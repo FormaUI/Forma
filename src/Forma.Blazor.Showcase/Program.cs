@@ -40,7 +40,10 @@ builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();
 builder.Services.AddScoped<IResourceProvider, MarkdownResourceProvider>();
 builder.Services.AddScoped<IPlayerProvider, CustomPlayerProvider>();
 
-// A stand-in cloud drive, so the share menu page can show a host-registered destination.
+// A stand-in cloud drive under the visitor's account, so the share menu page can show a host-registered destination and how it connects.
+builder.Services.AddScoped<ShowcaseShareAccounts>();
+builder.Services.AddScoped<IShareTokenSource>(services => services.GetRequiredService<ShowcaseShareAccounts>());
+builder.Services.AddScoped<IShareConnections>(services => services.GetRequiredService<ShowcaseShareAccounts>());
 builder.Services.AddScoped<ShowcaseShareTarget>();
 builder.Services.AddScoped<IShareTarget>(services => services.GetRequiredService<ShowcaseShareTarget>());
 

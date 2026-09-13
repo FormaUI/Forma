@@ -22,6 +22,7 @@
         <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -3,12 +3,14 @@ namespace Forma.AddOns.Share.Targets.Tests;
 using Forma.Framework.Resources;
 using Forma.Framework.Share;
 using Forma.Framework.Share.Targets;
+using Forma.Tests.Share;
 
 using Xunit;
 
 public sealed class CloudShareTests
 {
-    private static Task<string> GetTokenAsync() => Task.FromResult("token-123");
+    private static FakeShareTokenSource CreateTokens()
+        => new() { Tokens = { ["dropbox"] = "token-123", ["google-drive"] = "token-123", ["onedrive"] = "token-123", ["tiktok"] = "token-123" } };
 
     private static ShareItem CreateFile(string source = "https://example.com/files/kit.zip")
         => new() { Kind = ShareItemKind.File, Name = "kit.zip", Resource = new ResourceInfo(source) };
@@ -21,10 +23,10 @@ public sealed class CloudShareTests
             // Arrange
             using var handler = new RecordingHandler();
             using var http = new HttpClient(handler);
-            using var target = new DropboxShare(GetTokenAsync, http);
+            using var target = new DropboxShare(CreateTokens(), http);
 
             // Act
-            await target.ShareAsync(CreateFile());
+            await target.ShareAsync(CreateFile(), TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(
@@ -44,10 +46,10 @@ public sealed class CloudShareTests
             using var handler = new RecordingHandler();
             handler.Downloads["https://example.com/files/kit.zip"] = [1, 2, 3];
             using var http = new HttpClient(handler);
-            using var target = new GoogleDriveShare(GetTokenAsync, http);
+            using var target = new GoogleDriveShare(CreateTokens(), http);
 
             // Act
-            await target.ShareAsync(CreateFile());
+            await target.ShareAsync(CreateFile(), TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(
@@ -66,10 +68,10 @@ public sealed class CloudShareTests
             using var handler = new RecordingHandler();
             handler.Downloads["https://example.com/files/kit.zip"] = [1, 2, 3];
             using var http = new HttpClient(handler);
-            using var target = new OneDriveShare(GetTokenAsync, http);
+            using var target = new OneDriveShare(CreateTokens(), http);
 
             // Act
-            await target.ShareAsync(CreateFile());
+            await target.ShareAsync(CreateFile(), TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(
@@ -87,11 +89,11 @@ public sealed class CloudShareTests
             // Arrange
             using var handler = new RecordingHandler();
             using var http = new HttpClient(handler);
-            using var target = new TikTokShare(GetTokenAsync, http);
+            using var target = new TikTokShare(CreateTokens(), http);
             var clip = new ShareItem { Kind = ShareItemKind.Image, Name = "Finish line", Resource = new ResourceInfo("https://example.com/clips/finish.mp4") };
 
             // Act
-            await target.ShareAsync(clip);
+            await target.ShareAsync(clip, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(
@@ -108,10 +110,10 @@ public sealed class CloudShareTests
         {
             // Arrange
             var inMemory = new ShareItem { Kind = ShareItemKind.File, Name = "notes.txt", Resource = new ResourceInfo("data:text/plain,notes") };
-            using var dropbox = new DropboxShare(GetTokenAsync);
-            using var drive = new GoogleDriveShare(GetTokenAsync);
-            using var onedrive = new OneDriveShare(GetTokenAsync);
-            using var tiktok = new TikTokShare(GetTokenAsync);
+            using var dropbox = new DropboxShare(CreateTokens());
+            using var drive = new GoogleDriveShare(CreateTokens());
+            using var onedrive = new OneDriveShare(CreateTokens());
+            using var tiktok = new TikTokShare(CreateTokens());
 
             // Assert
             Assert.Multiple(

@@ -1,4 +1,4 @@
-namespace Forma.Framework.Feedback;
+namespace Forma.Framework.Events;
 
 /// <summary>Maintains a list of async callbacks and invokes them when notified.</summary>
 public sealed class StateNotifier : INotifyStateChanged

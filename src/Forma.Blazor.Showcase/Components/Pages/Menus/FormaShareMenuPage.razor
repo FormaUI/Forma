@@ -6,6 +6,7 @@
 @using Forma.Framework.Share
 @using Forma.Framework.Icons
 @inject IStringLocale<FormaShareMenuPage> L
+@implements IDisposable
 
 <h1>FormaShareMenu</h1>
 <p class="description">@L["A share menu over one subject. The social networks and a download make up the baseline, a consumer adds its own actions beside them, and everything past the primary row waits behind More. Where the platform offers a native share surface, one entry hands the subject to it."]</p>
@@ -23,6 +24,19 @@
     <p class="description">@L["A file stays off the networks; what applies is saving it, and any registered destination that takes files — here a stand-in Vault the Showcase registers."]</p>
     <div class="demo-box">
         <FormaShareMenu Item="_notes" />
+        <p class="demo-note">@L["Sent to Vault"]: <code>@(Vault.LastShared?.Name ?? L["nothing yet"])</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Connected Account"]</h2>
+    <p class="description">@L["The Vault shares through an account. Until the host reports it connected, the menu offers to connect it, and choosing that starts the host's sign-in; here it completes at once. A connected status is advisory: drop the token while the Vault stays connected, and the menu reports that the share needs a connected account, which is also what a host that reports no status shows."]</p>
+    <div class="demo-box">
+        <FormaShareMenu Item="_notes" />
+        <p class="demo-note">
+            <FormaButton OnClick="() => Accounts.SetVaultConnectedAsync(!Accounts.IsVaultConnected)">@(Accounts.IsVaultConnected ? L["Disconnect Vault"] : L["Connect Vault"])</FormaButton>
+            <FormaButton OnClick="() => Accounts.HasVaultToken = !Accounts.HasVaultToken">@(Accounts.HasVaultToken ? L["Drop the Token"] : L["Restore the Token"])</FormaButton>
+        </p>
         <p class="demo-note">@L["Sent to Vault"]: <code>@(Vault.LastShared?.Name ?? L["nothing yet"])</code></p>
     </div>
 </div>
@@ -64,10 +78,25 @@
 @code {
     [Inject] private ShowcaseShareTarget Vault { get; set; } = default!;
 
+    [Inject] private ShowcaseShareAccounts Accounts { get; set; } = default!;
+
     private string? _lastCommand;
+    private Func<Task> _refresh = default!;
+    private Action _refreshOnShared = default!;
 
     protected override void OnInitialized()
-        => Vault.Shared += () => InvokeAsync(StateHasChanged);
+    {
+        _refresh = () => InvokeAsync(StateHasChanged);
+        _refreshOnShared = () => InvokeAsync(StateHasChanged);
+        Vault.Shared += _refreshOnShared;
+        Accounts.Subscribe(_refresh);
+    }
+
+    public void Dispose()
+    {
+        Vault.Shared -= _refreshOnShared;
+        Accounts.Unsubscribe(_refresh);
+    }
 
     private readonly ShareItem _article = new()
     {

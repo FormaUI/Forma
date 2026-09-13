@@ -25,10 +25,13 @@ public abstract class ApiShare(string id, string title, Icon icon, HttpClient? h
     protected HttpClient Http => _http;
 
     /// <inheritdoc />
+    public virtual bool RequiresAccount => false;
+
+    /// <inheritdoc />
     public abstract bool Supports(ShareItem item);
 
     /// <inheritdoc />
-    public abstract Task ShareAsync(ShareItem item);
+    public abstract Task<bool> ShareAsync(ShareItem item, CancellationToken cancellationToken = default);
 
     /// <summary>The public address the item's resource can be fetched from, or null when it lives nowhere reachable.</summary>
     protected static string? GetReachableSource(ShareItem item)

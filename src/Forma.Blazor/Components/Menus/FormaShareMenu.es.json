@@ -5,5 +5,8 @@
   "Copy Link": "Copiar Enlace",
   "Email": "Correo",
   "More": "Más",
-  "Less": "Menos"
+  "Less": "Menos",
+  "Connect {Target}": "Conectar {Target}",
+  "Shared to {Target}.": "Compartido en {Target}.",
+  "{Target} needs a connected account.": "{Target} necesita una cuenta conectada."
 }

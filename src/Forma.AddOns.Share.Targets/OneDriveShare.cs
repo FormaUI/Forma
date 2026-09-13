@@ -4,42 +4,28 @@ using System.Net.Http.Headers;
 
 using Forma.Framework.Icons;
 
-/// <summary>Uploads a share item's resource into the OneDrive of the account whose token the host supplies, through Microsoft Graph.</summary>
-public sealed class OneDriveShare : ApiShare
+/// <summary>Uploads a share item's resource into the OneDrive of the account the user connected, through Microsoft Graph.</summary>
+/// <param name="tokens">Answers the user's Microsoft Graph token.</param>
+/// <param name="http">The connection to post over, or null for one of the target's own.</param>
+public sealed class OneDriveShare(IShareTokenSource tokens, HttpClient? http = null) : AccountShare("onedrive", "OneDrive", Glyph.CloudUpload, tokens, http)
 {
-    private readonly Func<Task<string>> _accessToken;
-
-    /// <summary>Creates a target uploading into the account the token accessor answers for.</summary>
-    public OneDriveShare(Func<Task<string>> accessToken, HttpClient? http = null)
-        : base("onedrive", "OneDrive", Glyph.CloudUpload, http)
-    {
-        ArgumentNullException.ThrowIfNull(accessToken);
-
-        _accessToken = accessToken;
-    }
-
     /// <summary>The upload carries the bytes, so the item needs a resource living at a public address to fetch them from.</summary>
     public override bool Supports(ShareItem item)
         => GetReachableSource(item) is not null;
 
     /// <inheritdoc />
-    public override async Task ShareAsync(ShareItem item)
+    protected override async Task ShareAsync(ShareItem item, string accessToken, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (GetReachableSource(item) is not { } source)
-        {
-            return;
-        }
-
-        var bytes = await Http.GetByteArrayAsync(new Uri(source)).ConfigureAwait(false);
+        var bytes = await Http.GetByteArrayAsync(new Uri(GetReachableSource(item)!), cancellationToken).ConfigureAwait(false);
 
         var address = new Uri($"https://graph.microsoft.com/v1.0/me/drive/root:/{Uri.EscapeDataString(item.Resource!.Name)}:/content");
         using var request = new HttpRequestMessage(HttpMethod.Put, address);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await _accessToken().ConfigureAwait(false));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         request.Content = new ByteArrayContent(bytes);
 
-        using var response = await Http.SendAsync(request).ConfigureAwait(false);
+        using var response = await Http.SendAsync(request, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
     }
 }

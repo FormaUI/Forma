@@ -25,7 +25,7 @@ Packaging:
 
 Registration:
 
-- A feature with services to register has a `ServiceCollectionExtensions` at its project root, registering with `TryAdd`, named for what lands in the container: an artwork package adds a pack named for its source, `AddFormaTwemojiPack()`; a feature whose defaults are services is `AddFormaFeedbackServices()`. The exceptions: culture routing registers through `CultureRoutingExtensions`, and a share target the host configures with a token or an address, `AddFormaDropboxSharing(accessToken)`, is added rather than tried.
+- A feature with services to register has a `ServiceCollectionExtensions` at its project root, registering with `TryAdd`, named for what lands in the container: an artwork package adds a pack named for its source, `AddFormaTwemojiPack()`; a feature whose defaults are services is `AddFormaFeedbackServices()`. The exceptions: culture routing registers through `CultureRoutingExtensions`, and a share destination the host switches on one by one, `AddFormaDiscordSharing(configure)`, is added rather than tried.
 - `Forma.Blazor` ships exactly one aggregate registrar, `AddFormaUI()`, fanning out to every default a component needs.
 - A component whose optional contract is unregistered falls back to a default the library carries, as `FormaIcon` does with the library's own glyph artwork; a contract carrying data nobody can synthesize, such as an emoji catalog, leaves the component in its empty state instead.
 

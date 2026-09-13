@@ -16,5 +16,11 @@
   "Last command": "פקודה אחרונה",
   "none yet": "עדיין אין",
   "Icon-Only Trigger": "מפעיל אייקון בלבד",
-  "Share": "שיתוף"
+  "Share": "שיתוף",
+  "A Connected Account": "חשבון מחובר",
+  "The Vault shares through an account. Until the host reports it connected, the menu offers to connect it, and choosing that starts the host's sign-in; here it completes at once. A connected status is advisory: drop the token while the Vault stays connected, and the menu reports that the share needs a connected account, which is also what a host that reports no status shows.": "ה-Vault משתף דרך חשבון. עד שהמארח מדווח שהוא מחובר, התפריט מציע לחבר אותו, והבחירה בכך מפעילה את הכניסה של המארח; כאן היא מסתיימת מיד. סטטוס מחובר הוא מייעץ בלבד: הסירו את הטוקן בעוד ה-Vault נשאר מחובר, והתפריט מדווח שהשיתוף דורש חשבון מחובר, וזה גם מה שמארח שאינו מדווח סטטוס מציג.",
+  "Connect Vault": "חיבור Vault",
+  "Disconnect Vault": "ניתוק Vault",
+  "Drop the Token": "הסרת הטוקן",
+  "Restore the Token": "שחזור הטוקן"
 }

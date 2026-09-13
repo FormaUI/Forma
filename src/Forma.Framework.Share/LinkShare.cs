@@ -24,9 +24,9 @@ public abstract class LinkShare(string id, string title, Icon icon) : IShareTarg
     /// <inheritdoc />
     public abstract string? GetAddress(ShareItem item);
 
-    /// <inheritdoc />
-    public Task ShareAsync(ShareItem item)
-        => Task.CompletedTask;
+    /// <summary>A navigation target shares through its address, so a call shares nothing.</summary>
+    public Task<bool> ShareAsync(ShareItem item, CancellationToken cancellationToken = default)
+        => Task.FromResult(false);
 
     /// <summary>The item's address percent-encoded, for a link or a picture; null for any other kind or an item without one.</summary>
     protected static string? EscapeAddress(ShareItem item)

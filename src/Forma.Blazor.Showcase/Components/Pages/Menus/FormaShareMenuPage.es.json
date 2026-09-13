@@ -16,5 +16,11 @@
   "Last command": "Último comando",
   "none yet": "ninguno todavía",
   "Icon-Only Trigger": "Disparador de Solo Icono",
-  "Share": "Compartir"
+  "Share": "Compartir",
+  "A Connected Account": "Una Cuenta Conectada",
+  "The Vault shares through an account. Until the host reports it connected, the menu offers to connect it, and choosing that starts the host's sign-in; here it completes at once. A connected status is advisory: drop the token while the Vault stays connected, and the menu reports that the share needs a connected account, which is also what a host that reports no status shows.": "El Vault comparte a través de una cuenta. Hasta que el anfitrión la reporte conectada, el menú ofrece conectarla, y elegirlo inicia el inicio de sesión del anfitrión; aquí se completa al instante. Un estado conectado es orientativo: retira el token mientras el Vault sigue conectado, y el menú informa de que compartir necesita una cuenta conectada, que es también lo que muestra un anfitrión que no reporta estado.",
+  "Connect Vault": "Conectar Vault",
+  "Disconnect Vault": "Desconectar Vault",
+  "Drop the Token": "Retirar el Token",
+  "Restore the Token": "Restaurar el Token"
 }

@@ -1,5 +1,7 @@
 namespace Forma.Framework.Feedback;
 
+using Forma.Framework.Events;
+
 
 /// <summary>In-memory <see cref="IToastService"/> that tracks active toasts and notifies subscribers on change.</summary>
 public sealed class ToastService : IToastService

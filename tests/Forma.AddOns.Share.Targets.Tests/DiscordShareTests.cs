@@ -8,7 +8,7 @@ using Forma.Framework.Share.Targets;
 
 using Xunit;
 
-public sealed class DiscordWebhookShareTests
+public sealed class DiscordShareTests
 {
     private static readonly Uri Webhook = new("https://discord.com/api/webhooks/123/abc");
 
@@ -18,11 +18,11 @@ public sealed class DiscordWebhookShareTests
         // Arrange
         using var handler = new RecordingHandler();
         using var http = new HttpClient(handler);
-        using var target = new DiscordWebhookShare(Webhook, http);
+        using var target = new DiscordShare(Webhook, http);
         var item = new ShareItem { Name = "Stage 12", Address = "https://example.com/news/stage-12" };
 
         // Act
-        await target.ShareAsync(item);
+        await target.ShareAsync(item, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Multiple(
@@ -37,11 +37,11 @@ public sealed class DiscordWebhookShareTests
         // Arrange
         using var handler = new RecordingHandler();
         using var http = new HttpClient(handler);
-        using var target = new DiscordWebhookShare(Webhook, http);
+        using var target = new DiscordShare(Webhook, http);
         var item = new ShareItem { Kind = ShareItemKind.File, Name = "kit.zip", Resource = new ResourceInfo("https://example.com/files/kit.zip") };
 
         // Act
-        await target.ShareAsync(item);
+        await target.ShareAsync(item, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Contains("https://example.com/files/kit.zip", handler.Body, StringComparison.Ordinal);
@@ -51,7 +51,7 @@ public sealed class DiscordWebhookShareTests
     public void Should_refuse_an_item_that_lives_nowhere_reachable()
     {
         // Arrange
-        using var target = new DiscordWebhookShare(Webhook);
+        using var target = new DiscordShare(Webhook);
         var inMemory = new ShareItem { Kind = ShareItemKind.File, Name = "notes.txt", Resource = new ResourceInfo("data:text/plain,notes") };
 
         // Assert
@@ -65,10 +65,10 @@ public sealed class DiscordWebhookShareTests
         // Arrange
         using var handler = new RecordingHandler(HttpStatusCode.Unauthorized);
         using var http = new HttpClient(handler);
-        using var target = new DiscordWebhookShare(Webhook, http);
+        using var target = new DiscordShare(Webhook, http);
 
         // Act + Assert
         await Assert.ThrowsAsync<HttpRequestException>(
-            () => target.ShareAsync(new ShareItem { Address = "https://example.com/a" }));
+            () => target.ShareAsync(new ShareItem { Address = "https://example.com/a" }, TestContext.Current.CancellationToken));
     }
 }

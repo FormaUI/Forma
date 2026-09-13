@@ -2,6 +2,7 @@ namespace Forma.Framework.Share.Targets;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 /// <summary>Registers the share targets this package ships.</summary>
 public static class ServiceCollectionExtensions
@@ -29,73 +30,100 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>Registers a Discord channel as a share target, posting through the webhook address the host configured.</summary>
+    /// <summary>Registers Messenger's send dialog as a share target, under the Facebook app the options name.</summary>
+    /// <param name="services">The collection to register into.</param>
+    /// <param name="configure">Sets the options, on top of whatever the host bound.</param>
+    /// <returns>The same collection, for chaining.</returns>
+    public static IServiceCollection AddFormaMessengerSharing(this IServiceCollection services, Action<MessengerShareOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        var options = services.AddOptions<MessengerShareOptions>()
+            .Validate(options => !string.IsNullOrWhiteSpace(options.AppId), "Messenger sharing needs the host's Facebook app id.")
+            .Validate(options => options.RedirectAddress is not null, "Messenger sharing needs the address the dialog returns to.")
+            .ValidateOnStart();
+
+        if (configure is not null)
+        {
+            options.Configure(configure);
+        }
+
+        services.AddSingleton<IShareTarget>(provider =>
+        {
+            var settings = provider.GetRequiredService<IOptions<MessengerShareOptions>>().Value;
+
+            return new MessengerShare(settings.AppId!, settings.RedirectAddress!);
+        });
+
+        return services;
+    }
+
+    /// <summary>Registers a Discord channel as a share target, posting through the webhook address the options name.</summary>
+    /// <param name="services">The collection to register into.</param>
+    /// <param name="configure">Sets the options, on top of whatever the host bound.</param>
+    /// <returns>The same collection, for chaining.</returns>
+    public static IServiceCollection AddFormaDiscordSharing(this IServiceCollection services, Action<DiscordShareOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        var options = services.AddOptions<DiscordShareOptions>()
+            .Validate(options => options.WebhookAddress is not null, "Discord sharing needs the channel's webhook address.")
+            .ValidateOnStart();
+
+        if (configure is not null)
+        {
+            options.Configure(configure);
+        }
+
+        // Built by the container so the container also disposes it.
+        services.AddSingleton<IShareTarget>(provider =>
+            new DiscordShare(provider.GetRequiredService<IOptions<DiscordShareOptions>>().Value.WebhookAddress!));
+
+        return services;
+    }
+
+    /// <summary>Registers a Discord channel as a share target, posting through the webhook address.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <param name="webhookAddress">The channel webhook's address, from Discord's channel settings.</param>
     /// <returns>The same collection, for chaining.</returns>
     public static IServiceCollection AddFormaDiscordSharing(this IServiceCollection services, Uri webhookAddress)
     {
-        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(webhookAddress);
 
-        // Built by the container so the container also disposes it.
-        services.AddSingleton<IShareTarget>(_ => new DiscordWebhookShare(webhookAddress));
-
-        return services;
+        return services.AddFormaDiscordSharing(options => options.WebhookAddress = webhookAddress);
     }
 
-    /// <summary>Registers Dropbox as a share target, saving into the account the token accessor answers for.</summary>
+    /// <summary>Registers Dropbox as a share target, saving into the account the user connected; the host supplies the <see cref="IShareTokenSource"/> it answers through.</summary>
     /// <param name="services">The collection to register into.</param>
-    /// <param name="accessToken">Answers a current access token for the account files are saved into.</param>
     /// <returns>The same collection, for chaining.</returns>
-    public static IServiceCollection AddFormaDropboxSharing(this IServiceCollection services, Func<Task<string>> accessToken)
+    public static IServiceCollection AddFormaDropboxSharing(this IServiceCollection services)
+        => services.AddAccountSharing<DropboxShare>();
+
+    /// <summary>Registers Google Drive as a share target, uploading into the account the user connected; the host supplies the <see cref="IShareTokenSource"/> it answers through.</summary>
+    /// <param name="services">The collection to register into.</param>
+    /// <returns>The same collection, for chaining.</returns>
+    public static IServiceCollection AddFormaGoogleDriveSharing(this IServiceCollection services)
+        => services.AddAccountSharing<GoogleDriveShare>();
+
+    /// <summary>Registers OneDrive as a share target, uploading into the account the user connected; the host supplies the <see cref="IShareTokenSource"/> it answers through.</summary>
+    /// <param name="services">The collection to register into.</param>
+    /// <returns>The same collection, for chaining.</returns>
+    public static IServiceCollection AddFormaOneDriveSharing(this IServiceCollection services)
+        => services.AddAccountSharing<OneDriveShare>();
+
+    /// <summary>Registers TikTok as a share target, publishing on the account the user connected; the host supplies the <see cref="IShareTokenSource"/> it answers through.</summary>
+    /// <param name="services">The collection to register into.</param>
+    /// <returns>The same collection, for chaining.</returns>
+    public static IServiceCollection AddFormaTikTokSharing(this IServiceCollection services)
+        => services.AddAccountSharing<TikTokShare>();
+
+    // Scoped to the user context, because the target shares through that user's account.
+    private static IServiceCollection AddAccountSharing<TTarget>(this IServiceCollection services)
+        where TTarget : AccountShare
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(accessToken);
 
-        services.AddSingleton<IShareTarget>(_ => new DropboxShare(accessToken));
-
-        return services;
-    }
-
-    /// <summary>Registers Google Drive as a share target, uploading into the account the token accessor answers for.</summary>
-    /// <param name="services">The collection to register into.</param>
-    /// <param name="accessToken">Answers a current access token for the account files are uploaded into.</param>
-    /// <returns>The same collection, for chaining.</returns>
-    public static IServiceCollection AddFormaGoogleDriveSharing(this IServiceCollection services, Func<Task<string>> accessToken)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(accessToken);
-
-        services.AddSingleton<IShareTarget>(_ => new GoogleDriveShare(accessToken));
-
-        return services;
-    }
-
-    /// <summary>Registers OneDrive as a share target, uploading into the account the token accessor answers for.</summary>
-    /// <param name="services">The collection to register into.</param>
-    /// <param name="accessToken">Answers a current access token for the account files are uploaded into.</param>
-    /// <returns>The same collection, for chaining.</returns>
-    public static IServiceCollection AddFormaOneDriveSharing(this IServiceCollection services, Func<Task<string>> accessToken)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(accessToken);
-
-        services.AddSingleton<IShareTarget>(_ => new OneDriveShare(accessToken));
-
-        return services;
-    }
-
-    /// <summary>Registers TikTok as a share target, publishing on the account the token accessor answers for.</summary>
-    /// <param name="services">The collection to register into.</param>
-    /// <param name="accessToken">Answers a current access token for the account videos are published on.</param>
-    /// <returns>The same collection, for chaining.</returns>
-    public static IServiceCollection AddFormaTikTokSharing(this IServiceCollection services, Func<Task<string>> accessToken)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(accessToken);
-
-        services.AddSingleton<IShareTarget>(_ => new TikTokShare(accessToken));
+        services.AddScoped<IShareTarget, TTarget>();
 
         return services;
     }

@@ -45,10 +45,33 @@ compete.
 - **The library references only the contracts.** The baseline networks, Facebook, X,
   WhatsApp, Telegram, Bluesky, Reddit, Snapchat, LinkedIn and Pinterest, ship as navigation
   destinations in the add-on, registered by `AddFormaShareNetworks()` beside `AddFormaUI()`.
-  The add-on also ships API destinations, each a plain HTTP integration switched on by its
-  own registrar: Discord through a channel webhook, Dropbox through its save-URL API,
-  Google Drive and OneDrive as uploads under a host-supplied access token, and TikTok by
-  publish-by-pull.
+  The add-on also ships destinations the host switches on one by one, each by its own
+  registrar: Messenger's send dialog under the host's Facebook app, Discord through a
+  channel webhook, Dropbox through its save-URL API, Google Drive and OneDrive as uploads,
+  and TikTok by publish-by-pull.
+- **Host settings and a user's credentials are two different things.** A value the website
+  owns, an app id or a webhook address, is an options class beside its target in the
+  add-on, bound the conventional way and settable through the registrar's configure
+  overload; reloading it at runtime is the host's wiring. A value the user owns, the token
+  for their Dropbox or TikTok, comes from `IShareTokenSource`, a contract in
+  `Forma.Framework.Share` the host implements in the current user's context and that
+  answers a token for a target id, or null when the user has connected none. A retrieval
+  failure throws, so it is never mistaken for "not connected".
+- **A target says whether it shares through an account.** `RequiresAccount` on the target
+  contract, true on `AccountShare`, the shell the account-backed destinations stand on;
+  the menu never keeps a list of platforms. Such a target is registered in the user's
+  context, so no singleton ever holds the user's token source, and its share reports
+  whether it happened: false with no token, so the menu can say the share needs a
+  connected account.
+- **Connection status is advisory and comes from the host.** `IShareConnections`, optional
+  and separate from the token source because starting a sign-in and answering a token are
+  different responsibilities, says whether the user has connected a target and starts the
+  host's sign-in for one; it notifies through `INotifyStateChanged` when that changes,
+  since starting a sign-in does not establish that anything connected. The menu reads it
+  to draw an account target the user has not connected as a Connect entry and never
+  fetches a token to draw itself. A connected status guarantees nothing at share time, so
+  a call is reported inside the menu either way: shared, or needing a connected account,
+  which is also what a host that reports no status gets.
 - **What needs per-user configuration to share at all is not a baseline network.** A
   network whose share needs an instance the reader chooses, or an app with no public web
   share endpoint, is reachable only through the native hand-off, where the platform lists

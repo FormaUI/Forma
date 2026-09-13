@@ -1,5 +1,7 @@
 namespace Forma.Framework.Feedback;
 
+using Forma.Framework.Events;
+
 
 /// <summary>Coordinates a single active confirmation dialog and its awaited result.</summary>
 public interface IConfirmDialogService : INotifyStateChanged

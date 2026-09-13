@@ -8,7 +8,8 @@ using Forma.Framework.Share;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A share menu over one item: the social networks and download baseline on a scrolling row, a consumer's own actions beside them, and the rest behind More.</summary>
-public sealed partial class FormaShareMenu : FormaElementBase
+/// <param name="connections">The accounts the user has connected for targets sharing through one, or null when the host reports none.</param>
+public sealed partial class FormaShareMenu(IShareConnections? connections = null) : FormaElementBase
 {
     /// <summary>What the menu acts on.</summary>
     [Parameter] public ShareItem? Item { get; set; }
@@ -36,8 +37,11 @@ public sealed partial class FormaShareMenu : FormaElementBase
     private Share _share = default!;
     private Clipboard _clipboard = default!;
     private Print _print = default!;
+    private Func<Task>? _refresh;
     private bool _canShareNatively;
     private bool _isExpanded;
+    private string? _notice;
+    private ShareItem? _noticedItem;
 
     private IReadOnlyList<IShareTarget> _supportedTargets = [];
 
@@ -53,7 +57,16 @@ public sealed partial class FormaShareMenu : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => _supportedTargets = Item is null ? [] : [.. ShareTargets.Where(target => target.Supports(Item))];
+    {
+        _supportedTargets = Item is null ? [] : [.. ShareTargets.Where(target => target.Supports(Item))];
+
+        // The notice is about the item it was made for, so it outlives a parent's re-render and not a change of item.
+        if (!ReferenceEquals(Item, _noticedItem))
+        {
+            _notice = null;
+            _noticedItem = Item;
+        }
+    }
 
     private string EmailAddress
         => $"mailto:?subject={Uri.EscapeDataString(Item?.Name ?? string.Empty)}&body={Uri.EscapeDataString(Item?.Address ?? string.Empty)}";
@@ -64,6 +77,12 @@ public sealed partial class FormaShareMenu : FormaElementBase
         _share = new Share(Context.JS);
         _clipboard = new Clipboard(Context.JS);
         _print = new Print(Context.JS);
+
+        if (connections is not null)
+        {
+            _refresh = () => InvokeAsync(StateHasChanged);
+            connections.Subscribe(_refresh);
+        }
     }
 
     /// <inheritdoc />
@@ -74,6 +93,21 @@ public sealed partial class FormaShareMenu : FormaElementBase
             _canShareNatively = true;
             StateHasChanged();
         }
+    }
+
+    /// <summary>Whether the target shares through an account the host reports the user has not connected.</summary>
+    private bool NeedsConnection(IShareTarget target)
+        => target.RequiresAccount && connections is { } known && !known.IsConnected(target.Id);
+
+    private Task ConnectAsync(IShareTarget target)
+        => connections!.ConnectAsync(target.Id);
+
+    /// <summary>Shares through a target that needs a call, and says how it went; the host's connection status is advisory, so a missing account is reported here whatever it said.</summary>
+    private async Task ShareAsync(IShareTarget target)
+    {
+        _notice = await target.ShareAsync(Item!)
+            ? L["Shared to {Target}.", target.Title].Value
+            : target.RequiresAccount ? L["{Target} needs a connected account.", target.Title].Value : null;
     }
 
     private void ToggleExpanded()
@@ -91,6 +125,11 @@ public sealed partial class FormaShareMenu : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
+        if (_refresh is not null)
+        {
+            connections?.Unsubscribe(_refresh);
+        }
+
         await _share.DisposeAsync();
         await _clipboard.DisposeAsync();
         await _print.DisposeAsync();

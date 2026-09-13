@@ -5,6 +5,7 @@
     <Project Path="src\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
     <Project Path="src\Forma.Framework.Css\Forma.Framework.Css.csproj" />
     <Project Path="src\Forma.Framework.Timing\Forma.Framework.Timing.csproj" />
+    <Project Path="src\Forma.Framework.Events\Forma.Framework.Events.csproj" />
     <Project Path="src\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
     <Project Path="src\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
     <Project Path="src\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
@@ -37,6 +38,7 @@
     <Project Path="tests\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Windows.Tests\Forma.Framework.Windows.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Timing.Tests\Forma.Framework.Timing.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Events.Tests\Forma.Framework.Events.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Input.Tests\Forma.Framework.Input.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Input.Interop.Tests\Forma.Framework.Input.Interop.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Core.Interop.Tests\Forma.Framework.Core.Interop.Tests.csproj" />

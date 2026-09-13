@@ -35,16 +35,25 @@
                     }
                     @foreach (var target in _supportedTargets)
                     {
-                        @if (target.GetAddress(Item!) is { } address)
+                        @if (NeedsConnection(target))
+                        {
+                            <FormaDropDownMenuItem @key="target.Id" OnClick="() => ConnectAsync(target)"><FormaIcon Icon="target.Icon" /><span>@L["Connect {Target}", target.Title]</span></FormaDropDownMenuItem>
+                        }
+                        else if (target.GetAddress(Item!) is { } address)
                         {
                             <FormaDropDownMenuItem @key="target.Id" Href="@address" target="_blank" rel="noopener noreferrer"><FormaIcon Icon="target.Icon" /><span>@target.Title</span></FormaDropDownMenuItem>
                         }
                         else
                         {
-                            <FormaDropDownMenuItem @key="target.Id" OnClick="() => target.ShareAsync(Item!)"><FormaIcon Icon="target.Icon" /><span>@target.Title</span></FormaDropDownMenuItem>
+                            @* A call reports how it went inside the menu, so the menu stays open to show it. *@
+                            <FormaDropDownMenuItem @key="target.Id" KeepsOpen="true" OnClick="() => ShareAsync(target)"><FormaIcon Icon="target.Icon" /><span>@target.Title</span></FormaDropDownMenuItem>
                         }
                     }
                 </FormaCommandBar>
+                @if (_notice is not null)
+                {
+                    <p class="forma-share-menu-notice" role="status">@_notice</p>
+                }
             </div>
             <FormaDropDownMenuDivider />
         }

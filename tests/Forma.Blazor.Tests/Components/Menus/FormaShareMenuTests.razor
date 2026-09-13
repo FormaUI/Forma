@@ -1,5 +1,8 @@
+@using AngleSharp.Dom
+@using Bunit.Rendering
 @using Forma.Framework.Resources
 @using Forma.Framework.Share
+@using Forma.Tests.Share
 @inherits FormaBunitContext
 @code {
     public sealed class Component
@@ -71,10 +74,10 @@
             public string Title => "Vault";
             public Icon Icon => Glyph.Folder;
             public bool Supports(ShareItem item) => item.Kind == ShareItemKind.File;
-            public Task ShareAsync(ShareItem item)
+            public Task<bool> ShareAsync(ShareItem item, CancellationToken cancellationToken = default)
             {
                 Shared = item;
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
         }
 
@@ -226,6 +229,125 @@
 
             // Assert 2
             Assert.Equal("demo.embed", raised);
+        }
+    }
+
+    public sealed class Accounts
+    {
+        private static ShareItem Article => new()
+        {
+            Name = "Stage 12",
+            Address = "https://example.com/news/stage-12",
+        };
+
+        private static FakeAccountShareTarget RegisterVault(FormaShareMenuTests ctx, FakeShareTokenSource tokens, FakeShareConnections? connections)
+        {
+            var vault = new FakeAccountShareTarget(tokens);
+            ctx.Services.AddSingleton<IShareTokenSource>(tokens);
+            ctx.Services.AddSingleton<IShareTarget>(vault);
+
+            if (connections is not null)
+            {
+                ctx.Services.AddSingleton<IShareConnections>(connections);
+            }
+
+            return vault;
+        }
+
+        private static IElement FindPrimaryButton(IRenderedComponent<ContainerFragment> cut, string text)
+            => cut.FindAll(".forma-share-menu-primary button").First(button => button.TextContent.Contains(text, StringComparison.Ordinal));
+
+        [Fact]
+        public void Should_offer_to_connect_an_account_target_the_host_reports_unconnected()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var connections = new FakeShareConnections();
+            var vault = RegisterVault(ctx, new FakeShareTokenSource(), connections);
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+            FindPrimaryButton(cut, "Connect Vault").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["vault"], connections.ConnectRequests),
+                () => Assert.Null(vault.Shared));
+        }
+
+        [Fact]
+        public void Should_share_through_an_account_the_host_reports_connected_and_say_so()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var connections = new FakeShareConnections { Connected = { "vault" } };
+            var vault = RegisterVault(ctx, new FakeShareTokenSource { Tokens = { ["vault"] = "token-123" } }, connections);
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+            FindPrimaryButton(cut, "Vault").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("token-123", vault.SharedUnder),
+                () => Assert.Equal("Shared to Vault.", cut.Find(".forma-share-menu-notice").TextContent));
+        }
+
+        [Fact]
+        public void Should_report_a_missing_account_when_the_host_reports_no_status()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var vault = RegisterVault(ctx, new FakeShareTokenSource(), connections: null);
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+            FindPrimaryButton(cut, "Vault").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(vault.Shared),
+                () => Assert.Equal("Vault needs a connected account.", cut.Find(".forma-share-menu-notice").TextContent));
+        }
+
+        [Fact]
+        public void Should_report_a_missing_account_when_the_hosts_status_is_stale()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var connections = new FakeShareConnections { Connected = { "vault" } };
+            var vault = RegisterVault(ctx, new FakeShareTokenSource(), connections);
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+            FindPrimaryButton(cut, "Vault").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(vault.Shared),
+                () => Assert.Equal("Vault needs a connected account.", cut.Find(".forma-share-menu-notice").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_offer_the_target_itself_once_the_host_reports_it_connected()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var connections = new FakeShareConnections();
+            RegisterVault(ctx, new FakeShareTokenSource { Tokens = { ["vault"] = "token-123" } }, connections);
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+            Assert.NotNull(FindPrimaryButton(cut, "Connect Vault"));
+
+            // Act
+            await connections.MarkConnectedAsync("vault");
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.DoesNotContain(cut.FindAll(".forma-share-menu-primary button"), button => button.TextContent.Contains("Connect", StringComparison.Ordinal)));
         }
     }
 }

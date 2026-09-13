@@ -5,5 +5,8 @@
   "Copy Link": "העתקת קישור",
   "Email": "דוא\"ל",
   "More": "עוד",
-  "Less": "פחות"
+  "Less": "פחות",
+  "Connect {Target}": "חיבור {Target}",
+  "Shared to {Target}.": "שותף אל {Target}.",
+  "{Target} needs a connected account.": "{Target} דורש חשבון מחובר."
 }

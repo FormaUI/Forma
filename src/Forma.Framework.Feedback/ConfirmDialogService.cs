@@ -1,5 +1,7 @@
 namespace Forma.Framework.Feedback;
 
+using Forma.Framework.Events;
+
 
 /// <summary><see cref="IConfirmDialogService"/> that tracks the active request and notifies subscribers on change.</summary>
 public sealed class ConfirmDialogService : IConfirmDialogService

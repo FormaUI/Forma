@@ -1,5 +1,7 @@
 namespace Forma.Framework.Feedback;
 
+using Forma.Framework.Events;
+
 
 /// <summary>Manages the transient toast notifications shown to the user.</summary>
 public interface IToastService : INotifyStateChanged
