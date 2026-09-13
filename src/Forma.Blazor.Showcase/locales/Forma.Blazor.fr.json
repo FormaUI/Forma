@@ -1,0 +1,23 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: fr;",
+  "Components.Menus.FormaShareMenu": {
+    "Share": "Partager",
+    "Download": "Télécharger",
+    "Copy Link": "Copier le Lien",
+    "Email": "E-mail",
+    "More": "Plus",
+    "Less": "Moins",
+    "Connect {Target}": "Connecter {Target}",
+    "Shared to {Target}.": "Partagé sur {Target}.",
+    "{Target} needs a connected account.": "{Target} nécessite un compte connecté."
+  },
+  "Components.Navigation.FormaPagination": {
+    "Pagination": "Pagination",
+    "Previous": "Précédent",
+    "Next": "Suivant",
+    "Page {PageNumber}": "Page {PageNumber}",
+    "Go to Page": "Aller à la Page",
+    "{PageNumber} of {PageCount}": "{PageNumber} sur {PageCount}",
+    "Go": "Aller"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: fr;",
+  "Components.Pages.Libraries.LocalizationPage": {
+    "Translations from the Host": "Traductions depuis l'Hôte",
+    "Key": "Clé",
+    "Beside the Page": "À Côté de la Page",
+    "From the Host's Folder": "Depuis le Dossier de l'Hôte",
+    "File": "Fichier",
+    "Written in the file named for the assembly": "Depuis le dossier de l'hôte : le fichier de l'assembly",
+    "Written in a file named for part of the namespace": "Depuis le dossier de l'hôte : un fichier d'espace de noms",
+    "Written in the file named for the type": "Depuis le dossier de l'hôte : le fichier du type",
+    "Added by the host's folder alone": "Ajouté par le dossier de l'hôte seul",
+    "A Language the Library Never Shipped": "Une Langue que la Bibliothèque n'a Jamais Livrée",
+    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for the pagination below, for the share menu, and for this section, so switch to Français in the sidebar to see them in French while everything else falls back to English.": "Le français n'est livré ni avec la bibliothèque ni avec le Showcase. Le dossier locales du Showcase le fournit pour la pagination ci-dessous, pour le menu de partage et pour cette section ; passez à Français dans la barre latérale pour les voir en français, tandis que tout le reste retombe en anglais.",
+    "Current page": "Page actuelle"
+  }
+}

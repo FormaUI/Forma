@@ -207,7 +207,9 @@ dotnet run --project src/Forma.Blazor.Showcase
 
 All four checks must pass before a change is offered for review. The Showcase serves an interactive
 page per component, in English, Hebrew, and Spanish — every state a component can enter is rendered
-there, and reviewing a component means looking at it in all three cultures.
+there, and reviewing a component means looking at it in all three cultures. It also offers French,
+which the library never shipped: its `locales` folder supplies a few components' strings in it, to
+show a host adding a language, and everything else falls back to English.
 
 Where to read before working:
 

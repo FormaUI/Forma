@@ -55,5 +55,8 @@
   "File": "קובץ",
   "Written in the file named for the assembly": "ליד הדף: קובץ המכלול",
   "Written in a file named for part of the namespace": "ליד הדף: קובץ מרחב השמות",
-  "Written in the file named for the type": "ליד הדף: קובץ הטיפוס"
+  "Written in the file named for the type": "ליד הדף: קובץ הטיפוס",
+  "A Language the Library Never Shipped": "שפה שהספרייה מעולם לא סיפקה",
+  "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for the pagination below, for the share menu, and for this section, so switch to Français in the sidebar to see them in French while everything else falls back to English.": "צרפתית אינה מסופקת לא עם הספרייה ולא עם ה-Showcase. תיקיית locales של ה-Showcase מספקת אותה לדפדוף שלמטה, לתפריט השיתוף ולמקטע הזה; עברו ל-Français בסרגל הצד כדי לראותם בצרפתית בעוד כל השאר נופל חזרה לאנגלית.",
+  "Current page": "עמוד נוכחי"
 }

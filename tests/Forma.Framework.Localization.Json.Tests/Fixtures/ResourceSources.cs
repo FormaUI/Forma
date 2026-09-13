@@ -48,3 +48,22 @@ public sealed class HostUnmarked;
 
 /// <summary>A host file giving a key a value that is not text.</summary>
 public sealed class HostMistyped;
+
+/// <summary>A type whose file carries its own strings at the top level and its nested types as sections.</summary>
+public sealed class Outer
+{
+    /// <summary>A nested type, translated through its outer type's file or a file of its own.</summary>
+    public sealed class Inner;
+
+    /// <summary>A generic nested type, whose arity is dropped like any other's.</summary>
+    /// <typeparam name="TValue">Unused; present only to make the type generic.</typeparam>
+    public sealed class InnerGeneric<TValue>;
+}
+
+/// <summary>A generic type whose arity is dropped from the name its nested type is reached through.</summary>
+/// <typeparam name="TValue">Unused; present only to make the type generic.</typeparam>
+public sealed class OuterGeneric<TValue>
+{
+    /// <summary>A type nested in a generic type.</summary>
+    public sealed class Inner;
+}

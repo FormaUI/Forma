@@ -59,6 +59,8 @@ precisely what the test asserts, so the duplicated `Fixtures` segment is require
 | `NewerMinor` | `…Tests.Fixtures` | A later minor schema, and a metadata field this build ignores | `Fixtures/NewerMinor.he.json` |
 | `MismatchedCulture` | `…Tests.Fixtures` | A declared culture the file name contradicts | `Fixtures/MismatchedCulture.he.json` |
 | `GroupedFirst`, `GroupedSecond` | `…Tests.Fixtures.Grouped` | The file named for the folder, read from inside it and from beside it, serving every type in the folder; a type's own file winning over it for the keys it carries | `Fixtures/Grouped/Grouped.he.json`, `Fixtures/Grouped.es.json`, `Fixtures/Grouped/GroupedSecond.he.json` |
+| `Outer`, `Outer.Inner`, `Outer.InnerGeneric<T>` | `…Tests.Fixtures` | An outer type's file carrying its own strings at the top level and its nested types as sections, a nested type's own file laid out as a folder path, and a nested type's arity dropped | `Fixtures/Outer.he.json`, `Fixtures/Outer/Inner.he.json`, `locales/{assembly}/Fixtures/Outer.es.json` |
+| `OuterGeneric<T>.Inner` | `…Tests.Fixtures` | A generic outer type's arity dropped from the name its nested type is reached through | `Fixtures/OuterGeneric.he.json` |
 
 ## The csproj entries
 

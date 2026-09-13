@@ -1,0 +1,11 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Open": "outer type's own",
+  "Inner": {
+    "Save": "outer file",
+    "Open": "outer file"
+  },
+  "InnerGeneric": {
+    "Save": "outer file"
+  }
+}

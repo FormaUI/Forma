@@ -1,5 +1,6 @@
 namespace Forma.Framework.Localization.Json.Tests;
 
+using Forma.Framework.Localization.Json.Tests.Fixtures;
 using Forma.Framework.Localization.Json.Tests.Fixtures.Grouped;
 
 public sealed class EmbeddedLocaleSourceTests
@@ -49,6 +50,93 @@ public sealed class EmbeddedLocaleSourceTests
 
             // Assert
             Assert.Equal("grouped file beside", localized.Value);
+        }
+    }
+
+    public sealed class Nesting
+    {
+        [Fact]
+        public void Should_translate_a_nested_type_through_its_outer_types_file()
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<Outer.Inner>();
+
+            // Act
+            var localized = strings["Open"];
+
+            // Assert
+            Assert.Equal("outer file", localized.Value);
+        }
+
+        [Fact]
+        public void Should_prefer_a_nested_types_own_file_over_the_outer_types()
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<Outer.Inner>();
+
+            // Act
+            var localized = strings["Save"];
+
+            // Assert
+            Assert.Equal("nested type's file", localized.Value);
+        }
+
+        [Fact]
+        public void Should_keep_the_outer_types_own_strings_at_the_top_level()
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<Outer>();
+
+            // Act
+            var localized = strings["Open"];
+
+            // Assert
+            Assert.Equal("outer type's own", localized.Value);
+        }
+
+        [Fact]
+        public void Should_drop_a_nested_types_arity()
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<Outer.InnerGeneric<int>>();
+
+            // Act
+            var localized = strings["Save"];
+
+            // Assert
+            Assert.Equal("outer file", localized.Value);
+        }
+
+        [Fact]
+        public void Should_drop_an_outer_types_arity()
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<OuterGeneric<int>.Inner>();
+
+            // Act
+            var localized = strings["Save"];
+
+            // Assert
+            Assert.Equal("generic outer file", localized.Value);
+        }
+
+        [Fact]
+        public void Should_reach_a_nested_type_through_the_hosts_outer_file()
+        {
+            // Arrange
+            using var culture = new CultureScope("es");
+            var strings = CreateLocale<Outer.Inner>();
+
+            // Act
+            var localized = strings["Save"];
+
+            // Assert
+            Assert.Equal("host outer file", localized.Value);
         }
     }
 

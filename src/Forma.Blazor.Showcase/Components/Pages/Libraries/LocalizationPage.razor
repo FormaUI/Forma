@@ -234,6 +234,15 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["A Language the Library Never Shipped"]</h2>
+    <p class="description">@L["French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for the pagination below, for the share menu, and for this section, so switch to Français in the sidebar to see them in French while everything else falls back to English."]</p>
+    <div class="demo-box">
+        <FormaPagination TotalItems="65" PageSize="10" CurrentPage="_page" OnPageChanged="HandlePageChangedAsync" />
+        <p class="demo-note">@L["Current page"]: <code>@_page</code></p>
+    </div>
+</div>
+
 @code {
     private const string AbsentKey = "No translation exists for this sentence.";
     private const string PluralKey = "[$ plural; one: # file; other: # files; $]";
@@ -271,9 +280,17 @@
     private int _written = 5;
     private int _allowed = 280;
     private decimal _count = 1m;
+    private int _page = 1;
 
     private static string Language
         => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+    private Task HandlePageChangedAsync(int page)
+    {
+        _page = page;
+
+        return Task.CompletedTask;
+    }
 
     private LocalizedPattern Pattern
         => L.Resolve("{Written} of {Allowed} characters", _written, _allowed);

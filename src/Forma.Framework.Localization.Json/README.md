@@ -152,6 +152,11 @@ locales/Forma.Blazor/Components/Composer/FormaComposer.es.json   { "Bold": "Negr
 The same precedence applies, and a host's entry wins over the assembly's own at the same position,
 so a host file holds only the keys it changes and every other key keeps the assembly's translation.
 
+Host overrides respect culture specificity. Lookup takes a key from the most specific culture that
+has it, from either source, before falling back to the parent, so an override written in `es` is a
+fallback for an `es-419` reader rather than a replacement for every Spanish string; an override of a
+key belongs in the culture that supplies that key.
+
 A host file completes a type's name from the assembly's name, without `ResourcesPath`, so the
 host's layout follows the namespace rather than the embedding. An assembly whose root namespace is
 not its name has its host files declare the root in their metadata, as

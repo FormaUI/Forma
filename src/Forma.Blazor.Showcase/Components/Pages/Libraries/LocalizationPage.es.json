@@ -55,5 +55,8 @@
   "File": "Archivo",
   "Written in the file named for the assembly": "Junto a la página: el archivo del ensamblado",
   "Written in a file named for part of the namespace": "Junto a la página: el archivo del espacio de nombres",
-  "Written in the file named for the type": "Junto a la página: el archivo del tipo"
+  "Written in the file named for the type": "Junto a la página: el archivo del tipo",
+  "A Language the Library Never Shipped": "Un Idioma que la Biblioteca Nunca Incluyó",
+  "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for the pagination below, for the share menu, and for this section, so switch to Français in the sidebar to see them in French while everything else falls back to English.": "El francés no viene ni con la biblioteca ni con el Showcase. La carpeta locales del Showcase lo aporta para la paginación de abajo, para el menú de compartir y para esta sección; cambie a Français en la barra lateral para verlos en francés mientras todo lo demás vuelve al inglés.",
+  "Current page": "Página actual"
 }
