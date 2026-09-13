@@ -189,6 +189,15 @@ entry higher up, as it wins over any other. `$tools` is reserved beside it for t
 its own entries under keys naming it, such as `"$tools": { "locali.ignore": ["LOC0113"] }`; the
 runtime reads nothing from it.
 
+A key shaped like a reserved entry, `$` followed by one lowercase word and nothing else, is the
+runtime's, and a file naming one it does not define, such as `$import`, fails to load. A doubled
+sign escapes the shape: `$$price` is the key `$price`, in a file and at a call site alike, read
+with exactly one `$` dropped and never interpreted again, so `$$shared` is the ordinary key
+`$shared` and `$$$price` the ordinary key `$$price`. The reserved names are recognized as written,
+before any escape. Any other key starting with `$`, such as `$`, `$5 off`, `$USD`, `$camelCase`,
+or `$price/month`, is ordinary text and needs no escape. Translation values are never read for
+the shape.
+
 Lookup walks `CultureInfo.CurrentUICulture` outward through `Parent`, taking the first culture whose
 files have the key and stopping before the invariant culture, which no file can name. Within a
 culture, a file is read from the main assembly first, then from that culture's satellite assembly.

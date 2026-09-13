@@ -21,6 +21,9 @@ public static class LocalizationSchema
     /// <summary>The key of the entry reserved for tools, each keeping its own entries under keys naming it, which the runtime reads nothing from.</summary>
     public const string ToolsKey = "$tools";
 
+    /// <summary>The prefix that keeps a key shaped like a reserved entry as text; one dollar sign is dropped and the rest is read as written.</summary>
+    public const string EscapePrefix = "$$";
+
     /// <summary>The field naming the namespace a host file completes a type's name from, in place of the assembly's name.</summary>
     public const string RootNamespaceField = "RootNamespace";
 
@@ -38,4 +41,33 @@ public static class LocalizationSchema
 
     /// <summary>The schema major version this build reads, which is the only part that decides readability.</summary>
     public static int SupportedMajor { get; } = Version.Parse(CurrentVersion).Major;
+
+    /// <summary>Whether a key is shaped like a reserved entry: a dollar sign, then one or more lowercase ASCII letters, and nothing else.</summary>
+    /// <param name="key">The key as written.</param>
+    public static bool IsReservedShape(ReadOnlySpan<char> key)
+    {
+        if (key.Length < 2 || key[0] != '$')
+        {
+            return false;
+        }
+
+        foreach (var character in key[1..])
+        {
+            if (!char.IsAsciiLetterLower(character))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>The text a key stands for: the key with one dollar sign dropped when it starts with the escape prefix, and the key itself otherwise.</summary>
+    /// <param name="key">The key as written.</param>
+    public static string Unescape(string key)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+
+        return key.StartsWith(EscapePrefix, StringComparison.Ordinal) ? key[1..] : key;
+    }
 }

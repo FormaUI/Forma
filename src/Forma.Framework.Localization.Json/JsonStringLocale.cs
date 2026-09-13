@@ -3,6 +3,7 @@ namespace Forma.Framework.Localization.Json;
 using System.Globalization;
 
 using Forma.Framework.Localization;
+using Forma.Framework.Localization.Files;
 
 /// <summary>Reads the strings for one resource location, walking the culture chain and falling back to the key itself.</summary>
 internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocation location) : IStringLocale
@@ -69,22 +70,25 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         }
     }
 
+    // The key is matched and falls back as the text it stands for, so a doubled dollar sign escapes the reserved shape at a call site as it does in a file.
     private LocalizedText Render(string name, LocalizedArgument[] arguments)
     {
-        var found = TryFind(name, out var entry);
+        var key = LocalizationSchema.Unescape(name);
+        var found = TryFind(key, out var entry);
         RequireFound(name, found);
 
-        var format = Evaluate(found ? entry.Format : name, IsTranslated(found, entry), arguments);
+        var format = Evaluate(found ? entry.Format : key, IsTranslated(found, entry), arguments);
 
         return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, location.BaseName);
     }
 
     private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
     {
-        var found = TryFind(name, out var entry);
+        var key = LocalizationSchema.Unescape(name);
+        var found = TryFind(key, out var entry);
         RequireFound(name, found);
 
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, IsTranslated(found, entry), arguments), arguments, !found, location.BaseName);
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : key, IsTranslated(found, entry), arguments), arguments, !found, location.BaseName);
     }
 
     // A format that is the key is source-language text, whether it was written as null or never found at all.

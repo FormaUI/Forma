@@ -141,7 +141,7 @@ public sealed class LocaleSourceTests
             Files =
             {
                 ["Contoso.Widgets/Bars/Bars.he.fake"] = new(
-                    CreateSections(("$shared", CreateEntries(("Bold", "shared"), ("Italic", "shared"))), ("Toolbar", CreateEntries(("Bold", "own")))),
+                    CreateSections(("Toolbar", CreateEntries(("Bold", "own")))).WithShared(("Bold", "shared"), ("Italic", "shared")),
                     null),
             },
         };
@@ -176,7 +176,7 @@ public sealed class LocaleSourceTests
             Files =
             {
                 ["Contoso.Widgets.he.fake"] = new(
-                    CreateSections(("Bars", CreateSections(("$shared", CreateEntries(("Bold", "bars"))))), ("Menus", CreateSections(("Menu", CreateEntries(("Open", "menu")))))),
+                    CreateSections(("Bars", CreateSections().WithShared(("Bold", "bars"))), ("Menus", CreateSections(("Menu", CreateEntries(("Open", "menu")))))),
                     null),
             },
         };
@@ -192,29 +192,27 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
-    public void Should_list_shared_entries_before_a_sections_own_wherever_the_file_writes_them()
+    public void Should_not_share_a_section_merely_named_like_the_shared_one()
     {
-        // Arrange — the shared section is written after the type's own, and a later entry overrides an earlier one.
+        // Arrange — a section under the reserved name, which an escaped key produces, is a section like any other.
         var source = new FakeLocaleSource
         {
             Files =
             {
                 ["Contoso.Widgets/Bars/Bars.he.fake"] = new(
-                    CreateSections(("Toolbar", CreateEntries(("Bold", "own"))), ("$shared", CreateEntries(("Bold", "shared")))),
+                    CreateSections(("$shared", CreateEntries(("Bold", "escaped"))), ("Toolbar", CreateEntries(("Bold", "own")))),
                     null),
             },
         };
 
         // Act
-        var entries = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+        var sectioned = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+        var unsectioned = source.Read(Assembly, "Contoso.Widgets.Bars.Ruler", "he");
 
         // Assert
-        Assert.Equal(
-            [
-                new("Contoso.Widgets/Bars/Bars.he.fake", "$shared", "Bold", "shared"),
-                new("Contoso.Widgets/Bars/Bars.he.fake", "Toolbar", "Bold", "own"),
-            ],
-            entries);
+        Assert.Multiple(
+            () => Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/Bars/Bars.he.fake", "Toolbar", "Bold", "own")], sectioned),
+            () => Assert.Empty(unsectioned));
     }
 
     [Fact]

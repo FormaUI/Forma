@@ -21,28 +21,17 @@ public sealed record LocaleFile(LocaleSection Root, string? RootNamespace)
     internal void Collect(ReadOnlySpan<string> remainingSegments, List<LocaleSourceEntry> entries, string fileName)
         => Collect(Root, remainingSegments, entries, fileName, string.Empty);
 
-    // A node's shared entries belong to every type reached through it and come first wherever the file writes them, so an entry of the type's own overrides one; a section completes the type's name, whether its key spells several segments or one; the entries are the type's once the name is complete.
+    // A node's shared entries belong to every type reached through it and come first, so an entry of the type's own overrides one; a section completes the type's name, whether its key spells several segments or one; the entries are the type's once the name is complete.
     private static void Collect(LocaleSection node, ReadOnlySpan<string> remainingSegments, List<LocaleSourceEntry> entries, string fileName, string typeName)
     {
-        foreach (var (name, section) in node.Sections)
+        var sharedName = Join(typeName, LocalizationSchema.SharedKey);
+        foreach (var (key, value) in node.SharedEntries)
         {
-            if (name == LocalizationSchema.SharedKey)
-            {
-                var sharedName = Join(typeName, name);
-                foreach (var (key, value) in section.Entries)
-                {
-                    entries.Add(new(fileName, sharedName, key, value));
-                }
-            }
+            entries.Add(new(fileName, sharedName, key, value));
         }
 
         foreach (var (name, section) in node.Sections)
         {
-            if (name == LocalizationSchema.SharedKey)
-            {
-                continue;
-            }
-
             var sectionSegments = name.Split('.');
             if (sectionSegments.Length <= remainingSegments.Length && remainingSegments[..sectionSegments.Length].SequenceEqual(sectionSegments))
             {
@@ -65,6 +54,12 @@ public sealed record LocaleFile(LocaleSection Root, string? RootNamespace)
         foreach (var (key, value) in node.Entries)
         {
             entries.Add(new(typeName, key, value));
+        }
+
+        var sharedName = Join(typeName, LocalizationSchema.SharedKey);
+        foreach (var (key, value) in node.SharedEntries)
+        {
+            entries.Add(new(sharedName, key, value));
         }
 
         foreach (var (name, section) in node.Sections)

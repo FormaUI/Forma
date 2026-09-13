@@ -67,3 +67,6 @@ public sealed class OuterGeneric<TValue>
     /// <summary>A type nested in a generic type.</summary>
     public sealed class Inner;
 }
+
+/// <summary>A file whose keys start with a dollar sign, one escaped with a second and one plain text.</summary>
+public sealed class Escaped;

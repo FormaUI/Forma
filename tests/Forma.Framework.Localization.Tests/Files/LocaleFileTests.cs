@@ -43,7 +43,7 @@ public sealed class LocaleFileTests
     {
         // Arrange
         var file = new LocaleFile(
-            CreateSections(("$shared", CreateEntries(("Bold", "shared"))), ("Toolbar", CreateEntries(("Save", "own")))),
+            CreateSections(("Toolbar", CreateEntries(("Save", "own")))).WithShared(("Bold", "shared")),
             null);
 
         // Act

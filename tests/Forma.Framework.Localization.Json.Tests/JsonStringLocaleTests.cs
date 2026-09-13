@@ -78,6 +78,91 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
+    public void Should_find_an_entry_whose_key_is_escaped_with_a_doubled_dollar()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = CreateLocale<Escaped>();
+
+        // Act
+        var localized = strings["$$price"];
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal("מחיר", localized.Value),
+            () => Assert.False(localized.ResourceNotFound));
+    }
+
+    [Fact]
+    public void Should_unescape_a_doubled_dollar_in_a_key_it_falls_back_to()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = CreateLocale<Escaped>();
+
+        // Act
+        var localized = strings["$$price"];
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal("$price", localized.Value),
+            () => Assert.True(localized.ResourceNotFound));
+    }
+
+    [Fact]
+    public void Should_drop_one_dollar_alone_from_a_key_with_several()
+    {
+        // Arrange — the key is unescaped once on each side, so a third sign survives in both the match and the fallback.
+        var strings = CreateLocale<Escaped>();
+
+        // Act
+        string hebrew;
+        string english;
+        using (var _ = new CultureScope("he"))
+        {
+            hebrew = strings["$$$price"].Value;
+        }
+
+        using (var _ = new CultureScope("en"))
+        {
+            english = strings["$$$price"].Value;
+        }
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal("מחיר כפול", hebrew),
+            () => Assert.Equal("$$price", english));
+    }
+
+    [Fact]
+    public void Should_serve_an_escaped_reserved_name_as_an_ordinary_translation()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = CreateLocale<Escaped>();
+
+        // Act
+        var localized = strings["$$tools"];
+
+        // Assert
+        Assert.Equal("כלים", localized.Value);
+    }
+
+    [Fact]
+    public void Should_find_an_entry_whose_key_starts_with_a_dollar_as_text()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = CreateLocale<Escaped>();
+
+        // Act
+        var localized = strings["$USD"];
+
+        // Assert
+        Assert.Equal("דולר", localized.Value);
+    }
+
+    [Fact]
     public void Should_fall_back_from_a_regional_culture_to_its_parent()
     {
         // Arrange

@@ -1,0 +1,7 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "$$price": "מחיר",
+  "$$$price": "מחיר כפול",
+  "$$tools": "כלים",
+  "$USD": "דולר"
+}
