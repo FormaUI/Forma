@@ -1,5 +1,14 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "$shared": {
+    "Navigation Steps": "צעדי ניווט",
+    "Steps That Look Ahead": "צעדים שמביטים קדימה",
+    "Navigation Input": "קלט ניווט",
+    "Without the Go Button": "ללא כפתור המעבר",
+    "Wheel Scroll on Hover": "גלגלת בריחוף",
+    "Inside a Form": "בתוך טופס",
+    "Page Beyond the Range": "עמוד מחוץ לטווח"
+  },
   "FormaBreadcrumbPage": {
     "A trail of segments that link, click, or sit static depending on what the caller wires up, with an optional dropdown of alternatives and drop-target events per segment.": "שרשרת קטעים שמקשרים, נלחצים או עומדים כטקסט סטטי, בהתאם למה שהקורא מחבר, עם תפריט נפתח אופציונלי של חלופות ואירועי מטרת-שחרור לכל קטע.",
     "Site Navigation": "ניווט באתר",
@@ -27,18 +36,13 @@
   },
   "FormaPaginationPage": {
     "Navigation buttons at either end, and between them either the navigation steps or the navigation input. Which one depends on the option, the page count and the width the pager is given, so the reader always gets the one that fits.": "כפתורי ניווט בשני הקצוות, וביניהם או צעדי הניווט או קלט הניווט. מי מהם תלוי באפשרות, במספר העמודים וברוחב שהמדפדף מקבל, כך שהקורא תמיד מקבל את זה שנכנס.",
-    "Navigation Steps": "צעדי ניווט",
     "Navigation steps": "צעדי ניווט",
     "Up to seven pages show as steps, with empty room kept for the rest, so the first page sits in the same place on every pager.": "עד שבעה עמודים מוצגים כצעדים, עם מקום ריק שנשמר לשאר, כך שהעמוד הראשון יושב באותו מקום בכל מדפדף.",
-    "Steps That Look Ahead": "צעדים שמביטים קדימה",
     "Steps that look ahead": "צעדים שמביטים קדימה",
-    "Navigation Input": "קלט ניווט",
     "Navigation input": "קלט ניווט",
     "The navigation input takes the place of the steps when the option asks for it, past the page count the option allows steps for — fifty unless told otherwise — or wherever seven steps do not fit. It shows the page the reader is on, the navigation buttons move it one page at a time, and a typed page goes there on Enter or the Go button.": "קלט הניווט תופס את מקום הצעדים כשהאפשרות מבקשת זאת, מעבר למספר העמודים שהאפשרות מתירה לצעדים — חמישים אלא אם נאמר אחרת — או בכל מקום ששבעה צעדים אינם נכנסים בו. הוא מציג את העמוד שבו הקורא נמצא, כפתורי הניווט מזיזים אותו עמוד אחד בכל פעם, ועמוד שהוקלד עובר לשם ב-Enter או בכפתור המעבר.",
     "With more pages than fit, the steps show the current page and the four after it, then the last. The navigation buttons move a whole window, so holding one walks the list quickly; a step goes straight to its page.": "כשיש יותר עמודים ממה שנכנס, הצעדים מציגים את העמוד הנוכחי ואת ארבעת הבאים אחריו, ואז את האחרון. כפתורי הניווט מזיזים חלון שלם, כך שלחיצה חוזרת עוברת על הרשימה במהירות; צעד עובר ישר לעמודו.",
-    "Without the Go Button": "ללא כפתור המעבר",
     "Without the Go button": "ללא כפתור המעבר",
-    "Wheel Scroll on Hover": "גלגלת בריחוף",
     "Wheel scroll on hover": "גלגלת בריחוף",
     "With the option on, a wheel turned anywhere over the pager moves one page, and the page underneath stays still while the pointer is there.": "כשהאפשרות פעילה, סיבוב גלגלת בכל מקום מעל המדפדף מזיז עמוד אחד, והעמוד שמתחת נשאר במקומו כל עוד המצביע שם.",
     "Enter goes to the typed page, so the Go button can be left out; a touch keypad for digits may have no Enter key, so there it stays.": "Enter עובר לעמוד שהוקלד, ולכן אפשר להשמיט את כפתור המעבר; במקלדת מגע לספרות ייתכן שאין מקש Enter, ולכן שם הוא נשאר.",
@@ -46,14 +50,12 @@
     "Inside a FormaDataGrid, which pages its own rows and holds a full page's height, so a short last page leaves the pager where it was.": "בתוך FormaDataGrid, שמדפדף את שורותיו בעצמו ושומר גובה של עמוד מלא, כך שעמוד אחרון קצר משאיר את המדפדף במקומו.",
     "Id": "מזהה",
     "Title": "כותרת",
-    "Inside a Form": "בתוך טופס",
     "Inside a form": "בתוך טופס",
     "Enter goes to the page without submitting the surrounding form. The submission count stays at zero.": "Enter עובר לעמוד בלי לשלוח את הטופס שמסביב. מונה השליחות נשאר אפס.",
     "Form submissions": "שליחות טופס",
     "Current page": "עמוד נוכחי",
     "Single Page": "עמוד יחיד",
     "When everything fits on one page, the component renders nothing.": "כשהכול נכנס בעמוד אחד, הרכיב לא מציג דבר.",
-    "Page Beyond the Range": "עמוד מחוץ לטווח",
     "Page beyond the range": "עמוד מחוץ לטווח",
     "A page past the end — after a filter narrows the list, or from a hand-edited URL — settles on the nearest page.": "עמוד שמעבר לסוף — אחרי שסינון מצמצם את הרשימה, או מכתובת שנערכה ידנית — נוחת על העמוד הקרוב ביותר."
   }

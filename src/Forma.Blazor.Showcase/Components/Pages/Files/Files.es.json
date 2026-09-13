@@ -1,5 +1,9 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "$shared": {
+    "{Name} selected": "{Name} seleccionado",
+    "{Name} declined ({Reason})": "{Name} rechazado ({Reason})"
+  },
   "FormaFilePickerPage": {
     "A drop zone and file picker in one. Dragging a file onto it, or clicking it, hands the browser's file straight to the change handler — the same validated selection either way.": "Una zona de arrastre y un selector de archivos en uno. Arrastrar un archivo hasta ella, o hacer clic, entrega el archivo del navegador directamente al controlador de cambio; la misma selección validada en ambos casos.",
     "Any File": "Cualquier Archivo",
@@ -9,9 +13,7 @@
     "A Size Limit": "Un Límite de Tamaño",
     "Capped at {SizeMarkup} here; a larger file is declined before it is ever read.": "Limitado a {SizeMarkup} aquí; un archivo más grande se rechaza antes de siquiera leerlo.",
     "A Selection Limit": "Un Límite de Selección",
-    "Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection.": "Limitado a dos archivos por selección; lo que supera el límite se rechaza en lugar de toda la selección.",
-    "{Name} selected": "{Name} seleccionado",
-    "{Name} declined ({Reason})": "{Name} rechazado ({Reason})"
+    "Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection.": "Limitado a dos archivos por selección; lo que supera el límite se rechaza en lugar de toda la selección."
   },
   "FormaFileUploaderPage": {
     "The half that moves the bytes. A picker chooses files off the device; this stores each one through an IFileStore the host supplies, showing progress per file and leaving the destination entirely to the application.": "La mitad que mueve los bytes. Un selector elige archivos del dispositivo; este guarda cada uno mediante un IFileStore que aporta el anfitrión, muestra el progreso por archivo y deja el destino enteramente a la aplicación.",
@@ -76,8 +78,6 @@
     "A Non-Image Rejected": "Un Archivo que No Es Imagen Es Rechazado",
     "The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one.": "El filtro de aceptación está fijado, así que un archivo que no es imagen se rechaza igual que lo haría FormaFilePicker.",
     "A Size Cap": "Un Límite de Tamaño",
-    "MaxFileSize declines an image over 100 KB, so the host never receives it.": "MaxFileSize rechaza una imagen de más de 100 KB, así que el anfitrión nunca la recibe.",
-    "{Name} selected": "{Name} seleccionado",
-    "{Name} declined ({Reason})": "{Name} rechazado ({Reason})"
+    "MaxFileSize declines an image over 100 KB, so the host never receives it.": "MaxFileSize rechaza una imagen de más de 100 KB, así que el anfitrión nunca la recibe."
   }
 }

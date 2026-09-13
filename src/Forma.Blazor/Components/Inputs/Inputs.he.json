@@ -1,5 +1,8 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "$shared": {
+    "Clear": "נקה"
+  },
   "FormaCalendar": {
     "Previous Month": "החודש הקודם",
     "Next Month": "החודש הבא"
@@ -9,12 +12,10 @@
     "Choose Color": "בחר צבע"
   },
   "FormaDatePicker": {
-    "Clear": "נקה",
     "Select Date": "בחר תאריך",
     "The {Field} field must be a date.": "השדה {Field} חייב להיות תאריך."
   },
   "FormaDateRangePicker": {
-    "Clear": "נקה",
     "Select Range": "בחר טווח",
     "Today": "היום",
     "Yesterday": "אתמול",
@@ -44,7 +45,7 @@
   "FormaMultiSelect": {
     "Search": "חיפוש",
     "No matches": "אין תוצאות",
-    "No options available yet": "אין עדיין אפשרויות",
+    "No options available yet": "אין עדיין אפשרויות זמינות",
     "Add New": "הוסף חדש",
     "Select Options": "בחר אפשרויות",
     "{Selected} selected": "[$ [Selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]",

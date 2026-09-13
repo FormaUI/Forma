@@ -1,5 +1,9 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "$shared": {
+    "{Name} selected": "{Name} נבחר",
+    "{Name} declined ({Reason})": "{Name} נדחה ({Reason})"
+  },
   "FormaFilePickerPage": {
     "A drop zone and file picker in one. Dragging a file onto it, or clicking it, hands the browser's file straight to the change handler — the same validated selection either way.": "אזור גרירה ובורר קבצים באחד. גרירת קובץ לתוכו, או לחיצה עליו, מעבירה את הקובץ מהדפדפן ישירות למטפל השינוי — אותה בחירה מאומתת בשני המקרים.",
     "Any File": "כל קובץ",
@@ -9,9 +13,7 @@
     "A Size Limit": "מגבלת גודל",
     "Capped at {SizeMarkup} here; a larger file is declined before it is ever read.": "מוגבל כאן ל-{SizeMarkup}; קובץ גדול יותר נדחה עוד לפני שהוא נקרא.",
     "A Selection Limit": "מגבלת בחירה",
-    "Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection.": "מוגבל לשני קבצים לכל גרירה או בחירה; כל מה שמעבר למגבלה נדחה במקום כל הבחירה.",
-    "{Name} selected": "{Name} נבחר",
-    "{Name} declined ({Reason})": "{Name} נדחה ({Reason})"
+    "Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection.": "מוגבל לשני קבצים לכל גרירה או בחירה; כל מה שמעבר למגבלה נדחה במקום כל הבחירה."
   },
   "FormaFileUploaderPage": {
     "The half that moves the bytes. A picker chooses files off the device; this stores each one through an IFileStore the host supplies, showing progress per file and leaving the destination entirely to the application.": "החצי שמעביר את הבתים. בורר קבצים בוחר קבצים מהמכשיר, וזה שומר כל אחד מהם דרך IFileStore שהמארח מספק, מציג התקדמות לכל קובץ ומשאיר את היעד כולו ליישום.",
@@ -76,8 +78,6 @@
     "A Non-Image Rejected": "קובץ שאינו תמונה נדחה",
     "The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one.": "מסנן הקבלה מנועל, כך שקובץ שאינו תמונה נדחה באותו אופן שבו FormaFilePicker דוחה קובץ כזה.",
     "A Size Cap": "מגבלת גודל",
-    "MaxFileSize declines an image over 100 KB, so the host never receives it.": "MaxFileSize דוחה תמונה שגודלה מעל 100 קילובייט, כך שהמארח לעולם אינו מקבל אותה.",
-    "{Name} selected": "{Name} נבחר",
-    "{Name} declined ({Reason})": "{Name} נדחה ({Reason})"
+    "MaxFileSize declines an image over 100 KB, so the host never receives it.": "MaxFileSize דוחה תמונה שגודלה מעל 100 קילובייט, כך שהמארח לעולם אינו מקבל אותה."
   }
 }

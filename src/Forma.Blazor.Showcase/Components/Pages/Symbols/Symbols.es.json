@@ -1,5 +1,9 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "$shared": {
+    "Sizing": "Tamaño",
+    "Large": "Grande"
+  },
   "FormaEmojiPage": {
     "One emoji, drawn through whichever provider the host registered.": "Un emoji, dibujado a través del proveedor que la aplicación haya registrado.",
     "This tab draws them the way a host that registered no artwork package sees them: as the reader's own platform characters, which look different on every device.": "Esta pestaña los dibuja como los ve una aplicación que no registró ningún paquete de arte: como los caracteres de la propia plataforma del lector, que se ven distintos en cada dispositivo.",
@@ -14,8 +18,6 @@
     "Objects": "Objetos",
     "Symbols": "Símbolos",
     "Flags": "Banderas",
-    "Sizing": "Tamaño",
-    "Large": "Grande",
     "An emoji takes the font size of whatever contains it, so it sits on a line of text without being measured against it.": "Un emoji toma el tamaño de fuente de su contenedor, así que se asienta en una línea de texto sin medirse contra ella.",
     "Inside a Sentence": "Dentro de una Frase",
     "An emoji is decorative by default and hidden from assistive technology, so the sentence around it has to read without it.": "Un emoji es decorativo por defecto y queda oculto a la tecnología de asistencia, así que la frase que lo rodea debe leerse sin él.",
@@ -52,12 +54,10 @@
     "Mathematics": "Matemáticas",
     "Zodiac": "Zodiaco",
     "Other": "Otros",
-    "Sizing": "Tamaño",
     "Each size an icon takes is a whole multiple of the grid its artwork is drawn on, so a stroke lands on whole pixels: 24px and 48px draw the 24-unit grid, 32px and 64px the 32-unit grid. A glyph inline with text follows the text instead.": "Cada tamaño que toma un icono es un múltiplo entero de la cuadrícula en que se dibuja su arte, así que cada trazo cae en píxeles enteros: 24px y 48px dibujan la cuadrícula de 24 unidades, 32px y 64px la de 32. Un icono en línea con el texto sigue al texto.",
     "Inline": "En línea",
     "Small": "Pequeño",
     "Medium": "Mediano",
-    "Large": "Grande",
     "Display": "Destacado",
     "A Character": "Un Carácter",
     "A single character set by the symbol font fills the same box as a glyph, for a badge, a keyboard hint or an initial that no drawing needs to exist for.": "Un solo carácter compuesto con la fuente de símbolos ocupa la misma caja que un icono, para una insignia, una pista de teclado o una inicial que no necesita dibujo alguno.",

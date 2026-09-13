@@ -1,11 +1,13 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "$shared": {
+    "Sizes": "גדלים",
+    "Disabled": "מושבת"
+  },
   "FormaButtonPage": {
     "The button every Forma surface presses. Its variant says how much it should stand out, its size how dense the row around it is, and while work is in flight it shows itself busy so the same click cannot be sent twice.": "הכפתור שכל משטח של Forma לוחץ עליו. הסגנון שלו אומר כמה עליו לבלוט, גודלו כמה צפופה השורה סביבו, ובזמן שעבודה מתבצעת הוא מציג את עצמו עסוק כדי שאותה לחיצה לא תישלח פעמיים.",
     "Variants": "סגנונות",
-    "Sizes": "גדלים",
     "Row Actions": "פעולות שורה",
-    "Disabled": "מושבת",
     "Busy": "עסוק",
     "Inside a Form": "בתוך טופס",
     "The tertiary variant is the one built for repeated inline commands, such as the actions at the end of a table row.": "הסגנון השלישוני נבנה עבור פקודות חוזרות בשורה, כמו הפעולות שבסוף שורת טבלה.",
@@ -34,8 +36,6 @@
   },
   "FormaCloseButtonPage": {
     "The dismiss glyph every panel closes with. A ghost FormaButton drawn square, so the modal, the toast and the context toolbar share one shape, one focus ring and one touch target.": "סמל הסגירה שכל חלונית נסגרת איתו. FormaButton בסגנון ghost המצויר כריבוע, כך שהמודאל, ההודעה הצפה וסרגל ההקשר חולקים צורה אחת, טבעת מיקוד אחת ויעד מגע אחד.",
-    "Sizes": "גדלים",
-    "Disabled": "מושבת",
     "On a Colored Surface": "על רקע צבעוני",
     "A surface sets --forma-button-ghost-color and its hover pair to retint the glyph; the toast does exactly this.": "משטח מגדיר את ‎--forma-button-ghost-color‎ ואת זוג המשתנים של המעבר כדי לצבוע מחדש את הסמל; ההודעה הצפה עושה בדיוק זאת.",
     "Saved successfully": "נשמר בהצלחה",
@@ -47,8 +47,6 @@
     "The reveal glyph, drawn as a ghost FormaButton square. Struck through while what it governs is hidden, plain once it is shown, so the state reads without color. FormaPasswordBox's toggle is this component.": "סמל החשיפה, המצויר כריבוע ghost של FormaButton. מחוק בקו אלכסוני כל עוד מה שהוא מנהל מוסתר, ונקי לאחר שנחשף, כך שהמצב נקרא גם ללא צבע. המתג של FormaPasswordBox הוא הרכיב הזה.",
     "Both States": "שני המצבים",
     "The caller owns the state and the wording, because what is being revealed decides both.": "הקורא מחזיק במצב ובניסוח, משום ששניהם נקבעים לפי מה שנחשף.",
-    "Sizes": "גדלים",
-    "Disabled": "מושבת",
     "On a Colored Surface": "על משטח צבעוני",
     "The glyph follows the surface through --forma-button-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above.": "הסמל עוקב אחר המשטח דרך ‎--forma-button-ghost-color‎ וזוג הריחוף שלו, במקום גיליון סגנונות מפוצל. שום דבר אחר אינו משתנה: הוא חושף כאן בדיוק כפי שהוא חושף למעלה.",
     "API key": "מפתח API",

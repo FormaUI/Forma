@@ -1,12 +1,14 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "$shared": {
+    "Canceled": "Cancelado"
+  },
   "FormaConfirmDialogPage": {
     "A question the app asks before it acts, answered with one of two buttons. Any code raises it through the confirm service and simply awaits the answer, so a confirmation is one line wherever it is needed.": "Una pregunta que la aplicación hace antes de actuar, respondida con uno de dos botones. Cualquier código la plantea a través del servicio de confirmación y simplemente espera la respuesta, así que una confirmación es una sola línea allí donde haga falta.",
     "Basic Confirmation": "Confirmación básica",
     "Delete Item": "Eliminar elemento",
     "Result:": "Resultado:",
     "Confirmed": "Confirmado",
-    "Canceled": "Cancelado",
     "Custom Button Labels": "Etiquetas de botón personalizadas",
     "Discard Changes": "Descartar cambios",
     "Discarded": "Descartado",
@@ -106,7 +108,6 @@
     "Being handled": "En gestión",
     "On the way": "En camino",
     "Completed": "Completado",
-    "Canceled": "Cancelado",
     "Shipped": "Enviado",
     "Refunded": "Reembolsado",
     "Article": "Artículo",

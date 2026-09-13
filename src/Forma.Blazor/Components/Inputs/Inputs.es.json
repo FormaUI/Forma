@@ -1,5 +1,9 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "$shared": {
+    "Clear": "Borrar",
+    "No options available yet": "Aún no hay opciones disponibles"
+  },
   "FormaCalendar": {
     "Previous Month": "Mes Anterior",
     "Next Month": "Mes Siguiente"
@@ -9,12 +13,10 @@
     "Choose Color": "Elegir Color"
   },
   "FormaDatePicker": {
-    "Clear": "Borrar",
     "Select Date": "Seleccionar Fecha",
     "The {Field} field must be a date.": "El campo {Field} debe ser una fecha."
   },
   "FormaDateRangePicker": {
-    "Clear": "Borrar",
     "Select Range": "Seleccionar Intervalo",
     "Today": "Hoy",
     "Yesterday": "Ayer",
@@ -44,7 +46,6 @@
   "FormaMultiSelect": {
     "Search": "Buscar",
     "No matches": "Sin resultados",
-    "No options available yet": "Aún no hay opciones disponibles",
     "Add New": "Agregar Nuevo",
     "Select Options": "Seleccionar Opciones",
     "{Selected} selected": "[$ [Selected] plural; one: # seleccionado; other: # seleccionados; $]",
@@ -70,8 +71,7 @@
     "Clear Search": "Borrar Búsqueda"
   },
   "FormaSelect": {
-    "Select an Option": "Seleccionar una Opción",
-    "No options available yet": "Aún no hay opciones disponibles"
+    "Select an Option": "Seleccionar una Opción"
   },
   "FormaTextArea": {
     "{Characters} of {Allowed} characters": "{Characters} de {Allowed} caracteres",
