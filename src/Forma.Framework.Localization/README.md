@@ -171,21 +171,30 @@ object's key may spell several segments at once or one at a time, so
 the keys it changes: a file closer to the type wins over one higher up, and the type's own file over
 every other.
 
-A node may hold a `$shared` section, whose entries every type reached through that node gets, so
-one translation serves every component in a folder, or every type in the assembly at the root of
-the assembly's file:
+Any node may hold a `$shared` section, whose entries every type reached through that node gets
+and no other, so one translation serves every component in a folder, or every type in the
+assembly at the root of the assembly's file. Here the assembly's file shares `Bold` with every
+type it reaches, `Composer` shares `Undo` with the editors alone, and the composer words `Bold`
+its own way:
 
 ```text
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "$shared": { "Bold": "Negrita", "Italic": "Cursiva" },
-  "FormaToolbar": { "Bold": "Negrita Fuerte" },
-  "FormaToolbarButton": { }
+  "Components": {
+    "Composer": {
+      "$shared": { "Undo": "Deshacer" },
+      "FormaComposer": { "Bold": "Negrita Fuerte" },
+      "RichTextEditor": { "FormaRichTextEditor": { } }
+    }
+  }
 }
 ```
 
-A section's own entry wins over a shared one, and a file closer to the type wins over a shared
-entry higher up, as it wins over any other. `$tools` is reserved beside it for tools, each keeping
+A `$shared` section holds translations alone; a section nested inside one fails to load. A type's
+own entry wins over a shared one, a deeper node's shared entry wins over a higher node's, and a
+file closer to the type wins over a shared entry higher up, as it wins over any other. `$tools` is
+reserved beside it for tools, each keeping
 its own entries under keys naming it, such as `"$tools": { "locali.ignore": ["LOC0113"] }`; the
 runtime reads nothing from it.
 

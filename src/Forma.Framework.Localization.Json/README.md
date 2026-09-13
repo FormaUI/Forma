@@ -101,8 +101,9 @@ resolves a base name from the type's full name, and a translation sits in the fi
 type or in a file named for a namespace above it, embedded in the assembly or laid in the host's
 `locales` folder. This backend adds only the format: a file is a JSON object, its extension is
 `.json`, a nested object is a section, a text value or null is a translation, and the metadata entry
-is the top-level `$localization` property, `$shared` is a section whose entries every type the file
-reaches gets, and `$tools` is reserved for tools, which the runtime reads nothing from. Any other
+is the top-level `$localization` property, `$shared` at any node is a section holding translations
+alone that every type reached through that node gets, and `$tools` is reserved for tools, which the
+runtime reads nothing from. Any other
 key of that shape, `$` and one lowercase word, fails to load, and a key starting with `$$` is read
 with one `$` dropped.
 
