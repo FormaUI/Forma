@@ -5,8 +5,10 @@ states, and the record of what has landed.
 
 ## Status
 
-The menu, the contracts, the eight baseline networks and the five API destinations are
-built.
+The menu, the contracts, the nine baseline networks and the five API destinations are
+built. LinkedIn landed last, once its share-offsite endpoint was confirmed to work; its mark
+comes from Bootstrap Icons, which brought the brand pack its second source, since Simple
+Icons no longer carries it.
 
 ## Deliberately absent
 
@@ -18,5 +20,4 @@ built.
 
 ## Open
 
-- LinkedIn's share-offsite endpoint works, but its mark is no longer in Simple Icons, so
-  the network waits on lawful artwork.
+Nothing.

@@ -1,0 +1,6 @@
+# The brand marks fetched from Bootstrap Icons, one per line as `Name slug`, where the slug is
+# the Bootstrap Icons identifier, followed by the brand's proper name in double quotes when it
+# differs from Name, as `Imdb imdb "IMDb"`. Run scripts/Get-BootstrapIconsPack.ps1 after editing.
+
+# Social
+LinkedIn linkedin

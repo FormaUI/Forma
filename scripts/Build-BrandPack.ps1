@@ -5,7 +5,7 @@ $ErrorActionPreference = 'Stop'
 # Builds the brand marks the library draws into the asset it embeds.
 #
 #   src/Forma.Framework.Icons/Brand.cs     the brands the library draws (hand-maintained)
-#   assets/Brands/*.svg                    the official marks, fetched by scripts/Get-SimpleIconsPack.ps1
+#   assets/Brands/*.svg                    the official marks, fetched by the scripts/Get-*Pack.ps1 scripts from the lists beside them
 #   src/Forma.Framework.Icons.Glyphs/_assets/brands.json    the compiled asset (generated, this script writes it)
 #
 # The enum and the marks on hand must agree: a member without a mark and a mark without a member
@@ -36,7 +36,7 @@ foreach ($name in $members) {
 
     $markup = Get-Content -LiteralPath $source -Raw
     if ($markup -notmatch '(?s)<svg[^>]*\sviewBox="(?<viewBox>[^"]+)"[^>]*>\s*<title>(?<title>[^<]+)</title>\s*<path d="(?<data>[^"]+)"') {
-        throw "Unexpected markup in $source; expected a titled single-path mark as scripts/Get-SimpleIconsPack.ps1 writes it."
+        throw "Unexpected markup in $source; expected a titled single-path mark as the scripts/Get-*Pack.ps1 scripts write it."
     }
 
     $marks[$name] = [ordered]@{
@@ -47,7 +47,7 @@ foreach ($name in $members) {
 }
 
 if ($missing.Count -gt 0) {
-    throw "No mark on hand for $($missing.Count) brand(s): $($missing -join ', '). Add each to assets/Brands/brands.txt and run scripts/Get-SimpleIconsPack.ps1."
+    throw "No mark on hand for $($missing.Count) brand(s): $($missing -join ', '). Add each to a list in assets/Brands and run that list's fetch script."
 }
 
 $unnamed = @(Get-ChildItem -LiteralPath $brandsDir -Filter '*.svg' | Where-Object { $members -notcontains $_.BaseName } | ForEach-Object { $_.BaseName })

@@ -43,7 +43,7 @@ compete.
   resources, network names are proper nouns, and action titles arrive caller-localized like
   toolbar titles.
 - **The library references only the contracts.** The baseline networks, Facebook, X,
-  WhatsApp, Telegram, Bluesky, Reddit, Snapchat and Pinterest, ship as navigation
+  WhatsApp, Telegram, Bluesky, Reddit, Snapchat, LinkedIn and Pinterest, ship as navigation
   destinations in the add-on, registered by `AddFormaShareNetworks()` beside `AddFormaUI()`.
   The add-on also ships API destinations, each a plain HTTP integration switched on by its
   own registrar: Discord through a channel webhook, Dropbox through its save-URL API,

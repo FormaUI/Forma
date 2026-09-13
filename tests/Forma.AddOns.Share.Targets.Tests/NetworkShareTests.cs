@@ -23,6 +23,7 @@ public sealed class NetworkShareTests
         { new BlueskyShare(), "https://bsky.app/intent/compose?text=Stage%2012%20https%3A%2F%2Fexample.com%2Fnews%2Fstage-12" },
         { new RedditShare(), "https://www.reddit.com/submit?url=https%3A%2F%2Fexample.com%2Fnews%2Fstage-12&title=Stage%2012" },
         { new SnapchatShare(), "https://www.snapchat.com/share?link=https%3A%2F%2Fexample.com%2Fnews%2Fstage-12" },
+        { new LinkedInShare(), "https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fexample.com%2Fnews%2Fstage-12" },
     };
 
     public sealed class EveryNetwork

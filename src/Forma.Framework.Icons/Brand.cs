@@ -177,6 +177,9 @@ public enum Brand
     /// <summary>The LINE mark.</summary>
     Line,
 
+    /// <summary>The LinkedIn mark.</summary>
+    LinkedIn,
+
     /// <summary>The Linux mark.</summary>
     Linux,
 

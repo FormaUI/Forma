@@ -50,12 +50,14 @@ provider reads and rejects any file that breaks the rules above, or a glyph with
 ### Brand marks
 
 A brand logo is never drawn by hand: it is a trademark, and its owner's guidelines forbid a
-redrawing. `assets/Brands/` holds the official marks as fetched from Simple Icons by
-`scripts/Get-SimpleIconsPack.ps1`, listed in its `brands.txt`, and none of the rules above apply
-to them. Every mark there has a member of the `Brand` enum named for the brand;
-`scripts/Build-BrandPack.ps1` compiles the marks, at their own precision and with each brand's
-title as its accessible name, into the asset the library embeds, and fails when the enum and the
-marks on hand disagree in either direction.
+redrawing. `assets/Brands/` holds the official marks as fetched from a pinned release of an
+icon set that carries them, one list and one `scripts/Get-{Source}Pack.ps1` script per source,
+and none of the rules above apply to them. Every mark there has a member of the `Brand` enum
+named for the brand; `scripts/Build-BrandPack.ps1` compiles the marks, at their own precision
+and with each brand's title as its accessible name, into the asset the library embeds, and
+fails when the enum and the marks on hand disagree in either direction. A mark one source
+withdraws is taken from another source that carries it, and its brand leaves the enum only
+when none does.
 
 ## Naming
 

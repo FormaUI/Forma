@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// <summary>Registers the share targets this package ships.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers the social networks a share menu offers a link or a picture: Facebook, X, WhatsApp, Telegram, Bluesky, Reddit, Snapchat, and Pinterest for pictures.</summary>
+    /// <summary>Registers the social networks a share menu offers a link or a picture: Facebook, X, WhatsApp, Telegram, Bluesky, Reddit, Snapchat, LinkedIn, and Pinterest for pictures.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection, for chaining.</returns>
     public static IServiceCollection AddFormaShareNetworks(this IServiceCollection services)
@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
             ServiceDescriptor.Singleton<IShareTarget, BlueskyShare>(),
             ServiceDescriptor.Singleton<IShareTarget, RedditShare>(),
             ServiceDescriptor.Singleton<IShareTarget, SnapchatShare>(),
+            ServiceDescriptor.Singleton<IShareTarget, LinkedInShare>(),
             ServiceDescriptor.Singleton<IShareTarget, PinterestShare>(),
         ]);
 

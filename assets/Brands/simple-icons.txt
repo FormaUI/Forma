@@ -1,4 +1,4 @@
-# The brand marks kept on hand, one per line as `Name slug`, where the slug is
+# The brand marks fetched from Simple Icons, one per line as `Name slug`, where the slug is
 # the Simple Icons identifier. Run scripts/Get-SimpleIconsPack.ps1 after editing.
 
 # Social

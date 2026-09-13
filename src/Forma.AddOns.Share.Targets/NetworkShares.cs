@@ -58,6 +58,14 @@ public sealed class SnapchatShare() : LinkShare("snapchat", "Snapchat", Brand.Sn
         => EscapeAddress(item) is { } address ? $"https://www.snapchat.com/share?link={address}" : null;
 }
 
+/// <summary>Opens LinkedIn's share composer on the item's address.</summary>
+public sealed class LinkedInShare() : LinkShare("linkedin", "LinkedIn", Brand.LinkedIn)
+{
+    /// <inheritdoc />
+    public override string? GetAddress(ShareItem item)
+        => EscapeAddress(item) is { } address ? $"https://www.linkedin.com/sharing/share-offsite/?url={address}" : null;
+}
+
 /// <summary>Opens Pinterest's pin composer on a picture, pointed at its media.</summary>
 public sealed class PinterestShare() : LinkShare("pinterest", "Pinterest", Brand.Pinterest)
 {
