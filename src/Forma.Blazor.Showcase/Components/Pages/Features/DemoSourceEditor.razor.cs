@@ -1,6 +1,5 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
-using System.Globalization;
 using System.Text.RegularExpressions;
 
 using Forma.Framework.Composer.Editing;
@@ -138,8 +137,8 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
         }
 
         _announcement = replaced == 0
-            ? string.Format(CultureInfo.CurrentCulture, L["No occurrence of \"{0}\" was found."], _oldName)
-            : string.Format(CultureInfo.CurrentCulture, L["Renamed {0} occurrences."], replaced.ToString(CultureInfo.CurrentCulture));
+            ? L["No occurrence of \"{Query}\" was found.", _oldName]
+            : L["Renamed {Count} occurrences.", replaced];
 
         CancelRename();
 
