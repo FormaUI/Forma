@@ -1,0 +1,80 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaCalendar": {
+    "Previous Month": "החודש הקודם",
+    "Next Month": "החודש הבא"
+  },
+  "FormaColorPicker": {
+    "Alpha": "שקיפות",
+    "Choose Color": "בחר צבע"
+  },
+  "FormaDatePicker": {
+    "Clear": "נקה",
+    "Select Date": "בחר תאריך",
+    "The {Field} field must be a date.": "השדה {Field} חייב להיות תאריך."
+  },
+  "FormaDateRangePicker": {
+    "Clear": "נקה",
+    "Select Range": "בחר טווח",
+    "Today": "היום",
+    "Yesterday": "אתמול",
+    "[$ plural; one: Last # day; other: Last # days; $]": "[$ plural; one: יום אחרון; two: יומיים אחרונים; other: # ימים אחרונים; $]",
+    "This Month": "החודש",
+    "Last Month": "חודש שעבר"
+  },
+  "FormaEmojiPicker": {
+    "Emoji Categories": "קטגוריות אמוג'י",
+    "Search Emoji": "חיפוש אמוג'י",
+    "Search Results": "תוצאות החיפוש",
+    "Recently Used": "בשימוש לאחרונה",
+    "Smileys & Emotion": "פרצופים ורגשות",
+    "People & Body": "אנשים וגוף",
+    "Animals & Nature": "חיות וטבע",
+    "Food & Drink": "אוכל ומשקאות",
+    "Activities": "פעילויות",
+    "Travel & Places": "נסיעות ומקומות",
+    "Objects": "חפצים",
+    "Symbols": "סמלים",
+    "Flags": "דגלים",
+    "No emoji match \"{Query}\".": "אין אמוג'י התואם ל\"{Query}\".",
+    "Loading {Category}": "טוען {Category}",
+    "Loading More Emoji": "טוען עוד אמוג'י",
+    "{Count} emoji found.": "{Count, plural, one {נמצא אמוג'י אחד.} two {נמצאו # אמוג'י.} other {נמצאו # אמוג'י.}}"
+  },
+  "FormaMultiSelect": {
+    "Search": "חיפוש",
+    "No matches": "אין תוצאות",
+    "No options available yet": "אין עדיין אפשרויות",
+    "Add New": "הוסף חדש",
+    "Select Options": "בחר אפשרויות",
+    "{Selected} selected": "[$ [Selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]",
+    "Remove {Text}": "הסר {Text}"
+  },
+  "FormaPasswordBox": {
+    "Show Password": "הצג סיסמה",
+    "Hide Password": "הסתר סיסמה",
+    "Password strength: Weak": "חוזק הסיסמה: חלשה",
+    "Password strength: Fair": "חוזק הסיסמה: סבירה",
+    "Password strength: Good": "חוזק הסיסמה: טובה",
+    "Password strength: Strong": "חוזק הסיסמה: חזקה",
+    "Password strength: Very strong": "חוזק הסיסמה: חזקה מאוד",
+    "The password must not contain your other details.": "הסיסמה לא יכולה להכיל פרטים אחרים שלך.",
+    "Avoid repeating the same characters.": "הימנע מחזרה על אותם התווים.",
+    "[$ plural; one: Use at least # character.; other: Use at least # characters.; $]": "[$ plural; one: השתמש בתו אחד לפחות.; two: השתמש בשני תווים לפחות.; other: השתמש ב-# תווים לפחות.; $]",
+    "Mix uppercase and lowercase letters.": "שלב אותיות גדולות וקטנות.",
+    "Add a number.": "הוסף ספרה.",
+    "Add a symbol.": "הוסף תו מיוחד."
+  },
+  "FormaSearchBox": {
+    "Search...": "חיפוש...",
+    "Clear Search": "ניקוי חיפוש"
+  },
+  "FormaSelect": {
+    "Select an Option": "בחר אפשרות",
+    "No options available yet": "אין עדיין אפשרויות זמינות"
+  },
+  "FormaTextArea": {
+    "{Characters} of {Allowed} characters": "{Characters} מתוך {Allowed} תווים",
+    "[$ plural; one: # character; other: # characters; $]": "[$ plural; one: תו אחד; two: שני תווים; other: # תווים; $]"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaBreadcrumb": {
+    "Breadcrumb": "Ruta de Navegación",
+    "Show options for {Label}": "Mostrar opciones para {Label}"
+  },
+  "FormaPagination": {
+    "Pagination": "Paginación",
+    "Previous": "Anterior",
+    "Next": "Siguiente",
+    "Page {PageNumber}": "Página {PageNumber}",
+    "Go to Page": "Ir a la Página",
+    "{PageNumber} of {PageCount}": "{PageNumber} de {PageCount}",
+    "Go": "Ir"
+  }
+}

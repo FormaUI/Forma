@@ -1,0 +1,80 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaCalendar": {
+    "Previous Month": "Mes Anterior",
+    "Next Month": "Mes Siguiente"
+  },
+  "FormaColorPicker": {
+    "Alpha": "Alfa",
+    "Choose Color": "Elegir Color"
+  },
+  "FormaDatePicker": {
+    "Clear": "Borrar",
+    "Select Date": "Seleccionar Fecha",
+    "The {Field} field must be a date.": "El campo {Field} debe ser una fecha."
+  },
+  "FormaDateRangePicker": {
+    "Clear": "Borrar",
+    "Select Range": "Seleccionar Intervalo",
+    "Today": "Hoy",
+    "Yesterday": "Ayer",
+    "[$ plural; one: Last # day; other: Last # days; $]": "[$ plural; one: Último # día; other: Últimos # días; $]",
+    "This Month": "Este Mes",
+    "Last Month": "Mes Pasado"
+  },
+  "FormaEmojiPicker": {
+    "Emoji Categories": "Categorías de Emoji",
+    "Search Emoji": "Buscar emoji",
+    "Search Results": "Resultados de la Búsqueda",
+    "Recently Used": "Usados Recientemente",
+    "Smileys & Emotion": "Caritas y Emociones",
+    "People & Body": "Personas y Cuerpo",
+    "Animals & Nature": "Animales y Naturaleza",
+    "Food & Drink": "Comida y Bebida",
+    "Activities": "Actividades",
+    "Travel & Places": "Viajes y Lugares",
+    "Objects": "Objetos",
+    "Symbols": "Símbolos",
+    "Flags": "Banderas",
+    "No emoji match \"{Query}\".": "Ningún emoji coincide con «{Query}».",
+    "Loading {Category}": "Cargando {Category}",
+    "Loading More Emoji": "Cargando Más Emojis",
+    "{Count} emoji found.": "{Count, plural, one {Se encontró # emoji.} other {Se encontraron # emojis.}}"
+  },
+  "FormaMultiSelect": {
+    "Search": "Buscar",
+    "No matches": "Sin resultados",
+    "No options available yet": "Aún no hay opciones disponibles",
+    "Add New": "Agregar Nuevo",
+    "Select Options": "Seleccionar Opciones",
+    "{Selected} selected": "[$ [Selected] plural; one: # seleccionado; other: # seleccionados; $]",
+    "Remove {Text}": "Quitar {Text}"
+  },
+  "FormaPasswordBox": {
+    "Show Password": "Mostrar Contraseña",
+    "Hide Password": "Ocultar Contraseña",
+    "Password strength: Weak": "Seguridad de la contraseña: débil",
+    "Password strength: Fair": "Seguridad de la contraseña: aceptable",
+    "Password strength: Good": "Seguridad de la contraseña: buena",
+    "Password strength: Strong": "Seguridad de la contraseña: fuerte",
+    "Password strength: Very strong": "Seguridad de la contraseña: muy fuerte",
+    "The password must not contain your other details.": "La contraseña no debe contener tus otros datos.",
+    "Avoid repeating the same characters.": "Evita repetir los mismos caracteres.",
+    "[$ plural; one: Use at least # character.; other: Use at least # characters.; $]": "[$ plural; one: Usa al menos # carácter.; other: Usa al menos # caracteres.; $]",
+    "Mix uppercase and lowercase letters.": "Combina mayúsculas y minúsculas.",
+    "Add a number.": "Añade un número.",
+    "Add a symbol.": "Añade un símbolo."
+  },
+  "FormaSearchBox": {
+    "Search...": "Buscar...",
+    "Clear Search": "Borrar Búsqueda"
+  },
+  "FormaSelect": {
+    "Select an Option": "Seleccionar una Opción",
+    "No options available yet": "Aún no hay opciones disponibles"
+  },
+  "FormaTextArea": {
+    "{Characters} of {Allowed} characters": "{Characters} de {Allowed} caracteres",
+    "[$ plural; one: # character; other: # characters; $]": "[$ plural; one: # carácter; other: # caracteres; $]"
+  }
+}

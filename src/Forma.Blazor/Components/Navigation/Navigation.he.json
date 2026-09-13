@@ -1,0 +1,16 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaBreadcrumb": {
+    "Breadcrumb": "נתיב ניווט",
+    "Show options for {Label}": "הצג אפשרויות עבור {Label}"
+  },
+  "FormaPagination": {
+    "Pagination": "ניווט עמודים",
+    "Previous": "הקודם",
+    "Next": "הבא",
+    "Page {PageNumber}": "עמוד {PageNumber}",
+    "Go to Page": "מעבר לעמוד",
+    "{PageNumber} of {PageCount}": "{PageNumber} מתוך {PageCount}",
+    "Go": "עבור"
+  }
+}

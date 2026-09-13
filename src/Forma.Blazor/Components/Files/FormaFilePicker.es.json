@@ -1,7 +1,0 @@
-{
-  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "Drop files here or click to browse": "Suelta los archivos aquí o haz clic para buscarlos",
-  "\"{Name}\" isn't an accepted file type.": "\"{Name}\" no es un tipo de archivo aceptado.",
-  "\"{Name}\" is too large.": "\"{Name}\" es demasiado grande.",
-  "\"{Name}\" wasn't included — too many files at once.": "\"{Name}\" no se incluyó: demasiados archivos a la vez."
-}

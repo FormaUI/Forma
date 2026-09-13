@@ -1,0 +1,38 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "InputInspector": {
+    "FormaInputInspector": {
+      "Input router": "Enrutador de entrada",
+      "Inspector": "Inspector",
+      "Paused": "En pausa",
+      "Press a key, click, or scroll to see how the router resolves it.": "Pulse una tecla, haga clic o desplácese para ver cómo lo resuelve el enrutador.",
+      "Owner": "Propietario",
+      "nothing": "nada",
+      "Action": "Acción",
+      "none": "ninguna",
+      "Reason": "Motivo",
+      "Decided by": "Decidido por",
+      "Bindings": "Asignaciones",
+      "remapped by the host": "reasignadas por el anfitrión",
+      "the route's defaults": "las predeterminadas de la ruta",
+      "Browser default": "Acción del navegador",
+      "prevented": "impedida",
+      "allowed": "permitida",
+      "Propagation": "Propagación",
+      "stops at the owner": "se detiene en el propietario",
+      "continues": "continúa",
+      "Active stack": "Pila activa",
+      "Nothing active": "Nada activo",
+      "modal": "modal",
+      "Recent": "Recientes",
+      "Pause": "Pausar",
+      "Resume": "Reanudar",
+      "Clear": "Limpiar",
+      "first eligible": "primero elegible",
+      "modal barrier": "barrera modal",
+      "inside its parent": "dentro de su padre",
+      "activated later": "activado después",
+      "registered later": "registrado después"
+    }
+  }
+}

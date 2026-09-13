@@ -1,0 +1,23 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaChrome": {
+    "{Title} Commands": "Comandos de {Title}"
+  },
+  "FormaCommandBar": {
+    "Scroll Commands Back": "Desplazar Comandos Atrás",
+    "Scroll Commands Forward": "Desplazar Comandos Adelante"
+  },
+  "FormaFrame": {
+    "the frame": "el marco",
+    "Move {Name} with the arrow keys; hold Shift to resize it": "Mueve {Name} con las flechas; mantén Shift para cambiar su tamaño",
+    "Move {Name} with the arrow keys": "Mueve {Name} con las flechas",
+    "Resize {Name} with Shift and the arrow keys": "Cambia el tamaño de {Name} con Shift y las flechas"
+  },
+  "FormaFreezePane": {
+    "Scroll Back": "Desplazar Atrás",
+    "Scroll Forward": "Desplazar Adelante",
+    "Scroll Up": "Desplazar Arriba",
+    "Scroll Down": "Desplazar Abajo",
+    "Resize Frozen Region": "Redimensionar la Región Fijada"
+  }
+}

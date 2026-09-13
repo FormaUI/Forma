@@ -1,7 +1,0 @@
-{
-  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "the frame": "המסגרת",
-  "Move {Name} with the arrow keys; hold Shift to resize it": "הזז את {Name} עם מקשי החצים; החזק Shift כדי לשנות את גודלו",
-  "Move {Name} with the arrow keys": "הזז את {Name} עם מקשי החצים",
-  "Resize {Name} with Shift and the arrow keys": "שנה את גודל {Name} עם Shift ומקשי החצים"
-}

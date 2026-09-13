@@ -1,7 +1,0 @@
-{
-  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "This video is unavailable.": "El video no está disponible.",
-  "Open this video on its own site.": "Abre este video en su propio sitio.",
-  "Play {Title}": "Reproducir {Title}",
-  "Loads from another site, which will see this visit.": "Se carga desde otro sitio, que verá esta visita."
-}

@@ -1,0 +1,37 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaFilePicker": {
+    "Drop files here or click to browse": "Suelta los archivos aquí o haz clic para buscarlos",
+    "\"{Name}\" isn't an accepted file type.": "\"{Name}\" no es un tipo de archivo aceptado.",
+    "\"{Name}\" is too large.": "\"{Name}\" es demasiado grande.",
+    "\"{Name}\" wasn't included — too many files at once.": "\"{Name}\" no se incluyó: demasiados archivos a la vez."
+  },
+  "FormaFileUploader": {
+    "All Files": "Todos los Archivos",
+    "Cancel": "Cancelar",
+    "Canceled": "Cancelado",
+    "Failed": "Falló",
+    "Rolled Back": "Revertido",
+    "Skipped": "Omitido",
+    "Stored": "Guardado",
+    "Stored {Stored} of {Total}.": "Se guardaron {Stored} de {Total}.",
+    "Upload": "Subir",
+    "Uploading": "Subiendo",
+    "Uploading {Started} of {Total}.": "Subiendo {Started} de {Total}.",
+    "Waiting": "En Espera",
+    "{Sent} of {Size}": "{Sent} de {Size}",
+    "{Remaining} left": "quedan {Remaining}"
+  },
+  "FormaFileViewer": {
+    "Zoom": "Zoom",
+    "Zoom Out": "Alejar",
+    "Zoom In": "Acercar",
+    "Open {DisplayName} in a new tab.": "Abre {DisplayName} en una pestaña nueva.",
+    "Download {DisplayName}": "Descargar {DisplayName}",
+    "Previous": "Anterior",
+    "Next": "Siguiente"
+  },
+  "FormaImagePicker": {
+    "Drop images here or click to browse": "Suelta las imágenes aquí o haz clic para buscarlas"
+  }
+}

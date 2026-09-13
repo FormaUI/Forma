@@ -1,0 +1,37 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaFilePicker": {
+    "Drop files here or click to browse": "גררו קבצים לכאן או לחצו כדי לבחור",
+    "\"{Name}\" isn't an accepted file type.": "\"{Name}\" אינו סוג קובץ מותר.",
+    "\"{Name}\" is too large.": "\"{Name}\" גדול מדי.",
+    "\"{Name}\" wasn't included — too many files at once.": "\"{Name}\" לא נכלל — יותר מדי קבצים בבת אחת."
+  },
+  "FormaFileUploader": {
+    "All Files": "כל הקבצים",
+    "Cancel": "ביטול",
+    "Canceled": "בוטל",
+    "Failed": "נכשל",
+    "Rolled Back": "בוטל והוסר",
+    "Skipped": "דולג",
+    "Stored": "נשמר",
+    "Stored {Stored} of {Total}.": "נשמרו {Stored} מתוך {Total}.",
+    "Upload": "העלאה",
+    "Uploading": "מעלה",
+    "Uploading {Started} of {Total}.": "מעלה {Started} מתוך {Total}.",
+    "Waiting": "ממתין",
+    "{Sent} of {Size}": "{Sent} מתוך {Size}",
+    "{Remaining} left": "נותרו {Remaining}"
+  },
+  "FormaFileViewer": {
+    "Zoom": "זום",
+    "Zoom Out": "הקטן",
+    "Zoom In": "הגדל",
+    "Open {DisplayName} in a new tab.": "פתחו את {DisplayName} בכרטיסייה חדשה.",
+    "Download {DisplayName}": "הורידו את {DisplayName}",
+    "Previous": "הקודם",
+    "Next": "הבא"
+  },
+  "FormaImagePicker": {
+    "Drop images here or click to browse": "גררו תמונות לכאן או לחצו כדי לבחור"
+  }
+}

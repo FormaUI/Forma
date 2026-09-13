@@ -1,0 +1,11 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaDialog": {
+    "Close": "Cerrar",
+    "Cancel": "Cancelar",
+    "Confirm": "Confirmar"
+  },
+  "FormaToastContainer": {
+    "Dismiss": "Descartar"
+  }
+}

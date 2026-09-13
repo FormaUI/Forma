@@ -1,0 +1,17 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaRestArea": {
+    "Windows": "חלונות",
+    "Minimized": "ממוזער",
+    "{Origin} {Number}": "{Origin} {Number}",
+    "Workspace": "סביבת עבודה"
+  },
+  "FormaWindow": {
+    "Close": "סגור",
+    "Maximize": "הגדל",
+    "Minimize": "מזער",
+    "Lock": "נעילה",
+    "Unlock": "ביטול נעילה",
+    "Restore": "שחזר"
+  }
+}

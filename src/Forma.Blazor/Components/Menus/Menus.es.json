@@ -1,0 +1,14 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaShareMenu": {
+    "Share": "Compartir",
+    "Download": "Descargar",
+    "Copy Link": "Copiar Enlace",
+    "Email": "Correo",
+    "More": "Más",
+    "Less": "Menos",
+    "Connect {Target}": "Conectar {Target}",
+    "Shared to {Target}.": "Compartido en {Target}.",
+    "{Target} needs a connected account.": "{Target} necesita una cuenta conectada."
+  }
+}

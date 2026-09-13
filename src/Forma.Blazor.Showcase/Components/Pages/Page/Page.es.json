@@ -1,0 +1,18 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaPageTitlePage": {
+    "The heading of a page, with its breadcrumb trail above and its actions beside it. Putting the three in one component keeps every page's top edge aligned.": "El encabezado de una página, con su rastro de migas encima y sus acciones al lado. Reunir los tres en un componente mantiene alineado el borde superior de todas las páginas.",
+    "Basic with Breadcrumbs": "Básico con rutas de navegación",
+    "Title Only": "Solo título",
+    "With Action Buttons": "Con botones de acción",
+    "Deep Breadcrumb Trail": "Ruta de navegación profunda",
+    "Orders": "Pedidos",
+    "Dashboard": "Panel",
+    "Products": "Productos",
+    "Edit Product": "Editar producto",
+    "Add New": "Agregar nuevo",
+    "Export": "Exportar",
+    "Home": "Inicio",
+    "Store": "Tienda"
+  }
+}

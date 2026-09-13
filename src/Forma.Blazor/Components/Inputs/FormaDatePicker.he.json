@@ -1,6 +1,0 @@
-{
-  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Clear": "נקה",
-  "Select Date": "בחר תאריך",
-  "The {Field} field must be a date.": "השדה {Field} חייב להיות תאריך."
-}
