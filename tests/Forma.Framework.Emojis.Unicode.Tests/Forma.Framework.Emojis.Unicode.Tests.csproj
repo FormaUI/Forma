@@ -20,7 +20,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
-        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 
 </Project>

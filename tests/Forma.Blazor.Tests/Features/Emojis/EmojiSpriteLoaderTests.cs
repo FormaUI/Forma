@@ -1,8 +1,8 @@
-namespace Forma.Framework.Emojis.Unicode.Tests;
+namespace Forma.Blazor.Tests.Features.Emojis;
 
+using Forma.Blazor.Features.Emojis;
 using Forma.Tests.Shared;
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 

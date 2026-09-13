@@ -3,10 +3,10 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
+using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis;
-using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;

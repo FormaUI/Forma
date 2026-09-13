@@ -1,5 +1,6 @@
 namespace Forma.Blazor;
 
+using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Core.Interop;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Feedback;
@@ -42,6 +43,8 @@ public static class ServiceCollectionExtensions
         services.AddFormaSanitizationServices();
 
         services.AddFormaEmojiServices();
+        // Scoped, because the sheets it has adopted are the ones in this circuit's own document.
+        services.TryAddScoped<EmojiSpriteLoader>();
         services.AddFormaGlyphServices();
 
         services.AddFormaInputRouter(inputRouting);

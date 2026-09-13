@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Tests;
 
+using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Core.Interop;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
@@ -15,6 +16,17 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 public sealed class ServiceCollectionExtensionsTests
 {
+    [Fact]
+    public void Should_register_the_sprite_loader_once_per_circuit()
+    {
+        // Act
+        var services = new ServiceCollection().AddFormaUI();
+
+        // Assert
+        var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(EmojiSpriteLoader));
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
     [Fact]
     public void Should_register_the_default_input_policy()
     {

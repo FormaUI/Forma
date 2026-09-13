@@ -1,4 +1,4 @@
-namespace Forma.Framework.Emojis.Unicode;
+namespace Forma.Blazor.Features.Emojis;
 
 using Forma.Framework.Common.Interop.Operations;
 using Forma.Framework.Core.Interop;
@@ -59,7 +59,7 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable, IDisposable
         if (!arrived && _loadsBySheet.TryGetValue(sheet, out var current) && ReferenceEquals(current, load))
         {
             _loadsBySheet.Remove(sheet);
-            EmojiLog.SpriteSheetDidNotLoad(_environment.Logger, sheet, _environment.RuntimeId);
+            EmojiSpriteLoaderLog.SpriteSheetDidNotLoad(_environment.Logger, sheet, _environment.RuntimeId);
         }
 
         return arrived;
