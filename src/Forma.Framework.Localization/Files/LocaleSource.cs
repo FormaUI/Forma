@@ -18,13 +18,13 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <param name="assemblyName">The name of the assembly the type lives in.</param>
     /// <param name="typeName">The type's full name.</param>
     /// <param name="cultureName">The culture the files are named for.</param>
-    public IReadOnlyList<KeyValuePair<string, string?>> Read(string assemblyName, string typeName, string cultureName)
+    public IReadOnlyList<LocaleSourceEntry> Read(string assemblyName, string typeName, string cultureName)
     {
         ArgumentException.ThrowIfNullOrEmpty(assemblyName);
         ArgumentException.ThrowIfNullOrEmpty(typeName);
         ArgumentException.ThrowIfNullOrEmpty(cultureName);
 
-        var entries = new List<KeyValuePair<string, string?>>();
+        var entries = new List<LocaleSourceEntry>();
 
         var segments = typeName.Split('.');
         var assemblySegments = assemblyName.Split('.');
@@ -63,7 +63,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <param name="cultureName">The culture the file is named for.</param>
     protected abstract Stream? Open(IReadOnlyList<string> segments, string cultureName);
 
-    private void ReadRoot(string assemblyName, string rootNamespace, IReadOnlyList<string> leadingSegments, string[] segments, string cultureName, List<KeyValuePair<string, string?>> entries)
+    private void ReadRoot(string assemblyName, string rootNamespace, IReadOnlyList<string> leadingSegments, string[] segments, string cultureName, List<LocaleSourceEntry> entries)
     {
         for (var depth = leadingSegments.Count == 0 ? 1 : 0; depth <= segments.Length; depth++)
         {
@@ -80,13 +80,13 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         }
     }
 
-    private void ReadFile(IReadOnlyList<string> segments, string assemblyName, string rootNamespace, ReadOnlySpan<string> remainingSegments, string cultureName, List<KeyValuePair<string, string?>> entries)
+    private void ReadFile(IReadOnlyList<string> segments, string assemblyName, string rootNamespace, ReadOnlySpan<string> remainingSegments, string cultureName, List<LocaleSourceEntry> entries)
     {
         var name = GetName(segments, cultureName);
         var file = _files.GetOrAdd(name, _ => Open(segments, cultureName) is { } stream ? ReadFile(stream, name, cultureName) : null);
         if (file is not null && (!ReadsDeclaredRoots || (file.RootNamespace ?? assemblyName) == rootNamespace))
         {
-            file.Collect(remainingSegments, entries);
+            file.Collect(remainingSegments, entries, name);
         }
     }
 

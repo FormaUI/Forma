@@ -30,9 +30,9 @@ internal sealed class JsonResourceCache(ILocaleFileFormat format, string resourc
         var embedded = _embedded.GetOrAdd(assembly, static (owner, cache) => new EmbeddedLocaleSource(owner, cache._resourcesPath, cache._format), this);
 
         var entries = new Dictionary<string, string?>(StringComparer.Ordinal);
-        foreach (var (name, translation) in embedded.Read(assemblyName, typeName, key.CultureName).Concat(_host.Read(assemblyName, typeName, key.CultureName)))
+        foreach (var entry in embedded.Read(assemblyName, typeName, key.CultureName).Concat(_host.Read(assemblyName, typeName, key.CultureName)))
         {
-            entries[name] = translation;
+            entries[entry.Key] = entry.Value;
         }
 
         if (entries.Count == 0)

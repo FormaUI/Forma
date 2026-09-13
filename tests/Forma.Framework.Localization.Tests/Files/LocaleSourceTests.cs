@@ -26,11 +26,11 @@ public sealed class LocaleSourceTests
         // Assert
         Assert.Equal(
             [
-                new("Bold", "assembly file"),
-                new("Italic", "assembly file"),
-                new("Italic", "folder file"),
-                new("Underline", "folder file"),
-                new("Underline", "type file"),
+                new("Contoso.Widgets.he.fake", "Bars.Toolbar", "Bold", "assembly file"),
+                new("Contoso.Widgets.he.fake", "Bars.Toolbar", "Italic", "assembly file"),
+                new("Contoso.Widgets/Bars/Bars.he.fake", "Toolbar", "Italic", "folder file"),
+                new("Contoso.Widgets/Bars/Bars.he.fake", "Toolbar", "Underline", "folder file"),
+                new("Contoso.Widgets/Bars/Toolbar.he.fake", string.Empty, "Underline", "type file"),
             ],
             entries);
     }
@@ -51,7 +51,7 @@ public sealed class LocaleSourceTests
         var entries = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
 
         // Assert
-        Assert.Equal([new("Bold", "beside the folder")], entries);
+        Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/Bars.he.fake", "Toolbar", "Bold", "beside the folder")], entries);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class LocaleSourceTests
         var entries = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
 
         // Assert
-        Assert.Equal([new("Bold", "declared root")], entries);
+        Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/Toolbar.he.fake", string.Empty, "Bold", "declared root")], entries);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public sealed class LocaleSourceTests
         var entries = source.Read(Assembly, "Toolbar", "he");
 
         // Assert
-        Assert.Equal([new("Bold", "no namespace")], entries);
+        Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/Toolbar.he.fake", string.Empty, "Bold", "no namespace")], entries);
     }
 
     [Fact]

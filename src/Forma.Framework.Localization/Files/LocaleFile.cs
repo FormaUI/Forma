@@ -17,24 +17,28 @@ public sealed record LocaleFile(LocaleSection Root, string? RootNamespace)
     /// <summary>Adds the entries for the type whose name the given segments complete, in the order the file writes them.</summary>
     /// <param name="remainingSegments">The part of the type's name the file's own name leaves out.</param>
     /// <param name="entries">The list the entries are added to.</param>
-    internal void Collect(ReadOnlySpan<string> remainingSegments, List<KeyValuePair<string, string?>> entries)
-        => Collect(Root, remainingSegments, entries);
+    /// <param name="fileName">The name the file has in the source it was read from.</param>
+    internal void Collect(ReadOnlySpan<string> remainingSegments, List<LocaleSourceEntry> entries, string fileName)
+        => Collect(Root, remainingSegments, entries, fileName, string.Empty);
 
     // A section completes the type's name, whether its key spells several segments or one; the entries are the type's once the name is complete.
-    private static void Collect(LocaleSection node, ReadOnlySpan<string> remainingSegments, List<KeyValuePair<string, string?>> entries)
+    private static void Collect(LocaleSection node, ReadOnlySpan<string> remainingSegments, List<LocaleSourceEntry> entries, string fileName, string typeName)
     {
         foreach (var (name, section) in node.Sections)
         {
             var sectionSegments = name.Split('.');
             if (sectionSegments.Length <= remainingSegments.Length && remainingSegments[..sectionSegments.Length].SequenceEqual(sectionSegments))
             {
-                Collect(section, remainingSegments[sectionSegments.Length..], entries);
+                Collect(section, remainingSegments[sectionSegments.Length..], entries, fileName, typeName.Length == 0 ? name : $"{typeName}.{name}");
             }
         }
 
         if (remainingSegments.Length == 0)
         {
-            entries.AddRange(node.Entries);
+            foreach (var (key, value) in node.Entries)
+            {
+                entries.Add(new(fileName, typeName, key, value));
+            }
         }
     }
 

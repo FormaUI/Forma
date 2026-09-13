@@ -53,6 +53,7 @@ Portugal. `Select` returns `null` for a locale it carries no rules for.
 | `LocaleFile` | One file as read: its sections and entries, and the root it completes a type's name from when it declares one. |
 | `LocaleSection` | One node of a file: the sections beneath it and the entries it holds. |
 | `LocaleFileEntry` | One translation a file declares, with the name of the type it belongs to. |
+| `LocaleSourceEntry` | One translation a source read for a type, with the file and the section it came from. |
 | `LocalizationSchema` | The shape of the metadata entry every file carries. |
 | `LocalizationMetadata` | Reads and checks that entry; `LocalizationFileMetadata` is what it declares beyond the required fields. |
 | `LocalizationMetadataException` | Thrown when a file's metadata does not let it be read. |
@@ -222,7 +223,8 @@ own, and any other project marks the folder as content copied to the output dire
 The layout is one rule, and it is public so a tool checks files by the rule the runtime reads them
 with rather than by a copy of it. `LocaleSource` owns the walk from the file named for the assembly
 down to the file named for the type, over any store a derived class opens a file from by its name
-segments; `EmbeddedLocaleSource` and `HostLocaleSource` are the runtime's two. A format is an
+segments, and answers with each entry it read together with the file and section it came from;
+`EmbeddedLocaleSource` and `HostLocaleSource` are the runtime's two. A format is an
 `ILocaleFileFormat`, which names the extension its files carry and reads one file into a
 `LocaleFile`, a tree of sections and entries the contract walks; a backend such as
 `Forma.Framework.Localization.Json` is one such format. `LocaleFile` lists every entry a file
