@@ -133,6 +133,91 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
+    public void Should_share_a_folders_entries_with_every_type_beneath_it()
+    {
+        // Arrange — the folder's file shares one entry, and a type with a section of its own overrides it.
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/Bars/Bars.he.fake"] = new(
+                    CreateSections(("$shared", CreateEntries(("Bold", "shared"), ("Italic", "shared"))), ("Toolbar", CreateEntries(("Bold", "own")))),
+                    null),
+            },
+        };
+
+        // Act
+        var sectioned = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+        var unsectioned = source.Read(Assembly, "Contoso.Widgets.Bars.Ruler", "he");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(
+                [
+                    new("Contoso.Widgets/Bars/Bars.he.fake", "$shared", "Bold", "shared"),
+                    new("Contoso.Widgets/Bars/Bars.he.fake", "$shared", "Italic", "shared"),
+                    new("Contoso.Widgets/Bars/Bars.he.fake", "Toolbar", "Bold", "own"),
+                ],
+                sectioned),
+            () => Assert.Equal(
+                [
+                    new LocaleSourceEntry("Contoso.Widgets/Bars/Bars.he.fake", "$shared", "Bold", "shared"),
+                    new LocaleSourceEntry("Contoso.Widgets/Bars/Bars.he.fake", "$shared", "Italic", "shared"),
+                ],
+                unsectioned));
+    }
+
+    [Fact]
+    public void Should_share_a_nested_sections_entries_with_the_types_beneath_it_alone()
+    {
+        // Arrange
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets.he.fake"] = new(
+                    CreateSections(("Bars", CreateSections(("$shared", CreateEntries(("Bold", "bars"))))), ("Menus", CreateSections(("Menu", CreateEntries(("Open", "menu")))))),
+                    null),
+            },
+        };
+
+        // Act
+        var bars = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+        var menus = source.Read(Assembly, "Contoso.Widgets.Menus.Menu", "he");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.he.fake", "Bars.$shared", "Bold", "bars")], bars),
+            () => Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.he.fake", "Menus.Menu", "Open", "menu")], menus));
+    }
+
+    [Fact]
+    public void Should_list_shared_entries_before_a_sections_own_wherever_the_file_writes_them()
+    {
+        // Arrange — the shared section is written after the type's own, and a later entry overrides an earlier one.
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/Bars/Bars.he.fake"] = new(
+                    CreateSections(("Toolbar", CreateEntries(("Bold", "own"))), ("$shared", CreateEntries(("Bold", "shared")))),
+                    null),
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+
+        // Assert
+        Assert.Equal(
+            [
+                new("Contoso.Widgets/Bars/Bars.he.fake", "$shared", "Bold", "shared"),
+                new("Contoso.Widgets/Bars/Bars.he.fake", "Toolbar", "Bold", "own"),
+            ],
+            entries);
+    }
+
+    [Fact]
     public void Should_ask_for_each_file_once()
     {
         // Arrange

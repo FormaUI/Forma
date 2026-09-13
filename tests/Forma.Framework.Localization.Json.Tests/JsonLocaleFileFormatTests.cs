@@ -46,6 +46,28 @@ public sealed class JsonLocaleFileFormatTests
     }
 
     [Fact]
+    public void Should_leave_the_entry_reserved_for_tools_out()
+    {
+        // Arrange
+        var file = Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$tools": { "locali.ignore": ["LOC0113"], "other": 1 }, "Save": "שמור" }""");
+
+        // Assert
+        Assert.Equal([new LocaleFileEntry(string.Empty, "Save", "שמור")], file.GetEntries());
+    }
+
+    [Fact]
+    public void Should_read_the_shared_section_as_a_section()
+    {
+        // Arrange
+        var file = Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$shared": { "Bold": "מודגש" }, "Toolbar": { "Save": "שמור" } }""");
+
+        // Assert
+        Assert.Equal(
+            [new LocaleFileEntry("$shared", "Bold", "מודגש"), new LocaleFileEntry("Toolbar", "Save", "שמור")],
+            file.GetEntries());
+    }
+
+    [Fact]
     public void Should_read_the_root_the_file_declares()
     {
         // Arrange

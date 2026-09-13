@@ -15,6 +15,12 @@ public static class LocalizationSchema
     /// <summary>The key the entry sits under, which also marks the file as a localization file.</summary>
     public const string Marker = "$localization";
 
+    /// <summary>The key of the section whose entries every type reached through its node shares, unless a section of its own says otherwise.</summary>
+    public const string SharedKey = "$shared";
+
+    /// <summary>The key of the entry reserved for tools, each keeping its own entries under keys naming it, which the runtime reads nothing from.</summary>
+    public const string ToolsKey = "$tools";
+
     /// <summary>The field naming the namespace a host file completes a type's name from, in place of the assembly's name.</summary>
     public const string RootNamespaceField = "RootNamespace";
 

@@ -171,6 +171,24 @@ object's key may spell several segments at once or one at a time, so
 the keys it changes: a file closer to the type wins over one higher up, and the type's own file over
 every other.
 
+A node may hold a `$shared` section, whose entries every type reached through that node gets, so
+one translation serves every component in a folder, or every type in the assembly at the root of
+the assembly's file:
+
+```text
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "$shared": { "Bold": "Negrita", "Italic": "Cursiva" },
+  "FormaToolbar": { "Bold": "Negrita Fuerte" },
+  "FormaToolbarButton": { }
+}
+```
+
+A section's own entry wins over a shared one, and a file closer to the type wins over a shared
+entry higher up, as it wins over any other. `$tools` is reserved beside it for tools, each keeping
+its own entries under keys naming it, such as `"$tools": { "locali.ignore": ["LOC0113"] }`; the
+runtime reads nothing from it.
+
 Lookup walks `CultureInfo.CurrentUICulture` outward through `Parent`, taking the first culture whose
 files have the key and stopping before the invariant culture, which no file can name. Within a
 culture, a file is read from the main assembly first, then from that culture's satellite assembly.

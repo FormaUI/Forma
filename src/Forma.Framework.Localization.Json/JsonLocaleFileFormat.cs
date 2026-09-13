@@ -35,7 +35,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
         return new LocaleFile(ReadSection(document.RootElement, fileName), metadata.RootNamespace);
     }
 
-    // An object is a section; text or null is a translation; the marker is the file's own and belongs to no type.
+    // An object is a section; text or null is a translation; the marker is the file's own, and the entry reserved for tools is left to them whatever it holds.
     private static LocaleSection ReadSection(JsonElement node, string fileName)
     {
         var sections = new List<KeyValuePair<string, LocaleSection>>();
@@ -43,6 +43,11 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
 
         foreach (var property in node.EnumerateObject())
         {
+            if (property.Name == LocalizationSchema.ToolsKey)
+            {
+                continue;
+            }
+
             switch (property.Value.ValueKind)
             {
                 case JsonValueKind.Object:

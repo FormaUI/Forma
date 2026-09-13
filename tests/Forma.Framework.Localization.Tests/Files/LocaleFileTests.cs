@@ -39,6 +39,23 @@ public sealed class LocaleFileTests
     }
 
     [Fact]
+    public void Should_list_a_shared_section_under_its_reserved_name()
+    {
+        // Arrange
+        var file = new LocaleFile(
+            CreateSections(("$shared", CreateEntries(("Bold", "shared"))), ("Toolbar", CreateEntries(("Save", "own")))),
+            null);
+
+        // Act
+        var entries = file.GetEntries();
+
+        // Assert
+        Assert.Equal(
+            [new LocaleFileEntry("$shared", "Bold", "shared"), new LocaleFileEntry("Toolbar", "Save", "own")],
+            entries);
+    }
+
+    [Fact]
     public void Should_list_the_entries_of_an_outer_type_before_its_nested_types()
     {
         // Arrange
