@@ -664,6 +664,22 @@
                      .Select(invocation => (InputProfile)invocation.Arguments[1]!)];
 
         [Fact]
+        public void Should_rove_its_controls_as_one_tab_stop()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+
+            // Act
+            ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            var invocation = Assert.Single(ctx.Focus.Invocations, invocation => invocation.Identifier == "attach");
+            var options = invocation.Arguments[1]!;
+            Assert.Equal("horizontal", options.GetType().GetProperty("roving")!.GetValue(options));
+        }
+
+        [Fact]
         public void Should_not_attach_shortcuts_without_a_target()
         {
             // Arrange

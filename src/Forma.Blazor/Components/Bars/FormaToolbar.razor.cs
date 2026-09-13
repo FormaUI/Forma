@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Bars;
 
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Layout;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -25,6 +26,8 @@ public sealed partial class FormaToolbar : FormaElementBase
     private InputScope? _inputScope;
     private IReadOnlyList<(string Command, string Shortcut)> _registeredShortcuts = [];
     private string? _registeredTargetId;
+    private Focus _focus = default!;
+    private string? _rovingRootId;
 
     /// <summary>The accessible name of the toolbar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -79,6 +82,13 @@ public sealed partial class FormaToolbar : FormaElementBase
         => Items.SelectMany(GetLeaves).OfType<FormaToolbarAction>();
 
     /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _focus = new Focus(Context.JS);
+    }
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -101,6 +111,8 @@ public sealed partial class FormaToolbar : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await RoveAsync();
+
         // Target is an element elsewhere, so hiding the toolbar does not stand its shortcuts down on its own.
         // An unrendered @ref still arrives as a non-null ElementReference carrying no id, and registering it fails silently.
         if (Hidden || Target is not { Id.Length: > 0 } target)
@@ -179,7 +191,24 @@ public sealed partial class FormaToolbar : FormaElementBase
     {
         await ReleaseAsync();
         _selfReference?.Dispose();
+        await _focus.DisposeAsync();
         await base.DisposeAsyncCore();
+    }
+
+    /// <summary>Makes the root one Tab stop whose arrow keys move among the controls, again whenever another element becomes the root.</summary>
+    private async Task RoveAsync()
+    {
+        var root = RootElement;
+
+        if (root.Id is not { Length: > 0 } || root.Id == _rovingRootId)
+        {
+            return;
+        }
+
+        if (await _focus.AttachAsync(root, roving: FocusOrientation.Horizontal))
+        {
+            _rovingRootId = root.Id;
+        }
     }
 
     /// <summary>Releases the current scope, so a cleared target leaves no routes behind on the element it named.</summary>

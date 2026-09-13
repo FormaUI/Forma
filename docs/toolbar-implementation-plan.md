@@ -5,15 +5,13 @@ record of what has landed.
 
 ## Status
 
-The item model, `FormaToolbar` with both roots, shortcuts as routes, and the three
-composed toolbars are built. `FormaSearchToolbar` was renamed from `FormaToolbar` once
+The item model, `FormaToolbar` with both roots, shortcuts as routes, roving focus, and the
+three composed toolbars are built. `FormaSearchToolbar` was renamed from `FormaToolbar` once
 that name was needed for the generic, item-driven toolbar, and rebuilt on it;
 `FormaSelectionToolbar` was renamed from `FormaContextToolbar`, since "context" named the
-circumstance rather than the subject.
+circumstance rather than the subject. Roving focus arrived last, as a roving mode of the
+shared `Focus` behavior rather than key handling of the toolbar's own.
 
 ## Open
 
-- `FormaToolbar` sets `role="toolbar"` without the arrow-key roving focus an ARIA
-  toolbar owes; the roles its children carry are correct, but keyboard navigation between
-  them is plain tab order. The gap is the toolbar's to close, and the composed toolbars
-  inherit it.
+Nothing.

@@ -62,6 +62,14 @@ on. `FormaToolbarMenu` adds `Options`, at least one, each a `FormaToolbarOption`
   `OnCommand` with the action's command as a click does, and is refused when the toolbar's
   `Disabled` or the action's `IsDisabled` says so, or when the state it requires is absent.
   `Hidden` releases the routes even while `Target` stays set.
+- **The toolbar is one Tab stop.** Whichever element is the root composes the shared
+  `Focus` behavior roving horizontally, as `role="toolbar"` obliges: Left and Right,
+  mirrored under a right-to-left direction, move among the enabled controls and wrap at
+  either end, Home and End reach the ends, and the control focused last keeps the stop
+  while the rest are parked at tabindex -1, so Tab leaves the toolbar on its own and a
+  surface arranging its own order around it, such as `FormaComposer`, counts the toolbar
+  once. A text field on the toolbar keeps its caret keys, and an open menu keeps its own;
+  the composed toolbars inherit all of it.
 - **Keys are identities.** Each item and option is keyed by its `Id` and each group by its
   own, so a host adding or removing one never tears down a neighbor's open menu.
 - **The toolbar holds no opinion on what its items are.** No plugin registry, no

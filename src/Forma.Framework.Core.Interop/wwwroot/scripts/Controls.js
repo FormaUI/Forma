@@ -5,7 +5,7 @@
 /** The selectors and keys native controls answer themselves. */
 export class Controls {
     /** Elements Tab can reach. */
-    static Focusable = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    static Focusable = 'button:not([disabled]):not([tabindex="-1"]), [href]:not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
 
     /** Elements that own their own press and keys. */
     static Interactive = 'a[href], button, input, select, textarea, label, [role="button"], [role="link"], [contenteditable="true"]';
