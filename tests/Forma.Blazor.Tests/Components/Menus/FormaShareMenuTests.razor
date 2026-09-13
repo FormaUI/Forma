@@ -2,6 +2,7 @@
 @using Bunit.Rendering
 @using Forma.Framework.Resources
 @using Forma.Framework.Share
+@using Forma.Framework.Share.Targets
 @using Forma.Tests.Share
 @inherits FormaBunitContext
 @code {
@@ -330,6 +331,39 @@
             Assert.Multiple(
                 () => Assert.Null(vault.Shared),
                 () => Assert.Equal("Vault needs a connected account.", cut.Find(".forma-share-menu-notice").TextContent));
+        }
+
+        [Fact]
+        public void Should_link_a_federated_target_to_the_users_server_once_named()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var servers = new FakeShareServerSource { Servers = { ["mastodon"] = new Uri("https://mastodon.social/") } };
+            ctx.Services.AddSingleton<IShareTarget>(new MastodonShare(servers));
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            var mastodon = cut.FindAll(".forma-share-menu-primary a").First(a => a.TextContent.Contains("Mastodon", StringComparison.Ordinal));
+            Assert.StartsWith("https://mastodon.social/share?text=", mastodon.GetAttribute("href"), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_report_a_federated_target_needs_an_account_while_no_server_is_named()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            ctx.Services.AddSingleton<IShareTarget>(new MastodonShare(new FakeShareServerSource()));
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+            FindPrimaryButton(cut, "Mastodon").Click();
+
+            // Assert
+            Assert.Equal("Mastodon needs a connected account.", cut.Find(".forma-share-menu-notice").TextContent);
         }
 
         [Fact]

@@ -93,6 +93,12 @@ public static class ServiceCollectionExtensions
         return services.AddFormaDiscordSharing(options => options.WebhookAddress = webhookAddress);
     }
 
+    /// <summary>Registers Mastodon as a share target, opening the composer on the server the user named; the host supplies the <see cref="IShareServerSource"/> it answers through.</summary>
+    /// <param name="services">The collection to register into.</param>
+    /// <returns>The same collection, for chaining.</returns>
+    public static IServiceCollection AddFormaMastodonSharing(this IServiceCollection services)
+        => services.AddAccountSharing<MastodonShare>();
+
     /// <summary>Registers Dropbox as a share target, saving into the account the user connected; the host supplies the <see cref="IShareTokenSource"/> it answers through.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection, for chaining.</returns>
@@ -119,7 +125,7 @@ public static class ServiceCollectionExtensions
 
     // Scoped to the user context, because the target shares through that user's account.
     private static IServiceCollection AddAccountSharing<TTarget>(this IServiceCollection services)
-        where TTarget : AccountShare
+        where TTarget : class, IShareTarget
     {
         ArgumentNullException.ThrowIfNull(services);
 

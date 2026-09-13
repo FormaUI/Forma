@@ -47,8 +47,8 @@ compete.
   destinations in the add-on, registered by `AddFormaShareNetworks()` beside `AddFormaUI()`.
   The add-on also ships destinations the host switches on one by one, each by its own
   registrar: Messenger's send dialog under the host's Facebook app, Discord through a
-  channel webhook, Dropbox through its save-URL API, Google Drive and OneDrive as uploads,
-  and TikTok by publish-by-pull.
+  channel webhook, Mastodon's composer on the server the user names, Dropbox through its
+  save-URL API, Google Drive and OneDrive as uploads, and TikTok by publish-by-pull.
 - **Host settings and a user's credentials are two different things.** A value the website
   owns, an app id or a webhook address, is an options class beside its target in the
   add-on, bound the conventional way and settable through the registrar's configure
@@ -56,7 +56,10 @@ compete.
   for their Dropbox or TikTok, comes from `IShareTokenSource`, a contract in
   `Forma.Framework.Share` the host implements in the current user's context and that
   answers a token for a target id, or null when the user has connected none. A retrieval
-  failure throws, so it is never mistaken for "not connected".
+  failure throws, so it is never mistaken for "not connected". A federated network has no
+  central server, so the value the user owns there is the server their account lives on:
+  `IShareServerSource` answers it synchronously, since a stored preference needs no
+  refresh and a link target composes its address while rendering.
 - **A target says whether it shares through an account.** `RequiresAccount` on the target
   contract, true on `AccountShare`, the shell the account-backed destinations stand on;
   the menu never keeps a list of platforms. Such a target is registered in the user's

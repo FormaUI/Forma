@@ -39,6 +39,13 @@
         </p>
         <p class="demo-note">@L["Sent to Vault"]: <code>@(Vault.LastShared?.Name ?? L["nothing yet"])</code></p>
     </div>
+    <p class="description">@L["Mastodon has no central server, so connecting it means naming the reader's own. Until then the menu offers Connect; once named, the entry links straight to that server's composer."]</p>
+    <div class="demo-box">
+        <FormaShareMenu Item="_article" />
+        <p class="demo-note">
+            <FormaButton OnClick="() => Accounts.SetMastodonConnectedAsync(!Accounts.IsMastodonConnected)">@(Accounts.IsMastodonConnected ? L["Disconnect Mastodon"] : L["Connect Mastodon"])</FormaButton>
+        </p>
+    </div>
 </div>
 
 <div class="demo-section">

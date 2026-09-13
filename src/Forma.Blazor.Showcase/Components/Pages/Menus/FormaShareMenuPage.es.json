@@ -22,5 +22,8 @@
   "Connect Vault": "Conectar Vault",
   "Disconnect Vault": "Desconectar Vault",
   "Drop the Token": "Retirar el Token",
-  "Restore the Token": "Restaurar el Token"
+  "Restore the Token": "Restaurar el Token",
+  "Mastodon has no central server, so connecting it means naming the reader's own. Until then the menu offers Connect; once named, the entry links straight to that server's composer.": "Mastodon no tiene un servidor central, así que conectarlo significa nombrar el del propio lector. Hasta entonces el menú ofrece Conectar; una vez nombrado, la entrada enlaza directamente al compositor de ese servidor.",
+  "Connect Mastodon": "Conectar Mastodon",
+  "Disconnect Mastodon": "Desconectar Mastodon"
 }

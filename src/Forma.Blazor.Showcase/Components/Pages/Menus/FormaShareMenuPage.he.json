@@ -22,5 +22,8 @@
   "Connect Vault": "חיבור Vault",
   "Disconnect Vault": "ניתוק Vault",
   "Drop the Token": "הסרת הטוקן",
-  "Restore the Token": "שחזור הטוקן"
+  "Restore the Token": "שחזור הטוקן",
+  "Mastodon has no central server, so connecting it means naming the reader's own. Until then the menu offers Connect; once named, the entry links straight to that server's composer.": "למסטודון אין שרת מרכזי, ולכן חיבור שלו פירושו לנקוב בשרת של הקורא עצמו. עד אז התפריט מציע חיבור; משנקבע השרת, הפריט מקשר ישירות אל העורך של אותו שרת.",
+  "Connect Mastodon": "חיבור Mastodon",
+  "Disconnect Mastodon": "ניתוק Mastodon"
 }

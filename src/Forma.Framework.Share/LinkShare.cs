@@ -18,7 +18,10 @@ public abstract class LinkShare(string id, string title, Icon icon) : IShareTarg
     public Icon Icon { get; } = icon;
 
     /// <inheritdoc />
-    public bool Supports(ShareItem item)
+    public virtual bool RequiresAccount => false;
+
+    /// <inheritdoc />
+    public virtual bool Supports(ShareItem item)
         => GetAddress(item) is not null;
 
     /// <inheritdoc />

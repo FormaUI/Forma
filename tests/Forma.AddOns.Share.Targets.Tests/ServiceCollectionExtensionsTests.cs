@@ -27,6 +27,22 @@ public sealed class ServiceCollectionExtensionsTests
         }
 
         [Fact]
+        public void Should_build_a_federated_target_over_the_hosts_server_source()
+        {
+            // Arrange
+            var services = new ServiceCollection().AddFormaMastodonSharing();
+            services.AddScoped<IShareServerSource, FakeShareServerSource>();
+            using var provider = services.BuildServiceProvider();
+            using var scope = provider.CreateScope();
+
+            // Act
+            var target = scope.ServiceProvider.GetRequiredService<IShareTarget>();
+
+            // Assert
+            Assert.IsType<MastodonShare>(target);
+        }
+
+        [Fact]
         public void Should_build_an_account_target_over_the_hosts_token_source()
         {
             // Arrange
