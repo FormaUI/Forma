@@ -11,7 +11,9 @@
     "Written in the file named for the type": "Depuis le dossier de l'hôte : le fichier du type",
     "Added by the host's folder alone": "Ajouté par le dossier de l'hôte seul",
     "A Language the Library Never Shipped": "Une Langue que la Bibliothèque n'a Jamais Livrée",
-    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for the pagination below, for the share menu, and for this section, so switch to Français in the sidebar to see them in French while everything else falls back to English.": "Le français n'est livré ni avec la bibliothèque ni avec le Showcase. Le dossier locales du Showcase le fournit pour la pagination ci-dessous, pour le menu de partage et pour cette section ; passez à Français dans la barre latérale pour les voir en français, tandis que tout le reste retombe en anglais.",
-    "Current page": "Page actuelle"
+    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English.": "Le français n'est livré ni avec la bibliothèque ni avec le Showcase. Le dossier locales du Showcase le fournit pour cette section, pour le menu de partage et pour la pagination ; les chaînes ci-dessous se lisent donc en français depuis ce seul dossier, et la page peut s'ouvrir en français pour voir tout le reste retomber en anglais.",
+    "Current page": "Page actuelle",
+    "Open this page in French": "Ouvrir cette page en français",
+    "In French, from the host's folder": "En français, depuis le dossier de l'hôte"
   }
 }

@@ -4,8 +4,10 @@
 @using System.Globalization
 @using Forma.Framework.Localization
 @using Forma.Framework.Localization.Json
+@using Forma.Framework.Globalization
 @using Forma.Framework.Localization.Language
 @inject IStringLocale<LocalizationPage> L
+@inject CultureRouter Router
 
 <h1>Localization</h1>
 <p class="description">@L["Every string Forma renders resolves through IStringLocale. Switch the culture in the sidebar to watch each section below change."]</p>
@@ -236,10 +238,28 @@
 
 <div class="demo-section">
     <h2>@L["A Language the Library Never Shipped"]</h2>
-    <p class="description">@L["French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for the pagination below, for the share menu, and for this section, so switch to Français in the sidebar to see them in French while everything else falls back to English."]</p>
+    <p class="description">@L["French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English."]</p>
     <div class="demo-box">
+        <table class="demo-table">
+            <thead>
+                <tr>
+                    <th>@L["Key"]</th>
+                    <th>@L["In French, from the host's folder"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var (key, _) in HostFiles)
+                {
+                    <tr>
+                        <td dir="ltr"><code>@key</code></td>
+                        <td dir="ltr">@GetFrench(key)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
         <FormaPagination TotalItems="65" PageSize="10" CurrentPage="_page" OnPageChanged="HandlePageChangedAsync" />
         <p class="demo-note">@L["Current page"]: <code>@_page</code></p>
+        <p class="demo-note"><a href="@Router.GetUrl(French, "localization")" data-enhance-nav="false">@L["Open this page in French"]</a></p>
     </div>
 </div>
 
@@ -284,6 +304,25 @@
 
     private static string Language
         => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+    private CultureRoute French
+        => Router.Routes.First(route => route.Token == "fr");
+
+    // A lookup under the French culture, restored at once, so the page itself stays in the culture on screen.
+    private string GetFrench(string key)
+    {
+        var current = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr");
+
+        try
+        {
+            return L[key].Value;
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = current;
+        }
+    }
 
     private Task HandlePageChangedAsync(int page)
     {

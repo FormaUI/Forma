@@ -58,7 +58,9 @@
     "Written in a file named for part of the namespace": "Junto a la página: el archivo del espacio de nombres",
     "Written in the file named for the type": "Junto a la página: el archivo del tipo",
     "A Language the Library Never Shipped": "Un Idioma que la Biblioteca Nunca Incluyó",
-    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for the pagination below, for the share menu, and for this section, so switch to Français in the sidebar to see them in French while everything else falls back to English.": "El francés no viene ni con la biblioteca ni con el Showcase. La carpeta locales del Showcase lo aporta para la paginación de abajo, para el menú de compartir y para esta sección; cambie a Français en la barra lateral para verlos en francés mientras todo lo demás vuelve al inglés.",
-    "Current page": "Página actual"
+    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English.": "El francés no viene ni con la biblioteca ni con el Showcase. La carpeta locales del Showcase lo aporta para esta sección, para el menú de compartir y para la paginación, así que las cadenas de abajo se leen en francés solo desde esa carpeta, y la página puede abrirse en francés para ver que todo lo demás vuelve al inglés.",
+    "Current page": "Página actual",
+    "Open this page in French": "Abrir esta Página en Francés",
+    "In French, from the host's folder": "En francés, desde la carpeta del anfitrión"
   }
 }

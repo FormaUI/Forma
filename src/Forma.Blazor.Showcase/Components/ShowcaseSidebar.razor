@@ -6,7 +6,7 @@
 <nav class="showcase-sidebar">
     <a class="showcase-brand" href="@Router.GetPath(Current, "/")"><img src="/logo.svg" alt="Forma" /></a>
     <div class="culture-switcher">
-        @foreach (var route in Router.Routes)
+        @foreach (var route in Router.Routes.Where(route => Labels.ContainsKey(route.Token)))
         {
             <a href="@LinkTo(route)" data-enhance-nav="false" class="@(IsCurrent(route) ? "active" : "")">@GetLabel(route)</a>
         }
@@ -26,8 +26,7 @@
     {
         ["en"] = "En",
         ["he"] = "עב",
-        ["es"] = "Es",
-        ["fr"] = "Fr"
+        ["es"] = "Es"
     };
 
     private CultureRoute Current => Router.CurrentRoute;

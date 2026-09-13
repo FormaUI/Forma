@@ -58,7 +58,9 @@
     "Written in a file named for part of the namespace": "ליד הדף: קובץ מרחב השמות",
     "Written in the file named for the type": "ליד הדף: קובץ הטיפוס",
     "A Language the Library Never Shipped": "שפה שהספרייה מעולם לא סיפקה",
-    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for the pagination below, for the share menu, and for this section, so switch to Français in the sidebar to see them in French while everything else falls back to English.": "צרפתית אינה מסופקת לא עם הספרייה ולא עם ה-Showcase. תיקיית locales של ה-Showcase מספקת אותה לדפדוף שלמטה, לתפריט השיתוף ולמקטע הזה; עברו ל-Français בסרגל הצד כדי לראותם בצרפתית בעוד כל השאר נופל חזרה לאנגלית.",
-    "Current page": "עמוד נוכחי"
+    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English.": "צרפתית אינה מסופקת לא עם הספרייה ולא עם ה-Showcase. תיקיית locales של ה-Showcase מספקת אותה למקטע הזה, לתפריט השיתוף ולדפדוף, ולכן המחרוזות שלמטה נקראות בצרפתית מאותה תיקייה בלבד, ואפשר לפתוח את הדף בצרפתית כדי לראות את כל השאר נופל חזרה לאנגלית.",
+    "Current page": "עמוד נוכחי",
+    "Open this page in French": "פתיחת הדף הזה בצרפתית",
+    "In French, from the host's folder": "בצרפתית, מתיקיית המארח"
   }
 }
