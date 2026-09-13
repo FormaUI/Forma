@@ -5,7 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
+        <PackageId>2Site.Forma.Framework.Icons</PackageId>
         <RootNamespace>Forma.Framework.Icons</RootNamespace>
     </PropertyGroup>
 

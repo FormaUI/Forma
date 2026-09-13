@@ -5,7 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
+        <PackageId>2Site.Forma.AddOns.Share.Targets</PackageId>
         <RootNamespace>Forma.Framework.Share.Targets</RootNamespace>
     </PropertyGroup>
 

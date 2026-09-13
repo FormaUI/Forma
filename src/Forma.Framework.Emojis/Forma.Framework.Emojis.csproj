@@ -5,7 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
+        <PackageId>2Site.Forma.Framework.Emojis</PackageId>
         <RootNamespace>Forma.Framework.Emojis</RootNamespace>
     </PropertyGroup>
 
