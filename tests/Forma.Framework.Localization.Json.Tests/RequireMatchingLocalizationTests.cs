@@ -6,7 +6,7 @@ using Forma.Tests.Shared;
 public sealed class RequireMatchingLocalizationTests
 {
     private static IStringLocale CreateLocale<TSource>(bool require)
-        => new JsonStringLocaleFactory(new JsonLocalizationOptions { RequireMatchingLocalization = require }).Create(typeof(TSource));
+        => new JsonStringLocaleFactory(new LocalizationOptions { RequireMatchingLocalization = require }).Create(typeof(TSource));
 
     [Fact]
     public void Should_fall_back_to_the_key_when_a_translation_is_not_required()

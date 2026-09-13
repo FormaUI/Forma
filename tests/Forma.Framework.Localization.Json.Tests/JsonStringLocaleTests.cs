@@ -387,7 +387,7 @@ public sealed class JsonStringLocaleTests
         // Arrange — the key is Hebrew, whose dual the displayed language does not have.
         const string Key = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
         using var culture = new CultureScope("en");
-        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he" }).Create(typeof(Untranslated));
+        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he" }).Create(typeof(Untranslated));
 
         // Act
         var two = strings[Key, 2];
@@ -398,11 +398,11 @@ public sealed class JsonStringLocaleTests
 
     [Fact]
     public void Should_reject_a_blank_source_language()
-        => Assert.Throws<ArgumentException>(() => new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = " " }));
+        => Assert.Throws<ArgumentException>(() => new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = " " }));
 
     [Fact]
     public void Should_reject_a_source_language_naming_no_language()
-        => Assert.Throws<ArgumentException>(() => new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "x-test" }));
+        => Assert.Throws<ArgumentException>(() => new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "x-test" }));
 
     [Fact]
     public void Should_read_a_regional_source_language_as_its_language()
@@ -410,7 +410,7 @@ public sealed class JsonStringLocaleTests
         // Arrange — the key is Hebrew, and only Hebrew's rules carry a dual.
         const string Key = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
         using var culture = new CultureScope("en");
-        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he-IL" }).Create(typeof(Untranslated));
+        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he-IL" }).Create(typeof(Untranslated));
 
         // Act
         var two = strings[Key, 2];
@@ -425,7 +425,7 @@ public sealed class JsonStringLocaleTests
         // Arrange — the key is English, but its count belongs to the culture on screen.
         const string Key = "[$ plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("es-CO");
-        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "en" }).Create(typeof(Untranslated));
+        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "en" }).Create(typeof(Untranslated));
 
         // Act
         var many = strings[Key, 1234.5m];

@@ -161,9 +161,9 @@ A host rewords a string the library ships, or adds a language it never had, by l
 in a `locales` folder beside the application, named for the assembly and the type they translate.
 
 [`Forma.Framework.Localization`](src/Forma.Framework.Localization/README.md)
-documents the contract, the ways to fill a hole, and the plural syntax.
+documents the contract, the ways to fill a hole, the plural syntax, and how a file is found.
 [`Forma.Framework.Localization.Json`](src/Forma.Framework.Localization.Json/README.md) documents the
-file format and how a file is found.
+file format.
 
 ## Culture in the URL
 

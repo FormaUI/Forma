@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Json;
+namespace Forma.Framework.Localization.Files;
 
 using System.Collections.Concurrent;
 using System.Globalization;
@@ -7,10 +7,11 @@ using System.Reflection;
 /// <summary>The translation files embedded in one assembly, in the assembly itself or in a culture's satellite assembly.</summary>
 /// <param name="assembly">The assembly the files are embedded in.</param>
 /// <param name="resourcesPath">The folder the files are embedded under, as dotted segments, or empty when they sit beside the types they translate.</param>
-internal sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPath) : LocaleSource
+/// <param name="format">The format the files are written in.</param>
+public sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPath, ILocaleFileFormat format) : LocaleSource(format)
 {
-    private readonly Assembly _assembly = assembly;
-    private readonly string _resourcesPath = resourcesPath;
+    private readonly Assembly _assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
+    private readonly string _resourcesPath = resourcesPath ?? throw new ArgumentNullException(nameof(resourcesPath));
     private readonly ConcurrentDictionary<string, Assembly?> _satellites = new(StringComparer.Ordinal);
 
     /// <inheritdoc />
@@ -22,12 +23,12 @@ internal sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPa
 
     /// <inheritdoc />
     protected override string GetName(IReadOnlyList<string> segments, string cultureName)
-        => $"{string.Join('.', segments)}.{cultureName}.json";
+        => $"{string.Join('.', segments)}.{cultureName}{Format.Extension}";
 
     /// <inheritdoc />
     protected override Stream? Open(IReadOnlyList<string> segments, string cultureName)
         => _assembly.GetManifestResourceStream(GetName(segments, cultureName))
-            ?? _satellites.GetOrAdd(cultureName, GetSatellite)?.GetManifestResourceStream($"{string.Join('.', segments)}.json");
+            ?? _satellites.GetOrAdd(cultureName, GetSatellite)?.GetManifestResourceStream($"{string.Join('.', segments)}{Format.Extension}");
 
     // A file the build moved into the culture's satellite assembly is named there without its culture.
     private Assembly? GetSatellite(string cultureName)

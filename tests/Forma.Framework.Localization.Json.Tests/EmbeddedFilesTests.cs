@@ -3,7 +3,7 @@ namespace Forma.Framework.Localization.Json.Tests;
 using Forma.Framework.Localization.Json.Tests.Fixtures;
 using Forma.Framework.Localization.Json.Tests.Fixtures.Grouped;
 
-public sealed class EmbeddedLocaleSourceTests
+public sealed class EmbeddedFilesTests
 {
     private static IStringLocale CreateLocale<T>()
         => new JsonStringLocaleFactory().Create(typeof(T));

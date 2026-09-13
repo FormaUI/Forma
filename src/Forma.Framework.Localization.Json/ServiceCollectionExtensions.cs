@@ -12,10 +12,10 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>Registers locales reading files that sit beside the types they translate.</summary>
     public static IServiceCollection AddJsonLocalization(this IServiceCollection services)
-        => services.AddJsonLocalization(new JsonLocalizationOptions());
+        => services.AddJsonLocalization(new LocalizationOptions());
 
     /// <summary>Registers locales reading files from the folder the options name.</summary>
-    public static IServiceCollection AddJsonLocalization(this IServiceCollection services, JsonLocalizationOptions options)
+    public static IServiceCollection AddJsonLocalization(this IServiceCollection services, LocalizationOptions options)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(options);

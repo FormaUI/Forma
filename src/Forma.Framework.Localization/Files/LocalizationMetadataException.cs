@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Json;
+namespace Forma.Framework.Localization.Files;
 
 using Forma.Framework.Localization;
 

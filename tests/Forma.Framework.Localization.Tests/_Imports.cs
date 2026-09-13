@@ -3,6 +3,7 @@ global using System.Globalization;
 global using System.Linq;
 
 global using Forma.Framework.Localization;
+global using Forma.Framework.Localization.Files;
 global using Forma.Framework.Localization.Language;
 global using Forma.Tests.Localization;
 global using Forma.Tests.Shared;

@@ -259,7 +259,7 @@
         new JsonStringLocaleFactory().Create(typeof(LocalizationPage));
 
     private static readonly IStringLocale HebrewSource =
-        new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he" }).Create(typeof(LocalizationPage));
+        new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he" }).Create(typeof(LocalizationPage));
 
     private const string AssemblyFileKey = "Written in the file named for the assembly";
     private const string NamespaceFileKey = "Written in a file named for part of the namespace";
@@ -275,7 +275,7 @@
     ];
 
     private static readonly IStringLocale WithoutHostFiles =
-        new JsonStringLocaleFactory(new JsonLocalizationOptions { LocalesPath = string.Empty }).Create(typeof(LocalizationPage));
+        new JsonStringLocaleFactory(new LocalizationOptions { LocalesPath = string.Empty }).Create(typeof(LocalizationPage));
 
     private int _written = 5;
     private int _allowed = 280;

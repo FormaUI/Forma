@@ -5,11 +5,15 @@ using System.Collections.Frozen;
 using System.Globalization;
 using System.Reflection;
 
+using Forma.Framework.Localization.Files;
+
 /// <summary>Reads the translations for a type in one culture, the files embedded in its assembly with the host's own laid over them, and keeps each result in memory after the first read.</summary>
+/// <param name="format">The format the files are written in.</param>
 /// <param name="resourcesPath">The folder the embedded files sit under, as dotted segments, or empty when they sit beside the types they translate.</param>
 /// <param name="host">The folder the host keeps its own translation files in.</param>
-internal sealed class JsonResourceCache(string resourcesPath, HostLocaleSource host)
+internal sealed class JsonResourceCache(ILocaleFileFormat format, string resourcesPath, HostLocaleSource host)
 {
+    private readonly ILocaleFileFormat _format = format;
     private readonly string _resourcesPath = resourcesPath;
     private readonly HostLocaleSource _host = host;
     private readonly ConcurrentDictionary<Assembly, EmbeddedLocaleSource> _embedded = new();
@@ -23,7 +27,7 @@ internal sealed class JsonResourceCache(string resourcesPath, HostLocaleSource h
     {
         var (assembly, _, typeName) = key.Location;
         var assemblyName = assembly.GetName().Name ?? string.Empty;
-        var embedded = _embedded.GetOrAdd(assembly, static (owner, resourcesPath) => new EmbeddedLocaleSource(owner, resourcesPath), _resourcesPath);
+        var embedded = _embedded.GetOrAdd(assembly, static (owner, cache) => new EmbeddedLocaleSource(owner, cache._resourcesPath, cache._format), this);
 
         var entries = new Dictionary<string, string?>(StringComparer.Ordinal);
         foreach (var (name, translation) in embedded.Read(assemblyName, typeName, key.CultureName).Concat(_host.Read(assemblyName, typeName, key.CultureName)))

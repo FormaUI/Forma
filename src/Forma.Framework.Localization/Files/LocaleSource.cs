@@ -1,11 +1,15 @@
-namespace Forma.Framework.Localization.Json;
+namespace Forma.Framework.Localization.Files;
 
 using System.Collections.Concurrent;
 
 /// <summary>Where translation files are read from, walked from the file named for the assembly down to the file named for the type, each file read once.</summary>
-internal abstract class LocaleSource
+/// <param name="format">The format the files are written in.</param>
+public abstract class LocaleSource(ILocaleFileFormat format)
 {
     private readonly ConcurrentDictionary<string, LocaleFile?> _files = new(StringComparer.Ordinal);
+
+    /// <summary>The format the files are written in.</summary>
+    protected ILocaleFileFormat Format { get; } = format ?? throw new ArgumentNullException(nameof(format));
 
     /// <summary>Whether a file may complete a type's name from a root it declares rather than from the assembly's name.</summary>
     protected abstract bool ReadsDeclaredRoots { get; }
@@ -16,6 +20,10 @@ internal abstract class LocaleSource
     /// <param name="cultureName">The culture the files are named for.</param>
     public IReadOnlyList<KeyValuePair<string, string?>> Read(string assemblyName, string typeName, string cultureName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(assemblyName);
+        ArgumentException.ThrowIfNullOrEmpty(typeName);
+        ArgumentException.ThrowIfNullOrEmpty(cultureName);
+
         var entries = new List<KeyValuePair<string, string?>>();
 
         var segments = typeName.Split('.');
@@ -46,12 +54,12 @@ internal abstract class LocaleSource
     protected abstract IReadOnlyList<string> GetLeadingSegments(string assemblyName, bool rootedAtAssembly);
 
     /// <summary>The name a file has in this source, named in anything thrown.</summary>
-    /// <param name="segments">The segments of the file's name, without the culture.</param>
+    /// <param name="segments">The segments of the file's name, without the culture and extension.</param>
     /// <param name="cultureName">The culture the file is named for.</param>
     protected abstract string GetName(IReadOnlyList<string> segments, string cultureName);
 
     /// <summary>Opens the file the segments name, or null when this source holds none.</summary>
-    /// <param name="segments">The segments of the file's name, without the culture.</param>
+    /// <param name="segments">The segments of the file's name, without the culture and extension.</param>
     /// <param name="cultureName">The culture the file is named for.</param>
     protected abstract Stream? Open(IReadOnlyList<string> segments, string cultureName);
 
@@ -78,15 +86,15 @@ internal abstract class LocaleSource
         var file = _files.GetOrAdd(name, _ => Open(segments, cultureName) is { } stream ? ReadFile(stream, name, cultureName) : null);
         if (file is not null && (!ReadsDeclaredRoots || (file.RootNamespace ?? assemblyName) == rootNamespace))
         {
-            file.Collect(remainingSegments, entries, name);
+            file.Collect(remainingSegments, entries);
         }
     }
 
-    private static LocaleFile ReadFile(Stream stream, string name, string cultureName)
+    private LocaleFile ReadFile(Stream stream, string name, string cultureName)
     {
         using (stream)
         {
-            return LocaleFile.Read(stream, name, cultureName);
+            return Format.Read(stream, name, cultureName);
         }
     }
 }

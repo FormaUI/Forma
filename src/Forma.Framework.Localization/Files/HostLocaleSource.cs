@@ -1,10 +1,11 @@
-namespace Forma.Framework.Localization.Json;
+namespace Forma.Framework.Localization.Files;
 
 /// <summary>The folder a host keeps its own translation files in, laid out by assembly and type.</summary>
 /// <param name="path">The folder's full path, or empty when the host keeps no such folder.</param>
-internal sealed class HostLocaleSource(string path) : LocaleSource
+/// <param name="format">The format the files are written in.</param>
+public sealed class HostLocaleSource(string path, ILocaleFileFormat format) : LocaleSource(format)
 {
-    private readonly string _path = path;
+    private readonly string _path = path ?? throw new ArgumentNullException(nameof(path));
 
     /// <inheritdoc />
     protected override bool ReadsDeclaredRoots => true;
@@ -15,7 +16,7 @@ internal sealed class HostLocaleSource(string path) : LocaleSource
 
     /// <inheritdoc />
     protected override string GetName(IReadOnlyList<string> segments, string cultureName)
-        => Path.Combine([_path, .. segments.Take(segments.Count - 1), $"{segments[^1]}.{cultureName}.json"]);
+        => Path.Combine([_path, .. segments.Take(segments.Count - 1), $"{segments[^1]}.{cultureName}{Format.Extension}"]);
 
     /// <inheritdoc />
     protected override Stream? Open(IReadOnlyList<string> segments, string cultureName)

@@ -1,23 +1,11 @@
-namespace Forma.Framework.Localization.Json;
-
-using Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Files;
 
 using Forma.Framework.Localization.Parser;
 using Forma.Framework.Localization.Parser.Syntax;
 
 /// <summary>Reads and checks the entry every localization file carries to declare what it is.</summary>
-internal static class LocalizationMetadata
+public static class LocalizationMetadata
 {
-    /// <summary>Removes the entry from a file's translations, having checked the file may be read at all.</summary>
-    /// <param name="entries">The translations as read, including the metadata entry.</param>
-    /// <param name="fileName">The file being read, named in anything thrown.</param>
-    /// <param name="expectedCulture">The culture the file's own name gives it.</param>
-    public static void Consume(Dictionary<string, string?> entries, string fileName, string expectedCulture)
-    {
-        entries.Remove(LocalizationSchema.Marker, out var value);
-        Read(value, fileName, expectedCulture);
-    }
-
     /// <summary>Reads what the entry declares, having checked that its value, or its absence, lets the file be read at all.</summary>
     /// <param name="value">The entry's value, or null when the file carries none.</param>
     /// <param name="fileName">The file being read, named in anything thrown.</param>

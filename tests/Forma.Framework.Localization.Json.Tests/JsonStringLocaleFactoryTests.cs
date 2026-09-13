@@ -11,7 +11,7 @@ public sealed class JsonStringLocaleFactoryTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocaleFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" });
+        var factory = new JsonStringLocaleFactory(new LocalizationOptions { ResourcesPath = "Resources" });
 
         // Act
         var localized = factory.Create(typeof(PathScoped))["Save"];
@@ -25,7 +25,7 @@ public sealed class JsonStringLocaleFactoryTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocaleFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" });
+        var factory = new JsonStringLocaleFactory(new LocalizationOptions { ResourcesPath = "Resources" });
 
         // Act
         var localized = factory.Create(typeof(Colocated))["Today"];
@@ -121,7 +121,7 @@ public sealed class JsonStringLocaleFactoryTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" }));
+        services.AddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(new LocalizationOptions { ResourcesPath = "Resources" }));
 
         // Act
         using var provider = services.AddJsonLocalization().BuildServiceProvider();

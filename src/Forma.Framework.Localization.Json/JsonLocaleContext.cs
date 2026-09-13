@@ -14,4 +14,4 @@ internal sealed record JsonLocaleContext(
     JsonResourceCache Cache,
     CultureInfo SourceCulture,
     PluralExpressionEvaluator PluralEvaluator,
-    JsonLocalizationOptions Options);
+    LocalizationOptions Options);

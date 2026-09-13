@@ -4,10 +4,10 @@ using System.Text.Json;
 
 using Forma.Framework.Localization.Json.Tests.Fixtures;
 
-public sealed class HostLocaleSourceTests
+public sealed class HostFilesTests
 {
-    private static IStringLocale CreateLocale<T>(JsonLocalizationOptions? options = null)
-        => new JsonStringLocaleFactory(options ?? new JsonLocalizationOptions()).Create(typeof(T));
+    private static IStringLocale CreateLocale<T>(LocalizationOptions? options = null)
+        => new JsonStringLocaleFactory(options ?? new LocalizationOptions()).Create(typeof(T));
 
     public sealed class Precedence
     {
@@ -105,7 +105,7 @@ public sealed class HostLocaleSourceTests
         {
             // Arrange
             using var culture = new CultureScope("he");
-            var strings = CreateLocale<PathScoped>(new JsonLocalizationOptions { ResourcesPath = "Resources" });
+            var strings = CreateLocale<PathScoped>(new LocalizationOptions { ResourcesPath = "Resources" });
 
             // Act
             var localized = strings["Open"];
@@ -270,7 +270,7 @@ public sealed class HostLocaleSourceTests
         {
             // Arrange
             using var culture = new CultureScope("he");
-            var strings = CreateLocale<HostOverridden>(new JsonLocalizationOptions { LocalesPath = string.Empty });
+            var strings = CreateLocale<HostOverridden>(new LocalizationOptions { LocalesPath = string.Empty });
 
             // Act
             var localized = strings["Delete"];
@@ -284,7 +284,7 @@ public sealed class HostLocaleSourceTests
         {
             // Arrange
             using var culture = new CultureScope("he");
-            var strings = CreateLocale<HostOverridden>(new JsonLocalizationOptions { LocalesPath = "nowhere" });
+            var strings = CreateLocale<HostOverridden>(new LocalizationOptions { LocalesPath = "nowhere" });
 
             // Act
             var localized = strings["Delete"];

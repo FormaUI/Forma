@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Json;
+namespace Forma.Framework.Localization.Files;
 
 /// <summary>The shape of the entry every localization file carries to declare what it is.</summary>
 public static class LocalizationSchema

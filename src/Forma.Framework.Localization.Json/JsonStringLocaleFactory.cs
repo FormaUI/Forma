@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Reflection;
 
 using Forma.Framework.Localization;
+using Forma.Framework.Localization.Files;
 using Forma.Framework.Localization.Language;
 
 using Microsoft.Extensions.Logging;
@@ -19,18 +20,18 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 
     /// <summary>Creates a factory reading files that sit beside the types they translate.</summary>
     public JsonStringLocaleFactory()
-        : this(new JsonLocalizationOptions())
+        : this(new LocalizationOptions())
     {
     }
 
     /// <summary>Creates a factory configured by the given options, discarding what its locales would log.</summary>
-    public JsonStringLocaleFactory(JsonLocalizationOptions options)
+    public JsonStringLocaleFactory(LocalizationOptions options)
         : this(options, NullLoggerFactory.Instance)
     {
     }
 
     /// <summary>Creates a factory configured by the given options, logging through the given factory.</summary>
-    public JsonStringLocaleFactory(JsonLocalizationOptions options, ILoggerFactory loggerFactory)
+    public JsonStringLocaleFactory(LocalizationOptions options, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
@@ -43,8 +44,10 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
             throw new ArgumentException($"'{options.SourceLanguage}' names no language.", nameof(options));
         }
 
+        var format = new JsonLocaleFileFormat();
+
         _context = new JsonLocaleContext(
-            new JsonResourceCache(NormalizePath(options.ResourcesPath), new HostLocaleSource(GetLocalesPath(options.LocalesPath))),
+            new JsonResourceCache(format, NormalizePath(options.ResourcesPath), new HostLocaleSource(GetLocalesPath(options.LocalesPath), format)),
             sourceCulture,
             new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>()),
             options);
