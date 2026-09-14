@@ -188,7 +188,7 @@ inside, so a press there toggles rather than dismisses:
         <ul role="listbox">
             @foreach (var member in _members)
             {
-                <li role="option" aria-selected="@(member == _members[_index])">@member</li>
+                <li role="option" aria-selected="@(member == _members[_index] ? "true" : "false")">@member</li>
             }
         </ul>
     }
