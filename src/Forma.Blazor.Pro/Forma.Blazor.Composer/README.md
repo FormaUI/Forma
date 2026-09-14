@@ -1,14 +1,240 @@
 # Forma.Blazor.Composer
 
-`FormaComposer`, the authoring surface for the **Forma** component library, hosting rich text,
-Markdown and code, every capability arriving as a plugin. Built on `Forma.Blazor` and speaking
-its namespaces, so a host that already renders the library adds this package and nothing else
-changes: the same `AddFormaUI()` registers what it needs, the same
-`@using Forma.Blazor.Components.Composer` line reaches it, and the same translation layout
-localizes it.
+`FormaComposer`, the authoring surface of the **Forma** component library and part of Forma Pro: a
+rich text editor with the toolbar, dialogs, views and file handling an article or a page body
+needs, assembled from plugins a host picks. It binds a `ComposerDocument` — the content together
+with the format it is written in — and holds every HTML document to a markup policy on the way in
+and on the way out. Built on `Forma.Blazor` and speaking its namespaces, so a host that already
+renders the library adds this package and the same `AddFormaUI()` registers what it needs.
 
 **.NET 11 · Interactive Server components.**
 
-Its file-picker dialog composes `FormaExplorer`, so this package depends on
-`Forma.Blazor.Explorer` in turn. The contract the composer speaks, `Forma.Framework.Composer`,
-ships inside this package; a plugin is written against it.
+## Install and register
+
+```pwsh
+dotnet add package 2Site.Forma.Blazor.Pro.Composer
+```
+
+The package depends on `2Site.Forma.Blazor`, the library it is built on, and on
+`2Site.Forma.Blazor.Pro.Explorer`, because its stored-files dialog composes `FormaExplorer`; both
+restore beside it. The composer's own contracts and its browser script ship inside the package.
+
+```csharp
+using Forma.Blazor;
+
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+builder.Services.AddFormaUI();
+```
+
+`AddFormaUI()` registers everything the composer needs from the library, including the HTML
+sanitizer, each only where the host registered nothing for it. Reach the components with
+`@using Forma.Blazor.Components.Composer`, the editor with `.RichTextEditor`, its plugins with
+`.RichTextEditor.Plugins`, its views with `.RichTextEditor.Views`, and the plugins that apply to any
+editor with `.Plugins`. `ComposerDocument` and its format live in
+`Forma.Framework.Composer.Documents`.
+
+Hebrew and Spanish translations ship with the component and resolve through the library's
+localization, so a host that calls `AddJsonLocalization()` localizes the composer with the rest.
+
+## What a host supplies
+
+**The document.** `FormaComposer` is a Forma input over `ComposerDocument`, bound with
+`@bind-Value` inside an `EditForm` or on its own. A `ComposerDocument` carries its `Format`, its
+`Content` and the `Attachments` held beside the content. The formats the package ships an editor
+for are `ComposerDocumentFormat.Html`, which the rich text editor authors, and
+`ComposerDocumentFormat.PlainText`. A document in HTML is sanitized when it is bound and every time
+it changes, so what the host reads back is what the sanitizer allowed; a host persisting the
+document still sanitizes on the server, because nothing the browser sends can be trusted by the
+endpoint receiving it.
+
+**The plugins.** Every editor and every capability is a plugin. A host passes them through the
+`Plugins` parameter, registers them as `IComposerPlugin` in dependency injection, or both; the
+composer takes the union. With no editor among them the composer falls back to plain text. The
+rich text plugins are built against the `RichTextEditorPlugin` instance they serve, and
+`ComposerPluginDiscovery.Discover` builds every feature and view plugin the package ships against
+the editors given, for a host that wants all of them.
+
+**Stores and providers, all optional.**
+
+| Registration | What it enables |
+| --- | --- |
+| `IExplorerItemsProvider` (`Forma.Framework.Explorer.Content.Queries`) | Browsing the host's stored files from `ExplorerPlugin`; without it the dialog offers no browsing. |
+| `IFileStore` (`Forma.Framework.Resources`) | Uploading into the library from that dialog, and attaching files from the author's device through `FileUploadPlugin`; without it neither offers upload. |
+| `IComposerDocumentConverter` (`Forma.Framework.Composer.Documents`) | Switching between editors whose formats differ; a switch with no converter registered for the pair is refused, and so is one whose converter reports what it could not carry across. |
+| `IHtmlSanitizer` or `IMarkupPolicy` (`Forma.Framework.Sanitization`) | Replacing the sanitizer, or only its rules, by registering before `AddFormaUI()`; the library's own is the default. |
+
+[`Forma.Framework.Resources`](../../Forma.Framework/Forma.Framework.Resources/README.md) documents
+the store, [`Forma.Blazor.Explorer`](../Forma.Blazor.Explorer/README.md) the items provider, and
+[`Forma.Framework.Sanitization`](../../Forma.Framework/Forma.Framework.Sanitization/README.md) the
+sanitizer and its policy.
+
+## Features
+
+### The composer and its presets
+
+| Component | What it is |
+| --- | --- |
+| `FormaComposer` | The engine: whichever editors are given, each with its own toolbar, an editor switcher when there is more than one, the views the active editor offers, the attachments list and the status strip. |
+| `FormaStandardRichTextEditor` | Rich text with paragraph formats, typography, basic formatting, lists, alignment and direction, links, images, tables and horizontal rules. |
+| `FormaCompactRichTextEditor` | Rich text with typography, basic formatting, alignment and direction, and links, for a blurb or a ticker. |
+
+All three bind a `ComposerDocument`, take `Disabled`, `ReadOnly` and `Options`, and accept `Id`,
+`Class` and `Style`. The two presets are `FormaComposer` with a fixed plugin set and always author
+HTML. A read-only composer shows no toolbar.
+
+`ComposerOptions` settles what the host fixes for an instance: `ShowToolbar`,
+`ShowEditorSwitcher`, `DefaultEditorId` for the editor that opens when the document's format
+alone does not decide it, `IsResizable` for the grip that drags the composer taller, and
+`HistoryCapacity` for the undo stack. `ActiveEditorId` with `ActiveEditorIdChanged` binds which
+editor is active, and `SwitchEditorAsync` switches it from code.
+
+### Editors
+
+| Plugin | Format | What it authors |
+| --- | --- | --- |
+| `RichTextEditorPlugin` | `Html` | A visual canvas, host to every plugin below, the selection bar and the two views. |
+| `PlainTextEditorPlugin` | `PlainText` | A text area; the editor the composer falls back to when none is given. |
+
+Switching editor is itself an undoable step, so a conversion the author dislikes is one undo away.
+
+### Rich text plugins
+
+Each is constructed with the `RichTextEditorPlugin` it contributes to; the ones with an options
+record take it as a second argument and default to the record's `Default`.
+
+| Plugin | Contributes | Options |
+| --- | --- | --- |
+| `BasicFormattingPlugin` | Bold, italic, underline, strikethrough, inline code, subscript, superscript, clear formatting | |
+| `ParagraphFormatPlugin` | Paragraph, headings 1–6, blockquote, lead paragraph | |
+| `TypographyPlugin` | Font family, font size, line height, text color, highlight color | `TypographyPluginOptions`: the families, sizes, line heights and colors offered, and whether a size is written in `rem` or points |
+| `ListPlugin` | Bulleted and numbered lists, indent, outdent | |
+| `AlignmentBidiPlugin` | Alignment and paragraph direction | |
+| `LinkPlugin` | Links and anchors, added, retargeted and removed; double-clicking one reopens its dialog | |
+| `ImagePlugin` | An image by address, with alt text and caption; double-clicking one reopens its dialog | |
+| `ExplorerPlugin` | The host's stored files, browsed and inserted — a picture, video or audio file embedded, linked or both, any other file linked | `ExplorerPluginOptions`: `AcceptedResourceKinds` and `AcceptedUploadKinds` as `globs:*.jpg;*.pdf` or `contentType:image;video`, `AllowUpload`, and the `MediaInsertMode` |
+| `VideoPlugin` | A video placeholder carrying the address, title and autoplay; double-clicking one reopens its dialog | |
+| `TablePlugin` | A table of a chosen size, with rows and columns added and removed, a header row toggled, and the table deleted | `TablePluginOptions`: default and maximum rows and columns, and whether a header row is included |
+| `HorizontalRulePlugin` | A thematic break | |
+| `EmojiPlugin` | An emoji picker | `EmojiPluginOptions`: the picker's `EmojiPickerOptions` |
+| `SpecialCharacterPlugin` | A palette of typographic and mathematical symbols | `SpecialCharacterPluginOptions`: the characters offered |
+| `ClipboardPlugin` | Paste as plain text, paste from Word, select all | |
+| `TemplatePlugin` | Document templates inserted at the caret or replacing the document | `TemplatePluginOptions`: the `ComposerTemplate` list, and `ReplaceContent` |
+| `EmbedPlugin` | A declarative embed placeholder the host resolves; double-clicking one reopens its dialog | |
+
+Pasted markup passes through the same sanitizer as typed content.
+
+The video and embed plugins write placeholders rather than the thing itself, because the
+sanitizer discards an `iframe` and a `script`. A video lands as
+`<div class="forma-composer-video" data-video-url="…" data-video-title="…" data-autoplay="true">`
+around a link to the address, and an embed as
+`<div class="forma-composer-embed" data-embed-type="…" data-embed-id="…" data-settings="…">`. A
+host rendering the document to readers replaces each with the player, form or widget it stands
+for; left alone, the video placeholder still shows its link.
+
+### Plugins for any editor
+
+| Plugin | Contributes |
+| --- | --- |
+| `MaximizePlugin` | A toggle filling the viewport with the composer. |
+| `SelectionBarPlugin` | A toggle showing or hiding the formatting bar that follows a selection; its handle drags the bar to where the author wants it. |
+| `FileUploadPlugin` | Attaching files uploaded from the author's device beside the document, in `ComposerDocument.Attachments`; `FileUploadPluginOptions.Picker` is the `FilePickerOptions` deciding which files are accepted. |
+
+Attachments are listed beneath the canvas whichever editor is active, each removable from there.
+
+### Views
+
+A view is a read-only surface over the active editor's document, reached from the trailing tabs
+of the editor switcher. The rich text editor offers two, each constructed with the editor:
+
+| Plugin | Shows |
+| --- | --- |
+| `RichTextPreviewViewPlugin` | The document as a reader will see it, at the width on offer, on an A3, A4, A5, Letter or Legal sheet, or at the width of a phone, tablet or desktop, turned to landscape or zoomed; printed, or exported as an HTML file. |
+| `RichTextSourceViewPlugin` | The document's HTML one block per numbered line, wrapped or not; copied to the clipboard, or downloaded. |
+
+### Rendering the document to readers
+
+The look of an authored document — headings, quotes, code, lists, tables, figures, links — lives in
+the library's `forma-prose.css`, which `FormaPageHead` links. A host renders a document to its
+readers inside an element carrying the `forma-prose` class, so the page reads as the canvas and
+the preview did.
+
+### Extending it
+
+A host adds a capability the same way the package's own arrive: a class implementing
+`IComposerFeaturePlugin` contributes toolbar items, key bindings and commands to the editors it
+names, and one implementing `IComposerEditorPlugin` contributes a whole editor with a canvas of its
+own. `IComposerDocumentConverter` carries a document between two formats, and a format is a
+value a host mints with `new ComposerDocumentFormat("…")`, so a converter and an editor for a
+format the package never named take nothing more.
+
+## Example
+
+A page authoring an article body in rich text, with stored pictures, a table, a preview and
+attachments:
+
+```razor
+@using Forma.Blazor.Components.Composer
+@using Forma.Blazor.Components.Composer.Plugins
+@using Forma.Blazor.Components.Composer.RichTextEditor
+@using Forma.Blazor.Components.Composer.RichTextEditor.Plugins
+@using Forma.Blazor.Components.Composer.RichTextEditor.Views
+@using Forma.Framework.Composer.Documents
+@using Forma.Framework.Composer.Plugins
+
+<FormaComposer @bind-Value="_body" Plugins="_plugins" />
+
+@code {
+    private ComposerDocument _body = new(ComposerDocumentFormat.Html, "<p>Draft.</p>");
+    private IReadOnlyList<IComposerPlugin> _plugins = [];
+
+    protected override void OnInitialized()
+    {
+        var richText = new RichTextEditorPlugin();
+
+        _plugins =
+        [
+            richText,
+            new ParagraphFormatPlugin(richText),
+            new BasicFormattingPlugin(richText),
+            new ListPlugin(richText),
+            new LinkPlugin(richText),
+            new ImagePlugin(richText),
+            new ExplorerPlugin(richText, new ExplorerPluginOptions
+            {
+                AcceptedResourceKinds = "contentType:image",
+                InsertMode = MediaInsertMode.Embed,
+            }),
+            new TablePlugin(richText, new TablePluginOptions { MaxRows = 12 }),
+            new RichTextPreviewViewPlugin(richText),
+            new FileUploadPlugin(),
+            new MaximizePlugin(),
+        ];
+    }
+}
+```
+
+The registrations that page relies on, beside `AddFormaUI()`: the stored files the explorer
+plugin browses, and the store the uploads land in.
+
+```csharp
+using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Resources;
+
+builder.Services.AddScoped<IExplorerItemsProvider, MediaLibrary>();
+builder.Services.AddScoped<IFileStore, UploadFolderStore>();
+```
+
+A short blurb needs none of that:
+
+```razor
+<FormaCompactRichTextEditor @bind-Value="_summary" />
+```
+
+## License
+
+`FormaComposer` is part of Forma Pro, licensed under the
+[Forma Pro Community License](../LICENSE.md) rather than the MIT license the rest of the library
+carries. It is free for individuals and for organizations within the license's eligibility, and a
+commercial license covers organizations beyond it; [`COMMERCIAL.md`](../COMMERCIAL.md) says what
+that covers and how to obtain one.
