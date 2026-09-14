@@ -4,8 +4,8 @@
 sandbox/
 scratch/
 spikes/
-**/Forma.UI.Blazor.Showcase/Sandbox/Assets/
-**/Forma.UI.Blazor.Showcase/Sandbox/Upload/
+**/Forma.Blazor.Showcase/Sandbox/Assets/
+**/Forma.Blazor.Showcase/Sandbox/Upload/
 appsettings.*.json
 .autocontext.json
 !/.autocontext.json
