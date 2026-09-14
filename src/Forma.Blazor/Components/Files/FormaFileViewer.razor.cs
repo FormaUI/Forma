@@ -5,7 +5,6 @@ using System.Globalization;
 using Forma.Blazor.Models;
 using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
-using Forma.Framework.Files;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Extensions;
 
