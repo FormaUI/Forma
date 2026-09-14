@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readSelection, take, writeSelection } from '#common/operations/Text.js';
+import { readSelection, take, writeSelection } from '#common/operations/TextEntry.js';
 
-describe('Text', () => {
+describe('TextEntry', () => {
     /** @type {HTMLInputElement} */
     let input;
 

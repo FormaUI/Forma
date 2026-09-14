@@ -32,7 +32,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
 
     private ElementReference _editorElement;
     private DotNetObjectReference<FormaRichTextEditor>? _selfReference;
-    private RichTextCanvas _canvas = default!;
+    private RichTextEditor _canvas = default!;
     private InputScope? _inputScope;
     private string? _committedContent;
     private string _blockAnnouncement = string.Empty;
@@ -59,7 +59,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _canvas = new RichTextCanvas(Context.JS);
+        _canvas = new RichTextEditor(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
 
         _editorPlugin = Editor as RichTextEditorPlugin

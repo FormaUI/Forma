@@ -5,10 +5,10 @@ import { defineConfig } from 'vitest/config';
 const resolved = path => decodeURIComponent(new URL(path, import.meta.url).pathname);
 
 const scripts = {
-    core: resolved('../../src/Forma.Framework.Core.Interop/wwwroot/scripts/'),
-    common: resolved('../../src/Forma.Framework.Common.Interop/wwwroot/scripts/'),
-    composer: resolved('../../src/Forma.Framework.Composer.Interop/wwwroot/scripts/'),
-    input: resolved('../../src/Forma.Framework.Input.Interop/wwwroot/scripts/'),
+    core: resolved('../../src/Forma.Framework/Forma.Framework.Core.Interop/wwwroot/scripts/'),
+    common: resolved('../../src/Forma.Framework/Forma.Framework.Common.Interop/wwwroot/scripts/'),
+    composer: resolved('../../src/Forma.Framework/Forma.Framework.Composer.Interop/wwwroot/scripts/'),
+    input: resolved('../../src/Forma.Framework/Forma.Framework.Input.Interop/wwwroot/scripts/'),
 };
 
 // One alias per assembly that ships scripts, each pointing at that assembly's scripts root. The

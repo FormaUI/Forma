@@ -66,7 +66,7 @@ root, a service's script beside the wrapper that owns it.
 - Do give a family of pure helpers a named class with static members rather than loose exports, so a caller imports the concept, not stray functions.
 - Do name a behavior for what the target can do while it is attached: `DropZone`, `DragGesture`, `Focus`, `Scroll`, `Breakpoint`, `AnchoredPopover`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
-- Do name an operation module for the browser concern it serves: `Text.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
+- Do name an operation module for the browser concern it serves: `TextEntry.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
 - Do lift a capability another component could want out into a behavior or an operation in the common interop assembly, however it arrived; a component script is for what only its own component wants.
 - Do compose behaviors in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
 - Do leave a behavior no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
@@ -102,7 +102,7 @@ export function capture(element, pointerId) {
 
 - Do export plain named functions, because an operation holds nothing and hands back no handle.
 - Do name an export for the action and let the module supply the subject, so `Pointer.js` exports `capture` rather than `capturePointer`.
-- Do qualify an export where its module covers more than one thing, so `Text.js` exports `take` beside `readSelection` and `writeSelection`.
+- Do qualify an export where its module covers more than one thing, so `TextEntry.js` exports `take` beside `readSelection` and `writeSelection`.
 - Don't reach for a class, private fields, an `AbortController`, or a `dispose`; needing any of them means a behavior has been filed as an operation.
 
 ## Component contract

@@ -59,7 +59,7 @@ and calls through `TryInvoke*`, so a dropped circuit leaves the call absent rath
 | `Pointer.js` | `Pointer` | Routes a pointer to one element for the rest of its gesture, and releases it. |
 | `Print.js` | `Print` | Prints the page as it stands, or markup by itself dressed in the page's stylesheets. |
 | `Share.js` | `Share` | Whether the platform offers a share surface, and offering a subject to it. |
-| `Text.js` | `TextEntry` | Reads and clears a text entry's value, and reads or writes its selected range. |
+| `TextEntry.js` | `TextEntry` | Reads and clears a text entry's value, and reads or writes its selected range. |
 
 ## Components
 

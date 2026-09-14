@@ -79,7 +79,7 @@ The composer is one assembly, `Forma.Framework.Composer`, carrying its contracts
 
 Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract and the allowlist implementation sit together in `Forma.Framework.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
 
-The rich text canvas's script module and its `RichTextCanvas` wrapper live in `Forma.Framework.Composer.Interop`, the one composer assembly that compiles against ASP.NET Core, so the contracts stay free of it.
+The rich text canvas's script module and its `RichTextEditor` wrapper live in `Forma.Framework.Composer.Interop`, the one composer assembly that compiles against ASP.NET Core, so the contracts stay free of it.
 
 **The composer project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to the assemblies that genuinely compile against ASP.NET Core — the components, the interop wrappers and the test support — so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
 
@@ -209,7 +209,7 @@ Two values are cascaded to every plugin component. `ComposerContext` is an immut
 
 ### 3.6 Where the editing surface actually lives
 
-The rich text editor's script module, in the interop assembly and reached through `RichTextCanvas`, owns the `contenteditable` surface and the browser selection. C# receives changes **debounced, and on blur** — never per keystroke. Under Interactive Server every keystroke would otherwise be a SignalR round-trip, and an article body over a mobile connection is exactly the case that has to feel local. Commands travel the other way as explicit calls into the module; the document in C# is the source of truth for persistence, the DOM is the source of truth for the caret. The selection report is deduplicated rather than debounced: the canvas reports a selection once per distinct snapshot — on click, on key-up and on `selectionchange` — so a keystroke that leaves the caret where it was costs no round-trip. The plain text editor, over a `<textarea>`, coalesces keystroke-driven caret movement on the same debounce as its content commit.
+The rich text editor's script module, in the interop assembly and reached through `RichTextEditor`, owns the `contenteditable` surface and the browser selection. C# receives changes **debounced, and on blur** — never per keystroke. Under Interactive Server every keystroke would otherwise be a SignalR round-trip, and an article body over a mobile connection is exactly the case that has to feel local. Commands travel the other way as explicit calls into the module; the document in C# is the source of truth for persistence, the DOM is the source of truth for the caret. The selection report is deduplicated rather than debounced: the canvas reports a selection once per distinct snapshot — on click, on key-up and on `selectionchange` — so a keystroke that leaves the caret where it was costs no round-trip. The plain text editor, over a `<textarea>`, coalesces keystroke-driven caret movement on the same debounce as its content commit.
 
 ### 3.7 What the host binds
 

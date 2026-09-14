@@ -36,7 +36,7 @@ under `RichTextEditor/`, each one class taking its collaborators in the construc
 
 ## The wrapper
 
-`RichTextCanvas` derives from `JSInterop` and owns the module.
+`RichTextEditor` derives from `JSInterop` and owns the module.
 
 | Member | What it does |
 | --- | --- |
@@ -47,7 +47,7 @@ under `RichTextEditor/`, each one class taking its collaborators in the construc
 | `BeginLinkDialogAsync(isAnchor)` | Freezes the selection a link dialog will act on and reports, as a `RichTextLinkTargetDto`, the text it covers and the one address behind it. |
 | `ExecuteCommandAsync(command, value)` | Runs a formatting command on the selection and reports, as a `RichTextCommandResult`, the content and the `RichTextSelectionDto` that resulted. |
 
-The editor component constructs the wrapper from its `Context.JS`, `new RichTextCanvas(Context.JS)`,
+The editor component constructs the wrapper from its `Context.JS`, `new RichTextEditor(Context.JS)`,
 and disposes it from its `DisposeAsyncCore`.
 
 ## License

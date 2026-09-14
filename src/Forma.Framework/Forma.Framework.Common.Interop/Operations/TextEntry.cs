@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 /// <summary>The value and selected range of a text entry.</summary>
 public sealed class TextEntry(IJSEnvironment js) : IAsyncDisposable
 {
-    private readonly JSModule _module = new(js, "./_content/forma/common/scripts/operations/Text.js");
+    private readonly JSModule _module = new(js, "./_content/forma/common/scripts/operations/TextEntry.js");
 
     /// <summary>Reads what is currently typed and empties the entry.</summary>
     public ValueTask<string?> ReadAndClearAsync(ElementReference input)
