@@ -312,4 +312,87 @@
                 .AddChildContent("Content")));
         }
     }
+
+    public sealed class SelectionById
+    {
+        [Fact]
+        public void Should_activate_the_tab_the_caller_named()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs ActiveTabId="second">
+                    <FormaTab TabId="first" Title="First">Content 1</FormaTab>
+                    <FormaTab TabId="second" Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var active = cut.FindAll(".forma-tab-button.active");
+            Assert.Single(active);
+            Assert.Contains("Second", active[0].TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task Should_report_the_identifier_the_caller_gave_the_tab()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            string? reported = null;
+            var cut = ctx.Render(
+                @<FormaTabs ActiveTabId="first" ActiveTabIdChanged="id => reported = id">
+                    <FormaTab TabId="first" Title="First">Content 1</FormaTab>
+                    <FormaTab TabId="second" Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Act
+            await cut.FindAll(".forma-tab-button")[1].ClickAsync(new());
+
+            // Assert
+            Assert.Equal("second", reported);
+        }
+
+        [Fact]
+        public void Should_reject_a_tab_with_no_identifier_when_the_caller_selects_by_one()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaTabs ActiveTabId="first">
+                    <FormaTab TabId="first" Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>));
+        }
+
+        [Fact]
+        public void Should_reject_a_tab_with_no_identifier_when_the_caller_only_observes()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaTabs ActiveTabIdChanged="_ => { }">
+                    <FormaTab Title="First">Content 1</FormaTab>
+                </FormaTabs>));
+        }
+
+        [Fact]
+        public void Should_reject_a_registered_tab_with_no_identifier_once_the_caller_starts_selecting()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                </FormaTabs>);
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(
+                () => cut.FindComponent<FormaTabs>().Render(parameters => parameters.Add(p => p.ActiveTabId, "first")));
+        }
+    }
 }

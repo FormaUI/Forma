@@ -16,7 +16,7 @@ public sealed partial class FormaTab : FormaElementBase
     /// <summary>A glyph shown before the title.</summary>
     [Parameter] public Icon? Icon { get; set; }
 
-    /// <summary>The identifier a controlled parent selects this tab by. A generated one stands in while this is unset.</summary>
+    /// <summary>The identifier a controlled parent selects this tab by, required once the parent selects by identifier. A generated one stands in otherwise.</summary>
     [Parameter] public string? TabId { get; set; }
 
     /// <summary>Whether the tab's header sits at the far end of the strip, after every leading tab.</summary>
