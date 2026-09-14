@@ -4,11 +4,14 @@ import { defineConfig } from 'vitest/config';
 // arrives percent-encoded, so the URL is decoded rather than converted by fileURLToPath.
 const resolved = path => decodeURIComponent(new URL(path, import.meta.url).pathname);
 
+// The scripts root of the interop assembly named for a concept, under the Framework family folder.
+const getInteropScriptsPath = name => resolved(`../../src/Forma.Framework/Forma.Framework.${name}.Interop/wwwroot/scripts/`);
+
 const scripts = {
-    core: resolved('../../src/Forma.Framework/Forma.Framework.Core.Interop/wwwroot/scripts/'),
-    common: resolved('../../src/Forma.Framework/Forma.Framework.Common.Interop/wwwroot/scripts/'),
-    composer: resolved('../../src/Forma.Framework/Forma.Framework.Composer.Interop/wwwroot/scripts/'),
-    input: resolved('../../src/Forma.Framework/Forma.Framework.Input.Interop/wwwroot/scripts/'),
+    core: getInteropScriptsPath('Core'),
+    common: getInteropScriptsPath('Common'),
+    composer: getInteropScriptsPath('Composer'),
+    input: getInteropScriptsPath('Input'),
 };
 
 // One alias per assembly that ships scripts, each pointing at that assembly's scripts root. The
