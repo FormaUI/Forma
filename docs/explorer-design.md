@@ -6,6 +6,9 @@
 items and folders, the two ways data arrives, the two options records and the constraints,
 item state and capabilities, and the view and interaction contracts the parts read.
 
+Sharing, tagging, search past an item's name, and bulk edit are later additions rather than
+non-goals: each is a surface the explorer is expected to grow, and none is designed here.
+
 ## Purpose
 
 A file manager for what is already on the server, in the shape of a resource explorer: a
@@ -98,6 +101,12 @@ each group. Where the header has no room for the search box, the search stands a
 until pressed; at a phone's width the header collapses to the breadcrumb, the search glyph
 and one menu holding navigation, actions, view mode, sorting and grouping, and below a
 tablet's width the sidebar stacks above the content.
+
+Three surfaces stay on `FormaExplorer` rather than on the region they appear over, because
+each is reached from more than one of them: the preview lightbox, which activation, the
+action menu and `FormaFileViewer`'s sibling stepping all drive through the explorer; the
+confirmation modals, since one rename dialog serves items and folders alike; and the upload
+panel, whose completion re-reads the provider window and raises `OnUploaded`.
 
 The details view keeps every column it is configured with, its headers sorting, its name
 column resized by dragging the frozen edge, and lets its pane scroll sideways when they do

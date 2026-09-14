@@ -37,3 +37,9 @@ mistakes it avoids.
 - **The handles are touch targets.** 44×44 under a coarse pointer around a rectangle whose
   corners may sit at the image's edge, with press-and-hold to start a drag so an ordinary
   swipe still scrolls.
+
+## Open decisions
+
+- **Does straightening by an arbitrary angle join the 90° steps?** It forces canvas
+  resampling and a bounds recalculation that quarter-turns avoid entirely, so it is a
+  different order of work than the rotation already in scope.

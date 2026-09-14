@@ -1,6 +1,6 @@
 # Forma Repository Structure
 
-Forma is a reusable Blazor component library: .NET 11, C# latest, a Razor Class Library rendered Interactive Server, JS-free by default. This document describes the repository as a codebase: what the solution is made of, where things live, what it derives from, who consumes it, and how it is built and verified. The working rules in `CLAUDE.md` refer to it by role. Each area with a technical design should have two documents beside this one: `{area}-design.md`, the design alone, and `{area}-implementation-plan.md`, the steps and what has landed; some areas carry the design alone.
+Forma is a reusable Blazor component library: .NET 11, C# latest, a Razor Class Library rendered Interactive Server, JS-free by default. This document describes the repository as a codebase: what the solution is made of, where things live, what it derives from, who consumes it, and how it is built and verified. The working rules in `CLAUDE.md` refer to it by role. An area with a technical design takes two documents beside this one while it is being built: `{area}-design.md`, the design alone, and `{area}-implementation-plan.md`, the steps and what has landed. The plan is retired once every step has landed and nothing is open, so a finished area carries its design alone.
 
 ## Solution structure
 

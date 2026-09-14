@@ -51,3 +51,12 @@ so a reader learns each once and no page draws its own.
   sorting offers a choice rather than performing one action. A grid that already has
   sortable column headers keeps using them, since two controls over one sort state is a
   synchronization problem with no upside.
+
+## Open decisions
+
+- **Does `FormaDeleteButton` pin the danger variant?** Right for a lone destructive button,
+  and loud repeated down every row of a grid. The alternative leaves it ghost like the rest
+  of the set and puts the emphasis on the confirm step instead.
+- **Is `FormaViewButton` a toggle or a two-option segmented control?** A toggle draws the
+  mode it switches to; a segmented control shows both modes at once and marks the active
+  one. Which reads better is guesswork until the managers that use it exist.

@@ -80,3 +80,9 @@ compete.
   network whose share needs an instance the reader chooses, or an app with no public web
   share endpoint, is reachable only through the native hand-off, where the platform lists
   it itself.
+- **Several platforms a reader would look for offer nothing to reach.** Instagram
+  publishes only through Meta's Graph API and only for professional accounts, so it would
+  be an account destination shaped like TikTok's and waits on a host with a reviewed app
+  to test it against. TikTok's share kit and Discord's share dialog are absent for want of
+  a web share link for content, which is why each ships here by publish-by-pull and by
+  webhook instead. Skype is retired and its share endpoint redirects to Teams.

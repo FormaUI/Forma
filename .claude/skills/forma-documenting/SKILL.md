@@ -41,13 +41,14 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 
 ## Design documents
 
-A design document states a design: the concepts, their names, how they relate, and the rules a change to that area must keep. It is read before changing the area, which is why the repository's working rules point at it. Beside it stands the area's implementation plan, a second document that holds everything about carrying the design out: the steps and their gates, what landed at each, where it departed from the design, and what is still open.
+A design document states a design: the concepts, their names, how they relate, and the rules a change to that area must keep. It is read before changing the area, which is why the repository's working rules point at it. While the area is being built, the implementation plan stands beside it, a second document holding everything about carrying the design out: the steps and their gates, what landed at each, where it departed from the design, and what is still open. A design outlives its plan, so a finished area carries the design alone.
 
 - Do write the design as it is meant to be, in prose, with a code sketch only where the shape itself is the design.
 - Do define a term of art where it is introduced, and in the repository's shared vocabulary when the whole codebase will speak it.
 - Do change a design document when the design changes, and leave it alone when code lands that follows it.
 - Do record progress in the implementation plan: a step that landed, a departure from the design and why, a survey the plan rested on, what remains.
 - Do start both documents together when an area is designed, and split a document that mixes the two along that line.
+- Do retire a plan once every step has landed and nothing is open, moving any reasoning it holds alone into the design first, since what a finished plan records is the code and the history.
 - Don't record the state of the code in a design document: no status paragraph, no "built" markers, no list of what departed from a sketch and why, no commit references.
 - Don't carry technical detail that belongs in the code and its summaries — signatures, member lists, file names, test names, counts.
 - Don't restate the design in the implementation plan; the plan refers to the design's sections and says what was done about them.

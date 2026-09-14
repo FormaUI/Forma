@@ -332,4 +332,9 @@ cannot tell an ordinary step to the parent from a missing expected file.
   failure; the gap this design closes is on the .NET side.
 - Retiring `IStringLocale<T>`. It stays for services and hosts.
 - A root object, `Root.Class` and `Root.Style`, and the splatted attribute dictionary it
-  would own. Possible, and deferred until the splat's precedence rules are written.
+  would own. With the class and style built through the two builders, such an object holds
+  two strings and no rule of its own, and `RootElement` stays outside it either way, since
+  forwarders override it and `@ref` binds it. It is worth having only alongside the splat,
+  which is where a precedence rule would live: the renderer lets a later attribute win and
+  omits a null one, so the splat would work, but it turns the attribute-order rule into a
+  precedence rule that has to be written down first, and that is its own change.

@@ -24,8 +24,8 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do use [docs/repository-vocabulary.md](docs/repository-vocabulary.md) for the words the library uses for its concepts, and use them the same way in code, tokens, documents and the Showcase.
 - Do use [docs/component-catalog.md](docs/component-catalog.md) for the components that exist, and [docs/component-roadmap.md](docs/component-roadmap.md) for the components still to build and the order they are built in.
 - Do use [README.md](README.md) for host consumption: install, service registration, stylesheets, and localization from the consumer's side.
-- Do read the design document for an area before changing it, `docs/{area}-design.md`, and the implementation plan beside it, `docs/{area}-implementation-plan.md`, which records the steps and what has landed; a catalog or roadmap entry names the design its component belongs to.
-- Do give an area that needs a technical design two documents in `docs/`, `{area}-design.md` for the design alone and `{area}-implementation-plan.md` for the steps, their state and what departed from the design; treat the design as authoritative for the area, and keep the catalog entry to a name and one line.
+- Do read the design document for an area before changing it, `docs/{area}-design.md`, and the implementation plan beside it, `docs/{area}-implementation-plan.md`, where one still stands, which records the steps and what has landed; a catalog or roadmap entry names the design its component belongs to.
+- Do give an area that needs a technical design two documents in `docs/`, `{area}-design.md` for the design alone and `{area}-implementation-plan.md` for the steps, their state and what departed from the design until they are all done; treat the design as authoritative for the area, and keep the catalog entry to a name and one line.
 - Do read `.editorconfig` before writing C#; it is the authority on style.
 - Don't invent scope, status, packaging, or style rules when an authoritative file defines them.
 
