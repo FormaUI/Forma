@@ -66,16 +66,22 @@ Two Coi behaviors are deliberately **not** reproduced as-authored:
 
 ## 2. Assembly layout
 
-The composer is one assembly, `Forma.Framework.Composer`, carrying its contracts and the engine that implements them. The components cannot render a composer without that engine, so splitting the two would only add a reference to get wrong. A capability resting on an external dependency is the exception, and ships as a satellite package a host adds deliberately.
+The composer is two assemblies, split along what an outside package needs. `Forma.Framework.Composer.Abstractions` carries the contracts a plugin author compiles against; `Forma.Framework.Composer` carries the engine that implements them. A capability resting on an external dependency is a third case, and ships as a satellite package a host adds deliberately.
+
+The split exists because a plugin may live outside the composer's own package, as the explorer's does. Whatever such a package extends has to be a package in its own right, or both would carry a copy of the same assembly and a host installing both would get two. Publishing the engine alongside the contracts would put the catalog, the command registry, the key-binding catalog and the history into public API for callers who never touch them, so only the contracts go.
 
 | Project | Namespace | References |
 |---|---|---|
-| `Forma.Framework.Composer` | `Forma.Framework.Composer` | `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
+| `Forma.Framework.Composer.Abstractions` | `Forma.Framework.Composer` | `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
+| `Forma.Framework.Composer` | `Forma.Framework.Composer` | the abstractions, `Forma.Framework.Icons`, `Forma.Framework.Toolbar` |
 | `Forma.Framework.Composer.Interop` | `Forma.Framework.Composer.Interop` | `Forma.Framework.Core.Interop` + ASP.NET Core |
-| `Forma.AddOns.Composer.Markdown` | `Forma.Framework.Composer.Markdown` | the composer + Markdig |
-| `Forma.AddOns.Composer.TextMate` | `Forma.Framework.Composer.TextMate` | the composer + TextMateSharp |
-| `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the composer + KaTeX browser assets |
-| `Forma.Blazor` | `Forma.Blazor.Components.Composer` | adds `Forma.Framework.Composer`, `Forma.Framework.Composer.Interop` and `Forma.Framework.Sanitization` |
+| `Forma.AddOns.Composer.Markdown` | `Forma.Framework.Composer.Markdown` | the abstractions + Markdig |
+| `Forma.AddOns.Composer.TextMate` | `Forma.Framework.Composer.TextMate` | the abstractions + TextMateSharp |
+| `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the abstractions + KaTeX browser assets |
+| `Forma.Blazor.Composer` | `Forma.Blazor.Components.Composer` | the engine, the interop assembly and `Forma.Framework.Sanitization` |
+| `Forma.Blazor.Explorer` | `Forma.Blazor.Components.Explorer` | the abstractions, for the stored-files plugin it contributes |
+
+Both assemblies share the namespace `Forma.Framework.Composer`, because the split is a packaging boundary rather than a second concept: a host moving a type across it should not have to change a `using`.
 
 Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract and the allowlist implementation sit together in `Forma.Framework.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
 
@@ -85,7 +91,7 @@ The rich text canvas's script module and its `RichTextEditor` wrapper live in `F
 
 **Every public type the composer owns carries the prefix** — `IComposer*` for contracts, `Composer*` for types. The namespace would disambiguate on its own, but a host sees these names in its DI registrations and its `using` list, where `ComposerDocumentFormat` cannot be mistaken for a framework type. The prefix is the convention for this assembly rather than a special case for the one collision that prompted it. It stops at the assembly boundary: a contract that is not the composer's own, such as `IHtmlSanitizer`, is named for what it does.
 
-The composer ships inside the components' own package, because a host installing the library gets a working composer. Each satellite is packable in its own right, so a host takes only the capabilities it wants.
+The engine ships inside the components' own package, because a host installing the composer gets a working one. The abstractions are packable in their own right, since packages outside that one extend them, and so is each satellite, so a host takes only the capabilities it wants.
 
 ---
 
@@ -118,12 +124,7 @@ public interface IComposerPlugin : IComposerKeyBindingSource
         => ValueTask.CompletedTask;
 }
 
-public interface IComposerFeaturePlugin : IComposerPlugin
-{
-    IReadOnlyList<string> SupportedEditorIds => [];
-
-    bool AppliesToViews => false;
-}
+public interface IComposerFeaturePlugin : IComposerPlugin;
 
 public interface IComposerEditorPlugin : IComposerPlugin
 {
@@ -134,12 +135,13 @@ public interface IComposerEditorPlugin : IComposerPlugin
     ComposerDocumentFormat Format { get; }
 
     Type EditorComponent { get; }
+
+    ValueTask<bool> TryInsertAsync(ComposerInsertion insertion, CancellationToken cancellationToken = default)
+        => ValueTask.FromResult(false);
 }
 
 public interface IComposerViewPlugin : IComposerPlugin
 {
-    string EditorId { get; }
-
     string Kind { get; }
 
     string Title { get; }
@@ -149,11 +151,39 @@ public interface IComposerViewPlugin : IComposerPlugin
 }
 ```
 
-Key bindings come through `IComposerKeyBindingSource`, which every plugin is and which the engine's own `ComposerKeyBindingSource.Default` also implements, so one `ComposerKeyBindingCatalog` merges them all, the earliest source winning a contested command. A feature plugin scopes itself to editors through `SupportedEditorIds`, empty meaning every editor, and joins a view's bar only when it says `AppliesToViews`.
+Key bindings come through `IComposerKeyBindingSource`, which every plugin is and which the engine's own `ComposerKeyBindingSource.Default` also implements, so one `ComposerKeyBindingCatalog` merges them all, the earliest source winning a contested command. **No plugin declares where it applies**; §3.1a's registration tree says that, so a plugin shipped by another package never has to name an editor whose type it cannot reference.
 
-A **view** has the shape of an editor — its own component, rows, items and assets, maximizable like any surface — but shows one editor's document read-only rather than editing it. Each editor opts into whichever views it offers by shipping a view plugin naming it, and feature plugins contribute to a view's rows exactly as they do to an editor's; the layout for a view takes the built-in row and the rows the view declared, from the view itself and from feature plugins that say `AppliesToViews`, and nothing else — so neither an editor's formatting nor a command acting on the document, such as attaching a file, lands on its preview. The switcher lists the active editor's views as trailing tabs after the editors, and those tabs are the only way in: a view is its own surface, not a toolbar toggle. A plugin reports which of its own toggles and options are active through `ActiveStates`, which is how a view's paper size and zoom show in its bar without going through the selection.
+A **view** has the shape of an editor — its own component, rows, items and assets, maximizable like any surface — but shows one editor's document read-only rather than editing it. An editor offers a view by registering it as a child, and a feature registered under that view contributes to its rows exactly as one registered under an editor contributes to the editor's; the layout for a view takes the built-in row, the rows the view declared, and what is registered under the view or at the composer root, and nothing else — so neither an editor's formatting nor a command acting on the document, such as attaching a file, lands on its preview. The switcher lists the active editor's views as trailing tabs after the editors, and those tabs are the only way in: a view is its own surface, not a toolbar toggle. A plugin reports which of its own toggles and options are active through `ActiveStates`, which is how a view's paper size and zoom show in its bar without going through the selection.
 
 `Title` is the **English source string**, not a resolved translation, so the composer renders it as `L[Title]`. A plugin never resolves a localizer of its own — a singleton that did would capture whichever culture constructed it and show the wrong language to every other reader.
+
+### 3.1a Composing a composer
+
+A host describes a composer with a builder. The description is immutable once built, and every `FormaComposer` activates it into a set of plugins it owns alone, because an editor plugin holds events its editor component subscribes to and two composers sharing one would each answer the other's commands.
+
+```csharp
+services.AddFormaComposer(composer => composer
+    .AddRichTextEditor(editor => editor
+        .TryAddDefaultFeatures()
+        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRows = 12)
+        .AddFeaturePlugin<ExplorerPlugin, ExplorerPluginOptions>(options => options.AcceptedResourceKinds = "contentType:image")
+        .AddViewPlugin<RichTextPreviewViewPlugin>())
+    .TryAddDefaultPlugins());
+```
+
+**Where a registration sits is the scope it applies to.** The composer root spans every editor and every view; under an editor is that editor's surface; under a view is that view's bar. This replaces the three properties that declared the same thing — a feature's supported editors, whether it joined view bars, and the editor a view belonged to — and it puts the decision where the knowledge is, since the host knows what it installed and a plugin from another package cannot.
+
+**Role comes from the method**, `AddEditorPlugin`, `AddFeaturePlugin` and `AddViewPlugin`, each constraining its type parameter, so a miscategorized plugin is a compile error rather than a surprise in the catalog. `AddRichTextEditor` and its siblings are sugar over `AddEditorPlugin<T>`.
+
+**No call depends on the order it was written in.** Defaults and anything else resolved against the whole tree are recorded and applied when the definition is built, so `TryAddDefaultFeatures` means "whatever this scope has not registered itself" however early it appears. Each builder carries only its own defaults method, so attaching one to the wrong scope does not compile.
+
+**A registration is a type, its options type and a delegate to configure them** — never a constructed instance, which would be shared. An implementation declares the options it takes through `IConfigurable<TOptions>`, so a registration naming the wrong pair does not compile. Each activation creates its own options, and options are settable rather than `init`-only, which is what a configure delegate and binding from configuration both need.
+
+Activation resolves each constructor parameter in order: a plugin in this composer's own set, the registration's options, the host's service provider, the parameter's default. Anything else is an `InvalidOperationException` naming the plugin, the parameter and what could have supplied it. The composer disposes what it built and nothing resolved from the host.
+
+An identifier is unique within its owner rather than across the composer, so two editors may each own a link plugin. Command dispatch is therefore rebuilt from the scope in play — root, active editor, active view — whenever the active editor or view changes.
+
+There is **no assembly scanning**. Scanning cannot decide scope, since the property that would have told it is the one the tree replaced, so every scan would be the host asserting a placement nothing checked. Naming a type from a package costs a host no more than naming its assembly did, and the set a scan was really wanted for — an editor's own standard features — is what `TryAddDefaultFeatures` supplies.
 
 ### 3.2 One plugin model for every kind of dependency
 
@@ -202,10 +232,44 @@ These are not plugins, because a plugin can be absent and these cannot:
 | Asset loading | `IComposerAssetLoader` | §3.2. |
 | Clipboard | `IHtmlSanitizer` | Pasted markup reaches the document through the same sanitized commit as typed content; paste from Word cleans the markup before it is inserted. |
 | Syntax highlighting | `IComposerSyntaxHighlighter` | §7. |
+| Dialogs and insertion | `ComposerInsertionRequest`, `IComposerInsertionDialog`, `ComposerInsertion` | §3.4a. |
+
+### 3.4a Dialogs and insertion
+
+A plugin that collects something from the author asks the engine for a dialog and supplies only its body; the engine owns the shell. Every composer dialog collects something to put into the document, so the contract says insertion rather than claiming to host any dialog at all.
+
+```csharp
+public sealed record ComposerInsertionRequest
+{
+    public required Type Body { get; init; }
+    public required string Title { get; init; }
+    public IReadOnlyDictionary<string, object?> Parameters { get; init; } = ReadOnlyDictionary<string, object?>.Empty;
+    public ComposerDialogSize Size { get; init; } = ComposerDialogSize.Medium;
+}
+
+public interface IComposerInsertionDialog
+{
+    IReadOnlyList<string> Messages { get; }
+
+    ValueTask<ComposerInsertion?> TryConfirmAsync(CancellationToken cancellationToken = default);
+}
+
+public abstract record ComposerInsertion;
+
+public sealed record ResourceInsertion(string Source, string Name, string Kind, bool Embed, bool Link) : ComposerInsertion;
+```
+
+The engine hosts `Body` in a `<DynamicComponent>` inside its own shell, which owns the title, the notice, the message list and the confirm and cancel controls, so every dialog looks the same however it arrived. The title is resolved through the **body's** type rather than the composer's, so a plugin's own translation file supplies it. A `Body` that does not implement the interface is rejected where the request is made rather than ignored at confirm time.
+
+Confirming asks the body for an insertion and hands it to the active editor through `IComposerEditorPlugin.TryInsertAsync`, which answers false when it takes none of that kind. **That bool is the compatibility check.** A plugin registered under an editor that cannot take what it produces needs no capability contract to declare the mismatch: the dialog reports it and stays open, which is also what a read-only or disabled composer does.
+
+Two members on `IComposerInteraction` carry it: `OpenDialogAsync(ComposerInsertionRequest)` and `TryInsertAsync(ComposerInsertion)`.
 
 ### 3.5 Shared state
 
-Two values are cascaded to every plugin component. `ComposerContext` is an immutable record — the active editor plugin id, the document, the selection, the chrome state (disabled, read-only, maximized, selection bar shown), the key map, and the live engine services above — rebuilt whenever any of it changes, so a changed context is also the re-render signal. `IComposerInteraction`, implemented by the composer itself, carries the operations a plugin invokes: changing the document, reporting a selection, running a command, requesting a render. Neither carries Blazor types, so both live in the composer assembly with everything else.
+Two values are cascaded to every plugin component. `ComposerContext` is an immutable record — the active editor and the view over it if one is showing, the document, the selection, the chrome state (disabled, read-only, maximized, selection bar shown), the key map, and the live engine services above — rebuilt whenever any of it changes, so a changed context is also the re-render signal.
+
+The surface is carried as the plugins themselves rather than their identifiers, because a plugin holds no catalog to resolve an identifier against, and it is carried as two values because an editor showing a read-only view of its document is a different surface from the editor itself — which a plugin registered at the composer root has to tell apart to know whether a command that edits belongs there. A host still binds `FormaComposer.ActiveEditorId` as an identifier: it chooses a surface before the composer has constructed any plugin, and an identifier is what a host can store and restore. `IComposerInteraction`, implemented by the composer itself, carries the operations a plugin invokes: changing the document, reporting a selection, running a command, requesting a render. Neither carries Blazor types, so both live in the composer assembly with everything else.
 
 ### 3.6 Where the editing surface actually lives
 
@@ -448,7 +512,7 @@ Clipboard note: browsers do not grant programmatic cut/copy/paste without user a
 
 ### 4.3a Engine-agnostic plugins
 
-`MaximizePlugin`, `SelectionBarPlugin` and `FileUploadPlugin` are not rich text features: full-viewport editing, the choice of whether a formatting bar follows the selection, and attaching files beside the document are useful to any editor, so all three declare `SupportedEditorIds` empty and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones.
+`MaximizePlugin`, `SelectionBarPlugin` and `FileUploadPlugin` are not rich text features: full-viewport editing, the choice of whether a formatting bar follows the selection, and attaching files beside the document are useful to any editor, so all three are registered at the composer root and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones, and being at the root is what keeps them present when the author switches editors and stops a second editor from bringing a second copy.
 
 | Plugin | Covers | Coi origin |
 |---|---|---|
@@ -605,7 +669,9 @@ These are correctness requirements for every Forma component, and the composer i
 
 Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are real namespace segments.
 
-**The composer project is foldered by concern rather than flat** — assets, documents, editing, plugins, syntax, widgets — with a contract and the engine's implementation of it side by side under the same folder, so an implementation sits under the same name as the contract it satisfies, and the test tree mirrors it.
+**The composer projects are foldered by concern rather than flat** — assets, documents, editing, plugins, syntax, widgets — and the two assemblies use the same folder names, so a contract in the abstractions and the engine's implementation of it sit under the same folder name in their own projects and the test tree mirrors both.
+
+**A plugin that another package contributes lives with that package**, in a folder named for what it extends, so the explorer's composer plugin and its dialog body sit under `Composer/` in `Forma.Blazor.Explorer` with that package's own strings beside them.
 
 **Localization follows `FormaExplorer`:** every component under `Composer/`, including those in sub-namespaces, resolves its strings through the localizer of the component it serves, named by `LocalizationSourceType` — `FormaComposer` for the engine, its bars, its dialogs and the editor canvases, `FormaRichTextEditor` for the rich text selection bar and views — each with its own `.he.json` / `.es.json` pair beside the component named. Resources resolve by the localizer's **type** rather than by file location, so this works — and a pair beside a component that names another as its source would silently fall back to English keys instead. This is the failure mode that has to be re-verified whenever a file moves.
 
@@ -627,3 +693,8 @@ Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are re
 | C10 | How does an editor choose between the shared toolbar row and one of its own? | By the row each item names through `ComposerToolbarItem.RowId` (§3.8). Both editors and external plugins declare rows through `Rows`, so there is one mechanism rather than a separate registration path per category. |
 | C11 | Are gutter markers and status readouts pushed or pulled? | Pushed, through a handle the plugin mutates and disposes. Toolbar items stay static lists. This matches VS Code's `createStatusBarItem` and decoration types, and the dispose pattern its API reference states as the general rule (§3.8). |
 | C12 | Where do the common editing operations live? | In the engine, as `ComposerText` returning `ComposerEdit` (§3.4). Word-at-caret, selected text, range replacement, per-line mapping and replace-all are needed by every editor and every plugin that touches text; leaving them out means each one reimplements them against raw strings. |
+| C13 | Why do the contracts split from the engine (§2)? | Because a plugin may ship from another package, and what such a package extends has to be a package itself or both carry a copy of it. Only the contracts go: publishing the catalog, the command registry and the history would make engine internals public API for callers who never touch them. |
+| C14 | What decides which editors and views a plugin applies to (§3.1a)? | Where the host registers it. A plugin from another package cannot name an editor whose type it cannot reference, and the host is the only party that knows what it installed. This retires a feature's supported-editor list, its view opt-in, and the editor id a view carried. |
+| C15 | May the composer scan assemblies for plugins? | No. Scanning cannot decide scope once the registration tree is what declares it, so every scan would assert a placement nothing checked. Naming a plugin costs a host no more than naming its assembly, and an editor's standard set comes from its own defaults instead. |
+| C16 | How does a plugin from another package open a dialog and put something into the document? | It supplies a body and the engine supplies the shell (§3.4a), and the result travels as a `ComposerInsertion` handed to the active editor. The editor answering false is the whole compatibility check, so no capability contract is needed to describe what an editor accepts. |
+| C17 | Does a plugin instance belong to the host or to the composer? | To the composer. Registration records a type and its configuration; each composer builds, owns and disposes its own set, because an editor plugin carries events its component subscribes to and a shared one would answer another composer's commands. |
