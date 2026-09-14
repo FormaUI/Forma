@@ -5,7 +5,7 @@
 > pattern to a Blazor component using **only** built-in Blazor components, native HTML elements,
 > and browser APIs — no external JS libraries.
 >
-> Target location: `Forma.Blazor/Components/`
+> Target location: `Forma.Blazor/Components/`, or `Forma.Blazor.Pro/Components/` for a component the Pro tier sells
 >
 > **Naming convention:** All components use the `Forma` prefix for their tag names (e.g., `<FormaDialog>`,
 > `<FormaTabs>`) to avoid clashes with third-party libraries. CSS classes use the `forma-` prefix.
@@ -34,12 +34,8 @@ Forma.Blazor/Components/
 ├── (2 / 2) Collections/
 │   ├── ✅ FormaDataGrid
 │   └── ✅ FormaSortableList
-├── (0 / 1) Composer/
-│   └── ◐ FormaComposer
 ├── (1 / 1) Debugging/InputInspector/
 │   └── ✅ FormaInputInspector
-├── (1 / 1) Explorer/
-│   └── ✅ FormaExplorer
 ├── (6 / 6) Feedback/
 │   ├── ✅ FormaConfirmDialog
 │   ├── ✅ FormaDialog
@@ -97,6 +93,12 @@ Forma.Blazor/Components/
 └── (2 / 2) Windows/
     ├── ✅ FormaRestArea
     └── ✅ FormaWindow
+
+Forma.Blazor.Pro/Components/
+├── (0 / 1) Composer/
+│   └── ◐ FormaComposer
+└── (1 / 1) Explorer/
+    └── ✅ FormaExplorer
 ```
 
 ## Components

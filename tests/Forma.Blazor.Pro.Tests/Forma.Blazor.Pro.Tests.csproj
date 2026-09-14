@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Forma.Blazor.Pro.Tests</RootNamespace>
+        <NoWarn>CA1707</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AngleSharp" Version="1.5.0" />
+        <PackageReference Include="bunit" Version="2.6.2" />
+        <PackageReference Include="xunit.v3" Version="3.0.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Blazor.Pro\Forma.Blazor.Pro.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Common.Interop\Forma.Framework.Common.Interop.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Files\Forma.Framework.Files.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Media\Forma.Framework.Media.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Timing\Forma.Framework.Timing.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
+        <ProjectReference Include="..\..\src\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\..\src\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Share\Forma.Framework.Share.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
+    </ItemGroup>
+
+</Project>

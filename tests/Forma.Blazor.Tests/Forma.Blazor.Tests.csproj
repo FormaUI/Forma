@@ -25,8 +25,6 @@
         <ProjectReference Include="..\..\src\Forma.Framework.Files\Forma.Framework.Files.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Media\Forma.Framework.Media.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Css\Forma.Framework.Css.csproj" />
@@ -39,6 +37,7 @@
         <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     </ItemGroup>

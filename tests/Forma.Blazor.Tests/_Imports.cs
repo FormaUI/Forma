@@ -10,6 +10,7 @@ global using Forma.Framework.Localization;
 global using Forma.Framework.Localization.Json;
 global using Forma.Framework.Media;
 global using Forma.Framework.Resources;
+global using Forma.Tests.Blazor;
 
 global using Microsoft.AspNetCore.Components;
 global using Microsoft.AspNetCore.Components.Forms;

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Forma.Tests.Blazor</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AngleSharp" Version="1.5.0" />
+        <PackageReference Include="bunit" Version="2.6.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\src\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components;
 
 /// <summary>The parameters a component takes from its host, each applied again only when the host changes it.</summary>
-internal sealed class ParameterStateTracker
+public sealed class ParameterStateTracker
 {
     private readonly List<Action> _applications = [];
 

@@ -28,13 +28,16 @@
     <Project Path="src\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
     <Project Path="src\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
     <Project Path="src\Forma.Blazor\Forma.Blazor.csproj" />
+    <Project Path="src\Forma.Blazor.Pro\Forma.Blazor.Pro.csproj" />
     <Project Path="src\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
     <Project Path="src\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
     <Project Path="src\Forma.Blazor.Showcase\Forma.Blazor.Showcase.csproj" />
 
     <!-- Tests -->
     <Project Path="tests\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+    <Project Path="tests\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
     <Project Path="tests\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
+    <Project Path="tests\Forma.Blazor.Pro.Tests\Forma.Blazor.Pro.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Windows.Tests\Forma.Framework.Windows.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Timing.Tests\Forma.Framework.Timing.Tests.csproj" />

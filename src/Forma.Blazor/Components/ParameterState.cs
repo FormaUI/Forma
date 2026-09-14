@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components;
 
 /// <summary>One parameter's value as last taken from the host, telling a change the host made from a render that repeats the same value.</summary>
-internal sealed class ParameterState<T>
+public sealed class ParameterState<T>
 {
     private T _taken = default!;
 

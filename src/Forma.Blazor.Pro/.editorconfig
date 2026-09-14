@@ -1,0 +1,8 @@
+[*.cs]
+# ------------------------------------------------------------
+# Diagnostics that do not apply to Blazor component code
+# ------------------------------------------------------------
+
+# Disable CA2007 - ConfigureAwait(false) escapes Blazor's synchronization context, after
+# which touching component state requires ComponentBase.InvokeAsync to marshal back.
+dotnet_diagnostic.CA2007.severity = none

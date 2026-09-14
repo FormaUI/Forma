@@ -21,6 +21,7 @@ Every production assembly has exactly one test project named after it, and is ne
 - Do assert exact text when a component can render more than one message through the same element or class, such as an empty-list notice versus a no-search-matches notice; finding the element only confirms *a* message rendered, not which one.
 - Do put a service's tests beside the category that owns it, because the test path mirrors where the production type lives.
 - Do put every test fake, fixture, and utility in the shared support project, in a folder mirroring the production area it serves, and put what no single area owns in `Shared/`.
+- Do put what needs bUnit or the components assembly, such as the shared bUnit context, in the bUnit support project beside it, which only the component test projects reference, so a Framework test never restores bUnit or the product.
 - Do drive an interop wrapper in a test through `FakeJSRuntime` and `FakeJSObjectReference` from the support project's interop folder, wrapped in a `JSEnvironment` over a `FakeLoggerFactory` logger, so the test reads what the wrapper returned and what it logged.
 - Do let the namespace follow the support folder, and reference the support project from each test project that uses one.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.

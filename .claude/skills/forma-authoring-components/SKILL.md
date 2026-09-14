@@ -11,6 +11,7 @@ A component lives in the components assembly under a category, where a category 
 
 - Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
 - Do give a component a category of its own, as an explorer or an editor has, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.
+- Do keep a component that ships in the Pro assembly under the same `Components/{Category}/` layout and the same namespace there, since that assembly borrows the components assembly's root namespace the way an AddOn borrows the one it extends; nothing in the components assembly may reference it.
 - Do place supporting types such as a size enum or an item record beside the component that owns them.
 - Do put a supporting type in the feature assembly instead once the concern has one, because a type a host names in a callback or an options parameter is the feature's vocabulary rather than one component's detail; what stays beside the component is what no caller ever names, such as a stream wrapper driving a progress bar.
 - Do put script a component needs in the `wwwroot/scripts/` of the interop assembly that ships it, never beside the component.
