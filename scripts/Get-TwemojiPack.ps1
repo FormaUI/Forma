@@ -1,8 +1,8 @@
 param([switch] $Format)
 $ErrorActionPreference = 'Stop'
 
-# Regenerates the emoji catalogue and its SVG sprite from the Unicode emoji test data,
-# the CLDR English annotations, and the Twemoji artwork. The catalogue is written compact;
+# Regenerates the emoji catalog and its SVG sprite from the Unicode emoji test data,
+# the CLDR English annotations, and the Twemoji artwork. The catalog is written compact;
 # -Format writes it indented for reading.
 
 $emojiVersion = '15.1'
@@ -141,19 +141,19 @@ if ($missing.Count -gt 0) {
 }
 
 $utf8 = New-Object System.Text.UTF8Encoding $false
-$catalogueFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.AddOns' 'Forma.AddOns.Emojis.Twemoji' '_assets'
+$catalogFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.AddOns' 'Forma.AddOns.Emojis.Twemoji' '_assets'
 $spriteFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.AddOns' 'Forma.AddOns.Emojis.Twemoji' 'wwwroot' 'assets'
 
-foreach ($folder in @($catalogueFolder, $spriteFolder)) {
+foreach ($folder in @($catalogFolder, $spriteFolder)) {
     if (-not (Test-Path -LiteralPath $folder)) {
         New-Item -ItemType Directory -Path $folder | Out-Null
     }
 }
 
-# One catalogue per category, and a sprite per chunk of it, so scrolling fetches only what it reaches.
+# One catalog per category, and a sprite per chunk of it, so scrolling fetches only what it reaches.
 $chunkSize = 60
 $spriteSizes = [ordered]@{}
-$catalogueSizes = [ordered]@{}
+$catalogSizes = [ordered]@{}
 $chunkCounts = [ordered]@{}
 
 foreach ($groupId in $groupIds.Values) {
@@ -185,16 +185,16 @@ foreach ($groupId in $groupIds.Values) {
         $spriteSizes[$groupId] += (Get-Item $spriteTarget).Length
     }
 
-    $catalogue = [PSCustomObject]@{
+    $catalog = [PSCustomObject]@{
         version   = $emojiVersion
         group     = $groupId
         chunkSize = $chunkSize
         emoji     = @($members | Select-Object -Property c, s, n, k)
     }
 
-    $catalogueTarget = Join-Path $catalogueFolder "$groupId.json"
-    [System.IO.File]::WriteAllText($catalogueTarget, ((($catalogue | ConvertTo-Json -Depth 5 -Compress:(-not $Format)) -replace "`r`n", "`n") + "`n"), $utf8)
-    $catalogueSizes[$groupId] = (Get-Item $catalogueTarget).Length
+    $catalogTarget = Join-Path $catalogFolder "$groupId.json"
+    [System.IO.File]::WriteAllText($catalogTarget, ((($catalog | ConvertTo-Json -Depth 5 -Compress:(-not $Format)) -replace "`r`n", "`n") + "`n"), $utf8)
+    $catalogSizes[$groupId] = (Get-Item $catalogTarget).Length
 }
 
 Write-Host ''
@@ -203,8 +203,8 @@ Write-Host ('{0,-11} {1,8} {2,8} {3,10} {4,10}' -f 'category', 'json', 'chunks',
 foreach ($groupId in $spriteSizes.Keys) {
     $chunks = $chunkCounts[$groupId]
     Write-Host ("  {0,-11} {1,5:N0} KB {2,8} {3,7:N0} KB {4,7:N0} KB" -f `
-            $groupId, ($catalogueSizes[$groupId] / 1KB), $chunks, ($spriteSizes[$groupId] / 1KB), ($spriteSizes[$groupId] / $chunks / 1KB))
+            $groupId, ($catalogSizes[$groupId] / 1KB), $chunks, ($spriteSizes[$groupId] / 1KB), ($spriteSizes[$groupId] / $chunks / 1KB))
 }
-Write-Host ("Catalogues in {0}" -f $catalogueFolder)
-Write-Host ("Artwork    in {0}" -f $spriteFolder)
+Write-Host ("Catalogs in {0}" -f $catalogFolder)
+Write-Host ("Artwork  in {0}" -f $spriteFolder)
 Write-Host ("Skipped {0} skin-tone variants." -f $skipped)
