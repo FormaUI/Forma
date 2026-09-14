@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Pro.Tests.Components.Explorer;
+namespace Forma.Blazor.Explorer.Tests;
 
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;

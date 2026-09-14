@@ -5,9 +5,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <!-- The components borrow the product's namespace, so their translations embed and resolve as the product's own do. -->
-        <RootNamespace>Forma.Blazor</RootNamespace>
-        <PackageId>2Site.Forma.Blazor.Pro</PackageId>
+        <!-- The component borrows the product's namespace, so its translations embed and resolve as the product's own do. -->
+        <RootNamespace>Forma.Blazor.Components.Explorer</RootNamespace>
+        <PackageId>2Site.Forma.Blazor.Pro.Explorer</PackageId>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectsInPackage</TargetsForTfmSpecificBuildOutput>
@@ -71,14 +71,12 @@
         <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
     </ItemGroup>
 
-    <!-- The two components' feature vocabularies and the composer's interop assembly, which ship inside this package. -->
+    <!-- The component's own feature vocabulary, which ships inside this package. -->
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" PrivateAssets="all" />
     </ItemGroup>
 
-    <!-- The Framework assemblies the components compile against, every one of which the product's package already ships or declares. -->
+    <!-- The Framework assemblies the component compiles against, every one of which the product's package already ships or declares. -->
     <ItemGroup>
         <ProjectReference Include="..\Forma.Framework.Files\Forma.Framework.Files.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" PrivateAssets="all" />
@@ -111,8 +109,8 @@
 
     <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
     <ItemGroup>
-        <EmbeddedResource Include="Components\**\*.json" WithCulture="false" />
-        <Content Remove="Components\**\*.json" />
+        <EmbeddedResource Include="**\*.json" WithCulture="false" />
+        <Content Remove="**\*.json" />
     </ItemGroup>
 
 </Project>

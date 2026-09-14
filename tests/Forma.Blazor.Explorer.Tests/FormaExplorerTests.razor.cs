@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Pro.Tests.Components.Explorer;
+namespace Forma.Blazor.Explorer.Tests;
 
 public sealed partial class FormaExplorerTests
 {

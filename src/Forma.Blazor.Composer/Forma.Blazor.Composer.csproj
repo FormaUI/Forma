@@ -1,0 +1,122 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <!-- The component borrows the product's namespace, so its translations embed and resolve as the product's own do. -->
+        <RootNamespace>Forma.Blazor.Components.Composer</RootNamespace>
+        <PackageId>2Site.Forma.Blazor.Pro.Composer</PackageId>
+        <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectsInPackage</TargetsForTfmSpecificBuildOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Update="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <!-- The product and the explorer, whose packages this one depends on, are the package dependencies. Every other referenced project is private: what a dependency's own package already ships is compiled against and left to it, and the rest ships inside this package, satellite assemblies included. -->
+    <!-- Resolving references searches for satellite assemblies only while building, which BuildOnlySettings declares. -->
+    <Target Name="IncludeBundledProjectsInPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+        <MSBuild Projects="@(_PackagedProject)" Targets="ResolveAssemblyReferences">
+            <Output TaskParameter="TargetOutputs" ItemName="_DependencyReference" />
+        </MSBuild>
+        <ItemGroup>
+            <_ReferencedProjectOutput Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'">
+                <Assembly>$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').Replace('.resources', ''))</Assembly>
+                <TargetPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</TargetPath>
+            </_ReferencedProjectOutput>
+        </ItemGroup>
+        <PropertyGroup>
+            <_ShippedByDependencies>;@(_DependencyReference->'%(Filename)', ';');</_ShippedByDependencies>
+            <_DeclaredAssemblies>;@(_DeclaredAssembly, ';');</_DeclaredAssemblies>
+        </PropertyGroup>
+        <ItemGroup>
+            <_OwnBundledAssembly Include="@(_PrivateAssembly)" Condition="!$(_ShippedByDependencies.Contains(';%(Identity);'))" />
+        </ItemGroup>
+        <PropertyGroup>
+            <_OwnBundledAssemblies>;@(_OwnBundledAssembly, ';');</_OwnBundledAssemblies>
+        </PropertyGroup>
+        <ItemGroup>
+            <BuildOutputInPackage Include="@(_ReferencedProjectOutput)" Condition="$(_OwnBundledAssemblies.Contains(';%(_ReferencedProjectOutput.Assembly);'))" />
+            <_UndeclaredProjectOutput Include="@(_ReferencedProjectOutput)" Condition="'%(_ReferencedProjectOutput.Extension)' == '.dll' and !$(_OwnBundledAssemblies.Contains(';%(_ReferencedProjectOutput.Assembly);')) and !$(_DeclaredAssemblies.Contains(';%(_ReferencedProjectOutput.Assembly);')) and !$(_ShippedByDependencies.Contains(';%(_ReferencedProjectOutput.Assembly);'))" />
+        </ItemGroup>
+        <Error Condition="'@(_UndeclaredProjectOutput)' != ''" Text="@(_UndeclaredProjectOutput->'%(Filename)', ', ') is reached through a referenced project but is neither bundled, declared as a dependency, nor shipped by one; reference it directly." />
+    </Target>
+
+    <!-- The static web assets of the assemblies this package bundles ship in it too, each under its own base path; what a dependency ships stays with it. -->
+    <Target Name="IncludeReferencedStaticWebAssetsInPackage" DependsOnTargets="IncludeBundledProjectsInPackage" BeforeTargets="GenerateStaticWebAssetsPackFiles">
+        <ItemGroup>
+            <_BundledStaticWebAsset Include="@(StaticWebAsset)" Condition="$(_OwnBundledAssemblies.Contains(';%(StaticWebAsset.SourceId);')) and '%(StaticWebAsset.AssetTraitName)' != 'Content-Encoding'" />
+            <StaticWebAsset Remove="@(_BundledStaticWebAsset)" />
+            <StaticWebAsset Include="@(_BundledStaticWebAsset)" SourceId="$(PackageId)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="RestoreReferencedStaticWebAssetsAfterPackage" AfterTargets="GenerateStaticWebAssetsPackFiles">
+        <ItemGroup>
+            <StaticWebAsset Remove="@(_BundledStaticWebAsset)" />
+            <StaticWebAsset Include="@(_BundledStaticWebAsset)" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <!-- The product and the explorer, whose file-picker dialog this component composes, so a host adding the composer also gets the explorer. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+    </ItemGroup>
+
+    <!-- The component's own feature vocabulary and interop assembly, which ship inside this package. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- The explorer's feature vocabulary, which this component's file-picker dialog speaks and the explorer's own package already ships. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- The Framework assemblies the component compiles against, every one of which the product's package already ships or declares. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Files\Forma.Framework.Files.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Media\Forma.Framework.Media.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Input\Forma.Framework.Input.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Core.Interop\Forma.Framework.Core.Interop.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Common.Interop\Forma.Framework.Common.Interop.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Share\Forma.Framework.Share.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Events\Forma.Framework.Events.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Timing\Forma.Framework.Timing.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Icons\Forma.Framework.Icons.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- The assemblies the references above declare as package dependencies or hold privately, read before the build adds the transitive references. -->
+    <ItemGroup>
+        <_PackagedProject Include="@(ProjectReference)" Exclude="@(ProjectReference->WithMetadataValue('PrivateAssets', 'all'))" />
+        <_DeclaredAssembly Include="@(_PackagedProject->'%(Filename)')" />
+        <_PrivateAssembly Include="@(ProjectReference->WithMetadataValue('PrivateAssets', 'all')->'%(Filename)')" />
+    </ItemGroup>
+
+    <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
+    <ItemGroup>
+        <EmbeddedResource Include="**\*.json" WithCulture="false" />
+        <Content Remove="**\*.json" />
+    </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Pro.Tests.Components.Composer.RichTextEditor.Plugins;
+namespace Forma.Blazor.Composer.Tests.RichTextEditor.Plugins;
 
 public sealed partial class FormaComposerEmojiButtonTests
 {

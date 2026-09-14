@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Pro.Tests.Components.Composer.RichTextEditor;
+namespace Forma.Blazor.Composer.Tests.RichTextEditor;
 
 using Forma.Blazor.Components.Composer.RichTextEditor;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;

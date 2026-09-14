@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Blazor.Pro.Tests</RootNamespace>
+        <RootNamespace>Forma.Blazor.Composer.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -19,11 +19,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Blazor.Pro\Forma.Blazor.Pro.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Input\Forma.Framework.Input.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Common.Interop\Forma.Framework.Common.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Files\Forma.Framework.Files.csproj" />

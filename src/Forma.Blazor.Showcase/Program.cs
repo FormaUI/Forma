@@ -87,6 +87,9 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<Forma.Blazor.Showcase.Components.App>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Forma.Blazor._Imports).Assembly, typeof(Forma.Blazor.Components._Imports).Assembly);
+    .AddAdditionalAssemblies(
+        typeof(Forma.Blazor._Imports).Assembly,
+        typeof(Forma.Blazor.Components.Explorer._Imports).Assembly,
+        typeof(Forma.Blazor.Components.Composer._Imports).Assembly);
 
 app.Run();

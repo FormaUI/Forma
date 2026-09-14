@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Pro.Tests.Components.Composer;
+namespace Forma.Blazor.Composer.Tests;
 
 public sealed partial class FormaComposerTests
 {

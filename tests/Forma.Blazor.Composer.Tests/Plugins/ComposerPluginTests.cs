@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Pro.Tests.Components.Composer.Plugins;
+namespace Forma.Blazor.Composer.Tests.Plugins;
 
 using Forma.Blazor.Components.Composer.Plugins;
 using Forma.Framework.Composer.Plugins;

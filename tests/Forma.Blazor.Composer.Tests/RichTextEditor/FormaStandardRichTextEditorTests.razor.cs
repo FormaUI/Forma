@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Pro.Tests.Components.Composer.RichTextEditor;
+namespace Forma.Blazor.Composer.Tests.RichTextEditor;
 
 public sealed partial class FormaStandardRichTextEditorTests
 {
