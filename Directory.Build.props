@@ -6,8 +6,21 @@
         Shared properties for all Forma projects.
     -->
 
+    <!-- Every project targets the same framework and language settings; a project overrides one by declaring it after this import, which none currently need to. -->
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
     <PropertyGroup>
         <Features>runtime-async=on</Features>
+    </PropertyGroup>
+
+    <!-- Repo-root-anchored, so a project imports it correctly whatever depth it sits at. -->
+    <PropertyGroup>
+        <BundledPackageTargets>$(MSBuildThisFileDirectory)eng\BundledPackage.targets</BundledPackageTargets>
     </PropertyGroup>
 
     <!-- The one version every package ships at; a preview, as the framework it targets is. -->

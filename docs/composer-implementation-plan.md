@@ -7,7 +7,7 @@ The plan for building the composer that [the composer design](composer-design.md
 The layout as built; an entry marked planned is one the design still calls for and no phase has landed yet.
 
 ```text
-src/Forma.Framework.Sanitization/
+src/Forma.Framework/Forma.Framework.Sanitization/
 ├── AllowlistHtmlSanitizer.cs
 ├── HtmlSubject.cs
 ├── IHtmlSanitizer.cs
@@ -15,7 +15,7 @@ src/Forma.Framework.Sanitization/
 ├── RichContentMarkupPolicy.cs             # the markup policy the sanitizer applies
 └── ServiceCollectionExtensions.cs
 
-src/Forma.Framework.Composer/
+src/Forma.Framework/Forma.Framework.Composer/
 ├── ComposerLog.cs
 ├── README.md                              # the engine's vocabulary
 ├── Assets/                                # namespace …Composer.Assets
@@ -74,7 +74,7 @@ src/Forma.Framework.Composer/
     ├── ComposerWidgetNode.cs
     └── ComposerWidgetTree.cs
 
-src/Forma.Framework.Composer.Interop/      # namespace …Composer.Interop
+src/Forma.Framework/Forma.Framework.Composer.Interop/      # namespace …Composer.Interop
 ├── RichTextCanvas.cs                      # the wrapper over the rich text script
 └── wwwroot/scripts/
     ├── RichTextEditor.js                  # lifecycle, events and command dispatch
@@ -92,12 +92,12 @@ src/Forma.Framework.Composer.Interop/      # namespace …Composer.Interop
         ├── SelectionMemory.mjs
         └── TableEditor.mjs
 
-src/Forma.Blazor.Pro/Components/Composer/
+src/Forma.Blazor.Pro/Forma.Blazor.Composer/
 ├── FormaComposer.razor                    # engine shell, editor switcher
 ├── FormaComposer.razor.cs
 ├── FormaComposer.razor.css
-├── FormaComposer.he.json
-├── FormaComposer.es.json
+├── Composer.he.json                       # one file per category; the project is the category
+├── Composer.es.json
 ├── ComposerChrome.cs                      # maximized and selection-bar state
 ├── ComposerKeyBindingCatalogExtensions.cs # the key map as input routes
 ├── ComposerOptions.cs
@@ -168,8 +168,6 @@ src/Forma.Blazor.Pro/Components/Composer/
 │   ├── FormaRichTextEditor.razor          # contenteditable canvas
 │   ├── FormaRichTextEditor.razor.cs
 │   ├── FormaRichTextEditor.razor.css
-│   ├── FormaRichTextEditor.he.json
-│   ├── FormaRichTextEditor.es.json
 │   ├── FormaStandardRichTextEditor.razor  # preset: Coi Basic
 │   ├── FormaStandardRichTextEditor.razor.cs
 │   ├── FormaCompactRichTextEditor.razor   # preset: Coi Mini
@@ -271,4 +269,4 @@ Each phase ends buildable, tested and reviewable.
 5. **Media, tables and embeds.** ✅ Link, image, explorer, video, table, horizontal rule, emoji, special character, clipboard, template and embed plugins, each contributing a toolbar entry and driving the canvas through the rich text surface; the dialogs sit in `Composer/Dialogs/` rather than under the editor, because nothing in them is contenteditable-specific, each built on `FormaComposerDialog` over `ComposerDialogBase` and reopening, on an element the author double-clicks, with what it already holds. Stored media landed as its own `ExplorerPlugin` rather than inside `ImagePlugin`: `ImagePlugin` takes an address, alt text and caption, while `ExplorerPlugin` browses through `FormaComposerExplorerDialog` over an embedded `FormaExplorer`, gated by `ExplorerPluginOptions`, offering no browsing when the host registered no `IExplorerItemsProvider` and no upload when it registered no `IFileStore`. `VideoPlugin` stores a placeholder rather than an embed, because `iframe` is discarded by the sanitizer, and the dialog refuses an address the document could not keep. `FileUploadPlugin`, which the design had not named, attaches uploaded files beside the document as `ComposerDocument.Attachments`, listed by `FormaComposerAttachments` beneath the canvas; it is engine-agnostic, so it sits in `Composer/Plugins/` and its command is the engine's `ComposerCommands.Attach` (§3.7, §4.3a). Maximize and the selection bar landed as **engine** commands on `FormaComposer` (§4.3a) rather than rich text plugins, since both change chrome the engine owns rather than the document any one editor holds.
 6. **Satellite capabilities.** `Forma.AddOns.Composer.TextMate`, `.KaTeX`, a Ganss.Xss sanitizer satellite for hosts wanting a hardened implementation, and the highlighting and math plugins that consume them.
 7. **Page designer.** `PageDesignerPlugin`, the palette, canvas, per-widget chrome and settings panel, `IComposerDesignerPlugin` with the built-in palette, `ComposerWidgetTree` with its renderer, pointer-based drag with a keyboard equivalent, and the text widget hosting `FormaRichTextEditor`. It lands last because it composes everything above it — a designer without a working rich text editor inside its text widget is not the component Coi had.
-8. **Accessibility, touch, direction, tests and Showcase.** ◐ bUnit tests under `tests/Forma.Blazor.Pro.Tests/Components/Composer/` mirror the source tree, and the Showcase page at `/composer` renders the composer in its default, disabled, read-only, toolbar-less and fixed-height states, both presets, the views, the status strip, the plugins bar, stored files and attachments. Still open: §8 verified in a real browser, and `he` and `es-419` checked.
+8. **Accessibility, touch, direction, tests and Showcase.** ◐ bUnit tests under `tests/Forma.Blazor.Composer.Tests/` mirror the source tree, and the Showcase page at `/composer` renders the composer in its default, disabled, read-only, toolbar-less and fixed-height states, both presets, the views, the status strip, the plugins bar, stored files and attachments. Still open: §8 verified in a real browser, and `he` and `es-419` checked.

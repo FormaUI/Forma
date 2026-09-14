@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,15 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net11.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Framework.Emojis.Unicode.Tests</RootNamespace>
-        <NoWarn>CA1707</NoWarn>
-    </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="AngleSharp" Version="1.5.0" />
         <PackageReference Include="bunit" Version="2.6.2" />
@@ -19,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
     </ItemGroup>
 
 </Project>

@@ -4,4 +4,10 @@
   <PropertyGroup>
     <RunSettingsFilePath>$(MSBuildThisFileDirectory)test.runsettings</RunSettingsFilePath>
   </PropertyGroup>
+
+  <!-- Nothing under tests/ ships as a package, and a test method's Should_x_y name is meant to carry an underscore. -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <NoWarn>CA1707</NoWarn>
+  </PropertyGroup>
 </Project>

@@ -131,7 +131,7 @@ the library's own artwork answers.
 `IEmojiCatalog` describes. With neither registered, `FormaEmoji` falls back to the reader's own
 platform font and the picker shows its empty state, because a catalog is data nothing can stand in
 for. To draw the bundled artwork and browse the bundled catalog, add the
-[Twemoji artwork pack](src/Forma.AddOns.Emojis.Twemoji/README.md):
+[Twemoji artwork pack](src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md):
 
 ```pwsh
 dotnet add package 2Site.Forma.AddOns.Emojis.Twemoji
@@ -162,9 +162,9 @@ reads correctly before any translation exists.
 A host rewords a string the library ships, or adds a language it never had, by laying its own files
 in a `locales` folder beside the application, named for the assembly and the type they translate.
 
-[`Forma.Framework.Localization`](src/Forma.Framework.Localization/README.md)
+[`Forma.Framework.Localization`](src/Forma.Framework/Forma.Framework.Localization/README.md)
 documents the contract, the ways to fill a hole, the plural syntax, and how a file is found.
-[`Forma.Framework.Localization.Json`](src/Forma.Framework.Localization.Json/README.md) documents the
+[`Forma.Framework.Localization.Json`](src/Forma.Framework/Forma.Framework.Localization.Json/README.md) documents the
 file format.
 
 ## Culture in the URL
@@ -232,3 +232,9 @@ Where to read before working:
   `FormaComposer`.
 - Per-project READMEs — the localization projects and the artwork packs each document their own
   contract, format, or artwork pipeline.
+
+## License
+
+Forma is MIT licensed — see [`LICENSE.md`](LICENSE.md) — with one exception: `src/Forma.Blazor.Pro/`,
+the `FormaExplorer` and `FormaComposer` components, is licensed separately. See
+[`COMMERCIAL.md`](COMMERCIAL.md) for what that covers and how to obtain a commercial agreement.

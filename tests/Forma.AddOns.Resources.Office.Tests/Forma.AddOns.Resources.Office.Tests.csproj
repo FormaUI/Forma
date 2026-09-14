@@ -1,15 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net11.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.AddOns.Resources.Office.Tests</RootNamespace>
-        <NoWarn>CA1707</NoWarn>
-    </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="xunit.v3" Version="3.0.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
@@ -17,10 +7,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\..\src\Forma.AddOns\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 

@@ -2,8 +2,28 @@
 
     <!--
         Forma Build Targets
-        
-        Currently empty — reserved for future build customizations.
+
+        Runs after each project's own properties, so a condition here can read what a project set;
+        IsPackable itself is not yet resolved to its SDK default at this point, so packaging metadata
+        added here must not depend on it — a non-packable project simply never reaches a pack step.
     -->
+
+    <!-- A packable project's own name is its package ID, prefixed as every Forma package is, unless it named a different one first. -->
+    <PropertyGroup Condition="'$(PackageId)' == ''">
+        <PackageId>2Site.$(MSBuildProjectName)</PackageId>
+    </PropertyGroup>
+
+    <!-- Every project ships the root MIT license if it gets packed, unless it named its own source file first. -->
+    <PropertyGroup Condition="'$(PackageLicenseSourceFile)' == ''">
+        <PackageLicenseSourceFile>$(MSBuildThisFileDirectory)LICENSE.md</PackageLicenseSourceFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(PackageLicenseSourceFile)" Pack="true" PackagePath="\" Visible="false" />
+    </ItemGroup>
 
 </Project>

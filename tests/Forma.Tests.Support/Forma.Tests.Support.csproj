@@ -1,11 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net11.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Tests</RootNamespace>
     </PropertyGroup>
 
@@ -14,15 +9,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Media\Forma.Framework.Media.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Timing\Forma.Framework.Timing.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Share\Forma.Framework.Share.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Timing\Forma.Framework.Timing.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     </ItemGroup>
 
     <ItemGroup>

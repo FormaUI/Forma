@@ -1,0 +1,61 @@
+<Project>
+
+    <!--
+        A referenced project marked private ships inside this package, its satellite assemblies
+        with it; every other one is a package dependency, and whatever a package dependency's own
+        project reaches ships in that package. A project imports this file once it has declared its
+        ProjectReference items and their _DeclaredAssembly/_PrivateAssembly/_PackagedProject groups.
+    -->
+
+    <!-- Resolving references searches for satellite assemblies only while building, which BuildOnlySettings declares. -->
+    <Target Name="IncludeBundledProjectsInPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+        <MSBuild Projects="@(_PackagedProject)" Targets="ResolveAssemblyReferences">
+            <Output TaskParameter="TargetOutputs" ItemName="_DependencyReference" />
+        </MSBuild>
+        <ItemGroup>
+            <_ReferencedProjectOutput Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'">
+                <Assembly>$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').Replace('.resources', ''))</Assembly>
+                <TargetPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</TargetPath>
+            </_ReferencedProjectOutput>
+        </ItemGroup>
+        <PropertyGroup>
+            <_ShippedByDependencies>;@(_DependencyReference->'%(Filename)', ';');</_ShippedByDependencies>
+            <_DeclaredAssemblies>;@(_DeclaredAssembly, ';');</_DeclaredAssemblies>
+        </PropertyGroup>
+        <ItemGroup>
+            <_OwnBundledAssembly Include="@(_PrivateAssembly)" Condition="!$(_ShippedByDependencies.Contains(';%(Identity);'))" />
+        </ItemGroup>
+        <PropertyGroup>
+            <_OwnBundledAssemblies>;@(_OwnBundledAssembly, ';');</_OwnBundledAssemblies>
+        </PropertyGroup>
+        <ItemGroup>
+            <BuildOutputInPackage Include="@(_ReferencedProjectOutput)" Condition="$(_OwnBundledAssemblies.Contains(';%(_ReferencedProjectOutput.Assembly);'))" />
+            <_UndeclaredProjectOutput Include="@(_ReferencedProjectOutput)" Condition="'%(_ReferencedProjectOutput.Extension)' == '.dll' and !$(_OwnBundledAssemblies.Contains(';%(_ReferencedProjectOutput.Assembly);')) and !$(_DeclaredAssemblies.Contains(';%(_ReferencedProjectOutput.Assembly);')) and !$(_ShippedByDependencies.Contains(';%(_ReferencedProjectOutput.Assembly);'))" />
+        </ItemGroup>
+        <Error Condition="'@(_UndeclaredProjectOutput)' != ''" Text="@(_UndeclaredProjectOutput->'%(Filename)', ', ') is reached through a referenced project but is neither bundled, declared as a dependency, nor shipped by one; reference it directly." />
+    </Target>
+
+    <!-- The static web assets of the assemblies this package bundles ship in it too, each under its own base path; what a dependency ships stays with it. -->
+    <Target Name="IncludeReferencedStaticWebAssetsInPackage" DependsOnTargets="IncludeBundledProjectsInPackage" BeforeTargets="GenerateStaticWebAssetsPackFiles">
+        <ItemGroup>
+            <_BundledStaticWebAsset Include="@(StaticWebAsset)" Condition="$(_OwnBundledAssemblies.Contains(';%(StaticWebAsset.SourceId);')) and '%(StaticWebAsset.AssetTraitName)' != 'Content-Encoding'" />
+            <StaticWebAsset Remove="@(_BundledStaticWebAsset)" />
+            <StaticWebAsset Include="@(_BundledStaticWebAsset)" SourceId="$(PackageId)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="RestoreReferencedStaticWebAssetsAfterPackage" AfterTargets="GenerateStaticWebAssetsPackFiles">
+        <ItemGroup>
+            <StaticWebAsset Remove="@(_BundledStaticWebAsset)" />
+            <StaticWebAsset Include="@(_BundledStaticWebAsset)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- The assemblies the importing project's references bundle, declare, or reach as a package dependency, read before the build adds the transitive references. -->
+    <ItemGroup>
+        <_PackagedProject Include="@(ProjectReference)" Exclude="@(ProjectReference->WithMetadataValue('PrivateAssets', 'all'))" />
+        <_DeclaredAssembly Include="@(_PackagedProject->'%(Filename)')" />
+        <_PrivateAssembly Include="@(ProjectReference->WithMetadataValue('PrivateAssets', 'all')->'%(Filename)')" />
+    </ItemGroup>
+
+</Project>
