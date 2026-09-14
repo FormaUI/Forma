@@ -19,7 +19,7 @@ types live in the `Forma.Framework.Files` namespace.
 | `RejectedFile` | The `Name` of a file the picker declined and the `Reason` it was. |
 | `FileRejectionReason` | `DisallowedType`, a type not among those the picker accepts; `TooLarge`, larger than its size limit; `TooManyFiles`, a selection carrying more files than it allows at once. |
 
-A picker's `FilePickerOptions` — `Accept`, `MaxFileSize`, `MaxFiles` and `AllowMultipleFiles`
+A picker's own `FilePickerOptions` — `Accept`, `MaxFileSize`, `MaxFiles` and `AllowMultipleFiles`
 — set those limits. The picker lists each rejection beneath its drop zone and raises
 `OnFilesRejected` with them; the files that passed arrive through `OnFilesSelected`.
 
@@ -28,7 +28,7 @@ A picker's `FilePickerOptions` — `Accept`, `MaxFileSize`, `MaxFiles` and `Allo
 `UploadFailure` carries the `Name` of a file whose upload did not complete and the `Error` that
 stopped it: what the store threw while saving it, or, when the uploader rolls back, what went
 wrong removing a file already stored. `FormaFileUploader` raises `OnFailed` once per failure and
-`OnCompleted` once with the resources every stored file became; its `FileUploaderOptions` say
+`OnCompleted` once with the resources every stored file became; its own `FileUploaderOptions` say
 whether a failure stops the rest of the set (`StopOnFailure`) and whether it undoes what was
 stored before it (`RollbackOnFailure`).
 
