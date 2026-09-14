@@ -68,10 +68,10 @@ The brand marks are never drawn by hand: each is the official mark, taken from a
 of an open icon set. Marks from [Simple Icons](https://simpleicons.org) are used under
 [CC0 1.0](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md); marks from
 [Bootstrap Icons](https://icons.getbootstrap.com) are used under the
-[MIT license](https://github.com/twbs/icons/blob/main/LICENSE), whose notice is reproduced in the
-repository's [`THIRD-PARTY-NOTICES.md`](../../../THIRD-PARTY-NOTICES.md). Neither license covers
-the marks the drawings depict: each logo remains the trademark of its owner and is subject to
-that owner's brand guidelines, and the accepted use is linking to a presence on that brand's
+[MIT license](https://github.com/twbs/icons/blob/main/LICENSE), whose notice is reproduced in
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), shipped inside this package. Neither license
+covers the marks the drawings depict: each logo remains the trademark of its owner and is subject
+to that owner's brand guidelines, and the accepted use is linking to a presence on that brand's
 platform.
 
 ## License

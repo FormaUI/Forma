@@ -35,7 +35,7 @@ other contributors and copyright 2023 the Twemoji contributors, used under
 [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/) — a license that makes this attribution a
 condition of shipping the artwork. The names and search keywords come from the
 [Unicode CLDR annotations](https://cldr.unicode.org), used under the Unicode License. Both notices
-are reproduced in [`THIRD-PARTY-NOTICES.md`](../../../THIRD-PARTY-NOTICES.md), which ships inside this
+are reproduced in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside this
 package.
 
 ## Regenerating the artwork

@@ -35,4 +35,9 @@
         <None Update="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
+    <!-- A project with third-party notices beside it ships them in its package, since what they credit ships there. -->
+    <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\THIRD-PARTY-NOTICES.md')">
+        <None Update="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
 </Project>
