@@ -26,4 +26,13 @@
         <None Include="$(PackageLicenseSourceFile)" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 
+    <!-- A project with a README beside it ships that as its package readme, unless it named a different one first. -->
+    <PropertyGroup Condition="'$(PackageReadmeFile)' == '' and Exists('$(MSBuildProjectDirectory)\README.md')">
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\README.md')">
+        <None Update="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
 </Project>

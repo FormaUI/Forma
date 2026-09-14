@@ -5,15 +5,10 @@
         <RootNamespace>Forma.Blazor.Components.Explorer</RootNamespace>
         <PackageId>2Site.Forma.Blazor.Pro.Explorer</PackageId>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <!-- The Pro tier's license is shared by every component it sells, one folder up. -->
         <PackageLicenseSourceFile>$(MSBuildThisFileDirectory)..\LICENSE.md</PackageLicenseSourceFile>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
-
-    <ItemGroup>
-        <None Update="README.md" Pack="true" PackagePath="\" />
-    </ItemGroup>
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -57,7 +52,7 @@
 
     <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
     <ItemGroup>
-        <EmbeddedResource Include="**\*.json" WithCulture="false" />
+        <EmbeddedResource Include="**\*.json" Exclude="$(DefaultItemExcludes)" WithCulture="false" />
         <Content Remove="**\*.json" />
     </ItemGroup>
 
