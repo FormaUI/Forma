@@ -372,7 +372,7 @@ a component default does not silently defeat explicit host policy.
 
 A type in `Forma.Framework.Input` is public only because a host or a component author reaches
 it from one of three doors: `InputRouterOptions` and `IInputActionHandler` for the host,
-`FormaInputScope` for the author, and the inspector's `Decision` for anyone debugging.
+`FormaInputScope` for the author, and the inspector's `InputDecision` for anyone debugging.
 The router service and the registration handle, `InputRouter` and `InputScope` in
 `Forma.Framework.Input.Interop`, are public because a library component that registers
 its own root reaches them directly; a type nothing outside the library reaches goes internal.
