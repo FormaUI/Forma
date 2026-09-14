@@ -1,9 +1,11 @@
 namespace Forma.Framework.Composer.Widgets;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 /// <summary>One placed widget, its content, its settings and its children.</summary>
-public sealed record ComposerWidgetNode
+[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "The page designer this belongs to is not built yet, so nothing constructs it.")]
+internal sealed record ComposerWidgetNode
 {
     private readonly JsonElement _settings;
 

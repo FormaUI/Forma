@@ -1,9 +1,12 @@
 namespace Forma.Framework.Composer.Widgets;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Icons;
 
 /// <summary>Describes a widget available to a designer.</summary>
-public sealed record ComposerWidget
+[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "The page designer this belongs to is not built yet, so nothing constructs it.")]
+internal sealed record ComposerWidget
 {
     /// <summary>The unique identifier of the widget kind.</summary>
     public required string Id { get; init; }

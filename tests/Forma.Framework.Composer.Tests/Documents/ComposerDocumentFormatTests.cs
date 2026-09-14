@@ -45,7 +45,7 @@ public sealed class ComposerDocumentFormatTests
     public void Should_render_as_its_id()
     {
         // Arrange
-        var format = ComposerDocumentFormat.WidgetTree;
+        var format = new ComposerDocumentFormat("widget-tree");
 
         // Act
         var rendered = format.ToString();

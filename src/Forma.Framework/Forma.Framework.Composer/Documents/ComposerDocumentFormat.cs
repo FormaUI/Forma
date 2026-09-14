@@ -26,7 +26,7 @@ public sealed record ComposerDocumentFormat
     public static ComposerDocumentFormat PlainText { get; } = new("text");
 
     /// <summary>The serialized widget tree the page designer edits.</summary>
-    public static ComposerDocumentFormat WidgetTree { get; } = new("widget-tree");
+    internal static ComposerDocumentFormat WidgetTree { get; } = new("widget-tree");
 
     /// <inheritdoc />
     public override string ToString()
