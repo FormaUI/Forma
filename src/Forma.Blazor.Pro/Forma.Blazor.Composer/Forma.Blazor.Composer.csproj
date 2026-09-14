@@ -20,6 +20,11 @@
         <ProjectReference Include="..\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
     </ItemGroup>
 
+    <!-- The contracts a plugin is written against, which ship as their own package so a plugin outside this one can be. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Composer.Abstractions\Forma.Framework.Composer.Abstractions.csproj" />
+    </ItemGroup>
+
     <!-- The component's own feature vocabulary and interop assembly, which ship inside this package. -->
     <ItemGroup>
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
