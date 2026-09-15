@@ -4,12 +4,13 @@ using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
+using Forma.Framework.Plugins;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes predefined document template insertion to the rich text editor.</summary>
 public sealed class TemplatePlugin(
     RichTextEditorPlugin editor,
-    TemplatePluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<TemplatePluginOptions>
+    TemplatePluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<TemplatePluginOptions>
 {
     /// <summary>Command prefix for inserting a specific predefined template.</summary>
     public const string InsertTemplatePrefix = "template.insert:";

@@ -22,7 +22,8 @@ this package only describes them.
 
 ## The plugin families
 
-Every plugin is an `IComposerPlugin` and one of three kinds.
+Every plugin is an `IComposerPlugin` — an `IPlugin` from `2Site.Forma.Framework.Plugins`, which
+the composer's registry is built on — and one of three kinds.
 
 | Type | What it is |
 | --- | --- |
@@ -34,7 +35,7 @@ Every plugin is an `IComposerPlugin` and one of three kinds.
 
 | Member | What it does |
 | --- | --- |
-| `Id` | The plugin's identifier, unique among the plugins of one composer. |
+| `Id` | The plugin's identifier, from `IPlugin`, unique among the plugins registered beside it. |
 | `Items` | The toolbar entries it contributes, each naming the row it lands on. |
 | `Rows` | Command rows it declares of its own, laid out after the composer's. |
 | `InputTriggers` | Typed-input triggers, so typing a sequence runs a command. |

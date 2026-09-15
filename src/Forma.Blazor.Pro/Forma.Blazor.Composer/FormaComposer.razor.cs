@@ -16,6 +16,7 @@ using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
+using Forma.Framework.Plugins;
 using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
 
@@ -31,7 +32,7 @@ public sealed partial class FormaComposer(
     : FormaInputBase<ComposerDocument>, IComposerInteraction
 {
     private readonly ComposerDefinition? _definition = definition;
-    private ComposerPluginSet _ownPlugins = ComposerPluginSet.Empty;
+    private PluginScope<IComposerPlugin> _ownPlugins = PluginScope<IComposerPlugin>.Empty;
     private readonly ComposerCommandRegistry _commandRegistry = new();
     private readonly ComposerRegionRegistry _regionRegistry = new();
     private ComposerSelection _selection = ComposerSelection.Empty;

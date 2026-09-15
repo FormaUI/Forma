@@ -6,12 +6,13 @@ using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
+using Forma.Framework.Plugins;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes typographic and mathematical symbol insertion to the rich text editor.</summary>
 public sealed class SpecialCharacterPlugin(
     RichTextEditorPlugin editor,
-    SpecialCharacterPluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<SpecialCharacterPluginOptions>
+    SpecialCharacterPluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<SpecialCharacterPluginOptions>
 {
     /// <summary>Command prefix for inserting a specific special character.</summary>
     public const string InsertCharacterPrefix = "special-character.insert:";

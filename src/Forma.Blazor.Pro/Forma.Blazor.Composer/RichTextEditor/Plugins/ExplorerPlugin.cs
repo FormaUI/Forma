@@ -6,10 +6,11 @@ using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
+using Forma.Framework.Plugins;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes browsing the host's stored files, and inserting whichever one is chosen.</summary>
-public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<ExplorerPluginOptions>
+public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<ExplorerPluginOptions>
 {
     /// <summary>The command opening the stored files dialog.</summary>
     public const string BrowseCommand = "explorer.browse";

@@ -6,12 +6,13 @@ using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
+using Forma.Framework.Plugins;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes font family, font size, text color, highlight color, and line height operations.</summary>
 public sealed class TypographyPlugin(
     RichTextEditorPlugin editor,
-    TypographyPluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<TypographyPluginOptions>
+    TypographyPluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<TypographyPluginOptions>
 {
     /// <summary>The command applying font family styling.</summary>
     public const string FontFamilyCommand = "typography.font-family";

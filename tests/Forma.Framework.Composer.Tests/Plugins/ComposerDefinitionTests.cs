@@ -3,6 +3,7 @@ namespace Forma.Framework.Composer.Tests.Plugins;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
+using Forma.Framework.Plugins;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +31,17 @@ public sealed class ComposerDefinitionTests
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
+    public sealed class PreviewView : IComposerViewPlugin
+    {
+        public string Id => "preview";
+        public string EditorId => "stub-editor";
+        public string Kind => ComposerViews.Preview;
+        public string Title => "Preview";
+        public Icon Icon => Glyph.File;
+        public Type ViewComponent => typeof(PreviewView);
+        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+    }
+
     public sealed class EditorBoundPlugin(StubEditor editor) : IComposerFeaturePlugin
     {
         public StubEditor Editor { get; } = editor;
@@ -37,19 +49,9 @@ public sealed class ComposerDefinitionTests
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
-    public sealed class AlsoEditorBoundPlugin(StubEditor editor) : IComposerFeaturePlugin
+    public sealed class ViewBoundPlugin : IComposerFeaturePlugin
     {
-        public StubEditor Editor { get; } = editor;
-        public string Id => "also-editor-bound";
-        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
-    }
-
-    public sealed class Clock;
-
-    public sealed class ServiceBoundPlugin(Clock clock) : IComposerFeaturePlugin
-    {
-        public Clock Clock { get; } = clock;
-        public string Id => "service-bound";
+        public string Id => "view-bound";
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
@@ -58,47 +60,14 @@ public sealed class ComposerDefinitionTests
         public int Count { get; set; } = 1;
     }
 
-    public sealed class CountingPlugin(CountOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<CountOptions>
+    public sealed class CountingPlugin(CountOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<CountOptions>
     {
         public CountOptions Options { get; } = options ?? new CountOptions();
         public string Id => "counting";
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
-    public sealed class NeedyPlugin(Uri address) : IComposerFeaturePlugin
-    {
-        public Uri Address { get; } = address;
-        public string Id => "needy";
-        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
-    }
-
-    public sealed class AmbiguousPlugin : IComposerFeaturePlugin
-    {
-        public AmbiguousPlugin()
-        {
-        }
-
-        public AmbiguousPlugin(Clock clock)
-        {
-            Clock = clock;
-        }
-
-        public Clock? Clock { get; }
-        public string Id => "ambiguous";
-        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
-    }
-
-    public sealed class ClosablePlugin : IComposerFeaturePlugin, IDisposable
-    {
-        public bool IsDisposed { get; private set; }
-        public string Id => "closable";
-        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
-
-        public void Dispose()
-            => IsDisposed = true;
-    }
-
-    private static ServiceProvider NoServices()
+    private static ServiceProvider CreateServices()
         => new ServiceCollection().BuildServiceProvider();
 
     public sealed class Activation
@@ -107,12 +76,13 @@ public sealed class ComposerDefinitionTests
         public void Should_build_the_plugins_in_the_order_they_were_registered()
         {
             // Arrange
+            using var services = CreateServices();
             var definition = ComposerDefinition.Create(composer => composer
                 .AddEditorPlugin<StubEditor>()
                 .AddFeaturePlugin<EditorBoundPlugin>());
 
             // Act
-            var plugins = definition.Activate(NoServices()).Plugins;
+            var plugins = definition.Activate(services).Plugins;
 
             // Assert
             Assert.Collection(
@@ -125,32 +95,29 @@ public sealed class ComposerDefinitionTests
         public void Should_hand_every_plugin_the_one_editor_this_composer_built()
         {
             // Arrange
+            using var services = CreateServices();
             var definition = ComposerDefinition.Create(composer => composer
-                .AddEditorPlugin<StubEditor>()
-                .AddFeaturePlugin<EditorBoundPlugin>()
-                .AddFeaturePlugin<AlsoEditorBoundPlugin>());
+                .AddEditorPlugin<StubEditor>(editor => editor.AddFeaturePlugin<EditorBoundPlugin>()));
 
             // Act
-            var plugins = definition.Activate(NoServices()).Plugins;
+            var plugins = definition.Activate(services).Plugins;
 
             // Assert
-            var editor = plugins.OfType<StubEditor>().Single();
-            Assert.Multiple(
-                () => Assert.Same(editor, plugins.OfType<EditorBoundPlugin>().Single().Editor),
-                () => Assert.Same(editor, plugins.OfType<AlsoEditorBoundPlugin>().Single().Editor));
+            Assert.Same(plugins.OfType<StubEditor>().Single(), plugins.OfType<EditorBoundPlugin>().Single().Editor);
         }
 
         [Fact]
-        public void Should_build_a_separate_set_for_every_composer()
+        public void Should_build_a_separate_scope_for_every_composer()
         {
             // Arrange
+            using var services = CreateServices();
             var definition = ComposerDefinition.Create(composer => composer
                 .AddEditorPlugin<StubEditor>()
                 .AddFeaturePlugin<EditorBoundPlugin>());
 
             // Act
-            var first = definition.Activate(NoServices()).Plugins;
-            var second = definition.Activate(NoServices()).Plugins;
+            var first = definition.Activate(services).Plugins;
+            var second = definition.Activate(services).Plugins;
 
             // Assert
             Assert.Multiple(
@@ -159,288 +126,99 @@ public sealed class ComposerDefinitionTests
         }
 
         [Fact]
-        public void Should_resolve_what_no_plugin_supplies_from_the_host()
+        public void Should_create_the_editor_the_registration_names_a_factory_for()
         {
             // Arrange
-            var clock = new Clock();
-            var services = new ServiceCollection().AddSingleton(clock).BuildServiceProvider();
-            var definition = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<ServiceBoundPlugin>());
+            using var services = CreateServices();
+            var editor = new StubEditor();
+            var definition = ComposerDefinition.Create(composer => composer.AddEditorPlugin(_ => editor));
 
             // Act
             var plugins = definition.Activate(services).Plugins;
 
             // Assert
-            Assert.Same(clock, plugins.OfType<ServiceBoundPlugin>().Single().Clock);
-        }
-
-        [Fact]
-        public void Should_create_the_plugin_the_registration_names_a_factory_for()
-        {
-            // Arrange
-            var editor = new StubEditor();
-            var definition = ComposerDefinition.Create(composer => composer.AddEditorPlugin(_ => editor));
-
-            // Act
-            var plugins = definition.Activate(NoServices()).Plugins;
-
-            // Assert
             Assert.Same(editor, Assert.Single(plugins));
         }
-    }
-
-    public sealed class Options
-    {
-        [Fact]
-        public void Should_create_fresh_options_for_every_composer()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer
-                .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 7));
-
-            // Act
-            var first = definition.Activate(NoServices()).Plugins.OfType<CountingPlugin>().Single().Options;
-            var second = definition.Activate(NoServices()).Plugins.OfType<CountingPlugin>().Single().Options;
-
-            // Assert
-            Assert.Multiple(
-                () => Assert.Equal(7, first.Count),
-                () => Assert.Equal(7, second.Count),
-                () => Assert.NotSame(first, second));
-        }
 
         [Fact]
-        public void Should_leave_a_plugin_its_own_options_when_the_registration_configures_none()
+        public void Should_activate_nothing_for_an_empty_description()
         {
             // Arrange
-            var definition = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<CountingPlugin>());
+            using var services = CreateServices();
 
             // Act
-            var plugin = definition.Activate(NoServices()).Plugins.OfType<CountingPlugin>().Single();
+            var plugins = ComposerDefinition.Empty.Activate(services).Plugins;
 
             // Assert
-            Assert.Equal(1, plugin.Options.Count);
+            Assert.Empty(plugins);
         }
     }
 
-    public sealed class Defaults
+    public sealed class Composition
     {
         [Fact]
-        public void Should_add_a_default_the_scope_registers_nothing_for()
+        public void Should_lay_an_editor_out_ahead_of_its_views_and_their_plugins()
         {
             // Arrange
-            var definition = ComposerDefinition.Create(composer => composer.TryAddFeaturePlugin<CountingPlugin>());
-
-            // Act
-            var plugins = definition.Activate(NoServices()).Plugins;
-
-            // Assert
-            Assert.IsType<CountingPlugin>(Assert.Single(plugins));
-        }
-
-        [Fact]
-        public void Should_keep_what_the_scope_registered_over_a_default_asked_for_first()
-        {
-            // Arrange
+            using var services = CreateServices();
             var definition = ComposerDefinition.Create(composer => composer
-                .TryAddFeaturePlugin<CountingPlugin>()
-                .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 4));
+                .AddEditorPlugin<StubEditor>(editor => editor
+                    .AddFeaturePlugin<EditorBoundPlugin>()
+                    .AddViewPlugin<PreviewView>(view => view.AddFeaturePlugin<ViewBoundPlugin>()))
+                .AddEditorPlugin<SecondEditor>());
 
             // Act
-            var plugin = Assert.IsType<CountingPlugin>(Assert.Single(definition.Activate(NoServices()).Plugins));
+            var names = definition.Activate(services).Plugins.Select(plugin => plugin.Id).ToList();
 
             // Assert
-            Assert.Equal(4, plugin.Options.Count);
+            Assert.Equal(["stub-editor", "editor-bound", "preview", "view-bound", "second-editor"], names);
         }
 
         [Fact]
-        public void Should_keep_what_the_scope_registered_over_a_default_asked_for_last()
+        public void Should_configure_a_plugin_registered_under_an_editor()
         {
             // Arrange
+            using var services = CreateServices();
+            var definition = ComposerDefinition.Create(composer => composer
+                .AddEditorPlugin<StubEditor>(editor => editor
+                    .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 6)));
+
+            // Act
+            var plugin = definition.Activate(services).Plugins.OfType<CountingPlugin>().Single();
+
+            // Assert
+            Assert.Equal(6, plugin.Options.Count);
+        }
+
+        [Fact]
+        public void Should_fall_back_on_a_default_the_editor_registers_nothing_for()
+        {
+            // Arrange
+            using var services = CreateServices();
+            var definition = ComposerDefinition.Create(composer => composer
+                .AddEditorPlugin<StubEditor>(editor => editor.TryAddFeaturePlugin<CountingPlugin>()));
+
+            // Act
+            var names = definition.Activate(services).Plugins.Select(plugin => plugin.Id).ToList();
+
+            // Assert
+            Assert.Equal(["stub-editor", "counting"], names);
+        }
+
+        [Fact]
+        public void Should_keep_what_the_composer_registered_over_a_default_it_asked_for()
+        {
+            // Arrange
+            using var services = CreateServices();
             var definition = ComposerDefinition.Create(composer => composer
                 .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 4)
                 .TryAddFeaturePlugin<CountingPlugin>());
 
             // Act
-            var plugin = Assert.IsType<CountingPlugin>(Assert.Single(definition.Activate(NoServices()).Plugins));
+            var plugin = Assert.IsType<CountingPlugin>(Assert.Single(definition.Activate(services).Plugins));
 
             // Assert
             Assert.Equal(4, plugin.Options.Count);
-        }
-
-        [Fact]
-        public void Should_keep_only_the_last_of_two_explicit_registrations()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer
-                .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 2)
-                .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 9));
-
-            // Act
-            var plugin = Assert.IsType<CountingPlugin>(Assert.Single(definition.Activate(NoServices()).Plugins));
-
-            // Assert
-            Assert.Equal(9, plugin.Options.Count);
-        }
-    }
-
-    public sealed class Refusals
-    {
-        [Fact]
-        public void Should_name_the_plugin_and_the_parameter_nothing_can_supply()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<NeedyPlugin>());
-
-            // Act
-            var refusal = Assert.Throws<InvalidOperationException>(() => definition.Activate(NoServices()));
-
-            // Assert
-            Assert.Multiple(
-                () => Assert.Contains(nameof(NeedyPlugin), refusal.Message, StringComparison.Ordinal),
-                () => Assert.Contains(nameof(Uri), refusal.Message, StringComparison.Ordinal),
-                () => Assert.Contains("address", refusal.Message, StringComparison.Ordinal));
-        }
-
-        [Fact]
-        public void Should_name_a_plugin_offering_more_than_one_constructor()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<AmbiguousPlugin>());
-
-            // Act
-            var refusal = Assert.Throws<InvalidOperationException>(() => definition.Activate(NoServices()));
-
-            // Assert
-            Assert.Contains(nameof(AmbiguousPlugin), refusal.Message, StringComparison.Ordinal);
-        }
-    }
-
-    public sealed class Ownership
-    {
-        [Fact]
-        public async Task Should_dispose_a_plugin_it_built_itself()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<ClosablePlugin>());
-            var set = definition.Activate(NoServices());
-            var plugin = set.Plugins.OfType<ClosablePlugin>().Single();
-
-            // Act
-            await set.DisposeAsync();
-
-            // Assert
-            Assert.True(plugin.IsDisposed);
-        }
-
-        [Fact]
-        public async Task Should_leave_a_plugin_a_factory_supplied_to_whoever_wrote_the_factory()
-        {
-            // Arrange
-            using var plugin = new ClosablePlugin();
-            var definition = ComposerDefinition.Create(composer => composer.AddFeaturePlugin(_ => plugin));
-            var set = definition.Activate(NoServices());
-
-            // Act
-            await set.DisposeAsync();
-
-            // Assert
-            Assert.False(plugin.IsDisposed);
-        }
-    }
-
-    public sealed class Description
-    {
-        [Fact]
-        public void Should_drop_what_a_replaced_registration_had_registered_under_it()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer
-                .AddEditorPlugin<StubEditor>(editor => editor.AddFeaturePlugin<EditorBoundPlugin>())
-                .AddEditorPlugin<StubEditor>(editor => editor.AddFeaturePlugin<AlsoEditorBoundPlugin>()));
-
-            // Act
-            var names = definition.Activate(NoServices()).Plugins.Select(plugin => plugin.Id).ToList();
-
-            // Assert
-            Assert.Equal(["stub-editor", "also-editor-bound"], names);
-        }
-
-        [Fact]
-        public void Should_order_a_registration_ahead_of_what_is_registered_under_it()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer
-                .AddEditorPlugin<StubEditor>(editor => editor.AddFeaturePlugin<EditorBoundPlugin>())
-                .AddFeaturePlugin<CountingPlugin>());
-
-            // Act
-            var names = definition.Activate(NoServices()).Plugins.Select(plugin => plugin.Id).ToList();
-
-            // Assert
-            Assert.Equal(["stub-editor", "editor-bound", "counting"], names);
-        }
-
-        [Fact]
-        public void Should_leave_the_rest_in_place_when_one_registration_is_replaced()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer
-                .AddFeaturePlugin<CountingPlugin>()
-                .AddFeaturePlugin<ClosablePlugin>()
-                .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 5));
-
-            // Act
-            var names = definition.Activate(NoServices()).Plugins.Select(plugin => plugin.Id).ToList();
-
-            // Assert
-            Assert.Equal(["counting", "closable"], names);
-        }
-        [Fact]
-        public void Should_build_one_plugin_per_place_it_is_registered()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer
-                .AddEditorPlugin<StubEditor>(editor => editor
-                    .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 3))
-                .AddEditorPlugin<SecondEditor>(editor => editor
-                    .AddFeaturePlugin<CountingPlugin, CountOptions>(options => options.Count = 8)));
-
-            // Act
-            var counting = definition.Activate(NoServices()).Plugins.OfType<CountingPlugin>().ToList();
-
-            // Assert
-            Assert.Multiple(
-                () => Assert.Equal(2, counting.Count),
-                () => Assert.NotSame(counting[0], counting[1]),
-                () => Assert.Equal([3, 8], counting.Select(plugin => plugin.Options.Count)));
-        }
-        [Fact]
-        public void Should_activate_nothing_for_an_empty_description()
-        {
-            // Act
-            var plugins = ComposerDefinition.Empty.Activate(NoServices()).Plugins;
-
-            // Assert
-            Assert.Empty(plugins);
-        }
-
-        [Fact]
-        public void Should_keep_an_editor_registered_under_another_editor_apart()
-        {
-            // Arrange
-            var definition = ComposerDefinition.Create(composer => composer
-                .AddEditorPlugin<StubEditor>(editor => editor.AddFeaturePlugin<EditorBoundPlugin>())
-                .AddEditorPlugin<SecondEditor>());
-
-            // Act
-            var plugins = definition.Activate(NoServices()).Plugins;
-
-            // Assert
-            Assert.Collection(
-                plugins,
-                plugin => Assert.IsType<StubEditor>(plugin),
-                plugin => Assert.IsType<EditorBoundPlugin>(plugin),
-                plugin => Assert.IsType<SecondEditor>(plugin));
         }
     }
 }

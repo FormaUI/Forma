@@ -72,7 +72,7 @@ The split exists because a plugin may live outside the composer's own package, a
 
 | Project | Namespace | References |
 |---|---|---|
-| `Forma.Framework.Composer.Abstractions` | `Forma.Framework.Composer` | `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
+| `Forma.Framework.Composer.Abstractions` | `Forma.Framework.Composer` | `Forma.Framework.Plugins`, `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
 | `Forma.Framework.Composer` | `Forma.Framework.Composer` | the abstractions, `Forma.Framework.Icons`, `Forma.Framework.Toolbar` |
 | `Forma.Framework.Composer.Interop` | `Forma.Framework.Composer.Interop` | `Forma.Framework.Core.Interop` + ASP.NET Core |
 | `Forma.AddOns.Composer.Markdown` | `Forma.Framework.Composer.Markdown` | the abstractions + Markdig |
@@ -175,9 +175,11 @@ services.AddFormaComposer(composer => composer
 
 **Role comes from the method**, `AddEditorPlugin`, `AddFeaturePlugin` and `AddViewPlugin`, each constraining its type parameter, so a miscategorized plugin is a compile error rather than a surprise in the catalog. `AddRichTextEditor` and its siblings are sugar over `AddEditorPlugin<T>`.
 
+**The builders own the composer's vocabulary alone.** Recording a registration, resolving defaults, constructing the tree in order and disposing what it built are one mechanism serving any feature with extensions, and live in `Forma.Framework.Plugins` as `PluginRegistry<TPlugin>` and the `PluginScope<TPlugin>` it activates into. `IComposerPlugin` is an `IPlugin`, so the composer's builders are role-typed faces over that registry rather than a second copy of it.
+
 **No call depends on the order it was written in.** Defaults and anything else resolved against the whole tree are recorded and applied when the definition is built, so `TryAddDefaultFeatures` means "whatever this scope has not registered itself" however early it appears. Each builder carries only its own defaults method, so attaching one to the wrong scope does not compile.
 
-**A registration is a type, its options type and a delegate to configure them** — never a constructed instance, which would be shared. An implementation declares the options it takes through `IComposerConfigurable<TOptions>`, so a registration naming the wrong pair does not compile. Each activation creates its own options, and options are settable rather than `init`-only, which is what a configure delegate and binding from configuration both need; an options record's `Default` therefore answers a fresh value rather than one every plugin could write to.
+**A registration is a type, its options type and a delegate to configure them** — never a constructed instance, which would be shared. An implementation declares the options it takes through `IPluginConfigurable<TOptions>`, so a registration naming the wrong pair does not compile. Each activation creates its own options, and options are settable rather than `init`-only, which is what a configure delegate and binding from configuration both need; an options record's `Default` therefore answers a fresh value rather than one every plugin could write to.
 
 **A registration may name a factory instead**, for a plugin whose construction neither the composer's own plugins, its options nor the host's services can satisfy. That is the deliberate escape rather than the accident the type-based shape prevents: the host writes the factory, so a factory answering one instance to every composer is a choice made in the open. A composer disposes the plugins it built and leaves a factory's to whoever wrote it.
 

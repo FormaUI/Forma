@@ -3,12 +3,13 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
+using Forma.Framework.Plugins;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes emoji character insertion to the rich text editor.</summary>
 public sealed class EmojiPlugin(
     RichTextEditorPlugin editor,
-    EmojiPluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<EmojiPluginOptions>
+    EmojiPluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<EmojiPluginOptions>
 {
     /// <summary>Command prefix for inserting a specific emoji character.</summary>
     public const string InsertEmojiPrefix = "emoji.insert:";

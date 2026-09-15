@@ -2,13 +2,11 @@ namespace Forma.Framework.Composer.Plugins;
 
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Editing;
+using Forma.Framework.Plugins;
 
 /// <summary>A capability contributed to the composer, whatever it is implemented in.</summary>
-public interface IComposerPlugin : IComposerKeyBindingSource
+public interface IComposerPlugin : IPlugin, IComposerKeyBindingSource
 {
-    /// <summary>The unique identifier of the plugin.</summary>
-    string Id { get; }
-
     /// <summary>The items this plugin contributes, each naming the row it lands on.</summary>
     IReadOnlyList<ComposerToolbarItem> Items => [];
 

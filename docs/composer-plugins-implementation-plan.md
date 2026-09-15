@@ -130,12 +130,36 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
      composer must use. The factory is the escape, and a composer disposes only what it built
      itself so a factory's instance is left to its owner.
    - **`IComposerConfigurable<TOptions>` carries the composer's prefix**, which §2's naming rule
-     requires of every public type the composer owns.
+     requires of every public type the composer owns. Superseded by step 3a, which moved the
+     declaration out of the composer altogether.
    - **An options record's `Default` answers a fresh value.** Settable options made the shared
      static a mutable global anything could write to.
 
    The every-plugin Showcase demo moved off discovery and onto the defaults, which is step 5's
    plan arriving early, as the explorer plugin's independence did in step 2.
+
+   **3a. The registry becomes shared.** The machinery step 3 built names no composer concept, so
+   it moves to `Forma.Framework.Plugins` as `IPlugin`, `IPluginConfigurable<TOptions>`,
+   `PluginRegistry<TPlugin>`, `PluginScope<TPlugin>` and `PluginInstance<TPlugin>`, generic
+   over the plugin contract a feature declares. `IComposerPlugin` becomes an `IPlugin` and
+   surrenders `Id` to it; the composer's builders stay where they are and keep the editor,
+   feature and view roles, each now a face over the shared registry.
+
+   A registration is internal to the package that owns the registry, so a parent registration
+   cannot be handed back for a caller to hang children off. Children are registered through a
+   callback instead, `Add<TImplementation>(children)`, which is what lets the registry own the
+   tree rather than reconstruct it from a flat list.
+
+   `PluginScope` also carries what a flat list could not say: what each plugin was registered
+   under, and whether its lifetime is the scope's to end. Being a plugin's owner says nothing
+   about disposing it, which is why the two are separate answers on `PluginInstance`.
+
+   **Gate:** the suite is green, and the registry's own behavior — order, defaults, options,
+   refusals, ownership — is tested against a plugin family of its own rather than through the
+   composer.
+
+   ✅ Built. The composer's tests keep what is the composer's: the roles, the layout of an editor
+   ahead of its views, and defaults at the scope that asked for them.
 
 4. **The tree becomes the scope.** Scope resolved from where a registration sits.
    `IComposerFeaturePlugin.SupportedEditorIds`, `IComposerFeaturePlugin.AppliesToViews` and
@@ -213,16 +237,6 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
 - **The rich text editor's own five dialogs.** Link, table, video, image and embed keep
   `RichTextDialogKind`. Moving them onto the hosted path would also give them reopening
   through the request, which is its own change with its own reason.
-- **A shared plugin framework.** Extracting this machinery into `Forma.Framework.Plugins`
-  waits for a second feature that needs it. Nothing else in the repository has plugins, and
-  [the toolbar design](toolbar-design.md) rules a plugin registry out for itself.
-
-  What the extraction would take, so the decision is not re-derived: the registration, the
-  scope, the activator, the set and the definition name no composer concept but the plugin
-  contract itself, so they become generic over it and move; the three builders encode the
-  editor, feature and view roles and stay wherever the composer is. Keeping that line — the
-  mechanism knowing only "a plugin" — is what keeps the extraction cheap, and it costs nothing
-  to hold, unlike a package boundary drawn for one caller.
 - **How an editor from another package declares its own defaults.** Only a third-party
   editor needs it, and none exists.
 
