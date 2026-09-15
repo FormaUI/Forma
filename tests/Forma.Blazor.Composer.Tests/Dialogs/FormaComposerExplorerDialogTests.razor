@@ -208,7 +208,7 @@
             HtmlModel model,
             RichTextEditorPlugin richText)
         {
-            IReadOnlyList<IComposerPlugin> plugins = [richText, new ExplorerPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin(_ => richText, editor => editor.AddFeaturePlugin<ExplorerPlugin>()));
 
             return ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
         }

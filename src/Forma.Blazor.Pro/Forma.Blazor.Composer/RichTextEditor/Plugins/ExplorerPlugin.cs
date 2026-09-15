@@ -9,7 +9,7 @@ using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes browsing the host's stored files, and inserting whichever one is chosen.</summary>
-public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : IComposerFeaturePlugin
+public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<ExplorerPluginOptions>
 {
     /// <summary>The command opening the stored files dialog.</summary>
     public const string BrowseCommand = "explorer.browse";

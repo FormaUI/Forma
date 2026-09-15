@@ -7,8 +7,8 @@ using Forma.Framework.Files;
 public sealed record FileUploadPluginOptions
 {
     /// <summary>The files the dialog's picker accepts.</summary>
-    public FilePickerOptions Picker { get; init; } = FilePickerOptions.Default;
+    public FilePickerOptions Picker { get; set; } = FilePickerOptions.Default;
 
     /// <summary>Default options for the file upload plugin.</summary>
-    public static FileUploadPluginOptions Default { get; } = new();
+    public static FileUploadPluginOptions Default => new();
 }

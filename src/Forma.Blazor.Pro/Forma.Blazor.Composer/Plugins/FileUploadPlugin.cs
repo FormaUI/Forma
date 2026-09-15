@@ -7,7 +7,7 @@ using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes attaching uploaded files to the document, for any editor.</summary>
-public sealed class FileUploadPlugin(FileUploadPluginOptions? options = null) : IComposerFeaturePlugin
+public sealed class FileUploadPlugin(FileUploadPluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<FileUploadPluginOptions>
 {
     /// <summary>Options configuring which files may be attached.</summary>
     public FileUploadPluginOptions Options { get; } = options ?? FileUploadPluginOptions.Default;

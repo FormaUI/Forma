@@ -4,7 +4,7 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 public sealed record SpecialCharacterPluginOptions
 {
     /// <summary>The characters available in the palette dropdown.</summary>
-    public IReadOnlyList<string> Characters { get; init; } =
+    public IReadOnlyList<string> Characters { get; set; } =
     [
         "©", "®", "™", "€", "£", "¥", "§", "°", "±", "—", "–", "«", "»",
         "×", "÷", "µ", "¶", "•", "…", "‰", "¼", "½", "¾", "¿", "¡", "†", "‡",
@@ -12,5 +12,5 @@ public sealed record SpecialCharacterPluginOptions
     ];
 
     /// <summary>Default options for the special character plugin.</summary>
-    public static SpecialCharacterPluginOptions Default { get; } = new();
+    public static SpecialCharacterPluginOptions Default => new();
 }

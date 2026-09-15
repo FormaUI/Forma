@@ -11,7 +11,7 @@ using Forma.Framework.Toolbar;
 /// <summary>Contributes typographic and mathematical symbol insertion to the rich text editor.</summary>
 public sealed class SpecialCharacterPlugin(
     RichTextEditorPlugin editor,
-    SpecialCharacterPluginOptions? options = null) : IComposerFeaturePlugin
+    SpecialCharacterPluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<SpecialCharacterPluginOptions>
 {
     /// <summary>Command prefix for inserting a specific special character.</summary>
     public const string InsertCharacterPrefix = "special-character.insert:";

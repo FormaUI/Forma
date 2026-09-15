@@ -170,52 +170,57 @@ format the package never named take nothing more.
 
 ## Example
 
-A page authoring an article body in rich text, with stored pictures, a table, a preview and
-attachments:
+What every composer in the application is made of is described once, at startup. A composer
+authoring an article body in rich text, with stored pictures, a table, a preview and attachments:
+
+```csharp
+using Forma.Blazor.Components.Composer;
+using Forma.Blazor.Components.Composer.Plugins;
+using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
+using Forma.Blazor.Components.Composer.RichTextEditor.Views;
+using Forma.Framework.Composer.Editing;
+
+builder.Services.AddFormaComposer(composer => composer
+    .AddRichTextEditor(editor => editor
+        .AddFeaturePlugin<ParagraphFormatPlugin>()
+        .AddFeaturePlugin<BasicFormattingPlugin>()
+        .AddFeaturePlugin<ListPlugin>()
+        .AddFeaturePlugin<LinkPlugin>()
+        .AddFeaturePlugin<ImagePlugin>()
+        .AddFeaturePlugin<ExplorerPlugin, ExplorerPluginOptions>(options =>
+        {
+            options.AcceptedResourceKinds = "contentType:image";
+            options.InsertMode = MediaInsertMode.Embed;
+        })
+        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRows = 12)
+        .AddViewPlugin<RichTextPreviewViewPlugin>())
+    .AddFeaturePlugin<FileUploadPlugin>()
+    .AddFeaturePlugin<MaximizePlugin>());
+```
+
+Registering a plugin names its type rather than an instance, because **every composer builds its
+own**: an editor plugin carries the events its canvas subscribes to, so two composers sharing one
+would answer each other's commands. A plugin's constructor is satisfied from the plugins that
+composer built, the options the registration configured, and then the host's own services.
+
+`TryAddDefaultFeatures()` on an editor and `TryAddDefaultPlugins()` on the composer register
+whatever that scope has not registered itself, so a host wanting everything with one setting
+changed names only the setting. Neither depends on where it sits in the chain.
+
+The page then places a composer with nothing more to say:
 
 ```razor
-@using Forma.Blazor.Components.Composer
-@using Forma.Blazor.Components.Composer.Plugins
-@using Forma.Blazor.Components.Composer.RichTextEditor
-@using Forma.Blazor.Components.Composer.RichTextEditor.Plugins
-@using Forma.Blazor.Components.Composer.RichTextEditor.Views
-@using Forma.Framework.Composer.Documents
-@using Forma.Framework.Composer.Editing
-@using Forma.Framework.Composer.Plugins
-
-<FormaComposer @bind-Value="_body" Plugins="_plugins" />
+<FormaComposer @bind-Value="_body" />
 
 @code {
     private ComposerDocument _body = new(ComposerDocumentFormat.Html, "<p>Draft.</p>");
-    private IReadOnlyList<IComposerPlugin> _plugins = [];
-
-    protected override void OnInitialized()
-    {
-        var richText = new RichTextEditorPlugin();
-
-        _plugins =
-        [
-            richText,
-            new ParagraphFormatPlugin(richText),
-            new BasicFormattingPlugin(richText),
-            new ListPlugin(richText),
-            new LinkPlugin(richText),
-            new ImagePlugin(richText),
-            new ExplorerPlugin(new ExplorerPluginOptions
-            {
-                AcceptedResourceKinds = "contentType:image",
-                InsertMode = MediaInsertMode.Embed,
-            }),
-            new TablePlugin(richText, new TablePluginOptions { MaxRows = 12 }),
-            new RichTextPreviewViewPlugin(richText),
-            new FileUploadPlugin(),
-            new MaximizePlugin(),
-        ];
-    }
 }
 ```
 
-The registrations that page relies on, beside `AddFormaUI()`: the stored files the explorer
+One composer that differs from the rest takes its own description through `Plugins`, built the
+same way with `ComposerDefinition.Create(…)`.
+
+The registrations that composer relies on, beside `AddFormaUI()`: the stored files the explorer
 plugin browses, and the store the uploads land in.
 
 ```csharp

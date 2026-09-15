@@ -116,6 +116,27 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    tests: two composers get separate instances; every plugin needing the editor gets the one
    its own composer built; each failure path reports the plugin and the parameter.
 
+   ◐ Built, apart from the browser walk of the Showcase, which needs a browser this environment
+   has none of. Four departures from what this step planned:
+
+   - **The builder lives in the engine and the registrar in the Pro package.** `AddFormaComposer`
+     and the `AddRichTextEditor` sugar name concrete plugins, which the engine cannot see, so the
+     engine ships the builders and the package that owns the plugins ships the methods naming
+     them. The defaults are extension methods for the same reason, which is also what keeps each
+     scope's defaults method off the other scopes.
+   - **A registration may name a factory.** Type-based registration cannot construct a plugin
+     whose dependencies are none of this composer's plugins, its options or the host's services —
+     and the Showcase has three such demos, where the page cascades the very editor instance the
+     composer must use. The factory is the escape, and a composer disposes only what it built
+     itself so a factory's instance is left to its owner.
+   - **`IComposerConfigurable<TOptions>` carries the composer's prefix**, which §2's naming rule
+     requires of every public type the composer owns.
+   - **An options record's `Default` answers a fresh value.** Settable options made the shared
+     static a mutable global anything could write to.
+
+   The every-plugin Showcase demo moved off discovery and onto the defaults, which is step 5's
+   plan arriving early, as the explorer plugin's independence did in step 2.
+
 4. **The tree becomes the scope.** Scope resolved from where a registration sits.
    `IComposerFeaturePlugin.SupportedEditorIds`, `IComposerFeaturePlugin.AppliesToViews` and
    `IComposerViewPlugin.EditorId` are deleted. The two on a feature plugin are read only by
@@ -195,6 +216,13 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
 - **A shared plugin framework.** Extracting this machinery into `Forma.Framework.Plugins`
   waits for a second feature that needs it. Nothing else in the repository has plugins, and
   [the toolbar design](toolbar-design.md) rules a plugin registry out for itself.
+
+  What the extraction would take, so the decision is not re-derived: the registration, the
+  scope, the activator, the set and the definition name no composer concept but the plugin
+  contract itself, so they become generic over it and move; the three builders encode the
+  editor, feature and view roles and stay wherever the composer is. Keeping that line — the
+  mechanism knowing only "a plugin" — is what keeps the extraction cheap, and it costs nothing
+  to hold, unlike a package boundary drawn for one caller.
 - **How an editor from another package declares its own defaults.** Only a third-party
   editor needs it, and none exists.
 

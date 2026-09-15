@@ -47,6 +47,28 @@
         }
     }
 
+    /// <summary>Counts how many times a plugin was built, which is once per composer.</summary>
+    public sealed class Tally
+    {
+        public int Built { get; set; }
+    }
+
+    public sealed class TallyingEditorPlugin : IComposerEditorPlugin
+    {
+        public TallyingEditorPlugin(Tally tally)
+        {
+            ArgumentNullException.ThrowIfNull(tally);
+            tally.Built++;
+        }
+
+        public string Id => "tallying";
+        public string Title => "Tallying";
+        public Icon Icon => Glyph.File;
+        public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
+        public Type EditorComponent => typeof(FormaPlainTextEditor);
+        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+    }
+
     public sealed class Component
     {
         private sealed class TestModel
@@ -87,7 +109,7 @@
         }
 
         // Proves a plugin-declared group's own title is localized, not only the items inside it.
-        private sealed class GroupedCommandPlugin : IComposerPlugin
+        private sealed class GroupedCommandPlugin : IComposerFeaturePlugin
         {
             public string Id => "grouped";
             public IReadOnlyList<ComposerToolbarItem> Items =>
@@ -105,7 +127,7 @@
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
-        private sealed class CommandPlugin : IComposerPlugin
+        private sealed class CommandPlugin : IComposerFeaturePlugin
         {
             public string Id => "commands";
             public List<string> Executed { get; } = [];
@@ -122,7 +144,7 @@
             }
         }
 
-        private sealed class ManyCommandsPlugin(int count) : IComposerPlugin
+        private sealed class ManyCommandsPlugin(int count) : IComposerFeaturePlugin
         {
             public string Id => "many";
             public IReadOnlyList<ComposerToolbarItem> Items =>
@@ -138,7 +160,7 @@
 
         // Leads with a menu, so part of the inline limit is spent on a leaf that is not an action
         // and the overflow index has to account for it.
-        private sealed class MenuThenCommandsPlugin(int count) : IComposerPlugin
+        private sealed class MenuThenCommandsPlugin(int count) : IComposerFeaturePlugin
         {
             public string Id => "menu-then-commands";
             public IReadOnlyList<ComposerToolbarItem> Items =>
@@ -161,7 +183,7 @@
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
-        private sealed class SlowPlugin : IComposerPlugin
+        private sealed class SlowPlugin : IComposerFeaturePlugin
         {
             public string Id => "slow";
             public async ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
@@ -182,7 +204,7 @@
 
         // Pushes a status item on command, proving the region registry is a composer-level capability
         // rather than something an editor plugin has to implement for itself.
-        private sealed class StatusPushingPlugin : IComposerPlugin
+        private sealed class StatusPushingPlugin : IComposerFeaturePlugin
         {
             private IComposerStatusItem? _item;
 
@@ -210,7 +232,7 @@
         }
 
         // Pushes a status item that opts into being announced, unlike the frequently updating readout above.
-        private sealed class AnnouncingStatusPlugin : IComposerPlugin
+        private sealed class AnnouncingStatusPlugin : IComposerFeaturePlugin
         {
             public string Id => "announcing";
             public IReadOnlyList<ComposerToolbarItem> Items =>
@@ -249,7 +271,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new SlowPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<SlowPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -441,7 +463,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>());
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -472,7 +494,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -488,7 +510,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Act
@@ -508,7 +530,7 @@
             using var culture = new CultureFixture("he");
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new GroupedCommandPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<GroupedCommandPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -538,7 +560,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<CommandPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -556,7 +578,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<CommandPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -586,7 +608,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<CommandPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -605,7 +627,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<CommandPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
             Assert.Contains("is-shown", cut.Find(".forma-composer-plugins-row").ParentElement!.ParentElement!.ClassList);
@@ -624,7 +646,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<CommandPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Act
@@ -643,7 +665,7 @@
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
             var surplus = FormaComposerPluginsBar.InlineLimit + 3;
-            IReadOnlyList<IComposerPlugin> plugins = [new ManyCommandsPlugin(surplus)];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin(_ => new ManyCommandsPlugin(surplus)));
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -664,7 +686,7 @@
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
             var surplus = FormaComposerPluginsBar.InlineLimit + 3;
-            IReadOnlyList<IComposerPlugin> plugins = [new MenuThenCommandsPlugin(surplus)];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin(_ => new MenuThenCommandsPlugin(surplus)));
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -685,7 +707,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin(), new ScopedPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>().AddFeaturePlugin<ScopedPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -701,7 +723,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin(), new ScopedPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>().AddFeaturePlugin<ScopedPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Act
@@ -718,7 +740,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new HtmlModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new HtmlEditorPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<HtmlEditorPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Act
@@ -734,7 +756,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new HtmlModel { Body = new(ComposerDocumentFormat.Html, "<p onclick=\"steal()\">Text</p><script>evil()</script>") };
-            IReadOnlyList<IComposerPlugin> plugins = [new HtmlEditorPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<HtmlEditorPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -750,7 +772,7 @@
             using var ctx = new FormaComposerTests();
             ctx.Services.AddSingleton<IComposerDocumentConverter>(new TextToHtmlConverter());
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new DummyEditorPlugin(), new HtmlEditorPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<DummyEditorPlugin>().AddEditorPlugin<HtmlEditorPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Act
@@ -915,7 +937,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<CommandPlugin>());
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -932,7 +954,7 @@
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
             var plugin = new CommandPlugin();
-            IReadOnlyList<IComposerPlugin> plugins = [plugin];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin(_ => plugin));
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
 
@@ -968,7 +990,7 @@
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
             var plugin = new CommandPlugin();
-            IReadOnlyList<IComposerPlugin> plugins = [plugin];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin(_ => plugin));
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" ReadOnly="true" />);
             var composer = cut.FindComponent<FormaComposer>().Instance;
 
@@ -1031,7 +1053,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new StatusPushingPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<StatusPushingPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
 
@@ -1049,7 +1071,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new StatusPushingPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<StatusPushingPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
 
@@ -1080,7 +1102,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin(), new StatusPushingPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>().AddFeaturePlugin<StatusPushingPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
             cut.Find("button[aria-label='Word Count']").Click();
@@ -1099,7 +1121,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new StatusPushingPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<StatusPushingPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
 
@@ -1116,7 +1138,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            IReadOnlyList<IComposerPlugin> plugins = [new AnnouncingStatusPlugin()];
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<AnnouncingStatusPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
 
@@ -1169,7 +1191,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var plugins = new IComposerPlugin[] { new MaximizePlugin() };
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<MaximizePlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             var composer = cut.FindComponent<FormaComposer>().Instance;
 
@@ -1195,7 +1217,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var plugins = new IComposerPlugin[] { new MaximizePlugin() };
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<MaximizePlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
 
@@ -1212,7 +1234,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var plugins = new IComposerPlugin[] { new SelectionBarPlugin() };
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<SelectionBarPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
 
@@ -1229,7 +1251,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var plugins = new IComposerPlugin[] { new SelectionBarPlugin() };
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin<SelectionBarPlugin>());
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             var composer = cut.FindComponent<FormaComposer>().Instance;
 
@@ -1255,8 +1277,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new HtmlModel();
-            var richText = new RichTextEditorPlugin();
-            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextPreviewViewPlugin(richText), new RichTextSourceViewPlugin(richText)];
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor.AddViewPlugin<RichTextPreviewViewPlugin>().AddViewPlugin<RichTextSourceViewPlugin>()));
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Assert
@@ -1279,8 +1300,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new HtmlModel { Body = new ComposerDocument(ComposerDocumentFormat.Html, "<p>One</p><p>Two</p>") };
-            var richText = new RichTextEditorPlugin();
-            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextSourceViewPlugin(richText)];
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor.AddViewPlugin<RichTextSourceViewPlugin>()));
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             // Act
             cut.FindAll("[role=tab]")[1].Click();
@@ -1300,8 +1320,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new HtmlModel();
-            var richText = new RichTextEditorPlugin();
-            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextPreviewViewPlugin(richText)];
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor.AddViewPlugin<RichTextPreviewViewPlugin>()));
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.FindAll("[role=tab]")[1].Click();
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-preview")));
@@ -1320,8 +1339,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new HtmlModel();
-            var richText = new RichTextEditorPlugin();
-            IReadOnlyList<IComposerPlugin> plugins = [richText, new BasicFormattingPlugin(richText), new RichTextPreviewViewPlugin(richText)];
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor.AddFeaturePlugin<BasicFormattingPlugin>().AddViewPlugin<RichTextPreviewViewPlugin>()));
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.FindAll("[role=tab]")[1].Click();
 
@@ -1329,6 +1347,49 @@
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Print']")));
             Assert.Empty(cut.FindAll("button[aria-label='Bold']"));
             Assert.Empty(cut.FindAll("button[aria-label='Undo']"));
+        }
+    }
+
+    public sealed class Composition
+    {
+        private sealed class TestModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.PlainText, "Initial Content");
+        }
+
+        [Fact]
+        public void Should_build_its_own_plugins_rather_than_share_another_composer_s()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var tally = new Tally();
+            ctx.Services.AddSingleton(tally);
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<TallyingEditorPlugin>());
+            var first = new TestModel();
+            var second = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<div>
+                <FormaComposer @bind-Value="first.Body" Plugins="plugins" />
+                <FormaComposer @bind-Value="second.Body" Plugins="plugins" />
+            </div>);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(2, tally.Built));
+        }
+
+        [Fact]
+        public void Should_fall_back_to_its_own_editor_when_nothing_is_registered()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Single(cut.FindAll("textarea")));
         }
     }
 
@@ -1344,7 +1405,7 @@
             TestModel model,
             IComposerEditorPlugin editor)
         {
-            IReadOnlyList<IComposerPlugin> plugins = [editor];
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin(_ => editor));
 
             return ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
         }

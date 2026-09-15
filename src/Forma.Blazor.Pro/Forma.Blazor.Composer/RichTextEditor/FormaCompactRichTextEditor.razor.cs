@@ -11,8 +11,13 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Compact rich text editor preset providing basic formatting, alignment, and typography.</summary>
 public sealed partial class FormaCompactRichTextEditor : FormaInputBase<ComposerDocument>
 {
-    private readonly RichTextEditorPlugin _editorPlugin = new();
-    private readonly IReadOnlyList<IComposerPlugin> _plugins;
+    // A description rather than instances, so each composer rendering this preset builds its own plugins.
+    private static readonly ComposerDefinition Preset = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor
+            .AddFeaturePlugin<TypographyPlugin>()
+            .AddFeaturePlugin<BasicFormattingPlugin>()
+            .AddFeaturePlugin<AlignmentBidiPlugin>()
+            .AddFeaturePlugin<LinkPlugin>()));
 
     /// <summary>Options configuring the underlying composer instance.</summary>
     [Parameter] public ComposerOptions Options { get; set; } = ComposerOptions.Default;
@@ -28,19 +33,6 @@ public sealed partial class FormaCompactRichTextEditor : FormaInputBase<Composer
     /// <inheritdoc />
     public override ElementReference RootElement
         => Composer is null ? default : Composer.RootElement;
-
-    /// <summary>Constructs a compact rich text editor preset with its pre-configured plugin set.</summary>
-    public FormaCompactRichTextEditor()
-    {
-        _plugins =
-        [
-            _editorPlugin,
-            new TypographyPlugin(_editorPlugin),
-            new BasicFormattingPlugin(_editorPlugin),
-            new AlignmentBidiPlugin(_editorPlugin),
-            new LinkPlugin(_editorPlugin),
-        ];
-    }
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(

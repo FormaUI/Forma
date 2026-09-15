@@ -24,9 +24,14 @@ using Microsoft.JSInterop;
 
 /// <summary>The composer engine, hosting rich text, Markdown, code, or page composition through extensible editor plugins.</summary>
 /// <param name="syntaxHighlighter">The host's registered highlighter, or null to classify no code.</param>
-public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHighlighter = null)
+/// <param name="definition">What the application registered every composer to be made of, or null to have only the editor a composer falls back to.</param>
+public sealed partial class FormaComposer(
+    IComposerSyntaxHighlighter? syntaxHighlighter = null,
+    ComposerDefinition? definition = null)
     : FormaInputBase<ComposerDocument>, IComposerInteraction
 {
+    private readonly ComposerDefinition? _definition = definition;
+    private ComposerPluginSet _ownPlugins = ComposerPluginSet.Empty;
     private readonly ComposerCommandRegistry _commandRegistry = new();
     private readonly ComposerRegionRegistry _regionRegistry = new();
     private ComposerSelection _selection = ComposerSelection.Empty;
@@ -55,8 +60,8 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
     [Parameter] public ComposerOptions Options { get; set; } = ComposerOptions.Default;
 
-    /// <summary>Plugins supplied directly to this instance in addition to any registered in dependency injection.</summary>
-    [Parameter] public IEnumerable<IComposerPlugin>? Plugins { get; set; }
+    /// <summary>What this composer alone is made of, in place of whatever the application registered.</summary>
+    [Parameter] public ComposerDefinition? Plugins { get; set; }
 
     /// <summary>The identifier of the active editor plugin.</summary>
     [Parameter] public string? ActiveEditorId { get; set; }
@@ -75,7 +80,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
     [Inject] private IHtmlSanitizer Sanitizer { get; set; } = default!;
-    [Inject] private IEnumerable<IComposerPlugin> RegisteredPlugins { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
 
     private string ElementId
@@ -219,9 +224,11 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
 
     private async Task LoadPluginsAsync()
     {
-        var candidates = (Plugins ?? []).Concat(RegisteredPlugins);
+        // The plugins are this composer's own: an editor plugin carries events its canvas subscribes to,
+        // so a second composer sharing one would answer this one's commands.
+        _ownPlugins = (Plugins ?? _definition ?? ComposerDefinition.Empty).Activate(Services);
 
-        _pluginCatalog = await ComposerPluginCatalog.CreateAsync(candidates, new PlainTextEditorPlugin());
+        _pluginCatalog = await ComposerPluginCatalog.CreateAsync(_ownPlugins.Plugins, new PlainTextEditorPlugin());
         _activeEditor = _pluginCatalog.ResolveEditor(ActiveEditorId, Options.DefaultEditorId, CurrentDocument.Format);
         _activeViews = null;
 
@@ -608,6 +615,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();
         await _focus.DisposeAsync();
+        await _ownPlugins.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

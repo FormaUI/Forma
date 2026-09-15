@@ -102,15 +102,15 @@
     <h2>@L["View Commands"]</h2>
     <p class="description">@L["Preview and Source are views the rich text editor offers over its document, reached from the tabs at the far end of the strip. Preview lays the document out at a chosen paper or screen size, prints it, and exports it; Source shows its markup one block per line. Maximize fills the viewport with whichever surface shows, and Selection Bar shows or hides the formatting bar that follows a selection; drag its handle to move it."]</p>
     <div class="demo-box">
-        <FormaComposer @bind-Value="_viewDoc" Plugins="_viewPlugins" />
+        <FormaComposer @bind-Value="_viewDoc" Plugins="ViewPlugins" />
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Every Plugin"]</h2>
-    <p class="description">@L["The standard preset carries the plugins most documents need. This demo discovers and registers every plugin the library ships, so what appears here is exactly what a host can opt into."]</p>
+    <p class="description">@L["The standard preset carries the plugins most documents need. This demo registers the defaults instead, which is every plugin the library ships, so what appears here is exactly what a host can opt into."]</p>
     <div class="demo-box">
-        <FormaComposer @bind-Value="_everyPluginDoc" Plugins="_everyPlugins" />
+        <FormaComposer @bind-Value="_everyPluginDoc" Plugins="EveryPlugin" />
     </div>
 </div>
 
@@ -118,7 +118,7 @@
     <h2>@L["Images and Stored Pictures"]</h2>
     <p class="description">@L["Insert Image takes an address and nothing else. Browse Files opens the stored library beside it, limited here to pictures, and renders whichever one is chosen where the caret sits."]</p>
     <div class="demo-box">
-        <FormaComposer @bind-Value="_imagesOnlyDoc" Plugins="_imagesOnlyPlugins" />
+        <FormaComposer @bind-Value="_imagesOnlyDoc" Plugins="ImagesOnlyPlugins" />
     </div>
 </div>
 
@@ -126,7 +126,7 @@
     <h2>@L["Any File, Browsed or Attached"]</h2>
     <p class="description">@L["Browse Files lists every stored file here rather than pictures alone, inserting what the browser can render together with a link to it, and everything else as a link. Attach Files uploads from this device instead, and what arrives is carried beside the document the way an email carries its attachments."]</p>
     <div class="demo-box">
-        <FormaComposer @bind-Value="_anyFileDoc" Plugins="_anyFilePlugins" />
+        <FormaComposer @bind-Value="_anyFileDoc" Plugins="AnyFilePlugins" />
     </div>
 </div>
 
@@ -151,46 +151,53 @@
     private ComposerDocument _anyFileDoc = new(ComposerDocumentFormat.Html, "<p>Browse any stored file, or attach one from this device.</p>");
     private readonly ComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
     private readonly ComposerOptions _fixedHeightOptions = new() { IsResizable = false };
-    private IReadOnlyList<IComposerPlugin> _statusPlugins = [];
-    private IReadOnlyList<IComposerPlugin> _sourcePlugins = [];
-    private IReadOnlyList<IComposerPlugin> _demoPlugins = [];
-    private IReadOnlyList<IComposerPlugin> _viewPlugins = [];
-    private IReadOnlyList<IComposerPlugin> _everyPlugins = [];
-    private IReadOnlyList<IComposerPlugin> _imagesOnlyPlugins = [];
-    private IReadOnlyList<IComposerPlugin> _anyFilePlugins = [];
+    // The demo editors are cascaded to the page's own components as well, so these compositions hand the
+    // composer the very instances the page holds rather than letting it build its own.
+    private ComposerDefinition _statusPlugins = ComposerDefinition.Empty;
+    private ComposerDefinition _sourcePlugins = ComposerDefinition.Empty;
+    private ComposerDefinition _demoPlugins = ComposerDefinition.Empty;
+
+    private static readonly ComposerDefinition ViewPlugins = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor
+            .AddFeaturePlugin<BasicFormattingPlugin>()
+            .AddViewPlugin<RichTextPreviewViewPlugin>()
+            .AddViewPlugin<RichTextSourceViewPlugin>())
+        .AddFeaturePlugin<MaximizePlugin>()
+        .AddFeaturePlugin<SelectionBarPlugin>());
+
+    private static readonly ComposerDefinition EveryPlugin = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
+        .TryAddDefaultPlugins());
+
+    private static readonly ComposerDefinition ImagesOnlyPlugins = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor
+            .AddFeaturePlugin<BasicFormattingPlugin>()
+            .AddFeaturePlugin<ImagePlugin>()
+            .AddFeaturePlugin<ExplorerPlugin, ExplorerPluginOptions>(options =>
+            {
+                options.AcceptedResourceKinds = "contentType:image";
+                options.AcceptedUploadKinds = "globs:*.png;*.jpg;*.svg";
+                options.InsertMode = MediaInsertMode.Embed;
+            })));
+
+    private static readonly ComposerDefinition AnyFilePlugins = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor
+            .AddFeaturePlugin<BasicFormattingPlugin>()
+            .AddFeaturePlugin<ExplorerPlugin, ExplorerPluginOptions>(options =>
+            {
+                options.AllowUpload = false;
+                options.InsertMode = MediaInsertMode.Both;
+            }))
+        .AddFeaturePlugin<FileUploadPlugin, FileUploadPluginOptions>(options => options.Picker = new() { MaxFileSize = 5 * 1024 * 1024 }));
 
     protected override void OnInitialized()
     {
-        _statusPlugins = [_statusTextPlugin];
-        _sourcePlugins = [_sourceOnlyPlugin];
-        _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
-        var richView = new RichTextEditorPlugin();
-        _viewPlugins = [richView, new BasicFormattingPlugin(richView), new RichTextPreviewViewPlugin(richView), new RichTextSourceViewPlugin(richView), new MaximizePlugin(), new SelectionBarPlugin()];
-
-        // Plugins are discovered from the library.
-        _everyPlugins = ComposerPluginDiscovery.Discover([new RichTextEditorPlugin()], typeof(RichTextEditorPlugin).Assembly);
-
-        var richFiles = new RichTextEditorPlugin();
-        _imagesOnlyPlugins =
-        [
-            richFiles,
-            new BasicFormattingPlugin(richFiles),
-            new ImagePlugin(richFiles),
-            new ExplorerPlugin(new ExplorerPluginOptions
-            {
-                AcceptedResourceKinds = "contentType:image",
-                AcceptedUploadKinds = "globs:*.png;*.jpg;*.svg",
-                InsertMode = MediaInsertMode.Embed,
-            }),
-        ];
-
-        var richAnything = new RichTextEditorPlugin();
-        _anyFilePlugins =
-        [
-            richAnything,
-            new BasicFormattingPlugin(richAnything),
-            new ExplorerPlugin(new ExplorerPluginOptions { AllowUpload = false, InsertMode = MediaInsertMode.Both }),
-            new FileUploadPlugin(new FileUploadPluginOptions { Picker = new() { MaxFileSize = 5 * 1024 * 1024 } }),
-        ];
+        _statusPlugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin(_ => _statusTextPlugin));
+        _sourcePlugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin(_ => _sourceOnlyPlugin));
+        _demoPlugins = ComposerDefinition.Create(composer => composer
+            .AddEditorPlugin(_ => _everythingTextPlugin)
+            .AddEditorPlugin(_ => _everythingSourcePlugin)
+            .AddFeaturePlugin<TimestampPlugin>()
+            .AddFeaturePlugin<CleanupPlugin>());
     }
 }

@@ -9,7 +9,7 @@ using Forma.Framework.Toolbar;
 /// <summary>Contributes HTML table insertion and cell, row, and column manipulation commands to the rich text editor.</summary>
 public sealed class TablePlugin(
     RichTextEditorPlugin editor,
-    TablePluginOptions? options = null) : IComposerFeaturePlugin
+    TablePluginOptions? options = null) : IComposerFeaturePlugin, IComposerConfigurable<TablePluginOptions>
 {
     /// <summary>The command opening the insert table dialog.</summary>
     public const string InsertTableCommand = "table.insert";

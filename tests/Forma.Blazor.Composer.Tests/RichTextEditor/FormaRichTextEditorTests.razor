@@ -8,6 +8,16 @@
             public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Initial Text</p>");
         }
 
+        private static readonly ComposerDefinition RichText =
+            ComposerDefinition.Create(composer => composer.AddRichTextEditor());
+
+        private static readonly ComposerDefinition RichTextWithFormatting = ComposerDefinition.Create(composer => composer
+            .AddRichTextEditor(editor => editor.AddFeaturePlugin<BasicFormattingPlugin>()));
+
+        private static readonly ComposerDefinition RichTextWithSelectionBar = ComposerDefinition.Create(composer => composer
+            .AddRichTextEditor(editor => editor.AddFeaturePlugin<BasicFormattingPlugin>())
+            .AddFeaturePlugin<SelectionBarPlugin>());
+
         [Fact]
         public void Should_render_contenteditable_canvas()
         {
@@ -16,7 +26,7 @@
             var model = new TestModel();
 
             // Act
-            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[new RichTextEditorPlugin()]" />);
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
 
             // Assert
             var canvas = cut.Find(".forma-composer-rich-text-canvas");
@@ -32,7 +42,7 @@
             var model = new TestModel();
 
             // Act
-            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Disabled="true" Plugins="[new RichTextEditorPlugin()]" />);
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Disabled="true" Plugins="RichText" />);
 
             // Assert
             var canvas = cut.Find(".forma-composer-rich-text-canvas");
@@ -47,7 +57,7 @@
             var model = new TestModel();
 
             // Act
-            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" ReadOnly="true" Plugins="[new RichTextEditorPlugin()]" />);
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" ReadOnly="true" Plugins="RichText" />);
 
             // Assert
             var canvas = cut.Find(".forma-composer-rich-text-canvas");
@@ -63,7 +73,7 @@
             var editor = new RichTextEditorPlugin();
 
             // Act
-            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[editor, new BasicFormattingPlugin(editor)]" />);
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
 
             // Assert
             var menu = cut.Find(".forma-composer-selection-bar");
@@ -82,7 +92,7 @@
             using var ctx = new FormaRichTextEditorTests();
             var model = new TestModel();
             var editor = new RichTextEditorPlugin();
-            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[editor, new BasicFormattingPlugin(editor), new SelectionBarPlugin()]" />);
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithSelectionBar" />);
             var composer = cut.FindComponent<FormaComposer>().Instance;
             Assert.NotNull(cut.Find(".forma-composer-selection-bar"));
 
@@ -101,7 +111,7 @@
             var model = new TestModel();
 
             // Act
-            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[new RichTextEditorPlugin()]" />);
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-composer-selection-bar"));
