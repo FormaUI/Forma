@@ -242,14 +242,17 @@ A plugin that collects something from the author asks the engine for a dialog an
 public sealed record ComposerInsertionRequest
 {
     public required Type Body { get; init; }
-    public required string Title { get; init; }
     public IReadOnlyDictionary<string, object?> Parameters { get; init; } = ReadOnlyDictionary<string, object?>.Empty;
     public ComposerDialogSize Size { get; init; } = ComposerDialogSize.Medium;
 }
 
 public interface IComposerInsertionDialog
 {
-    IReadOnlyList<string> Messages { get; }
+    string Title { get; }
+
+    string? Notice => null;
+
+    IReadOnlyList<string> Messages => [];
 
     ValueTask<ComposerInsertion?> TryConfirmAsync(CancellationToken cancellationToken = default);
 }
@@ -259,9 +262,11 @@ public abstract record ComposerInsertion;
 public sealed record ResourceInsertion(string Source, string Name, string Kind, bool Embed, bool Link) : ComposerInsertion;
 ```
 
-The engine hosts `Body` in a `<DynamicComponent>` inside its own shell, which owns the title, the notice, the message list and the confirm and cancel controls, so every dialog looks the same however it arrived. The title is resolved through the **body's** type rather than the composer's, so a plugin's own translation file supplies it. A `Body` that does not implement the interface is rejected where the request is made rather than ignored at confirm time.
+The engine hosts `Body` in a `<DynamicComponent>` inside its own shell, which draws the header, the notice, the message list and the confirm and cancel controls, so every dialog looks the same however it arrived. A `Body` that does not implement the interface is rejected where the request is made rather than ignored at confirm time.
 
-Confirming asks the body for an insertion and hands it to the active editor through `IComposerEditorPlugin.TryInsertAsync`, which answers false when it takes none of that kind. **That bool is the compatibility check.** A plugin registered under an editor that cannot take what it produces needs no capability contract to declare the mismatch: the dialog reports it and stays open, which is also what a read-only or disabled composer does.
+**The body resolves its own title, notice and messages**, rather than the request carrying them, because those strings belong to whichever package ships the body: a plugin never resolves a localizer, and the composer has no resources for a body it has never heard of. The request says which body and how much room it gets, and nothing about what it says.
+
+Confirming asks the body for an insertion and hands it to the active editor through `IComposerEditorPlugin.TryInsertAsync`, which answers false when it takes none of that kind. **That bool is the compatibility check.** A plugin registered under an editor that cannot take what it produces needs no capability contract to declare the mismatch: the dialog stays open and says so, which is also what a read-only or disabled composer does. What the body refused and what the editor refused are shown together, the body's own messages first.
 
 Two members on `IComposerInteraction` carry it: `OpenDialogAsync(ComposerInsertionRequest)` and `TryInsertAsync(ComposerInsertion)`.
 

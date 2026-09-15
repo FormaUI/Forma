@@ -1,8 +1,10 @@
 namespace Forma.Blazor.Composer.Tests.RichTextEditor;
 
+using Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Blazor.Components.Composer.RichTextEditor;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Blazor.Components.Inputs;
+using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
@@ -418,55 +420,67 @@ public sealed class RichTextPluginTests
     public sealed class Explorer
     {
         [Fact]
-        public async Task Should_dispatch_browse_request()
+        public async Task Should_ask_the_composer_to_open_the_stored_files_dialog()
         {
             // Arrange
-            var editor = new RichTextEditorPlugin();
-            var plugin = new ExplorerPlugin(editor);
-            var state = CreateState();
-            ExplorerPluginOptions? requestedOptions = null;
-            editor.ExplorerDialogRequested += options => requestedOptions = options;
+            var plugin = new ExplorerPlugin();
+            var interaction = new RecordingComposerInteraction();
 
             // Act
-            await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
+            await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, CreateState(), interaction, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Same(plugin.Options, requestedOptions);
+            var request = Assert.Single(interaction.OpenedDialogs);
+            Assert.Equal(typeof(FormaComposerExplorerDialog), request.Body);
+            Assert.Equal(ComposerDialogSize.Large, request.Size);
             Assert.Equal("explorer", plugin.Id);
+        }
+
+        [Fact]
+        public async Task Should_open_nothing_for_a_command_it_does_not_own()
+        {
+            // Arrange
+            var plugin = new ExplorerPlugin();
+            var interaction = new RecordingComposerInteraction();
+
+            // Act
+            await plugin.ExecuteAsync("something.else", CreateState(), interaction, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Empty(interaction.OpenedDialogs);
         }
 
         [Fact]
         public async Task Should_carry_the_limits_the_host_set()
         {
             // Arrange
-            var editor = new RichTextEditorPlugin();
-            var plugin = new ExplorerPlugin(editor, new ExplorerPluginOptions
+            var plugin = new ExplorerPlugin(new ExplorerPluginOptions
             {
                 AcceptedResourceKinds = "contentType:image",
                 AcceptedUploadKinds = "globs:*.png",
                 AllowUpload = false,
                 InsertMode = MediaInsertMode.Both,
             });
-            var state = CreateState();
-            ExplorerPluginOptions? requestedOptions = null;
-            editor.ExplorerDialogRequested += options => requestedOptions = options;
+            var interaction = new RecordingComposerInteraction();
 
             // Act
-            await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
+            await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, CreateState(), interaction, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.NotNull(requestedOptions);
-            Assert.Equal("contentType:image", requestedOptions.AcceptedResourceKinds);
-            Assert.Equal("globs:*.png", requestedOptions.AcceptedUploadKinds);
-            Assert.False(requestedOptions.AllowUpload);
-            Assert.Equal(MediaInsertMode.Both, requestedOptions.InsertMode);
+            var request = Assert.Single(interaction.OpenedDialogs);
+            var carried = Assert.IsType<ExplorerPluginOptions>(request.Parameters[nameof(FormaComposerExplorerDialog.Options)]);
+            Assert.Multiple(
+                () => Assert.Equal("contentType:image", carried.AcceptedResourceKinds),
+                () => Assert.Equal("globs:*.png", carried.AcceptedUploadKinds),
+                () => Assert.False(carried.AllowUpload),
+                () => Assert.Equal(MediaInsertMode.Both, carried.InsertMode));
         }
 
         [Fact]
         public void Should_default_to_embedding_everything_it_can()
         {
             // Arrange & Act
-            var plugin = new ExplorerPlugin(new RichTextEditorPlugin());
+            var plugin = new ExplorerPlugin();
 
             // Assert
             Assert.Null(plugin.Options.AcceptedResourceKinds);

@@ -5,8 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 using Forma.Blazor.Components.Composer.Assets;
 using Forma.Blazor.Components.Composer.PlainTextEditor;
 using Forma.Blazor.Components.Composer.Plugins;
+using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Composer.Assets;
+using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
@@ -44,6 +46,11 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     private bool _isJsStarted;
     private readonly ComposerChrome _chrome = new();
     private bool _isAttachOpen;
+    private ComposerInsertionRequest? _dialog;
+    private Dictionary<string, object>? _dialogParameters;
+    private DynamicComponent? _dialogComponent;
+    private bool _isDialogBodyReady;
+    private string? _dialogRefusal;
 
     /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
     [Parameter] public ComposerOptions Options { get; set; } = ComposerOptions.Default;
@@ -241,6 +248,13 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The shell reads its title, notice and messages off the body, which the renderer creates as the shell renders.
+        if (_dialog is not null && !_isDialogBodyReady && DialogBody is not null)
+        {
+            _isDialogBodyReady = true;
+            StateHasChanged();
+        }
+
         // The first render can precede plugin loading, so interop waits for the render that follows it.
         if (_isJsStarted || !_isInitialized)
         {
@@ -357,6 +371,91 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
 
     Task IComposerInteraction.ExecuteCommandAsync(string command)
         => HandleCommandAsync(command);
+
+    Task IComposerInteraction.OpenDialogAsync(ComposerInsertionRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (!typeof(IComposerInsertionDialog).IsAssignableFrom(request.Body))
+        {
+            throw new ArgumentException(
+                $"{request.Body.Name} cannot be opened as a composer dialog, because it does not implement {nameof(IComposerInsertionDialog)}.",
+                nameof(request));
+        }
+
+        _dialog = request;
+        _dialogParameters = request.Parameters.ToDictionary(parameter => parameter.Key, parameter => parameter.Value!, StringComparer.Ordinal);
+        _dialogComponent = null;
+        _isDialogBodyReady = false;
+        _dialogRefusal = null;
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    ValueTask<bool> IComposerInteraction.TryInsertAsync(ComposerInsertion insertion)
+    {
+        ArgumentNullException.ThrowIfNull(insertion);
+
+        return Disabled || ReadOnly
+            ? ValueTask.FromResult(false)
+            : _activeEditor.TryInsertAsync(insertion);
+    }
+
+    private IComposerInsertionDialog? DialogBody
+        => _dialogComponent?.Instance as IComposerInsertionDialog;
+
+    // The body reports what confirming refused; the composer adds its own refusal when no editor took the insertion.
+    private IReadOnlyList<string> DialogMessages
+    {
+        get
+        {
+            var refused = DialogBody?.Messages ?? [];
+
+            return _dialogRefusal is null ? refused : [.. refused, _dialogRefusal];
+        }
+    }
+
+    private static DialogSize GetDialogSize(ComposerDialogSize size)
+        => size switch
+        {
+            ComposerDialogSize.Small => DialogSize.Small,
+            ComposerDialogSize.Large => DialogSize.Large,
+            ComposerDialogSize.ExtraLarge => DialogSize.ExtraLarge,
+            _ => DialogSize.Medium,
+        };
+
+    private async Task HandleDialogConfirmAsync()
+    {
+        if (DialogBody is not { } body)
+        {
+            return;
+        }
+
+        _dialogRefusal = null;
+
+        if (await body.TryConfirmAsync() is not { } insertion)
+        {
+            return;
+        }
+
+        if (await ((IComposerInteraction)this).TryInsertAsync(insertion))
+        {
+            CloseDialog();
+
+            return;
+        }
+
+        _dialogRefusal = L["This could not be inserted into the document."].Value;
+    }
+
+    private void CloseDialog()
+    {
+        _dialog = null;
+        _dialogParameters = null;
+        _dialogComponent = null;
+        _isDialogBodyReady = false;
+        _dialogRefusal = null;
+    }
 
     private Task HandleDocumentChangedAsync(ComposerDocument document)
     {

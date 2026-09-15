@@ -55,14 +55,6 @@
                                       OnCancel="CloseDialog" />
         }
 
-        @if (_dialog.Kind == RichTextDialogKind.Explorer)
-        {
-            <FormaComposerExplorerDialog Opened="true"
-                                         Options="_explorerOptions"
-                                         OnInsert="HandleResourceInsertedAsync"
-                                         OnCancel="CloseDialog" />
-        }
-
         @if (_dialog.Kind == RichTextDialogKind.Embed)
         {
             <FormaComposerEmbedDialog Opened="true"

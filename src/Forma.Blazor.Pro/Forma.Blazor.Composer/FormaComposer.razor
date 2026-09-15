@@ -77,5 +77,18 @@
                                        OnAttach="HandleAttachedAsync"
                                        OnCancel="() => _isAttachOpen = false" />
     }
+
+    @if (_dialog is { } dialog)
+    {
+        <FormaComposerDialog Opened="true"
+                             Title="@DialogBody?.Title"
+                             Size="@GetDialogSize(dialog.Size)"
+                             Notice="@DialogBody?.Notice"
+                             Messages="DialogMessages"
+                             OnConfirm="HandleDialogConfirmAsync"
+                             OnCancel="CloseDialog">
+            <DynamicComponent Type="dialog.Body" Parameters="_dialogParameters" @ref="_dialogComponent" />
+        </FormaComposerDialog>
+    }
 </CascadingValue>
 </CascadingValue>

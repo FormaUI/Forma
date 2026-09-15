@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
+using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 
@@ -27,9 +28,6 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     /// <summary>Raised when a plugin requests opening the image insertion dialog.</summary>
     public event Action? ImageDialogRequested;
 
-    /// <summary>Raised when a plugin requests opening the stored files dialog, carrying what it browses and inserts.</summary>
-    public event Action<ExplorerPluginOptions>? ExplorerDialogRequested;
-
     /// <summary>Raised when a plugin requests opening the embed dialog.</summary>
     public event Action? EmbedDialogRequested;
 
@@ -51,6 +49,19 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
+
+    /// <inheritdoc />
+    public ValueTask<bool> TryInsertAsync(ComposerInsertion insertion, CancellationToken cancellationToken = default)
+    {
+        if (insertion is not ResourceInsertion resource)
+        {
+            return ValueTask.FromResult(false);
+        }
+
+        RequestCommand("insertResource", resource);
+
+        return ValueTask.FromResult(true);
+    }
 
     /// <summary>Requests execution of a rich text command on the active canvas.</summary>
     public void RequestCommand(string command, object? value = null)
@@ -74,13 +85,6 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     /// <summary>Requests opening the image insertion dialog.</summary>
     public void RequestImageDialog()
         => ImageDialogRequested?.Invoke();
-
-    /// <summary>Requests opening the stored files dialog.</summary>
-    public void RequestExplorerDialog(ExplorerPluginOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-        ExplorerDialogRequested?.Invoke(options);
-    }
 
     /// <summary>Requests opening the embed insertion dialog.</summary>
     public void RequestEmbedDialog()

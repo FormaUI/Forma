@@ -1,10 +1,52 @@
 @inherits FormaBunitContext
+@using Bunit.Rendering
 @using Forma.Blazor.Components.Composer.Plugins
 @using Forma.Blazor.Components.Composer.RichTextEditor
 @using Forma.Blazor.Components.Composer.RichTextEditor.Views
+@using Forma.Framework.Composer.Dialogs
 @using Forma.Framework.Input
 
 @code {
+    private sealed class StubInsertionDialog : ComponentBase, IComposerInsertionDialog
+    {
+        /// <summary>Set to make confirming refuse with this message instead of answering an insertion.</summary>
+        [Parameter] public string? Refusal { get; set; }
+
+        /// <summary>Set to report that the body can do nothing, the way an unregistered provider does.</summary>
+        [Parameter] public string? Unavailable { get; set; }
+
+        public string Title => "Stub Dialog";
+
+        public string? Notice => Unavailable;
+
+        public IReadOnlyList<string> Messages => Refusal is null ? [] : [Refusal];
+
+        public ValueTask<ComposerInsertion?> TryConfirmAsync(CancellationToken cancellationToken = default)
+            => ValueTask.FromResult<ComposerInsertion?>(
+                Refusal is null ? new ResourceInsertion("/media/a.png", "a.png", "image", true, false) : null);
+    }
+
+    private sealed class NotAnInsertionDialog : ComponentBase;
+
+    private sealed class InsertingEditorPlugin : IComposerEditorPlugin
+    {
+        public string Id => "inserting";
+        public string Title => "Inserting";
+        public Icon Icon => Glyph.File;
+        public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
+        public Type EditorComponent => typeof(FormaPlainTextEditor);
+        public List<ComposerInsertion> Insertions { get; } = [];
+        public bool TakesInsertions { get; set; } = true;
+        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+        public ValueTask<bool> TryInsertAsync(ComposerInsertion insertion, CancellationToken cancellationToken = default)
+        {
+            Insertions.Add(insertion);
+
+            return ValueTask.FromResult(TakesInsertions);
+        }
+    }
+
     public sealed class Component
     {
         private sealed class TestModel
@@ -1287,6 +1329,185 @@
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Print']")));
             Assert.Empty(cut.FindAll("button[aria-label='Bold']"));
             Assert.Empty(cut.FindAll("button[aria-label='Undo']"));
+        }
+    }
+
+    public sealed class PluginDialogs
+    {
+        private sealed class TestModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.PlainText, "Initial Content");
+        }
+
+        private IRenderedComponent<ContainerFragment> RenderComposer(
+            FormaComposerTests ctx,
+            TestModel model,
+            IComposerEditorPlugin editor)
+        {
+            IReadOnlyList<IComposerPlugin> plugins = [editor];
+
+            return ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+        }
+
+        private static async Task OpenAsync(
+            IRenderedComponent<ContainerFragment> cut,
+            string? refusal = null,
+            string? unavailable = null)
+        {
+            var composer = (IComposerInteraction)cut.FindComponent<FormaComposer>().Instance;
+
+            await cut.InvokeAsync(() => composer.OpenDialogAsync(new ComposerInsertionRequest
+            {
+                Body = typeof(StubInsertionDialog),
+                Parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["Refusal"] = refusal,
+                    ["Unavailable"] = unavailable,
+                },
+            }));
+        }
+
+        private static void Confirm(IRenderedComponent<ContainerFragment> cut)
+            => cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
+
+        [Fact]
+        public async Task Should_open_the_dialog_a_plugin_asks_for_under_the_body_own_title()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var editor = new InsertingEditorPlugin();
+            var cut = RenderComposer(ctx, model, editor);
+
+            // Act
+            await OpenAsync(cut);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Stub Dialog", cut.Find(".forma-composer-dialog-form").Closest("dialog")!.QuerySelector("h5")!.TextContent.Trim()));
+        }
+
+        [Fact]
+        public async Task Should_show_the_notice_the_body_reports()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = RenderComposer(ctx, model, new InsertingEditorPlugin());
+
+            // Act
+            await OpenAsync(cut, unavailable: "There is nothing to choose from.");
+
+            // Assert
+            cut.WaitForAssertion(
+                () => Assert.Equal(
+                    "There is nothing to choose from.",
+                    cut.Find(".forma-composer-dialog-notice[role=status]").TextContent.Trim()));
+        }
+
+        [Fact]
+        public async Task Should_show_no_notice_while_the_body_reports_none()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = RenderComposer(ctx, model, new InsertingEditorPlugin());
+
+            // Act
+            await OpenAsync(cut);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-dialog-form")));
+            Assert.Empty(cut.FindAll(".forma-composer-dialog-notice"));
+        }
+
+        [Fact]
+        public async Task Should_hand_a_confirmed_insertion_to_the_active_editor()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var editor = new InsertingEditorPlugin();
+            var cut = RenderComposer(ctx, model, editor);
+            await OpenAsync(cut);
+
+            // Act
+            Confirm(cut);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Single(editor.Insertions));
+            var insertion = Assert.IsType<ResourceInsertion>(editor.Insertions[0]);
+            Assert.Equal("a.png", insertion.Name);
+        }
+
+        [Fact]
+        public async Task Should_close_the_dialog_once_the_editor_takes_the_insertion()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var editor = new InsertingEditorPlugin();
+            var cut = RenderComposer(ctx, model, editor);
+            await OpenAsync(cut);
+
+            // Act
+            Confirm(cut);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.DoesNotContain("Stub Dialog", cut.Markup, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_dialog_open_and_say_so_when_the_editor_takes_nothing()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var editor = new InsertingEditorPlugin { TakesInsertions = false };
+            var cut = RenderComposer(ctx, model, editor);
+            await OpenAsync(cut);
+
+            // Act
+            Confirm(cut);
+
+            // Assert
+            cut.WaitForAssertion(
+                () => Assert.Equal(
+                    "This could not be inserted into the document.",
+                    cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim()));
+            Assert.Contains("Stub Dialog", cut.Markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task Should_show_what_the_body_refused_without_reaching_the_editor()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var editor = new InsertingEditorPlugin();
+            var cut = RenderComposer(ctx, model, editor);
+            await OpenAsync(cut, "Choose something first.");
+
+            // Act
+            Confirm(cut);
+
+            // Assert
+            cut.WaitForAssertion(
+                () => Assert.Equal("Choose something first.", cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim()));
+            Assert.Empty(editor.Insertions);
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_body_that_is_not_an_insertion_dialog()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = RenderComposer(ctx, model, new InsertingEditorPlugin());
+            var composer = (IComposerInteraction)cut.FindComponent<FormaComposer>().Instance;
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => composer.OpenDialogAsync(new ComposerInsertionRequest { Body = typeof(NotAnInsertionDialog) }));
         }
     }
 }

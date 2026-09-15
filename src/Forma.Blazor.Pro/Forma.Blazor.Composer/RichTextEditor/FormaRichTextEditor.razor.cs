@@ -40,7 +40,6 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
 
     private RichTextDialogState _dialog = RichTextDialogState.None;
     private bool _isLinkAnchorMode;
-    private ExplorerPluginOptions _explorerOptions = ExplorerPluginOptions.Default;
 
     private RichTextEditorPlugin _editorPlugin = default!;
 
@@ -70,7 +69,6 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         _editorPlugin.TableDialogRequested += HandleTableDialogRequested;
         _editorPlugin.VideoDialogRequested += HandleVideoDialogRequested;
         _editorPlugin.ImageDialogRequested += HandleImageDialogRequested;
-        _editorPlugin.ExplorerDialogRequested += HandleExplorerDialogRequested;
         _editorPlugin.EmbedDialogRequested += HandleEmbedDialogRequested;
     }
 
@@ -257,13 +255,6 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         StateHasChanged();
     }
 
-    private void HandleExplorerDialogRequested(ExplorerPluginOptions options)
-    {
-        _explorerOptions = options;
-        _dialog = new RichTextDialogState(RichTextDialogKind.Explorer);
-        StateHasChanged();
-    }
-
     private void HandleEmbedDialogRequested()
     {
         _dialog = new RichTextDialogState(RichTextDialogKind.Embed);
@@ -295,12 +286,6 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     {
         CloseDialog();
         await ExecuteCommandAsync("insertImage", result);
-    }
-
-    private async Task HandleResourceInsertedAsync(ResourceDialogResult result)
-    {
-        CloseDialog();
-        await ExecuteCommandAsync("insertResource", result);
     }
 
     private async Task HandleEmbedInsertedAsync(EmbedDialogResult result)
@@ -371,7 +356,6 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             _editorPlugin.TableDialogRequested -= HandleTableDialogRequested;
             _editorPlugin.VideoDialogRequested -= HandleVideoDialogRequested;
             _editorPlugin.ImageDialogRequested -= HandleImageDialogRequested;
-            _editorPlugin.ExplorerDialogRequested -= HandleExplorerDialogRequested;
             _editorPlugin.EmbedDialogRequested -= HandleEmbedDialogRequested;
         }
 

@@ -20,9 +20,6 @@ internal enum RichTextDialogKind
     /// <summary>The image dialog.</summary>
     Image,
 
-    /// <summary>The media explorer dialog.</summary>
-    Explorer,
-
     /// <summary>The embed dialog.</summary>
     Embed
 }

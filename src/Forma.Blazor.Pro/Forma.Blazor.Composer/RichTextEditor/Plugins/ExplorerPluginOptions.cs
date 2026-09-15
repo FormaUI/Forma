@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 
+using Forma.Framework.Composer.Editing;
+
 /// <summary>Options configuring what the explorer plugin browses, takes in, and inserts.</summary>
 public sealed record ExplorerPluginOptions
 {

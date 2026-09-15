@@ -180,6 +180,7 @@ attachments:
 @using Forma.Blazor.Components.Composer.RichTextEditor.Plugins
 @using Forma.Blazor.Components.Composer.RichTextEditor.Views
 @using Forma.Framework.Composer.Documents
+@using Forma.Framework.Composer.Editing
 @using Forma.Framework.Composer.Plugins
 
 <FormaComposer @bind-Value="_body" Plugins="_plugins" />
@@ -200,7 +201,7 @@ attachments:
             new ListPlugin(richText),
             new LinkPlugin(richText),
             new ImagePlugin(richText),
-            new ExplorerPlugin(richText, new ExplorerPluginOptions
+            new ExplorerPlugin(new ExplorerPluginOptions
             {
                 AcceptedResourceKinds = "contentType:image",
                 InsertMode = MediaInsertMode.Embed,

@@ -103,6 +103,7 @@
     "Insert Image": "הוסף תמונה",
     "Enter the address of the image before inserting.": "הזן את כתובת התמונה לפני ההוספה.",
     "Browse Files": "עיון בקבזים",
+    "This could not be inserted into the document.": "לא ניתן היה להוסיף זאת למסמך.",
     "Search files": "חיפוש קבזים",
     "Choose a file before inserting.": "בחר קובץ לפני ההוספה.",
     "No stored files are available, because this application registered nowhere to browse.": "אין קבזים שמורים זמינים, משום שהיישום לא רשם מקום לעיין בו.",

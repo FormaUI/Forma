@@ -95,9 +95,43 @@ so a changed context is also the signal to re-render.
 | `ReportSelectionAsync` | Reports the caret or range an editor observed, so the engine shares it with every plugin. |
 | `ExecuteCommandAsync` | Runs a named command, resolved against the engine's own commands first and the plugins after. |
 | `RequestRenderAsync` | Asks the composer shell to re-render. |
+| `OpenDialogAsync` | Opens a dialog the plugin describes, inside the composer's own shell. |
+| `TryInsertAsync` | Hands an insertion to the active editor, reporting whether it took one of that kind. |
 
 `ComposerCommands` names the commands the engine owns: `Undo`, `Redo`, `Maximize`,
 `SelectionBar` and `Attach`.
+
+## Dialogs and insertion
+
+A plugin that collects something from the author supplies a dialog **body** and the composer
+supplies the shell, so a plugin shipped from another package gets the same modal as a built-in one
+without referencing the component that draws it.
+
+| Type | What it is |
+| --- | --- |
+| `ComposerInsertionRequest` | Which component fills the dialog, the parameters it is handed, and how much room it gets. |
+| `IComposerInsertionDialog` | What the body answers: its `Title`, an optional `Notice` while it can do nothing, the `Messages` confirming refused, and `TryConfirmAsync`. |
+| `ComposerInsertion` | What goes into the document. `ResourceInsertion` carries a stored file's `Source`, `Name` and `Kind`, and whether it is embedded, linked, or both. |
+| `MediaInsertMode` | `Embed`, `Link` or `Both`, for a file the browser can render. |
+
+The body resolves its own title, notice and messages, because those strings ship with the body
+rather than with the composer hosting it. Confirming asks the body for an insertion and hands it to
+the active editor through `IComposerEditorPlugin.TryInsertAsync`, which an editor overrides for the
+insertions it understands and which answers false by default. An editor that takes none of that kind
+answers false and the dialog stays open saying so; that answer is the whole compatibility check,
+since an editor never declares what it accepts anywhere else.
+
+```csharp
+await interaction.OpenDialogAsync(new ComposerInsertionRequest
+{
+    Body = typeof(MyPickerDialog),
+    Size = ComposerDialogSize.Large,
+    Parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
+    {
+        [nameof(MyPickerDialog.Options)] = Options,
+    },
+});
+```
 
 ## The document
 

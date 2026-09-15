@@ -146,7 +146,6 @@ src/Forma.Blazor.Pro/Forma.Blazor.Composer/
 │   ├── EmbedDialogResult.cs
 │   ├── ImageDialogResult.cs
 │   ├── LinkDialogResult.cs
-│   ├── ResourceDialogResult.cs
 │   ├── TableDialogResult.cs
 │   └── VideoDialogResult.cs
 │

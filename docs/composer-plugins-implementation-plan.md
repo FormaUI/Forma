@@ -59,8 +59,7 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    defaulting to false, which `RichTextEditorPlugin` overrides by raising the
    `CommandRequested` event it already has, so the canvas path is untouched.
 
-   `FormaComposer` hosts one requested dialog inside its own shell, resolving the title
-   through the body's type so a plugin's strings stay with the plugin. A body that does not
+   `FormaComposer` hosts one requested dialog inside its own shell. A body that does not
    implement the contract is rejected at `OpenDialogAsync`; an insertion the editor refuses
    leaves the dialog open with a message.
 
@@ -68,6 +67,21 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    composer package, which proves the seam before anything relies on it.
 
    **Gate:** the stored-files dialog behaves exactly as before, walked in a browser.
+
+   ◐ Built, apart from the browser walk. Three departures from what this step planned:
+
+   - **The body resolves its own title**, rather than the request carrying it for the shell to
+     resolve through the body's type. The shell would have had to reach the body's
+     `LocalizationSourceType`, which is protected, and the explorer dialog's strings sit in the
+     composer's own section. `IComposerInsertionDialog` therefore carries `Title` and `Notice`
+     beside `Messages`, and the request says only which body and how much room it gets (§3.4a).
+   - **`ExplorerPlugin` lost its `RichTextEditorPlugin` parameter**, which the analyzer caught as
+     unused the moment the plugin started talking through the interaction. That is step 6's
+     outcome arriving early, and it leaves the plugin naming the editor only through the
+     `SupportedEditorIds` constant that step 4 removes.
+   - **The shell re-renders once when the body attaches**, because a `DynamicComponent`'s
+     instance exists only after the render that creates it, and the shell reads the title and
+     notice off it.
 
 3. **The builder and per-composer activation.** The largest step; several commits.
 
@@ -149,6 +163,9 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    change; the explorer README gains a section on what it contributes to a composer; and the
    abstractions README, written with the package in step 1, is brought up to the contracts
    steps 2 and 4 leave behind.
+
+   [The composer implementation plan](composer-implementation-plan.md)'s file layout still
+   shows one composer assembly and must be re-cut along the split.
 
    One correction while there: the composer implementation plan says `IComposerAssetLoader`'s
    implementation "sits in `Forma.Blazor`". It is `JSComposerAssetLoader` in

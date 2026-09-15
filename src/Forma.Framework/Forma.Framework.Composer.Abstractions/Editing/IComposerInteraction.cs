@@ -1,5 +1,6 @@
 namespace Forma.Framework.Composer.Editing;
 
+using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Documents;
 
 /// <summary>Everything a plugin invokes on the composer.</summary>
@@ -16,4 +17,10 @@ public interface IComposerInteraction
 
     /// <summary>Runs a named command through the engine, which resolves it against the engine's own commands and then the registered plugins.</summary>
     Task ExecuteCommandAsync(string command);
+
+    /// <summary>Opens a dialog the plugin describes, inside the composer's own shell.</summary>
+    Task OpenDialogAsync(ComposerInsertionRequest request);
+
+    /// <summary>Hands an insertion to the active editor, reporting whether it took one of that kind.</summary>
+    ValueTask<bool> TryInsertAsync(ComposerInsertion insertion);
 }

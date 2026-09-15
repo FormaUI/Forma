@@ -8,6 +8,7 @@
 @using Forma.Blazor.Components.Composer.RichTextEditor.Plugins
 @using Forma.Blazor.Components.Composer.RichTextEditor.Views
 @using Forma.Framework.Composer.Documents
+@using Forma.Framework.Composer.Editing
 @using Forma.Framework.Composer.Plugins
 @inject IStringLocale<FormaComposerPage> L
 
@@ -175,7 +176,7 @@
             richFiles,
             new BasicFormattingPlugin(richFiles),
             new ImagePlugin(richFiles),
-            new ExplorerPlugin(richFiles, new ExplorerPluginOptions
+            new ExplorerPlugin(new ExplorerPluginOptions
             {
                 AcceptedResourceKinds = "contentType:image",
                 AcceptedUploadKinds = "globs:*.png;*.jpg;*.svg",
@@ -188,7 +189,7 @@
         [
             richAnything,
             new BasicFormattingPlugin(richAnything),
-            new ExplorerPlugin(richAnything, new ExplorerPluginOptions { AllowUpload = false, InsertMode = MediaInsertMode.Both }),
+            new ExplorerPlugin(new ExplorerPluginOptions { AllowUpload = false, InsertMode = MediaInsertMode.Both }),
             new FileUploadPlugin(new FileUploadPluginOptions { Picker = new() { MaxFileSize = 5 * 1024 * 1024 } }),
         ];
     }

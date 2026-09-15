@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
+namespace Forma.Framework.Composer.Editing;
 
 /// <summary>How a chosen file the browser can render is put into the document.</summary>
 public enum MediaInsertMode

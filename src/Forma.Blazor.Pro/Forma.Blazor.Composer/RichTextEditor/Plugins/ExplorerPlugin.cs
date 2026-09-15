@@ -1,20 +1,18 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 
+using Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Framework.Composer.Assets;
+using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes browsing the host's stored files, and inserting whichever one is chosen.</summary>
-public sealed class ExplorerPlugin(
-    RichTextEditorPlugin editor,
-    ExplorerPluginOptions? options = null) : IComposerFeaturePlugin
+public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : IComposerFeaturePlugin
 {
     /// <summary>The command opening the stored files dialog.</summary>
     public const string BrowseCommand = "explorer.browse";
-
-    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <summary>Options configuring what is browsed, taken in, and inserted.</summary>
     public ExplorerPluginOptions Options { get; } = options ?? ExplorerPluginOptions.Default;
@@ -53,17 +51,25 @@ public sealed class ExplorerPlugin(
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public async ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
-        if (command == BrowseCommand)
+        if (command != BrowseCommand)
         {
-            _editorPlugin.RequestExplorerDialog(Options);
+            return;
         }
 
-        return ValueTask.CompletedTask;
+        await interaction.OpenDialogAsync(new ComposerInsertionRequest
+        {
+            Body = typeof(FormaComposerExplorerDialog),
+            Size = ComposerDialogSize.Large,
+            Parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [nameof(FormaComposerExplorerDialog.Options)] = Options,
+            },
+        });
     }
 }
