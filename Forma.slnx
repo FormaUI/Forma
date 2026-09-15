@@ -18,6 +18,7 @@
     <Project Path="src\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
+    <Project Path="src\Forma.Framework\Forma.Framework.Plugins\Forma.Framework.Plugins.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
@@ -54,6 +55,7 @@
     <Project Path="tests\Forma.Framework.Globalization.Tests\Forma.Framework.Globalization.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Feedback.Tests\Forma.Framework.Feedback.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Plugins.Tests\Forma.Framework.Plugins.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Composer.Tests\Forma.Framework.Composer.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Sanitization.Tests\Forma.Framework.Sanitization.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Share.Targets.Tests\Forma.AddOns.Share.Targets.Tests.csproj" />
