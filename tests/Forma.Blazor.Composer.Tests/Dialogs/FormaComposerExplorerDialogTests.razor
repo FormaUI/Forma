@@ -1,9 +1,13 @@
 @inherits FormaBunitContext
 @using Bunit.Rendering
 @using Forma.Framework.Composer.Dialogs
+@using Forma.Framework.Composer.Documents
 @using Forma.Framework.Composer.Editing
+@using Forma.Framework.Composer.Plugins
 @using Forma.Framework.Resources
+@using Forma.Blazor.Components.Composer
 @using Forma.Blazor.Components.Composer.Dialogs
+@using Forma.Blazor.Components.Composer.RichTextEditor
 @using Forma.Blazor.Components.Composer.RichTextEditor.Plugins
 @using Forma.Blazor.Components.Explorer
 
@@ -179,6 +183,101 @@
                 () => Assert.Equal("file", insertion.Kind),
                 () => Assert.False(insertion.Embed),
                 () => Assert.True(insertion.Link));
+        }
+    }
+
+    // The whole seam with nothing stubbed: the plugin's command, the composer's shell, the explorer
+    // inside it, and the insertion arriving at the rich text editor as a canvas command.
+    public sealed class ThroughTheComposer
+    {
+        private sealed class StubLibrary(params ResourceInfo[] resources) : IExplorerItemsProvider
+        {
+            public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
+                => ValueTask.FromResult(new ExplorerItemPage(ExplorerItem.ForAll(resources), resources.Length));
+        }
+
+        private sealed class HtmlModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Draft.</p>");
+        }
+
+        private static readonly ResourceInfo Picture = new ImageResourceInfo("/media/podium.png");
+
+        private IRenderedComponent<ContainerFragment> RenderComposer(
+            FormaComposerExplorerDialogTests ctx,
+            HtmlModel model,
+            RichTextEditorPlugin richText)
+        {
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new ExplorerPlugin()];
+
+            return ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+        }
+
+        private static void Browse(IRenderedComponent<ContainerFragment> cut)
+        {
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Browse Files']")));
+            cut.Find("button[aria-label='Browse Files']").Click();
+        }
+
+        [Fact]
+        public void Should_open_the_stored_files_dialog_from_the_toolbar()
+        {
+            // Arrange
+            using var ctx = new FormaComposerExplorerDialogTests();
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
+            var cut = RenderComposer(ctx, new HtmlModel(), new RichTextEditorPlugin());
+
+            // Act
+            Browse(cut);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-dialog-form .forma-explorer")));
+            Assert.Equal("Browse Files", cut.Find(".forma-composer-dialog-form").Closest("dialog")!.QuerySelector("h5")!.TextContent.Trim());
+        }
+
+        [Fact]
+        public void Should_insert_the_chosen_file_into_the_editor_and_close()
+        {
+            // Arrange
+            using var ctx = new FormaComposerExplorerDialogTests();
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
+            var richText = new RichTextEditorPlugin();
+            object? inserted = null;
+            richText.CommandRequested += (command, value) => inserted = command == "insertResource" ? value : inserted;
+            var cut = RenderComposer(ctx, new HtmlModel(), richText);
+            Browse(cut);
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-dialog-form .forma-explorer")));
+
+            // Act
+            cut.FindAll(".forma-explorer-item-open").Single(button => button.GetAttribute("aria-label")!.Contains("podium.png", StringComparison.Ordinal)).Click();
+            cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(inserted));
+            var insertion = Assert.IsType<ResourceInsertion>(inserted);
+            Assert.Equal("/media/podium.png", insertion.Source);
+            Assert.Empty(cut.FindAll(".forma-composer-dialog-form"));
+        }
+
+        // Dismissal is not covered here: FormaDialog closes only when its own open state is set, and that
+        // is set by the JS call that shows the native dialog, which bUnit never runs. It needs a browser.
+
+        [Fact]
+        public void Should_say_there_is_nothing_to_browse_when_no_provider_is_registered()
+        {
+            // Arrange
+            using var ctx = new FormaComposerExplorerDialogTests();
+            var cut = RenderComposer(ctx, new HtmlModel(), new RichTextEditorPlugin());
+
+            // Act
+            Browse(cut);
+
+            // Assert
+            cut.WaitForAssertion(
+                () => Assert.Equal(
+                    "No stored files are available, because this application registered nowhere to browse.",
+                    cut.Find(".forma-composer-dialog-notice").TextContent.Trim()));
+            Assert.Empty(cut.FindAll(".forma-explorer"));
         }
     }
 }

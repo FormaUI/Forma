@@ -68,7 +68,14 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
 
    **Gate:** the stored-files dialog behaves exactly as before, walked in a browser.
 
-   ◐ Built, apart from the browser walk. Three departures from what this step planned:
+   ✅ Built. The seam is covered end to end without stubs — the plugin's toolbar command opens the
+   dialog, the explorer renders inside a shell it no longer owns, a chosen file reaches the rich
+   text editor as a canvas command, and an unregistered provider says so rather than showing an
+   empty modal. **Dismissal is the one part no test reaches**: `FormaDialog` closes only when its
+   own open state is set, and that is set by the JS call showing the native dialog, which bUnit
+   never runs — so Escape and Cancel need a browser, as does how any of it looks.
+
+   Three departures from what this step planned:
 
    - **The body resolves its own title**, rather than the request carrying it for the shell to
      resolve through the body's type. The shell would have had to reach the body's
