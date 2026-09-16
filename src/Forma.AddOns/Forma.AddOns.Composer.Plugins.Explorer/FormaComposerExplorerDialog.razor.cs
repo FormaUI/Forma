@@ -1,6 +1,5 @@
-namespace Forma.Blazor.Components.Composer.Dialogs;
+namespace Forma.Blazor.Components.Composer.Plugins;
 
-using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Blazor.Components.Explorer;
 using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Editing;
@@ -30,10 +29,6 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? 
     private ExplorerConstraints _constraints = ExplorerConstraints.None;
     private readonly ParameterState<ExplorerPluginOptions?> _optionsParameter = new();
     private IReadOnlyList<IExplorerItem> _selected = [];
-
-    /// <inheritdoc />
-    protected override Type LocalizationSourceType
-        => typeof(FormaComposer);
 
     string IComposerInsertionDialog.Title
         => L["Browse Files"].Value;

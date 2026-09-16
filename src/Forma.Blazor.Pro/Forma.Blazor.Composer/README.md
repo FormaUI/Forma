@@ -16,9 +16,11 @@ dotnet add package 2Site.Forma.Blazor.Pro.Composer
 ```
 
 The package depends on `2Site.Forma.Blazor`, the library it is built on, and on
-`2Site.Forma.Blazor.Pro.Explorer`, because its stored-files dialog composes `FormaExplorer`, and on
-`2Site.Forma.Framework.Composer.Abstractions`, the contracts a plugin is written against; all three
-restore beside it. The composer's engine and its browser script ship inside the package.
+`2Site.Forma.Framework.Composer.Abstractions`, the contracts a plugin is written against; both
+restore beside it. The composer's engine and its browser script ship inside the package. Browsing
+the host's stored files from the composer is
+[`Forma.AddOns.Composer.Plugins.Explorer`](../../Forma.AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md),
+a package of its own, so a host that does not want `FormaExplorer` never downloads it.
 
 ```csharp
 using Forma.Blazor;
@@ -59,15 +61,13 @@ registered falls back to plain text. [Example](#example) shows a description.
 
 | Registration | What it enables |
 | --- | --- |
-| `IExplorerItemsProvider` (`Forma.Framework.Explorer.Content.Queries`) | Browsing the host's stored files from `ExplorerPlugin`; without it the dialog offers no browsing. |
-| `IFileStore` (`Forma.Framework.Resources`) | Uploading into the library from that dialog, and attaching files from the author's device through `FileUploadPlugin`; without it neither offers upload. |
+| `IFileStore` (`Forma.Framework.Resources`) | Attaching files from the author's device through `FileUploadPlugin`; without it attaching offers no upload. |
 | `IComposerDocumentConverter` (`Forma.Framework.Composer.Documents`) | Switching between editors whose formats differ; a switch with no converter registered for the pair is refused, and so is one whose converter reports what it could not carry across. |
 | `IHtmlSanitizer` or `IMarkupPolicy` (`Forma.Framework.Sanitization`) | Replacing the sanitizer, or only its rules, by registering before `AddFormaUI()`; the library's own is the default. |
 
 [`Forma.Framework.Resources`](../../Forma.Framework/Forma.Framework.Resources/README.md) documents
-the store, [`Forma.Blazor.Explorer`](../Forma.Blazor.Explorer/README.md) the items provider, and
-[`Forma.Framework.Sanitization`](../../Forma.Framework/Forma.Framework.Sanitization/README.md) the
-sanitizer and its policy.
+the store and [`Forma.Framework.Sanitization`](../../Forma.Framework/Forma.Framework.Sanitization/README.md)
+the sanitizer and its policy.
 
 ## Features
 
@@ -100,8 +100,9 @@ Switching editor is itself an undoable step, so a conversion the author dislikes
 
 ### Rich text plugins
 
-Each is constructed with the `RichTextEditorPlugin` it contributes to; the ones with an options
-record take it as a second argument and default to the record's `Default`.
+Each is registered under the rich text editor, which the composer hands it when it builds the
+plugin; the ones with an options record are configured at registration and otherwise take the
+record's `Default`.
 
 | Plugin | Contributes | Options |
 | --- | --- | --- |
@@ -112,7 +113,6 @@ record take it as a second argument and default to the record's `Default`.
 | `AlignmentBidiPlugin` | Alignment and paragraph direction | |
 | `LinkPlugin` | Links and anchors, added, retargeted and removed; double-clicking one reopens its dialog | |
 | `ImagePlugin` | An image by address, with alt text and caption; double-clicking one reopens its dialog | |
-| `ExplorerPlugin` | The host's stored files, browsed and inserted — a picture, video or audio file embedded, linked or both, any other file linked | `ExplorerPluginOptions`: `AcceptedResourceKinds` and `AcceptedUploadKinds` as `globs:*.jpg;*.pdf` or `contentType:image;video`, `AllowUpload`, and the `MediaInsertMode` |
 | `VideoPlugin` | A video placeholder carrying the address, title and autoplay; double-clicking one reopens its dialog | |
 | `TablePlugin` | A table of a chosen size, with rows and columns added and removed, a header row toggled, and the table deleted | `TablePluginOptions`: default and maximum rows and columns, and whether a header row is included |
 | `HorizontalRulePlugin` | A thematic break | |
@@ -171,14 +171,13 @@ format the package never named take nothing more.
 ## Example
 
 What every composer in the application is made of is described once, at startup. A composer
-authoring an article body in rich text, with stored pictures, a table, a preview and attachments:
+authoring an article body in rich text, with pictures, a table, a preview and attachments:
 
 ```csharp
 using Forma.Blazor.Components.Composer;
 using Forma.Blazor.Components.Composer.Plugins;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Blazor.Components.Composer.RichTextEditor.Views;
-using Forma.Framework.Composer.Editing;
 
 builder.Services.AddFormaComposer(composer => composer
     .AddRichTextEditor(editor => editor
@@ -187,11 +186,6 @@ builder.Services.AddFormaComposer(composer => composer
         .AddFeaturePlugin<ListPlugin>()
         .AddFeaturePlugin<LinkPlugin>()
         .AddFeaturePlugin<ImagePlugin>()
-        .AddFeaturePlugin<ExplorerPlugin, ExplorerPluginOptions>(options =>
-        {
-            options.AcceptedResourceKinds = "contentType:image";
-            options.InsertMode = MediaInsertMode.Embed;
-        })
         .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRows = 12)
         .AddFeaturePlugin<FileUploadPlugin>()
         .AddViewPlugin<RichTextPreviewViewPlugin>())
@@ -227,14 +221,11 @@ The page then places a composer with nothing more to say:
 One composer that differs from the rest takes its own description through `Plugins`, built the
 same way with `ComposerDefinition.Create(…)`.
 
-The registrations that composer relies on, beside `AddFormaUI()`: the stored files the explorer
-plugin browses, and the store the uploads land in.
+The registration that composer relies on, beside `AddFormaUI()`: the store attached files land in.
 
 ```csharp
-using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Resources;
 
-builder.Services.AddScoped<IExplorerItemsProvider, MediaLibrary>();
 builder.Services.AddScoped<IFileStore, UploadFolderStore>();
 ```
 

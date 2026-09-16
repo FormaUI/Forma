@@ -1,0 +1,9 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaComposerExplorerDialog": {
+    "Browse Files": "עיון בקבצים",
+    "Search files": "חיפוש קבצים",
+    "Choose a file before inserting.": "בחר קובץ לפני ההוספה.",
+    "No stored files are available, because this application registered nowhere to browse.": "אין קבצים שמורים זמינים, משום שהיישום לא רשם מקום לעיין בו."
+  }
+}

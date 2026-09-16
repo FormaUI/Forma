@@ -66,7 +66,7 @@ Two Coi behaviors are deliberately **not** reproduced as-authored:
 
 ## 2. Assembly layout
 
-The composer is two assemblies, split along what an outside package needs. `Forma.Framework.Composer.Abstractions` carries the contracts a plugin author compiles against; `Forma.Framework.Composer` carries the engine that implements them. A capability resting on an external dependency is a third case, and ships as a satellite package a host adds deliberately.
+The composer is two assemblies, split along what an outside package needs. `Forma.Framework.Composer.Abstractions` carries the contracts a plugin author compiles against; `Forma.Framework.Composer` carries the engine that implements them. A capability resting on an external dependency is a third case, and ships as a satellite package a host adds deliberately; so is a capability joining the composer to another component, as browsing stored files joins it to `FormaExplorer`, so that neither component's package depends on the other.
 
 The split exists because a plugin may live outside the composer's own package, as the explorer's does. Whatever such a package extends has to be a package in its own right, or both would carry a copy of the same assembly and a host installing both would get two. Publishing the engine alongside the contracts would put the catalog, the command registry, the key-binding catalog and the history into public API for callers who never touch them, so only the contracts go.
 
@@ -79,7 +79,7 @@ The split exists because a plugin may live outside the composer's own package, a
 | `Forma.AddOns.Composer.TextMate` | `Forma.Framework.Composer.TextMate` | the abstractions + TextMateSharp |
 | `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the abstractions + KaTeX browser assets |
 | `Forma.Blazor.Composer` | `Forma.Blazor.Components.Composer` | the engine, the interop assembly and `Forma.Framework.Sanitization` |
-| `Forma.Blazor.Explorer` | `Forma.Blazor.Components.Explorer` | the abstractions, for the stored-files plugin it contributes |
+| `Forma.AddOns.Composer.Plugins.Explorer` | `Forma.Blazor.Components.Composer.Plugins` | the abstractions + `Forma.Blazor.Explorer`, whose `FormaExplorer` its dialog composes |
 
 Both assemblies share the namespace `Forma.Framework.Composer`, because the split is a packaging boundary rather than a second concept: a host moving a type across it should not have to change a `using`.
 
@@ -506,7 +506,7 @@ A designer **is** an editor plugin — it is a surface the switcher offers — *
 | `AlignmentBidiPlugin` | Align start/center/end/justify, direction LTR/RTL | Justify*, BidiRtl, BidiLtr |
 | `LinkPlugin` | Link, unlink, anchor, remove anchor; double-clicking one reopens its dialog on it | Link, Unlink, Anchor |
 | `ImagePlugin` | An image by address, with alt text and caption; double-clicking one reopens its dialog on it | Image |
-| `ExplorerPlugin` | The host's stored files through `FormaExplorer`, which carries `FormaFilePicker` + `FormaFileUploader` in its own toolbar; a chosen picture, video or audio file is embedded, linked or both, any other file linked | `imagelibrary` |
+| `ExplorerPlugin` | Shipped by `Forma.AddOns.Composer.Plugins.Explorer`: the host's stored files through `FormaExplorer`, which carries `FormaFilePicker` + `FormaFileUploader` in its own toolbar; a chosen picture, video or audio file is embedded, linked or both, any other file linked | `imagelibrary` |
 | `VideoPlugin` | A placeholder carrying the address, title and autoplay, which the host resolves when it renders the document — through `FormaVideoPlayer` or otherwise — since the sanitizer discards an `iframe` | `youtube` |
 | `TablePlugin` | Insert grid, row/column add and remove, header toggle, delete | Table, tabletools |
 | `HorizontalRulePlugin` | Thematic break | HorizontalRule |
@@ -684,7 +684,7 @@ Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are re
 
 **The composer projects are foldered by concern rather than flat** — assets, documents, editing, plugins, syntax, widgets — and the two assemblies use the same folder names, so a contract in the abstractions and the engine's implementation of it sit under the same folder name in their own projects and the test tree mirrors both.
 
-**A plugin that another package contributes lives with that package**, in a folder named for what it extends, so the explorer's composer plugin and its dialog body sit under `Composer/` in `Forma.Blazor.Explorer` with that package's own strings beside them.
+**A plugin joining the composer to another component is an AddOn of its own**, `Forma.AddOns.Composer.Plugins.{Component}`, borrowing the composer plugins' namespace as an AddOn borrows what it extends. The stored-files plugin and its dialog body are `Forma.AddOns.Composer.Plugins.Explorer`, with their own strings beside them, so the composer never depends on the explorer, the explorer never depends on the composer, and a host wanting both adds the one package that joins them.
 
 **Localization follows `FormaExplorer`:** every component under `Composer/`, including those in sub-namespaces, resolves its strings through the localizer of the component it serves, named by `LocalizationSourceType` — `FormaComposer` for the engine, its bars, its dialogs and the editor canvases, `FormaRichTextEditor` for the rich text selection bar and views — each with its own `.he.json` / `.es.json` pair beside the component named. Resources resolve by the localizer's **type** rather than by file location, so this works — and a pair beside a component that names another as its source would silently fall back to English keys instead. This is the failure mode that has to be re-verified whenever a file moves.
 

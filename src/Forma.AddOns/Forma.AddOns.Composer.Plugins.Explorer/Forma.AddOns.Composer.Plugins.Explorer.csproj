@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <!-- The AddOn borrows the namespace of the composer plugins it joins, so a host reaches it with the using it already writes. -->
+        <RootNamespace>Forma.Blazor.Components.Composer.Plugins</RootNamespace>
+        <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectsInPackage</TargetsForTfmSpecificBuildOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <!-- The contracts the plugin is written against, the explorer its dialog composes, and the product both build on; each is a package this one depends on. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Composer.Abstractions\Forma.Framework.Composer.Abstractions.csproj" />
+        <ProjectReference Include="..\..\Forma.Blazor.Pro\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+        <ProjectReference Include="..\..\Forma.Blazor\Forma.Blazor.csproj" />
+    </ItemGroup>
+
+    <!-- The explorer's feature vocabulary, which its dialog speaks and the explorer's own package already ships. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <Import Project="$(BundledPackageTargets)" />
+
+    <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
+    <ItemGroup>
+        <EmbeddedResource Include="**\*.json" Exclude="$(DefaultItemExcludes)" WithCulture="false" />
+        <Content Remove="**\*.json" />
+    </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Composer.Tests.Dialogs;
+namespace Forma.AddOns.Composer.Plugins.Explorer.Tests;
 
 public sealed partial class FormaComposerExplorerDialogTests
 {

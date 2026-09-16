@@ -34,6 +34,7 @@
         <ProjectReference Include="..\Forma.AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\Forma.AddOns\Forma.AddOns.Composer.Plugins.Explorer\Forma.AddOns.Composer.Plugins.Explorer.csproj" />
         <ProjectReference Include="..\Forma.AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     </ItemGroup>

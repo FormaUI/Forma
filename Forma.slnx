@@ -30,6 +30,7 @@
     <Project Path="src\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
     <Project Path="src\Forma.Blazor.Pro\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
+    <Project Path="src\Forma.AddOns\Forma.AddOns.Composer.Plugins.Explorer\Forma.AddOns.Composer.Plugins.Explorer.csproj" />
     <Project Path="src\Forma.AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
     <Project Path="src\Forma.AddOns\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
     <Project Path="src\Forma.AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
@@ -58,6 +59,7 @@
     <Project Path="tests\Forma.Framework.Plugins.Tests\Forma.Framework.Plugins.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Composer.Tests\Forma.Framework.Composer.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Sanitization.Tests\Forma.Framework.Sanitization.Tests.csproj" />
+    <Project Path="tests\Forma.AddOns.Composer.Plugins.Explorer.Tests\Forma.AddOns.Composer.Plugins.Explorer.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Share.Targets.Tests\Forma.AddOns.Share.Targets.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Explorer.Tests\Forma.Framework.Explorer.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Files.Tests\Forma.Framework.Files.Tests.csproj" />

@@ -254,14 +254,29 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    the explorer's carries the abstractions. Browser walk with the plugin registered, then
    with it absent, where the Browse Files command is simply not there.
 
+   ◐ Built, apart from the browser walk. One departure, which changes where everything went:
+
+   - **The plugin is an AddOn, not part of the explorer.** Moving it into
+     `Forma.Blazor.Explorer` would only have turned the dependency around, the explorer
+     depending on the composer's contracts instead of the composer on the explorer. It is
+     `Forma.AddOns.Composer.Plugins.Explorer` instead, in the composer plugins' namespace
+     `Forma.Blazor.Components.Composer.Plugins`, depending on the abstractions, the explorer
+     and the product, and bundling nothing but itself. Packed, the composer depends on
+     neither the explorer nor the AddOn, and the explorer on nothing of the composer's.
+
+   The dialog body reads its strings from a translation pair of its own beside it rather than
+   from the composer's. The Hebrew for "files" had been misspelled throughout the composer's
+   and the Showcase's translations, and is corrected with the move.
+
 7. **Documentation.** §2, §3.1, §3.1a, §3.4a, §4.3a, §9 and the decisions table of the
    design are written as this plan starts, not after it. `repository-structure.md` and
    `CLAUDE.md` gain the `.Abstractions` shape: the contracts a package publishes apart from
    the engine that implements them, which is neither of the two shapes the Framework rule
    names today. The composer README's dependency paragraph and its registration example
-   change; the explorer README gains a section on what it contributes to a composer; and the
-   abstractions README, written with the package in step 1, is brought up to the contracts
-   steps 2 and 4 leave behind.
+   change; and the abstractions README, written with the package in step 1, is brought up to
+   the contracts steps 2 and 4 leave behind. The explorer README, which this step once meant to
+   extend, is untouched, since step 6 left the explorer knowing nothing of the composer; the
+   AddOn has a README of its own.
 
    [The composer implementation plan](composer-implementation-plan.md)'s file layout still
    shows one composer assembly and must be re-cut along the split.
@@ -288,9 +303,15 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
 
 ## Open
 
-Nothing. Whether `AddPlainTextEditor` earned its place beside the catalog's fallback editor
-was settled by step 4: the fallback is never registered and so carries no defaults, which
-makes `AddPlainTextEditor` the one way to a plain text editor with its own.
+- **Where a plugin from another package translates its toolbar labels.** The composer renders
+  every plugin's titles through its own translation file, as §3.1 prescribes, so the Hebrew
+  and Spanish for the AddOn's "Browse Files" command still sit in the composer's file, and a
+  plugin a third party ships has no way to translate its labels at all. The dialog's own
+  strings moved with it; only the labels the composer draws are left behind.
+
+Whether `AddPlainTextEditor` earned its place beside the catalog's fallback editor was settled
+by step 4: the fallback is never registered and so carries no defaults, which makes
+`AddPlainTextEditor` the one way to a plain text editor with its own.
 
 ## Risks
 

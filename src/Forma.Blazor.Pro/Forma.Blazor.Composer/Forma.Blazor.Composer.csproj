@@ -14,10 +14,9 @@
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
-    <!-- The product and the explorer, whose file-picker dialog this component composes, so a host adding the composer also gets the explorer. -->
+    <!-- The product, whose package this one depends on. -->
     <ItemGroup>
         <ProjectReference Include="..\..\Forma.Blazor\Forma.Blazor.csproj" />
-        <ProjectReference Include="..\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
     </ItemGroup>
 
     <!-- The contracts a plugin is written against, which ship as their own package so a plugin outside this one can be. -->
@@ -29,11 +28,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" PrivateAssets="all" />
-    </ItemGroup>
-
-    <!-- The explorer's feature vocabulary, which this component's file-picker dialog speaks and the explorer's own package already ships. -->
-    <ItemGroup>
-        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" PrivateAssets="all" />
     </ItemGroup>
 
     <!-- The Framework assemblies the component compiles against, every one of which the product's package already ships or declares. -->

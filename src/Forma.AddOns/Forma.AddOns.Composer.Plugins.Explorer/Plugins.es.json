@@ -1,0 +1,9 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaComposerExplorerDialog": {
+    "Browse Files": "Examinar Archivos",
+    "Search files": "Buscar archivos",
+    "Choose a file before inserting.": "Elige un archivo antes de insertarlo.",
+    "No stored files are available, because this application registered nowhere to browse.": "No hay archivos almacenados disponibles, porque esta aplicación no registró ningún lugar que examinar."
+  }
+}

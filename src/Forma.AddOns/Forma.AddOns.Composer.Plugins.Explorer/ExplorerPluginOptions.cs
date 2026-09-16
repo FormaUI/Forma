@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
+namespace Forma.Blazor.Components.Composer.Plugins;
 
 using Forma.Framework.Composer.Editing;
 

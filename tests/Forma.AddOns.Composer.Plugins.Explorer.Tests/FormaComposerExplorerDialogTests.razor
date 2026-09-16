@@ -3,13 +3,11 @@
 @using Forma.Framework.Composer.Dialogs
 @using Forma.Framework.Composer.Documents
 @using Forma.Framework.Composer.Editing
-@using Forma.Framework.Composer.Plugins
 @using Forma.Framework.Resources
 @using Forma.Blazor.Components.Composer
-@using Forma.Blazor.Components.Composer.Dialogs
 @using Forma.Blazor.Components.Composer.RichTextEditor
-@using Forma.Blazor.Components.Composer.RichTextEditor.Plugins
 @using Forma.Blazor.Components.Explorer
+@using Forma.Framework.Composer.Plugins
 
 @code {
     public sealed class Component
@@ -61,6 +59,22 @@
             Assert.Equal(
                 "No stored files are available, because this application registered nowhere to browse.",
                 GetBody(cut).Notice);
+        }
+
+        [Fact]
+        public void Should_speak_the_readers_language_from_its_own_translations()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaComposerExplorerDialogTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposerExplorerDialog />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("עיון בקבצים", GetBody(cut).Title),
+                () => Assert.Equal("אין קבצים שמורים זמינים, משום שהיישום לא רשם מקום לעיין בו.", GetBody(cut).Notice));
         }
 
         [Fact]
