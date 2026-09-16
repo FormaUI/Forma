@@ -252,6 +252,32 @@ public sealed class ComposerToolbarLayoutTests
     }
 
     [Fact]
+    public void Should_translate_each_contribution_in_the_language_of_the_plugin_that_declared_it()
+    {
+        // Arrange
+        var editor = new Editor
+        {
+            Rows = [new() { Id = "editor.row", Label = "Editor Row" }],
+            Items = [CreateRow("editor.row", CreateCommand("own"))],
+        };
+        var first = new Plugin { Id = "first", Items = [CreateRow(ComposerRows.Formatting, Group("media", CreateCommand("image")))] };
+        var second = new Plugin { Id = "second", Items = [CreateRow(ComposerRows.Formatting, Group("media", CreateCommand("browse")))] };
+
+        // Act
+        var layout = ComposerToolbarLayout.Create(editor, [first, second], (plugin, title) => $"{plugin?.Id ?? "composer"}:{title}");
+
+        // Assert
+        var formatting = layout.Rows.Single(row => row.Id == ComposerRows.Formatting);
+        var media = Assert.IsType<FormaToolbarGroup>(Assert.Single(formatting.Items));
+        Assert.Multiple(
+            () => Assert.Equal("composer:Editor Commands", layout.Rows[0].Label),
+            () => Assert.Equal("editor:Editor Row", layout.Rows.Single(row => row.Id == "editor.row").Label),
+            () => Assert.Equal("composer:Text Formatting", formatting.Label),
+            () => Assert.Equal("first:media", media.Title),
+            () => Assert.Equal(["first:image", "second:browse"], media.Items.Select(item => item.Title)));
+    }
+
+    [Fact]
     public void Should_keep_the_first_declaration_when_two_plugins_declare_the_same_row()
     {
         // Arrange

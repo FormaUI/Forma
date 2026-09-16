@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Composer;
 
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
+using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
@@ -29,14 +30,23 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
+    [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
+
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
+
     private ComposerSelectionBar SelectionBar { get; set; } = new([], ComposerKeyBindingCatalog.Empty);
+
+    private ComposerPluginTranslator Translator
+        => field ??= new ComposerPluginTranslator(StringLocaleFactory, L);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Editor);
 
-        var layout = ComposerToolbarLayout.Create(Editor, Plugins);
+        var layout = ComposerToolbarLayout.Create(Editor, Plugins, Translator.Translate);
         var items = layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Selection)?.Items ?? [];
 
         SelectionBar = new ComposerSelectionBar(items, KeyBindings);

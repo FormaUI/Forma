@@ -234,6 +234,21 @@
         }
 
         [Fact]
+        public void Should_label_its_command_from_its_own_translations_and_its_group_from_the_composers()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaComposerExplorerDialogTests();
+
+            // Act
+            var cut = RenderComposer(ctx, new HtmlModel(), new RichTextEditorPlugin());
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='עיון בקבצים']")));
+            Assert.NotNull(cut.Find("[role=group][aria-label='מדיה']"));
+        }
+
+        [Fact]
         public void Should_open_the_stored_files_dialog_from_the_toolbar()
         {
             // Arrange

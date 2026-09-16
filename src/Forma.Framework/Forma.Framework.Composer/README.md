@@ -69,7 +69,9 @@ the plugins it is handed, and `CreateForView(view, plugins)` does the same for a
 an item naming a row the view never declared is left out rather than falling back. Each answers
 `Rows`, a `ComposerToolbarRowLayout` per row, the shared built-in row first and each declared row
 after the one it defaults to. Groups sharing an identifier fold into the first of them, so several
-plugins fill one named cluster rather than repeating it.
+plugins fill one named cluster rather than repeating it. Given a way to translate, each takes a
+title and the plugin that declared it — or none, for the layout's own row names — and translates
+every contribution before the groups fold, since a folded group no longer says whose item is whose.
 
 ## History, regions and text
 

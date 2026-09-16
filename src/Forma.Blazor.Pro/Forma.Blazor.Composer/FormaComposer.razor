@@ -16,7 +16,7 @@
             <FormaTabs ActiveTabId="@ActiveTabId" ActiveTabIdChanged="SelectTabAsync" Label="@L["Editors"]">
                 @foreach (var editor in _pluginCatalog.Editors)
                 {
-                    <FormaTab TabId="@editor.Id" Title="@L[editor.Title]" Icon="editor.Icon">
+                    <FormaTab TabId="@editor.Id" Title="@Translator.Translate(editor, editor.Title)" Icon="editor.Icon">
                         @if (editor.Id == _activeEditor.Id && _activeView is null)
                         {
                             <FormaComposerSurface
@@ -31,7 +31,7 @@
                 }
                 @foreach (var view in ActiveViews)
                 {
-                    <FormaTab TabId="@view.Id" Title="@L[view.Title]" Icon="view.Icon" Trailing="true">
+                    <FormaTab TabId="@view.Id" Title="@Translator.Translate(view, view.Title)" Icon="view.Icon" Trailing="true">
                         @if (view.Id == _activeView?.Id)
                         {
                             <FormaComposerSurface

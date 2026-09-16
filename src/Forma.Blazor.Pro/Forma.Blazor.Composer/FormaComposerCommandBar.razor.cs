@@ -12,7 +12,7 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     /// <summary>The accessible name of the bar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>The items laid out on the bar, ready for a FormaToolbar to render as given.</summary>
+    /// <summary>The items laid out on the bar, already in the reader's language, ready for a FormaToolbar to render as given.</summary>
     [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
 
     /// <summary>Whether the bar opens with the undo and redo commands.</summary>
@@ -46,7 +46,7 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     private bool CanRedo
         => Composer?.History.CanRedo ?? false;
 
-    /// <summary>What the bar actually renders: the history group first when shown, then Items localized and patched with live state.</summary>
+    /// <summary>What the bar actually renders: the history group first when shown, then Items patched with the shortcuts they currently answer to.</summary>
     private IReadOnlyList<FormaToolbarItem> RenderedItems
     {
         get
@@ -93,32 +93,17 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
         };
     }
 
-    // Localizes a plugin-declared item and layers on the state only render time knows: which
-    // toggle/option is active, and which shortcut a command currently answers to.
+    // Layers on the state only render time knows: which shortcut a command currently answers to.
     private FormaToolbarItem Patch(FormaToolbarItem item) => item switch
     {
-        FormaToolbarGroup group => group with { Title = L[group.Title], Items = [.. group.Items.Select(Patch)] },
-        FormaToolbarToggle toggle => toggle with
+        FormaToolbarGroup group => group with { Items = [.. group.Items.Select(Patch)] },
+        FormaToolbarAction action => action with
         {
-            Title = L[toggle.Title],
-            AlternateTitle = toggle.AlternateTitle is { } activeTitle ? L[activeTitle] : null,
-            ShortcutDisplay = KeyBindings.FindByCommand(toggle.Command)?.Display,
-            ShortcutAriaKeys = KeyBindings.FindByCommand(toggle.Command)?.AriaKeyShortcuts,
+            ShortcutDisplay = KeyBindings.FindByCommand(action.Command)?.Display,
+            ShortcutAriaKeys = KeyBindings.FindByCommand(action.Command)?.AriaKeyShortcuts,
         },
-        FormaToolbarCommand command => command with
-        {
-            Title = L[command.Title],
-            ShortcutDisplay = KeyBindings.FindByCommand(command.Command)?.Display,
-            ShortcutAriaKeys = KeyBindings.FindByCommand(command.Command)?.AriaKeyShortcuts,
-        },
-        FormaToolbarMenu menu => menu with { Title = L[menu.Title], Options = [.. menu.Options.Select(PatchOption)] },
-        FormaToolbarReadout readout => readout with { Title = L[readout.Title] },
-        FormaToolbarCustomItem customItem => customItem with { Title = L[customItem.Title] },
         _ => item,
     };
-
-    private FormaToolbarOption PatchOption(FormaToolbarOption option)
-        => option with { Title = L[option.Title] };
 
     // The engine's own toggles, whose state it reports rather than the selection.
     private const string MaximizeToggleId = "maximize";

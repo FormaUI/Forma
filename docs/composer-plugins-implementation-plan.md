@@ -268,6 +268,13 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    from the composer's. The Hebrew for "files" had been misspelled throughout the composer's
    and the Showcase's translations, and is corrected with the move.
 
+   The move exposed that the composer translated every plugin's titles through its own file
+   alone, so a plugin from another package had nowhere to put its labels. A plugin now names
+   its translations through `LocalizationSourceType`, the layout translates each contribution
+   in its plugin's language before groups merge, and a title the plugin's file lacks is read
+   from the composer's, which is how the AddOn's command keeps the composer's word for the
+   media group it joins.
+
 7. **Documentation.** §2, §3.1, §3.1a, §3.4a, §4.3a, §9 and the decisions table of the
    design are written as this plan starts, not after it. `repository-structure.md` and
    `CLAUDE.md` gain the `.Abstractions` shape: the contracts a package publishes apart from
@@ -303,13 +310,7 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
 
 ## Open
 
-- **Where a plugin from another package translates its toolbar labels.** The composer renders
-  every plugin's titles through its own translation file, as §3.1 prescribes, so the Hebrew
-  and Spanish for the AddOn's "Browse Files" command still sit in the composer's file, and a
-  plugin a third party ships has no way to translate its labels at all. The dialog's own
-  strings moved with it; only the labels the composer draws are left behind.
-
-Whether `AddPlainTextEditor` earned its place beside the catalog's fallback editor was settled
+Nothing. Whether `AddPlainTextEditor` earned its place beside the catalog's fallback editor was settled
 by step 4: the fallback is never registered and so carries no defaults, which makes
 `AddPlainTextEditor` the one way to a plain text editor with its own.
 

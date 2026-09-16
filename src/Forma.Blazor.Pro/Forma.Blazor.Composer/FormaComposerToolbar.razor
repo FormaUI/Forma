@@ -5,7 +5,7 @@
     @foreach (var (bar, index) in Bars.Select((bar, index) => (bar, index)))
     {
         <FormaComposerCommandBar
-            Label="@L[bar.Label]"
+            Label="@bar.Label"
             Items="bar.Items"
             ShowHistory="index == 0 && View is null"
             Disabled="Disabled"

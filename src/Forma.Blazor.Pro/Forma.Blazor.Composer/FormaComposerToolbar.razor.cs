@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Composer;
 
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
+using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
@@ -30,12 +31,17 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
+    [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
+
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaComposer);
 
     private ComposerToolbarLayout _layout = default!;
     private bool _arePluginsShown;
+
+    private ComposerPluginTranslator Translator
+        => field ??= new ComposerPluginTranslator(StringLocaleFactory, L);
 
     private string PluginsId
         => $"composer-plugins-{Context.RuntimeId:N}";
@@ -89,7 +95,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
         ArgumentNullException.ThrowIfNull(Editor);
 
         _layout = View is null
-            ? ComposerToolbarLayout.Create(Editor, Plugins)
-            : ComposerToolbarLayout.CreateForView(View, Plugins);
+            ? ComposerToolbarLayout.Create(Editor, Plugins, Translator.Translate)
+            : ComposerToolbarLayout.CreateForView(View, Plugins, Translator.Translate);
     }
 }

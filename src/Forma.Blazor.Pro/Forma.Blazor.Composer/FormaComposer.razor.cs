@@ -16,6 +16,7 @@ using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
+using Forma.Framework.Localization;
 using Forma.Framework.Plugins;
 using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
@@ -84,6 +85,7 @@ public sealed partial class FormaComposer(
     [Inject] private IHtmlSanitizer Sanitizer { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
+    [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
 
     private string ElementId
         => Id ?? $"composer-{Context.RuntimeId:N}";
@@ -100,6 +102,9 @@ public sealed partial class FormaComposer(
 
     private string ActiveTabId
         => _activeView?.Id ?? _activeEditor.Id;
+
+    private ComposerPluginTranslator Translator
+        => field ??= new ComposerPluginTranslator(StringLocaleFactory, L);
 
     private ComposerDocument CurrentDocument
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);

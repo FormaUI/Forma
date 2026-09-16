@@ -78,9 +78,6 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
     private static IEnumerable<FormaToolbarItem> GetLeaves(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items : [item];
 
-    private string GetItemTitle(FormaToolbarItem item)
-        => L[item.Title].Value;
-
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
     {

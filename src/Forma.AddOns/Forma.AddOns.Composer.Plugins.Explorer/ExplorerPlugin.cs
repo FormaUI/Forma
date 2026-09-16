@@ -21,6 +21,9 @@ public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : ICom
     public string Id => "explorer";
 
     /// <inheritdoc />
+    public Type LocalizationSourceType => typeof(FormaComposerExplorerDialog);
+
+    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,
