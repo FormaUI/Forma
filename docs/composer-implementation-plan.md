@@ -15,45 +15,50 @@ src/Forma.Framework/Forma.Framework.Sanitization/
 ├── RichContentMarkupPolicy.cs             # the markup policy the sanitizer applies
 └── ServiceCollectionExtensions.cs
 
-src/Forma.Framework/Forma.Framework.Composer/
-├── README.md                              # the engine's vocabulary
+src/Forma.Framework/Forma.Framework.Plugins/              # the registry every composer is described through
+├── IPlugin.cs
+├── IPluginConfigurable.cs                 # the options record a plugin's constructor takes
+├── PluginActivator.cs                     # builds one owner's plugins, resolving each constructor
+├── PluginInstance.cs
+├── PluginRegistration.cs
+├── PluginRegistry.cs                      # what one owner registers, and what sits under each
+├── PluginScope.cs                         # one owner's built plugins, and their disposal
+└── README.md
+
+src/Forma.Framework/Forma.Framework.Composer.Abstractions/ # the contracts; compiles into …Composer
+├── README.md                              # what a plugin is written against
 ├── Assets/                                # namespace …Composer.Assets
 │   ├── ComposerAsset.cs
 │   ├── ComposerAssetKind.cs
 │   ├── ComposerAssetLoading.cs
 │   └── IComposerAssetLoader.cs
+├── Dialogs/                               # namespace …Composer.Dialogs
+│   ├── ComposerDialogSize.cs
+│   ├── ComposerInsertionRequest.cs        # a dialog body a plugin asks the composer to host
+│   └── IComposerInsertionDialog.cs
 ├── Documents/                             # namespace …Composer.Documents
 │   ├── ComposerConversionResult.cs
 │   ├── ComposerDocument.cs
 │   ├── ComposerDocumentFormat.cs
-│   ├── DocumentConverterRegistry.cs
-│   ├── HtmlSourceFormatter.cs             # one block per line, for the source view
 │   └── IComposerDocumentConverter.cs
 ├── Editing/                               # namespace …Composer.Editing
-│   ├── ComposerCommandRegistry.cs         # engine commands first, then the plugin that named it
-│   ├── ComposerCommandResult.cs
 │   ├── ComposerCommands.cs                # the engine's own command names
 │   ├── ComposerContext.cs
-│   ├── ComposerEdit.cs
-│   ├── ComposerHistory.cs
+│   ├── ComposerInsertion.cs               # what a dialog hands the active editor
 │   ├── ComposerKeyBindingCatalog.cs       # the merged key map
-│   ├── ComposerKeyBindingSource.cs        # the engine's own bindings
-│   ├── ComposerRegionRegistry.cs          # pushed status items and gutter markers
 │   ├── ComposerRows.cs                    # the rows the composer always provides
 │   ├── ComposerSelection.cs
 │   ├── ComposerSelectionBar.cs
-│   ├── ComposerText.cs
-│   ├── ComposerTextSpan.cs
-│   ├── ComposerToolbarLayout.cs           # rows resolved for one editor or one view
 │   ├── IComposerGutterMarker.cs
 │   ├── IComposerHistory.cs
 │   ├── IComposerInteraction.cs
 │   ├── IComposerRegionRegistry.cs
-│   └── IComposerStatusItem.cs
+│   ├── IComposerStatusItem.cs
+│   ├── MediaInsertMode.cs
+│   └── ResourceInsertion.cs
 ├── Plugins/                               # namespace …Composer.Plugins
 │   ├── ComposerInputTrigger.cs
 │   ├── ComposerKeyBinding.cs
-│   ├── ComposerPluginCatalog.cs           # the available plugins, split by kind
 │   ├── ComposerToolbarItem.cs
 │   ├── ComposerToolbarRow.cs
 │   ├── ComposerViews.cs
@@ -65,12 +70,35 @@ src/Forma.Framework/Forma.Framework.Composer/
 │   └── IComposerViewPlugin.cs
 ├── Syntax/                                # namespace …Composer.Syntax
 │   ├── ComposerSyntaxToken.cs
-│   ├── IComposerSyntaxHighlighter.cs
-│   └── NullSyntaxHighlighter.cs
+│   └── IComposerSyntaxHighlighter.cs
 └── Widgets/                               # namespace …Composer.Widgets
     ├── ComposerWidget.cs
     ├── ComposerWidgetNode.cs
     └── ComposerWidgetTree.cs
+
+src/Forma.Framework/Forma.Framework.Composer/             # the engine, bundled in the composer's package
+├── README.md                              # the engine's vocabulary
+├── Documents/                             # namespace …Composer.Documents
+│   ├── DocumentConverterRegistry.cs
+│   └── HtmlSourceFormatter.cs             # one block per line, for the source view
+├── Editing/                               # namespace …Composer.Editing
+│   ├── ComposerCommandRegistry.cs         # engine commands first, then the plugin that named it
+│   ├── ComposerCommandResult.cs
+│   ├── ComposerEdit.cs
+│   ├── ComposerHistory.cs
+│   ├── ComposerKeyBindingSource.cs        # the engine's own bindings
+│   ├── ComposerRegionRegistry.cs          # pushed status items and gutter markers
+│   ├── ComposerText.cs
+│   ├── ComposerTextSpan.cs
+│   └── ComposerToolbarLayout.cs           # rows resolved for one editor or one view
+├── Plugins/                               # namespace …Composer.Plugins
+│   ├── ComposerDefinition.cs              # a composer described once, activated per composer
+│   ├── ComposerEditorBuilder.cs           # typed by its editor, so each editor has its own defaults
+│   ├── ComposerPluginBuilder.cs
+│   ├── ComposerPluginCatalog.cs           # the available plugins, answered by surface
+│   └── ComposerViewBuilder.cs
+└── Syntax/                                # namespace …Composer.Syntax
+    └── NullSyntaxHighlighter.cs
 
 src/Forma.Framework/Forma.Framework.Composer.Interop/      # namespace …Composer.Interop
 ├── RichTextEditor.cs                      # the wrapper over the rich text script
@@ -99,6 +127,7 @@ src/Forma.Blazor.Pro/Forma.Blazor.Composer/
 ├── ComposerChrome.cs                      # maximized and selection-bar state
 ├── ComposerKeyBindingCatalogExtensions.cs # the key map as input routes
 ├── ComposerOptions.cs
+├── ComposerPluginTranslator.cs            # a plugin's titles, from its translations then the composer's
 ├── FormaComposerAttachments.razor         # the files carried beside the document
 ├── FormaComposerAttachments.razor.cs
 ├── FormaComposerAttachments.razor.css
@@ -115,6 +144,8 @@ src/Forma.Blazor.Pro/Forma.Blazor.Composer/
 ├── FormaComposerSurface.razor.css
 ├── FormaComposerToolbar.razor             # the rows of one surface
 ├── FormaComposerToolbar.razor.cs
+├── README.md                              # the host's view of the composer
+├── ServiceCollectionExtensions.cs         # AddFormaComposer, and each editor's defaults
 │
 ├── Assets/                                # namespace …Composer.Assets
 │   ├── ComposerAssetLog.cs
@@ -198,7 +229,6 @@ src/Forma.Blazor.Pro/Forma.Blazor.Composer/
 │       ├── ListPlugin.cs
 │       ├── MarkdownBlockPlugin.cs         # planned (§4.3, Phase 4)
 │       ├── MathPlugin.cs                  # planned (§4.3, Phase 6)
-│       ├── MediaInsertMode.cs
 │       ├── ParagraphFormatPlugin.cs
 │       ├── SpecialCharacterPlugin.cs
 │       ├── SpecialCharacterPluginOptions.cs
@@ -247,13 +277,23 @@ src/Forma.Blazor.Pro/Forma.Blazor.Composer/
         ├── FormaMapWidget.razor
         ├── FormaCodeWidget.razor
         └── FormaEmbedWidget.razor
+
+src/Forma.AddOns/Forma.AddOns.Composer.Plugins.Explorer/  # namespace …Composer.Plugins — the composer joined to FormaExplorer
+├── ExplorerPlugin.cs
+├── ExplorerPluginOptions.cs
+├── FormaComposerExplorerDialog.razor      # the host's stored files through FormaExplorer
+├── FormaComposerExplorerDialog.razor.cs
+├── FormaComposerExplorerDialog.razor.css
+├── Plugins.he.json                        # the dialog's strings, and the plugin's command
+├── Plugins.es.json
+└── README.md
 ```
 
 ## Phases
 
 Each phase ends buildable, tested and reviewable.
 
-1. **Capability model.** ✅ The composer assembly, every contract in §3 and §5–§7, the default sanitizer, the converter registry, and history are built, and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one sits in `Forma.Blazor` rather than here, because it needs the JS environment, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
+1. **Capability model.** ✅ The composer assembly, every contract in §3 and §5–§7, the default sanitizer, the converter registry, and history are built — the contracts since split into `Forma.Framework.Composer.Abstractions` by the [plugins plan](composer-plugins-implementation-plan.md) — and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one is `JSComposerAssetLoader`, in the composer's own package under `Assets/` rather than here, because it needs the JS environment, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
 2. **Engine shell.** ✅ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery (since retired by the [plugins plan](composer-plugins-implementation-plan.md), which describes a composer by registration instead) and availability probing, the selection bridge, `ComposerText`, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. The selection bridge is the shared `TextEntry` operation, not welded into any one editor plugin, so a textarea-based surface reuses it rather than reimplementing it; the rich text canvas has its own, `RichTextEditor` over the script module in `Forma.Framework.Composer.Interop`, because the DOM APIs genuinely differ, but through the same generic `IComposerInteraction.ReportSelectionAsync` seam. `PlainTextEditorPlugin`, over a `<textarea>`, is the editor the catalog falls back to when no registered editor is available, which the design's C3 had ruled out; C3 records the surface that shipped.
 2a. **Regions.** ◐ The status strip of §3.8 is built: `IComposerRegionRegistry` pushes `IComposerStatusItem` handles that any plugin creates and disposes, cascaded on `ComposerContext.Regions` so no editor is a special case. `FormaComposerStatusStrip` renders it once per composer, beneath whichever surface is active. The gutter's contract (`IComposerGutterMarker`) is built and tested the same way; its visual rendering waits on a line-oriented surface, since pixel-aligning a marker beside a wrapping `<textarea>` needs font-metric mirroring that would itself become a one-off hack rather than a real capability.
 3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the selection bar, the preview and source views, and the formatting, typography, paragraph, list and alignment/bidi plugins. The canvas's script is `RichTextEditor.js` in `Forma.Framework.Composer.Interop`, one module per editing concept, wrapped by `RichTextEditor`, rather than a module colocated beside the component. Three departures from the design's sketches are recorded there: the list plugin has no task list, the link plugin no auto-linking, and the canvas reports every distinct selection snapshot rather than coalescing keystroke-driven caret movement (§3.6, §4.3).

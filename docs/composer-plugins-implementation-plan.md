@@ -292,6 +292,23 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    implementation "sits in `Forma.Blazor`". It is `JSComposerAssetLoader` in
    `Forma.Blazor.Pro/Forma.Blazor.Composer/Assets/`.
 
+   ✅ Built. Steps 5 and 6 had already rewritten both composer READMEs and the structure
+   document as they went, so what was left was the documents no step's own change reached:
+
+   - **The composer implementation plan's file layout** now shows the shared registry, the
+     contracts and the engine as the three projects they are, the translator and registrar
+     the composer's package gained, and the AddOn; its phase record says where the contracts
+     and the asset loader went.
+   - **The abstractions README** was read against every contract it names. It now says that
+     a plugin registered on an editor stays off the views over its document, and describes
+     the selection bar an editor component is handed, which it had left out.
+   - **The design** had kept the context and the interaction "in the composer assembly" and
+     described a translation pair beside each component where the package has one, sectioned
+     by component. The decisions table gains the choices steps 3a to 6 made.
+   - **`CLAUDE.md`** is not given the split-contracts rule, which `repository-structure.md`
+     already states and `CLAUDE.md` defers to for packaging; its namespace rule, which
+     allowed no assembly to borrow a namespace, now admits the ones that do.
+
 8. **Verification.** A visible-browser walk of `/composer` in `en`, `he` and `es-419`:
    browse and insert a stored file, upload an attachment, maximize, switch editors, switch
    views, and the selection bar.

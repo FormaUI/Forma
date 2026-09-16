@@ -53,9 +53,10 @@ with its own and with every other plugin's.
 
 A plugin never declares where it applies: the host says that by where it registers the plugin.
 Registered on the composer, a plugin reaches every editor and every view; registered on an
-editor, it reaches that editor's surface alone; registered on a view, it reaches that view's bar.
-So a plugin shipped from another package need not name an editor whose type it cannot reference,
-and the same plugin type serves two editors as two instances, each with its own options.
+editor, it reaches that editor's surface alone and not the views over its document; registered
+on a view, it reaches that view's bar. So a plugin shipped from another package need not name an
+editor whose type it cannot reference, and the same plugin type serves two editors as two
+instances, each with its own options.
 
 ## What a plugin contributes
 
@@ -87,6 +88,10 @@ so a changed context is also the signal to re-render.
 | `Regions` | The status items and gutter markers plugins have pushed. |
 | `SyntaxHighlighter` | The highlighter code classification runs through. |
 | `KeyBindings` | The shortcuts the composer and its plugins answer. |
+
+An editor's component is also handed a `ComposerSelectionBar`: the items plugins placed on the
+selection row, already in the reader's language, and the key bindings their shortcuts are read
+from. An editor with a text selection draws them over it; one without ignores them.
 
 ## What a plugin can ask for
 
