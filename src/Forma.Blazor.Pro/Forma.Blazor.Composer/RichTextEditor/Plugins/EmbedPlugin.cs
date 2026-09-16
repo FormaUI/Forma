@@ -18,9 +18,6 @@ public sealed class EmbedPlugin(RichTextEditorPlugin editor) : IComposerFeatureP
     public string Id => "embed";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Plugins,

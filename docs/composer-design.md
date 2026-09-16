@@ -179,6 +179,8 @@ services.AddFormaComposer(composer => composer
 
 **No call depends on the order it was written in.** Defaults and anything else resolved against the whole tree are recorded and applied when the definition is built, so `TryAddDefaultFeatures` means "whatever this scope has not registered itself" however early it appears. Each builder carries only its own defaults method, so attaching one to the wrong scope does not compile.
 
+**Each editor has its own defaults.** An editor's builder is typed by the editor it describes, `ComposerEditorBuilder<TEditor>`, and each editor's package extends its own: the rich text editor's `TryAddDefaultFeatures` brings its formatting, attaching, the selection bar and its views; the plain text editor's brings attaching. Calling one editor's defaults on another does not compile, since the rich text defaults depend on the rich text editor and would otherwise fail only when a composer activated them. The composer's own `TryAddDefaultPlugins` brings what belongs on every editor and every view alike, which is maximizing.
+
 **A registration is a type, its options type and a delegate to configure them** — never a constructed instance, which would be shared. An implementation declares the options it takes through `IPluginConfigurable<TOptions>`, so a registration naming the wrong pair does not compile. Each activation creates its own options, and options are settable rather than `init`-only, which is what a configure delegate and binding from configuration both need; an options record's `Default` therefore answers a fresh value rather than one every plugin could write to.
 
 **A registration may name a factory instead**, for a plugin whose construction neither the composer's own plugins, its options nor the host's services can satisfy. That is the deliberate escape rather than the accident the type-based shape prevents: the host writes the factory, so a factory answering one instance to every composer is a choice made in the open. A composer disposes the plugins it built and leaves a factory's to whoever wrote it.
@@ -521,7 +523,9 @@ Clipboard note: browsers do not grant programmatic cut/copy/paste without user a
 
 ### 4.3a Engine-agnostic plugins
 
-`MaximizePlugin`, `SelectionBarPlugin` and `FileUploadPlugin` are not rich text features: full-viewport editing, the choice of whether a formatting bar follows the selection, and attaching files beside the document are useful to any editor, so all three are registered at the composer root and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones, and being at the root is what keeps them present when the author switches editors and stops a second editor from bringing a second copy.
+`MaximizePlugin`, `SelectionBarPlugin` and `FileUploadPlugin` are not rich text features: full-viewport editing, the choice of whether a formatting bar follows the selection, and attaching files beside the document are useful to more than one editor, so all three take no dependency on `RichTextEditorPlugin` and live at `Composer/Plugins/`, one level up from the editor-specific ones.
+
+Where each is registered follows what it acts on. Maximizing acts on the composer, so it sits at the root and reaches every editor and every view. Attaching changes the document, and a view never edits it, so it is each editor's default rather than the root's; the selection bar follows formatting a surface must have for it to show anything, so it is a default of the rich text editor alone. An editor registering its own copy is one surface's plugin, never a second one beside the first, because only one surface is in play at a time and a surface's own registration answers in place of the composer's.
 
 | Plugin | Covers | Coi origin |
 |---|---|---|

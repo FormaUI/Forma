@@ -18,9 +18,6 @@ public sealed class HorizontalRulePlugin(RichTextEditorPlugin editor) : ICompose
     public string Id => "horizontal-rule";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,

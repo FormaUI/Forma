@@ -25,23 +25,22 @@ public sealed class ComposerToolbarLayout
     /// <summary>The rows to render, the shared built-in row first and each declared row after the one that defaults to it.</summary>
     public IReadOnlyList<ComposerToolbarRowLayout> Rows { get; }
 
-    /// <summary>Lays out the editor's own commands and those of the plugins scoped to it.</summary>
+    /// <summary>Lays out the editor's own commands and those of the plugins it is handed.</summary>
     public static ComposerToolbarLayout Create(IComposerEditorPlugin editor, IEnumerable<IComposerPlugin> plugins)
     {
         ArgumentNullException.ThrowIfNull(editor);
         ArgumentNullException.ThrowIfNull(plugins);
 
-        return Create(editor, editor.Id, plugins, StandardRows);
+        return Create(editor, plugins, StandardRows);
     }
 
-    /// <summary>Lays out the view's own commands and those of the plugins scoped to its editor; an item naming a row the view never declared is left out.</summary>
+    /// <summary>Lays out the view's own commands and those of the plugins it is handed; an item naming a row the view never declared is left out.</summary>
     public static ComposerToolbarLayout CreateForView(IComposerViewPlugin view, IEnumerable<IComposerPlugin> plugins)
     {
         ArgumentNullException.ThrowIfNull(view);
         ArgumentNullException.ThrowIfNull(plugins);
 
-        // A view takes only the plugins that say they belong on a view; the rest act on the document, which a view never edits.
-        return Create(view, view.EditorId, plugins.Where(plugin => plugin is IComposerFeaturePlugin { AppliesToViews: true }), []);
+        return Create(view, plugins, []);
     }
 
     private static readonly IReadOnlyList<ComposerToolbarRow> StandardRows =
@@ -54,11 +53,10 @@ public sealed class ComposerToolbarLayout
 
     private static ComposerToolbarLayout Create(
         IComposerPlugin owner,
-        string editorId,
         IEnumerable<IComposerPlugin> plugins,
         IReadOnlyList<ComposerToolbarRow> standardRows)
     {
-        var external = plugins.Where(p => !ReferenceEquals(p, owner) && p is not IComposerEditorPlugin and not IComposerViewPlugin && AppliesTo(p, editorId)).ToList();
+        var external = plugins.Where(p => !ReferenceEquals(p, owner) && p is not IComposerEditorPlugin and not IComposerViewPlugin).ToList();
         var order = Order(owner, external, standardRows);
         var items = order.ToDictionary(r => r.Id, _ => new List<FormaToolbarItem>(), StringComparer.Ordinal);
         var catchesStrays = items.ContainsKey(ComposerRows.Plugins);
@@ -156,10 +154,4 @@ public sealed class ComposerToolbarLayout
             }
         }
     }
-
-    // Only a feature plugin scopes itself to editors; anything else contributes to every editor.
-    private static bool AppliesTo(IComposerPlugin plugin, string editorId)
-        => plugin is not IComposerFeaturePlugin feature
-            || feature.SupportedEditorIds.Count == 0
-            || feature.SupportedEditorIds.Contains(editorId, StringComparer.Ordinal);
 }

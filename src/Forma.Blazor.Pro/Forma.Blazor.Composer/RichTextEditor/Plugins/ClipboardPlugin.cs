@@ -24,9 +24,6 @@ public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerFeat
     public string Id => "clipboard";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,

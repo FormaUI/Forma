@@ -18,7 +18,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     /// <summary>The view this toolbar belongs to, or null when it belongs to the editor itself.</summary>
     [Parameter] public IComposerViewPlugin? View { get; set; }
 
-    /// <summary>The feature plugins on offer; those scoped to other editors are left out.</summary>
+    /// <summary>The feature plugins in play on this bar's surface.</summary>
     [Parameter] public IReadOnlyList<IComposerPlugin> Plugins { get; set; } = [];
 
     /// <summary>Whether every control on the toolbar is disabled.</summary>

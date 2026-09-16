@@ -22,9 +22,6 @@ public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : ICom
     public string Id => "explorer";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,

@@ -24,9 +24,6 @@ public sealed class TemplatePlugin(
     public string Id => "template";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.BuiltIn,

@@ -2,6 +2,7 @@ namespace Forma.Tests.Composer;
 
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
+using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Sanitization;
 
@@ -9,10 +10,16 @@ using Forma.Framework.Sanitization;
 public static class ComposerContexts
 {
     /// <summary>A state over the given markup, defaulting every service to the shipped implementation.</summary>
-    public static ComposerContext Create(string html = "<p>Test</p>", ComposerSelection? selection = null)
+    /// <param name="html">The markup the document holds.</param>
+    /// <param name="selection">The caret and range the browser last reported.</param>
+    /// <param name="activeEditor">The editor said to be rendering, defaulting to a stub standing in for one.</param>
+    public static ComposerContext Create(
+        string html = "<p>Test</p>",
+        ComposerSelection? selection = null,
+        IComposerEditorPlugin? activeEditor = null)
         => new()
         {
-            ActiveEditorId = "rich-text",
+            ActiveEditor = activeEditor ?? new StubEditorPlugin(),
             Document = new ComposerDocument(ComposerDocumentFormat.Html, html),
             Selection = selection ?? ComposerSelection.Empty,
             History = new ComposerHistory(),

@@ -34,7 +34,6 @@ public sealed class ComposerDefinitionTests
     public sealed class PreviewView : IComposerViewPlugin
     {
         public string Id => "preview";
-        public string EditorId => "stub-editor";
         public string Kind => ComposerViews.Preview;
         public string Title => "Preview";
         public Icon Icon => Glyph.File;

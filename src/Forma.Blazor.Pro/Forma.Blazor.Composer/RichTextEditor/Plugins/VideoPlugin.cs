@@ -18,9 +18,6 @@ public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerFeatureP
     public string Id => "video";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,

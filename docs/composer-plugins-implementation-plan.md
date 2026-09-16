@@ -189,6 +189,47 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    two editors owning one plugin identifier each dispatch to their own instance; switching
    editor re-points the commands.
 
+   ◐ Built, apart from the browser walk, which needs a browser this environment has none of.
+   Deleting `AppliesToViews` moved two things the property had been deciding, and both are
+   now the tree's:
+
+   - **A view is a surface in the editor's place**, so while one shows the scope is the root
+     and the view, and nothing the editor registered. The editor's formatting had stayed off
+     a view's bar only because a view declares none of the formatting rows; a command an
+     editor contributes to the built-in row would have landed there.
+   - **Each editor has its own defaults.** At the root, attaching and the selection bar
+     reached every view, which §3.1 forbids for attaching. The editor builder became
+     `ComposerEditorBuilder<TEditor>`, and each editor extends its own `TryAddDefaultFeatures`:
+     the rich text editor's adds attaching and the selection bar, the plain text editor's adds
+     attaching, and the composer's `TryAddDefaultPlugins` keeps only maximizing. §3.1a and
+     §4.3a say so.
+
+   A plugin whose identifier the composer and the surface both register is answered by the
+   surface's, so a host registering attaching in both places gets one button rather than two.
+
+   `ActiveView` has its first reader in the composer's own attachments list, which offers to
+   remove an attachment on the editor and not on a view, where it had been offering to edit a
+   document the view only shows.
+
+   Four departures from what this step planned:
+
+   - **The catalog still tells the roles apart by type.** The step expected the role to arrive
+     with the registration, but the registry step 3a extracted knows only "a plugin"; the
+     role-typed builder methods constrain what may be registered where and record nothing.
+     Testing for `IComposerEditorPlugin` is what a plugin implementing it already claims, so
+     the switch stayed where the catalog sorts what it was handed.
+   - **Key bindings are scoped beside the commands.** The step named the command registry
+     alone, but a binding surviving a switch would fire a command the registry no longer
+     routes, which reads to a user as a dead shortcut rather than an absent one.
+   - **The preview and source views lost their editor parameter**, which the analyzer caught
+     as unused the moment they stopped naming the editor they belong to. That is the same
+     outcome `ExplorerPlugin` reached in step 2.
+   - **The catalog answers by surface rather than listing by kind.** `Views` and
+     `FeaturePlugins` were properties over the whole composer; they are now `GetViews(editor)`
+     and `GetFeaturePlugins(editor, view)`, since neither question has a composer-wide answer
+     once scope is the tree. `Plugins` is registration order rather than editors, then views,
+     then the rest.
+
 5. **Retire discovery.** `ComposerPluginDiscovery`, its tests and its `Discoverables` and
    `Unbuildables` fixtures are deleted. Its one caller outside tests is the Showcase's
    every-plugin demo, which becomes the editor's defaults.
@@ -230,10 +271,9 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
 ## Deliberately out of scope
 
 - **Reach beyond one scope** — registering a feature on every view of an editor, or on an
-  editor and its views together. `AppliesToViews` is set by one plugin in the whole
-  repository, `MaximizePlugin`, which sits at the root where everything already reaches it.
-  Adding a builder method later breaks nothing, so the name is better chosen against a real
-  case than invented now.
+  editor and its views together. The only plugin that wanted it, `MaximizePlugin`, sits at
+  the root where everything already reaches it. Adding a builder method later breaks nothing,
+  so the name is better chosen against a real case than invented now.
 - **The rich text editor's own five dialogs.** Link, table, video, image and embed keep
   `RichTextDialogKind`. Moving them onto the hosted path would also give them reopening
   through the request, which is its own change with its own reason.
@@ -242,9 +282,9 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
 
 ## Open
 
-- Whether `AddPlainTextEditor` is worth shipping, given `PlainTextEditorPlugin` is already
-  the catalog's automatic fallback; it earns its place only for a host wanting plain text
-  *beside* rich text as a second tab.
+Nothing. Whether `AddPlainTextEditor` earned its place beside the catalog's fallback editor
+was settled by step 4: the fallback is never registered and so carries no defaults, which
+makes `AddPlainTextEditor` the one way to a plain text editor with its own.
 
 ## Risks
 

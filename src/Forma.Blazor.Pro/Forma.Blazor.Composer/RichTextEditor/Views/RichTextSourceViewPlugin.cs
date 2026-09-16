@@ -6,7 +6,7 @@ using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
 /// <summary>The rich text document's HTML, laid out for reading, copied or saved from there.</summary>
-public sealed class RichTextSourceViewPlugin(RichTextEditorPlugin editor) : IComposerViewPlugin
+public sealed class RichTextSourceViewPlugin : IComposerViewPlugin
 {
     /// <summary>The identifier of this view.</summary>
     public const string ViewId = "rich-text.source";
@@ -23,8 +23,6 @@ public sealed class RichTextSourceViewPlugin(RichTextEditorPlugin editor) : ICom
     /// <summary>The command saving the source as an HTML file.</summary>
     public const string DownloadCommand = "source.download";
 
-    private readonly RichTextEditorPlugin _editorPlugin = editor ?? throw new ArgumentNullException(nameof(editor));
-
     /// <summary>Raised when the source is to be placed on the clipboard.</summary>
     public event Action? CopyRequested;
 
@@ -36,9 +34,6 @@ public sealed class RichTextSourceViewPlugin(RichTextEditorPlugin editor) : ICom
 
     /// <inheritdoc />
     public string Id => ViewId;
-
-    /// <inheritdoc />
-    public string EditorId => _editorPlugin.Id;
 
     /// <inheritdoc />
     public string Kind => ComposerViews.Source;

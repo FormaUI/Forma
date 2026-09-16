@@ -23,8 +23,9 @@ public sealed partial class FormaComposerAttachments : FormaComponentBase
     private IReadOnlyList<ResourceInfo> Attachments
         => Composer?.Document.Attachments ?? [];
 
+    // A view shows the document without editing it, so removing an attachment belongs to the editor alone.
     private bool CanRemove
-        => Composer is { IsDisabled: false, IsReadOnly: false };
+        => Composer is { IsDisabled: false, IsReadOnly: false, ActiveView: null };
 
     private string TotalSize
         => ResourceFormatter.FromByteCount(Attachments.Sum(attachment => attachment.Size ?? 0));

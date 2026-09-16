@@ -39,9 +39,6 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
     public string Id => "basic-formatting";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,

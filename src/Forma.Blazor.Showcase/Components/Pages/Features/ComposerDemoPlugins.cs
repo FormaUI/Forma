@@ -211,9 +211,6 @@ public sealed class TimestampPlugin : IComposerFeaturePlugin
     public string Id => "timestamp";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [TextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
         [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "timestamp", Title = "Insert Timestamp", Icon = Glyph.Clock, Command = TimestampCommand }])];
 
@@ -254,9 +251,6 @@ public sealed class CleanupPlugin : IComposerFeaturePlugin
 
     /// <inheritdoc />
     public string Id => "cleanup";
-
-    /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [TextEditorPlugin.EditorId];
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>

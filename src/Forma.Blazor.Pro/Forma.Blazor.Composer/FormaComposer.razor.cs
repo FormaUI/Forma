@@ -48,6 +48,7 @@ public sealed partial class FormaComposer(
     private IComposerEditorPlugin _activeEditor = default!;
     private IReadOnlyList<IComposerViewPlugin>? _activeViews;
     private IComposerViewPlugin? _activeView;
+    private IReadOnlyList<IComposerPlugin> _surfacePlugins = [];
     private bool _isInitialized;
     private bool _isJsStarted;
     private readonly ComposerChrome _chrome = new();
@@ -95,7 +96,7 @@ public sealed partial class FormaComposer(
         => Options.ShowEditorSwitcher && (_pluginCatalog.Editors.Count > 1 || ActiveViews.Count > 0);
 
     private IReadOnlyList<IComposerViewPlugin> ActiveViews
-        => _activeViews ??= _pluginCatalog.GetViewsForEditor(_activeEditor.Id);
+        => _activeViews ??= _pluginCatalog.GetViews(_activeEditor);
 
     private string ActiveTabId
         => _activeView?.Id ?? _activeEditor.Id;
@@ -131,7 +132,8 @@ public sealed partial class FormaComposer(
     private ComposerContext BuildComposer()
         => new()
         {
-            ActiveEditorId = _activeEditor.Id,
+            ActiveEditor = _activeEditor,
+            ActiveView = _activeView,
             Document = CurrentDocument,
             Selection = _selection,
             IsDisabled = Disabled,
@@ -181,6 +183,8 @@ public sealed partial class FormaComposer(
     {
         _activeView = view;
 
+        RebuildScope();
+
         if (view is not null)
         {
             await _assetLoader.LoadAssetsAsync(view.Assets);
@@ -229,13 +233,23 @@ public sealed partial class FormaComposer(
         // so a second composer sharing one would answer this one's commands.
         _ownPlugins = (Plugins ?? _definition ?? ComposerDefinition.Empty).Activate(Services);
 
-        _pluginCatalog = await ComposerPluginCatalog.CreateAsync(_ownPlugins.Plugins, new PlainTextEditorPlugin());
+        _pluginCatalog = await ComposerPluginCatalog.CreateAsync(_ownPlugins.Instances, new PlainTextEditorPlugin());
         _activeEditor = _pluginCatalog.ResolveEditor(ActiveEditorId, Options.DefaultEditorId, CurrentDocument.Format);
         _activeViews = null;
 
-        _commandRegistry.RegisterPlugins(_pluginCatalog.Plugins);
-        _keyBindingCatalog = new ComposerKeyBindingCatalog([ComposerKeyBindingSource.Default, .. _pluginCatalog.Plugins]);
-        _attachOptions = _pluginCatalog.FeaturePlugins.OfType<FileUploadPlugin>().FirstOrDefault()?.Options ?? FileUploadPluginOptions.Default;
+        RebuildScope();
+    }
+
+    // Two editors may each own a plugin whose command is the same, so what answers a command is the scope in play.
+    private void RebuildScope()
+    {
+        _surfacePlugins = _pluginCatalog.GetFeaturePlugins(_activeEditor, _activeView);
+
+        var inPlay = _pluginCatalog.GetSurfacePlugins(_activeEditor, _activeView);
+
+        _commandRegistry.RegisterPlugins(inPlay);
+        _keyBindingCatalog = new ComposerKeyBindingCatalog([ComposerKeyBindingSource.Default, .. inPlay]);
+        _attachOptions = _surfacePlugins.OfType<FileUploadPlugin>().FirstOrDefault()?.Options ?? FileUploadPluginOptions.Default;
     }
 
     /// <inheritdoc />
@@ -341,6 +355,8 @@ public sealed partial class FormaComposer(
         _activeEditor = target;
         _activeView = null;
         _activeViews = null;
+
+        RebuildScope();
 
         await _assetLoader.LoadAssetsAsync(target.Assets);
 

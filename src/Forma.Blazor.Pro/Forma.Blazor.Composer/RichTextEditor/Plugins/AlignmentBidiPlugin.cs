@@ -33,9 +33,6 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
     public string Id => "alignment-bidi";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Paragraph,

@@ -2,14 +2,18 @@ namespace Forma.Framework.Composer.Editing;
 
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
+using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Sanitization;
 
 /// <summary>The composer as a plugin reads it: the active document, the selection, and the live engine services beside them.</summary>
 public sealed record ComposerContext
 {
-    /// <summary>The identifier of the editor plugin currently rendering.</summary>
-    public required string ActiveEditorId { get; init; }
+    /// <summary>The editor plugin currently rendering.</summary>
+    public required IComposerEditorPlugin ActiveEditor { get; init; }
+
+    /// <summary>The view over that editor's document currently showing, or null while the editor itself is.</summary>
+    public IComposerViewPlugin? ActiveView { get; init; }
 
     /// <summary>The document as the composer currently holds it.</summary>
     public required ComposerDocument Document { get; init; }

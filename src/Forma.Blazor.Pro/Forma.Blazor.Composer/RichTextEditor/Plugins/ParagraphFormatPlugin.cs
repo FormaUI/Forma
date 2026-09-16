@@ -61,9 +61,6 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
     public string Id => "paragraph-format";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,

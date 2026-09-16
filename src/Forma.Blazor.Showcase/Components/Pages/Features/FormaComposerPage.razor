@@ -160,10 +160,10 @@
     private static readonly ComposerDefinition ViewPlugins = ComposerDefinition.Create(composer => composer
         .AddRichTextEditor(editor => editor
             .AddFeaturePlugin<BasicFormattingPlugin>()
+            .AddFeaturePlugin<SelectionBarPlugin>()
             .AddViewPlugin<RichTextPreviewViewPlugin>()
             .AddViewPlugin<RichTextSourceViewPlugin>())
-        .AddFeaturePlugin<MaximizePlugin>()
-        .AddFeaturePlugin<SelectionBarPlugin>());
+        .AddFeaturePlugin<MaximizePlugin>());
 
     private static readonly ComposerDefinition EveryPlugin = ComposerDefinition.Create(composer => composer
         .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
@@ -187,17 +187,17 @@
             {
                 options.AllowUpload = false;
                 options.InsertMode = MediaInsertMode.Both;
-            }))
-        .AddFeaturePlugin<FileUploadPlugin, FileUploadPluginOptions>(options => options.Picker = new() { MaxFileSize = 5 * 1024 * 1024 }));
+            })
+            .AddFeaturePlugin<FileUploadPlugin, FileUploadPluginOptions>(options => options.Picker = new() { MaxFileSize = 5 * 1024 * 1024 })));
 
     protected override void OnInitialized()
     {
         _statusPlugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin(_ => _statusTextPlugin));
         _sourcePlugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin(_ => _sourceOnlyPlugin));
         _demoPlugins = ComposerDefinition.Create(composer => composer
-            .AddEditorPlugin(_ => _everythingTextPlugin)
-            .AddEditorPlugin(_ => _everythingSourcePlugin)
-            .AddFeaturePlugin<TimestampPlugin>()
-            .AddFeaturePlugin<CleanupPlugin>());
+            .AddEditorPlugin(_ => _everythingTextPlugin, editor => editor
+                .AddFeaturePlugin<TimestampPlugin>()
+                .AddFeaturePlugin<CleanupPlugin>())
+            .AddEditorPlugin(_ => _everythingSourcePlugin));
     }
 }

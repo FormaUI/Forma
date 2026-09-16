@@ -28,15 +28,12 @@ public sealed class ComposerToolbarLayoutTests
         public string Id { get; init; } = "plugin";
         public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];
         public IReadOnlyList<ComposerToolbarRow> Rows { get; init; } = [];
-        public IReadOnlyList<string> SupportedEditorIds { get; init; } = [];
-        public bool AppliesToViews { get; init; }
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
     private sealed class View : IComposerViewPlugin
     {
         public string Id { get; init; } = "editor.preview";
-        public string EditorId { get; init; } = "editor";
         public string Kind => ComposerViews.Preview;
         public string Title => Id;
         public Icon Icon => Glyph.Preview;
@@ -58,14 +55,13 @@ public sealed class ComposerToolbarLayoutTests
             Rows = [new() { Id = "preview.page", Label = "Page" }],
             Items = [CreateRow("preview.page", CreateCommand("paper"))],
         };
+        // A view is handed what is registered on it or at the composer root, so what reaches the layout is already the scope in play.
         var plugins = new IComposerPlugin[]
         {
-            new Plugin { Id = "chrome", AppliesToViews = true, Items = [CreateRow(ComposerRows.BuiltIn, CreateCommand("maximize"))] },
-            new Plugin { Id = "attach", Items = [CreateRow(ComposerRows.BuiltIn, CreateCommand("attach"))] },
-            new Plugin { Id = "bold", AppliesToViews = true, Items = [CreateRow(ComposerRows.Formatting, CreateCommand("bold"))] },
-            new Plugin { Id = "export", AppliesToViews = true, Items = [CreateRow("preview.page", CreateCommand("export"))] },
-            new Plugin { Id = "stray", AppliesToViews = true, Items = [CreateRow("nowhere", CreateCommand("stray"))], Rows = [new() { Id = "declared", Label = "Declared" }] },
-            new Plugin { Id = "elsewhere", AppliesToViews = true, SupportedEditorIds = ["other"], Items = [CreateRow("preview.page", CreateCommand("elsewhere"))] },
+            new Plugin { Id = "chrome", Items = [CreateRow(ComposerRows.BuiltIn, CreateCommand("maximize"))] },
+            new Plugin { Id = "bold", Items = [CreateRow(ComposerRows.Formatting, CreateCommand("bold"))] },
+            new Plugin { Id = "export", Items = [CreateRow("preview.page", CreateCommand("export"))] },
+            new Plugin { Id = "stray", Items = [CreateRow("nowhere", CreateCommand("stray"))], Rows = [new() { Id = "declared", Label = "Declared" }] },
         };
 
         // Act
@@ -253,20 +249,6 @@ public sealed class ComposerToolbarLayoutTests
         Assert.Multiple(
             () => Assert.Equal([ComposerRows.BuiltIn, ComposerRows.Plugins], layout.Rows.Select(r => r.Id)),
             () => Assert.Equal(["bold"], GetItemIds(layout.Rows[1])));
-    }
-
-    [Fact]
-    public void Should_leave_out_a_plugin_scoped_to_another_editor()
-    {
-        // Arrange
-        var editor = new Editor { Id = "plain" };
-        var plugin = new Plugin { SupportedEditorIds = ["rich"], Items = [CreateRow(ComposerRows.Plugins, CreateCommand("shout"))] };
-
-        // Act
-        var layout = ComposerToolbarLayout.Create(editor, [plugin]);
-
-        // Assert
-        Assert.Equal([ComposerRows.BuiltIn], layout.Rows.Select(r => r.Id));
     }
 
     [Fact]

@@ -193,19 +193,26 @@ builder.Services.AddFormaComposer(composer => composer
             options.InsertMode = MediaInsertMode.Embed;
         })
         .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRows = 12)
+        .AddFeaturePlugin<FileUploadPlugin>()
         .AddViewPlugin<RichTextPreviewViewPlugin>())
-    .AddFeaturePlugin<FileUploadPlugin>()
     .AddFeaturePlugin<MaximizePlugin>());
 ```
+
+Where a plugin is registered is where it applies. One registered on the composer reaches every
+editor and every view, which suits maximizing and nothing that edits; one registered on an editor
+reaches that editor's surface alone, so attaching a file never lands on its preview.
 
 Registering a plugin names its type rather than an instance, because **every composer builds its
 own**: an editor plugin carries the events its canvas subscribes to, so two composers sharing one
 would answer each other's commands. A plugin's constructor is satisfied from the plugins that
 composer built, the options the registration configured, and then the host's own services.
 
-`TryAddDefaultFeatures()` on an editor and `TryAddDefaultPlugins()` on the composer register
-whatever that scope has not registered itself, so a host wanting everything with one setting
-changed names only the setting. Neither depends on where it sits in the chain.
+Each editor has its own defaults. `TryAddDefaultFeatures()` on the rich text editor registers its
+formatting, attaching, the selection bar and its views; on the plain text editor it registers
+attaching. `TryAddDefaultPlugins()` on the composer registers what belongs on every editor and
+every view, which is maximizing. Each adds only what that scope has not registered itself, so a
+host wanting everything with one setting changed names only the setting, and none depends on
+where it sits in the chain.
 
 The page then places a composer with nothing more to say:
 

@@ -27,9 +27,6 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
     public string Id => "list";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Paragraph,

@@ -18,9 +18,6 @@ public sealed class ImagePlugin(RichTextEditorPlugin editor) : IComposerFeatureP
     public string Id => "image";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,

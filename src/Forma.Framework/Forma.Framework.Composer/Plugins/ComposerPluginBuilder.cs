@@ -18,10 +18,10 @@ public sealed class ComposerPluginBuilder
     /// <summary>Registers an editor, and the plugins and views that belong to it.</summary>
     /// <typeparam name="TPlugin">The editor to create.</typeparam>
     /// <param name="configure">Registers the editor's own plugins and views.</param>
-    public ComposerPluginBuilder AddEditorPlugin<TPlugin>(Action<ComposerEditorBuilder>? configure = null)
+    public ComposerPluginBuilder AddEditorPlugin<TPlugin>(Action<ComposerEditorBuilder<TPlugin>>? configure = null)
         where TPlugin : class, IComposerEditorPlugin
     {
-        _registry.Add<TPlugin>(editor => configure?.Invoke(new ComposerEditorBuilder(editor)));
+        _registry.Add<TPlugin>(editor => configure?.Invoke(new ComposerEditorBuilder<TPlugin>(editor)));
 
         return this;
     }
@@ -33,10 +33,10 @@ public sealed class ComposerPluginBuilder
     /// <remarks>A factory answering the same instance every time hands that instance to every composer, which an editor plugin must never do.</remarks>
     public ComposerPluginBuilder AddEditorPlugin<TPlugin>(
         Func<IServiceProvider, TPlugin> factory,
-        Action<ComposerEditorBuilder>? configure = null)
+        Action<ComposerEditorBuilder<TPlugin>>? configure = null)
         where TPlugin : class, IComposerEditorPlugin
     {
-        _registry.Add(factory, editor => configure?.Invoke(new ComposerEditorBuilder(editor)));
+        _registry.Add(factory, editor => configure?.Invoke(new ComposerEditorBuilder<TPlugin>(editor)));
 
         return this;
     }

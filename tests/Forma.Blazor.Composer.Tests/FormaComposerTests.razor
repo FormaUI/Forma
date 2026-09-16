@@ -196,7 +196,6 @@
         private sealed class ScopedPlugin : IComposerFeaturePlugin
         {
             public string Id => "scoped";
-            public IReadOnlyList<string> SupportedEditorIds => ["dummy"];
             public IReadOnlyList<ComposerToolbarItem> Items =>
                 [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "scoped", Title = "Scoped", Icon = Glyph.File, Command = "demo.scoped" }])];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
@@ -702,12 +701,12 @@
         }
 
         [Fact]
-        public void Should_leave_out_a_plugin_scoped_to_another_editor()
+        public void Should_leave_out_a_plugin_registered_under_another_editor()
         {
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>().AddFeaturePlugin<ScopedPlugin>());
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>(editor => editor.AddFeaturePlugin<ScopedPlugin>()));
 
             // Act
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -723,7 +722,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>().AddFeaturePlugin<ScopedPlugin>());
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>().AddEditorPlugin<DummyEditorPlugin>(editor => editor.AddFeaturePlugin<ScopedPlugin>()));
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Act
@@ -963,6 +962,53 @@
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal(["demo.shout"], plugin.Executed));
+        }
+
+        [Fact]
+        public void Should_route_a_command_two_editors_both_name_to_the_active_editors_own_plugin()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var onPlainText = new CommandPlugin();
+            var onDummy = new CommandPlugin();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddEditorPlugin<PlainTextEditorPlugin>(editor => editor.AddFeaturePlugin(_ => onPlainText))
+                .AddEditorPlugin<DummyEditorPlugin>(editor => editor.AddFeaturePlugin(_ => onDummy)));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Act
+            cut.Find("button[aria-label=Shout]").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Multiple(
+                () => Assert.Equal(["demo.shout"], onPlainText.Executed),
+                () => Assert.Empty(onDummy.Executed)));
+        }
+
+        [Fact]
+        public void Should_re_point_a_shared_command_when_the_editor_is_switched()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var onPlainText = new CommandPlugin();
+            var onDummy = new CommandPlugin();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddEditorPlugin<PlainTextEditorPlugin>(editor => editor.AddFeaturePlugin(_ => onPlainText))
+                .AddEditorPlugin<DummyEditorPlugin>(editor => editor.AddFeaturePlugin(_ => onDummy)));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+            cut.WaitForAssertion(() => cut.Find("button[aria-label='Plugin Commands']").Click());
+            cut.Find("button[aria-label=Shout]").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Multiple(
+                () => Assert.Equal(["demo.shout"], onDummy.Executed),
+                () => Assert.Empty(onPlainText.Executed)));
         }
 
         [Fact]
@@ -1347,6 +1393,87 @@
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Print']")));
             Assert.Empty(cut.FindAll("button[aria-label='Bold']"));
             Assert.Empty(cut.FindAll("button[aria-label='Undo']"));
+        }
+
+        [Fact]
+        public void Should_offer_the_defaults_on_the_editors_own_toolbar()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
+                .TryAddDefaultPlugins());
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Attach Files']")));
+            Assert.NotNull(cut.Find("button[aria-label='Maximize']"));
+            Assert.NotNull(cut.Find("button[aria-label='Selection Bar']"));
+        }
+
+        [Fact]
+        public void Should_offer_to_remove_an_attachment_on_the_editor_but_not_on_a_view()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            model.Body = model.Body with { Attachments = [new ResourceInfo("/files/brief.pdf")] };
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.AddViewPlugin<RichTextPreviewViewPlugin>()));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            var removals = cut.FindAll("button[aria-label='Remove brief.pdf']").Count;
+
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Print']")));
+            Assert.Multiple(
+                () => Assert.Equal(1, removals),
+                () => Assert.Empty(cut.FindAll("button[aria-label='Remove brief.pdf']")),
+                () => Assert.NotNull(cut.Find(".forma-composer-attachments")));
+        }
+
+        [Fact]
+        public void Should_offer_the_plain_text_editors_own_defaults()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddPlainTextEditor(editor => editor.TryAddDefaultFeatures())
+                .TryAddDefaultPlugins());
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Attach Files']")));
+            Assert.NotNull(cut.Find("button[aria-label='Maximize']"));
+            Assert.Empty(cut.FindAll("button[aria-label='Selection Bar']"));
+        }
+
+        [Fact]
+        public void Should_keep_the_editors_commands_off_a_view_showing_over_its_document()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
+                .TryAddDefaultPlugins());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
+            Assert.Empty(cut.FindAll("button[aria-label='Attach Files']"));
+            Assert.Empty(cut.FindAll("button[aria-label='Selection Bar']"));
         }
     }
 

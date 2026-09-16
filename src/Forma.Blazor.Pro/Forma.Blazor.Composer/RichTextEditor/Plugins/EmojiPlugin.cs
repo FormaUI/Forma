@@ -23,9 +23,6 @@ public sealed class EmojiPlugin(
     public string Id => "emoji";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<string> CommandPrefixes => [InsertEmojiPrefix];
 
     /// <inheritdoc />

@@ -5,9 +5,6 @@ using Forma.Framework.Icons;
 /// <summary>A read-only way of looking at one editor's document, such as a rendered preview or its source, with a command bar of its own.</summary>
 public interface IComposerViewPlugin : IComposerPlugin
 {
-    /// <summary>The identifier of the editor this view belongs to.</summary>
-    string EditorId { get; }
-
     /// <summary>The kind of view, one of <see cref="ComposerViews"/>.</summary>
     string Kind { get; }
 

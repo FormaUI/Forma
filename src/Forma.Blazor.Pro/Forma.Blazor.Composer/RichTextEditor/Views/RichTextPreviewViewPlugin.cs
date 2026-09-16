@@ -8,7 +8,7 @@ using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
 /// <summary>The rich text document as a reader will see it, laid out at a chosen paper or screen size, printed or exported from there.</summary>
-public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : IComposerViewPlugin
+public sealed class RichTextPreviewViewPlugin : IComposerViewPlugin
 {
     /// <summary>The identifier of this view.</summary>
     public const string ViewId = "rich-text.preview";
@@ -36,8 +36,6 @@ public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : ICo
 
     private static readonly IReadOnlyList<int> Zooms = [50, 75, 100, 125, 150];
 
-    private readonly RichTextEditorPlugin _editorPlugin = editor ?? throw new ArgumentNullException(nameof(editor));
-
     /// <summary>Raised when the document is to be printed.</summary>
     public event Action? PrintRequested;
 
@@ -55,9 +53,6 @@ public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : ICo
 
     /// <inheritdoc />
     public string Id => ViewId;
-
-    /// <inheritdoc />
-    public string EditorId => _editorPlugin.Id;
 
     /// <inheritdoc />
     public string Kind => ComposerViews.Preview;

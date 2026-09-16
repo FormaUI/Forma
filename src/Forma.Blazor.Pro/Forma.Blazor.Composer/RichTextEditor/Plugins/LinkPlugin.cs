@@ -33,9 +33,6 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
     public string Id => "link";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,

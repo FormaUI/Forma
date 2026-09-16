@@ -50,11 +50,11 @@ with its own and with every other plugin's.
 
 ### Where a contribution applies
 
-| Member | On | What it does |
-| --- | --- | --- |
-| `SupportedEditorIds` | `IComposerFeaturePlugin` | The editors the plugin contributes to. Empty — the default — means every editor, so a plugin written for one surface names it. |
-| `AppliesToViews` | `IComposerFeaturePlugin` | Whether the plugin's items also stand on the bar of a read-only view, which only a command acting on the surface rather than the document should. Defaults to `false`. |
-| `EditorId` | `IComposerViewPlugin` | The editor whose document the view looks at. |
+A plugin never declares where it applies: the host says that by where it registers the plugin.
+Registered on the composer, a plugin reaches every editor and every view; registered on an
+editor, it reaches that editor's surface alone; registered on a view, it reaches that view's bar.
+So a plugin shipped from another package need not name an editor whose type it cannot reference,
+and the same plugin type serves two editors as two instances, each with its own options.
 
 ## What a plugin contributes
 
@@ -75,7 +75,8 @@ so a changed context is also the signal to re-render.
 
 | Member | What it is |
 | --- | --- |
-| `ActiveEditorId` | The identifier of the editor plugin currently rendering. |
+| `ActiveEditor` | The editor plugin currently rendering. |
+| `ActiveView` | The view over that editor's document currently showing, or null while the editor itself is. |
 | `Document` | The document as the composer currently holds it. |
 | `Selection` | The caret and range as the browser last reported them. |
 | `IsDisabled`, `IsReadOnly`, `IsMaximized`, `IsSelectionBarShown` | The composer's chrome state. |

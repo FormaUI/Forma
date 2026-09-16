@@ -31,11 +31,11 @@ public static class ServiceCollectionExtensions
     /// <param name="configure">Registers the editor's own plugins and views; omitted, the editor is registered bare.</param>
     public static ComposerPluginBuilder AddRichTextEditor(
         this ComposerPluginBuilder composer,
-        Action<ComposerEditorBuilder>? configure = null)
+        Action<ComposerEditorBuilder<RichTextEditorPlugin>>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(composer);
 
-        return composer.AddEditorPlugin<RichTextEditorPlugin>(configure ?? (_ => { }));
+        return composer.AddEditorPlugin(configure);
     }
 
     /// <summary>Registers the plain text editor, which a composer otherwise falls back to only when no editor is registered.</summary>
@@ -43,28 +43,34 @@ public static class ServiceCollectionExtensions
     /// <param name="configure">Registers the editor's own plugins and views; omitted, the editor is registered bare.</param>
     public static ComposerPluginBuilder AddPlainTextEditor(
         this ComposerPluginBuilder composer,
-        Action<ComposerEditorBuilder>? configure = null)
+        Action<ComposerEditorBuilder<PlainTextEditorPlugin>>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(composer);
 
-        return composer.AddEditorPlugin<PlainTextEditorPlugin>(configure ?? (_ => { }));
+        return composer.AddEditorPlugin(configure);
     }
 
-    /// <summary>Registers the capabilities every editor has, for whichever of them the composer does not register itself.</summary>
+    /// <summary>Registers the capabilities every editor and every view has, for whichever of them the composer does not register itself.</summary>
     /// <param name="composer">The composer being described.</param>
     public static ComposerPluginBuilder TryAddDefaultPlugins(this ComposerPluginBuilder composer)
     {
         ArgumentNullException.ThrowIfNull(composer);
 
-        return composer
-            .TryAddFeaturePlugin<FileUploadPlugin>()
-            .TryAddFeaturePlugin<MaximizePlugin>()
-            .TryAddFeaturePlugin<SelectionBarPlugin>();
+        return composer.TryAddFeaturePlugin<MaximizePlugin>();
+    }
+
+    /// <summary>Registers the plain text editor's standard capabilities, for whichever of them the editor does not register itself.</summary>
+    /// <param name="editor">The editor being described.</param>
+    public static ComposerEditorBuilder<PlainTextEditorPlugin> TryAddDefaultFeatures(this ComposerEditorBuilder<PlainTextEditorPlugin> editor)
+    {
+        ArgumentNullException.ThrowIfNull(editor);
+
+        return editor.TryAddFeaturePlugin<FileUploadPlugin>();
     }
 
     /// <summary>Registers the rich text editor's standard capabilities, for whichever of them the editor does not register itself.</summary>
     /// <param name="editor">The editor being described.</param>
-    public static ComposerEditorBuilder TryAddDefaultFeatures(this ComposerEditorBuilder editor)
+    public static ComposerEditorBuilder<RichTextEditorPlugin> TryAddDefaultFeatures(this ComposerEditorBuilder<RichTextEditorPlugin> editor)
     {
         ArgumentNullException.ThrowIfNull(editor);
 
@@ -84,6 +90,8 @@ public static class ServiceCollectionExtensions
             .TryAddFeaturePlugin<ClipboardPlugin>()
             .TryAddFeaturePlugin<EmbedPlugin>()
             .TryAddFeaturePlugin<TemplatePlugin>()
+            .TryAddFeaturePlugin<FileUploadPlugin>()
+            .TryAddFeaturePlugin<SelectionBarPlugin>()
             .AddViewPlugin<RichTextPreviewViewPlugin>()
             .AddViewPlugin<RichTextSourceViewPlugin>();
     }
