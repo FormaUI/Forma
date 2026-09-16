@@ -16,7 +16,6 @@ src/Forma.Framework/Forma.Framework.Sanitization/
 └── ServiceCollectionExtensions.cs
 
 src/Forma.Framework/Forma.Framework.Composer/
-├── ComposerLog.cs
 ├── README.md                              # the engine's vocabulary
 ├── Assets/                                # namespace …Composer.Assets
 │   ├── ComposerAsset.cs
@@ -55,7 +54,6 @@ src/Forma.Framework/Forma.Framework.Composer/
 │   ├── ComposerInputTrigger.cs
 │   ├── ComposerKeyBinding.cs
 │   ├── ComposerPluginCatalog.cs           # the available plugins, split by kind
-│   ├── ComposerPluginDiscovery.cs         # finds and builds an assembly's feature and view plugins
 │   ├── ComposerToolbarItem.cs
 │   ├── ComposerToolbarRow.cs
 │   ├── ComposerViews.cs
@@ -261,7 +259,7 @@ src/Forma.Blazor.Pro/Forma.Blazor.Composer/
 Each phase ends buildable, tested and reviewable.
 
 1. **Capability model.** ✅ The composer assembly, every contract in §3 and §5–§7, the default sanitizer, the converter registry, and history are built, and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one sits in `Forma.Blazor` rather than here, because it needs the JS environment, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
-2. **Engine shell.** ✅ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery and availability probing, the selection bridge, `ComposerText`, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. The selection bridge is the shared `TextEntry` operation, not welded into any one editor plugin, so a textarea-based surface reuses it rather than reimplementing it; the rich text canvas has its own, `RichTextEditor` over the script module in `Forma.Framework.Composer.Interop`, because the DOM APIs genuinely differ, but through the same generic `IComposerInteraction.ReportSelectionAsync` seam. `PlainTextEditorPlugin`, over a `<textarea>`, is the editor the catalog falls back to when no registered editor is available, which the design's C3 had ruled out; C3 records the surface that shipped.
+2. **Engine shell.** ✅ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery (since retired by the [plugins plan](composer-plugins-implementation-plan.md), which describes a composer by registration instead) and availability probing, the selection bridge, `ComposerText`, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. The selection bridge is the shared `TextEntry` operation, not welded into any one editor plugin, so a textarea-based surface reuses it rather than reimplementing it; the rich text canvas has its own, `RichTextEditor` over the script module in `Forma.Framework.Composer.Interop`, because the DOM APIs genuinely differ, but through the same generic `IComposerInteraction.ReportSelectionAsync` seam. `PlainTextEditorPlugin`, over a `<textarea>`, is the editor the catalog falls back to when no registered editor is available, which the design's C3 had ruled out; C3 records the surface that shipped.
 2a. **Regions.** ◐ The status strip of §3.8 is built: `IComposerRegionRegistry` pushes `IComposerStatusItem` handles that any plugin creates and disposes, cascaded on `ComposerContext.Regions` so no editor is a special case. `FormaComposerStatusStrip` renders it once per composer, beneath whichever surface is active. The gutter's contract (`IComposerGutterMarker`) is built and tested the same way; its visual rendering waits on a line-oriented surface, since pixel-aligning a marker beside a wrapping `<textarea>` needs font-metric mirroring that would itself become a one-off hack rather than a real capability.
 3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the selection bar, the preview and source views, and the formatting, typography, paragraph, list and alignment/bidi plugins. The canvas's script is `RichTextEditor.js` in `Forma.Framework.Composer.Interop`, one module per editing concept, wrapped by `RichTextEditor`, rather than a module colocated beside the component. Three departures from the design's sketches are recorded there: the list plugin has no task list, the link plugin no auto-linking, and the canvas reports every distinct selection snapshot rather than coalescing keystroke-driven caret movement (§3.6, §4.3).
 4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.AddOns.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.

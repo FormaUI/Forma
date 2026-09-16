@@ -16,8 +16,9 @@ dotnet add package 2Site.Forma.Blazor.Pro.Composer
 ```
 
 The package depends on `2Site.Forma.Blazor`, the library it is built on, and on
-`2Site.Forma.Blazor.Pro.Explorer`, because its stored-files dialog composes `FormaExplorer`; both
-restore beside it. The composer's own contracts and its browser script ship inside the package.
+`2Site.Forma.Blazor.Pro.Explorer`, because its stored-files dialog composes `FormaExplorer`, and on
+`2Site.Forma.Framework.Composer.Abstractions`, the contracts a plugin is written against; all three
+restore beside it. The composer's engine and its browser script ship inside the package.
 
 ```csharp
 using Forma.Blazor;
@@ -48,12 +49,11 @@ it changes, so what the host reads back is what the sanitizer allowed; a host pe
 document still sanitizes on the server, because nothing the browser sends can be trusted by the
 endpoint receiving it.
 
-**The plugins.** Every editor and every capability is a plugin. A host passes them through the
-`Plugins` parameter, registers them as `IComposerPlugin` in dependency injection, or both; the
-composer takes the union. With no editor among them the composer falls back to plain text. The
-rich text plugins are built against the `RichTextEditorPlugin` instance they serve, and
-`ComposerPluginDiscovery.Discover` builds every feature and view plugin the package ships against
-the editors given, for a host that wants all of them.
+**The plugins.** Every editor and every capability is a plugin. A host describes them once with
+`AddFormaComposer`, or hands one composer a description of its own through the `Plugins`
+parameter, which takes the place of the application's. Each composer builds its own plugins from
+the description, the rich text ones against the rich text editor it built, and with no editor
+registered falls back to plain text. [Example](#example) shows a description.
 
 **Stores and providers, all optional.**
 
@@ -162,9 +162,9 @@ the preview did.
 ### Extending it
 
 A host adds a capability the same way the package's own arrive: a class implementing
-`IComposerFeaturePlugin` contributes toolbar items, key bindings and commands to the editors it
-names, and one implementing `IComposerEditorPlugin` contributes a whole editor with a canvas of its
-own. `IComposerDocumentConverter` carries a document between two formats, and a format is a
+`IComposerFeaturePlugin` contributes toolbar items, key bindings and commands wherever the host
+registers it, and one implementing `IComposerEditorPlugin` contributes a whole editor with a canvas
+of its own. `IComposerDocumentConverter` carries a document between two formats, and a format is a
 value a host mints with `new ComposerDocumentFormat("…")`, so a converter and an editor for a
 format the package never named take nothing more.
 

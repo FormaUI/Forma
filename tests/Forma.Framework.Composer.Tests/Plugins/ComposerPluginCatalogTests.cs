@@ -88,6 +88,23 @@ public sealed class ComposerPluginCatalogTests
         }
 
         [Fact]
+        public async Task Should_keep_the_first_available_plugin_of_an_identifier_past_an_unavailable_one()
+        {
+            // Arrange
+            var editor = CreateInstance(new EditorPlugin("html", ComposerDocumentFormat.Html));
+            var standIn = new FeaturePlugin("tables");
+
+            // Act
+            var catalog = await CreateAsync(
+                editor,
+                CreateInstance(new FeaturePlugin("tables", isAvailable: false), editor),
+                CreateInstance(standIn, editor));
+
+            // Assert
+            Assert.Same(standIn, Assert.Single(catalog.GetFeaturePlugins((IComposerEditorPlugin)editor.Plugin)));
+        }
+
+        [Fact]
         public async Task Should_keep_a_plugin_of_one_identifier_that_two_owners_each_register()
         {
             // Arrange

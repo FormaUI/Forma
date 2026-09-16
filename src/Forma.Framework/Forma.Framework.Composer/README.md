@@ -19,28 +19,35 @@ every piece of it is testable from a plain class library. How the component is c
 
 | Namespace | What it holds |
 | --- | --- |
-| `Forma.Framework.Composer.Plugins` | `ComposerPluginCatalog` and `ComposerPluginDiscovery`. |
+| `Forma.Framework.Composer.Plugins` | `ComposerDefinition` with the builders that describe one, and `ComposerPluginCatalog`. |
 | `.Editing` | `ComposerCommandRegistry` with `ComposerCommandResult`, `ComposerToolbarLayout`, `ComposerHistory`, `ComposerRegionRegistry`, `ComposerKeyBindingSource`, and the `ComposerText` operations with `ComposerTextSpan` and `ComposerEdit`. |
 | `.Documents` | `DocumentConverterRegistry` and `HtmlSourceFormatter`. |
 | `.Syntax` | `NullSyntaxHighlighter`. |
 
+## Describing a composer
+
+`ComposerDefinition.Create(configure)` describes a composer's plugins once, and `Activate(services)`
+builds them for one composer into a `PluginScope` it disposes. The description is a tree over the
+registry in [`Forma.Framework.Plugins`](../Forma.Framework.Plugins/README.md), written through three
+builders whose methods say the role: `ComposerPluginBuilder` at the root, where a plugin reaches
+every editor and every view; `ComposerEditorBuilder<TEditor>` under an editor, typed by that editor
+so each editor's package extends it with defaults of its own; and `ComposerViewBuilder` under a
+view.
+
 ## The catalog
 
-`ComposerPluginCatalog.CreateAsync(candidates, fallbackEditor)` keeps the first plugin of each
-`Id` that reports itself available, sorted into `Editors`, `Views` and `FeaturePlugins`, and takes
-the fallback editor when no editor remains — which is what guarantees a composer always has a
-surface. `ResolveEditor(requestedId, defaultId, format)` picks the editor to activate, preferring
-an explicit request, then a configured default, then the document's format, and
-`GetViewsForEditor(editorId)` answers the views belonging to one editor.
+`ComposerPluginCatalog.CreateAsync(instances, fallbackEditor)` takes the plugins one composer
+built, each still naming what it was registered under. It keeps the first of each `Id` an owner
+registers that reports itself available, and takes the fallback editor when no editor remains —
+which is what guarantees a composer always has a surface. `ResolveEditor(requestedId, defaultId,
+format)` picks the editor to activate, preferring an explicit request, then a configured default,
+then the document's format.
 
-`ComposerPluginDiscovery.Discover(plugins, assembly, locations, logger)` builds every public
-feature and view plugin in an assembly — or in every loaded assembly referencing the contracts —
-and appends them after the plugins given; `locations` are namespace suffixes narrowing the search.
-A found plugin has one public constructor, and each of its parameters is satisfied by the first
-given plugin of that type or by the parameter's default. A plugin whose type is among those given
-is not built again, and one that takes what no given plugin can stand in for is constructed by the
-caller and passed among them. An assembly that loads only partially is reported through
-`ComposerLog` at `Warning`, and discovery continues with the types that did load.
+The rest answers by surface. `GetViews(editor)` gives the views registered under an editor.
+`GetFeaturePlugins(editor, view)` gives the capabilities in play: the composer's, and the
+surface's own, where a showing view takes the editor's place and a surface's registration answers
+in place of the composer's for an identifier both carry. `GetSurfacePlugins(editor, view)` gives
+the surface followed by those, which is what commands and key bindings are drawn from.
 
 ## Commands
 
@@ -58,7 +65,7 @@ Ctrl+Y and Ctrl+Shift+Z for redo — and is merged with every plugin's by the ke
 ## Toolbar layout
 
 `ComposerToolbarLayout.Create(editor, plugins)` lays out the editor's own commands and those of
-the plugins scoped to it, and `CreateForView(view, plugins)` does the same for a view's bar, where
+the plugins it is handed, and `CreateForView(view, plugins)` does the same for a view's bar, where
 an item naming a row the view never declared is left out rather than falling back. Each answers
 `Rows`, a `ComposerToolbarRowLayout` per row, the shared built-in row first and each declared row
 after the one it defaults to. Groups sharing an identifier fold into the first of them, so several

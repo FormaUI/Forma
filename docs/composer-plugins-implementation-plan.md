@@ -238,6 +238,12 @@ visible-browser walk of the Showcase's `/composer` page where a step changes wha
    deployment must preserve, what order a scan yields, which assemblies are in scope, and
    how a found constructor is matched.
 
+   ✅ Built. The Showcase demo had already moved to the editor's defaults in step 3, so
+   discovery had no caller left. Its warning for a partly loaded assembly was the engine's
+   only log message, and the message class went with it. Both composer READMEs had gone on
+   describing hand-built plugin lists and the pre-step-4 catalog; they now describe a
+   composer by its registration and the catalog by surface.
+
 6. **The explorer's plugin moves.** `ExplorerPlugin`, `ExplorerPluginOptions`, the dialog
    body, its stylesheet, its strings and its tests move to `Forma.Blazor.Explorer` under
    `Composer/`, which takes a reference to the abstractions. The plugin loses its

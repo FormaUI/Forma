@@ -42,8 +42,9 @@ public sealed class ComposerPluginCatalog
 
         foreach (var instance in instances)
         {
-            if (!seen.Add((instance.Owner, instance.Plugin.Id))
-                || !await instance.Plugin.IsAvailableAsync(cancellationToken).ConfigureAwait(false))
+            // Availability is asked first, so a plugin that cannot run leaves its identifier to the next one that can.
+            if (!await instance.Plugin.IsAvailableAsync(cancellationToken).ConfigureAwait(false)
+                || !seen.Add((instance.Owner, instance.Plugin.Id)))
             {
                 continue;
             }
