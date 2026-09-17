@@ -112,19 +112,14 @@ export class BlockFormatter {
             return;
         }
 
-        const tail = document.createRange();
-        tail.setStart(range.startContainer, range.startOffset);
-        tail.setEnd(block, block.childNodes.length);
-
-        const following = block.cloneNode(false);
-        following.appendChild(tail.extractContents());
+        const following = this.#canvas.splitBlock(block, range);
         if (!following.hasChildNodes()) {
             following.appendChild(document.createElement('br'));
         }
         if (!block.hasChildNodes()) {
             block.appendChild(document.createElement('br'));
         }
-        block.after(rule, following);
+        block.after(rule);
 
         this.#canvas.placeCaret(following, 0);
     }

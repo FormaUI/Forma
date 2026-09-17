@@ -99,6 +99,20 @@ export class Canvas {
         return touched.filter(block => !touched.some(other => other !== block && block.contains(other)));
     }
 
+    /** Moves what follows the range out of its block into a copy standing after it, and returns that copy. */
+    splitBlock(block, range) {
+        const tail = document.createRange();
+        tail.setStart(range.startContainer, range.startOffset);
+        tail.setEnd(block, block.childNodes.length);
+
+        const following = block.cloneNode(false);
+        following.removeAttribute('id');
+        following.append(tail.extractContents());
+        block.after(following);
+
+        return following;
+    }
+
     /** Every text node the range covers at least partially, in document order. */
     textNodesIn(range) {
         const root = range.commonAncestorContainer;

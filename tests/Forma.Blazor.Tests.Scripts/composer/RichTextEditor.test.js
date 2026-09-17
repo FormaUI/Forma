@@ -778,6 +778,83 @@ describe('RichTextEditor', () => {
             expect(editor.textContent).toBe('Replaced content\u{1F600}');
         });
 
+        it('splits the paragraph at the caret to insert a block between its halves', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 5, text, 5);
+            handle.exec('insertResource', { source: '/media/report.pdf', name: 'report.pdf', kind: 'file', link: true });
+
+            expect(editor.querySelector('p p')).toBeNull();
+            expect([...editor.children].map(child => child.textContent)).toEqual(['Hello', 'report.pdf', ' world']);
+        });
+
+        it('stands a block between the paragraphs a selection spanned, replacing what it covered', () => {
+            editor.innerHTML = '<p>first</p><p>second</p>';
+            const handle = attach(editor, { owner });
+            const [first, second] = editor.querySelectorAll('p');
+
+            selectWithin(first.firstChild, 2, second.firstChild, 3);
+            handle.exec('insertResource', { source: '/media/a.png', name: 'a.png', kind: 'image', embed: true });
+
+            expect(editor.querySelector('p p')).toBeNull();
+            expect([...editor.children].map(child => child.textContent)).toEqual(['fi', '', 'ond']);
+            expect(editor.children[1].querySelector('img')).not.toBeNull();
+        });
+
+        it('places the caret at the start of the paragraph that follows the inserted block', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 5, text, 5);
+            handle.exec('insertResource', { source: '/media/report.pdf', name: 'report.pdf', kind: 'file', link: true });
+            handle.exec('insertText', 'X');
+
+            expect(editor.lastElementChild.textContent).toBe('X world');
+        });
+
+        it('drops the trailing spacer when the split paragraph already follows the inserted block', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 5, text, 5);
+            handle.exec('insertVideo', { source: 'https://vimeo.com/1', title: 'Clip' });
+
+            expect([...editor.children].map(child => child.tagName)).toEqual(['P', 'DIV', 'P']);
+            expect(editor.lastElementChild.textContent).toBe(' world');
+        });
+
+        it('keeps the trailing spacer when nothing followed the caret', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 11, text, 11);
+            handle.exec('insertVideo', { source: 'https://vimeo.com/1', title: 'Clip' });
+
+            expect([...editor.children].map(child => child.tagName)).toEqual(['P', 'DIV', 'P']);
+            expect(editor.lastElementChild.textContent).toBe(' ');
+        });
+
+        it('leaves no empty paragraph behind when the caret sits at an end', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 11, text, 11);
+            handle.exec('insertResource', { source: '/media/a.png', name: 'a.png', kind: 'image', embed: true });
+
+            expect(editor.innerHTML).toBe('<p>Hello world</p><p><img class="forma-composer-image" src="/media/a.png" alt="a.png"></p>');
+        });
+
+        it('keeps inline markup inside the paragraph it lands in', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 5, text, 5);
+            handle.exec('insertHtml', '<b>!</b>');
+
+            expect(editor.innerHTML).toBe('<p>Hello<b>!</b> world</p>');
+        });
+
         it('leaves the content alone when there is nothing to insert', () => {
             const handle = attach(editor, { owner });
 
