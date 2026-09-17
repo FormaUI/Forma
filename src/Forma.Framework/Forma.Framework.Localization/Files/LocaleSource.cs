@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization.Files;
 
 using System.Collections.Concurrent;
 
-/// <summary>Where translation files are read from, walked from the file named for the assembly down to the file named for the type, each file read once.</summary>
+/// <summary>Where locale files are read from, walked from the file named for the assembly down to the file named for the type, each file read once.</summary>
 /// <param name="format">The format the files are written in.</param>
 public abstract class LocaleSource(ILocaleFileFormat format)
 {

@@ -3,7 +3,7 @@ namespace Forma.Framework.Localization.Json;
 using Forma.Framework.Localization;
 
 /// <summary>Reads the strings belonging to <typeparamref name="T"/>.</summary>
-/// <typeparam name="T">The type whose translation files hold the strings.</typeparam>
+/// <typeparam name="T">The type whose locale files hold the strings.</typeparam>
 public sealed class JsonStringLocale<T> : IStringLocale<T>
 {
     private readonly IStringLocale _locale;
@@ -23,11 +23,11 @@ public sealed class JsonStringLocale<T> : IStringLocale<T>
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
         => _locale[name, values];
 
-    /// <summary>The translated format for a key, with every hole left open.</summary>
+    /// <summary>The localized format for a key, with every hole left open.</summary>
     public LocalizedPattern Resolve(string name)
         => _locale.Resolve(name);
 
-    /// <summary>The translated format for a key, with values paired to its holes by position.</summary>
+    /// <summary>The localized format for a key, with values paired to its holes by position.</summary>
     public LocalizedPattern Resolve(string name, params object?[] values)
         => _locale.Resolve(name, values);
 

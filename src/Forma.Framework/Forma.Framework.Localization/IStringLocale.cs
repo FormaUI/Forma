@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization;
 
-/// <summary>Provides translated strings for one resource base name.</summary>
+/// <summary>Provides localized strings for one resource base name.</summary>
 public interface IStringLocale
 {
     /// <summary>The translation for a key, falling back to the key itself.</summary>
@@ -17,11 +17,11 @@ public interface IStringLocale
     /// </remarks>
     LocalizedText this[string name, params ReadOnlySpan<object?> values] { get; }
 
-    /// <summary>The translated format for a key, with plural forms resolved and every hole left open.</summary>
+    /// <summary>The localized format for a key, with plural forms resolved and every hole left open.</summary>
     /// <param name="name">The key to look up, which is the English source text.</param>
     LocalizedPattern Resolve(string name);
 
-    /// <summary>The translated format for a key, with values paired to its holes by position.</summary>
+    /// <summary>The localized format for a key, with values paired to its holes by position.</summary>
     /// <param name="name">The key to look up, which is the English source text.</param>
     /// <param name="values">One value per distinct hole, in the order the holes first appear in the key.</param>
     /// <remarks>A value stays <see langword="object"/>, so a hole can carry rendered content rather than text.</remarks>

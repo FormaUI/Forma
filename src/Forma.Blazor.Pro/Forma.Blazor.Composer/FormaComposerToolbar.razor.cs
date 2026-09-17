@@ -40,8 +40,8 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     private ComposerToolbarLayout _layout = default!;
     private bool _arePluginsShown;
 
-    private ComposerPluginTranslator Translator
-        => field ??= new ComposerPluginTranslator(StringLocaleFactory, L);
+    private ComposerPluginLocalizer Localizer
+        => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
 
     private string PluginsId
         => $"composer-plugins-{Context.RuntimeId:N}";
@@ -95,7 +95,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
         ArgumentNullException.ThrowIfNull(Editor);
 
         _layout = View is null
-            ? ComposerToolbarLayout.Create(Editor, Plugins, Translator.Translate)
-            : ComposerToolbarLayout.CreateForView(View, Plugins, Translator.Translate);
+            ? ComposerToolbarLayout.Create(Editor, Plugins, Localizer.Localize)
+            : ComposerToolbarLayout.CreateForView(View, Plugins, Localizer.Localize);
     }
 }

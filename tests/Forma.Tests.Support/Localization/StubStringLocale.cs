@@ -17,7 +17,7 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
         => GetText(name, LocalizedFormat.Bind(name, values));
 
-    /// <summary>The translated format for a key, with every hole left open.</summary>
+    /// <summary>The localized format for a key, with every hole left open.</summary>
     public LocalizedPattern Resolve(string name)
     {
         LocalizedArgument[] arguments = [];
@@ -25,7 +25,7 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
         return Resolve(name, arguments);
     }
 
-    /// <summary>The translated format for a key, with values paired to its holes by position.</summary>
+    /// <summary>The localized format for a key, with values paired to its holes by position.</summary>
     public LocalizedPattern Resolve(string name, params object?[] values)
         => Resolve(name, LocalizedFormat.Bind(name, values));
 

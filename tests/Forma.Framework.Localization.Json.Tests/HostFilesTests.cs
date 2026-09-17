@@ -218,11 +218,11 @@ public sealed class HostFilesTests
     public sealed class Cultures
     {
         [Fact]
-        public void Should_translate_a_culture_the_assembly_does_not_ship()
+        public void Should_localize_a_culture_the_assembly_does_not_ship()
         {
             // Arrange
             using var culture = new CultureScope("fr");
-            var strings = CreateLocale<HostTranslated>();
+            var strings = CreateLocale<HostLocalized>();
 
             // Act
             var localized = strings["Save"];
@@ -236,7 +236,7 @@ public sealed class HostFilesTests
         {
             // Arrange
             using var culture = new CultureScope("fr-CA");
-            var strings = CreateLocale<HostTranslated>();
+            var strings = CreateLocale<HostLocalized>();
 
             // Act
             var localized = strings["Save"];

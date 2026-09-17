@@ -1,7 +1,7 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: fr;",
   "Components.Pages.Libraries.LocalizationPage": {
-    "Translations from the Host": "Traductions depuis l'Hôte",
+    "Locale Files from the Host": "Fichiers de Localisation depuis l'Hôte",
     "Key": "Clé",
     "Beside the Page": "À Côté de la Page",
     "From the Host's Folder": "Depuis le Dossier de l'Hôte",

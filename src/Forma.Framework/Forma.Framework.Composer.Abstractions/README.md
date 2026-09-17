@@ -36,7 +36,7 @@ the composer's registry is built on — and one of three kinds.
 | Member | What it does |
 | --- | --- |
 | `Id` | The plugin's identifier, from `IPlugin`, unique among the plugins registered beside it. |
-| `LocalizationSourceType` | The type whose translation files hold the plugin's titles and labels. The composer reads a title from them first and from its own after, so a plugin from another package ships its strings with it; null, the default, reads the composer's alone. |
+| `LocalizationSourceType` | The type whose locale files hold the plugin's titles and labels. The composer reads a title from them first and from its own after, so a plugin from another package ships its strings with it; null, the default, reads the composer's alone. |
 | `Items` | The toolbar entries it contributes, each naming the row it lands on. |
 | `Rows` | Command rows it declares of its own, laid out after the composer's. |
 | `InputTriggers` | Typed-input triggers, so typing a sequence runs a command. |

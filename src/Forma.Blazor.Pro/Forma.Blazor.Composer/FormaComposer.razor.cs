@@ -103,8 +103,8 @@ public sealed partial class FormaComposer(
     private string ActiveTabId
         => _activeView?.Id ?? _activeEditor.Id;
 
-    private ComposerPluginTranslator Translator
-        => field ??= new ComposerPluginTranslator(StringLocaleFactory, L);
+    private ComposerPluginLocalizer Localizer
+        => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
 
     private ComposerDocument CurrentDocument
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);

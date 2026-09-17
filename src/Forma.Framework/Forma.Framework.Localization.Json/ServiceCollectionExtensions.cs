@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 /// <summary>Registers JSON-backed localization in a service collection.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers locales reading files that sit beside the types they translate.</summary>
+    /// <summary>Registers locales reading files that sit beside the types they localize.</summary>
     public static IServiceCollection AddJsonLocalization(this IServiceCollection services)
         => services.AddJsonLocalization(new LocalizationOptions());
 

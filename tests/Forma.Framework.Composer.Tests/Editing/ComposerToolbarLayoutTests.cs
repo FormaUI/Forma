@@ -252,7 +252,7 @@ public sealed class ComposerToolbarLayoutTests
     }
 
     [Fact]
-    public void Should_translate_each_contribution_in_the_language_of_the_plugin_that_declared_it()
+    public void Should_localize_each_contribution_in_the_language_of_the_plugin_that_declared_it()
     {
         // Arrange
         var editor = new Editor

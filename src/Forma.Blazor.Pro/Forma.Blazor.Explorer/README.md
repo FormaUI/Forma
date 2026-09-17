@@ -7,7 +7,7 @@ preview of any item. It stores nothing itself: the host supplies the items and f
 change the reader asks for comes back to the host as a request to carry out, and an upload goes
 into the host's `IFileStore`. A host that already renders `Forma.Blazor` adds this package and
 nothing else changes: the same `AddFormaUI()` registers what it needs, the same namespaces reach
-it, and the same translation layout localizes it.
+it, and the same locale file layout localizes it.
 
 **.NET 11 · Interactive Server components.**
 

@@ -9,8 +9,8 @@ using Forma.Framework.Localization.Files;
 
 /// <summary>Reads the translations for a type in one culture, the files embedded in its assembly with the host's own laid over them, and keeps each result in memory after the first read.</summary>
 /// <param name="format">The format the files are written in.</param>
-/// <param name="resourcesPath">The folder the embedded files sit under, as dotted segments, or empty when they sit beside the types they translate.</param>
-/// <param name="host">The folder the host keeps its own translation files in.</param>
+/// <param name="resourcesPath">The folder the embedded files sit under, as dotted segments, or empty when they sit beside the types they localize.</param>
+/// <param name="host">The folder the host keeps its own locale files in.</param>
 internal sealed class JsonResourceCache(ILocaleFileFormat format, string resourcesPath, HostLocaleSource host)
 {
     private readonly ILocaleFileFormat _format = format;

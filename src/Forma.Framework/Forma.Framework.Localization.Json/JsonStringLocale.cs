@@ -77,7 +77,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         var found = TryFind(key, out var entry);
         RequireFound(name, found);
 
-        var format = Evaluate(found ? entry.Format : key, IsTranslated(found, entry), arguments);
+        var format = Evaluate(found ? entry.Format : key, IsLocalized(found, entry), arguments);
 
         return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, location.BaseName);
     }
@@ -88,18 +88,18 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         var found = TryFind(key, out var entry);
         RequireFound(name, found);
 
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : key, IsTranslated(found, entry), arguments), arguments, !found, location.BaseName);
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : key, IsLocalized(found, entry), arguments), arguments, !found, location.BaseName);
     }
 
     // A format that is the key is source-language text, whether it was written as null or never found at all.
-    private static bool IsTranslated(bool found, JsonResourceEntry entry)
+    private static bool IsLocalized(bool found, JsonResourceEntry entry)
         => found && !entry.IsSourceText;
 
     // The text a plural expression inflects decides the rules, so source-language text follows the source language.
-    private string Evaluate(string format, bool translated, IReadOnlyList<LocalizedArgument> arguments)
+    private string Evaluate(string format, bool localized, IReadOnlyList<LocalizedArgument> arguments)
         => context.PluralEvaluator.Evaluate(
             format,
-            translated ? CultureInfo.CurrentUICulture : context.SourceCulture,
+            localized ? CultureInfo.CurrentUICulture : context.SourceCulture,
             CultureInfo.CurrentUICulture,
             arguments);
 

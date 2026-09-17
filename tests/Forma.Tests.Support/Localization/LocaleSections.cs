@@ -2,7 +2,7 @@ namespace Forma.Tests.Localization;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>Builds the nodes of a translation file from entries and sections given inline.</summary>
+/// <summary>Builds the nodes of a locale file from entries and sections given inline.</summary>
 public static class LocaleSections
 {
     /// <summary>A node holding the given entries and no sections.</summary>

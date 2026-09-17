@@ -41,13 +41,13 @@ Components/{Category}/
 ├── FormaX.razor          # markup
 ├── FormaX.razor.cs       # logic
 ├── FormaX.razor.css      # isolated stylesheet
-├── FormaX.he.json        # translations, when the component invents text
+├── FormaX.he.json        # its locale file, when the component invents text
 └── FormaX.es.json
 ```
 
 Every component derives from one of three bases in `src/Forma.Blazor/Components/`: `FormaElementBase` for a component a host places, `FormaInputBase<TValue>` for a form input, `FormaComponentBase` for a part that only lives inside its owner. `component-foundations-design.md` is the design.
 
-The library ships three cultures: `en` as the source language, `he` and `es`. A category's translation pair is `{Category}.he.json` and `{Category}.es.json` inside its folder, a section per component keyed by the English source text, with a component in a nested folder sectioned under that folder's name. The sibling repository `Forma.Locali` ships `locali`, which checks translation files against the `L[...]` call sites that key them.
+The library ships three cultures: `en` as the source language, `he` and `es`. A category's locale pair is `{Category}.he.json` and `{Category}.es.json` inside its folder, a section per component keyed by the English source text, with a component in a nested folder sectioned under that folder's name. The sibling repository `Forma.Locali` ships `locali`, which checks locale files against the `L[...]` call sites that key them.
 
 Interop lives in interop assemblies, never in `Forma.Blazor`:
 
@@ -61,7 +61,7 @@ Stylesheets: `src/Forma.Blazor/wwwroot/forma-tokens.css` holds every token, valu
 
 ## The Showcase
 
-`src/Forma.Blazor.Showcase` is the review surface: one interactive page per component under `Components/Pages/{Category}/FormaXPage.razor`, its strings a section of the category's translation pair, rendering every state the component can enter in all three cultures; the composer's and the explorer's pages sit under `Features/`. A page opens with:
+`src/Forma.Blazor.Showcase` is the review surface: one interactive page per component under `Components/Pages/{Category}/FormaXPage.razor`, its strings a section of the category's locale pair, rendering every state the component can enter in all three cultures; the composer's and the explorer's pages sit under `Features/`. A page opens with:
 
 ```razor
 @page "/x-component"

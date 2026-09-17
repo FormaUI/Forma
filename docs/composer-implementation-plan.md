@@ -127,7 +127,7 @@ src/Forma.Blazor.Pro/Forma.Blazor.Composer/
 ├── ComposerChrome.cs                      # maximized and selection-bar state
 ├── ComposerKeyBindingCatalogExtensions.cs # the key map as input routes
 ├── ComposerOptions.cs
-├── ComposerPluginTranslator.cs            # a plugin's titles, from its translations then the composer's
+├── ComposerPluginLocalizer.cs             # a plugin's titles, from its locale then the composer's
 ├── FormaComposerAttachments.razor         # the files carried beside the document
 ├── FormaComposerAttachments.razor.cs
 ├── FormaComposerAttachments.razor.css

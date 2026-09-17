@@ -310,7 +310,7 @@ on. A message names the event and keeps application and user data out: a plural 
 is reported by its name and type, never its value. What is normal stays silent: a
 superseded delay, resolve or fetch, a disposal race, a failure the component already
 hands to its host as a domain object, a discarded `Try*` result the wrapper already
-reports, and a missing translation file, because the locale walks the culture chain and
+reports, and a missing locale file, because the locale walks the culture chain and
 cannot tell an ordinary step to the parent from a missing expected file.
 
 ## What the bases do not carry

@@ -1,13 +1,13 @@
 # Forma.Framework.Localization
 
-The localization contract `Forma.Blazor` reads every string through: a locale that translates a
-key, the value types a translation comes back as, the settings every backend shares, the layout
-translation files follow, and the plural rules a translated format is evaluated with. A key is the
+The localization contract `Forma.Blazor` reads every string through: a locale that localizes a
+key, the value types a localized string comes back as, the settings every backend shares, the
+layout locale files follow, and the plural rules a localized format is evaluated with. A key is the
 source text itself, so a key with no translation renders as written.
 
 The package is backend-agnostic. A backend registers `IStringLocaleFactory` and `IStringLocale<T>`;
 `Forma.Framework.Localization.Json` is the backend Forma ships, reading JSON files embedded beside
-the types they translate.
+the types they localize.
 
 ## Install
 
@@ -24,14 +24,14 @@ the source language.
 
 | Type | What it is |
 | --- | --- |
-| `IStringLocale` | Translated strings for one resource base name: `this[name]`, `this[name, values]`, `Resolve`, and `GetAllStrings`. |
+| `IStringLocale` | Localized strings for one resource base name: `this[name]`, `this[name, values]`, `Resolve`, and `GetAllStrings`. |
 | `IStringLocale<T>` | The same, for the base name derived from `T`. Adds no members. |
 | `IStringLocaleFactory` | Creates a locale for a type, `Create(Type)`, or for a base name under a location, `Create(string, string)`. |
 | `NullStringLocaleFactory` | The factory standing in where none is registered; `Instance` is the one instance. |
 | `LocalizationOptions` | The settings every backend shares: `SourceLanguage`, `RequireMatchingLocalization`, `ResourcesPath`, and `LocalesPath`. |
 | `LocalizationNotFoundException` | Thrown when a key has no translation and `RequireMatchingLocalization` is on. |
-| `LocalizedText` | A translated string, `Value`, with the key it was looked up under, `Name`, whether the lookup fell back to the key, `ResourceNotFound`, and the base name searched, `SearchedLocation`. Converts implicitly to `string`. |
-| `LocalizedPattern` | A translated format, `Format`, with its plural forms resolved and its holes still open, and the `Arguments` the holes name. |
+| `LocalizedText` | A localized string, `Value`, with the key it was looked up under, `Name`, whether the lookup fell back to the key, `ResourceNotFound`, and the base name searched, `SearchedLocation`. Converts implicitly to `string`. |
+| `LocalizedPattern` | A localized format, `Format`, with its plural forms resolved and its holes still open, and the `Arguments` the holes name. |
 | `LocalizedArgument` | A value with the `Name` a hole refers to it by; `Unnamed` holds the value an expression naming no argument reads. |
 | `LocalizedFormat` | Pairs values with a format's holes, `Bind`, and renders a format once they are paired, `Render`. |
 | `LocalizedSegment` | One run of a format: literal `Text`, or a hole with a `Name`, an `Alignment`, and a `Format` specifier; `Parse` walks any format. |
@@ -92,7 +92,7 @@ passed as an `object` rather than rendered first, so the format being rendered d
 specifier and alignment: `"Ratio {Ratio:P1}"` renders its value with `P1` where no translation
 exists, and a translation may write `{Ratio}` or `{Ratio:P2}` instead.
 
-A literal brace is doubled, in keys and in translation files alike: `"Use {{curly}}"` renders as
+A literal brace is doubled, in keys and in locale files alike: `"Use {{curly}}"` renders as
 `Use {curly}`, and its translation writes `{{` too.
 
 ## Plural forms
@@ -136,7 +136,7 @@ the expressions are resolved first, and every other hole is filled after.
 
 ## Patterns and segments
 
-`Resolve` returns the translated format with its plural forms selected and its holes still open,
+`Resolve` returns the localized format with its plural forms selected and its holes still open,
 so a caller can render literal text and holes differently, filling a hole with rendered content
 rather than text:
 
@@ -156,7 +156,7 @@ foreach (var segment in pattern.EnumerateSegments())
 }
 ```
 
-Segments run over the translated format, so they come in the order the translation writes them.
+Segments run over the localized format, so they come in the order the translation writes them.
 `LocalizedSegment.Text` and `Name` are `ReadOnlySpan<char>` sliced from the format and the
 enumerator is a `ref struct`, so walking allocates nothing. A doubled brace arrives as its own
 single-character run: `"Use {{curly}}"` yields `Use `, `{`, `curly`, `}`.
@@ -202,9 +202,9 @@ its count is still formatted for the reader.
 `LocalizationNotFoundException`, and defaults to `false`. `GetAllStrings` never throws under it,
 so a host can survey what is untranslated.
 
-`ResourcesPath` names the folder an assembly embeds its translation files under, and is empty when
-they sit beside the types they translate. `LocalesPath` names the folder the host keeps its own
-translation files in, `locales` beside the application by default, resolved against the
+`ResourcesPath` names the folder an assembly embeds its locale files under, and is empty when
+they sit beside the types they localize. `LocalesPath` names the folder the host keeps its own
+locale files in, `locales` beside the application by default, resolved against the
 application's base directory when relative; empty reads none.
 
 ## How a file is found
@@ -223,7 +223,7 @@ reads `Outer.Inner.he.json`, and a closed generic resolves through its open defi
 
 Every file is named for one culture, and a type's translations sit in the file named for the type
 or in a file named for a namespace above it, where sections complete the rest of the name. Walking
-down from the assembly, each of these, shown with the JSON backend's extension, translates
+down from the assembly, each of these, shown with the JSON backend's extension, localizes
 `FormaToolbar` in `Forma.Blazor.Components.Bars`:
 
 ```text
@@ -277,13 +277,13 @@ culture's satellite assembly, where it is named without its culture. `ResourcesP
 folder segment between the assembly name and the remainder; a type rooted outside the assembly
 bypasses it.
 
-## Translations from the host
+## Locale files from the host
 
 A host lays its own files in a `locales` folder beside the application, to reword a string an
 assembly ships or to add a language it never had. `LocalesPath` names the folder.
 
 The folder is laid out as an assembly's own files are, under a folder named for the assembly, so
-each of these, shown with the JSON backend's extension, translates `FormaComposer` in
+each of these, shown with the JSON backend's extension, localizes `FormaComposer` in
 `Forma.Blazor.Components.Composer`:
 
 ```text
@@ -300,7 +300,7 @@ host's layout follows the namespace rather than the embedding. For an assembly w
 is not its name, a host file declares the root in its metadata, as
 `RootNamespace: Forma.Framework.Resources.Office;`, and the path and sections then complete the
 name from there: a file declaring that root at
-`locales/Forma.AddOns.Resources.Office/OfficeResourceProvider.es.json` translates
+`locales/Forma.AddOns.Resources.Office/OfficeResourceProvider.es.json` localizes
 `Forma.Framework.Resources.Office.OfficeResourceProvider`. A file declaring no root, for a type
 whose namespace does not start with the assembly's name, is laid out by the type's full name.
 Entries under a declared root win over the assembly's own.
@@ -315,9 +315,9 @@ checks files by the rule the runtime reads them with:
 
 | Type | What it is |
 | --- | --- |
-| `LocaleSource` | Where translation files are read from: `Read(assemblyName, typeName, cultureName)` walks from the file named for the assembly down to the file named for the type, over a store a derived class opens files from. |
+| `LocaleSource` | Where locale files are read from: `Read(assemblyName, typeName, cultureName)` walks from the file named for the assembly down to the file named for the type, over a store a derived class opens files from. |
 | `EmbeddedLocaleSource` | The files embedded in one assembly, or in a culture's satellite assembly. |
-| `HostLocaleSource` | The folder a host keeps its own translation files in. |
+| `HostLocaleSource` | The folder a host keeps its own locale files in. |
 | `ILocaleFileFormat` | A format files are written in: its `Extension`, and how one file is `Read` into a `LocaleFile`. |
 | `LocaleFile` | One file as read: its `Root` section and the `RootNamespace` it declares; `GetEntries` lists every translation with the type name its sections complete. |
 | `LocaleSection` | One node of a file: its `Sections`, its `Entries`, and its `SharedEntries`. |

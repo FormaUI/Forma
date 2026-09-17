@@ -1,7 +1,7 @@
 # Forma.Framework.Localization.Json
 
 The JSON backend for `Forma.Framework.Localization`: it implements `IStringLocaleFactory` and
-`IStringLocale<T>` over JSON translation files that sit beside the types they translate and ship
+`IStringLocale<T>` over JSON locale files that sit beside the types they localize and ship
 inside their assembly, with the host's own files laid over them. A lookup resolves the right file
 from the type asking and the culture in force, and a key with no translation renders as written.
 
@@ -35,11 +35,11 @@ which `Forma.Framework.Localization` documents.
 | `ServiceCollectionExtensions` | `AddJsonLocalization`, with or without options. |
 | `JsonStringLocaleFactory` | Creates locales reading JSON files embedded in the assembly owning the type, with the host's files laid over them; constructed with no arguments, with options, or with options and an `ILoggerFactory`. |
 | `JsonStringLocale<T>` | The `IStringLocale<T>` the container resolves, reading the strings belonging to `T`. |
-| `JsonLocaleFileFormat` | The `ILocaleFileFormat` a JSON translation file is written in, for a tool reading files by the runtime's rule. |
+| `JsonLocaleFileFormat` | The `ILocaleFileFormat` a JSON locale file is written in, for a tool reading files by the runtime's rule. |
 
 ## Getting started
 
-Put a file beside the type it translates, named for the type and the culture, and embed it:
+Put a file beside the type it localizes, named for the type and the culture, and embed it:
 
 ```text
 UploadStatus.cs
@@ -91,7 +91,7 @@ themselves. A Razor component injects the same locale, `@inject IStringLocale<Up
 Values pair with the key's holes by position, and `Forma.Framework.Localization` documents the
 hole and plural syntax in full.
 
-## Translation files
+## Locale files
 
 Every file names its culture in its own file name and in its metadata; there is no cultureless
 file, and the source language needs none. A text value is a translation, a nested object is a
@@ -125,7 +125,7 @@ build cannot read. The version is compared by part: a differing **major** is ref
 **minor** is accepted in either direction, and **patch** is ignored. A field this build does not
 recognize is ignored, so a file written by a newer minor schema still loads.
 
-### Untranslated entries
+### Source-text entries
 
 A `null` value declares that the translation for this culture is the source text itself, for a
 term the language borrows, an acronym, a brand or proper noun, or a symbol:

@@ -4,7 +4,7 @@ namespace Forma.Framework.Localization.Json.Tests.Fixtures;
 public sealed class Colocated;
 
 /// <summary>No translation file in any culture.</summary>
-public sealed class Untranslated;
+public sealed class Unlocalized;
 
 /// <summary>Generic type, to prove the arity is dropped from the file name.</summary>
 /// <typeparam name="TValue">Unused; present only to make the type generic.</typeparam>
@@ -40,8 +40,8 @@ public sealed class NullValued;
 /// <summary>A file beside the type whose entries the host's files override, one file shape per key.</summary>
 public sealed class HostOverridden;
 
-/// <summary>No file beside the type; the host's files alone translate it.</summary>
-public sealed class HostTranslated;
+/// <summary>No file beside the type; the host's files alone localize it.</summary>
+public sealed class HostLocalized;
 
 /// <summary>A host file carrying no metadata entry.</summary>
 public sealed class HostUnmarked;

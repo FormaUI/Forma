@@ -38,15 +38,15 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
 
     private ComposerSelectionBar SelectionBar { get; set; } = new([], ComposerKeyBindingCatalog.Empty);
 
-    private ComposerPluginTranslator Translator
-        => field ??= new ComposerPluginTranslator(StringLocaleFactory, L);
+    private ComposerPluginLocalizer Localizer
+        => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Editor);
 
-        var layout = ComposerToolbarLayout.Create(Editor, Plugins, Translator.Translate);
+        var layout = ComposerToolbarLayout.Create(Editor, Plugins, Localizer.Localize);
         var items = layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Selection)?.Items ?? [];
 
         SelectionBar = new ComposerSelectionBar(items, KeyBindings);

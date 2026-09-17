@@ -17,11 +17,11 @@ public sealed class StubStringLocale<T>(IReadOnlyDictionary<string, string> tran
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
         => _locale[name, values];
 
-    /// <summary>The translated format for a key, with every hole left open.</summary>
+    /// <summary>The localized format for a key, with every hole left open.</summary>
     public LocalizedPattern Resolve(string name)
         => _locale.Resolve(name);
 
-    /// <summary>The translated format for a key, with values paired to its holes by position.</summary>
+    /// <summary>The localized format for a key, with values paired to its holes by position.</summary>
     public LocalizedPattern Resolve(string name, params object?[] values)
         => _locale.Resolve(name, values);
 

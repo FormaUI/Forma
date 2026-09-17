@@ -9,9 +9,9 @@ public class LocalizationOptions
     /// <summary>Whether a key with no translation for the culture on screen throws rather than falling back to itself.</summary>
     public bool RequireMatchingLocalization { get; init; }
 
-    /// <summary>Folder holding the translation files embedded in an assembly, empty when they sit beside the types they translate.</summary>
+    /// <summary>Folder holding the locale files embedded in an assembly, empty when they sit beside the types they localize.</summary>
     public string ResourcesPath { get; init; } = string.Empty;
 
-    /// <summary>Folder holding the host's own translation files, resolved against the application's base directory when relative; empty to read none.</summary>
+    /// <summary>Folder holding the host's own locale files, resolved against the application's base directory when relative; empty to read none.</summary>
     public string LocalesPath { get; init; } = "locales";
 }

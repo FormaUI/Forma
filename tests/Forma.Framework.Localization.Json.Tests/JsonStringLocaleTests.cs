@@ -26,7 +26,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = CreateLocale<Untranslated>();
+        var strings = CreateLocale<Unlocalized>();
 
         // Act
         var localized = strings["Anything at all"];
@@ -36,7 +36,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_translate_from_the_matching_culture_file()
+    public void Should_localize_from_the_matching_culture_file()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -472,7 +472,7 @@ public sealed class JsonStringLocaleTests
         // Arrange — the key is Hebrew, whose dual the displayed language does not have.
         const string Key = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
         using var culture = new CultureScope("en");
-        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he" }).Create(typeof(Untranslated));
+        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he" }).Create(typeof(Unlocalized));
 
         // Act
         var two = strings[Key, 2];
@@ -495,7 +495,7 @@ public sealed class JsonStringLocaleTests
         // Arrange — the key is Hebrew, and only Hebrew's rules carry a dual.
         const string Key = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
         using var culture = new CultureScope("en");
-        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he-IL" }).Create(typeof(Untranslated));
+        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he-IL" }).Create(typeof(Unlocalized));
 
         // Act
         var two = strings[Key, 2];
@@ -510,7 +510,7 @@ public sealed class JsonStringLocaleTests
         // Arrange — the key is English, but its count belongs to the culture on screen.
         const string Key = "[$ plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("es-CO");
-        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "en" }).Create(typeof(Untranslated));
+        var strings = new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "en" }).Create(typeof(Unlocalized));
 
         // Act
         var many = strings[Key, 1234.5m];

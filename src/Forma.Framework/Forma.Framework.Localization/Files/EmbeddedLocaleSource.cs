@@ -4,9 +4,9 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
 
-/// <summary>The translation files embedded in one assembly, in the assembly itself or in a culture's satellite assembly.</summary>
+/// <summary>The locale files embedded in one assembly, in the assembly itself or in a culture's satellite assembly.</summary>
 /// <param name="assembly">The assembly the files are embedded in.</param>
-/// <param name="resourcesPath">The folder the files are embedded under, as dotted segments, or empty when they sit beside the types they translate.</param>
+/// <param name="resourcesPath">The folder the files are embedded under, as dotted segments, or empty when they sit beside the types they localize.</param>
 /// <param name="format">The format the files are written in.</param>
 public sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPath, ILocaleFileFormat format) : LocaleSource(format)
 {

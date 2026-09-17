@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Files;
 
-/// <summary>A format translation files are written in: the extension its files carry, and how one is read.</summary>
+/// <summary>A format locale files are written in: the extension its files carry, and how one is read.</summary>
 public interface ILocaleFileFormat
 {
     /// <summary>The extension a file of this format carries after its culture, with its leading dot.</summary>

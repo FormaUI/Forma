@@ -160,7 +160,7 @@ Translations sit in `MyPage.he.json` beside the type, or in a file named for the
 per type, keyed by that same English text. A key with no translation renders as written, so a page
 reads correctly before any translation exists.
 A host rewords a string the library ships, or adds a language it never had, by laying its own files
-in a `locales` folder beside the application, named for the assembly and the type they translate.
+in a `locales` folder beside the application, named for the assembly and the type they localize.
 
 [`Forma.Framework.Localization`](src/Forma.Framework/Forma.Framework.Localization/README.md)
 documents the contract, the ways to fill a hole, the plural syntax, and how a file is found.

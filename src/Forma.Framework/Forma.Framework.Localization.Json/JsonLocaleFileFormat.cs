@@ -4,7 +4,7 @@ using System.Text.Json;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>The JSON format a translation file is written in: an object whose text values are translations and whose nested objects are sections.</summary>
+/// <summary>The JSON format a locale file is written in: an object whose text values are translations and whose nested objects are sections.</summary>
 public sealed class JsonLocaleFileFormat : ILocaleFileFormat
 {
     private static readonly JsonDocumentOptions DocumentOptions = new()

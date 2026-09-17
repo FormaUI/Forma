@@ -56,7 +56,7 @@ public sealed class EmbeddedFilesTests
     public sealed class Nesting
     {
         [Fact]
-        public void Should_translate_a_nested_type_through_its_outer_types_file()
+        public void Should_localize_a_nested_type_through_its_outer_types_file()
         {
             // Arrange
             using var culture = new CultureScope("he");

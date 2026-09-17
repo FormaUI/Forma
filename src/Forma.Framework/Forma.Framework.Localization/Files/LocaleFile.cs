@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Files;
 
-/// <summary>A translation file as read: its sections and entries, and the root it completes a type's name from when it declares one.</summary>
+/// <summary>A locale file as read: its sections and entries, and the root it completes a type's name from when it declares one.</summary>
 /// <param name="Root">The file's top-level node.</param>
 /// <param name="RootNamespace">The namespace the file completes a type's name from, or null when it declares none.</param>
 public sealed record LocaleFile(LocaleSection Root, string? RootNamespace)

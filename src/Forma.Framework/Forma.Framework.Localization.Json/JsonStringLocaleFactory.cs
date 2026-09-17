@@ -18,7 +18,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     private readonly JsonLocaleContext _context;
     private readonly string _resourcesPath;
 
-    /// <summary>Creates a factory reading files that sit beside the types they translate.</summary>
+    /// <summary>Creates a factory reading files that sit beside the types they localize.</summary>
     public JsonStringLocaleFactory()
         : this(new LocalizationOptions())
     {

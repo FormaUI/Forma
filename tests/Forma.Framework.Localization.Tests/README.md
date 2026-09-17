@@ -46,7 +46,7 @@ precisely what the test asserts, so the duplicated `Fixtures` segment is require
 | Type | Namespace | What it covers | Resource |
 |---|---|---|---|
 | `Colocated` | `…Tests.Fixtures` | The default layout, in two cultures, regional fallback to a parent, and that it stops being found once `ResourcesPath` is set | `Fixtures/Colocated.{he,es}.json` |
-| `Untranslated` | `…Tests.Fixtures` | No file in any culture, so the key comes back | *(none, deliberately)* |
+| `Unlocalized` | `…Tests.Fixtures` | No file in any culture, so the key comes back | *(none, deliberately)* |
 | `GenericArity<T>` | `…Tests.Fixtures` | The `` `1 `` arity is dropped from the file name | `Fixtures/GenericArity.he.json` |
 | `MainAssembly` | `…Tests.Fixtures` | A culture file kept out of a satellite | `Fixtures/MainAssembly.he.json` |
 | `PathScoped` | `…Tests.Fixtures` | `ResourcesPath` inserting a segment, with the namespace tail mirrored beneath it | `Resources/Fixtures/PathScoped.he.json` |
@@ -86,7 +86,7 @@ is the type's name, and a file higher up completes the name with sections inside
 | Type | What it covers | Host files |
 |---|---|---|
 | `HostOverridden` | One key per file shape, each overriding the file beside the type, a key the assembly never had, a null value, and sections nested as objects | `locales/{assembly}.he.json`, `locales/{assembly}.es.json`, `locales/{assembly}/Fixtures.he.json`, `locales/{assembly}/Fixtures/HostOverridden.he.json` |
-| `HostTranslated` | A culture the assembly does not ship, reached from a regional culture too | `locales/{assembly}/Fixtures/HostTranslated.fr.json` |
+| `HostLocalized` | A culture the assembly does not ship, reached from a regional culture too | `locales/{assembly}/Fixtures/HostLocalized.fr.json` |
 | `PathScoped` | The host's layout following the type's name rather than `ResourcesPath` | `locales/{assembly}/Fixtures/PathScoped.he.json` |
 | `ForeignRoot` | The host's layout following the full name of a type rooted outside the assembly, and the layout under a root a file declares, from the file named for the type and through sections; a file whose declared root does not meet its path is ignored | `locales/{assembly}/Contoso/Widgets/ForeignRoot.he.json`, `locales/{assembly}/ForeignRoot.es.json`, `locales/{assembly}/Widgets.es.json`, `locales/{assembly}/Widgets/ForeignRoot.es.json` |
 | `HostUnmarked` | A host file carrying no metadata entry | `locales/{assembly}/Fixtures/HostUnmarked.he.json` |

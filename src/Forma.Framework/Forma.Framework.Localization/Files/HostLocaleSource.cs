@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Files;
 
-/// <summary>The folder a host keeps its own translation files in, laid out by assembly and type.</summary>
+/// <summary>The folder a host keeps its own locale files in, laid out by assembly and type.</summary>
 /// <param name="path">The folder's full path, or empty when the host keeps no such folder.</param>
 /// <param name="format">The format the files are written in.</param>
 public sealed class HostLocaleSource(string path, ILocaleFileFormat format) : LocaleSource(format)

@@ -32,7 +32,7 @@ holds the sample documents, video, audio and captions the file and media pages o
 
 The Showcase routes four cultures: English, unprefixed and the default; Spanish (`es-419`) under
 `/es`; Hebrew under `/he`; and French under `/fr`. English, Spanish and Hebrew are in the
-sidebar's culture switcher, and each page's copy is translated for them beside the page. French
+sidebar's culture switcher, and each page's copy is localized for them beside the page. French
 ships with neither the library nor the Showcase: the project's `locales` folder supplies a few
 components' strings in it, which is how a host adds a language the library never had, and the
 Localization page links into it so everything else can be seen falling back to English.
@@ -68,7 +68,7 @@ A page is any routed component under `Components/Pages/{Category}/` that carries
 `@attribute [ShowcasePage("FormaX")]`; the catalog reads the attribute and the folder at startup,
 and the sidebar, home page and tab strip follow from that with nothing else to register. The
 folder is the component's own category, the page is named `FormaXPage.razor`, its strings are a
-section of the category's translation pair, and it is structured as a heading and a description
+section of the category's locale pair, and it is structured as a heading and a description
 followed by one section per scenario, each with a heading and a box. A second page named
 `FormaXPage.Variant.razor` demonstrates the same component through another package and joins the
 first page's tab strip by its name alone. The repository's component authoring guide states what

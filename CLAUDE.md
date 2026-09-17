@@ -10,7 +10,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 |---|---|
 | `forma-scripting` | Writing or changing a script or an interop wrapper |
 | `forma-checking-a11y-touch-rtl` | Finishing or reviewing a component: the three gates it must pass |
-| `forma-localizing` | Adding user-facing strings or translation files |
+| `forma-localizing` | Adding user-facing strings or locale files |
 | `forma-testing` | Writing component tests or script tests |
 | `forma-authoring-components` | Creating or changing a component: its files, parameters, options record, contracts, composition, disposal, logging, or a service it uses |
 | `forma-styling` | Writing or changing a stylesheet or a token: regions on backdrops, spacing, type, radii, targets, and fitting a width |
@@ -72,7 +72,7 @@ The gate is the build with no warnings, every test project, the script tests, th
 
 - Do build, review, and commit one component at a time, taking the next from the roadmap's build order.
 - Do derive parameters, validation, disposal, CSS, ARIA, localization, and tests from established repository patterns.
-- Do deliver the complete component set: markup, logic, stylesheet, warranted translation or script files, tests, and Showcase page.
+- Do deliver the complete component set: markup, logic, stylesheet, warranted locale or script files, tests, and Showcase page.
 - Do verify both directions, color-independent states, accessible names and focus, and touch targets before review; the `forma-checking-a11y-touch-rtl` skill carries the full standard.
 - Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
 - Do move a component from the roadmap to the catalog after approval, and from the roadmap's structure to the catalog's when its implementation starts.
