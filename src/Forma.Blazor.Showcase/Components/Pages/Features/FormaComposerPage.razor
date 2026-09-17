@@ -88,7 +88,7 @@
 
 <div class="demo-section">
     <h2>@L["Plugins"]</h2>
-    <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins name the editor they apply to."]</p>
+    <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins are registered under the Plain Text editor."]</p>
     <div class="demo-box">
         <CascadingValue Value="_everythingSourcePlugin" IsFixed="true">
             <CascadingValue Value="_everythingTextPlugin" IsFixed="true">
@@ -108,7 +108,7 @@
 
 <div class="demo-section">
     <h2>@L["Every Plugin"]</h2>
-    <p class="description">@L["The standard preset carries the plugins most documents need. This demo registers the defaults instead, which is every plugin the library ships, so what appears here is exactly what a host can opt into."]</p>
+    <p class="description">@L["The standard preset carries the plugins most documents need. This demo registers the defaults instead, the rich text editor's and the composer's, so what appears here is what a host gets without naming a single plugin."]</p>
     <div class="demo-box">
         <FormaComposer @bind-Value="_everyPluginDoc" Plugins="EveryPlugin" />
     </div>
@@ -146,7 +146,7 @@
     private ComposerDocument _statusDoc = new(ComposerDocumentFormat.PlainText, "pear\napple\nbanana");
     private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
     private ComposerDocument _viewDoc = new(ComposerDocumentFormat.Html, "<p>Press <strong>Preview</strong> to read this as rendered output, or <strong>Maximize</strong> to fill the viewport.</p>");
-    private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every plugin the library ships is registered here.</p>");
+    private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every default plugin is registered here.</p>");
     private ComposerDocument _imagesOnlyDoc = new(ComposerDocumentFormat.Html, "<p>Insert an image by address, or browse the pictures already stored.</p>");
     private ComposerDocument _anyFileDoc = new(ComposerDocumentFormat.Html, "<p>Browse any stored file, or attach one from this device.</p>");
     private readonly ComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
