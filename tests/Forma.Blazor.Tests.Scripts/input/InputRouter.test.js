@@ -480,6 +480,11 @@ describe('InputRouter registrations', () => {
         expect(describeScope(popup()).active).toBe(false);
     });
 
+    it('registers nothing on an element reference that resolved to nothing', () => {
+        expect(register(null, { modal: true })).toBeNull();
+        expect(stack()).toEqual([]);
+    });
+
     it('releases what a disposed registration held', () => {
         const registration = scope(popup(), {});
         registration.activate();

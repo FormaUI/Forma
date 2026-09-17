@@ -25,6 +25,7 @@ public sealed partial class FormaDialog : FormaElementBase
     private DotNetObjectReference<FormaDialog> _selfReference = default!;
     private InputScope? _inputScope;
     private bool _isOpen;
+    private bool _hasOpened;
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
@@ -79,7 +80,14 @@ public sealed partial class FormaDialog : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Options);
+    {
+        ArgumentNullException.ThrowIfNull(Options);
+
+        if (!Opened)
+        {
+            _hasOpened = false;
+        }
+    }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -89,16 +97,22 @@ public sealed partial class FormaDialog : FormaElementBase
             await _dialog.AttachAsync(RootElement);
         }
 
-        if (Opened && !_isOpen)
+        // An Opened request is honored once; a dialog the user closed stays closed until the parent asks again.
+        if (Opened && !_isOpen && !_hasOpened)
         {
             // Content that renders again while the attach round-trip is still in flight brings a
             // second pass through here, and a call made before the module answered never ran. Only
             // a call that did run counts as open, so the pass that follows it opens the dialog.
             _isOpen = await _dialog.OpenAsync(Options.CloseOnScrimClick);
 
-            if (_isOpen && _inputScope is null)
+            if (_isOpen)
             {
-                await RegisterAsync();
+                _hasOpened = true;
+
+                if (_inputScope is null)
+                {
+                    await RegisterAsync();
+                }
             }
         }
         else if (!Opened && _isOpen)
@@ -184,8 +198,8 @@ public sealed partial class FormaDialog : FormaElementBase
             return;
         }
 
-        // The dialog may have closed, or another pass may have registered it, while the registration was being made.
-        if (!_isOpen || _inputScope is not null)
+        // The dialog may have closed or been disposed, or another pass may have registered it, while the registration was being made.
+        if (!_isOpen || IsDisposed || _inputScope is not null)
         {
             await inputScope.DisposeAsync();
             return;

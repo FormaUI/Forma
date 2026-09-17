@@ -311,6 +311,44 @@
             Assert.DoesNotContain(ctx.Dialog.Invocations, invocation => invocation.Identifier == "close");
         }
 
+        [Fact]
+        public async Task Should_stay_closed_after_the_user_closed_it_while_opened_is_still_true()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+            var cut = ctx.Render(
+                @<FormaDialog Opened="true" OnClose="@(() => { })" />);
+            cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
+
+            // Act
+            await cut.Find("dialog").TriggerEventAsync("onclose", new EventArgs());
+            cut.Render();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(ctx.Dialog.Invocations, invocation => invocation.Identifier == "open"),
+                () => Assert.Single(GetRegistrations(ctx)));
+        }
+
+        [Fact]
+        public async Task Should_open_again_once_the_parent_asks_after_the_user_closed_it()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+            var cut = ctx.Render<FormaDialog>(parameters => parameters
+                .Add(p => p.Opened, true)
+                .Add(p => p.OnClose, () => { }));
+            cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
+
+            // Act
+            await cut.Find("dialog").TriggerEventAsync("onclose", new EventArgs());
+            cut.Render(parameters => parameters.Add(p => p.Opened, false));
+            cut.Render(parameters => parameters.Add(p => p.Opened, true));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(2, ctx.Dialog.Invocations.Count(invocation => invocation.Identifier == "open")));
+        }
+
         /// <summary>The profile of every scope the dialog registered with the router.</summary>
         private static List<InputProfile> GetRegistrations(FormaDialogTests ctx)
             => [.. ctx.Router.Invocations

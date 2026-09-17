@@ -129,6 +129,11 @@ export function configure(options = {}) {
  *   The parent and the elements counted as inside, given apart from the profile when the profile is shared between instances.
  */
 export function register(element, profile = {}, owner = null, placement = null) {
+    // A reference that resolved to nothing names an element already gone, which no scope can stand on.
+    if (!(element instanceof Element)) {
+        return null;
+    }
+
     // The parent and the elements counted as inside are per instance, so a .NET caller passes them beside its reusable profile.
     const contributed = placement ? { ...profile, ...placement } : profile;
     let scope = scopes.get(element);
