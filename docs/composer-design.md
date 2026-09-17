@@ -187,6 +187,8 @@ services.AddFormaComposer(composer => composer
 
 Activation resolves each constructor parameter in order: a plugin in this composer's own set, the registration's options, the host's service provider, the parameter's default. Anything else is an `InvalidOperationException` naming the plugin, the parameter and what could have supplied it. The composer disposes what it built and nothing resolved from the host.
 
+**A registration reaches its own scope and no further.** Nothing registers a feature on every view of an editor, or on an editor and its views together: the one plugin that wanted either, maximizing, sits at the root, which already reaches them all, and a builder method added for a real case later breaks nothing.
+
 An identifier is unique within its owner rather than across the composer, so two editors may each own a link plugin. Command dispatch is therefore rebuilt from the scope in play — root, active editor, active view — whenever the active editor or view changes.
 
 There is **no assembly scanning**. Scanning cannot decide scope, since the property that would have told it is the one the tree replaced, so every scan would be the host asserting a placement nothing checked. Naming a type from a package costs a host no more than naming its assembly did, and the set a scan was really wanted for — an editor's own standard features — is what `TryAddDefaultFeatures` supplies.
@@ -275,6 +277,8 @@ The engine hosts `Body` in a `<DynamicComponent>` inside its own shell, which dr
 Confirming asks the body for an insertion and hands it to the active editor through `IComposerEditorPlugin.TryInsertAsync`, which answers false when it takes none of that kind. **That bool is the compatibility check.** A plugin registered under an editor that cannot take what it produces needs no capability contract to declare the mismatch: the dialog stays open and says so, which is also what a read-only or disabled composer does. What the body refused and what the editor refused are shown together, the body's own messages first.
 
 Two members on `IComposerInteraction` carry it: `OpenDialogAsync(ComposerInsertionRequest)` and `TryInsertAsync(ComposerInsertion)`.
+
+The rich text editor's own link, table, video, image and embed dialogs stay its own rather than taking this path, since moving them would also mean reopening one through the request on an element the author double-clicks, which is a change with a reason of its own.
 
 ### 3.5 Shared state
 
