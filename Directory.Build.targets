@@ -4,12 +4,11 @@
         Forma Build Targets
 
         Runs after each project's own properties, so a condition here can read what a project set;
-        IsPackable itself is not yet resolved to its SDK default at this point, so packaging metadata
-        added here must not depend on it — a non-packable project simply never reaches a pack step.
+        IsPackable is not yet resolved to its SDK default at this point, so only an explicit false is visible.
     -->
 
-    <!-- A packable project's own name is its package ID, prefixed as every Forma package is, unless it named a different one first. -->
-    <PropertyGroup Condition="'$(PackageId)' == ''">
+    <!-- A packable project's own name is its package ID, prefixed as every Forma package is, unless it named a different one first; a project set not packable keeps its own name, which its static asset identity follows. -->
+    <PropertyGroup Condition="'$(PackageId)' == '' and '$(IsPackable)' != 'false'">
         <PackageId>2Site.$(MSBuildProjectName)</PackageId>
     </PropertyGroup>
 
