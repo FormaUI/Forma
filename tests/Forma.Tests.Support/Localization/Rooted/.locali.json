@@ -1,0 +1,5 @@
+{
+  // This assembly's root namespace is not its name, so the root is named here, with the strings in a folder of their own.
+  "rootNamespace": "Forma.Tests.Localization.Rooted",
+  "rootDir": "Strings"
+}

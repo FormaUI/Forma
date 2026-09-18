@@ -3,7 +3,10 @@
     // The page shows a hit and a miss side by side, so its miss is a sentence no file translates.
     "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0209"],
     // The test proves the metadata entry is never served, which takes looking it up by its reserved name.
-    "tests/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0214"]
+    "tests/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0214"],
+    // The paths their own settings files name place these files, and the linter reads a file by the fixed forms alone.
+    "tests/Forma.Tests.Support/Localization/Rooted/**": ["LOC0112"],
+    "tests/Forma.Framework.Localization.Json.Tests/Hosts/**": ["LOC0112"]
   },
   // The fixtures are malformed on purpose, each proving what its test asserts.
   "exclude": ["*/Fixtures/*"]

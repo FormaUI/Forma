@@ -1,0 +1,7 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "RootedWidget": {
+    "Save": "assembly file",
+    "Close": "assembly file"
+  }
+}

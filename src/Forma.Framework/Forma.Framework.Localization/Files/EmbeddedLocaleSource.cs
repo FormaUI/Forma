@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
 
-/// <summary>The locale files embedded in one assembly, in the assembly itself or in a culture's satellite assembly.</summary>
+/// <summary>The locale files embedded in one assembly, in the assembly itself or in a culture's satellite assembly, known by their resource names.</summary>
 /// <param name="assembly">The assembly the files are embedded in.</param>
 /// <param name="resourcesPath">The folder the files are embedded under, as dotted segments, or empty when they sit beside the types they localize.</param>
 /// <param name="format">The format the files are written in.</param>
@@ -12,25 +12,64 @@ public sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPath
 {
     private readonly Assembly _assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
     private readonly string _resourcesPath = resourcesPath ?? throw new ArgumentNullException(nameof(resourcesPath));
-    private readonly ConcurrentDictionary<string, Assembly?> _satellites = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, SatelliteResource> _satelliteResources = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, string[]> _satelliteNames = new(StringComparer.Ordinal);
 
     /// <inheritdoc />
-    protected override bool ReadsDeclaredRoots => false;
+    protected override char FolderSeparator
+        => '.';
 
     /// <inheritdoc />
-    protected override IReadOnlyList<string> GetLeadingSegments(string assemblyName, bool rootedAtAssembly)
-        => !rootedAtAssembly ? [] : _resourcesPath.Length == 0 ? [assemblyName] : [assemblyName, _resourcesPath];
+    protected override IEnumerable<string> EnumerateNames()
+        => _assembly.GetManifestResourceNames();
+
+    // A file the build moved into the culture's satellite assembly is named there without its culture, which sat just before the extension.
+    /// <inheritdoc />
+    protected override IEnumerable<string> EnumerateCultureNames(string cultureName)
+        => _satelliteNames.GetOrAdd(cultureName, ListSatelliteNames);
 
     /// <inheritdoc />
-    protected override string GetFileName(IReadOnlyList<string> segments, string cultureName)
-        => $"{string.Join('.', segments)}.{cultureName}{Format.Extension}";
+    protected override string GetDefaultRootDir(string assemblyName)
+        => _resourcesPath.Length == 0 ? assemblyName : $"{assemblyName}.{_resourcesPath}";
+
+    // The build puts a namespace at the front of every resource name, so a type outside the root namespace is spelled from the start.
+    /// <inheritdoc />
+    protected override string GetRootDirOutsideRootNamespace(string rootDir)
+        => string.Empty;
+
+    // No resource name reaches above the project's root namespace, so a root climbing past it lands there.
+    /// <inheritdoc />
+    protected override string GetRootDirPastStart(string settingsName, string rootDir, string rootNamespace)
+        => rootNamespace;
 
     /// <inheritdoc />
-    protected override Stream? OpenFile(IReadOnlyList<string> segments, string cultureName)
-        => _assembly.GetManifestResourceStream(GetFileName(segments, cultureName))
-            ?? _satellites.GetOrAdd(cultureName, GetSatellite)?.GetManifestResourceStream($"{string.Join('.', segments)}{Format.Extension}");
+    protected override Stream? OpenFile(string name)
+        => _assembly.GetManifestResourceStream(name)
+            ?? (_satelliteResources.TryGetValue(name, out var resource) ? resource.Satellite.GetManifestResourceStream(resource.Name) : null);
 
-    // A file the build moved into the culture's satellite assembly is named there without its culture.
+    private string[] ListSatelliteNames(string cultureName)
+    {
+        if (GetSatellite(cultureName) is not { } satellite)
+        {
+            return [];
+        }
+
+        var names = new List<string>();
+        foreach (var resourceName in satellite.GetManifestResourceNames())
+        {
+            if (!resourceName.EndsWith(Format.Extension, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var name = $"{resourceName[..^Format.Extension.Length]}.{cultureName}{Format.Extension}";
+            _satelliteResources[name] = new SatelliteResource(satellite, resourceName);
+            names.Add(name);
+        }
+
+        return [.. names];
+    }
+
     private Assembly? GetSatellite(string cultureName)
     {
         try
@@ -46,4 +85,6 @@ public sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPath
             return null;
         }
     }
+
+    private readonly record struct SatelliteResource(Assembly Satellite, string Name);
 }

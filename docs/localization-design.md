@@ -120,9 +120,10 @@ the same way, so `Components/Bars/.locales/he.json` under `Forma.Blazor` is
 which no namespace segment can produce, so a folder of locale files is never mistaken for a
 namespace.
 
-A culture's satellite assembly names a file without its culture. A path in which `$Culture` is
-a dot-separated part of a file's name is also read there with that part left out; a path in
-which `$Culture` is the whole of a file's name has no satellite form.
+A culture's satellite assembly names a file without its culture, which the build takes only from
+just before the extension, as in `Bars.he.json`. A source lists a satellite's files under the
+names they would carry in the assembly itself, so every path reads them as it reads any other. A
+file whose culture is the whole of its name, as `.locales/he.json`'s is, stays in the assembly.
 
 A project embeds its files with its own item, as it always has. Nothing about a path asks the
 build for more.
@@ -138,7 +139,8 @@ hidden and skips them unless told not to.
 
 A source needs two things to place anchors: where its names begin, which `$RootDir` stands for,
 and the root namespace anchors are counted from, which `$RootNamespace` stands for. The
-outermost `.locali.json` in a source fixes both.
+outermost `.locali.json` in a source fixes both. A source has one root, so two settings files
+with none above them are refused. For a host, each assembly's folder is a source of its own.
 
 `$RootDir` is where that file sits, unless the file names `rootDir`: for embedded files, the
 prefix the file's own resource name carries before `.locali.json`; for a host's, the folder inside
@@ -149,9 +151,11 @@ A `rootDir` moves where names begin. It is a path relative to the settings file'
 written with `/`, and may climb with `..`; one ending in a project or solution file means that
 file's folder, so `./Contoso.csproj` beside a project file is the project's root and
 `../../../Contoso.slnx` the solution's. For embedded files the path is walked over the resource
-name's segments, and one that climbs past the project's root namespace, which no resource name
-reaches above, is reported by the linter and read by the runtime as the root namespace itself.
-For a host's files it is walked on disk, and one that leaves the host's folder is refused. A
+name's segments. No resource name reaches above the project's root namespace, so one climbing
+past the settings file's own name is read by the runtime as the root namespace itself. The
+runtime cannot see where a project's root namespace ends, and the linter, which can, reports a
+`rootDir` climbing past it. For a host's files the path is walked on disk. A root is a folder
+inside the host's folder, so one that reaches the host's folder or leaves it is refused. A
 settings file naming no `rootDir` leaves names beginning where the file sits, as above.
 
 A source with no `.locali.json` is rooted where its names begin: for embedded files, at the
@@ -161,15 +165,18 @@ what the library has always done, so an unconfigured project reads as before.
 
 A type whose name does not start with the root namespace is read by its full name, with the root
 namespace left empty: every anchor is a prefix of the full name, which is what a file laid out by
-its namespace spells whatever the root. `$RootDir` is unchanged, since it names where files sit
-rather than what they complete. A path that stands for the root alone does not apply to such a
-type.
+its namespace spells whatever the root. For a host's files `$RootDir` is unchanged, since it names
+where files sit rather than what they complete. For embedded files it is empty: the build puts a
+namespace at the front of every resource name, so a file laid out by such a type's namespace
+begins with it. A path that stands for the root alone does not apply to such a type. A type
+outside any namespace belongs to the root, completed from the root namespace like any other.
 
 A nested `.locali.json` applies its `paths` and `localesDir` to the files beneath it and moves
-neither root: `$RootDir` and the root namespace are the outermost file's, and a nested file
-naming a `rootNamespace` is reported by the linter. A folder holding strings arranged differently
-states that in its own paths, with the folder written as literal text where it sits; the paths
-are where such a relation is written, and nothing is inferred.
+neither root: `$RootDir` and the root namespace are the outermost file's. The runtime passes over
+a nested file's `rootNamespace` and `rootDir`, and the linter reports either. A folder holding
+strings arranged differently states that in its own paths, with the folder written as literal text
+where it sits; the paths are where such a relation is written, and nothing is inferred. A file
+above the root, such as one beside a host's assembly folder, is read under the root's settings.
 
 ## Settings
 
@@ -194,13 +201,15 @@ belongs. Next to the linter's `ignore` and `exclude`, it carries:
 ```
 
 A file applies to the folder it sits in and everything beneath it, and a nearer file's key wins
-over a farther one's. For embedded files a folder is a resource-name prefix, so a `.locali.json`
-embedded under `Forma.Blazor.Components` applies to every anchor whose files sit below
-`Components`. The runtime reads the keys it owns and passes over the linter's; the linter reads
-both.
+over a farther one's. A locale file is read by the paths of the nearest settings file above it.
+For embedded files a folder is a resource-name prefix, so a `.locali.json` embedded under
+`Forma.Blazor.Components` applies to every file whose name sits below `Components`. The runtime
+reads the keys it owns and passes over the linter's; the linter reads both.
 
 A project embeds a `.locali.json` like any other file, and a host lays one in its folder or in an
-assembly's folder inside it. One that keeps its linter rules at the repository's root embeds a
+assembly's folder inside it. One in the host's folder itself puts its `paths` and `localesDir` in
+force beneath every assembly's folder. It passes over `rootNamespace` and `rootDir`, since no one
+root fits every assembly. A project that keeps its linter rules at the repository's root embeds a
 file holding the runtime's keys alone.
 
 ### `$localization`
@@ -215,7 +224,8 @@ For one type and one culture, entries are applied in this order, each overriding
 
 1. Embedded files, then host files.
 2. Within a source, shallower anchors, then deeper ones.
-3. Within one anchor, files placed by the paths in their order.
+3. Within one anchor, files read by a farther settings file's paths, then a nearer one's, and
+   each settings file's in the order of its paths.
 4. Within a file, what the file's own ordering rules say: shared entries before a type's own, a
    higher node's shared entries before a deeper node's.
 

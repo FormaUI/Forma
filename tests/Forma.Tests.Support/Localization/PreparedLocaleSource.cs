@@ -2,7 +2,7 @@ namespace Forma.Tests.Localization;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>A locale source over files already read, each named by its segments joined with slashes, which opens nothing.</summary>
+/// <summary>A locale source over files already read, each named by its folders joined with slashes and rooted at a folder named for the assembly, which opens nothing.</summary>
 public sealed class PreparedLocaleSource() : LocaleSource(new FakeLocaleFileFormat())
 {
     /// <summary>The files, each keyed by its name.</summary>
@@ -12,26 +12,26 @@ public sealed class PreparedLocaleSource() : LocaleSource(new FakeLocaleFileForm
     public List<string> Requests { get; } = [];
 
     /// <inheritdoc />
-    protected override bool ReadsDeclaredRoots => true;
+    protected override char FolderSeparator
+        => Path.AltDirectorySeparatorChar;
 
     /// <inheritdoc />
-    protected override IReadOnlyList<string> GetLeadingSegments(string assemblyName, bool rootedAtAssembly)
-        => [assemblyName];
+    protected override IEnumerable<string> EnumerateNames()
+        => Files.Keys;
 
     /// <inheritdoc />
-    protected override string GetFileName(IReadOnlyList<string> segments, string cultureName)
-        => $"{string.Join('/', segments)}.{cultureName}{Format.Extension}";
+    protected override string GetDefaultRootDir(string assemblyName)
+        => assemblyName;
 
     /// <inheritdoc />
-    protected override LocaleFile? ReadFile(IReadOnlyList<string> segments, string cultureName)
+    protected override LocaleFile? ReadFile(string name, string cultureName)
     {
-        var name = GetFileName(segments, cultureName);
         Requests.Add(name);
 
         return Files.GetValueOrDefault(name);
     }
 
     /// <inheritdoc />
-    protected override Stream? OpenFile(IReadOnlyList<string> segments, string cultureName)
+    protected override Stream? OpenFile(string name)
         => throw new InvalidOperationException("A prepared source is never asked to open a file.");
 }

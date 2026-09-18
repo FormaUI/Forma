@@ -29,4 +29,9 @@
         <Content Include="locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
+    <!-- Host folders a test names in place of the default one, each configured its own way. -->
+    <ItemGroup>
+        <Content Include="Hosts\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

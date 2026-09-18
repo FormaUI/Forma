@@ -6,7 +6,7 @@ beside it, which reads the same settings file and resolves files through the sam
 
 ## Status
 
-Step 1 is built. Steps 2 to 7 are not.
+Steps 1 to 3 are built. Steps 4 to 7 are not.
 
 ## Steps
 
@@ -85,6 +85,43 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    and a `.locales` folder and a `.locali.json` found in the host's folder, run on Linux as well
    as Windows.
 
+   ✅ Built. A source lists its names once, and places each file at the anchor it stands for
+   through the matcher, so a type's files are looked up rather than guessed at. An embedded source
+   lists an assembly's resource names, plus a culture's satellite names under the names they carry
+   in the assembly. A host source lists every file beneath its folder. The build was checked to
+   embed `.locali.json` and `.locales` files under the names the design gives them. The fixtures
+   that proved a root through embedded settings live in the test support assembly, whose root
+   namespace is not its name. A settings file embedded in the JSON test assembly would re-root
+   every other fixture there. The existing tests pass unchanged, except where they wrote the
+   retired root: the declared-root tests now declare it in a settings file. Rules this step
+   settled, and departures from what it planned:
+
+   - **The host's own `.locali.json` applies to every assembly.** A file in the host's folder
+     itself puts its `paths` and `localesDir` in force beneath every assembly's folder. The root
+     of an assembly's files is still marked inside that assembly's folder, so that file's
+     `rootNamespace` and `rootDir` are not read.
+   - **Only the file marking the root names it.** A nested file's `rootNamespace` and `rootDir`
+     are passed over. Two settings files with none above them are refused as two roots.
+   - **A root is always a folder below where names start.** A host's `rootDir` that reaches the
+     host's folder or leaves it is refused. An embedded one climbing past the settings file's own
+     name lands on the root namespace. The runtime cannot see where a project's root namespace
+     ends, and the linter can.
+   - **An embedded type outside the root namespace is spelled from the start.** The build puts a
+     namespace at the front of every resource name, so such a type's files begin with its own
+     namespace rather than beneath `$RootDir`. A host's are still read beneath it. A type outside
+     any namespace belongs to the root.
+   - **One anchor's files can fall under different settings files.** They are read farther
+     folder first, and each folder's files in the order of its paths. A file above the root,
+     such as one beside a host's assembly folder, is read under the root's settings.
+   - **`ResourcesPath` applies only where no settings file marks the root**, until step 4
+     removes it.
+   - **The linter's source follows the new members** so its build and tests stay green. It still
+     names files by its fixed forms, so this repository's `.locali.json` leaves LOC0112 out for
+     the fixtures only a settings file places.
+   - **The host tests ran on Windows alone.** They mark the `.locales` folder and the settings
+     file hidden, which is what a leading dot means on Linux, but no Linux machine was available
+     to run them.
+
 4. **The defaults move.** `LocalesPath` defaults to `.locales`, and `ResourcesPath` is removed;
    its tests become tests of a path naming the folder instead. The test project's and the
    Showcase's host folders are renamed, and the Showcase copies its folder to the output under the
@@ -96,11 +133,14 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 5. **The linter resolves by the paths.** In `Forma.Locali`, a project's files are served under
    the names the build embeds them by and read through step 3's source, so the runtime and the
    linter place every file the same way. The host folder is the one the settings name, not a fixed
-   `locales`. Three rules join: a file no path in force places, two files of one source standing
-   for one anchor, and a nested `.locali.json` naming a `rootNamespace`, which only the outermost
-   file may.
+   `locales`. Four rules join: a file no path in force places, two files of one source standing
+   for one anchor, a `.locali.json` naming a `rootNamespace` or `rootDir` that the runtime passes
+   over, which only the file marking the root may name, and a `rootDir` climbing past the
+   project's root namespace, which the runtime cannot see and reads as the root namespace itself.
+   This repository's `.locali.json` drops the LOC0112 entries for the fixtures a settings file
+   places.
 
-   **Gate:** the linter's tests for both rules and for a project using `.locales` paths, and
+   **Gate:** the linter's tests for each rule and for a project using `.locales` paths, and
    the linter over `Forma.slnx` reporting nothing.
 
 6. **The repository takes one form.** Every locale file in this repository moves to the one form

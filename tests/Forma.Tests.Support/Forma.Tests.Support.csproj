@@ -20,6 +20,11 @@
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     </ItemGroup>
 
+    <!-- Locale files and the settings that place them, embedded as a project embeds its own, under a root namespace that is not the assembly's name. -->
+    <ItemGroup>
+        <EmbeddedResource Include="Localization\Rooted\**\*.json" />
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="OfficeIMO.Excel" Version="3.2.0" />
         <PackageReference Include="OfficeIMO.PowerPoint" Version="3.2.0" />

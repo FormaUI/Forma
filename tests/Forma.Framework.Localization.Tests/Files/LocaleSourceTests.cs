@@ -55,14 +55,18 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
-    public void Should_complete_a_types_name_from_the_root_a_file_declares()
+    public void Should_complete_a_types_name_from_the_root_its_settings_declare()
     {
         // Arrange
         var source = new FakeLocaleSource
         {
             Files =
             {
-                ["Contoso.Widgets/Toolbar.he.fake"] = new(CreateEntries(("Bold", "declared root")), "Contoso.Widgets.Bars"),
+                ["Contoso.Widgets/Toolbar.he.fake"] = new(CreateEntries(("Bold", "declared root")), null),
+            },
+            Settings =
+            {
+                ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty with { RootNamespace = "Contoso.Widgets.Bars" },
             },
         };
 
@@ -74,14 +78,18 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
-    public void Should_ignore_a_file_whose_declared_root_does_not_meet_its_path()
+    public void Should_ignore_a_file_whose_path_does_not_meet_the_declared_root()
     {
         // Arrange
         var source = new FakeLocaleSource
         {
             Files =
             {
-                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "wrong root")), "Contoso.Widgets.Bars"),
+                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "wrong root")), null),
+            },
+            Settings =
+            {
+                ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty with { RootNamespace = "Contoso.Widgets.Bars" },
             },
         };
 
@@ -141,8 +149,7 @@ public sealed class LocaleSourceTests
             Files =
             {
                 ["Contoso.Widgets/Bars/Bars.he.fake"] = new(
-                    CreateSections(("Toolbar", CreateEntries(("Bold", "own")))).WithShared(("Bold", "shared"), ("Italic", "shared")),
-                    null),
+                    CreateSections(("Toolbar", CreateEntries(("Bold", "own")))).WithShared(("Bold", "shared"), ("Italic", "shared")), null),
             },
         };
 
@@ -176,8 +183,7 @@ public sealed class LocaleSourceTests
             Files =
             {
                 ["Contoso.Widgets.he.fake"] = new(
-                    CreateSections(("Bars", CreateSections().WithShared(("Bold", "bars"))), ("Menus", CreateSections(("Menu", CreateEntries(("Open", "menu")))))),
-                    null),
+                    CreateSections(("Bars", CreateSections().WithShared(("Bold", "bars"))), ("Menus", CreateSections(("Menu", CreateEntries(("Open", "menu")))))), null),
             },
         };
 
@@ -200,8 +206,7 @@ public sealed class LocaleSourceTests
             Files =
             {
                 ["Contoso.Widgets/Bars/Bars.he.fake"] = new(
-                    CreateSections(("$shared", CreateEntries(("Bold", "escaped"))), ("Toolbar", CreateEntries(("Bold", "own")))),
-                    null),
+                    CreateSections(("$shared", CreateEntries(("Bold", "escaped"))), ("Toolbar", CreateEntries(("Bold", "own")))), null),
             },
         };
 
@@ -213,6 +218,75 @@ public sealed class LocaleSourceTests
         Assert.Multiple(
             () => Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/Bars/Bars.he.fake", "Toolbar", "Bold", "own")], sectioned),
             () => Assert.Empty(unsectioned));
+    }
+
+    [Fact]
+    public void Should_open_a_file_once_however_often_its_type_is_read()
+    {
+        // Arrange
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "type file")), null),
+            },
+        };
+
+        // Act
+        source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+        source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+
+        // Assert
+        Assert.Equal(["Contoso.Widgets/Bars/Toolbar.he.fake"], source.Requests);
+    }
+
+    [Fact]
+    public void Should_read_a_file_two_paths_name_at_one_anchor_once()
+    {
+        // Arrange — beside the assembly's folder, the file is what the first two default paths both name at the root.
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets.he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "assembly file")))), null),
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+
+        // Assert
+        Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.he.fake", "Bars.Toolbar", "Bold", "assembly file")], entries);
+    }
+
+    [Fact]
+    public void Should_read_a_farther_folders_files_before_a_nearer_ones_at_one_anchor()
+    {
+        // Arrange — both files stand for Bars: one under the root's paths, one under the paths its own folder's settings name.
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "nearer")))), null),
+                ["Contoso.Widgets/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "farther")))), null),
+            },
+            Settings =
+            {
+                ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty,
+                ["Contoso.Widgets/Bars/.locali.json"] = LocaliSettings.Empty with { Paths = [LocalePath.Parse("$RootDir/$AnchorName/$LocalesDir/$Culture$Extension")] },
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+
+        // Assert
+        Assert.Equal(
+            [
+                new("Contoso.Widgets/Bars.he.fake", "Toolbar", "Bold", "farther"),
+                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Bold", "nearer"),
+            ],
+            entries);
     }
 
     [Fact]

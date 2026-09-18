@@ -1,0 +1,7 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "RootedWidget": {
+    "Open": "root file",
+    "Save": "root file"
+  }
+}

@@ -2,7 +2,7 @@ namespace Forma.Tests.Localization;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>A locale source over files held in memory, each named by its segments joined with slashes, read through a format that hands each back as it is.</summary>
+/// <summary>A locale source over files held in memory, each named by its folders joined with slashes and rooted at a folder named for the assembly, read through a format that hands each back as it is.</summary>
 public sealed class FakeLocaleSource : LocaleSource
 {
     private readonly FakeLocaleFileFormat _format;
@@ -18,29 +18,36 @@ public sealed class FakeLocaleSource : LocaleSource
         _format = format;
     }
 
-    /// <summary>The files, each keyed by its name.</summary>
+    /// <summary>The locale files, each keyed by its name.</summary>
     public Dictionary<string, LocaleFile> Files => _format.Files;
 
-    /// <summary>The names asked for so far, in order.</summary>
+    /// <summary>The settings files, each keyed by its name.</summary>
+    public Dictionary<string, LocaliSettings> Settings { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>The names opened so far, in order.</summary>
     public List<string> Requests { get; } = [];
 
     /// <inheritdoc />
-    protected override bool ReadsDeclaredRoots => true;
+    protected override char FolderSeparator
+        => Path.AltDirectorySeparatorChar;
 
     /// <inheritdoc />
-    protected override IReadOnlyList<string> GetLeadingSegments(string assemblyName, bool rootedAtAssembly)
-        => [assemblyName];
+    protected override IEnumerable<string> EnumerateNames()
+        => Files.Keys.Concat(Settings.Keys);
 
     /// <inheritdoc />
-    protected override string GetFileName(IReadOnlyList<string> segments, string cultureName)
-        => $"{string.Join('/', segments)}.{cultureName}{Format.Extension}";
+    protected override string GetDefaultRootDir(string assemblyName)
+        => assemblyName;
 
     /// <inheritdoc />
-    protected override Stream? OpenFile(IReadOnlyList<string> segments, string cultureName)
+    protected override Stream? OpenFile(string name)
     {
-        var name = GetFileName(segments, cultureName);
         Requests.Add(name);
 
         return Files.ContainsKey(name) ? new MemoryStream() : null;
     }
+
+    /// <inheritdoc />
+    protected override LocaliSettings ReadSettings(string name)
+        => Settings[name];
 }

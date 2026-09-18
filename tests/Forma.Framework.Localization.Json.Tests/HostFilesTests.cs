@@ -82,6 +82,82 @@ public sealed class HostFilesTests
                 () => Assert.Equal("added", localized.Value),
                 () => Assert.False(localized.ResourceNotFound));
         }
+
+        [Fact]
+        public void Should_prefer_a_host_file_in_a_form_the_assembly_does_not_use()
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<HostDotted>();
+
+            // Act
+            var localized = strings["Save"];
+
+            // Assert
+            Assert.Equal("host file inside .locales", localized.Value);
+        }
+
+        [Fact]
+        public void Should_keep_the_assemblys_entry_the_host_file_in_another_form_leaves_out()
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<HostDotted>();
+
+            // Act
+            var localized = strings["Open"];
+
+            // Assert
+            Assert.Equal("embedded file", localized.Value);
+        }
+    }
+
+    public sealed class Roots
+    {
+        private static IStringLocale CreateRootedLocale<T>()
+            => CreateLocale<T>(new LocalizationOptions { LocalesPath = "Hosts/Rooted" });
+
+        [Fact]
+        public void Should_complete_the_types_name_from_the_root_the_hosts_settings_name()
+        {
+            // Arrange
+            using var culture = new CultureScope("es");
+            var strings = CreateRootedLocale<Contoso.Widgets.ForeignRoot>();
+
+            // Act
+            var localized = strings["Open"];
+
+            // Assert
+            Assert.Equal("type file under a declared root", localized.Value);
+        }
+
+        [Fact]
+        public void Should_read_the_file_named_for_the_assembly_beneath_a_root_it_does_not_name()
+        {
+            // Arrange
+            using var culture = new CultureScope("es");
+            var strings = CreateRootedLocale<Contoso.Widgets.ForeignRoot>();
+
+            // Act
+            var localized = strings["Save"];
+
+            // Assert
+            Assert.Equal("assembly file under a declared root", localized.Value);
+        }
+
+        [Fact]
+        public void Should_ignore_a_file_whose_path_does_not_meet_the_declared_root()
+        {
+            // Arrange
+            using var culture = new CultureScope("es");
+            var strings = CreateRootedLocale<Contoso.Widgets.ForeignRoot>();
+
+            // Act
+            var localized = strings["Delete"];
+
+            // Assert
+            Assert.True(localized.ResourceNotFound);
+        }
     }
 
     public sealed class Layout
@@ -126,48 +202,6 @@ public sealed class HostFilesTests
 
             // Assert
             Assert.Equal("type file", localized.Value);
-        }
-
-        [Fact]
-        public void Should_complete_the_types_name_from_the_root_a_file_declares()
-        {
-            // Arrange
-            using var culture = new CultureScope("es");
-            var strings = CreateLocale<Contoso.Widgets.ForeignRoot>();
-
-            // Act
-            var localized = strings["Open"];
-
-            // Assert
-            Assert.Equal("type file under a declared root", localized.Value);
-        }
-
-        [Fact]
-        public void Should_complete_the_types_name_from_a_declared_root_through_sections()
-        {
-            // Arrange
-            using var culture = new CultureScope("es");
-            var strings = CreateLocale<Contoso.Widgets.ForeignRoot>();
-
-            // Act
-            var localized = strings["Save"];
-
-            // Assert
-            Assert.Equal("namespace file under a declared root", localized.Value);
-        }
-
-        [Fact]
-        public void Should_ignore_a_file_whose_declared_root_does_not_meet_its_path()
-        {
-            // Arrange
-            using var culture = new CultureScope("es");
-            var strings = CreateLocale<Contoso.Widgets.ForeignRoot>();
-
-            // Act
-            var localized = strings["Delete"];
-
-            // Assert
-            Assert.True(localized.ResourceNotFound);
         }
 
         [Fact]

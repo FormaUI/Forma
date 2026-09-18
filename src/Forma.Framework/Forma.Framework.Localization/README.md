@@ -202,8 +202,9 @@ its count is still formatted for the reader.
 `LocalizationNotFoundException`, and defaults to `false`. `GetAllStrings` never throws under it,
 so a host can survey what is untranslated.
 
-`ResourcesPath` names the folder an assembly embeds its locale files under, and is empty when
-they sit beside the types they localize. `LocalesPath` names the folder the host keeps its own
+`ResourcesPath` names the folder an assembly embeds its locale files under, where no
+`.locali.json` embedded in it names a root, and is empty when they sit beside the types they
+localize. `LocalesPath` names the folder the host keeps its own
 locale files in, `locales` beside the application by default, resolved against the
 application's base directory when relative; empty reads none.
 
@@ -297,13 +298,12 @@ so a host file holds only the keys it changes and every other key keeps the asse
 
 A host file completes a type's name from the assembly's name, without `ResourcesPath`, so the
 host's layout follows the namespace rather than the embedding. For an assembly whose root namespace
-is not its name, a host file declares the root in its metadata, as
-`RootNamespace: Forma.Framework.Resources.Office;`, and the path and sections then complete the
-name from there: a file declaring that root at
+is not its name, a `.locali.json` in the assembly's folder names the root, as
+`{ "rootNamespace": "Forma.Framework.Resources.Office" }`, and the path and sections then complete
+the name from there: beside that file,
 `locales/Forma.AddOns.Resources.Office/OfficeResourceProvider.es.json` localizes
-`Forma.Framework.Resources.Office.OfficeResourceProvider`. A file declaring no root, for a type
-whose namespace does not start with the assembly's name, is laid out by the type's full name.
-Entries under a declared root win over the assembly's own.
+`Forma.Framework.Resources.Office.OfficeResourceProvider`. Where no settings file names a root, a
+type whose namespace does not start with the assembly's name is laid out by its full name.
 
 The folder has to reach the application's output: a web project copies JSON content there on its
 own, and any other project marks the folder as content copied to the output directory.
@@ -315,7 +315,7 @@ checks files by the rule the runtime reads them with:
 
 | Type | What it is |
 | --- | --- |
-| `LocaleSource` | Where locale files are read from: `Read(assemblyName, typeName, cultureName)` walks from the file named for the assembly down to the file named for the type, over a store a derived class opens files from. |
+| `LocaleSource` | Where locale files are read from: `Read(assemblyName, typeName, cultureName)` reads a type's files from its root down to the type, placing each file the store lists by the paths in force where it sits, over a store a derived class lists and opens. |
 | `EmbeddedLocaleSource` | The files embedded in one assembly, or in a culture's satellite assembly. |
 | `HostLocaleSource` | The folder a host keeps its own locale files in. |
 | `ILocaleFileFormat` | A format files are written in: its `Extension`, and how one file is `Read` into a `LocaleFile`. |

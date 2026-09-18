@@ -43,6 +43,9 @@ public sealed class HostOverridden;
 /// <summary>No file beside the type; the host's files alone localize it.</summary>
 public sealed class HostLocalized;
 
+/// <summary>A file beside the type whose entry a host file in a <c>.locales</c> folder overrides, a form the assembly does not use.</summary>
+public sealed class HostDotted;
+
 /// <summary>A host file carrying no metadata entry.</summary>
 public sealed class HostUnmarked;
 

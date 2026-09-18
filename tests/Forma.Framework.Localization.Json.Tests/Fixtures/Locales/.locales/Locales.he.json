@@ -1,0 +1,7 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "DottedWidget": {
+    "Open": "folder file inside .locales",
+    "Save": "folder file inside .locales"
+  }
+}
