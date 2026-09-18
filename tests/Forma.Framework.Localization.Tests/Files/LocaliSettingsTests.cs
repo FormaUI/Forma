@@ -101,11 +101,58 @@ public sealed class LocaliSettingsTests
         }
 
         [Fact]
+        public void Should_leave_a_malformed_linter_key_to_the_linter()
+            => Assert.Equal(LocaliSettings.Empty, Read("""{ "ignore": 1, "exclude": "everything" }"""));
+    }
+
+    public sealed class Rules
+    {
+        [Theory]
+        [InlineData(LocaliSettings.RootNamespaceKey, "Contoso.Widgets")]
+        [InlineData(LocaliSettings.RootDirKey, "./Contoso.csproj")]
+        [InlineData(LocaliSettings.LocalesDirKey, "i18n/strings")]
+        public void Should_accept_a_value_a_key_owns(string key, string value)
+        {
+            // Act
+            var isAccepted = LocaliSettings.Accepts(key, value, out var problem);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isAccepted),
+                () => Assert.Null(problem));
+        }
+
+        [Theory]
+        [InlineData(LocaliSettings.RootNamespaceKey, "", "names nothing")]
+        [InlineData(LocaliSettings.RootNamespaceKey, "Contoso..Widgets", "not a namespace")]
+        [InlineData(LocaliSettings.RootDirKey, "/strings", "relative path")]
+        [InlineData(LocaliSettings.LocalesDirKey, "../strings", "relative folder")]
+        public void Should_say_what_is_wrong_with_a_value_a_key_refuses(string key, string value, string expected)
+        {
+            // Act
+            var isAccepted = LocaliSettings.Accepts(key, value, out var problem);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(isAccepted),
+                () => Assert.Contains(key, problem!, StringComparison.Ordinal),
+                () => Assert.Contains(expected, problem!, StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [InlineData("ignore")]
+        [InlineData(LocaliSettings.PathsKey)]
+        public void Should_accept_any_text_under_a_key_whose_value_is_not_text(string key)
+            => Assert.True(LocaliSettings.Accepts(key, "anything", out _));
+
+        [Fact]
         public void Should_name_the_default_dir_of_locale_files_with_a_leading_dot()
             => Assert.Equal(".locales", LocaliSettings.DefaultLocalesDir);
 
         [Fact]
-        public void Should_leave_a_malformed_linter_key_to_the_linter()
-            => Assert.Equal(LocaliSettings.Empty, Read("""{ "ignore": 1, "exclude": "everything" }"""));
+        public void Should_list_the_keys_the_runtime_reads()
+            => Assert.Equal(
+                [LocaliSettings.RootNamespaceKey, LocaliSettings.RootDirKey, LocaliSettings.LocalesDirKey, LocaliSettings.PathsKey],
+                LocaliSettings.Keys);
     }
 }

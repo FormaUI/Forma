@@ -76,7 +76,10 @@ public sealed class LocalePath
     public override string ToString()
         => Text;
 
-    private static string FormatProblem(string text, LocaleDiagnostic diagnostic)
+    /// <summary>What is wrong with a path, in a sentence, as <see cref="Parse"/> would refuse it.</summary>
+    /// <param name="text">The path as written.</param>
+    /// <param name="diagnostic">What reading it found wrong.</param>
+    public static string FormatProblem(string text, LocaleDiagnostic diagnostic)
         => diagnostic.Kind switch
         {
             LocaleDiagnosticKind.EmptyPath => "A locale path is empty.",

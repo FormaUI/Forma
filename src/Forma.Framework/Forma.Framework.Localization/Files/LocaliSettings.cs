@@ -1,6 +1,7 @@
 namespace Forma.Framework.Localization.Files;
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 /// <summary>What a <c>.locali.json</c> file says about the locale files beneath it; a key the file leaves out is null.</summary>
@@ -37,6 +38,9 @@ public sealed record LocaliSettings(string? RootNamespace, string? RootDir, stri
         AllowDuplicateProperties = false,
     };
 
+    /// <summary>The keys the runtime reads, in the order a file is expected to write them.</summary>
+    public static IReadOnlyList<string> Keys { get; } = [RootNamespaceKey, RootDirKey, LocalesDirKey, PathsKey];
+
     /// <summary>Settings that say nothing, leaving every value to a farther file or the default.</summary>
     public static LocaliSettings Empty { get; } = new(null, null, null, null);
 
@@ -67,15 +71,15 @@ public sealed record LocaliSettings(string? RootNamespace, string? RootDir, stri
                 switch (property.Name)
                 {
                     case RootNamespaceKey:
-                        rootNamespace = ReadRootNamespace(property.Value, fileName);
+                        rootNamespace = ReadSetting(property.Value, RootNamespaceKey, fileName);
                         break;
 
                     case RootDirKey:
-                        rootDir = ReadRootDir(property.Value, fileName);
+                        rootDir = ReadSetting(property.Value, RootDirKey, fileName);
                         break;
 
                     case LocalesDirKey:
-                        localesDir = ReadLocalesDir(property.Value, fileName);
+                        localesDir = ReadSetting(property.Value, LocalesDirKey, fileName);
                         break;
 
                     case PathsKey:
@@ -92,34 +96,33 @@ public sealed record LocaliSettings(string? RootNamespace, string? RootDir, stri
         }
     }
 
-    private static string ReadRootNamespace(JsonElement value, string fileName)
+    /// <summary>Whether a key whose value is text accepts one, and what is wrong with it when it does not.</summary>
+    /// <param name="key">The key, as a file writes it; one the runtime does not own, and <see cref="PathsKey"/>, whose value is a list of paths each read by <see cref="LocalePath.Parse"/>, accept any text.</param>
+    /// <param name="value">The value, as a file writes it.</param>
+    /// <param name="problem">What is wrong with the value, in a sentence, when the key does not accept it.</param>
+    public static bool Accepts(string key, string value, [NotNullWhen(false)] out string? problem)
     {
-        var text = ReadText(value, RootNamespaceKey, fileName);
-        if (!IsNamespace(text))
-        {
-            throw new LocaliSettingsException($"'{fileName}' names '{text}' as '{RootNamespaceKey}', which is not a namespace.");
-        }
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(value);
 
-        return text;
+        problem = (key, value) switch
+        {
+            (_, "") => $"'{key}' names nothing.",
+            (RootNamespaceKey, _) when !IsNamespace(value) => $"'{key}' names '{value}', which is not a namespace.",
+            (RootDirKey, _) when !IsRelativePath(value) => $"'{key}' names '{value}', which is not a relative path written with '/'.",
+            (LocalesDirKey, _) when !IsRelativePath(value) || IsDotted(value) => $"'{key}' names '{value}', which is not a relative folder written with '/'.",
+            _ => null,
+        };
+
+        return problem is null;
     }
 
-    private static string ReadRootDir(JsonElement value, string fileName)
+    private static string ReadSetting(JsonElement value, string key, string fileName)
     {
-        var text = ReadText(value, RootDirKey, fileName);
-        if (!IsRelativePath(text))
+        var text = ReadText(value, key, fileName);
+        if (!Accepts(key, text, out var problem))
         {
-            throw new LocaliSettingsException($"'{fileName}' names '{text}' as '{RootDirKey}', which is not a relative path written with '/'.");
-        }
-
-        return text;
-    }
-
-    private static string ReadLocalesDir(JsonElement value, string fileName)
-    {
-        var text = ReadText(value, LocalesDirKey, fileName);
-        if (!IsRelativePath(text) || IsDotted(text))
-        {
-            throw new LocaliSettingsException($"'{fileName}' names '{text}' as '{LocalesDirKey}', which is not a relative folder written with '/'.");
+            throw new LocaliSettingsException($"In '{fileName}', {problem}");
         }
 
         return text;

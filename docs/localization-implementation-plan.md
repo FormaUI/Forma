@@ -47,14 +47,23 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    `$ParentName` and `$CurrentName` say so, beside `$RootDir` for where names begin. The schema
    version is untouched.
 
-2. **The linter reads the runtime's keys.** In `Forma.Locali`, `.locali.json` accepts `rootNamespace`,
-   `localesDir` and `paths` rather than reporting them as unknown, and reports a malformed
-   path through step 1's parser, at the path's position. A nested `.locali.json` naming a
-   `rootNamespace` is reported, since only the outermost file marks a root. The linter does not
-   yet resolve files by the paths.
+2. **The linter reads the runtime's keys.** In `Forma.Locali`, `.locali.json` accepts
+   `rootNamespace`, `rootDir`, `localesDir` and `paths` rather than reporting them as unknown,
+   holds each to the runtime's own rule, and reports a malformed path through step 1's parser, at
+   the token that is wrong. The linter does not yet resolve files by the paths.
 
-   **Gate:** the linter's tests for each key, well-formed and malformed, a nested file naming a
-   root, and the linter over `Forma.slnx` still reporting nothing.
+   **Gate:** the linter's tests for each key, well-formed and malformed, and the linter over
+   `Forma.slnx` still reporting nothing.
+
+   ✅ Built. The rules the runtime holds a value to are one statement it exposes rather than two
+   the linter would have to keep in step, so the two can never refuse different files. Two
+   departures from what this step planned:
+
+   - **A nested `.locali.json` naming a `rootNamespace` is not reported yet.** The linter walks
+     ancestors the way an `.editorconfig` is read and does not yet know where a source begins, so
+     which file is outermost *within a source* cannot be told apart from which is outermost in a
+     run. The rule moves to step 5, where the linter resolves files through a source.
+   - **`rootDir` joined the keys**, which the step was written before.
 
 3. **Sources read by paths.** `LocaleSource` holds the names its store lists, read once, and
    answers a type from the paths in force rather than from a fixed walk: roots found in the order
@@ -87,8 +96,9 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 5. **The linter resolves by the paths.** In `Forma.Locali`, a project's files are served under
    the names the build embeds them by and read through step 3's source, so the runtime and the
    linter place every file the same way. The host folder is the one the settings name, not a fixed
-   `locales`. Two rules join: a file no path in force places, and two files of one source
-   standing for one anchor.
+   `locales`. Three rules join: a file no path in force places, two files of one source standing
+   for one anchor, and a nested `.locali.json` naming a `rootNamespace`, which only the outermost
+   file may.
 
    **Gate:** the linter's tests for both rules and for a project using `.locales` paths, and
    the linter over `Forma.slnx` reporting nothing.
