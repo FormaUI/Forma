@@ -1,0 +1,6 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "Pages.Libraries.LocalizationPage": {
+    "Written in a parent folder's file": "Desde la carpeta del anfitrión: el archivo de una carpeta superior"
+  }
+}

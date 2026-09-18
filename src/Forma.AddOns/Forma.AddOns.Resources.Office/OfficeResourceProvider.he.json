@@ -1,6 +1,0 @@
-{
-  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Slide {Number}": "שקופית {Number}",
-  "Showing the first {Rows} rows and {Columns} columns.": "מוצגות {Rows} השורות הראשונות ו-{Columns} העמודות הראשונות.",
-  "Showing the first {MaxSlides} slides.": "מוצגות {MaxSlides} השקופיות הראשונות."
-}

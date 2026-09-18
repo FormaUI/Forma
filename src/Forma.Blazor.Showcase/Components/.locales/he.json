@@ -1,0 +1,9 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "ShowcaseNav": {
+    "Pages": "דפים"
+  },
+  "ShowcaseTabs": {
+    "Variants": "וריאציות"
+  }
+}

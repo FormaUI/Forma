@@ -1,0 +1,9 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "ShowcaseNav": {
+    "Pages": "Páginas"
+  },
+  "ShowcaseTabs": {
+    "Variants": "Variantes"
+  }
+}

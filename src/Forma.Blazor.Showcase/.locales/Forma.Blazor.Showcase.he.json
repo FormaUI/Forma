@@ -1,7 +1,0 @@
-{
-  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Components.Pages.Libraries.LocalizationPage": {
-    "Written in the file named for the assembly": "מתיקיית המארח: קובץ המכלול",
-    "Added by the host's folder alone": "נוסף מתיקיית המארח בלבד"
-  }
-}

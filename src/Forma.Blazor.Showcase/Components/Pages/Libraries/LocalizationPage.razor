@@ -281,17 +281,17 @@
     private static readonly IStringLocale HebrewSource =
         new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he" }).Create(typeof(LocalizationPage));
 
-    private const string AssemblyFileKey = "Written in the file named for the assembly";
-    private const string NamespaceFileKey = "Written in a file named for part of the namespace";
-    private const string TypeFileKey = "Written in the file named for the type";
+    private const string AssemblyFileKey = "Written in the root's file";
+    private const string NamespaceFileKey = "Written in a parent folder's file";
+    private const string TypeFileKey = "Written in the page's folder's file";
     private const string HostOnlyKey = "Added by the host's folder alone";
 
     private static readonly (string Key, string File)[] HostFiles =
     [
-        (AssemblyFileKey, ".locales/Forma.Blazor.Showcase.{culture}.json"),
-        (NamespaceFileKey, ".locales/Forma.Blazor.Showcase/Components.{culture}.json"),
-        (TypeFileKey, ".locales/Forma.Blazor.Showcase/Components/Pages/Libraries/LocalizationPage.{culture}.json"),
-        (HostOnlyKey, ".locales/Forma.Blazor.Showcase.{culture}.json"),
+        (AssemblyFileKey, ".locales/Forma.Blazor.Showcase/.locales/{culture}.json"),
+        (NamespaceFileKey, ".locales/Forma.Blazor.Showcase/Components/.locales/{culture}.json"),
+        (TypeFileKey, ".locales/Forma.Blazor.Showcase/Components/Pages/Libraries/.locales/{culture}.json"),
+        (HostOnlyKey, ".locales/Forma.Blazor.Showcase/.locales/{culture}.json"),
     ];
 
     private static readonly IStringLocale WithoutHostFiles =

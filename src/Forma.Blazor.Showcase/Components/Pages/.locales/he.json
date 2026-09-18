@@ -1,0 +1,6 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Home": {
+    "Every component in the library, rendered in every state it can take, in each culture and both writing directions. Pick a component to see it standing in each of its states.": "כל רכיב בספרייה, מצויר בכל מצב שהוא יכול לקבל, בכל תרבות ובשני כיווני הכתיבה. בחרו רכיב כדי לראותו בכל אחד ממצביו."
+  }
+}

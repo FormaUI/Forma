@@ -1,0 +1,7 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: en;",
+  "Components.Pages.Libraries.LocalizationPage": {
+    "Written in the root's file": "From the host's folder: the root's file",
+    "Added by the host's folder alone": "Added by the host's folder, in English too"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: en;",
+  "Pages.Libraries.LocalizationPage": {
+    "Written in a parent folder's file": "From the host's folder: a parent folder's file"
+  }
+}

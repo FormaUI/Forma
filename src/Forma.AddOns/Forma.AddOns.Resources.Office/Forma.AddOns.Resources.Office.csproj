@@ -12,7 +12,7 @@
 
     <!-- The translations embed in the assembly itself rather than in satellite assemblies. -->
     <ItemGroup>
-        <EmbeddedResource Include="*.json" WithCulture="false" />
+        <EmbeddedResource Include=".locales\**\*.json" WithCulture="false" />
     </ItemGroup>
 
     <ItemGroup>
