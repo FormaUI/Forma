@@ -19,6 +19,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
+    /// <summary>Everything this part invokes on the composer, cascaded from the parent shell.</summary>
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     /// <summary>The editor plugin cascaded by the composer surface.</summary>

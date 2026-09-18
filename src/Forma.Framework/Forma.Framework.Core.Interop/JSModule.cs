@@ -83,6 +83,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         var import = _import;

@@ -22,6 +22,10 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable, IDisposable
 
     private Asset? _asset;
 
+    /// <summary>Creates a loader adopting sheets through the circuit's script runtime.</summary>
+    /// <param name="js">The script runtime the sheets are adopted through.</param>
+    /// <param name="logger">Where a failed script call is reported.</param>
+    /// <param name="navigation">The navigation that replaces the document's body, after which every sheet is adopted afresh; none where the loader never outlives a page.</param>
     public EmojiSpriteLoader(IJSRuntime js, ILogger<EmojiSpriteLoader> logger, NavigationManager? navigation = null)
     {
         ArgumentNullException.ThrowIfNull(js);

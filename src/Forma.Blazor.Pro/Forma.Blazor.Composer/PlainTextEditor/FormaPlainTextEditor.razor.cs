@@ -18,6 +18,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
+    /// <summary>Everything this part invokes on the composer, cascaded from the parent shell.</summary>
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
