@@ -1,6 +1,5 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "$tools": { "locali.ignore": ["LOC0113"] },
   "$shared": {
     "Basic": "Básico",
     "Disabled": "Deshabilitado",
