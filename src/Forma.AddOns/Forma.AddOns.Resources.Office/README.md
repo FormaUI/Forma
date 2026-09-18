@@ -53,7 +53,7 @@ A sheet shows at most its first 500 rows and 50 columns, and a deck its first 20
 deck cut short says so in a closing row or paragraph. A slide with no title is headed `Slide {Number}`.
 Those three strings are the provider's own and are read through its locale, so they follow the
 reader's culture: the package carries Spanish and Hebrew translations, and a host rewords them or
-adds a language through its `locales` folder, laid out as `Forma.Framework.Localization`'s README
+adds a language through its `.locales` folder, laid out as `Forma.Framework.Localization`'s README
 describes for an assembly whose root namespace is not its name.
 
 The markup is safe to render as trusted. Text a cell or a slide holds is rendered as text, a link

@@ -99,7 +99,7 @@ itself. Comments and trailing commas are allowed.
 
 `Forma.Framework.Localization` owns the layout: a locale resolves a base name from the type's full
 name, and a translation sits in the file named for the type or in a file named for a namespace
-above it, embedded in the assembly or laid in the host's `locales` folder. It also defines the
+above it, embedded in the assembly or laid in the host's `.locales` folder. It also defines the
 `$shared` section any node may hold, the `$tools` entry reserved for tools, and the `$$` escape
 for a key shaped like a reserved entry. This backend adds the format alone: the extension is
 `.json`, and the metadata entry is the `$localization` property.
@@ -156,7 +156,7 @@ whose files carry the key and stopping before the invariant culture, which no fi
 `es-419` reader gets the `es` file's entry where no `es-419` file has it, and a host override
 written in `es` is a fallback for that reader rather than a replacement for every Spanish string.
 
-Within a culture, the assembly's embedded files are read first and the host's `locales` folder is
+Within a culture, the assembly's embedded files are read first and the host's `.locales` folder is
 laid over them, so a host entry wins over the assembly's own at the same position. Each file is
 read once per factory and kept in memory.
 

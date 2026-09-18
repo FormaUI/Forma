@@ -57,7 +57,7 @@ type's name, so `PathScoped` in `…Tests.Fixtures` has its file at `Resources/F
 | `NewerMinor` | `…Tests.Fixtures` | A later minor schema, and a metadata field this build ignores | `Fixtures/NewerMinor.he.json` |
 | `MismatchedCulture` | `…Tests.Fixtures` | A declared culture the file name contradicts | `Fixtures/MismatchedCulture.he.json` |
 | `GroupedFirst`, `GroupedSecond` | `…Tests.Fixtures.Grouped` | The file named for the folder, read from inside it and from beside it, serving every type in the folder; a type's own file winning over it for the keys it carries | `Fixtures/Grouped/Grouped.he.json`, `Fixtures/Grouped.es.json`, `Fixtures/Grouped/GroupedSecond.he.json` |
-| `Outer`, `Outer.Inner`, `Outer.InnerGeneric<T>` | `…Tests.Fixtures` | An outer type's file carrying its own strings at the top level and its nested types as sections, a nested type's own file laid out as a folder path, and a nested type's arity dropped | `Fixtures/Outer.he.json`, `Fixtures/Outer/Inner.he.json`, `locales/{assembly}/Fixtures/Outer.es.json` |
+| `Outer`, `Outer.Inner`, `Outer.InnerGeneric<T>` | `…Tests.Fixtures` | An outer type's file carrying its own strings at the top level and its nested types as sections, a nested type's own file laid out as a folder path, and a nested type's arity dropped | `Fixtures/Outer.he.json`, `Fixtures/Outer/Inner.he.json`, `.locales/{assembly}/Fixtures/Outer.es.json` |
 | `OuterGeneric<T>.Inner` | `…Tests.Fixtures` | A generic outer type's arity dropped from the name its nested type is reached through | `Fixtures/OuterGeneric.he.json` |
 | `DottedWidget` | `…Tests.Fixtures.Locales` | Every `.locales` form a default path reads: the folder's file inside its `.locales` folder, the culture's file there winning over it, and the type's file in its parent's `.locales` folder winning over both | `Fixtures/Locales/.locales/Locales.he.json`, `Fixtures/Locales/.locales/he.json`, `Fixtures/Locales/.locales/DottedWidget.he.json` |
 | `HostDotted` | `…Tests.Fixtures` | A file beside the type, which a host file in a form the assembly does not use overrides | `Fixtures/HostDotted.he.json` |
@@ -94,19 +94,19 @@ The last two use `Update` rather than `Include`, since `Fixtures\**\*.json` alre
 
 ## The host's files
 
-`locales/` is copied beside the test assembly, where the factory's default `LocalesPath` looks, so
+`.locales/` is copied beside the test assembly, where the factory's default `LocalesPath` looks, so
 the layout under it is a fixture too: the first folder is the assembly's name, the rest of the path
 is the type's name, and a file higher up completes the name with sections inside it.
 
 | Type | What it covers | Host files |
 |---|---|---|
-| `HostOverridden` | One key per file shape, each overriding the file beside the type, a key the assembly never had, a null value, and sections nested as objects | `locales/{assembly}.he.json`, `locales/{assembly}.es.json`, `locales/{assembly}/Fixtures.he.json`, `locales/{assembly}/Fixtures/HostOverridden.he.json` |
-| `HostLocalized` | A culture the assembly does not ship, reached from a regional culture too | `locales/{assembly}/Fixtures/HostLocalized.fr.json` |
-| `PathScoped` | The host's layout following the type's name rather than the folder its embedded file sits in | `locales/{assembly}/Fixtures/PathScoped.he.json` |
-| `ForeignRoot` | The host's layout following the full name of a type rooted outside the assembly | `locales/{assembly}/Contoso/Widgets/ForeignRoot.he.json` |
-| `HostDotted` | A host file in a `.locales` folder overriding an embedded entry from a form the assembly does not use | `locales/{assembly}/Fixtures/.locales/HostDotted.he.json` |
-| `HostUnmarked` | A host file carrying no metadata entry | `locales/{assembly}/Fixtures/HostUnmarked.he.json` |
-| `HostMistyped` | A host file giving a key a value that is not text | `locales/{assembly}/Fixtures/HostMistyped.he.json` |
+| `HostOverridden` | One key per file shape, each overriding the file beside the type, a key the assembly never had, a null value, and sections nested as objects | `.locales/{assembly}.he.json`, `.locales/{assembly}.es.json`, `.locales/{assembly}/Fixtures.he.json`, `.locales/{assembly}/Fixtures/HostOverridden.he.json` |
+| `HostLocalized` | A culture the assembly does not ship, reached from a regional culture too | `.locales/{assembly}/Fixtures/HostLocalized.fr.json` |
+| `PathScoped` | The host's layout following the type's name rather than the folder its embedded file sits in | `.locales/{assembly}/Fixtures/PathScoped.he.json` |
+| `ForeignRoot` | The host's layout following the full name of a type rooted outside the assembly | `.locales/{assembly}/Contoso/Widgets/ForeignRoot.he.json` |
+| `HostDotted` | A host file in a `.locales` folder overriding an embedded entry from a form the assembly does not use | `.locales/{assembly}/Fixtures/.locales/HostDotted.he.json` |
+| `HostUnmarked` | A host file carrying no metadata entry | `.locales/{assembly}/Fixtures/HostUnmarked.he.json` |
+| `HostMistyped` | A host file giving a key a value that is not text | `.locales/{assembly}/Fixtures/HostMistyped.he.json` |
 
 The keys the host files change on `PathScoped` and `ForeignRoot` are not the ones the other tests
 read, so those tests see the embedded translation as before.

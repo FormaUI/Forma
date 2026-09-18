@@ -202,7 +202,7 @@ its count is still formatted for the reader.
 `LocalizationNotFoundException`, and defaults to `false`. `GetAllStrings` never throws under it,
 so a host can survey what is untranslated.
 
-`LocalesPath` names the folder the host keeps its own locale files in, `locales` beside the
+`LocalesPath` names the folder the host keeps its own locale files in, `.locales` beside the
 application by default, resolved against the application's base directory when relative; empty
 reads none. Where an assembly keeps its own embedded files is no option's to say: the paths a
 `.locali.json` beside them states place them.
@@ -277,7 +277,7 @@ culture's satellite assembly, where it is named without its culture.
 
 ## Locale files from the host
 
-A host lays its own files in a `locales` folder beside the application, to reword a string an
+A host lays its own files in a `.locales` folder beside the application, to reword a string an
 assembly ships or to add a language it never had. `LocalesPath` names the folder.
 
 The folder is laid out as an assembly's own files are, under a folder named for the assembly, so
@@ -285,9 +285,9 @@ each of these, shown with the JSON backend's extension, localizes `FormaComposer
 `Forma.Blazor.Components.Composer`:
 
 ```text
-locales/Forma.Blazor.es.json                                     { "Components.Composer.FormaComposer": { "Bold": "Negrita" } }
-locales/Forma.Blazor/Components.es.json                          { "Composer.FormaComposer": { "Bold": "Negrita" } }
-locales/Forma.Blazor/Components/Composer/FormaComposer.es.json   { "Bold": "Negrita" }
+.locales/Forma.Blazor.es.json                                     { "Components.Composer.FormaComposer": { "Bold": "Negrita" } }
+.locales/Forma.Blazor/Components.es.json                          { "Composer.FormaComposer": { "Bold": "Negrita" } }
+.locales/Forma.Blazor/Components/Composer/FormaComposer.es.json   { "Bold": "Negrita" }
 ```
 
 The same precedence applies, and a host's entry wins over the assembly's own at the same position,
@@ -298,12 +298,19 @@ namespace rather than the embedding. For an assembly whose root namespace
 is not its name, a `.locali.json` in the assembly's folder names the root, as
 `{ "rootNamespace": "Forma.Framework.Resources.Office" }`, and the path and sections then complete
 the name from there: beside that file,
-`locales/Forma.AddOns.Resources.Office/OfficeResourceProvider.es.json` localizes
+`.locales/Forma.AddOns.Resources.Office/OfficeResourceProvider.es.json` localizes
 `Forma.Framework.Resources.Office.OfficeResourceProvider`. Where no settings file names a root, a
 type whose namespace does not start with the assembly's name is laid out by its full name.
 
-The folder has to reach the application's output: a web project copies JSON content there on its
-own, and any other project marks the folder as content copied to the output directory.
+The folder has to reach the application's output, and a project marks it as content copied to the
+output directory, web project or not: the SDK's own globs pass over a folder whose name starts
+with a dot.
+
+```xml
+<ItemGroup>
+    <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+</ItemGroup>
+```
 
 ## Reading files from a tool
 

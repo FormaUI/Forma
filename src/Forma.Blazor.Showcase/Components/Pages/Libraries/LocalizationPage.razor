@@ -210,7 +210,7 @@
 
 <div class="demo-section">
     <h2>@L["Locale Files from the Host"]</h2>
-    <p class="description">@L["A host lays its own files in a locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is localized beside this page and again in the Showcase's locales folder, and the folder wins; the last key exists in the folder alone."]</p>
+    <p class="description">@L["A host lays its own files in a .locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is localized beside this page and again in the Showcase's .locales folder, and the folder wins; the last key exists in the folder alone."]</p>
     <div class="demo-box">
         <table class="demo-table">
             <thead>
@@ -238,7 +238,7 @@
 
 <div class="demo-section">
     <h2>@L["A Language the Library Never Shipped"]</h2>
-    <p class="description">@L["French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English."]</p>
+    <p class="description">@L["French ships with neither the library nor the Showcase. The Showcase's .locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English."]</p>
     <div class="demo-box">
         <table class="demo-table">
             <thead>
@@ -288,10 +288,10 @@
 
     private static readonly (string Key, string File)[] HostFiles =
     [
-        (AssemblyFileKey, "locales/Forma.Blazor.Showcase.{culture}.json"),
-        (NamespaceFileKey, "locales/Forma.Blazor.Showcase/Components.{culture}.json"),
-        (TypeFileKey, "locales/Forma.Blazor.Showcase/Components/Pages/Libraries/LocalizationPage.{culture}.json"),
-        (HostOnlyKey, "locales/Forma.Blazor.Showcase.{culture}.json"),
+        (AssemblyFileKey, ".locales/Forma.Blazor.Showcase.{culture}.json"),
+        (NamespaceFileKey, ".locales/Forma.Blazor.Showcase/Components.{culture}.json"),
+        (TypeFileKey, ".locales/Forma.Blazor.Showcase/Components/Pages/Libraries/LocalizationPage.{culture}.json"),
+        (HostOnlyKey, ".locales/Forma.Blazor.Showcase.{culture}.json"),
     ];
 
     private static readonly IStringLocale WithoutHostFiles =

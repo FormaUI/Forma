@@ -50,7 +50,7 @@
     "Format": "Formato",
     "Arguments": "Argumentos",
     "Locale Files from the Host": "Archivos de Localización desde el Anfitrión",
-    "A host lays its own files in a locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is localized beside this page and again in the Showcase's locales folder, and the folder wins; the last key exists in the folder alone.": "Un anfitrión coloca sus propios archivos en una carpeta locales junto a la aplicación, para reformular una cadena que un ensamblado incluye o añadir un idioma que nunca tuvo. Cada clave de abajo se localiza junto a esta página y otra vez en la carpeta locales del Showcase, y la carpeta gana; la última clave existe solo en la carpeta.",
+    "A host lays its own files in a .locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is localized beside this page and again in the Showcase's .locales folder, and the folder wins; the last key exists in the folder alone.": "Un anfitrión coloca sus propios archivos en una carpeta .locales junto a la aplicación, para reformular una cadena que un ensamblado incluye o añadir un idioma que nunca tuvo. Cada clave de abajo se localiza junto a esta página y otra vez en la carpeta .locales del Showcase, y la carpeta gana; la última clave existe solo en la carpeta.",
     "Beside the Page": "Junto a la Página",
     "From the Host's Folder": "Desde la Carpeta del Anfitrión",
     "File": "Archivo",
@@ -58,7 +58,7 @@
     "Written in a file named for part of the namespace": "Junto a la página: el archivo del espacio de nombres",
     "Written in the file named for the type": "Junto a la página: el archivo del tipo",
     "A Language the Library Never Shipped": "Un Idioma que la Biblioteca Nunca Incluyó",
-    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English.": "El francés no viene ni con la biblioteca ni con el Showcase. La carpeta locales del Showcase lo aporta para esta sección, para el menú de compartir y para la paginación, así que las cadenas de abajo se leen en francés solo desde esa carpeta, y la página puede abrirse en francés para ver que todo lo demás vuelve al inglés.",
+    "French ships with neither the library nor the Showcase. The Showcase's .locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English.": "El francés no viene ni con la biblioteca ni con el Showcase. La carpeta .locales del Showcase lo aporta para esta sección, para el menú de compartir y para la paginación, así que las cadenas de abajo se leen en francés solo desde esa carpeta, y la página puede abrirse en francés para ver que todo lo demás vuelve al inglés.",
     "Current page": "Página actual",
     "Open this page in French": "Abrir esta Página en Francés",
     "In French, from the host's folder": "En francés, desde la carpeta del anfitrión"

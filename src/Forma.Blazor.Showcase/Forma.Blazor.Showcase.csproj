@@ -44,4 +44,9 @@
         <EmbeddedResource Include="Components\**\*.json" WithCulture="false" />
     </ItemGroup>
 
+    <!-- The host's own files, copied beside the application where the default folder is looked for; the SDK's own globs pass over a folder whose name starts with a dot. -->
+    <ItemGroup>
+        <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

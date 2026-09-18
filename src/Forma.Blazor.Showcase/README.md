@@ -33,7 +33,7 @@ holds the sample documents, video, audio and captions the file and media pages o
 The Showcase routes four cultures: English, unprefixed and the default; Spanish (`es-419`) under
 `/es`; Hebrew under `/he`; and French under `/fr`. English, Spanish and Hebrew are in the
 sidebar's culture switcher, and each page's copy is localized for them beside the page. French
-ships with neither the library nor the Showcase: the project's `locales` folder supplies a few
+ships with neither the library nor the Showcase: the project's `.locales` folder supplies a few
 components' strings in it, which is how a host adds a language the library never had, and the
 Localization page links into it so everything else can be seen falling back to English.
 

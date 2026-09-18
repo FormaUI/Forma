@@ -50,7 +50,7 @@
     "Format": "תבנית",
     "Arguments": "ערכים",
     "Locale Files from the Host": "קובצי לוקליזציה מהאתר המארח",
-    "A host lays its own files in a locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is localized beside this page and again in the Showcase's locales folder, and the folder wins; the last key exists in the folder alone.": "אתר מארח מניח קבצים משלו בתיקיית locales לצד היישום, כדי לנסח מחדש מחרוזת שמכלול מספק או להוסיף שפה שמעולם לא הייתה לו. כל מפתח למטה עובר לוקליזציה ליד הדף הזה ושוב בתיקיית locales של ה-Showcase, והתיקייה גוברת; המפתח האחרון קיים בתיקייה בלבד.",
+    "A host lays its own files in a .locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is localized beside this page and again in the Showcase's .locales folder, and the folder wins; the last key exists in the folder alone.": "אתר מארח מניח קבצים משלו בתיקיית .locales לצד היישום, כדי לנסח מחדש מחרוזת שמכלול מספק או להוסיף שפה שמעולם לא הייתה לו. כל מפתח למטה עובר לוקליזציה ליד הדף הזה ושוב בתיקיית .locales של ה-Showcase, והתיקייה גוברת; המפתח האחרון קיים בתיקייה בלבד.",
     "Beside the Page": "ליד הדף",
     "From the Host's Folder": "מתיקיית המארח",
     "File": "קובץ",
@@ -58,7 +58,7 @@
     "Written in a file named for part of the namespace": "ליד הדף: קובץ מרחב השמות",
     "Written in the file named for the type": "ליד הדף: קובץ הטיפוס",
     "A Language the Library Never Shipped": "שפה שהספרייה מעולם לא סיפקה",
-    "French ships with neither the library nor the Showcase. The Showcase's locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English.": "צרפתית אינה מסופקת לא עם הספרייה ולא עם ה-Showcase. תיקיית locales של ה-Showcase מספקת אותה למקטע הזה, לתפריט השיתוף ולדפדוף, ולכן המחרוזות שלמטה נקראות בצרפתית מאותה תיקייה בלבד, ואפשר לפתוח את הדף בצרפתית כדי לראות את כל השאר נופל חזרה לאנגלית.",
+    "French ships with neither the library nor the Showcase. The Showcase's .locales folder supplies it for this section, for the share menu and for the pagination, so the strings below read in French from that folder alone, and the page can be opened in French to see everything else fall back to English.": "צרפתית אינה מסופקת לא עם הספרייה ולא עם ה-Showcase. תיקיית .locales של ה-Showcase מספקת אותה למקטע הזה, לתפריט השיתוף ולדפדוף, ולכן המחרוזות שלמטה נקראות בצרפתית מאותה תיקייה בלבד, ואפשר לפתוח את הדף בצרפתית כדי לראות את כל השאר נופל חזרה לאנגלית.",
     "Current page": "עמוד נוכחי",
     "Open this page in French": "פתיחת הדף הזה בצרפתית",
     "In French, from the host's folder": "בצרפתית, מתיקיית המארח"

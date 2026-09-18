@@ -6,7 +6,7 @@ beside it, which reads the same settings file and resolves files through the sam
 
 ## Status
 
-Steps 1 to 3 are built. Steps 4 to 7 are not.
+Steps 1 to 4 are built. Steps 5 to 7 are not.
 
 ## Steps
 
@@ -123,9 +123,9 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    - **The linter's source follows the new members** so its build and tests stay green. It still
      names files by its fixed forms, so this repository's `.locali.json` leaves LOC0112 out for
      the fixtures only a settings file places.
-   - **The host tests ran on Windows alone.** They mark the `.locales` folder and the settings
-     file hidden, which is what a leading dot means on Linux, but no Linux machine was available
-     to run them.
+   - **The host tests ran on Linux as well as Windows**, on Ubuntu under WSL, where a leading dot
+     hides a folder from .NET. On both systems the hidden-name tests fail when the source skips
+     hidden entries, so they guard the rule rather than pass by accident.
 
 4. **The defaults move.** `LocalesPath` defaults to `.locales`, and `ResourcesPath` is removed;
    its tests become tests of a path naming the folder instead. The test project's and the
@@ -135,10 +135,27 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    **Gate:** the suite green, and the Showcase's localization page reading its host section in
    `fr` from the renamed folder, walked in a browser.
 
+   ✅ Built. A project names the folder its own files sit in through the paths of a
+   `.locali.json` beside them, so the tests that set `ResourcesPath` read the same fixture through
+   a settings file under `Resources/`. The JSON test assembly gained an empty root settings file
+   for that, which keeps the one under `Resources/` nested. Departures from what this step
+   planned:
+
+   - **The linter tells a host's files from embedded ones by the project's items.** It skipped a
+     folder named `locales` by its name alone, and `.locales` at a project root is a host's folder
+     in one project and an embedded form in another. The linter now reads each project's
+     `EmbeddedResource` items and lints those alone, whatever folder they sit in, which step 5
+     planned to decide.
+   - **The linter's alias names retire with `ResourcesPath`.** It read a file under every name
+     `ResourcesPath` could have given it, and left alone a name two files claimed that way. A file
+     now has the one name the build embeds it by, as the runtime reads it.
+   - **The Showcase copies its folder with an item of its own.** The SDK's own globs pass over a
+     folder whose name starts with a dot, so the rename alone would have stopped the folder
+     reaching the output. The page's text and its translations name the new folder.
+
 5. **The linter resolves by the paths.** In `Forma.Locali`, a project's files are served under
    the names the build embeds them by and read through step 3's source, so the runtime and the
-   linter place every file the same way. The host folder is the one the settings name, not a fixed
-   `locales`. Four rules join: a file no path in force places, two files of one source standing
+   linter place every file the same way. Four rules join: a file no path in force places, two files of one source standing
    for one anchor, a `.locali.json` naming a `rootNamespace` or `rootDir` that the runtime passes
    over, which only the file marking the root may name, and a `rootDir` climbing past the
    project's root namespace, which the runtime cannot see and reads as the root namespace itself.

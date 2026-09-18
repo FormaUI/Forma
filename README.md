@@ -160,7 +160,7 @@ Translations sit in `MyPage.he.json` beside the type, or in a file named for the
 per type, keyed by that same English text. A key with no translation renders as written, so a page
 reads correctly before any translation exists.
 A host rewords a string the library ships, or adds a language it never had, by laying its own files
-in a `locales` folder beside the application, named for the assembly and the type they localize.
+in a `.locales` folder beside the application, named for the assembly and the type they localize.
 
 [`Forma.Framework.Localization`](src/Forma.Framework/Forma.Framework.Localization/README.md)
 documents the contract, the ways to fill a hole, the plural syntax, and how a file is found.
@@ -210,7 +210,7 @@ dotnet run --project src/Forma.Blazor.Showcase
 All four checks must pass before a change is offered for review. The Showcase serves an interactive
 page per component, in English, Hebrew, and Spanish — every state a component can enter is rendered
 there, and reviewing a component means looking at it in all three cultures. Its localization page
-also shows French, which the library never shipped: the Showcase's `locales` folder supplies a few
+also shows French, which the library never shipped: the Showcase's `.locales` folder supplies a few
 components' strings in it, to show a host adding a language, and a link opens the page in French
 with everything else falling back to English.
 

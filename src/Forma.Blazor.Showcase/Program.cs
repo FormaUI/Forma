@@ -63,7 +63,7 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
     new("rejected", CssColor.FromRgba(214, 57, 57, 0.14), CssColor.FromHex(0xa32222)) { Marker = Glyph.CircleCross }
 ]));
 
-// French ships with neither the library nor the Showcase; the locales folder supplies it, so a host adding a language can be seen.
+// French ships with neither the library nor the Showcase; the .locales folder supplies it, so a host adding a language can be seen.
 builder.Services.AddCultureRouting(new CultureRouterOptions
 {
     Prefix = CulturePrefix.ExceptDefault,
