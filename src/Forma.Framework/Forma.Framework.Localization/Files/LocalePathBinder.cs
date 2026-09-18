@@ -6,7 +6,7 @@ using Forma.Framework.Localization.Parser.Syntax;
 
 /// <summary>Builds a file's name from a locale path, for one source and one culture.</summary>
 /// <param name="values">What the path's tokens stand for apart from the anchor.</param>
-/// <param name="separator">The character written between folders: <c>/</c> for a path, <c>.</c> for an embedded resource's name.</param>
+/// <param name="separator">The character written between folders: <see cref="Path.AltDirectorySeparatorChar"/> for a path, <c>.</c> for an embedded resource's name, which no path separator describes.</param>
 public sealed class LocalePathBinder(LocalePathValues values, char separator)
 {
     private readonly LocalePathValues _values = values;
@@ -34,7 +34,7 @@ public sealed class LocalePathBinder(LocalePathValues values, char separator)
             {
                 foreach (var character in part.Text)
                 {
-                    if (character != LocalePath.FolderSeparator)
+                    if (character != Path.AltDirectorySeparatorChar)
                     {
                         name.Append(character);
                         endsWithFolderSeparator = false;
@@ -107,7 +107,7 @@ public sealed class LocalePathBinder(LocalePathValues values, char separator)
             case LocalePathToken.RootDir or LocalePathToken.LocalesDir:
                 var start = name.Length;
                 name.Append(GetLiteral(token, _values));
-                name.Replace(LocalePath.FolderSeparator, _separator, start, name.Length - start);
+                name.Replace(Path.AltDirectorySeparatorChar, _separator, start, name.Length - start);
                 break;
 
             default:

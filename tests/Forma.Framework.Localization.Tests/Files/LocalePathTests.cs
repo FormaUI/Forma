@@ -71,11 +71,11 @@ public sealed class LocalePathTests
         [InlineData(NamedForAssembly, "Contoso.Widgets/Contoso.Widgets.he.json")]
         [InlineData(CultureInOwnDir, "Contoso.Widgets/.locales/he.json")]
         public void Should_name_a_host_file_at_the_root_as_a_path(string path, string expected)
-            => Assert.Equal(expected, GetName(path, [], Embedded, '/'));
+            => Assert.Equal(expected, GetName(path, [], Embedded, Path.AltDirectorySeparatorChar));
 
         [Fact]
         public void Should_name_a_host_file_below_the_root_as_a_path()
-            => Assert.Equal("Contoso.Widgets/Components/.locales/Bars.he.json", GetName(InParentsDir, ["Components", "Bars"], Embedded, '/'));
+            => Assert.Equal("Contoso.Widgets/Components/.locales/Bars.he.json", GetName(InParentsDir, ["Components", "Bars"], Embedded, Path.AltDirectorySeparatorChar));
 
         [Fact]
         public void Should_name_a_file_for_an_assembly_whose_root_namespace_is_another()
@@ -93,7 +93,7 @@ public sealed class LocalePathTests
         public void Should_read_every_other_token_from_the_values()
             => Assert.Equal(
                 "Contoso.Widgets.Plugins/Contoso.Widgets.Extras/Bars/he.json",
-                GetName("$RootNamespace/$AssemblyName/$AnchorName/$Culture$Extension", ["Bars"], Borrowed, '/'));
+                GetName("$RootNamespace/$AssemblyName/$AnchorName/$Culture$Extension", ["Bars"], Borrowed, Path.AltDirectorySeparatorChar));
 
         [Fact]
         public void Should_start_a_name_below_an_unknown_root_without_a_separator()
@@ -111,22 +111,22 @@ public sealed class LocalePathTests
         public void Should_give_a_path_standing_for_the_root_no_name_below_it()
         {
             // Arrange
-            const string Path = "$RootDir/$LocalesDir/$Culture$Extension";
+            const string RootOnlyPath = "$RootDir/$LocalesDir/$Culture$Extension";
 
             // Assert
             Assert.Multiple(
-                () => Assert.True(LocalePath.Parse(Path).IsRootOnly),
-                () => Assert.Equal("Contoso.Widgets/.locales/he.json", GetName(Path, [], Embedded, '/')),
-                () => Assert.Null(GetName(Path, ["Bars"], Embedded, '/')));
+                () => Assert.True(LocalePath.Parse(RootOnlyPath).IsRootOnly),
+                () => Assert.Equal("Contoso.Widgets/.locales/he.json", GetName(RootOnlyPath, [], Embedded, Path.AltDirectorySeparatorChar)),
+                () => Assert.Null(GetName(RootOnlyPath, ["Bars"], Embedded, Path.AltDirectorySeparatorChar)));
         }
 
         [Fact]
         public void Should_drop_the_separator_after_an_empty_leading_token()
-            => Assert.Equal(".locales/he.json", GetName("$AnchorName/$LocalesDir/$Culture$Extension", [], Embedded, '/'));
+            => Assert.Equal(".locales/he.json", GetName("$AnchorName/$LocalesDir/$Culture$Extension", [], Embedded, Path.AltDirectorySeparatorChar));
 
         [Fact]
         public void Should_write_an_escaped_marker_as_a_dollar()
-            => Assert.Equal("Contoso.Widgets/$strings/Bars.he.json", GetName("$RootDir/$$strings/$AnchorName.$Culture$Extension", ["Bars"], Embedded, '/'));
+            => Assert.Equal("Contoso.Widgets/$strings/Bars.he.json", GetName("$RootDir/$$strings/$AnchorName.$Culture$Extension", ["Bars"], Embedded, Path.AltDirectorySeparatorChar));
     }
 
     public sealed class Matching
@@ -139,7 +139,7 @@ public sealed class LocalePathTests
         [Theory]
         [MemberData(nameof(Anchors), MemberType = typeof(LocalePathTests))]
         public void Should_read_back_the_anchor_every_default_path_names_as_a_path(string text, string[] anchor)
-            => AssertReadsBack(text, anchor, Embedded, '/');
+            => AssertReadsBack(text, anchor, Embedded, Path.AltDirectorySeparatorChar);
 
         [Theory]
         [MemberData(nameof(Anchors), MemberType = typeof(LocalePathTests))]
@@ -159,7 +159,7 @@ public sealed class LocalePathTests
         [InlineData("$RootDir/$$strings/$AnchorName.$Culture$Extension", "Bars")]
         [InlineData("$RootDir/$LocalesDir/$Culture$Extension", "")]
         public void Should_read_back_the_anchor_of_a_path_written_in_another_order(string text, string anchor)
-            => AssertReadsBack(text, anchor.Length == 0 ? [] : anchor.Split('.'), Embedded, '/');
+            => AssertReadsBack(text, anchor.Length == 0 ? [] : anchor.Split('.'), Embedded, Path.AltDirectorySeparatorChar);
 
         [Fact]
         public void Should_read_a_file_named_for_the_assembly_as_the_root()
@@ -195,7 +195,7 @@ public sealed class LocalePathTests
 
         [Fact]
         public void Should_not_read_a_root_file_where_the_root_is_unknown()
-            => Assert.False(TryGetAnchor("$RootDir/$LocalesDir/$Culture$Extension", ".locales/he.json", Unrooted, '/', out _));
+            => Assert.False(TryGetAnchor("$RootDir/$LocalesDir/$Culture$Extension", ".locales/he.json", Unrooted, Path.AltDirectorySeparatorChar, out _));
 
         [Fact]
         public void Should_compare_a_name_as_asked()
@@ -206,13 +206,13 @@ public sealed class LocalePathTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.False(new LocalePathMatcher(Embedded, '/', StringComparison.Ordinal).TryGetAnchor(path, Name, out _)),
-                () => Assert.True(new LocalePathMatcher(Embedded, '/', StringComparison.OrdinalIgnoreCase).TryGetAnchor(path, Name, out _)));
+                () => Assert.False(new LocalePathMatcher(Embedded, Path.AltDirectorySeparatorChar, StringComparison.Ordinal).TryGetAnchor(path, Name, out _)),
+                () => Assert.True(new LocalePathMatcher(Embedded, Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase).TryGetAnchor(path, Name, out _)));
         }
 
         [Fact]
         public void Should_refuse_a_comparison_that_is_not_ordinal()
-            => Assert.Throws<ArgumentOutOfRangeException>(() => new LocalePathMatcher(Embedded, '/', StringComparison.CurrentCulture));
+            => Assert.Throws<ArgumentOutOfRangeException>(() => new LocalePathMatcher(Embedded, Path.AltDirectorySeparatorChar, StringComparison.CurrentCulture));
 
         private static void AssertReadsBack(string text, string[] anchor, LocalePathValues values, char separator)
         {

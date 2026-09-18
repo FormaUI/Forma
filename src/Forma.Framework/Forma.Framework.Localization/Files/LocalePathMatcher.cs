@@ -23,7 +23,7 @@ public sealed class LocalePathMatcher
 
     /// <summary>Creates a matcher for one source and one culture.</summary>
     /// <param name="values">What the path's tokens stand for apart from the anchor.</param>
-    /// <param name="separator">The character written between folders.</param>
+    /// <param name="separator">The character written between folders: <see cref="Path.AltDirectorySeparatorChar"/> for a path, <c>.</c> for an embedded resource's name, which no path separator describes.</param>
     /// <param name="comparison">How a name is compared: <see cref="StringComparison.Ordinal"/> or <see cref="StringComparison.OrdinalIgnoreCase"/>.</param>
     public LocalePathMatcher(LocalePathValues values, char separator, StringComparison comparison)
     {
@@ -117,7 +117,7 @@ public sealed class LocalePathMatcher
             {
                 foreach (var character in part.Text)
                 {
-                    if (character != LocalePath.FolderSeparator)
+                    if (character != Path.AltDirectorySeparatorChar)
                     {
                         fragments.Add((Regex.Escape(character.ToString()), false));
                         optionalLeadingGroup = null;
@@ -183,7 +183,7 @@ public sealed class LocalePathMatcher
                     break;
 
                 default:
-                    var value = LocalePathBinder.GetLiteral(token, _values)!.Replace(LocalePath.FolderSeparator, _separator);
+                    var value = LocalePathBinder.GetLiteral(token, _values)!.Replace(Path.AltDirectorySeparatorChar, _separator);
                     if (value.Length == 0)
                     {
                         if (fragments is [.., (_, true)])

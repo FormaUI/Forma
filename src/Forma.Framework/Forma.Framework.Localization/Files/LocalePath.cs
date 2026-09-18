@@ -6,9 +6,6 @@ using Forma.Framework.Localization.Parser.Syntax;
 /// <summary>The path of a locale file, written from a source's root with tokens for what varies by anchor, culture and source.</summary>
 public sealed class LocalePath
 {
-    /// <summary>The character written between folders in a path.</summary>
-    public const char FolderSeparator = '/';
-
     /// <summary>The paths a source reads by unless a setting states others: every form a file beside, inside or named for its folder or its assembly takes, and the <c>.locales</c> forms, in the order a source applies them at one anchor.</summary>
     public static IReadOnlyList<LocalePath> Defaults { get; } =
     [

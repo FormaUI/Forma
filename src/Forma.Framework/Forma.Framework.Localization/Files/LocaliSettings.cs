@@ -183,12 +183,12 @@ public sealed record LocaliSettings(string? RootNamespace, string? RootDir, stri
     // A path is relative, written with '/' alone, and never doubles a separator.
     private static bool IsRelativePath(ReadOnlySpan<char> text)
     {
-        if (text[0] == '/' || text.ContainsAny(NotInARelativePath))
+        if (text[0] == Path.AltDirectorySeparatorChar || text.ContainsAny(NotInARelativePath))
         {
             return false;
         }
 
-        foreach (var range in text.Split('/'))
+        foreach (var range in text.Split(Path.AltDirectorySeparatorChar))
         {
             if (text[range].IsEmpty)
             {
@@ -201,7 +201,7 @@ public sealed record LocaliSettings(string? RootNamespace, string? RootDir, stri
 
     private static bool IsDotted(ReadOnlySpan<char> text)
     {
-        foreach (var range in text.Split('/'))
+        foreach (var range in text.Split(Path.AltDirectorySeparatorChar))
         {
             if (text[range] is "." or "..")
             {
