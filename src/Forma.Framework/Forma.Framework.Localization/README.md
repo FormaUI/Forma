@@ -326,11 +326,17 @@ checks files by the rule the runtime reads them with:
 | `LocalizationSchema` | The shape of the metadata entry every file carries: its `Marker`, `CurrentVersion`, `RequiredFields`, `OptionalFields`, the reserved keys, and `IsReservedShape` and `Unescape` for keys. |
 | `LocalizationMetadata` | `Read` checks a file's metadata entry and returns the `LocalizationFileMetadata` it declares beyond the required fields. |
 | `LocalizationMetadataException` | Thrown when a file's metadata does not let it be read. |
+| `LocalePath` | The path of a locale file written in tokens, which `Parse` reads; `Defaults` are the paths a source reads by unless a setting states others. |
+| `LocalePathBinder` | Builds a file's name from a path for an anchor, `GetName`, in one source and one culture. |
+| `LocalePathMatcher` | Reads the anchor a file's name stands for under a path, `TryGetAnchor`, in one source and one culture. |
+| `LocalePathValues` | What a path's tokens stand for apart from the anchor: the assembly, the root, the folder of locale files, the culture and the extension. |
+| `LocaliSettings` | What a `.locali.json` file says about the files beneath it; `Read` takes the keys the runtime owns and passes over the linter's. |
+| `LocaliSettingsException` | Thrown when a settings file cannot be read or a key the runtime owns is malformed. |
 
 The `Forma.Framework.Localization.Parser` namespace reads the syntax inside a string:
 `LocaleExpressionParser` reads the `[$ … $]` expressions in a format and `LocaleFieldParser` the
-`name: value;` pairs of an expression body or a metadata entry, each returning the spans it read
-and the diagnostics it raised.
+`name: value;` pairs of an expression body or a metadata entry, and `LocalePathParser` a locale
+path's literal runs and tokens, each returning the spans it read and the diagnostics it raised.
 
 ## License
 

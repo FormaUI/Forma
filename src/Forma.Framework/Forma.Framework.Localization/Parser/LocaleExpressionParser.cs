@@ -21,7 +21,7 @@ public static class LocaleExpressionParser
     /// <param name="text">The text to examine.</param>
     /// <param name="normalized">The rewritten text, or <see langword="null"/> when the text already reads as written.</param>
     /// <remarks>
-    /// An interpolated call site writes <c>[{files}]</c>, which the handler keeps as a hole, while a translation
+    /// An interpolated call site writes <c>[{files}]</c>, which the handler keeps as a hole, while a locale
     /// file carries the canonical <c>[files]</c>. Rewriting is confined to an expression's header so that prose
     /// such as <c>See [{files}] for details</c> keeps the hole it means to fill.
     /// </remarks>

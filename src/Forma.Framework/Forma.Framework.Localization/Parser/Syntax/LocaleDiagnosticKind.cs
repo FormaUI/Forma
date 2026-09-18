@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Parser.Syntax;
 
-/// <summary>What a parser found wrong with an expression.</summary>
+/// <summary>What a parser found wrong with what it read.</summary>
 public enum LocaleDiagnosticKind
 {
     /// <summary>An expression was opened but never closed.</summary>
@@ -44,4 +44,22 @@ public enum LocaleDiagnosticKind
 
     /// <summary>A field name appears more than once in the same expression.</summary>
     DuplicateFieldName,
+
+    /// <summary>A locale path is empty.</summary>
+    EmptyPath,
+
+    /// <summary>A locale path names a token no path defines.</summary>
+    UnknownPathToken,
+
+    /// <summary>A locale path names a token more than once.</summary>
+    DuplicatePathToken,
+
+    /// <summary>A locale path does not name a token every path must name.</summary>
+    MissingPathToken,
+
+    /// <summary>A locale path names part of an anchor but not all of it.</summary>
+    IncompletePathAnchor,
+
+    /// <summary>A locale path names an anchor in two ways at once.</summary>
+    ConflictingPathAnchor,
 }
