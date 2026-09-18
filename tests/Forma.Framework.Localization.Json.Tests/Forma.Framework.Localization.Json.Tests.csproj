@@ -18,12 +18,12 @@
         <EmbeddedResource Include="Fixtures\**\*.json" />
         <!-- A folder whose own settings file names the path its files are read by. -->
         <EmbeddedResource Include="Resources\**\*.json" />
-        <!-- Kept in the main assembly to cover the layout a project gets by opting out of satellites. -->
-        <EmbeddedResource Update="Fixtures\MainAssembly.he.json" WithCulture="false" />
+        <!-- A file beside its type, kept in the main assembly to cover the layout a project gets by opting out of satellites. -->
+        <EmbeddedResource Update="Fixtures\Beside\MainAssembly.he.json" WithCulture="false" />
         <!-- Embedded under the type's own namespace, which an assembly named apart from its root produces. -->
-        <EmbeddedResource Update="Fixtures\Foreign\ForeignRoot.he.json" LogicalName="Contoso.Widgets.ForeignRoot.he.json" WithCulture="false" />
+        <EmbeddedResource Update="Fixtures\Foreign\ForeignRoot\.locales\he.json" LogicalName="Contoso.Widgets.ForeignRoot..locales.he.json" />
         <!-- A type outside any namespace, whose resource the root namespace alone qualifies. -->
-        <EmbeddedResource Update="Fixtures\GlobalRoot.he.json" LogicalName="Forma.Framework.Localization.Json.Tests.GlobalRoot.he.json" WithCulture="false" />
+        <EmbeddedResource Update="Fixtures\GlobalRoot\.locales\he.json" LogicalName="Forma.Framework.Localization.Json.Tests.GlobalRoot..locales.he.json" />
     </ItemGroup>
 
     <!-- The host's own files, copied beside the test assembly, where the default folder is looked for. -->

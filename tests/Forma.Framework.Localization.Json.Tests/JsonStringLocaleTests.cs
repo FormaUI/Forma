@@ -1,6 +1,7 @@
 namespace Forma.Framework.Localization.Json.Tests;
 
 using Forma.Framework.Localization.Json.Tests.Fixtures;
+using Forma.Framework.Localization.Json.Tests.Fixtures.Beside;
 
 public sealed class JsonStringLocaleTests
 {
@@ -309,6 +310,20 @@ public sealed class JsonStringLocaleTests
         // Arrange
         using var culture = new CultureScope("he");
         var strings = CreateLocale<MainAssembly>();
+
+        // Act
+        var localized = strings["Close"];
+
+        // Assert
+        Assert.Equal("סגור", localized.Value);
+    }
+
+    [Fact]
+    public void Should_read_a_culture_file_the_build_moves_into_a_satellite_assembly()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = CreateLocale<InSatellite>();
 
         // Act
         var localized = strings["Close"];

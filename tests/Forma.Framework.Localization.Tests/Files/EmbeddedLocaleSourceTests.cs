@@ -16,6 +16,50 @@ public sealed class EmbeddedLocaleSourceTests
         format.Files[name] = new LocaleFile(root);
     }
 
+    private static LocaleSection CreateToolbarSection(string value)
+        => CreateSections(("Toolbar", CreateEntries(("Bold", value))));
+
+    public sealed class Locales
+    {
+        [Fact]
+        public void Should_read_each_folders_locales_file_from_the_root_down_to_the_types_own()
+        {
+            // Arrange
+            var assembly = new FakeAssembly(Assembly);
+            var format = new FakeLocaleFileFormat();
+            AddFile(assembly, format, "Contoso.Widgets..locales.he.fake", CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "root file")))));
+            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("folder file"));
+            AddFile(assembly, format, "Contoso.Widgets.Bars.Toolbar..locales.he.fake", CreateEntries(("Bold", "type's own file")));
+
+            // Act
+            var entries = Read(assembly, format);
+
+            // Assert
+            Assert.Equal(
+                [
+                    new("Contoso.Widgets..locales.he.fake", "Bars.Toolbar", "Bold", "root file"),
+                    new("Contoso.Widgets.Bars..locales.he.fake", "Toolbar", "Bold", "folder file"),
+                    new("Contoso.Widgets.Bars.Toolbar..locales.he.fake", string.Empty, "Bold", "type's own file"),
+                ],
+                entries);
+        }
+
+        [Fact]
+        public void Should_not_read_a_file_beside_its_type_unless_a_setting_names_that_form()
+        {
+            // Arrange
+            var assembly = new FakeAssembly(Assembly);
+            var format = new FakeLocaleFileFormat();
+            AddFile(assembly, format, "Contoso.Widgets.Bars.Toolbar.he.fake", CreateEntries(("Bold", "beside the type")));
+
+            // Act
+            var entries = Read(assembly, format);
+
+            // Assert
+            Assert.Empty(entries);
+        }
+    }
+
     public sealed class Roots
     {
         [Fact]
@@ -24,14 +68,14 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Strings..locali.json"] = "{}" } };
             var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Strings.Bars.Toolbar.he.fake", CreateEntries(("Bold", "beneath the root")));
-            AddFile(assembly, format, "Contoso.Widgets.Bars.Toolbar.he.fake", CreateEntries(("Bold", "above the root")));
+            AddFile(assembly, format, "Contoso.Widgets.Strings.Bars..locales.he.fake", CreateToolbarSection("beneath the root"));
+            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("above the root"));
 
             // Act
             var entries = Read(assembly, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Strings.Bars.Toolbar.he.fake", string.Empty, "Bold", "beneath the root")], entries);
+            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Strings.Bars..locales.he.fake", "Toolbar", "Bold", "beneath the root")], entries);
         }
 
         [Fact]
@@ -40,20 +84,23 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var assembly = new FakeAssembly("Contoso.Widgets.Core") { Resources = { ["Contoso..locali.json"] = """{ "rootNamespace": "Contoso.Widgets" }""" } };
             var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Bars.Toolbar.he.fake", CreateEntries(("Bold", "declared root")));
+            AddFile(assembly, format, "Contoso.Bars..locales.he.fake", CreateToolbarSection("declared root"));
 
             // Act
             var entries = Read(assembly, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Bars.Toolbar.he.fake", string.Empty, "Bold", "declared root")], entries);
+            Assert.Equal([new LocaleSourceEntry("Contoso.Bars..locales.he.fake", "Toolbar", "Bold", "declared root")], entries);
         }
 
         [Fact]
         public void Should_read_the_file_named_for_an_assembly_whose_root_namespace_differs()
         {
             // Arrange
-            var assembly = new FakeAssembly("Contoso.Widgets.Core") { Resources = { ["Contoso..locali.json"] = """{ "rootNamespace": "Contoso.Widgets" }""" } };
+            var assembly = new FakeAssembly("Contoso.Widgets.Core")
+            {
+                Resources = { ["Contoso..locali.json"] = """{ "rootNamespace": "Contoso.Widgets", "paths": ["$RootDir/$AssemblyName.$Culture$Extension"] }""" },
+            };
             var format = new FakeLocaleFileFormat();
             AddFile(assembly, format, "Contoso.Contoso.Widgets.Core.he.fake", CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "assembly file")))));
 
@@ -103,22 +150,22 @@ public sealed class EmbeddedLocaleSourceTests
     public sealed class RootDirs
     {
         [Theory]
-        [InlineData("Contoso.Widgets..locali.json", "Strings/Main", "Contoso.Widgets.Strings.Main.Bars.Toolbar.he.fake")]
-        [InlineData("Contoso.Widgets.Build..locali.json", "../Contoso.Widgets.csproj", "Contoso.Widgets.Bars.Toolbar.he.fake")]
-        [InlineData("Contoso.Widgets.Src.Core..locali.json", "../../Contoso.slnx", "Contoso.Widgets.Bars.Toolbar.he.fake")]
-        [InlineData("Contoso.Widgets..locali.json", "./Contoso.Widgets.csproj", "Contoso.Widgets.Bars.Toolbar.he.fake")]
+        [InlineData("Contoso.Widgets..locali.json", "Strings/Main", "Contoso.Widgets.Strings.Main.Bars..locales.he.fake")]
+        [InlineData("Contoso.Widgets.Build..locali.json", "../Contoso.Widgets.csproj", "Contoso.Widgets.Bars..locales.he.fake")]
+        [InlineData("Contoso.Widgets.Src.Core..locali.json", "../../Contoso.slnx", "Contoso.Widgets.Bars..locales.he.fake")]
+        [InlineData("Contoso.Widgets..locali.json", "./Contoso.Widgets.csproj", "Contoso.Widgets.Bars..locales.he.fake")]
         public void Should_begin_the_names_where_the_root_dir_leads(string settingsName, string rootDir, string fileName)
         {
             // Arrange
             var assembly = new FakeAssembly(Assembly) { Resources = { [settingsName] = $$"""{ "rootDir": "{{rootDir}}" }""" } };
             var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, fileName, CreateEntries(("Bold", "found")));
+            AddFile(assembly, format, fileName, CreateToolbarSection("found"));
 
             // Act
             var entries = Read(assembly, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry(fileName, string.Empty, "Bold", "found")], entries);
+            Assert.Equal([new LocaleSourceEntry(fileName, "Toolbar", "Bold", "found")], entries);
         }
 
         [Fact]
@@ -127,14 +174,14 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Deep.Nest..locali.json"] = """{ "rootNamespace": "Contoso.Widgets", "rootDir": "../../../.." }""" } };
             var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Bars.Toolbar.he.fake", CreateEntries(("Bold", "at the root namespace")));
-            AddFile(assembly, format, "Contoso.Widgets.Deep.Nest.Bars.Toolbar.he.fake", CreateEntries(("Bold", "where the settings sit")));
+            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("at the root namespace"));
+            AddFile(assembly, format, "Contoso.Widgets.Deep.Nest.Bars..locales.he.fake", CreateToolbarSection("where the settings sit"));
 
             // Act
             var entries = Read(assembly, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Bars.Toolbar.he.fake", string.Empty, "Bold", "at the root namespace")], entries);
+            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Bars..locales.he.fake", "Toolbar", "Bold", "at the root namespace")], entries);
         }
     }
 
@@ -146,7 +193,7 @@ public sealed class EmbeddedLocaleSourceTests
                 Resources =
                 {
                     ["Contoso.Widgets..locali.json"] = "{}",
-                    ["Contoso.Widgets.Bars..locali.json"] = """{ "localesDir": "i18n", "paths": ["$RootDir/$AnchorName/$LocalesDir/$Culture$Extension"] }""",
+                    ["Contoso.Widgets.Bars..locali.json"] = """{ "localesDir": "i18n", "paths": ["$RootDir/$AnchorName/$LocalesDir/$CurrentName.$Culture$Extension"] }""",
                 },
             };
 
@@ -156,14 +203,14 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var assembly = CreateNestedAssembly();
             var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Bars.i18n.he.fake", CreateSections(("Toolbar", CreateEntries(("Bold", "nested form")))));
-            AddFile(assembly, format, "Contoso.Widgets.Bars.Toolbar.he.fake", CreateEntries(("Bold", "default form")));
+            AddFile(assembly, format, "Contoso.Widgets.Bars.i18n.Bars.he.fake", CreateToolbarSection("nested form"));
+            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("default form"));
 
             // Act
             var entries = Read(assembly, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Bars.i18n.he.fake", "Toolbar", "Bold", "nested form")], entries);
+            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Bars.i18n.Bars.he.fake", "Toolbar", "Bold", "nested form")], entries);
         }
 
         [Fact]
@@ -172,67 +219,28 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var assembly = CreateNestedAssembly();
             var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Menus.Menu.he.fake", CreateEntries(("Open", "default form")));
+            AddFile(assembly, format, "Contoso.Widgets.Menus..locales.he.fake", CreateSections(("Menu", CreateEntries(("Open", "default form")))));
 
             // Act
             var entries = Read(assembly, format, "Contoso.Widgets.Menus.Menu");
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Menus.Menu.he.fake", string.Empty, "Open", "default form")], entries);
+            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Menus..locales.he.fake", "Menu", "Open", "default form")], entries);
         }
     }
 
-    public sealed class Locales
-    {
-        [Fact]
-        public void Should_read_every_locales_form_anchor_by_anchor_and_path_by_path()
-        {
-            // Arrange
-            var assembly = new FakeAssembly(Assembly);
-            var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateSections(("Toolbar", CreateEntries(("Bold", "culture file")))));
-            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.Bars.he.fake", CreateSections(("Toolbar", CreateEntries(("Bold", "folder file inside")))));
-            AddFile(assembly, format, "Contoso.Widgets..locales.Bars.he.fake", CreateSections(("Toolbar", CreateEntries(("Bold", "folder file in the parent's")))));
-            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.Toolbar.he.fake", CreateEntries(("Bold", "type file")));
-
-            // Act
-            var entries = Read(assembly, format);
-
-            // Assert
-            Assert.Equal(
-                [
-                    new("Contoso.Widgets..locales.Bars.he.fake", "Toolbar", "Bold", "folder file in the parent's"),
-                    new("Contoso.Widgets.Bars..locales.Bars.he.fake", "Toolbar", "Bold", "folder file inside"),
-                    new("Contoso.Widgets.Bars..locales.he.fake", "Toolbar", "Bold", "culture file"),
-                    new("Contoso.Widgets.Bars..locales.Toolbar.he.fake", string.Empty, "Bold", "type file"),
-                ],
-                entries);
-        }
-
-        [Fact]
-        public void Should_read_the_locales_file_at_the_root()
-        {
-            // Arrange
-            var assembly = new FakeAssembly(Assembly);
-            var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets..locales.he.fake", CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "root file")))));
-
-            // Act
-            var entries = Read(assembly, format);
-
-            // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets..locales.he.fake", "Bars.Toolbar", "Bold", "root file")], entries);
-        }
-    }
-
+    // A file named for its culture alone never reaches a satellite, so these read a form the build moves there.
     public sealed class Satellites
     {
+        private static FakeAssembly CreateAssemblyReadingBeside()
+            => new(Assembly) { Resources = { ["Contoso.Widgets..locali.json"] = """{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }""" } };
+
         [Fact]
         public void Should_read_a_satellites_file_under_its_name_with_the_culture()
         {
             // Arrange
-            var satellite = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Bars.Toolbar.fake"] = string.Empty } };
-            var assembly = new FakeAssembly(Assembly) { Satellites = { ["he"] = satellite } };
+            var assembly = CreateAssemblyReadingBeside();
+            assembly.Satellites["he"] = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Bars.Toolbar.fake"] = string.Empty } };
             var format = new FakeLocaleFileFormat { Files = { ["Contoso.Widgets.Bars.Toolbar.he.fake"] = new(CreateEntries(("Bold", "satellite file"))) } };
 
             // Act
@@ -246,8 +254,8 @@ public sealed class EmbeddedLocaleSourceTests
         public void Should_read_the_assemblys_own_file_once_when_a_satellite_holds_one_of_the_same_name()
         {
             // Arrange
-            var satellite = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Bars.Toolbar.fake"] = string.Empty } };
-            var assembly = new FakeAssembly(Assembly) { Satellites = { ["he"] = satellite } };
+            var assembly = CreateAssemblyReadingBeside();
+            assembly.Satellites["he"] = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Bars.Toolbar.fake"] = string.Empty } };
             var format = new FakeLocaleFileFormat();
             AddFile(assembly, format, "Contoso.Widgets.Bars.Toolbar.he.fake", CreateEntries(("Bold", "one file")));
 
@@ -267,14 +275,14 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var assembly = new FakeAssembly(Assembly);
             var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Fabrikam.Gadgets.Dial.he.fake", CreateEntries(("Turn", "full name")));
-            AddFile(assembly, format, "Contoso.Widgets.Fabrikam.Gadgets.Dial.he.fake", CreateEntries(("Turn", "beneath the assembly")));
+            AddFile(assembly, format, "Fabrikam.Gadgets..locales.he.fake", CreateSections(("Dial", CreateEntries(("Turn", "full name")))));
+            AddFile(assembly, format, "Contoso.Widgets.Fabrikam.Gadgets..locales.he.fake", CreateSections(("Dial", CreateEntries(("Turn", "beneath the assembly")))));
 
             // Act
             var entries = Read(assembly, format, "Fabrikam.Gadgets.Dial");
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry("Fabrikam.Gadgets.Dial.he.fake", string.Empty, "Turn", "full name")], entries);
+            Assert.Equal([new LocaleSourceEntry("Fabrikam.Gadgets..locales.he.fake", "Dial", "Turn", "full name")], entries);
         }
 
         [Fact]
@@ -283,13 +291,13 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var assembly = new FakeAssembly(Assembly);
             var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Dial.he.fake", CreateEntries(("Turn", "beneath the root")));
+            AddFile(assembly, format, "Contoso.Widgets..locales.he.fake", CreateSections(("Dial", CreateEntries(("Turn", "beneath the root")))));
 
             // Act
             var entries = Read(assembly, format, "Dial");
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Dial.he.fake", string.Empty, "Turn", "beneath the root")], entries);
+            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets..locales.he.fake", "Dial", "Turn", "beneath the root")], entries);
         }
     }
 }

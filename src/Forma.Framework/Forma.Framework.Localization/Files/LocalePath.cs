@@ -6,15 +6,17 @@ using Forma.Framework.Localization.Parser.Syntax;
 /// <summary>The path of a locale file, written from a source's root with tokens for what varies by anchor, culture and source.</summary>
 public sealed class LocalePath
 {
-    /// <summary>The paths a source reads by unless a setting states others: every form a file beside, inside or named for its folder or its assembly takes, and the <c>.locales</c> forms, in the order a source applies them at one anchor.</summary>
+    /// <summary>The paths a source reads by unless a setting states others: a folder's own <c>.locales</c> folder, holding one file per culture for everything the folder completes.</summary>
     public static IReadOnlyList<LocalePath> Defaults { get; } =
     [
-        Parse("$RootDir/$AnchorName.$Culture$Extension"),
-        Parse("$RootDir/$AnchorName/$CurrentName.$Culture$Extension"),
-        Parse("$RootDir/$AssemblyName.$Culture$Extension"),
-        Parse("$RootDir/$ParentName/$LocalesDir/$CurrentName.$Culture$Extension"),
-        Parse("$RootDir/$AnchorName/$LocalesDir/$CurrentName.$Culture$Extension"),
         Parse("$RootDir/$AnchorName/$LocalesDir/$Culture$Extension"),
+    ];
+
+    /// <summary>The paths a host's folder reads by unless a setting states others: a folder's culture file directly inside the host's folder, which is itself the host's <c>.locales</c> root, and then the path every source reads, which wins where both stand for one anchor.</summary>
+    public static IReadOnlyList<LocalePath> HostDefaults { get; } =
+    [
+        Parse("$RootDir/$AnchorName/$Culture$Extension"),
+        .. Defaults,
     ];
 
     private LocalePath(string text, IReadOnlyList<LocalePathPart> parts)

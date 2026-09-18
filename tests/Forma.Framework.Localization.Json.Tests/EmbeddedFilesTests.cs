@@ -2,7 +2,6 @@ namespace Forma.Framework.Localization.Json.Tests;
 
 using Forma.Framework.Localization.Json.Tests.Fixtures;
 using Forma.Framework.Localization.Json.Tests.Fixtures.Grouped;
-using Forma.Framework.Localization.Json.Tests.Fixtures.Locales;
 using Forma.Tests.Localization.Rooted;
 using Forma.Tests.Localization.Rooted.Bars;
 
@@ -14,7 +13,7 @@ public sealed class EmbeddedFilesTests
     public sealed class Layout
     {
         [Fact]
-        public void Should_read_the_file_named_for_the_folder_from_inside_it()
+        public void Should_read_the_file_in_the_folders_own_locales_folder()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -24,21 +23,7 @@ public sealed class EmbeddedFilesTests
             var localized = strings["Save"];
 
             // Assert
-            Assert.Equal("grouped file inside", localized.Value);
-        }
-
-        [Fact]
-        public void Should_read_the_file_named_for_the_folder_from_beside_it()
-        {
-            // Arrange
-            using var culture = new CultureScope("es");
-            var strings = CreateLocale<GroupedFirst>();
-
-            // Act
-            var localized = strings["Save"];
-
-            // Assert
-            Assert.Equal("grouped file beside", localized.Value);
+            Assert.Equal("folder file", localized.Value);
         }
 
         [Fact]
@@ -52,7 +37,7 @@ public sealed class EmbeddedFilesTests
             var localized = strings["Save"];
 
             // Assert
-            Assert.Equal("grouped file beside", localized.Value);
+            Assert.Equal("folder file", localized.Value);
         }
     }
 
@@ -146,7 +131,7 @@ public sealed class EmbeddedFilesTests
     public sealed class Precedence
     {
         [Fact]
-        public void Should_prefer_the_file_named_for_the_type_over_the_folders_file()
+        public void Should_prefer_the_file_in_the_types_own_folder_over_the_parent_folders_file()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -170,52 +155,7 @@ public sealed class EmbeddedFilesTests
             var localized = strings["Open"];
 
             // Assert
-            Assert.Equal("grouped file inside", localized.Value);
-        }
-    }
-
-    public sealed class Locales
-    {
-        [Fact]
-        public void Should_read_the_folders_file_inside_its_locales_folder()
-        {
-            // Arrange
-            using var culture = new CultureScope("he");
-            var strings = CreateLocale<DottedWidget>();
-
-            // Act
-            var localized = strings["Open"];
-
-            // Assert
-            Assert.Equal("folder file inside .locales", localized.Value);
-        }
-
-        [Fact]
-        public void Should_prefer_the_culture_file_inside_the_folders_locales_folder_over_the_folders_file()
-        {
-            // Arrange
-            using var culture = new CultureScope("he");
-            var strings = CreateLocale<DottedWidget>();
-
-            // Act
-            var localized = strings["Save"];
-
-            // Assert
-            Assert.Equal("culture file inside .locales", localized.Value);
-        }
-
-        [Fact]
-        public void Should_prefer_the_types_file_inside_its_parents_locales_folder_over_the_folders_files()
-        {
-            // Arrange
-            using var culture = new CultureScope("he");
-            var strings = CreateLocale<DottedWidget>();
-
-            // Act
-            var localized = strings["Close"];
-
-            // Assert
-            Assert.Equal("type file inside the parent's .locales", localized.Value);
+            Assert.Equal("folder file", localized.Value);
         }
     }
 
@@ -236,7 +176,7 @@ public sealed class EmbeddedFilesTests
         }
 
         [Fact]
-        public void Should_read_the_file_named_for_an_assembly_whose_root_namespace_differs()
+        public void Should_read_the_file_named_for_the_assembly_by_a_path_its_settings_name()
         {
             // Arrange
             using var culture = new CultureScope("he");

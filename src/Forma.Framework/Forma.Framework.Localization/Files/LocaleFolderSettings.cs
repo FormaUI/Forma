@@ -8,7 +8,9 @@ namespace Forma.Framework.Localization.Files;
 internal sealed record LocaleFolderSettings(string Folder, int Depth, string LocalesDir, IReadOnlyList<LocalePath> Paths)
 {
     /// <summary>The settings a source applies when no <c>.locali.json</c> says otherwise.</summary>
-    public static LocaleFolderSettings Default { get; } = new(string.Empty, 0, LocaliSettings.DefaultLocalesDir, LocalePath.Defaults);
+    /// <param name="paths">The paths the source reads by default.</param>
+    public static LocaleFolderSettings CreateDefault(IReadOnlyList<LocalePath> paths)
+        => new(string.Empty, 0, LocaliSettings.DefaultLocalesDir, paths);
 
     /// <summary>These settings with a nearer file's keys laid over them, a key the file leaves out keeping its value here.</summary>
     /// <param name="folder">The folder the nearer file sits in.</param>

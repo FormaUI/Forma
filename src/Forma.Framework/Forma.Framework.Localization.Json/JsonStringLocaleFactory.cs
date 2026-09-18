@@ -57,7 +57,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     {
         ArgumentNullException.ThrowIfNull(resourceSource);
 
-        // A closed generic carries its arguments in FullName; the open definition names the file.
+        // A closed generic carries its arguments in FullName; the open definition names the type its files are read for.
         var source = resourceSource.IsConstructedGenericType ? resourceSource.GetGenericTypeDefinition() : resourceSource;
         var assembly = source.Assembly;
         var assemblyName = assembly.GetName().Name ?? string.Empty;
@@ -85,7 +85,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     private static string TrimPrefix(string value, string prefix)
         => value.StartsWith(prefix, StringComparison.Ordinal) ? value[prefix.Length..] : value;
 
-    // Nested types arrive as Outer+Inner and generics as Name`1; neither shape appears in a file name.
+    // Nested types arrive as Outer+Inner and generics as Name`1; neither shape appears in the name a file stands for.
     private static string NormalizeTypeName(string typeName)
     {
         var segments = typeName.Replace('+', '.').Split('.');

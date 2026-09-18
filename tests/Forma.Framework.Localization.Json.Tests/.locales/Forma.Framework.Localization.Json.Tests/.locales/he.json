@@ -1,0 +1,9 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Fixtures.HostOverridden": {
+    "Save": "root file",
+    "Cancel": "root file",
+    "Delete": "root file",
+    "Export": "added"
+  }
+}

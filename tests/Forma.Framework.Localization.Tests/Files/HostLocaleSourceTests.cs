@@ -19,6 +19,63 @@ public sealed class HostLocaleSourceTests
         return fullPath;
     }
 
+    private static LocaleSection CreateToolbarSection(string value)
+        => CreateSections(("Toolbar", CreateEntries(("Bold", value))));
+
+    public sealed class Layouts
+    {
+        [Fact]
+        public void Should_read_a_folders_culture_file_directly_inside_the_hosts_folder()
+        {
+            // Arrange
+            using var folder = new TempDirectory();
+            var format = new FakeLocaleFileFormat();
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the host's root"));
+
+            // Act
+            var entries = Read(folder, format);
+
+            // Assert
+            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "the host's root")], entries);
+        }
+
+        [Fact]
+        public void Should_read_a_folders_own_locales_folder_as_every_source_does()
+        {
+            // Arrange
+            using var folder = new TempDirectory();
+            var format = new FakeLocaleFileFormat();
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the folder's own"));
+
+            // Act
+            var entries = Read(folder, format);
+
+            // Assert
+            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "the folder's own")], entries);
+        }
+
+        [Fact]
+        public void Should_let_a_folders_own_locales_folder_win_where_both_layouts_stand_for_it()
+        {
+            // Arrange
+            using var folder = new TempDirectory();
+            var format = new FakeLocaleFileFormat();
+            var rootFile = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the host's root"));
+            var ownFile = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the folder's own"));
+
+            // Act
+            var entries = Read(folder, format);
+
+            // Assert
+            Assert.Equal(
+                [
+                    new LocaleSourceEntry(rootFile, "Toolbar", "Bold", "the host's root"),
+                    new LocaleSourceEntry(ownFile, "Toolbar", "Bold", "the folder's own"),
+                ],
+                entries);
+        }
+    }
+
     public sealed class HiddenNames
     {
         [Fact]
@@ -27,14 +84,14 @@ public sealed class HostLocaleSourceTests
             // Arrange
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
-            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/Toolbar.he.fake", CreateEntries(("Bold", "hidden folder")));
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("hidden folder"));
             File.SetAttributes(Path.GetDirectoryName(fullPath)!, FileAttributes.Directory | FileAttributes.Hidden);
 
             // Act
             var entries = Read(folder, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry(fullPath, string.Empty, "Bold", "hidden folder")], entries);
+            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "hidden folder")], entries);
         }
 
         [Fact]
@@ -45,13 +102,13 @@ public sealed class HostLocaleSourceTests
             var settingsPath = folder.Write("Contoso.Widgets/.locali.json", """{ "rootDir": "Strings" }""");
             File.SetAttributes(settingsPath, FileAttributes.Hidden);
             var format = new FakeLocaleFileFormat();
-            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Strings/Bars/Toolbar.he.fake", CreateEntries(("Bold", "beneath the root dir")));
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Strings/Bars/.locales/he.fake", CreateToolbarSection("beneath the root dir"));
 
             // Act
             var entries = Read(folder, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry(fullPath, string.Empty, "Bold", "beneath the root dir")], entries);
+            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "beneath the root dir")], entries);
         }
     }
 
@@ -62,10 +119,10 @@ public sealed class HostLocaleSourceTests
         {
             // Arrange
             using var folder = new TempDirectory();
-            folder.Write(".locali.json", """{ "paths": ["$RootDir/$AnchorName/$LocalesDir/$Culture$Extension"] }""");
+            folder.Write(".locali.json", """{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }""");
             var format = new FakeLocaleFileFormat();
-            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateSections(("Toolbar", CreateEntries(("Bold", "the host's form")))));
-            WriteFile(folder, format, "Contoso.Widgets/Bars.he.fake", CreateSections(("Toolbar", CreateEntries(("Bold", "a default form")))));
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars.he.fake", CreateToolbarSection("the host's form"));
+            WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("a default form"));
 
             // Act
             var entries = Read(folder, format);
@@ -81,7 +138,7 @@ public sealed class HostLocaleSourceTests
             using var folder = new TempDirectory();
             folder.Write("Fabrikam.Gadgets/.locali.json", """{ "rootDir": "Strings" }""");
             var format = new FakeLocaleFileFormat();
-            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars.he.fake", CreateSections(("Toolbar", CreateEntries(("Bold", "default root")))));
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("default root"));
 
             // Act
             var entries = Read(folder, format);

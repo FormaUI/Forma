@@ -1,0 +1,11 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "GroupedFirst": {
+    "Save": "folder file",
+    "Open": "folder file"
+  },
+  "GroupedSecond": {
+    "Save": "folder file",
+    "Open": "folder file"
+  }
+}

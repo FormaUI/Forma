@@ -1,20 +1,17 @@
 namespace Forma.Framework.Localization.Json.Tests.Fixtures;
 
-/// <summary>Hebrew and Spanish files sitting beside the type, which is the default layout.</summary>
+/// <summary>Hebrew and Spanish files in the <c>.locales</c> folder of the type's own folder, the default layout.</summary>
 public sealed class Colocated;
 
 /// <summary>No translation file in any culture.</summary>
 public sealed class Unlocalized;
 
-/// <summary>Generic type, to prove the arity is dropped from the file name.</summary>
+/// <summary>Generic type, to prove the arity is dropped from the name its files are read for.</summary>
 /// <typeparam name="TValue">Unused; present only to make the type generic.</typeparam>
 public sealed class GenericArity<TValue>;
 
-/// <summary>Files reached through the configured resources folder rather than from beside the type.</summary>
+/// <summary>Files reached through the path a settings file in another folder names.</summary>
 public sealed class PathScoped;
-
-/// <summary>A culture file kept out of a satellite, so it stays in the main assembly.</summary>
-public sealed class MainAssembly;
 
 /// <summary>A translation carrying a plural expression.</summary>
 public sealed class Pluralized;
@@ -37,13 +34,13 @@ public sealed class MismatchedCulture;
 /// <summary>A file whose value is null, meaning the translation is deliberately the key.</summary>
 public sealed class NullValued;
 
-/// <summary>A file beside the type whose entries the host's files override, one file shape per key.</summary>
+/// <summary>An embedded file whose entries the host's files override, one host file per key.</summary>
 public sealed class HostOverridden;
 
-/// <summary>No file beside the type; the host's files alone localize it.</summary>
+/// <summary>No embedded file; the host's files alone localize it.</summary>
 public sealed class HostLocalized;
 
-/// <summary>A file beside the type whose entry a host file in a <c>.locales</c> folder overrides, a form the assembly does not use.</summary>
+/// <summary>An embedded file whose entry a host file lying directly in the type's folder overrides, a form the assembly does not use.</summary>
 public sealed class HostDotted;
 
 /// <summary>A host file carrying no metadata entry.</summary>

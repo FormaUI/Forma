@@ -20,6 +20,10 @@ public sealed class HostLocaleSource(string path, ILocaleFileFormat format) : Lo
     protected override char FolderSeparator
         => Path.AltDirectorySeparatorChar;
 
+    /// <inheritdoc />
+    protected override IReadOnlyList<LocalePath> DefaultPaths
+        => LocalePath.HostDefaults;
+
     // Names are compared as the file system the host most likely runs on compares them.
     /// <inheritdoc />
     protected override StringComparison NameComparison

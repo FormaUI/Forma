@@ -1,0 +1,4 @@
+{
+  // Files here sit beside the types they localize, the one form the build moves into a satellite assembly.
+  "paths": ["$RootDir/$AnchorName.$Culture$Extension"]
+}

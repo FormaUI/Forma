@@ -1,0 +1,7 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "HostOverridden": {
+    "Cancel": "parent folder file",
+    "Delete": "parent folder file"
+  }
+}

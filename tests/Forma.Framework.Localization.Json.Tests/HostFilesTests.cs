@@ -26,7 +26,7 @@ public sealed class HostFilesTests
         }
 
         [Fact]
-        public void Should_prefer_the_file_named_for_the_assembly_over_the_assemblys_entry()
+        public void Should_prefer_the_roots_file_over_the_assemblys_entry()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -36,11 +36,11 @@ public sealed class HostFilesTests
             var localized = strings["Save"];
 
             // Assert
-            Assert.Equal("assembly file", localized.Value);
+            Assert.Equal("root file", localized.Value);
         }
 
         [Fact]
-        public void Should_prefer_a_file_named_for_part_of_the_namespace_over_the_assembly_file()
+        public void Should_prefer_a_parent_folders_file_over_the_roots_file()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -50,11 +50,11 @@ public sealed class HostFilesTests
             var localized = strings["Cancel"];
 
             // Assert
-            Assert.Equal("namespace file", localized.Value);
+            Assert.Equal("parent folder file", localized.Value);
         }
 
         [Fact]
-        public void Should_prefer_the_file_named_for_the_type_over_every_other()
+        public void Should_prefer_the_file_in_the_types_own_folder_over_every_other()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -64,7 +64,7 @@ public sealed class HostFilesTests
             var localized = strings["Delete"];
 
             // Assert
-            Assert.Equal("type file", localized.Value);
+            Assert.Equal("type folder file", localized.Value);
         }
 
         [Fact]
@@ -94,7 +94,7 @@ public sealed class HostFilesTests
             var localized = strings["Save"];
 
             // Assert
-            Assert.Equal("host file inside .locales", localized.Value);
+            Assert.Equal("flat host file", localized.Value);
         }
 
         [Fact]
@@ -118,7 +118,7 @@ public sealed class HostFilesTests
             => CreateLocale<T>(new LocalizationOptions { LocalesPath = "Hosts/Rooted" });
 
         [Fact]
-        public void Should_complete_the_types_name_from_the_root_the_hosts_settings_name()
+        public void Should_complete_the_types_name_from_the_root_namespace_the_hosts_settings_name()
         {
             // Arrange
             using var culture = new CultureScope("es");
@@ -128,11 +128,11 @@ public sealed class HostFilesTests
             var localized = strings["Open"];
 
             // Assert
-            Assert.Equal("type file under a declared root", localized.Value);
+            Assert.Equal("type folder file under a declared root namespace", localized.Value);
         }
 
         [Fact]
-        public void Should_read_the_file_named_for_the_assembly_beneath_a_root_it_does_not_name()
+        public void Should_read_the_roots_file_under_a_declared_root_namespace()
         {
             // Arrange
             using var culture = new CultureScope("es");
@@ -142,11 +142,11 @@ public sealed class HostFilesTests
             var localized = strings["Save"];
 
             // Assert
-            Assert.Equal("assembly file under a declared root", localized.Value);
+            Assert.Equal("root file under a declared root namespace", localized.Value);
         }
 
         [Fact]
-        public void Should_ignore_a_file_whose_path_does_not_meet_the_declared_root()
+        public void Should_ignore_a_file_whose_path_does_not_meet_the_declared_root_namespace()
         {
             // Arrange
             using var culture = new CultureScope("es");
@@ -187,7 +187,7 @@ public sealed class HostFilesTests
             var localized = strings["Open"];
 
             // Assert
-            Assert.Equal("type file", localized.Value);
+            Assert.Equal("type folder file", localized.Value);
         }
 
         [Fact]
@@ -201,11 +201,11 @@ public sealed class HostFilesTests
             var localized = strings["Open"];
 
             // Assert
-            Assert.Equal("type file", localized.Value);
+            Assert.Equal("type folder file", localized.Value);
         }
 
         [Fact]
-        public void Should_read_the_assemblys_file_from_inside_the_assemblys_folder()
+        public void Should_read_the_roots_file_from_the_root_itself()
         {
             // Arrange
             using var culture = new CultureScope("es");
@@ -215,11 +215,11 @@ public sealed class HostFilesTests
             var localized = strings["Open"];
 
             // Assert
-            Assert.Equal("assembly file inside the folder", localized.Value);
+            Assert.Equal("root file in the root itself", localized.Value);
         }
 
         [Fact]
-        public void Should_read_a_namespace_file_from_inside_its_folder()
+        public void Should_read_a_parent_folders_file_from_the_folder_itself()
         {
             // Arrange
             using var culture = new CultureScope("es");
@@ -229,7 +229,7 @@ public sealed class HostFilesTests
             var localized = strings["Cancel"];
 
             // Assert
-            Assert.Equal("namespace file inside the folder", localized.Value);
+            Assert.Equal("parent folder file in the folder itself", localized.Value);
         }
 
         [Fact]
@@ -341,7 +341,7 @@ public sealed class HostFilesTests
             var thrown = Assert.Throws<LocalizationMetadataException>(() => strings["Save"]);
 
             // Assert
-            Assert.Contains("HostUnmarked.he.json", thrown.Message, StringComparison.Ordinal);
+            Assert.Contains(Path.Combine("HostUnmarked", ".locales", "he.json"), thrown.Message, StringComparison.Ordinal);
         }
 
         [Fact]

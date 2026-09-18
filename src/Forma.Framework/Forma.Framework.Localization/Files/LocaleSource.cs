@@ -22,6 +22,10 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <summary>The character written between folders in this source's names: <see cref="Path.AltDirectorySeparatorChar"/> for a file path, <c>.</c> for an embedded resource's name, which no path separator describes.</summary>
     protected abstract char FolderSeparator { get; }
 
+    /// <summary>The paths this source reads by where no <c>.locali.json</c> states others, <see cref="LocalePath.Defaults"/> unless the source reads more.</summary>
+    protected virtual IReadOnlyList<LocalePath> DefaultPaths
+        => LocalePath.Defaults;
+
     /// <summary>How this source compares names, <see cref="StringComparison.Ordinal"/> unless its store ignores case.</summary>
     protected virtual StringComparison NameComparison
         => StringComparison.Ordinal;
@@ -41,9 +45,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         var segments = typeName.Split('.');
         var rootSegments = root.RootNamespace.Split('.');
 
-        // A type outside any namespace belongs to the root, and a type starting elsewhere is read by its full name.
-        var isUnderRoot = segments.Length == 1
-            || (segments.Length > rootSegments.Length && segments.AsSpan(0, rootSegments.Length).SequenceEqual(rootSegments));
+        var isUnderRoot = IsUnderRootNamespace(segments, rootSegments);
         var anchor = isUnderRoot && segments.Length > 1 ? segments[rootSegments.Length..] : segments;
         var anchors = _anchors.GetOrAdd(new AnchorsKey(assemblyName, cultureName, !isUnderRoot), CreateAnchors);
 
@@ -77,6 +79,51 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         }
 
         return entries;
+    }
+
+    /// <summary>The full name of every type or namespace the paths in force place a file at in one culture, none when no path reads it there.</summary>
+    /// <param name="assemblyName">The name of the assembly the file belongs to.</param>
+    /// <param name="name">The file's name in the source.</param>
+    /// <param name="cultureName">The culture the file is read for.</param>
+    /// <exception cref="LocaliSettingsException">A settings file the source holds for the assembly is malformed, or the source's settings mark more than one root.</exception>
+    protected IReadOnlyList<string> GetAnchorNames(string assemblyName, string name, string cultureName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(assemblyName);
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentException.ThrowIfNullOrEmpty(cultureName);
+
+        var root = _roots.GetOrAdd(assemblyName, CreateRoot);
+        var rootSegments = root.RootNamespace.Split('.');
+        var anchorNames = new List<string>();
+
+        foreach (var isOutsideRootNamespace in (ReadOnlySpan<bool>)[false, true])
+        {
+            var anchors = _anchors.GetOrAdd(new AnchorsKey(assemblyName, cultureName, isOutsideRootNamespace), CreateAnchors);
+            foreach (var (anchorKey, names) in anchors)
+            {
+                if (!names.Any(candidate => candidate.Equals(name, NameComparison)))
+                {
+                    continue;
+                }
+
+                string[] anchor = anchorKey.Length == 0 ? [] : anchorKey.Split(AnchorKeySeparator);
+
+                // An anchor outside the root namespace is a full name, which only a type the root namespace does not start is read by.
+                if (isOutsideRootNamespace)
+                {
+                    if (anchor.Length > 0 && !IsUnderRootNamespace(anchor, rootSegments))
+                    {
+                        anchorNames.Add(string.Join('.', anchor));
+                    }
+
+                    continue;
+                }
+
+                anchorNames.Add(string.Join('.', [root.RootNamespace, .. anchor]));
+            }
+        }
+
+        return [.. anchorNames.Distinct(StringComparer.Ordinal)];
     }
 
     /// <summary>Every name the source's own store holds, settings files included, written with <see cref="FolderSeparator"/> between folders.</summary>
@@ -158,6 +205,11 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         }
     }
 
+    // A type outside any namespace belongs to the root, and a type starting elsewhere is read by its full name.
+    private static bool IsUnderRootNamespace(string[] segments, string[] rootSegments)
+        => segments.Length == 1
+            || (segments.Length > rootSegments.Length && segments.AsSpan(0, rootSegments.Length).SequenceEqual(rootSegments));
+
     // A project or solution file stands for the folder it sits in.
     private static bool IsProjectOrSolutionFile(string name)
     {
@@ -223,7 +275,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
                 $"'{GetDisplayName(first.Name)}' and '{GetDisplayName(second.Name)}' each mark a root for '{assemblyName}'; one settings file must sit above both.");
         }
 
-        var rootSettings = LocaleFolderSettings.Default;
+        var rootSettings = LocaleFolderSettings.CreateDefault(DefaultPaths);
         foreach (var (folder, name) in sharedFiles)
         {
             rootSettings = rootSettings.Apply(folder, ReadSettings(name));
