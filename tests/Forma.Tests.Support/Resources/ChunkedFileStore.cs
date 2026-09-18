@@ -18,7 +18,7 @@ public sealed class ChunkedFileStore(int chunkSize = 4) : IFileStore
 
         while (await content.Stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false) > 0)
         {
-            await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+            await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
         }
 
         return new ResourceInfo($"/stored/{content.Name}") { Size = content.Size };

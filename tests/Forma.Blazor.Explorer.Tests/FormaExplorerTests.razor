@@ -2092,8 +2092,9 @@
             Assert.Empty(cut.FindAll(".forma-explorer-spinner"));
         }
 
-        [Fact]
-        public void Should_ignore_a_second_load_while_the_first_page_is_still_arriving()
+        // A press turned away renders nothing, so its task, not a render, says it has settled.
+        [Fact(Timeout = 10_000)]
+        public async Task Should_ignore_a_second_load_while_the_first_page_is_still_arriving()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2107,28 +2108,31 @@
                 new ImageResourceInfo("https://example.com/f.jpg")
             ];
             var pending = new TaskCompletionSource();
+            var requested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var pages = new List<int>();
             var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))"
                                                 PageSize="2"
                                                 Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })"
-                                                OnPageChanged="@(page => { pages.Add(page); return pending.Task; })" />);
+                                                OnPageChanged="@(page => { pages.Add(page); requested.TrySetResult(); return pending.Task; })" />);
 
             // Act - a second press lands while the host is still fetching the first
             var contentArea = cut.FindComponent<FormaExplorerContentArea>().Instance;
             var first = cut.InvokeAsync(contentArea.HandleReachedAsync);
             var second = cut.InvokeAsync(contentArea.HandleReachedAsync);
+            await requested.Task;
+            await second;
 
-            // Assert - the guard turns the second press away, so it settles while the first is still parked
-            cut.WaitForState(() => second.IsCompleted);
-            cut.WaitForAssertion(() => Assert.Equal([2], pages));
+            // Assert - the guard turned the second press away while the first was still parked
+            Assert.Multiple(
+                () => Assert.False(first.IsCompleted),
+                () => Assert.Equal([2], pages));
 
             // Act
             pending.SetResult();
-            cut.WaitForState(() => first.IsCompleted);
-            var third = cut.InvokeAsync(contentArea.HandleReachedAsync);
+            await first;
+            await cut.InvokeAsync(contentArea.HandleReachedAsync);
 
             // Assert
-            cut.WaitForState(() => third.IsCompleted);
             Assert.Equal([2, 3], pages);
         }
 
