@@ -7,7 +7,7 @@ description: The component authoring standard — the file set a component is an
 
 ## Component file layout
 
-A component lives in the components assembly under a category, where a category names a UI role such as bars, feedback, inputs or navigation, and is a file set: `FormaX.razor` for markup only, with `@namespace` first; `FormaX.razor.cs` for all component logic; `FormaX.razor.css` for isolated CSS with a banner; and a section per culture in the category's locale files, `{Category}.he.json` in the category's folder, when the component invents user-facing text.
+A component lives in the components assembly under a category, where a category names a UI role such as bars, feedback, inputs or navigation, and is a file set: `FormaX.razor` for markup only, with `@namespace` first; `FormaX.razor.cs` for all component logic; `FormaX.razor.css` for isolated CSS with a banner; and a section in each of the category's locale files, one per culture in the `.locales` folder inside the category's folder, `.locales/he.json`, when the component invents user-facing text.
 
 - Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
 - Do give a component a category of its own, as an explorer or an editor has, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.

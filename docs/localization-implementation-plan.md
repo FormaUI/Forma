@@ -6,7 +6,8 @@ beside it, which reads the same settings file and resolves files through the sam
 
 ## Status
 
-Steps 1 to 4 are built. Steps 5 to 7 are not.
+Steps 1 to 4, 6 and 7 are built. Step 5 is built in part: the linter reads every file as the
+runtime does, and three of its rules are not written yet.
 
 ## Steps
 
@@ -165,24 +166,47 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    **Gate:** the linter's tests for each rule and for a project using `.locales` paths, and
    the linter over `Forma.slnx` reporting nothing.
 
-6. **The repository takes one form.** Every locale file in this repository moves to the one form
-   the repository chooses, the repository's `.locali.json` states that form as its paths so the
-   linter holds every future file to it, and each project's embedding item reaches the files where
-   they now sit.
+   Built in part, together with step 6. The linter takes each file's name from the build's own
+   naming targets, a `LogicalName` and a satellite's culture included, rather than rebuilding it
+   from the folder, serves the `.locali.json` files a project embeds to the walk beside its locale
+   files, and reads a culture from a file named for the culture alone as well as from one whose
+   name ends in it. A file no path in force places is reported under LOC0112, naming the anchors a
+   file stands for as the runtime's own source places it, so this repository's `.locali.json`
+   leaves LOC0112 out for the one fixture whose folder's settings leave it unread on purpose. The
+   other three rules are still to write.
 
-   The form is chosen at this step. The recommendation is
-   `$RootDir/$AnchorName/$LocalesDir/$CurrentName.$Culture$Extension`: the files sit in the
-   folder they serve, and every editor tab still names what the file is for, where `he.json` in every folder
-   would not.
+6. **One form, the library's default.** Every source reads
+   `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension` unless a setting states otherwise, every
+   locale file in this repository moves to it, and each project's embedding item reaches the files
+   where they now sit.
 
    **Gate:** the suite green, the linter reporting nothing, and the Showcase walked in every
    culture it routes, including the composer's and the explorer's pages, whose strings come from
    the Pro packages and the AddOn.
 
+   ✅ Built. Departures from what this step planned:
+
+   - **The form is the library's default, not a repository setting.** The files sit in the
+     folder they serve, named for the culture alone, and every source reads that form without a
+     `.locali.json`, so this repository states no paths of its own. The forms the library read
+     before are no longer defaults; a project keeping one states it.
+   - **A host reads two forms.** The host's folder is itself a folder of locale files, so beside
+     the default it reads a folder's file lying directly in it, the outer form speaking for the
+     host's root and the inner one for its folder alone, the inner one winning where both stand for
+     one anchor.
+   - **Files that shared a folder merged.** Where a folder held a file for its category and files
+     for single types, they became one file per culture with a section per type.
+   - **The satellite form keeps a fixture.** A file whose name ends in its culture is the one form
+     the build moves into a satellite assembly, so a fixture folder's own settings read it beside
+     its type, once kept in the assembly and once in the satellite.
+
 7. **Documentation.** The localization README's account of how a file is found becomes the
    paths, the JSON backend's README follows, and `repository-structure.md`, the
    `forma-localizing` skill and the localization test project's README describe the form the
    repository uses. The linter's README gains the runtime's keys and the two rules.
+
+   ✅ Built with step 6. The fixture README moved beside the JSON test project whose fixtures it
+   describes.
 
 ## Deliberately out of scope
 
@@ -193,4 +217,6 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 
 ## Open
 
-Nothing beyond the form step 6 chooses.
+Step 5's three remaining rules: two files of one source standing for one anchor, a nested
+`.locali.json` naming `rootNamespace` or `rootDir`, and a `rootDir` climbing past the project's
+root namespace.

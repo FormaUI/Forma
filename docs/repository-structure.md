@@ -41,13 +41,14 @@ Components/{Category}/
 ├── FormaX.razor          # markup
 ├── FormaX.razor.cs       # logic
 ├── FormaX.razor.css      # isolated stylesheet
-├── FormaX.he.json        # its locale file, when the component invents text
-└── FormaX.es.json
+└── .locales/             # the category's locale files, when a component invents text
+    ├── he.json
+    └── es.json
 ```
 
 Every component derives from one of three bases in `src/Forma.Blazor/Components/`: `FormaElementBase` for a component a host places, `FormaInputBase<TValue>` for a form input, `FormaComponentBase` for a part that only lives inside its owner. `component-foundations-design.md` is the design.
 
-The library ships three cultures: `en` as the source language, `he` and `es`. A category's locale pair is `{Category}.he.json` and `{Category}.es.json` inside its folder, a section per component keyed by the English source text, with a component in a nested folder sectioned under that folder's name. The sibling repository `Forma.Locali` ships `locali`, which checks locale files against the `L[...]` call sites that key them.
+The library ships three cultures: `en` as the source language, `he` and `es`. A category's locale pair is `.locales/he.json` and `.locales/es.json` inside its folder, a section per component keyed by the English source text, with a component in a nested folder sectioned under that folder's name. The sibling repository `Forma.Locali` ships `locali`, which checks locale files against the `L[...]` call sites that key them.
 
 Interop lives in interop assemblies, never in `Forma.Blazor`:
 

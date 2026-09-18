@@ -1,8 +1,8 @@
 # Forma.Framework.Localization.Json
 
 The JSON backend for `Forma.Framework.Localization`: it implements `IStringLocaleFactory` and
-`IStringLocale<T>` over JSON locale files that sit beside the types they localize and ship
-inside their assembly, with the host's own files laid over them. A lookup resolves the right file
+`IStringLocale<T>` over JSON locale files that sit in a `.locales` folder beside the types they
+localize and ship inside their assembly, with the host's own files laid over them. A lookup resolves the right file
 from the type asking and the culture in force, and a key with no translation renders as written.
 
 ## Install and register
@@ -38,31 +38,35 @@ which `Forma.Framework.Localization` documents.
 
 ## Getting started
 
-Put a file beside the type it localizes, named for the type and the culture, and embed it:
+Put a file for each culture in the `.locales` folder beside the type it localizes, named for the
+culture, and embed it:
 
 ```text
-UploadStatus.cs
-UploadStatus.es.json
-UploadStatus.he.json
+Uploads/UploadStatus.cs
+Uploads/.locales/es.json
+Uploads/.locales/he.json
 ```
 
 ```xml
 <ItemGroup>
-    <EmbeddedResource Include="**\*.json" WithCulture="false" />
+    <EmbeddedResource Include="**\*.json" Exclude="$(DefaultItemExcludes)" />
 </ItemGroup>
 ```
 
-`WithCulture="false"` keeps the file in the assembly itself; without it the build moves the file
-into the culture's satellite assembly, which is read as well.
+The SDK embeds no JSON by default, so the item names the files. A file named for its culture alone
+stays in the assembly itself rather than moving into a satellite assembly.
 
-A file is a JSON object keyed by the source text, opening with the metadata entry:
+A file is a JSON object whose sections complete the type's name from its folder, keyed by the
+source text and opening with the metadata entry:
 
 ```json
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "Saved": "Guardado",
-  "Stored {Stored} of {Total}.": "Se guardaron {Stored} de {Total}.",
-  "[$ plural; one: # file; other: # files; $]": "[$ plural; one: # archivo; other: # archivos; $]"
+  "UploadStatus": {
+    "Saved": "Guardado",
+    "Stored {Stored} of {Total}.": "Se guardaron {Stored} de {Total}.",
+    "[$ plural; one: # file; other: # files; $]": "[$ plural; one: # archivo; other: # archivos; $]"
+  }
 }
 ```
 
@@ -97,9 +101,9 @@ file, and the source language needs none. A text value is a translation, a neste
 section completing a type's name, and `null` says the translation is deliberately the source text
 itself. Comments and trailing commas are allowed.
 
-`Forma.Framework.Localization` owns the layout: a locale resolves a base name from the type's full
-name, and a translation sits in the file named for the type or in a file named for a namespace
-above it, embedded in the assembly or laid in the host's `.locales` folder. It also defines the
+`Forma.Framework.Localization` owns the layout: a type's translations are read from the root down
+to the type, each folder's from the `.locales` folder inside it unless a `.locali.json` states
+other paths, embedded in the assembly or laid in the host's `.locales` folder. It also defines the
 `$shared` section any node may hold, the `$tools` entry reserved for tools, and the `$$` escape
 for a key shaped like a reserved entry. This backend adds the format alone: the extension is
 `.json`, and the metadata entry is the `$localization` property.

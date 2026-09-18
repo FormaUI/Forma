@@ -156,11 +156,12 @@ strings, inject `IStringLocale<T>` and look a string up by its English text:
 <p>@L["Stored {stored} of {total}.", stored, total]</p>
 ```
 
-Translations sit in `MyPage.he.json` beside the type, or in a file named for the folder with a section
-per type, keyed by that same English text. A key with no translation renders as written, so a page
-reads correctly before any translation exists.
+Translations sit in the `.locales` folder beside the type, one file per culture named for the
+culture, `.locales/he.json`, with a section per type keyed by that same English text. A key with no
+translation renders as written, so a page reads correctly before any translation exists.
 A host rewords a string the library ships, or adds a language it never had, by laying its own files
-in a `.locales` folder beside the application, named for the assembly and the type they localize.
+in a `.locales` folder beside the application, in a folder named for the assembly laid out as the
+assembly's own files are.
 
 [`Forma.Framework.Localization`](src/Forma.Framework/Forma.Framework.Localization/README.md)
 documents the contract, the ways to fill a hole, the plural syntax, and how a file is found.

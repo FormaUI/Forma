@@ -6,8 +6,8 @@ layout locale files follow, and the plural rules a localized format is evaluated
 source text itself, so a key with no translation renders as written.
 
 The package is backend-agnostic. A backend registers `IStringLocaleFactory` and `IStringLocale<T>`;
-`Forma.Framework.Localization.Json` is the backend Forma ships, reading JSON files embedded beside
-the types they localize.
+`Forma.Framework.Localization.Json` is the backend Forma ships, reading JSON files embedded in the
+assembly whose types they localize.
 
 ## Install
 
@@ -205,40 +205,47 @@ so a host can survey what is untranslated.
 `LocalesPath` names the folder the host keeps its own locale files in, `.locales` beside the
 application by default, resolved against the application's base directory when relative; empty
 reads none. Where an assembly keeps its own embedded files is no option's to say: the paths a
-`.locali.json` beside them states place them.
+`.locali.json` among them states place them.
 
 ## How a file is found
 
-A locale resolves a **base name** from the type's full name, which every `LocalizedText` reports
-as `SearchedLocation`:
+A type's translations are read from the assembly's root down to the type. The root is where the
+assembly's files begin, the project folder its root namespace stands for; each folder beneath it
+is one segment of the type's full name, and each such name, the type's own included, is an
+**anchor** a file can stand for. Generic arity and nested-type markers are dropped: `Grid<T>`
+reads as `Grid`, `Outer+Inner` as `Outer.Inner`, and a closed generic reads through its open
+definition. A type whose namespace does not start with the root namespace is read by its full
+name, and a type outside any namespace belongs to the root. Every `LocalizedText` reports the
+type's full name as `SearchedLocation`, qualified by the assembly's name for a type outside any
+namespace.
 
-| Type's full name | Base name |
-| --- | --- |
-| Starts with the assembly name | `{assembly}.{remainder}` |
-| Contains a dot but a different root | `{full name}` |
-| No dot at all | `{assembly}.{name}` |
-
-Generic arity and nested-type markers are dropped: `Grid<T>` reads `Grid.he.json`, `Outer+Inner`
-reads `Outer.Inner.he.json`, and a closed generic resolves through its open definition.
-
-Every file is named for one culture, and a type's translations sit in the file named for the type
-or in a file named for a namespace above it, where sections complete the rest of the name. Walking
-down from the assembly, each of these, shown with the JSON backend's extension, localizes
-`FormaToolbar` in `Forma.Blazor.Components.Bars`:
+Every folder keeps its translations in a `.locales` folder of its own, one file per culture named
+for the culture alone, and sections complete the rest of the type's name. Each of these, shown
+with the JSON backend's extension, localizes `FormaToolbar` in `Forma.Blazor.Components.Bars`:
 
 ```text
-Forma.Blazor.es.json                    { "Components.Bars.FormaToolbar": { "Bold": "Negrita" } }
-Components/Bars.es.json                 { "FormaToolbar": { "Bold": "Negrita" } }
-Components/Bars/Bars.es.json            { "FormaToolbar": { "Bold": "Negrita" } }
-Components/Bars/FormaToolbar.es.json    { "Bold": "Negrita" }
+.locales/es.json                                { "Components.Bars.FormaToolbar": { "Bold": "Negrita" } }
+Components/.locales/es.json                     { "Bars.FormaToolbar": { "Bold": "Negrita" } }
+Components/Bars/.locales/es.json                { "FormaToolbar": { "Bold": "Negrita" } }
+Components/Bars/FormaToolbar/.locales/es.json   { "Bold": "Negrita" }
 ```
 
-A file named for a folder sits beside that folder or inside it under the folder's own name, and
-the two are one and the same; the assembly's file sits at the project root under the assembly's
-name. A section's key may spell several segments at once or one at a time, so
+A section's key may spell several segments at once or one at a time, so
 `"Components": { "Bars.FormaToolbar": { … } }` reads the same as the first line. A file holds only
-the keys it changes: a file closer to the type wins over one higher up, and the type's own file
-over every other.
+the keys it changes, and a file closer to the type wins over one higher up.
+
+That layout is a path written in tokens, `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension`,
+and a `.locali.json` states other paths for the files beneath it. A project keeping each file
+beside the folder or type it localizes, as `Components/Bars.es.json` or
+`Components/Bars/FormaToolbar.es.json`, writes:
+
+```json
+{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }
+```
+
+`localesDir` renames the `.locales` folder beneath it, and the outermost `.locali.json` an
+assembly embeds marks its root, naming the root namespace with `rootNamespace` where it is not
+the assembly's name and the folder its files begin in with `rootDir`.
 
 Any node may hold a `$shared` section, whose entries every type reached through that node gets.
 Here the assembly's file shares `Bold` and `Italic` with every type it reaches, `Composer` shares
@@ -272,35 +279,42 @@ with exactly one `$` dropped and never interpreted again, so `$$shared` is the o
 `$shared`. Any other key starting with `$`, such as `$`, `$5 off`, `$USD` or `$camelCase`, is
 ordinary text and needs no escape. Translation values are never read for the shape.
 
-Within a culture, an embedded file is read from the main assembly first and then from that
-culture's satellite assembly, where it is named without its culture.
+A file named for its culture alone stays in the assembly itself. The build moves a file whose name
+ends in its culture, such as `Bars.es.json`, into that culture's satellite assembly unless its item
+sets `WithCulture="false"`, and the runtime reads it from there under the same name.
 
 ## Locale files from the host
 
 A host lays its own files in a `.locales` folder beside the application, to reword a string an
 assembly ships or to add a language it never had. `LocalesPath` names the folder.
 
-The folder is laid out as an assembly's own files are, under a folder named for the assembly, so
-each of these, shown with the JSON backend's extension, localizes `FormaComposer` in
-`Forma.Blazor.Components.Composer`:
+The folder holds a folder for each assembly, which is that assembly's root, laid out as the
+assembly's own files are. Each of these, shown with the JSON backend's extension, localizes
+`FormaComposer` in `Forma.Blazor.Components.Composer`:
 
 ```text
-.locales/Forma.Blazor.es.json                                     { "Components.Composer.FormaComposer": { "Bold": "Negrita" } }
-.locales/Forma.Blazor/Components.es.json                          { "Composer.FormaComposer": { "Bold": "Negrita" } }
-.locales/Forma.Blazor/Components/Composer/FormaComposer.es.json   { "Bold": "Negrita" }
+.locales/Forma.Blazor/.locales/es.json                                     { "Components.Composer.FormaComposer": { "Bold": "Negrita" } }
+.locales/Forma.Blazor/Components/.locales/es.json                          { "Composer.FormaComposer": { "Bold": "Negrita" } }
+.locales/Forma.Blazor/Components/Composer/FormaComposer/.locales/es.json   { "Bold": "Negrita" }
 ```
+
+The host's folder is itself a folder of locale files, so a host file may also sit directly in the
+folder it localizes: `.locales/Forma.Blazor/es.json` is the root's file and
+`.locales/Forma.Blazor/Components/es.json` the `Components` folder's. The outer form speaks for the
+host's root as a whole and the inner one for the folder alone, and where both stand for one
+folder, the file in the folder's own `.locales` wins.
 
 The same precedence applies, and a host's entry wins over the assembly's own at the same position,
 so a host file holds only the keys it changes and every other key keeps the assembly's translation.
 
 A host file completes a type's name from the assembly's name, so the host's layout follows the
-namespace rather than the embedding. For an assembly whose root namespace
-is not its name, a `.locali.json` in the assembly's folder names the root, as
-`{ "rootNamespace": "Forma.Framework.Resources.Office" }`, and the path and sections then complete
-the name from there: beside that file,
-`.locales/Forma.AddOns.Resources.Office/OfficeResourceProvider.es.json` localizes
-`Forma.Framework.Resources.Office.OfficeResourceProvider`. Where no settings file names a root, a
-type whose namespace does not start with the assembly's name is laid out by its full name.
+namespace rather than the embedding. For an assembly whose root namespace is not its name, a
+`.locali.json` in the assembly's folder names the root, as
+`{ "rootNamespace": "Forma.Framework.Resources.Office" }`, and the paths and sections then complete
+the name from there: beneath that file,
+`.locales/Forma.AddOns.Resources.Office/.locales/es.json` with an `OfficeResourceProvider` section
+localizes `Forma.Framework.Resources.Office.OfficeResourceProvider`. Where no settings file names a
+root, a type whose namespace does not start with the assembly's name is laid out by its full name.
 
 The folder has to reach the application's output, and a project marks it as content copied to the
 output directory, web project or not: the SDK's own globs pass over a folder whose name starts
@@ -319,7 +333,7 @@ checks files by the rule the runtime reads them with:
 
 | Type | What it is |
 | --- | --- |
-| `LocaleSource` | Where locale files are read from: `Read(assemblyName, typeName, cultureName)` reads a type's files from its root down to the type, placing each file the store lists by the paths in force where it sits, over a store a derived class lists and opens. |
+| `LocaleSource` | Where locale files are read from: `Read(assemblyName, typeName, cultureName)` reads a type's files from its root down to the type, placing each file the store lists by the paths in force where it sits, over a store a derived class lists and opens, and a derived class asks `GetAnchorNames` which anchors a file stands for. |
 | `EmbeddedLocaleSource` | The files embedded in one assembly, or in a culture's satellite assembly. |
 | `HostLocaleSource` | The folder a host keeps its own locale files in. |
 | `ILocaleFileFormat` | A format files are written in: its `Extension`, and how one file is `Read` into a `LocaleFile`. |
@@ -330,7 +344,7 @@ checks files by the rule the runtime reads them with:
 | `LocalizationSchema` | The shape of the metadata entry every file carries: its `Marker`, `CurrentVersion`, `RequiredFields`, `OptionalFields`, the reserved keys, and `IsReservedShape` and `Unescape` for keys. |
 | `LocalizationMetadata` | `Validate` checks that a file's metadata entry lets the file be read. |
 | `LocalizationMetadataException` | Thrown when a file's metadata does not let it be read. |
-| `LocalePath` | The path of a locale file written in tokens, which `Parse` reads; `Defaults` are the paths a source reads by unless a setting states others. |
+| `LocalePath` | The path of a locale file written in tokens, which `Parse` reads; `Defaults` are the paths a source reads by unless a setting states others, and `HostDefaults` the ones a host's folder reads by. |
 | `LocalePathBinder` | Builds a file's name from a path for an anchor, `GetName`, in one source and one culture. |
 | `LocalePathMatcher` | Reads the anchor a file's name stands for under a path, `TryGetAnchor`, in one source and one culture. |
 | `LocalePathValues` | What a path's tokens stand for apart from the anchor: the assembly, the root, the folder of locale files, the culture and the extension. |

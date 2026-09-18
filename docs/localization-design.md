@@ -19,8 +19,9 @@ assembly and be found, and a host laying its own files over a library's has to g
 forms the library used.
 
 Forma answers this with one mechanism: an ordered list of **paths** written in tokens,
-which every source reads its files by. The forms that exist today are the default paths,
-and a project or a host that wants another states it.
+which every source reads its files by, and one canonical form as the default: every folder keeps
+its files in a `.locales` folder of its own, one per culture. A project or a host that wants
+another form states it.
 
 ## Decision summary
 
@@ -28,14 +29,16 @@ and a project or a host that wants another states it.
   A file's anchor is read from its name against the paths in force, and from nothing else.
 - Embedded and host files are read by paths in the same tokens. A source knows every
   file it holds, read once, so finding a type's files never guesses at names.
-- The default paths are every form the library has read so far plus the `.locales` forms, so no
-  file moves for this to work.
+- The default path is one form, `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension`: a
+  folder's own `.locales` folder, holding a file per culture named for the culture alone. A host's
+  folder also reads a folder's file lying directly in it, since that folder is itself a folder of
+  locale files.
 - Configuration lives in `.locali.json` alone, the one settings file the runtime and the linter
   both read. It is embedded in an assembly beside the assembly's locale files, or laid in the
   host's folder, and applies to everything beneath it. A locale file's own `$localization` entry
   carries facts about the file and nothing that steers the loader.
 - The outermost `.locali.json` marks a source's root. A source with none is rooted where its
-  names begin, so an unconfigured project reads as it always has.
+  names begin, so a project laid out by the default needs no settings file.
 - A folder of locale files is `.locales` by default and configurable. The leading dot keeps it
   apart from a folder a project already names `Locales`, on disk and in embedded resource names.
 - Everything is the library's own. A project embeds its files as it always has; the library adds
@@ -96,20 +99,26 @@ outright, since no anchor token stands for it.
 
 ### The default paths
 
-In the order a source applies them at one anchor:
+Every source reads one path unless a setting states others:
 
 | Path | Reads |
 |---|---|
-| `$RootDir/$AnchorName.$Culture$Extension` | `Components/Bars.he.json`, a type's own `Components/Bars/FormaToolbar.he.json`, and at the root `he.json` beside the project file or a host's `Forma.Blazor.he.json` beside the assembly's folder |
-| `$RootDir/$AnchorName/$CurrentName.$Culture$Extension` | `Components/Bars/Bars.he.json` |
-| `$RootDir/$AssemblyName.$Culture$Extension` | A file named for the assembly at the root, whatever the root namespace |
-| `$RootDir/$ParentName/$LocalesDir/$CurrentName.$Culture$Extension` | `Components/.locales/Bars.he.json` |
-| `$RootDir/$AnchorName/$LocalesDir/$CurrentName.$Culture$Extension` | `Components/Bars/.locales/Bars.he.json` |
-| `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension` | `Components/Bars/.locales/he.json`, and `.locales/he.json` at the root |
+| `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension` | `Components/Bars/.locales/he.json`, a type's own `Components/Bars/FormaToolbar/.locales/he.json`, and `.locales/he.json` at the root |
 
-The first three are the forms files have always been read by. Two paths naming the same file
-at one anchor, as the first two do at the root, read it once. Paths a setting declares replace the
-default ones whole, so a project that wants one canonical form states that form alone.
+A host's folder reads two, in the order it applies them at one anchor:
+
+| Path | Reads |
+|---|---|
+| `$RootDir/$AnchorName/$Culture$Extension` | `Forma.Blazor/Components/Bars/he.json`, and `Forma.Blazor/he.json` at the root |
+| `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension` | `Forma.Blazor/Components/Bars/.locales/he.json`, and `Forma.Blazor/.locales/he.json` at the root |
+
+The host's folder is itself a folder of locale files, so the first path reads a file lying
+directly in the folder it translates, and the second the file in that folder's own `.locales`,
+which is the path every source reads. The two say different things: the outer form speaks for the
+host's root as a whole, and the inner one holds translations for its folder alone, so the inner one
+wins where both stand for one anchor. Paths a setting declares replace the default ones whole, so a
+project that wants another form states it, as
+`$RootDir/$AnchorName.$Culture$Extension` reads `Components/Bars.he.json` beside its folder.
 
 ### Embedded files and resource names
 
@@ -160,8 +169,8 @@ settings file naming no `rootDir` leaves names beginning where the file sits, as
 
 A source with no `.locali.json` is rooted where its names begin: for embedded files, at the
 project's root namespace the build puts at the front of every resource name; for a host's, at the
-assembly's folder inside the host's folder. The root namespace is the assembly's name. This is
-what the library has always done, so an unconfigured project reads as before.
+assembly's folder inside the host's folder. The root namespace is the assembly's name, so a
+project whose root namespace is its name needs no settings file.
 
 A type whose name does not start with the root namespace is read by its full name, with the root
 namespace left empty: every anchor is a prefix of the full name, which is what a file laid out by
@@ -236,7 +245,9 @@ and the linter reports the pair.
 ## What goes
 
 `ResourcesPath` retires: a path names any folder a project gathers its files under. The fixed
-walk over file names retires with it, since the default paths read every file that walk read.
+walk over file names retires with it, and so do the forms it read as defaults: a file beside its
+folder, inside it under the folder's own name, named for the type, or named for the assembly. A
+project keeping one of them states it as a path.
 `RootNamespace` leaves a file's metadata for `.locali.json`, and with it the walk over every
 namespace prefix a host file might have declared.
 
@@ -245,10 +256,10 @@ namespace prefix a host file might have declared.
 | # | Question | Decision |
 |---|---|---|
 | L1 | Is a file's placement a build setting or a library feature? | A library feature. A project embeds its files as it always has, and the paths are read at runtime, so every consumer gets it by referencing the package. |
-| L2 | One canonical form or many? | One mechanism, with the forms that exist as its defaults. A project or a host that wants one form states that form. |
+| L2 | One canonical form or many? | One canonical form, a folder's own `.locales` folder with a file per culture, as every source's default, and one mechanism for any other form a project or a host states. A host's folder reads a folder's file lying directly in it as well, since that folder is itself a folder of locale files: the outer form speaks for the host's root, the inner one for its folder alone, and the inner one wins. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
 | L4 | Where do settings live? | In `.locali.json` alone, beside the linter's, embedded in an assembly or laid in the host's folder. A locale file's metadata describes the file and steers nothing, so there is one place to look and one file the runtime and the linter read. |
-| L5 | What marks a source's root? | Its outermost `.locali.json`; a source with none is rooted where its names begin, as it always was. |
+| L5 | What marks a source's root? | Its outermost `.locali.json`; a source with none is rooted where its names begin. |
 | L6 | Do a host's paths have to match the library's? | No. Host entries are applied after every embedded entry whatever paths either uses, and a host's `.locali.json` states its own paths. |
-| L7 | Can a file be named for an assembly whose root namespace is not its name? | Yes. A path names `$AssemblyName` outright, and the default paths carry one that does. |
+| L7 | Can a file be named for an assembly whose root namespace is not its name? | Yes. A path names `$AssemblyName` outright, which a settings file states where a project keeps such a file. |
 | L8 | Are the anchor tokens namespaces? | No. An anchor's segments are parts of a type's full name, which take in containing types and the type itself, and the library relates a folder to a name only through the paths. The tokens say *name*. |

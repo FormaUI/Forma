@@ -122,8 +122,8 @@ src/Forma.Blazor.Pro/Forma.Blazor.Composer/
 ├── FormaComposer.razor                    # engine shell, editor switcher
 ├── FormaComposer.razor.cs
 ├── FormaComposer.razor.css
-├── Composer.he.json                       # one file per category; the project is the category
-├── Composer.es.json
+├── .locales/he.json                       # one file per culture for the category; the project is the category
+├── .locales/es.json
 ├── ComposerChrome.cs                      # maximized and selection-bar state
 ├── ComposerKeyBindingCatalogExtensions.cs # the key map as input routes
 ├── ComposerOptions.cs
@@ -284,8 +284,8 @@ src/Forma.AddOns/Forma.AddOns.Composer.Plugins.Explorer/  # namespace …Compose
 ├── FormaComposerExplorerDialog.razor      # the host's stored files through FormaExplorer
 ├── FormaComposerExplorerDialog.razor.cs
 ├── FormaComposerExplorerDialog.razor.css
-├── Plugins.he.json                        # the dialog's strings, and the plugin's command
-├── Plugins.es.json
+├── .locales/he.json                       # the dialog's strings, and the plugin's command
+├── .locales/es.json
 └── README.md
 ```
 
