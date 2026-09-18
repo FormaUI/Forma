@@ -102,9 +102,9 @@ section completing a type's name, and `null` says the translation is deliberatel
 itself. Comments and trailing commas are allowed.
 
 `Forma.Framework.Localization` owns the layout: a type's translations are read from the root down
-to the type, each folder's from the `.locales` folder inside it unless a `.locali.json` states
-other paths, embedded in the assembly or laid in the host's `.locales` folder. It also defines the
-`$shared` section any node may hold, the `$tools` entry reserved for tools, and the `$$` escape
+to the type, each folder's from the `.locales` folder inside it unless the assembly's `.locale.json`
+states other paths, embedded in the assembly or laid in the host's `.locales` folder. It also
+defines the `$shared` section any node may hold and the `$$` escape
 for a key shaped like a reserved entry. This backend adds the format alone: the extension is
 `.json`, and the metadata entry is the `$localization` property.
 
@@ -118,8 +118,8 @@ for a key shaped like a reserved entry. This backend adds the format alone: the 
 ```
 
 The value is a list of `Name: value;` fields. `SchemaVersion` and `Culture` are required, and a
-file may add `Author` and `Revision`. Where a file belongs is the business of the `.locali.json`
-settings above it, never of the entry. The entry is removed before lookup, so it
+file may add `Author` and `Revision`. Where a file belongs is the business of the assembly's `.locale.json`,
+never of the entry. The entry is removed before lookup, so it
 appears in neither a key search nor `GetAllStrings`.
 
 Reading a file without the entry throws `LocalizationMetadataException`, as does a malformed

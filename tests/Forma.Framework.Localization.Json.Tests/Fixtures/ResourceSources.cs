@@ -10,7 +10,7 @@ public sealed class Unlocalized;
 /// <typeparam name="TValue">Unused; present only to make the type generic.</typeparam>
 public sealed class GenericArity<TValue>;
 
-/// <summary>Files reached through the path a settings file in another folder names.</summary>
+/// <summary>Files reached through the path a config file in another folder names.</summary>
 public sealed class PathScoped;
 
 /// <summary>A translation carrying a plural expression.</summary>

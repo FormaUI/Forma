@@ -18,9 +18,6 @@ public static class LocalizationSchema
     /// <summary>The key of the section whose entries every type reached through its node shares, unless a section of its own says otherwise.</summary>
     public const string SharedKey = "$shared";
 
-    /// <summary>The key of the entry reserved for tools, each keeping its own entries under keys naming it, which the runtime reads nothing from.</summary>
-    public const string ToolsKey = "$tools";
-
     /// <summary>The prefix that keeps a key shaped like a reserved entry as text; one dollar sign is dropped and the rest is read as written.</summary>
     public const string EscapePrefix = "$$";
 

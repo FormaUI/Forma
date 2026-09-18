@@ -35,7 +35,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
         return new LocaleFile(ReadSection(document.RootElement, fileName));
     }
 
-    // The reserved names are read as written, before any escape: the marker is the file's own, the entry reserved for tools is left to them whatever it holds, and the shared section's entries go to everything beneath the node. Every other key is read as the text behind its escape; an object is a section, text or null a translation.
+    // The reserved names are read as written, before any escape: the marker is the file's own, and the shared section's entries go to everything beneath the node. Every other key is read as the text behind its escape; an object is a section, text or null a translation.
     private static LocaleSection ReadSection(JsonElement node, string fileName)
     {
         var sections = new List<KeyValuePair<string, LocaleSection>>();
@@ -44,7 +44,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
 
         foreach (var property in node.EnumerateObject())
         {
-            if (property.Name == LocalizationSchema.ToolsKey || (property.Name == LocalizationSchema.Marker && property.Value.ValueKind == JsonValueKind.String))
+            if (property.Name == LocalizationSchema.Marker && property.Value.ValueKind == JsonValueKind.String)
             {
                 continue;
             }
@@ -95,7 +95,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
             return LocalizationSchema.Unescape(name);
         }
 
-        if (LocalizationSchema.IsReservedShape(name) && name is not (LocalizationSchema.Marker or LocalizationSchema.SharedKey or LocalizationSchema.ToolsKey))
+        if (LocalizationSchema.IsReservedShape(name) && name is not (LocalizationSchema.Marker or LocalizationSchema.SharedKey))
         {
             throw new JsonException($"'{fileName}' names '{name}', which is shaped like a reserved entry the runtime does not define.");
         }

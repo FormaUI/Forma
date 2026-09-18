@@ -21,8 +21,8 @@ public sealed class FakeLocaleSource : LocaleSource
     /// <summary>The locale files, each keyed by its name.</summary>
     public Dictionary<string, LocaleFile> Files => _format.Files;
 
-    /// <summary>The settings files, each keyed by its name.</summary>
-    public Dictionary<string, LocaliSettings> Settings { get; } = new(StringComparer.Ordinal);
+    /// <summary>The config files, each keyed by its name.</summary>
+    public Dictionary<string, LocaleConfig> Configs { get; } = new(StringComparer.Ordinal);
 
     /// <summary>The names opened so far, in order.</summary>
     public List<string> Requests { get; } = [];
@@ -40,7 +40,7 @@ public sealed class FakeLocaleSource : LocaleSource
 
     /// <inheritdoc />
     protected override IEnumerable<string> EnumerateNames()
-        => Files.Keys.Concat(Settings.Keys);
+        => Files.Keys.Concat(Configs.Keys);
 
     /// <inheritdoc />
     protected override string GetDefaultRootDir(string assemblyName)
@@ -55,6 +55,6 @@ public sealed class FakeLocaleSource : LocaleSource
     }
 
     /// <inheritdoc />
-    protected override LocaliSettings ReadSettings(string name)
-        => Settings[name];
+    protected override LocaleConfig ReadConfig(string name)
+        => Configs[name];
 }

@@ -12,5 +12,5 @@ public class LocalizationOptions
     public bool RequireMatchingLocalization { get; init; }
 
     /// <summary>Folder holding the host's own locale files, resolved against the application's base directory when relative; empty to read none.</summary>
-    public string LocalesPath { get; init; } = LocaliSettings.DefaultLocalesDir;
+    public string LocalesPath { get; init; } = LocaleConfig.DefaultLocalesDir;
 }

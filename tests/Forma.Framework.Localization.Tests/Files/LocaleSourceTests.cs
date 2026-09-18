@@ -7,7 +7,7 @@ public sealed class LocaleSourceTests
     private const string Assembly = "Contoso.Widgets";
     private const string Toolbar = "Contoso.Widgets.Bars.Toolbar";
 
-    // A form other than the default, which a settings file names to read files beside the folder they complete.
+    // A form other than the default, which a config file names to read files beside the folder they complete.
     private static readonly LocalePath Beside = LocalePath.Parse("$RootDir/$AnchorName.$Culture$Extension");
 
     [Fact]
@@ -40,7 +40,7 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
-    public void Should_read_the_form_its_settings_name_in_place_of_the_default()
+    public void Should_read_the_form_its_config_names_in_place_of_the_default()
     {
         // Arrange
         var source = new FakeLocaleSource
@@ -50,9 +50,9 @@ public sealed class LocaleSourceTests
                 ["Contoso.Widgets/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "beside the folder"))))),
                 ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "the default form"))))),
             },
-            Settings =
+            Configs =
             {
-                ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty with { Paths = [Beside] },
+                ["Contoso.Widgets/.locale.json"] = LocaleConfig.Empty with { Paths = [Beside] },
             },
         };
 
@@ -64,7 +64,7 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
-    public void Should_complete_a_types_name_from_the_root_its_settings_declare()
+    public void Should_complete_a_types_name_from_the_root_its_config_declares()
     {
         // Arrange
         var source = new FakeLocaleSource
@@ -73,9 +73,9 @@ public sealed class LocaleSourceTests
             {
                 ["Contoso.Widgets/Toolbar/.locales/he.fake"] = new(CreateEntries(("Bold", "declared root"))),
             },
-            Settings =
+            Configs =
             {
-                ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty with { RootNamespace = "Contoso.Widgets.Bars" },
+                ["Contoso.Widgets/.locale.json"] = LocaleConfig.Empty with { RootNamespace = "Contoso.Widgets.Bars" },
             },
         };
 
@@ -96,9 +96,9 @@ public sealed class LocaleSourceTests
             {
                 ["Contoso.Widgets/Bars/Toolbar/.locales/he.fake"] = new(CreateEntries(("Bold", "wrong root"))),
             },
-            Settings =
+            Configs =
             {
-                ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty with { RootNamespace = "Contoso.Widgets.Bars" },
+                ["Contoso.Widgets/.locale.json"] = LocaleConfig.Empty with { RootNamespace = "Contoso.Widgets.Bars" },
             },
         };
 
@@ -259,9 +259,9 @@ public sealed class LocaleSourceTests
             {
                 ["Contoso.Widgets.he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "root file"))))),
             },
-            Settings =
+            Configs =
             {
-                ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty with { Paths = [Beside, LocalePath.Parse("$RootDir/$AnchorName/$CurrentName.$Culture$Extension")] },
+                ["Contoso.Widgets/.locale.json"] = LocaleConfig.Empty with { Paths = [Beside, LocalePath.Parse("$RootDir/$AnchorName/$CurrentName.$Culture$Extension")] },
             },
         };
 
@@ -270,36 +270,6 @@ public sealed class LocaleSourceTests
 
         // Assert
         Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.he.fake", "Bars.Toolbar", "Bold", "root file")], entries);
-    }
-
-    [Fact]
-    public void Should_read_a_farther_folders_files_before_a_nearer_ones_at_one_anchor()
-    {
-        // Arrange — both files stand for Bars: one beside the folder under the root's paths, one inside it under the folder's own.
-        var source = new FakeLocaleSource
-        {
-            Files =
-            {
-                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "nearer"))))),
-                ["Contoso.Widgets/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "farther"))))),
-            },
-            Settings =
-            {
-                ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty with { Paths = [Beside] },
-                ["Contoso.Widgets/Bars/.locali.json"] = LocaliSettings.Empty with { Paths = LocalePath.Defaults },
-            },
-        };
-
-        // Act
-        var entries = source.Read(Assembly, Toolbar, "he");
-
-        // Assert
-        Assert.Equal(
-            [
-                new("Contoso.Widgets/Bars.he.fake", "Toolbar", "Bold", "farther"),
-                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Bold", "nearer"),
-            ],
-            entries);
     }
 
     [Fact]
@@ -367,7 +337,7 @@ public sealed class LocaleSourceTests
         var source = new FakeLocaleSource
         {
             Files = { [Name] = new(CreateEntries(("Bold", "any"))) },
-            Settings = { ["Contoso.Widgets/.locali.json"] = LocaliSettings.Empty with { RootNamespace = "Contoso.Widgets" } },
+            Configs = { ["Contoso.Widgets/.locale.json"] = LocaleConfig.Empty with { RootNamespace = "Contoso.Widgets" } },
         };
 
         // Act

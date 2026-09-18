@@ -2,12 +2,12 @@
 
 The plan for building the paths [the localization design](localization-design.md) states, and the
 record of what has landed. Two repositories take part: this one, and the `Forma.Locali` linter
-beside it, which reads the same settings file and resolves files through the same types.
+beside it, which reads the same config file and resolves files through the same types.
 
 ## Status
 
-Steps 1 to 4, 6 and 7 are built. Step 5 is built in part: the linter reads every file as the
-runtime does, and three of its rules are not written yet.
+Steps 1 to 4 and 6 to 8 are built. Step 5 is built in part: the linter reads every file as the
+runtime does, and two of its rules are not written yet.
 
 ## Steps
 
@@ -21,7 +21,7 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    source and a tool both use: a path parsed from text, rejecting an unknown token or a path
    without `$Culture` and `$Extension`; the value of every token for an anchor; the name a path
    gives an anchor, as a file path and as a resource name; the anchor a path reads from a name; and
-   the default paths. The settings a `.locali.json` carries are read into a record by a reader in
+   the default paths. The settings a `.locale.json` carries are read into a record by a reader in
    the same package, which passes over keys it does not own, so the linter's `ignore` and
    `exclude` never trouble it, and holds `rootDir` as written for a source to resolve. A locale
    file's `$localization` gains nothing: it describes the file, and the paths are the settings
@@ -48,7 +48,7 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    `$ParentName` and `$CurrentName` say so, beside `$RootDir` for where names begin. The schema
    version is untouched.
 
-2. **The linter reads the runtime's keys.** In `Forma.Locali`, `.locali.json` accepts
+2. **The linter reads the runtime's keys.** In `Forma.Locali`, `.locale.json` accepts
    `rootNamespace`, `rootDir`, `localesDir` and `paths` rather than reporting them as unknown,
    holds each to the runtime's own rule, and reports a malformed path through step 1's parser, at
    the token that is wrong. The linter does not yet resolve files by the paths.
@@ -60,7 +60,7 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    the linter would have to keep in step, so the two can never refuse different files. Two
    departures from what this step planned:
 
-   - **A nested `.locali.json` naming a `rootNamespace` is not reported yet.** The linter walks
+   - **A nested `.locale.json` naming a `rootNamespace` is not reported yet.** The linter walks
      ancestors the way an `.editorconfig` is read and does not yet know where a source begins, so
      which file is outermost *within a source* cannot be told apart from which is outermost in a
      run. The rule moves to step 5, where the linter resolves files through a source.
@@ -68,9 +68,9 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 
 3. **Sources read by paths.** `LocaleSource` holds the names its store lists, read once, and
    answers a type from the paths in force rather than from a fixed walk: roots found in the order
-   the design gives, nested `.locali.json` files applied to the anchors beneath them, and entries
+   the design gives, nested `.locale.json` files applied to the anchors beneath them, and entries
    applied in the design's order. `RootNamespace` leaves a file's metadata: a host names an
-   assembly's root in the `.locali.json` of that assembly's folder, and the fixtures that declared
+   assembly's root in the `.locale.json` of that assembly's folder, and the fixtures that declared
    one move to that.
    `EmbeddedLocaleSource` lists an assembly's resource names and its satellites';
    `HostLocaleSource` walks its folder with nothing skipped. A `rootDir` is resolved here: over
@@ -79,51 +79,51 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 
    **Gate:** every existing localization test passes unchanged. New fixtures and tests for each
    `.locales` form embedded and in the host folder; a file named for an assembly whose root
-   namespace differs; a root named by an embedded `.locali.json`, by its name alone and by its
+   namespace differs; a root named by an embedded `.locale.json`, by its name alone and by its
    `rootNamespace`; a `rootDir` naming a folder, a project file and a solution file, and one
-   climbing past the root; a nested `.locali.json` changing the paths beneath it; a host file overriding
+   climbing past the root; a nested `.locale.json` changing the paths beneath it; a host file overriding
    an embedded entry from a form the assembly does not use;
-   and a `.locales` folder and a `.locali.json` found in the host's folder, run on Linux as well
+   and a `.locales` folder and a `.locale.json` found in the host's folder, run on Linux as well
    as Windows.
 
    ✅ Built. A source lists its names once, and places each file at the anchor it stands for
    through the matcher, so a type's files are looked up rather than guessed at. An embedded source
    lists an assembly's resource names, plus a culture's satellite names under the names they carry
    in the assembly. A host source lists every file beneath its folder. The build was checked to
-   embed `.locali.json` and `.locales` files under the names the design gives them. The fixtures
+   embed `.locale.json` and `.locales` files under the names the design gives them. The fixtures
    that proved a root through embedded settings live in the test support assembly, whose root
-   namespace is not its name. A settings file embedded in the JSON test assembly would re-root
+   namespace is not its name. A config file embedded in the JSON test assembly would re-root
    every other fixture there. The existing tests pass unchanged, except where they wrote the
-   retired root or its reader: the declared-root tests now declare it in a settings file, a file's
+   retired root or its reader: the declared-root tests now declare it in a config file, a file's
    record lost its second argument, the tests that read a file's root were dropped, and the
    metadata tests call the check by its new name. Rules this step settled, and departures from
    what it planned:
 
-   - **The host's own `.locali.json` applies to every assembly.** A file in the host's folder
+   - **The host's own `.locale.json` applies to every assembly.** A file in the host's folder
      itself puts its `paths` and `localesDir` in force beneath every assembly's folder. The root
      of an assembly's files is still marked inside that assembly's folder, so that file's
      `rootNamespace` and `rootDir` are not read.
    - **Only the file marking the root names it.** A nested file's `rootNamespace` and `rootDir`
-     are passed over. Two settings files with none above them are refused as two roots.
+     are passed over. Two config files with none above them are refused as two roots.
    - **A root is always a folder below where names start.** A host's `rootDir` that reaches the
-     host's folder or leaves it is refused. An embedded one climbing past the settings file's own
+     host's folder or leaves it is refused. An embedded one climbing past the config file's own
      name lands on the root namespace. The runtime cannot see where a project's root namespace
      ends, and the linter can.
    - **An embedded type outside the root namespace is spelled from the start.** The build puts a
      namespace at the front of every resource name, so such a type's files begin with its own
      namespace rather than beneath `$RootDir`. A host's are still read beneath it. A type outside
      any namespace belongs to the root.
-   - **One anchor's files can fall under different settings files.** They are read farther
+   - **One anchor's files can fall under different config files.** They are read farther
      folder first, and each folder's files in the order of its paths. A file above the root,
      such as one beside a host's assembly folder, is read under the root's settings.
-   - **`ResourcesPath` applies only where no settings file marks the root**, until step 4
+   - **`ResourcesPath` applies only where no config file marks the root**, until step 4
      removes it.
    - **A file still declaring `RootNamespace` is read.** The field is passed over like any other
      this build does not know, and the linter's unknown-field rule reports it.
      `LocalizationMetadata.Read` became `Validate`, since nothing is left for it to return.
    - **The linter's source follows the new members** so its build and tests stay green. It still
      names files by its fixed forms, so this repository's `.locali.json` leaves LOC0112 out for
-     the fixtures only a settings file places.
+     the fixtures only a config file places.
    - **The host tests ran on Linux as well as Windows**, on Ubuntu under WSL, where a leading dot
      hides a folder from .NET. On both systems the hidden-name tests fail when the source skips
      hidden entries, so they guard the rule rather than pass by accident.
@@ -137,8 +137,8 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    `fr` from the renamed folder, walked in a browser.
 
    ✅ Built. A project names the folder its own files sit in through the paths of a
-   `.locali.json` beside them, so the tests that set `ResourcesPath` read the same fixture through
-   a settings file under `Resources/`. The JSON test assembly gained an empty root settings file
+   `.locale.json` beside them, so the tests that set `ResourcesPath` read the same fixture through
+   a config file under `Resources/`. The JSON test assembly gained an empty root config file
    for that, which keeps the one under `Resources/` nested. Departures from what this step
    planned:
 
@@ -157,10 +157,10 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 5. **The linter resolves by the paths.** In `Forma.Locali`, a project's files are served under
    the names the build embeds them by and read through step 3's source, so the runtime and the
    linter place every file the same way. Four rules join: a file no path in force places, two files of one source standing
-   for one anchor, a `.locali.json` naming a `rootNamespace` or `rootDir` that the runtime passes
+   for one anchor, a `.locale.json` naming a `rootNamespace` or `rootDir` that the runtime passes
    over, which only the file marking the root may name, and a `rootDir` climbing past the
    project's root namespace, which the runtime cannot see and reads as the root namespace itself.
-   This repository's `.locali.json` drops the LOC0112 entries for the fixtures a settings file
+   This repository's `.locali.json` drops the LOC0112 entries for the fixtures a config file
    places.
 
    **Gate:** the linter's tests for each rule and for a project using `.locales` paths, and
@@ -168,7 +168,7 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 
    Built in part, together with step 6. The linter takes each file's name from the build's own
    naming targets, a `LogicalName` and a satellite's culture included, rather than rebuilding it
-   from the folder, serves the `.locali.json` files a project embeds to the walk beside its locale
+   from the folder, serves the `.locale.json` files a project embeds to the walk beside its locale
    files, and reads a culture from a file named for the culture alone as well as from one whose
    name ends in it. A file no path in force places is reported under LOC0112, naming the anchors a
    file stands for as the runtime's own source places it, so this repository's `.locali.json`
@@ -188,7 +188,7 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 
    - **The form is the library's default, not a repository setting.** The files sit in the
      folder they serve, named for the culture alone, and every source reads that form without a
-     `.locali.json`, so this repository states no paths of its own. The forms the library read
+     `.locale.json`, so this repository states no paths of its own. The forms the library read
      before are no longer defaults; a project keeping one states it.
    - **A host reads two forms.** The host's folder is itself a folder of locale files, so beside
      the default it reads a folder's file lying directly in it, the outer form speaking for the
@@ -208,6 +208,27 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    ✅ Built with step 6. The fixture README moved beside the JSON test project whose fixtures it
    describes.
 
+8. **Two files, one concern each.** The runtime's configuration moves out of `.locali.json` into
+   `.locale.json`, read by `LocaleConfig`: one optional file per assembly, embedded with its files
+   or laid in its folder inside the host's, applying to every file of the assembly and cascading
+   nowhere, since it is a runtime file the assembly ships. `.locali.json` keeps the linter's
+   `ignore` and `exclude` alone and its `.editorconfig`-style cascade, and the runtime never
+   reads it. `$tools` leaves the locale files, so a file holds translations and nothing a tool
+   reads; a per-file exception is written in `.locali.json`.
+
+   **Gate:** the suites green in both repositories, the linter reporting nothing over
+   `Forma.slnx`, and a `.locale.json` the runtime would refuse reported where it is written.
+
+   ✅ Built. Departures from what the earlier steps had settled:
+
+   - **No nested config.** A second `.locale.json` among an assembly's files is refused rather
+     than scoped beneath its folder, and a file in the host's folder itself configures no
+     assembly. A folder read differently states that in the assembly's paths. The nested rule
+     step 5 planned to write is gone with it.
+   - **The linter reads `.locale.json` as a file of its own.** LOC0022 reports one the runtime
+     would refuse, a key the runtime does not read, or two files for one assembly. LOC0114
+     retires with `$tools`.
+
 ## Deliberately out of scope
 
 - **Watching the host's folder for changes.** A source reads its folder once, as it does today.
@@ -217,6 +238,5 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 
 ## Open
 
-Step 5's three remaining rules: two files of one source standing for one anchor, a nested
-`.locali.json` naming `rootNamespace` or `rootDir`, and a `rootDir` climbing past the project's
-root namespace.
+Step 5's two remaining rules: two files of one source standing for one anchor, and a `rootDir`
+climbing past the project's root namespace.

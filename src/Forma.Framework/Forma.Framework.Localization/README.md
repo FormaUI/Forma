@@ -204,8 +204,8 @@ so a host can survey what is untranslated.
 
 `LocalesPath` names the folder the host keeps its own locale files in, `.locales` beside the
 application by default, resolved against the application's base directory when relative; empty
-reads none. Where an assembly keeps its own embedded files is no option's to say: the paths a
-`.locali.json` among them states place them.
+reads none. Where an assembly keeps its own embedded files is no option's to say: the paths its
+`.locale.json` states place them.
 
 ## How a file is found
 
@@ -235,17 +235,19 @@ A section's key may spell several segments at once or one at a time, so
 the keys it changes, and a file closer to the type wins over one higher up.
 
 That layout is a path written in tokens, `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension`,
-and a `.locali.json` states other paths for the files beneath it. A project keeping each file
-beside the folder or type it localizes, as `Components/Bars.es.json` or
+and an assembly states other paths in a `.locale.json` embedded with its files. A project keeping
+each file beside the folder or type it localizes, as `Components/Bars.es.json` or
 `Components/Bars/FormaToolbar.es.json`, writes:
 
 ```json
 { "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }
 ```
 
-`localesDir` renames the `.locales` folder beneath it, and the outermost `.locali.json` an
-assembly embeds marks its root, naming the root namespace with `rootNamespace` where it is not
-the assembly's name and the folder its files begin in with `rootDir`.
+`localesDir` renames the `.locales` folder, and the file marks where the assembly's files begin,
+naming the root namespace with `rootNamespace` where it is not the assembly's name and the folder
+its files begin in with `rootDir`. An assembly has one such file at most, applying to every file
+it embeds, and none where the defaults serve; the file is the runtime's alone, and a tool's
+configuration never sits in it.
 
 Any node may hold a `$shared` section, whose entries every type reached through that node gets.
 Here the assembly's file shares `Bold` and `Italic` with every type it reaches, `Composer` shares
@@ -268,9 +270,6 @@ Here the assembly's file shares `Bold` and `Italic` with every type it reaches, 
 A `$shared` section holds translations alone. A type's own entry wins over a shared one, a deeper
 node's shared entry wins over a higher node's, and a file closer to the type wins over a shared
 entry higher up, as it wins over any other.
-
-`$tools` is reserved beside it for tools, each keeping its own entries under keys naming it, such
-as `"$tools": { "crowdin.id": 1 }`; the runtime reads nothing from it.
 
 A key shaped like a reserved entry, `$` followed by one lowercase word and nothing else, is the
 runtime's, and a file naming one it does not define, such as `$import`, fails to load. A doubled
@@ -309,11 +308,11 @@ so a host file holds only the keys it changes and every other key keeps the asse
 
 A host file completes a type's name from the assembly's name, so the host's layout follows the
 namespace rather than the embedding. For an assembly whose root namespace is not its name, a
-`.locali.json` in the assembly's folder names the root, as
+`.locale.json` in the assembly's folder names the root, as
 `{ "rootNamespace": "Forma.Framework.Resources.Office" }`, and the paths and sections then complete
 the name from there: beneath that file,
 `.locales/Forma.AddOns.Resources.Office/.locales/es.json` with an `OfficeResourceProvider` section
-localizes `Forma.Framework.Resources.Office.OfficeResourceProvider`. Where no settings file names a
+localizes `Forma.Framework.Resources.Office.OfficeResourceProvider`. Where no config file names a
 root, a type whose namespace does not start with the assembly's name is laid out by its full name.
 
 The folder has to reach the application's output, and a project marks it as content copied to the
@@ -348,8 +347,8 @@ checks files by the rule the runtime reads them with:
 | `LocalePathBinder` | Builds a file's name from a path for an anchor, `GetName`, in one source and one culture. |
 | `LocalePathMatcher` | Reads the anchor a file's name stands for under a path, `TryGetAnchor`, in one source and one culture. |
 | `LocalePathValues` | What a path's tokens stand for apart from the anchor: the assembly, the root, the folder of locale files, the culture and the extension. |
-| `LocaliSettings` | What a `.locali.json` file says about the files beneath it; `Read` takes the keys the runtime owns and passes over the linter's. |
-| `LocaliSettingsException` | Thrown when a settings file cannot be read or a key the runtime owns is malformed. |
+| `LocaleConfig` | What an assembly's `.locale.json` says about its files; `Read` takes the runtime's keys and passes over one it does not read. |
+| `LocaleConfigException` | Thrown when a config file cannot be read, a key is malformed, or an assembly holds more than one. |
 
 The `Forma.Framework.Localization.Parser` namespace reads the syntax inside a string:
 `LocaleExpressionParser` reads the `[$ … $]` expressions in a format and `LocaleFieldParser` the

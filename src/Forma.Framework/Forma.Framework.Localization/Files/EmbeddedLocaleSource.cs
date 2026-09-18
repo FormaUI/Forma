@@ -37,7 +37,7 @@ public sealed class EmbeddedLocaleSource(Assembly assembly, ILocaleFileFormat fo
 
     // No resource name reaches above the project's root namespace, so a root climbing past it lands there.
     /// <inheritdoc />
-    protected override string GetRootDirPastStart(string settingsName, string rootDir, string rootNamespace)
+    protected override string GetRootDirPastStart(string configName, string rootDir, string rootNamespace)
         => rootNamespace;
 
     /// <inheritdoc />

@@ -42,10 +42,6 @@ public sealed class HostLocaleSource(string path, ILocaleFileFormat format) : Lo
         => assemblyName;
 
     /// <inheritdoc />
-    protected override bool AppliesToEveryAssembly(string folder)
-        => folder.Length == 0;
-
-    /// <inheritdoc />
     protected override bool BelongsToAssembly(string folder, string assemblyName)
         => folder.Equals(assemblyName, NameComparison) || LocaleRoot.IsBeneath(assemblyName, folder, FolderSeparator, NameComparison);
 

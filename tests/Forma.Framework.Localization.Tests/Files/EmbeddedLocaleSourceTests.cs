@@ -63,10 +63,10 @@ public sealed class EmbeddedLocaleSourceTests
     public sealed class Roots
     {
         [Fact]
-        public void Should_begin_the_names_where_an_embedded_settings_file_sits()
+        public void Should_begin_the_names_where_the_embedded_config_file_sits()
         {
             // Arrange
-            var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Strings..locali.json"] = "{}" } };
+            var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Strings..locale.json"] = "{}" } };
             var format = new FakeLocaleFileFormat();
             AddFile(assembly, format, "Contoso.Widgets.Strings.Bars..locales.he.fake", CreateToolbarSection("beneath the root"));
             AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("above the root"));
@@ -79,10 +79,10 @@ public sealed class EmbeddedLocaleSourceTests
         }
 
         [Fact]
-        public void Should_count_anchors_from_the_root_namespace_the_settings_name()
+        public void Should_count_anchors_from_the_root_namespace_the_config_names()
         {
             // Arrange
-            var assembly = new FakeAssembly("Contoso.Widgets.Core") { Resources = { ["Contoso..locali.json"] = """{ "rootNamespace": "Contoso.Widgets" }""" } };
+            var assembly = new FakeAssembly("Contoso.Widgets.Core") { Resources = { ["Contoso..locale.json"] = """{ "rootNamespace": "Contoso.Widgets" }""" } };
             var format = new FakeLocaleFileFormat();
             AddFile(assembly, format, "Contoso.Bars..locales.he.fake", CreateToolbarSection("declared root"));
 
@@ -99,7 +99,7 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var assembly = new FakeAssembly("Contoso.Widgets.Core")
             {
-                Resources = { ["Contoso..locali.json"] = """{ "rootNamespace": "Contoso.Widgets", "paths": ["$RootDir/$AssemblyName.$Culture$Extension"] }""" },
+                Resources = { ["Contoso..locale.json"] = """{ "rootNamespace": "Contoso.Widgets", "paths": ["$RootDir/$AssemblyName.$Culture$Extension"] }""" },
             };
             var format = new FakeLocaleFileFormat();
             AddFile(assembly, format, "Contoso.Contoso.Widgets.Core.he.fake", CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "assembly file")))));
@@ -112,52 +112,52 @@ public sealed class EmbeddedLocaleSourceTests
         }
 
         [Fact]
-        public void Should_refuse_two_settings_files_that_each_mark_a_root()
+        public void Should_refuse_two_config_files_for_one_assembly()
         {
             // Arrange
             var assembly = new FakeAssembly(Assembly)
             {
                 Resources =
                 {
-                    ["Contoso.Widgets.Bars..locali.json"] = "{}",
-                    ["Contoso.Widgets.Menus..locali.json"] = "{}",
+                    ["Contoso.Widgets.Bars..locale.json"] = "{}",
+                    ["Contoso.Widgets.Menus..locale.json"] = "{}",
                 },
             };
 
             // Act
-            var thrown = Assert.Throws<LocaliSettingsException>(() => Read(assembly, new FakeLocaleFileFormat()));
+            var thrown = Assert.Throws<LocaleConfigException>(() => Read(assembly, new FakeLocaleFileFormat()));
 
             // Assert
             Assert.Multiple(
-                () => Assert.Contains("Contoso.Widgets.Bars..locali.json", thrown.Message, StringComparison.Ordinal),
-                () => Assert.Contains("Contoso.Widgets.Menus..locali.json", thrown.Message, StringComparison.Ordinal));
+                () => Assert.Contains("Contoso.Widgets.Bars..locale.json", thrown.Message, StringComparison.Ordinal),
+                () => Assert.Contains("Contoso.Widgets.Menus..locale.json", thrown.Message, StringComparison.Ordinal));
         }
 
         [Fact]
-        public void Should_say_which_settings_file_is_malformed()
+        public void Should_say_which_config_file_is_malformed()
         {
             // Arrange
-            var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets..locali.json"] = """{ "rootDir": "/strings" }""" } };
+            var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets..locale.json"] = """{ "rootDir": "/strings" }""" } };
 
             // Act
-            var thrown = Assert.Throws<LocaliSettingsException>(() => Read(assembly, new FakeLocaleFileFormat()));
+            var thrown = Assert.Throws<LocaleConfigException>(() => Read(assembly, new FakeLocaleFileFormat()));
 
             // Assert
-            Assert.Contains("Contoso.Widgets..locali.json", thrown.Message, StringComparison.Ordinal);
+            Assert.Contains("Contoso.Widgets..locale.json", thrown.Message, StringComparison.Ordinal);
         }
     }
 
     public sealed class RootDirs
     {
         [Theory]
-        [InlineData("Contoso.Widgets..locali.json", "Strings/Main", "Contoso.Widgets.Strings.Main.Bars..locales.he.fake")]
-        [InlineData("Contoso.Widgets.Build..locali.json", "../Contoso.Widgets.csproj", "Contoso.Widgets.Bars..locales.he.fake")]
-        [InlineData("Contoso.Widgets.Src.Core..locali.json", "../../Contoso.slnx", "Contoso.Widgets.Bars..locales.he.fake")]
-        [InlineData("Contoso.Widgets..locali.json", "./Contoso.Widgets.csproj", "Contoso.Widgets.Bars..locales.he.fake")]
-        public void Should_begin_the_names_where_the_root_dir_leads(string settingsName, string rootDir, string fileName)
+        [InlineData("Contoso.Widgets..locale.json", "Strings/Main", "Contoso.Widgets.Strings.Main.Bars..locales.he.fake")]
+        [InlineData("Contoso.Widgets.Build..locale.json", "../Contoso.Widgets.csproj", "Contoso.Widgets.Bars..locales.he.fake")]
+        [InlineData("Contoso.Widgets.Src.Core..locale.json", "../../Contoso.slnx", "Contoso.Widgets.Bars..locales.he.fake")]
+        [InlineData("Contoso.Widgets..locale.json", "./Contoso.Widgets.csproj", "Contoso.Widgets.Bars..locales.he.fake")]
+        public void Should_begin_the_names_where_the_root_dir_leads(string configName, string rootDir, string fileName)
         {
             // Arrange
-            var assembly = new FakeAssembly(Assembly) { Resources = { [settingsName] = $$"""{ "rootDir": "{{rootDir}}" }""" } };
+            var assembly = new FakeAssembly(Assembly) { Resources = { [configName] = $$"""{ "rootDir": "{{rootDir}}" }""" } };
             var format = new FakeLocaleFileFormat();
             AddFile(assembly, format, fileName, CreateToolbarSection("found"));
 
@@ -172,7 +172,7 @@ public sealed class EmbeddedLocaleSourceTests
         public void Should_begin_the_names_at_the_root_namespace_when_the_root_dir_climbs_past_it()
         {
             // Arrange
-            var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Deep.Nest..locali.json"] = """{ "rootNamespace": "Contoso.Widgets", "rootDir": "../../../.." }""" } };
+            var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Deep.Nest..locale.json"] = """{ "rootNamespace": "Contoso.Widgets", "rootDir": "../../../.." }""" } };
             var format = new FakeLocaleFileFormat();
             AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("at the root namespace"));
             AddFile(assembly, format, "Contoso.Widgets.Deep.Nest.Bars..locales.he.fake", CreateToolbarSection("where the settings sit"));
@@ -185,55 +185,11 @@ public sealed class EmbeddedLocaleSourceTests
         }
     }
 
-    public sealed class Nesting
-    {
-        private static FakeAssembly CreateNestedAssembly()
-            => new(Assembly)
-            {
-                Resources =
-                {
-                    ["Contoso.Widgets..locali.json"] = "{}",
-                    ["Contoso.Widgets.Bars..locali.json"] = """{ "localesDir": "i18n", "paths": ["$RootDir/$AnchorName/$LocalesDir/$CurrentName.$Culture$Extension"] }""",
-                },
-            };
-
-        [Fact]
-        public void Should_read_the_names_beneath_a_nested_settings_file_by_its_paths_alone()
-        {
-            // Arrange
-            var assembly = CreateNestedAssembly();
-            var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Bars.i18n.Bars.he.fake", CreateToolbarSection("nested form"));
-            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("default form"));
-
-            // Act
-            var entries = Read(assembly, format);
-
-            // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Bars.i18n.Bars.he.fake", "Toolbar", "Bold", "nested form")], entries);
-        }
-
-        [Fact]
-        public void Should_keep_the_roots_paths_outside_the_nested_folder()
-        {
-            // Arrange
-            var assembly = CreateNestedAssembly();
-            var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Menus..locales.he.fake", CreateSections(("Menu", CreateEntries(("Open", "default form")))));
-
-            // Act
-            var entries = Read(assembly, format, "Contoso.Widgets.Menus.Menu");
-
-            // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Menus..locales.he.fake", "Menu", "Open", "default form")], entries);
-        }
-    }
-
     // A file named for its culture alone never reaches a satellite, so these read a form the build moves there.
     public sealed class Satellites
     {
         private static FakeAssembly CreateAssemblyReadingBeside()
-            => new(Assembly) { Resources = { ["Contoso.Widgets..locali.json"] = """{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }""" } };
+            => new(Assembly) { Resources = { ["Contoso.Widgets..locale.json"] = """{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }""" } };
 
         [Fact]
         public void Should_read_a_satellites_file_under_its_name_with_the_culture()

@@ -1,42 +1,12 @@
 namespace Forma.Framework.Localization.Files;
 
-/// <summary>Where one assembly's files begin in a source, the root namespace their anchors are counted from, and the settings in force beneath each folder.</summary>
-/// <param name="rootDir">Where the source's names begin, written with the source's separator.</param>
-/// <param name="rootNamespace">The root namespace anchors are counted from.</param>
-/// <param name="rootSettings">The settings in force at the root, and for every name no nested settings file holds.</param>
-/// <param name="nestedSettings">The settings each nested <c>.locali.json</c> puts in force beneath its folder.</param>
-/// <param name="separator">The character written between folders in the source's names.</param>
-/// <param name="comparison">How the source compares names.</param>
-internal sealed class LocaleRoot(
-    string rootDir,
-    string rootNamespace,
-    LocaleFolderSettings rootSettings,
-    IReadOnlyList<LocaleFolderSettings> nestedSettings,
-    char separator,
-    StringComparison comparison)
+/// <summary>What one assembly's <c>.locale.json</c> puts in force in a source, or the defaults where it has none: where its files begin, the root namespace their anchors are counted from, the name of a folder of locale files, and the paths its files are read by.</summary>
+/// <param name="RootDir">Where the source's names begin, written with the source's separator.</param>
+/// <param name="RootNamespace">The root namespace anchors are counted from.</param>
+/// <param name="LocalesDir">The name <c>$LocalesDir</c> stands for.</param>
+/// <param name="Paths">The paths the assembly's files are read by.</param>
+internal sealed record LocaleRoot(string RootDir, string RootNamespace, string LocalesDir, IReadOnlyList<LocalePath> Paths)
 {
-    /// <summary>Where the source's names begin, written with the source's separator.</summary>
-    public string RootDir { get; } = rootDir;
-
-    /// <summary>The root namespace anchors are counted from.</summary>
-    public string RootNamespace { get; } = rootNamespace;
-
-    /// <summary>The settings a name is read under: the nearest nested folder's holding it, or the root's.</summary>
-    /// <param name="name">The file's name in the source.</param>
-    public LocaleFolderSettings GetSettings(string name)
-    {
-        var nearestSettings = rootSettings;
-        foreach (var folderSettings in nestedSettings)
-        {
-            if (folderSettings.Depth > nearestSettings.Depth && IsBeneath(folderSettings.Folder, name, separator, comparison))
-            {
-                nearestSettings = folderSettings;
-            }
-        }
-
-        return nearestSettings;
-    }
-
     /// <summary>Whether a name sits beneath a folder, which every name does beneath the empty one.</summary>
     /// <param name="folder">The folder, written with the separator.</param>
     /// <param name="name">The name.</param>

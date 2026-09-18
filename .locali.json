@@ -4,8 +4,12 @@
     "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0209"],
     // The test proves the metadata entry is never served, which takes looking it up by its reserved name.
     "tests/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0214"],
-    // The paths their own settings files name place these files, and the linter reads a file by the fixed forms alone.
-    "tests/Forma.Tests.Support/Localization/Rooted/**": ["LOC0112"]
+    // A page's sections word one key differently on purpose, where the same English fits two sentences.
+    "src/Forma.Blazor.Showcase/Components/Pages/Collections/.locales/he.json": ["LOC0113"],
+    "src/Forma.Blazor.Showcase/Components/Pages/Feedback/.locales/he.json": ["LOC0113"],
+    "src/Forma.Blazor.Showcase/Components/Pages/Inputs/.locales/es.json": ["LOC0113"],
+    "src/Forma.Blazor.Showcase/Components/Pages/Layout/.locales/*.json": ["LOC0113"],
+    "src/Forma.Blazor.Showcase/Components/Pages/Menus/.locales/es.json": ["LOC0113"]
   },
   // The fixtures are malformed on purpose, each proving what its test asserts.
   "exclude": ["*/Fixtures/*"]

@@ -12,7 +12,7 @@ public sealed class LocalePathTests
     private const string CultureInOwnDir = "$RootDir/$AnchorName/$LocalesDir/$Culture$Extension";
     private const string CultureInHostDir = "$RootDir/$AnchorName/$Culture$Extension";
 
-    // Every form a settings file might name, the defaults among them, so the binder and matcher agree on each.
+    // Every form a config file might name, the defaults among them, so the binder and matcher agree on each.
     private static readonly string[] Forms = [Beside, Inside, NamedForAssembly, InParentsDir, NamedInOwnDir, CultureInOwnDir, CultureInHostDir];
 
     private static readonly LocalePathValues Embedded = new("Contoso.Widgets", "Contoso.Widgets", "Contoso.Widgets", ".locales", "he", ".json");

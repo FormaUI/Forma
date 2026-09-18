@@ -159,10 +159,10 @@ public sealed class EmbeddedFilesTests
         }
     }
 
-    public sealed class Settings
+    public sealed class Configs
     {
         [Fact]
-        public void Should_read_from_the_root_an_embedded_settings_file_names()
+        public void Should_read_from_the_root_an_embedded_config_file_names()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -176,7 +176,7 @@ public sealed class EmbeddedFilesTests
         }
 
         [Fact]
-        public void Should_read_the_file_named_for_the_assembly_by_a_path_its_settings_name()
+        public void Should_read_the_file_named_for_the_assembly_by_a_path_its_config_names()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -190,21 +190,7 @@ public sealed class EmbeddedFilesTests
         }
 
         [Fact]
-        public void Should_read_a_nested_folder_by_the_paths_its_own_settings_name()
-        {
-            // Arrange
-            using var culture = new CultureScope("he");
-            var strings = CreateLocale<RootedToolbar>();
-
-            // Act
-            var localized = strings["Open"];
-
-            // Assert
-            Assert.Equal("nested folder file", localized.Value);
-        }
-
-        [Fact]
-        public void Should_not_read_a_form_the_nested_settings_leave_out()
+        public void Should_read_a_folder_beneath_a_declared_root_by_the_roots_paths()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -214,7 +200,7 @@ public sealed class EmbeddedFilesTests
             var localized = strings["Save"];
 
             // Assert
-            Assert.True(localized.ResourceNotFound);
+            Assert.Equal("folder file", localized.Value);
         }
     }
 }

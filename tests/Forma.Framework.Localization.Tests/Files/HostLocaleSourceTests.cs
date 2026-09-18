@@ -95,12 +95,12 @@ public sealed class HostLocaleSourceTests
         }
 
         [Fact]
-        public void Should_read_a_settings_file_the_system_hides()
+        public void Should_read_a_config_file_the_system_hides()
         {
             // Arrange
             using var folder = new TempDirectory();
-            var settingsPath = folder.Write("Contoso.Widgets/.locali.json", """{ "rootDir": "Strings" }""");
-            File.SetAttributes(settingsPath, FileAttributes.Hidden);
+            var configPath = folder.Write("Contoso.Widgets/.locale.json", """{ "rootDir": "Strings" }""");
+            File.SetAttributes(configPath, FileAttributes.Hidden);
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Strings/Bars/.locales/he.fake", CreateToolbarSection("beneath the root dir"));
 
@@ -112,31 +112,31 @@ public sealed class HostLocaleSourceTests
         }
     }
 
-    public sealed class Settings
+    public sealed class Configs
     {
         [Fact]
-        public void Should_apply_the_hosts_own_settings_to_every_assembly()
+        public void Should_leave_a_config_file_at_the_hosts_root_unread()
         {
-            // Arrange
+            // Arrange — a config file belongs to one assembly's folder, and one above every folder configures none.
             using var folder = new TempDirectory();
-            folder.Write(".locali.json", """{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }""");
+            folder.Write(".locale.json", """{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }""");
             var format = new FakeLocaleFileFormat();
-            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars.he.fake", CreateToolbarSection("the host's form"));
-            WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("a default form"));
+            WriteFile(folder, format, "Contoso.Widgets/Bars.he.fake", CreateToolbarSection("the form the file names"));
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the default form"));
 
             // Act
             var entries = Read(folder, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "the host's form")], entries);
+            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "the default form")], entries);
         }
 
         [Fact]
-        public void Should_leave_another_assemblys_settings_to_it()
+        public void Should_leave_another_assemblys_config_to_it()
         {
             // Arrange
             using var folder = new TempDirectory();
-            folder.Write("Fabrikam.Gadgets/.locali.json", """{ "rootDir": "Strings" }""");
+            folder.Write("Fabrikam.Gadgets/.locale.json", """{ "rootDir": "Strings" }""");
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("default root"));
 
@@ -152,10 +152,10 @@ public sealed class HostLocaleSourceTests
         {
             // Arrange
             using var folder = new TempDirectory();
-            folder.Write("Contoso.Widgets/.locali.json", """{ "rootDir": ".." }""");
+            folder.Write("Contoso.Widgets/.locale.json", """{ "rootDir": ".." }""");
 
             // Act
-            var thrown = Assert.Throws<LocaliSettingsException>(() => Read(folder, new FakeLocaleFileFormat()));
+            var thrown = Assert.Throws<LocaleConfigException>(() => Read(folder, new FakeLocaleFileFormat()));
 
             // Assert
             Assert.Contains("'..'", thrown.Message, StringComparison.Ordinal);

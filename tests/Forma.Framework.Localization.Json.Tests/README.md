@@ -25,25 +25,23 @@ named for it, so a malformed file troubles no other type. The folder name is a n
 `Contoso.Widgets`, not in the namespace its folder implies — that mismatch is the scenario. Its
 resource carries an explicit `LogicalName`, so the file's location is free.
 
-**`Fixtures/Beside/`** holds its own `.locali.json`, whose one path reads a file beside the type it
-localizes, the one form whose name ends in its culture and so the one the build moves into a
-satellite assembly.
-
-**`Resources/`** holds its own `.locali.json`, whose one path reads a file beneath the folder by the
-type's name, so `PathScoped` in `…Tests.Fixtures` has its file at `Resources/Fixtures/`. The empty
-`.locali.json` at the project root marks where the assembly's names begin, which keeps the ones
-beneath it nested settings files, in force beneath their folders alone, rather than the root.
+**`Fixtures/Beside/`** holds files beside the types they localize, the one form whose name ends in
+its culture and so the one the build moves into a satellite assembly. **`Resources/`** holds a file
+beneath a folder of its own, read by the type's name, so `PathScoped` in `…Tests.Fixtures` has its
+file at `Resources/Fixtures/`. Both forms are paths the assembly's one `.locale.json` at the
+project root states beside the default, since a config file applies to the whole assembly and
+never to one folder.
 
 ## The fixtures
 
 | Type | Namespace | What it covers | Resource |
 |---|---|---|---|
-| `Colocated` | `…Tests.Fixtures` | The default layout, in two cultures, regional fallback to a parent, and that another folder's settings leave it read | `Fixtures/Colocated/.locales/{he,es}.json` |
+| `Colocated` | `…Tests.Fixtures` | The default layout, in two cultures, regional fallback to a parent, and that the paths the config adds leave the default read | `Fixtures/Colocated/.locales/{he,es}.json` |
 | `Unlocalized` | `…Tests.Fixtures` | No file in any culture, so the key comes back | *(none, deliberately)* |
 | `GenericArity<T>` | `…Tests.Fixtures` | The `` `1 `` arity is dropped from the anchor | `Fixtures/GenericArity/.locales/he.json` |
 | `MainAssembly` | `…Tests.Fixtures.Beside` | A file beside its type kept out of a satellite | `Fixtures/Beside/MainAssembly.he.json` |
 | `InSatellite` | `…Tests.Fixtures.Beside` | A file beside its type, which the build moves into the `he` satellite | `Fixtures/Beside/InSatellite.he.json` |
-| `PathScoped` | `…Tests.Fixtures` | A folder whose own settings file names the path its files are read by | `Resources/.locali.json`, `Resources/Fixtures/PathScoped.he.json` |
+| `PathScoped` | `…Tests.Fixtures` | A file gathered under a folder of its own, read by a path the assembly's config names | `.locale.json`, `Resources/Fixtures/PathScoped.he.json` |
 | `ForeignRoot` | `Contoso.Widgets` | An assembly whose name does not lead its types' root namespace | `Fixtures/Foreign/ForeignRoot/.locales/he.json` |
 | `GlobalRoot` | *(none)* | A type declared without a namespace | `Fixtures/GlobalRoot/.locales/he.json` |
 | `Pluralized` | `…Tests.Fixtures` | A translation carrying a plural expression | `Fixtures/Pluralized/.locales/he.json` |
@@ -59,22 +57,22 @@ beneath it nested settings files, in force beneath their folders alone, rather t
 
 ## Settings embedded beside the files
 
-A `.locali.json` in this assembly naming a root would move every fixture above, so the fixture
-proving a root named by embedded settings sits in the `Forma.Tests.Support` assembly instead, under
-`Localization/Rooted/`. That assembly's root namespace, `Forma.Tests`, is not its name, which is the
-case the settings exist for.
+A `.locale.json` in this assembly naming a root would move every fixture above, so the fixture
+proving a root named by an embedded config sits in the `Forma.Tests.Support` assembly instead,
+under `Localization/Rooted/`. That assembly's root namespace, `Forma.Tests`, is not its name, which
+is the case the config exists for.
 
 | Type | What it covers | Files |
 |---|---|---|
-| `RootedWidget` | A root named by an embedded `.locali.json`, by its `rootNamespace` and a `rootDir` naming a folder, read through the root's `.locales` file and a file named for the assembly, a form the root's settings add to the default | `Rooted/.locali.json`, `Rooted/Strings/.locales/he.json`, `Rooted/Strings/Forma.Tests.Support.he.json` |
-| `RootedToolbar` | A nested `.locali.json` changing the paths and the folder name beneath it, so a default form there is no longer read | `Rooted/Strings/Bars/.locali.json`, `Rooted/Strings/Bars/i18n/Bars.he.json`, `Rooted/Strings/Bars/.locales/he.json` |
+| `RootedWidget` | A root named by an embedded `.locale.json`, by its `rootNamespace` and a `rootDir` naming a folder, read through the root's `.locales` file and a file named for the assembly, a form the config adds to the default | `Rooted/.locale.json`, `Rooted/Strings/.locales/he.json`, `Rooted/Strings/Forma.Tests.Support.he.json` |
+| `RootedToolbar` | A folder beneath the declared root, read by the root's paths as any folder is | `Rooted/Strings/Bars/.locales/he.json` |
 
 ## The csproj entries
 
 Four files need more than the globs:
 
-- `.locali.json` at the project root is included on its own, since no glob reaches it, and marks
-  where the assembly's names begin.
+- `.locale.json` at the project root is included on its own, since no glob reaches it, and is the
+  assembly's one config file, stating the three paths its fixtures are read by.
 - `MainAssembly.he.json` sets `WithCulture="false"` so the SDK leaves it in the main assembly
   instead of moving it to a `he` satellite, covering a project that opts out of satellites.
 - `ForeignRoot`'s file pins `LogicalName` to `Contoso.Widgets.ForeignRoot..locales.he.json`,
@@ -105,7 +103,7 @@ read, so those tests see the embedded translation as before.
 
 `Hosts/` holds host folders a test names in place of the default one, since a root named in the
 default folder would move every other fixture there. `Hosts/Rooted/` names `Contoso.Widgets` as the
-root in its assembly folder's `.locali.json`, so `ForeignRoot` is read from its own folder's file and
+root in its assembly folder's `.locale.json`, so `ForeignRoot` is read from its own folder's file and
 through the sections of the root's file, and a file whose path does not meet that root is ignored.
 
 ## Before you move anything

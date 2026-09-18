@@ -1,0 +1,8 @@
+{
+  // Beside the default layout, a file beside the type it localizes, the one form the build moves into a satellite assembly, and the files gathered under Resources by the type's name.
+  "paths": [
+    "$RootDir/$AnchorName/$LocalesDir/$Culture$Extension",
+    "$RootDir/$AnchorName.$Culture$Extension",
+    "$RootDir/Resources/$AnchorName.$Culture$Extension"
+  ]
+}

@@ -1,4 +1,0 @@
-{
-  "localesDir": "i18n",
-  "paths": ["$RootDir/$AnchorName/$LocalesDir/$CurrentName.$Culture$Extension"]
-}
