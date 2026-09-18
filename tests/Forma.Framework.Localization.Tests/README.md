@@ -8,16 +8,13 @@ breaks it silently: a miss returns the key itself, so an assertion sees English 
 
 ## How a base name is derived
 
-`BaseNameFor` picks one of three branches, and only the first two folder layouts follow from it:
+`GetBaseName` picks one of three branches, and only the first two folder layouts follow from it:
 
 | Type's full name | Branch taken | Base name |
 |---|---|---|
-| Starts with the assembly name | strip that prefix, then qualify | `{assembly}.[{ResourcesPath}.]{remainder}` |
+| Starts with the assembly name | strip that prefix, then qualify | `{assembly}.{remainder}` |
 | Contains a dot but a different root | used verbatim | `{full name}` |
-| No dot at all | qualify the bare name | `{assembly}.[{ResourcesPath}.]{name}` |
-
-`ResourcesPath` is inserted between the assembly name and the remainder, so it only affects the first
-and third branches. A type rooted outside the assembly bypasses it entirely.
+| No dot at all | qualify the bare name | `{assembly}.{name}` |
 
 The reader lists every resource name the main assembly carries, and those of the culture's
 satellite assembly under the names they would carry in the main one, then places each at the part
@@ -37,20 +34,20 @@ not in the namespace its folder implies — that mismatch is the scenario. Keepi
 namespace *does* track the folder would suggest the folder governs the namespace here, and it does not.
 Its resource carries an explicit `LogicalName`, so the file's location is free.
 
-**`Resources/Fixtures/`** cannot be nested under `Fixtures/`. `ResourcesPath = "Resources"` resolves from
-the assembly root, so the folder has to be top level; and because `PathScoped` lives in `…Tests.Fixtures`,
-its file must sit at `Resources/Fixtures/` for the derived manifest name to match. That mirroring is
-precisely what the test asserts, so the duplicated `Fixtures` segment is required, not redundant.
+**`Resources/`** holds its own `.locali.json`, whose one path reads a file beneath the folder by the
+type's name, so `PathScoped` in `…Tests.Fixtures` has its file at `Resources/Fixtures/`. The empty
+`.locali.json` at the project root marks where the assembly's names begin, which keeps the one under
+`Resources/` a nested settings file, in force beneath its folder alone, rather than the root.
 
 ## The fixtures
 
 | Type | Namespace | What it covers | Resource |
 |---|---|---|---|
-| `Colocated` | `…Tests.Fixtures` | The default layout, in two cultures, regional fallback to a parent, and that it stops being found once `ResourcesPath` is set | `Fixtures/Colocated.{he,es}.json` |
+| `Colocated` | `…Tests.Fixtures` | The default layout, in two cultures, regional fallback to a parent, and that another folder's settings leave it read | `Fixtures/Colocated.{he,es}.json` |
 | `Unlocalized` | `…Tests.Fixtures` | No file in any culture, so the key comes back | *(none, deliberately)* |
 | `GenericArity<T>` | `…Tests.Fixtures` | The `` `1 `` arity is dropped from the file name | `Fixtures/GenericArity.he.json` |
 | `MainAssembly` | `…Tests.Fixtures` | A culture file kept out of a satellite | `Fixtures/MainAssembly.he.json` |
-| `PathScoped` | `…Tests.Fixtures` | `ResourcesPath` inserting a segment, with the namespace tail mirrored beneath it | `Resources/Fixtures/PathScoped.he.json` |
+| `PathScoped` | `…Tests.Fixtures` | A folder whose own settings file names the path its files are read by | `Resources/.locali.json`, `Resources/Fixtures/PathScoped.he.json` |
 | `ForeignRoot` | `Contoso.Widgets` | An assembly whose name does not lead its types' root namespace | `Fixtures/Foreign/ForeignRoot.he.json` |
 | `GlobalRoot` | *(none)* | A type declared without a namespace | `Fixtures/GlobalRoot.he.json` |
 | `Pluralized` | `…Tests.Fixtures` | A translation carrying a plural expression | `Fixtures/Pluralized.he.json` |
@@ -70,7 +67,7 @@ whose culture is its whole name, stays in the main assembly, so the one fixture 
 
 ## Settings embedded beside the files
 
-A `.locali.json` embedded in this assembly would mark the root of every fixture above, so the
+A `.locali.json` in this assembly naming a root would move every fixture above, so the
 fixture proving a root named by embedded settings sits in the `Forma.Tests.Support` assembly
 instead, under `Localization/Rooted/`. That assembly's root namespace, `Forma.Tests`, is not its
 name, which is the case the settings exist for.
@@ -82,12 +79,12 @@ name, which is the case the settings exist for.
 
 ## The csproj entries
 
-Four files need more than the two globs:
+Four files need more than the globs:
 
+- `.locali.json` at the project root is included on its own, since no glob reaches it, and marks
+  where the assembly's names begin.
 - `MainAssembly.he.json` sets `WithCulture="false"` so the SDK leaves it in the main assembly instead of
   moving it to a `he` satellite, covering a project that opts out of satellites.
-- `Grouped.es.json` sets `WithCulture="false"` for the same reason, so the file named for a folder is read from
-  the main assembly as well as from a satellite.
 - `ForeignRoot.he.json` pins `LogicalName` to `Contoso.Widgets.ForeignRoot.he.json`, because the name
   MSBuild would derive from the folder is not the name the type produces.
 - `GlobalRoot.he.json` pins `LogicalName` for the same reason: a namespace-less type yields
@@ -105,7 +102,7 @@ is the type's name, and a file higher up completes the name with sections inside
 |---|---|---|
 | `HostOverridden` | One key per file shape, each overriding the file beside the type, a key the assembly never had, a null value, and sections nested as objects | `locales/{assembly}.he.json`, `locales/{assembly}.es.json`, `locales/{assembly}/Fixtures.he.json`, `locales/{assembly}/Fixtures/HostOverridden.he.json` |
 | `HostLocalized` | A culture the assembly does not ship, reached from a regional culture too | `locales/{assembly}/Fixtures/HostLocalized.fr.json` |
-| `PathScoped` | The host's layout following the type's name rather than `ResourcesPath` | `locales/{assembly}/Fixtures/PathScoped.he.json` |
+| `PathScoped` | The host's layout following the type's name rather than the folder its embedded file sits in | `locales/{assembly}/Fixtures/PathScoped.he.json` |
 | `ForeignRoot` | The host's layout following the full name of a type rooted outside the assembly | `locales/{assembly}/Contoso/Widgets/ForeignRoot.he.json` |
 | `HostDotted` | A host file in a `.locales` folder overriding an embedded entry from a form the assembly does not use | `locales/{assembly}/Fixtures/.locales/HostDotted.he.json` |
 | `HostUnmarked` | A host file carrying no metadata entry | `locales/{assembly}/Fixtures/HostUnmarked.he.json` |

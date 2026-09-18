@@ -13,8 +13,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- Marks where the assembly's embedded names begin, so a settings file further down applies to its own folder alone. -->
+        <EmbeddedResource Include=".locali.json" />
         <EmbeddedResource Include="Fixtures\**\*.json" />
-        <!-- The same relative tree under a root, which is what ResourcesPath resolves against. -->
+        <!-- A folder whose own settings file names the path its files are read by. -->
         <EmbeddedResource Include="Resources\**\*.json" />
         <!-- Kept in the main assembly to cover the layout a project gets by opting out of satellites. -->
         <EmbeddedResource Update="Fixtures\MainAssembly.he.json" WithCulture="false" />

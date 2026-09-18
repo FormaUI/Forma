@@ -6,12 +6,10 @@ using System.Reflection;
 
 /// <summary>The locale files embedded in one assembly, in the assembly itself or in a culture's satellite assembly, known by their resource names.</summary>
 /// <param name="assembly">The assembly the files are embedded in.</param>
-/// <param name="resourcesPath">The folder the files are embedded under, as dotted segments, or empty when they sit beside the types they localize.</param>
 /// <param name="format">The format the files are written in.</param>
-public sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPath, ILocaleFileFormat format) : LocaleSource(format)
+public sealed class EmbeddedLocaleSource(Assembly assembly, ILocaleFileFormat format) : LocaleSource(format)
 {
     private readonly Assembly _assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
-    private readonly string _resourcesPath = resourcesPath ?? throw new ArgumentNullException(nameof(resourcesPath));
     private readonly ConcurrentDictionary<string, SatelliteResource> _satelliteResources = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, string[]> _satelliteNames = new(StringComparer.Ordinal);
 
@@ -30,7 +28,7 @@ public sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPath
 
     /// <inheritdoc />
     protected override string GetDefaultRootDir(string assemblyName)
-        => _resourcesPath.Length == 0 ? assemblyName : $"{assemblyName}.{_resourcesPath}";
+        => assemblyName;
 
     // The build puts a namespace at the front of every resource name, so a type outside the root namespace is spelled from the start.
     /// <inheritdoc />

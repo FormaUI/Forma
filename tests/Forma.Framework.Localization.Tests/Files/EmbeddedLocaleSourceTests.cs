@@ -8,7 +8,7 @@ public sealed class EmbeddedLocaleSourceTests
     private const string Toolbar = "Contoso.Widgets.Bars.Toolbar";
 
     private static IReadOnlyList<LocaleSourceEntry> Read(FakeAssembly assembly, FakeLocaleFileFormat format, string typeName = Toolbar)
-        => new EmbeddedLocaleSource(assembly, string.Empty, format).Read(assembly.GetName().Name!, typeName, "he");
+        => new EmbeddedLocaleSource(assembly, format).Read(assembly.GetName().Name!, typeName, "he");
 
     private static void AddFile(FakeAssembly assembly, FakeLocaleFileFormat format, string name, LocaleSection root)
     {

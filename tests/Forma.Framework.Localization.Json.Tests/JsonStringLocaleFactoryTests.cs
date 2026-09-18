@@ -7,11 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 public sealed class JsonStringLocaleFactoryTests
 {
     [Fact]
-    public void Should_read_files_from_the_configured_resources_folder()
+    public void Should_read_files_from_a_folder_by_the_path_its_settings_name()
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocaleFactory(new LocalizationOptions { ResourcesPath = "Resources" });
+        var factory = new JsonStringLocaleFactory();
 
         // Act
         var localized = factory.Create(typeof(PathScoped))["Save"];
@@ -21,17 +21,17 @@ public sealed class JsonStringLocaleFactoryTests
     }
 
     [Fact]
-    public void Should_not_find_a_colocated_file_when_a_resources_folder_is_configured()
+    public void Should_keep_reading_a_file_beside_its_type_outside_that_folder()
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocaleFactory(new LocalizationOptions { ResourcesPath = "Resources" });
+        var factory = new JsonStringLocaleFactory();
 
         // Act
         var localized = factory.Create(typeof(Colocated))["Today"];
 
         // Assert
-        Assert.True(localized.ResourceNotFound);
+        Assert.Equal("היום", localized.Value);
     }
 
     [Fact]
@@ -121,14 +121,14 @@ public sealed class JsonStringLocaleFactoryTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(new LocalizationOptions { ResourcesPath = "Resources" }));
+        services.AddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(new LocalizationOptions { RequireMatchingLocalization = true }));
 
         // Act
         using var provider = services.AddJsonLocalization().BuildServiceProvider();
         using var culture = new CultureScope("he");
-        var localized = provider.GetRequiredService<IStringLocale<PathScoped>>()["Save"];
+        var strings = provider.GetRequiredService<IStringLocale<Colocated>>();
 
-        // Assert
-        Assert.Equal("שמור", localized.Value);
+        // Assert — only the host's factory refuses a key no file translates.
+        Assert.Throws<LocalizationNotFoundException>(() => strings["No file translates this"]);
     }
 }

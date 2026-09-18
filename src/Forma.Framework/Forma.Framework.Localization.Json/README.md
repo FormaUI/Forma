@@ -19,7 +19,6 @@ builder.Services.AddJsonLocalization();
 
 builder.Services.AddJsonLocalization(new LocalizationOptions
 {
-    ResourcesPath = "Resources",
     RequireMatchingLocalization = builder.Environment.IsDevelopment(),
 });
 ```

@@ -177,11 +177,11 @@ public sealed class HostFilesTests
         }
 
         [Fact]
-        public void Should_lay_files_out_by_the_types_name_rather_than_the_resources_folder()
+        public void Should_lay_files_out_by_the_types_name_rather_than_the_embedded_folder()
         {
             // Arrange
             using var culture = new CultureScope("he");
-            var strings = CreateLocale<PathScoped>(new LocalizationOptions { ResourcesPath = "Resources" });
+            var strings = CreateLocale<PathScoped>();
 
             // Act
             var localized = strings["Open"];

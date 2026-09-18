@@ -28,7 +28,7 @@ the source language.
 | `IStringLocale<T>` | The same, for the base name derived from `T`. Adds no members. |
 | `IStringLocaleFactory` | Creates a locale for a type, `Create(Type)`, or for a base name under a location, `Create(string, string)`. |
 | `NullStringLocaleFactory` | The factory standing in where none is registered; `Instance` is the one instance. |
-| `LocalizationOptions` | The settings every backend shares: `SourceLanguage`, `RequireMatchingLocalization`, `ResourcesPath`, and `LocalesPath`. |
+| `LocalizationOptions` | The settings every backend shares: `SourceLanguage`, `RequireMatchingLocalization`, and `LocalesPath`. |
 | `LocalizationNotFoundException` | Thrown when a key has no translation and `RequireMatchingLocalization` is on. |
 | `LocalizedText` | A localized string, `Value`, with the key it was looked up under, `Name`, whether the lookup fell back to the key, `ResourceNotFound`, and the base name searched, `SearchedLocation`. Converts implicitly to `string`. |
 | `LocalizedPattern` | A localized format, `Format`, with its plural forms resolved and its holes still open, and the `Arguments` the holes name. |
@@ -202,11 +202,10 @@ its count is still formatted for the reader.
 `LocalizationNotFoundException`, and defaults to `false`. `GetAllStrings` never throws under it,
 so a host can survey what is untranslated.
 
-`ResourcesPath` names the folder an assembly embeds its locale files under, where no
-`.locali.json` embedded in it names a root, and is empty when they sit beside the types they
-localize. `LocalesPath` names the folder the host keeps its own
-locale files in, `locales` beside the application by default, resolved against the
-application's base directory when relative; empty reads none.
+`LocalesPath` names the folder the host keeps its own locale files in, `locales` beside the
+application by default, resolved against the application's base directory when relative; empty
+reads none. Where an assembly keeps its own embedded files is no option's to say: the paths a
+`.locali.json` beside them states place them.
 
 ## How a file is found
 
@@ -215,9 +214,9 @@ as `SearchedLocation`:
 
 | Type's full name | Base name |
 | --- | --- |
-| Starts with the assembly name | `{assembly}.[{ResourcesPath}.]{remainder}` |
+| Starts with the assembly name | `{assembly}.{remainder}` |
 | Contains a dot but a different root | `{full name}` |
-| No dot at all | `{assembly}.[{ResourcesPath}.]{name}` |
+| No dot at all | `{assembly}.{name}` |
 
 Generic arity and nested-type markers are dropped: `Grid<T>` reads `Grid.he.json`, `Outer+Inner`
 reads `Outer.Inner.he.json`, and a closed generic resolves through its open definition.
@@ -274,9 +273,7 @@ with exactly one `$` dropped and never interpreted again, so `$$shared` is the o
 ordinary text and needs no escape. Translation values are never read for the shape.
 
 Within a culture, an embedded file is read from the main assembly first and then from that
-culture's satellite assembly, where it is named without its culture. `ResourcesPath` inserts a
-folder segment between the assembly name and the remainder; a type rooted outside the assembly
-bypasses it.
+culture's satellite assembly, where it is named without its culture.
 
 ## Locale files from the host
 
@@ -296,8 +293,8 @@ locales/Forma.Blazor/Components/Composer/FormaComposer.es.json   { "Bold": "Negr
 The same precedence applies, and a host's entry wins over the assembly's own at the same position,
 so a host file holds only the keys it changes and every other key keeps the assembly's translation.
 
-A host file completes a type's name from the assembly's name, without `ResourcesPath`, so the
-host's layout follows the namespace rather than the embedding. For an assembly whose root namespace
+A host file completes a type's name from the assembly's name, so the host's layout follows the
+namespace rather than the embedding. For an assembly whose root namespace
 is not its name, a `.locali.json` in the assembly's folder names the root, as
 `{ "rootNamespace": "Forma.Framework.Resources.Office" }`, and the path and sections then complete
 the name from there: beside that file,

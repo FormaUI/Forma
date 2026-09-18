@@ -16,9 +16,8 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
     private readonly ConcurrentDictionary<string, IStringLocale> _locales = new(StringComparer.Ordinal);
     private readonly JsonLocaleContext _context;
-    private readonly string _resourcesPath;
 
-    /// <summary>Creates a factory reading files that sit beside the types they localize.</summary>
+    /// <summary>Creates a factory reading files by the default paths, with the host's own from the default folder.</summary>
     public JsonStringLocaleFactory()
         : this(new LocalizationOptions())
     {
@@ -47,12 +46,10 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var format = new JsonLocaleFileFormat();
 
         _context = new JsonLocaleContext(
-            new JsonResourceCache(format, NormalizePath(options.ResourcesPath), new HostLocaleSource(GetLocalesPath(options.LocalesPath), format)),
+            new JsonResourceCache(format, new HostLocaleSource(GetLocalesPath(options.LocalesPath), format)),
             sourceCulture,
             new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>()),
             options);
-
-        _resourcesPath = NormalizePath(options.ResourcesPath);
     }
 
     /// <summary>Creates a locale for the strings belonging to a type.</summary>
@@ -85,9 +82,6 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     private static string GetLocalesPath(string path)
         => path.Length == 0 ? string.Empty : Path.GetFullPath(path, AppContext.BaseDirectory);
 
-    private static string NormalizePath(string path)
-        => path.Replace('\\', '.').Replace('/', '.').Trim('.');
-
     private static string TrimPrefix(string value, string prefix)
         => value.StartsWith(prefix, StringComparison.Ordinal) ? value[prefix.Length..] : value;
 
@@ -109,15 +103,13 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 
     // A type's full name already spells the root namespace its resource was embedded under, which leads
     // with the assembly name only when a project left the two in step; a type without one carries no root.
-    private string GetBaseName(string assemblyName, string typeName)
+    private static string GetBaseName(string assemblyName, string typeName)
         => typeName.StartsWith(assemblyName + ".", StringComparison.Ordinal)
             ? Qualify(assemblyName, typeName[(assemblyName.Length + 1)..])
             : typeName.Contains('.', StringComparison.Ordinal) ? typeName : Qualify(assemblyName, typeName);
 
-    private string Qualify(string assemblyName, string relativeName)
-        => _resourcesPath.Length == 0
-            ? $"{assemblyName}.{relativeName}"
-            : $"{assemblyName}.{_resourcesPath}.{relativeName}";
+    private static string Qualify(string assemblyName, string relativeName)
+        => $"{assemblyName}.{relativeName}";
 
     private IStringLocale GetOrAdd(Assembly assembly, string baseName, string typeName)
         => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_context, new ResourceLocation(assembly, baseName, typeName)));
