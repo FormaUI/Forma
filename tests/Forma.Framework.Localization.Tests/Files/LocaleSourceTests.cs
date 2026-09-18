@@ -14,9 +14,9 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets.he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "assembly file"), ("Italic", "assembly file")))), null),
-                ["Contoso.Widgets/Bars/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Italic", "folder file"), ("Underline", "folder file")))), null),
-                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Underline", "type file")), null),
+                ["Contoso.Widgets.he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "assembly file"), ("Italic", "assembly file"))))),
+                ["Contoso.Widgets/Bars/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Italic", "folder file"), ("Underline", "folder file"))))),
+                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Underline", "type file"))),
             },
         };
 
@@ -43,7 +43,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "beside the folder")))), null),
+                ["Contoso.Widgets/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "beside the folder"))))),
             },
         };
 
@@ -62,7 +62,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Toolbar.he.fake"] = new(CreateEntries(("Bold", "declared root")), null),
+                ["Contoso.Widgets/Toolbar.he.fake"] = new(CreateEntries(("Bold", "declared root"))),
             },
             Settings =
             {
@@ -85,7 +85,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "wrong root")), null),
+                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "wrong root"))),
             },
             Settings =
             {
@@ -108,7 +108,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Toolbar.he.fake"] = new(CreateEntries(("Bold", "no namespace")), null),
+                ["Contoso.Widgets/Toolbar.he.fake"] = new(CreateEntries(("Bold", "no namespace"))),
             },
         };
 
@@ -127,7 +127,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "already read")), null),
+                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "already read"))),
             },
         };
 
@@ -149,7 +149,7 @@ public sealed class LocaleSourceTests
             Files =
             {
                 ["Contoso.Widgets/Bars/Bars.he.fake"] = new(
-                    CreateSections(("Toolbar", CreateEntries(("Bold", "own")))).WithShared(("Bold", "shared"), ("Italic", "shared")), null),
+                    CreateSections(("Toolbar", CreateEntries(("Bold", "own")))).WithShared(("Bold", "shared"), ("Italic", "shared"))),
             },
         };
 
@@ -183,7 +183,7 @@ public sealed class LocaleSourceTests
             Files =
             {
                 ["Contoso.Widgets.he.fake"] = new(
-                    CreateSections(("Bars", CreateSections().WithShared(("Bold", "bars"))), ("Menus", CreateSections(("Menu", CreateEntries(("Open", "menu")))))), null),
+                    CreateSections(("Bars", CreateSections().WithShared(("Bold", "bars"))), ("Menus", CreateSections(("Menu", CreateEntries(("Open", "menu"))))))),
             },
         };
 
@@ -206,7 +206,7 @@ public sealed class LocaleSourceTests
             Files =
             {
                 ["Contoso.Widgets/Bars/Bars.he.fake"] = new(
-                    CreateSections(("$shared", CreateEntries(("Bold", "escaped"))), ("Toolbar", CreateEntries(("Bold", "own")))), null),
+                    CreateSections(("$shared", CreateEntries(("Bold", "escaped"))), ("Toolbar", CreateEntries(("Bold", "own"))))),
             },
         };
 
@@ -228,7 +228,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "type file")), null),
+                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "type file"))),
             },
         };
 
@@ -248,7 +248,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets.he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "assembly file")))), null),
+                ["Contoso.Widgets.he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "assembly file"))))),
             },
         };
 
@@ -267,8 +267,8 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "nearer")))), null),
-                ["Contoso.Widgets/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "farther")))), null),
+                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "nearer"))))),
+                ["Contoso.Widgets/Bars.he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "farther"))))),
             },
             Settings =
             {

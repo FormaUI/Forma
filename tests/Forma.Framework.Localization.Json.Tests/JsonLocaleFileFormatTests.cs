@@ -173,16 +173,6 @@ public sealed class JsonLocaleFileFormatTests
     }
 
     [Fact]
-    public void Should_read_the_root_the_file_declares()
-    {
-        // Arrange
-        var file = Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he; RootNamespace: Contoso.Widgets;" }""");
-
-        // Assert
-        Assert.Equal("Contoso.Widgets", file.RootNamespace);
-    }
-
-    [Fact]
     public void Should_reject_a_value_that_is_not_text()
     {
         // Act

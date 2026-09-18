@@ -319,12 +319,12 @@ checks files by the rule the runtime reads them with:
 | `EmbeddedLocaleSource` | The files embedded in one assembly, or in a culture's satellite assembly. |
 | `HostLocaleSource` | The folder a host keeps its own locale files in. |
 | `ILocaleFileFormat` | A format files are written in: its `Extension`, and how one file is `Read` into a `LocaleFile`. |
-| `LocaleFile` | One file as read: its `Root` section and the `RootNamespace` it declares; `GetEntries` lists every translation with the type name its sections complete. |
+| `LocaleFile` | One file as read: its `Root` section; `GetEntries` lists every translation with the type name its sections complete. |
 | `LocaleSection` | One node of a file: its `Sections`, its `Entries`, and its `SharedEntries`. |
 | `LocaleFileEntry` | One translation a file declares, with the `TypeName` its sections complete. |
 | `LocaleSourceEntry` | One translation a source read for a type, with the `FileName` and `TypeName` it came from. |
 | `LocalizationSchema` | The shape of the metadata entry every file carries: its `Marker`, `CurrentVersion`, `RequiredFields`, `OptionalFields`, the reserved keys, and `IsReservedShape` and `Unescape` for keys. |
-| `LocalizationMetadata` | `Read` checks a file's metadata entry and returns the `LocalizationFileMetadata` it declares beyond the required fields. |
+| `LocalizationMetadata` | `Validate` checks that a file's metadata entry lets the file be read. |
 | `LocalizationMetadataException` | Thrown when a file's metadata does not let it be read. |
 | `LocalePath` | The path of a locale file written in tokens, which `Parse` reads; `Defaults` are the paths a source reads by unless a setting states others. |
 | `LocalePathBinder` | Builds a file's name from a path for an anchor, `GetName`, in one source and one culture. |

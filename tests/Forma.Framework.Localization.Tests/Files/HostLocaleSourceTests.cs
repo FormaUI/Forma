@@ -14,7 +14,7 @@ public sealed class HostLocaleSourceTests
     private static string WriteFile(TempDirectory folder, FakeLocaleFileFormat format, string name, LocaleSection root)
     {
         var fullPath = Path.GetFullPath(folder.Write(name, string.Empty));
-        format.Files[fullPath] = new LocaleFile(root, null);
+        format.Files[fullPath] = new LocaleFile(root);
 
         return fullPath;
     }

@@ -115,8 +115,8 @@ for a key shaped like a reserved entry. This backend adds the format alone: the 
 ```
 
 The value is a list of `Name: value;` fields. `SchemaVersion` and `Culture` are required, and a
-file may add `Author`, `Revision`, and `RootNamespace`, which a host file declares to complete a
-type's name from a namespace other than the assembly's. The entry is removed before lookup, so it
+file may add `Author` and `Revision`. Where a file belongs is the business of the `.locali.json`
+settings above it, never of the entry. The entry is removed before lookup, so it
 appears in neither a key search nor `GetAllStrings`.
 
 Reading a file without the entry throws `LocalizationMetadataException`, as does a malformed

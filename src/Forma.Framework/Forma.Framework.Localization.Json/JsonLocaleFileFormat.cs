@@ -30,9 +30,9 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
         }
 
         var marker = document.RootElement.TryGetProperty(LocalizationSchema.Marker, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
-        var metadata = LocalizationMetadata.Read(marker, fileName, cultureName);
+        LocalizationMetadata.Validate(marker, fileName, cultureName);
 
-        return new LocaleFile(ReadSection(document.RootElement, fileName), metadata.RootNamespace);
+        return new LocaleFile(ReadSection(document.RootElement, fileName));
     }
 
     // The reserved names are read as written, before any escape: the marker is the file's own, the entry reserved for tools is left to them whatever it holds, and the shared section's entries go to everything beneath the node. Every other key is read as the text behind its escape; an object is a section, text or null a translation.

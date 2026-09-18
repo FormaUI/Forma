@@ -8,7 +8,7 @@ public sealed class LocaleFileTests
     public void Should_list_a_types_own_entries_without_a_type_name()
     {
         // Arrange
-        var file = new LocaleFile(CreateEntries(("Save", "שמור"), ("Reset", null)), null);
+        var file = new LocaleFile(CreateEntries(("Save", "שמור"), ("Reset", null)));
 
         // Act
         var entries = file.GetEntries();
@@ -26,8 +26,7 @@ public sealed class LocaleFileTests
         var file = new LocaleFile(
             CreateSections(
                 ("Bars.Toolbar", CreateEntries(("Bold", "מודגש"))),
-                ("Menus", CreateSections(("ShareMenu", CreateEntries(("Share", "שיתוף")))))),
-            null);
+                ("Menus", CreateSections(("ShareMenu", CreateEntries(("Share", "שיתוף")))))));
 
         // Act
         var entries = file.GetEntries();
@@ -43,8 +42,7 @@ public sealed class LocaleFileTests
     {
         // Arrange
         var file = new LocaleFile(
-            CreateSections(("Toolbar", CreateEntries(("Save", "own")))).WithShared(("Bold", "shared")),
-            null);
+            CreateSections(("Toolbar", CreateEntries(("Save", "own")))).WithShared(("Bold", "shared")));
 
         // Act
         var entries = file.GetEntries();
@@ -60,8 +58,7 @@ public sealed class LocaleFileTests
     {
         // Arrange
         var file = new LocaleFile(
-            new LocaleSection([new("Inner", CreateEntries(("Save", "nested")))], [new("Open", "outer")]),
-            null);
+            new LocaleSection([new("Inner", CreateEntries(("Save", "nested")))], [new("Open", "outer")]));
 
         // Act
         var entries = file.GetEntries();

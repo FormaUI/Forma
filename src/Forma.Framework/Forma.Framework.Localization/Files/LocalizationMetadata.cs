@@ -3,14 +3,15 @@ namespace Forma.Framework.Localization.Files;
 using Forma.Framework.Localization.Parser;
 using Forma.Framework.Localization.Parser.Syntax;
 
-/// <summary>Reads and checks the entry every localization file carries to declare what it is.</summary>
+/// <summary>Checks the entry every localization file carries to declare what it is.</summary>
 public static class LocalizationMetadata
 {
-    /// <summary>Reads what the entry declares, having checked that its value, or its absence, lets the file be read at all.</summary>
+    /// <summary>Checks that the entry's value, or its absence, lets the file be read at all.</summary>
     /// <param name="value">The entry's value, or null when the file carries none.</param>
     /// <param name="fileName">The file being read, named in anything thrown.</param>
     /// <param name="expectedCulture">The culture the file's own name gives it.</param>
-    public static LocalizationFileMetadata Read(string? value, string fileName, string expectedCulture)
+    /// <exception cref="LocalizationMetadataException">The entry is missing or malformed, is written for a schema this build does not read, or declares another culture.</exception>
+    public static void Validate(string? value, string fileName, string expectedCulture)
     {
         if (value is null)
         {
@@ -25,13 +26,11 @@ public static class LocalizationMetadata
                 $"'{fileName}' has a malformed '{LocalizationSchema.Marker}' entry; expected 'SchemaVersion: {LocalizationSchema.CurrentVersion}; Culture: {expectedCulture};'.");
         }
 
-        ReadSchemaVersion(result, value, fileName);
-        ReadCulture(result, value, fileName, expectedCulture);
-
-        return new LocalizationFileMetadata(Find(result, value, LocalizationSchema.RootNamespaceField));
+        ValidateSchemaVersion(result, value, fileName);
+        ValidateCulture(result, value, fileName, expectedCulture);
     }
 
-    private static void ReadSchemaVersion(LocaleFieldResult result, string value, string fileName)
+    private static void ValidateSchemaVersion(LocaleFieldResult result, string value, string fileName)
     {
         if (Find(result, value, LocalizationSchema.SchemaVersionField) is not { } written)
         {
@@ -53,7 +52,7 @@ public static class LocalizationMetadata
         }
     }
 
-    private static void ReadCulture(LocaleFieldResult result, string value, string fileName, string expectedCulture)
+    private static void ValidateCulture(LocaleFieldResult result, string value, string fileName, string expectedCulture)
     {
         if (Find(result, value, LocalizationSchema.CultureField) is not { } written)
         {

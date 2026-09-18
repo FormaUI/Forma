@@ -24,9 +24,6 @@ public static class LocalizationSchema
     /// <summary>The prefix that keeps a key shaped like a reserved entry as text; one dollar sign is dropped and the rest is read as written.</summary>
     public const string EscapePrefix = "$$";
 
-    /// <summary>The field naming the namespace a host file completes a type's name from, in place of the assembly's name.</summary>
-    public const string RootNamespaceField = "RootNamespace";
-
     /// <summary>The field naming the revision the translations are at.</summary>
     public const string RevisionField = "Revision";
 
@@ -34,7 +31,7 @@ public static class LocalizationSchema
     public const string SchemaVersionField = "SchemaVersion";
 
     /// <summary>The fields an entry may declare after the required ones.</summary>
-    public static IReadOnlyList<string> OptionalFields { get; } = [AuthorField, RevisionField, RootNamespaceField];
+    public static IReadOnlyList<string> OptionalFields { get; } = [AuthorField, RevisionField];
 
     /// <summary>The fields every entry declares, in the order it declares them.</summary>
     public static IReadOnlyList<string> RequiredFields { get; } = [SchemaVersionField, CultureField];

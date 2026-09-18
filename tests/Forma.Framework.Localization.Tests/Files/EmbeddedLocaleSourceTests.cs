@@ -13,7 +13,7 @@ public sealed class EmbeddedLocaleSourceTests
     private static void AddFile(FakeAssembly assembly, FakeLocaleFileFormat format, string name, LocaleSection root)
     {
         assembly.Resources[name] = string.Empty;
-        format.Files[name] = new LocaleFile(root, null);
+        format.Files[name] = new LocaleFile(root);
     }
 
     public sealed class Roots
@@ -233,7 +233,7 @@ public sealed class EmbeddedLocaleSourceTests
             // Arrange
             var satellite = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Bars.Toolbar.fake"] = string.Empty } };
             var assembly = new FakeAssembly(Assembly) { Satellites = { ["he"] = satellite } };
-            var format = new FakeLocaleFileFormat { Files = { ["Contoso.Widgets.Bars.Toolbar.he.fake"] = new(CreateEntries(("Bold", "satellite file")), null) } };
+            var format = new FakeLocaleFileFormat { Files = { ["Contoso.Widgets.Bars.Toolbar.he.fake"] = new(CreateEntries(("Bold", "satellite file"))) } };
 
             // Act
             var entries = Read(assembly, format);

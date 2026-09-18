@@ -93,8 +93,10 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    that proved a root through embedded settings live in the test support assembly, whose root
    namespace is not its name. A settings file embedded in the JSON test assembly would re-root
    every other fixture there. The existing tests pass unchanged, except where they wrote the
-   retired root: the declared-root tests now declare it in a settings file. Rules this step
-   settled, and departures from what it planned:
+   retired root or its reader: the declared-root tests now declare it in a settings file, a file's
+   record lost its second argument, the tests that read a file's root were dropped, and the
+   metadata tests call the check by its new name. Rules this step settled, and departures from
+   what it planned:
 
    - **The host's own `.locali.json` applies to every assembly.** A file in the host's folder
      itself puts its `paths` and `localesDir` in force beneath every assembly's folder. The root
@@ -115,6 +117,9 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
      such as one beside a host's assembly folder, is read under the root's settings.
    - **`ResourcesPath` applies only where no settings file marks the root**, until step 4
      removes it.
+   - **A file still declaring `RootNamespace` is read.** The field is passed over like any other
+     this build does not know, and the linter's unknown-field rule reports it.
+     `LocalizationMetadata.Read` became `Validate`, since nothing is left for it to return.
    - **The linter's source follows the new members** so its build and tests stay green. It still
      names files by its fixed forms, so this repository's `.locali.json` leaves LOC0112 out for
      the fixtures only a settings file places.
