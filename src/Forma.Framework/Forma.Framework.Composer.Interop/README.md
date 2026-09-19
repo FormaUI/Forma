@@ -2,7 +2,7 @@
 
 The browser side of the composer's rich text editor: the `contenteditable` canvas, the formatting
 commands that act on it, and the selection they act on, with the C# wrapper the editor component
-reaches it through. It is not a package; it ships inside `2Site.Forma.Blazor.Pro.Composer`, and a
+reaches it through. It is not a package; it ships inside `2Site.Forma.Blazor.Composer`, and a
 host never references it. It is built on `Forma.Framework.JavaScript.Interop`, whose `JSInterop` the
 wrapper derives from and whose `Sanitizer.js` the script imports.
 
@@ -52,8 +52,4 @@ and disposes it from its `DisposeAsyncCore`.
 
 ## License
 
-MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md). The assembly ships inside the
-Composer package, which is licensed as Forma Pro under
-[`src/Forma.Blazor.Pro/LICENSE.md`](../../Forma.Blazor.Pro/LICENSE.md); that license covers what is
-published under `Forma.Blazor.Pro/`, and this assembly, under `Forma.Framework/`, is MIT like every
-other Framework assembly.
+MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md). The assembly ships inside the Composer package.

@@ -14,7 +14,7 @@
     <!-- The contracts the plugin is written against, the explorer its dialog composes, and the product both build on; each is a package this one depends on. -->
     <ItemGroup>
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />
-        <ProjectReference Include="..\..\Forma.Blazor.Pro\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+        <ProjectReference Include="..\..\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
         <ProjectReference Include="..\..\Forma.Blazor\Forma.Blazor.csproj" />
     </ItemGroup>
 

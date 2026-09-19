@@ -1,11 +1,8 @@
 {
 	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../2Site/Coi"
-		}
-	],
+        {
+            "path": "."
+        }
+    ],
     "settings": {}
 }

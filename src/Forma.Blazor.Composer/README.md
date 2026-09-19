@@ -1,6 +1,6 @@
 # Forma.Blazor.Composer
 
-`FormaComposer`, the authoring surface of the **Forma** component library and part of Forma Pro: a
+`FormaComposer`, the authoring surface of the **Forma** component library: a
 rich text editor with the toolbar, dialogs, views and file handling an article or a page body
 needs, assembled from plugins a host picks. It binds a `ComposerDocument` — the content together
 with the format it is written in — and holds every HTML document to a markup policy on the way in
@@ -12,7 +12,7 @@ renders the library adds this package and the same `AddFormaUI()` registers what
 ## Install and register
 
 ```pwsh
-dotnet add package 2Site.Forma.Blazor.Pro.Composer
+dotnet add package 2Site.Forma.Blazor.Composer
 ```
 
 The package depends on `2Site.Forma.Blazor`, the library it is built on, and on
@@ -237,8 +237,4 @@ A short blurb needs none of that:
 
 ## License
 
-`FormaComposer` is part of Forma Pro, licensed under the
-[Forma Pro Community License](../LICENSE.md) rather than the MIT license the rest of the library
-carries. It is free for individuals and for organizations within the license's eligibility, and a
-commercial license covers organizations beyond it; [`COMMERCIAL.md`](../COMMERCIAL.md) says what
-that covers and how to obtain one.
+MIT, under the repository's [`LICENSE.md`](../../LICENSE.md).

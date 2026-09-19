@@ -118,7 +118,7 @@ src/Forma.Framework/Forma.Framework.Composer.Interop/      # namespace …Compos
         ├── SelectionMemory.mjs
         └── TableEditor.mjs
 
-src/Forma.Blazor.Pro/Forma.Blazor.Composer/
+src/Forma.Blazor.Composer/
 ├── FormaComposer.razor                    # engine shell, editor switcher
 ├── FormaComposer.razor.cs
 ├── FormaComposer.razor.css

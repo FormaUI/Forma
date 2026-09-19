@@ -9,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Blazor.Pro\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" />

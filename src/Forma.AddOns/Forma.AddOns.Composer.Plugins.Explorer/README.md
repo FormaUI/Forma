@@ -6,9 +6,8 @@ audio file embedded, linked or both, any other file linked. It joins the compose
 it is written against, to the explorer, whose component it composes, so neither of those packages
 depends on the other and a host installs this one only where it wants both.
 
-The composer is [`Forma.Blazor.Composer`](../../Forma.Blazor.Pro/Forma.Blazor.Composer/README.md)
-and the explorer is [`Forma.Blazor.Explorer`](../../Forma.Blazor.Pro/Forma.Blazor.Explorer/README.md);
-both are Forma Pro components.
+The composer is [`Forma.Blazor.Composer`](../../Forma.Blazor.Composer/README.md)
+and the explorer is [`Forma.Blazor.Explorer`](../../Forma.Blazor.Explorer/README.md).
 
 ## Install
 
@@ -16,7 +15,7 @@ both are Forma Pro components.
 dotnet add package 2Site.Forma.AddOns.Composer.Plugins.Explorer
 ```
 
-The package depends on `2Site.Forma.Blazor.Pro.Explorer`, `2Site.Forma.Framework.Composer.Extensibility`
+The package depends on `2Site.Forma.Blazor.Explorer`, `2Site.Forma.Framework.Composer.Extensibility`
 and `2Site.Forma.Blazor`, which restore beside it. The code lives in the composer's own
 `Forma.Blazor.Components.Composer.Plugins` namespace, beside the plugins the composer ships for any
 editor. Hebrew and Spanish translations ship with it.
@@ -74,5 +73,4 @@ The explorer's README documents the items provider, and
 
 ## License
 
-MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md). It composes Forma Pro components,
-which are licensed under [`Forma.Blazor.Pro/LICENSE.md`](../../Forma.Blazor.Pro/LICENSE.md).
+MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md).

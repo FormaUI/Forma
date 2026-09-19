@@ -10,11 +10,11 @@ ceilings it keeps and the bookkeeping every browsing surface repeats are
 [`Forma.Framework.Catalog`](../Forma.Framework.Catalog/README.md). **That is the
 package to read to write items or a provider**; this assembly is how the explorer draws them.
 
-It ships inside `2Site.Forma.Blazor.Pro.Explorer` rather than as a package of its own, because
+It ships inside `2Site.Forma.Blazor.Explorer` rather than as a package of its own, because
 nothing outside the explorer has reason to reach it. It references nothing from ASP.NET Core, so
 every piece of it is testable from a plain class library. How the component itself is consumed —
 its parameters, its callbacks and the registrations it reads — is in
-[`Forma.Blazor.Explorer`](../../Forma.Blazor.Pro/Forma.Blazor.Explorer/README.md).
+[`Forma.Blazor.Explorer`](../../Forma.Blazor.Explorer/README.md).
 
 ## Namespaces
 
@@ -61,5 +61,4 @@ The state behind those contracts that is the explorer's own:
 ## License
 
 MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md). The assembly ships inside
-`2Site.Forma.Blazor.Pro.Explorer`, which is licensed as Forma Pro under
-[`Forma.Blazor.Pro/LICENSE.md`](../../Forma.Blazor.Pro/LICENSE.md).
+`2Site.Forma.Blazor.Explorer`.

@@ -8,7 +8,7 @@ compiles against this one alone and never against the engine behind it.
 Everything here is free of Blazor, so a plugin's contracts and its tests need no renderer. A
 plugin that draws something surfaces a `Type` and the composer hosts it.
 
-The engine that reads these contracts ships inside `2Site.Forma.Blazor.Pro.Composer`, so a host
+The engine that reads these contracts ships inside `2Site.Forma.Blazor.Composer`, so a host
 installs that for a working composer and a plugin author installs this to write one.
 
 ## Install

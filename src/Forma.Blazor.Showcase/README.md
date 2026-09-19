@@ -10,8 +10,7 @@ complete working host to copy from.
 ## What it shows
 
 One page per component, grouped by the category the component lives in — buttons, inputs, menus,
-feedback, layout, files, windows and the rest — plus the composite surfaces of `Forma.Blazor.Pro`,
-`FormaExplorer` and `FormaComposer`, under Features. Two further groups hold things that are not
+feedback, layout, files, windows and the rest — plus the composite surfaces `FormaExplorer` and `FormaComposer`, under Features. Two further groups hold things that are not
 components: Libraries demonstrates a Framework library on its own, such as localization, and
 Debugging holds tooling, such as the input inspector that shows which owner each key, wheel turn
 and drop resolves to.

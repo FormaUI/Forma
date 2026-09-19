@@ -2,12 +2,12 @@
 
 A reusable Blazor component library — modals, toasts, pickers, tabs, data grids, form inputs, and
 file intake. Localized, RTL-ready, and JS-free apart from what the DOM cannot do without script.
-`Forma.Blazor.Pro` adds the file explorer and the `FormaComposer` authoring surface on top of it,
-under the same namespaces and the same registration.
+The file explorer and the `FormaComposer` authoring surface ship as packages of their own, under
+the same namespaces and the same registration.
 
 **.NET 11 · Interactive Server components.**
 
-Installing the one package brings everything a host needs, with the Framework pieces it builds on restored beside it as packages of their own; optional artwork packs and add-ons are separate and opt-in, and the Pro package is installed beside it for the explorer and the composer.
+Installing the one package brings everything a host needs, with the Framework pieces it builds on restored beside it as packages of their own; optional artwork packs and add-ons are separate and opt-in, as are the explorer and the composer, each installed beside it as a package of its own.
 The host owns its own `App.razor` and `Routes.razor`; the package ships components, styles, and JS.
 `src/Forma.Blazor.Showcase` is a complete working host to copy from.
 
@@ -71,8 +71,8 @@ render mode.
 ## Components
 
 The library covers the admin-app staples — form inputs and pickers, modals and toasts, data
-grids, toolbars, tabs, and file intake; `Forma.Blazor.Pro` adds the file explorer and the
-`FormaComposer` authoring surface.
+grids, toolbars, tabs, and file intake, with the file explorer and the `FormaComposer` authoring
+surface as packages of their own.
 [`docs/component-catalog.md`](docs/component-catalog.md) lists the components that exist, one line each, with the design document each belongs to.
 
 `FormaStatusBadge` needs a catalog of the statuses **your** application defines — the library ships
@@ -236,6 +236,4 @@ Where to read before working:
 
 ## License
 
-Forma is MIT licensed — see [`LICENSE.md`](LICENSE.md) — with one exception: `src/Forma.Blazor.Pro/`,
-the `FormaExplorer` and `FormaComposer` components, is licensed separately. See
-[`COMMERCIAL.md`](COMMERCIAL.md) for what that covers and how to obtain a commercial agreement.
+Forma is MIT licensed — see [`LICENSE.md`](LICENSE.md).

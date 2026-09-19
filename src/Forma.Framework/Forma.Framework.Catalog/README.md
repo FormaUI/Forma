@@ -17,7 +17,7 @@ share the model without either depending on the other.
 dotnet add package 2Site.Forma.Framework.Explorer.Items
 ```
 
-A host of `2Site.Forma.Blazor.Pro.Explorer` already has it, restored beside the component. Install
+A host of `2Site.Forma.Blazor.Explorer` already has it, restored beside the component. Install
 it directly in the project that implements items or a provider, which needs no component behind
 it. The package references nothing from ASP.NET Core, so an item or a provider is written in a
 plain class library, and it registers nothing.

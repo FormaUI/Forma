@@ -5,7 +5,7 @@
 > pattern to a Blazor component using **only** built-in Blazor components, native HTML elements,
 > and browser APIs — no external JS libraries.
 >
-> Target location: `Forma.Blazor/Components/`, or its own project under `Forma.Blazor.Pro/` for a component the Pro tier sells
+> Target location: `Forma.Blazor/Components/`, or its own project under `src/` for a component large enough to grow sub-components
 >
 > **Naming convention:** All components use the `Forma` prefix for their tag names (e.g., `<FormaDialog>`,
 > `<FormaTabs>`) to avoid clashes with third-party libraries. CSS classes use the `forma-` prefix.
@@ -94,7 +94,7 @@ Forma.Blazor/Components/
     ├── ✅ FormaRestArea
     └── ✅ FormaWindow
 
-Forma.Blazor.Pro/
+src/
 ├── (0 / 1) Forma.Blazor.Composer/
 │   └── ◐ FormaComposer
 └── (1 / 1) Forma.Blazor.Explorer/

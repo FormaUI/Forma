@@ -14,7 +14,7 @@ it, and the same locale file layout localizes it.
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.Blazor.Pro.Explorer
+dotnet add package 2Site.Forma.Blazor.Explorer
 ```
 
 The package depends on `2Site.Forma.Blazor`, the product, and on
@@ -326,7 +326,4 @@ public sealed class CatalogItemsProvider(IMediaCatalog catalog, Func<string?> cu
 
 ## License
 
-`FormaExplorer` is part of Forma Pro, which is licensed under the Forma Pro Community License
-rather than the MIT license the rest of Forma carries. Individuals, and organizations within the
-license's eligibility, use it at no charge; an organization beyond that takes a commercial license.
-See [`LICENSE.md`](../LICENSE.md) and [`COMMERCIAL.md`](../COMMERCIAL.md).
+MIT, under the repository's [`LICENSE.md`](../../LICENSE.md).

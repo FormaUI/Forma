@@ -9,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Blazor.Pro\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />

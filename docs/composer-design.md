@@ -4,7 +4,7 @@ An extensible authoring surface for the **Forma** component library, replacing b
 
 The name is the claim: **the composer composes content, and content can be composed of more content.** A page designer places widgets; one of those widgets is a text widget; that text widget hosts the rich text editor. Coi did exactly this with `CKEDITOR.inline`, and the plugin model makes it fall out rather than be special-cased.
 
-- **Component category:** `Components/Composer/` in `Forma.Blazor.Pro`, namespace `Forma.Blazor.Components.Composer`
+- **Component category:** its own project `Forma.Blazor.Composer`, namespace `Forma.Blazor.Components.Composer`
 - **Root component:** `FormaComposer`
 - **Supersedes:** the standalone rich text editor, and Coi's `admin/pops/template.aspx` over `Controls/Edit/`
 - **Consumers:** Coi's admin, whose page designer and product templates this replaces wholesale; Épica Deportiva's News article body (P6), page and product editors
