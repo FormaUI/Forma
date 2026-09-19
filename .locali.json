@@ -1,9 +1,9 @@
 {
   "ignoreDiagnostics": {
     // The page shows a hit and a miss side by side, so its miss is a sentence no file translates.
-    "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0209"],
+    "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0207"],
     // The test proves the metadata entry is never served, which takes looking it up by its reserved name.
-    "tests/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0214"],
+    "tests/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0212"],
     // A page's sections word one key differently on purpose, where the same English fits two sentences.
     "src/Forma.Blazor.Showcase/Components/Pages/Collections/.locales/he.json": ["LOC0113"],
     "src/Forma.Blazor.Showcase/Components/Pages/Feedback/.locales/he.json": ["LOC0113"],
@@ -11,10 +11,10 @@
     "src/Forma.Blazor.Showcase/Components/Pages/Layout/.locales/*.json": ["LOC0113"],
     "src/Forma.Blazor.Showcase/Components/Pages/Menus/.locales/es.json": ["LOC0113"],
     // The fixtures prove two files standing for one anchor are both read: a host's root file in both forms, and a root's file beside one named for the assembly.
-    "tests/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/es.json": ["LOC0118"],
-    "tests/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/.locales/es.json": ["LOC0118"],
-    "tests/Forma.Tests.Support/Localization/Rooted/Strings/.locales/he.json": ["LOC0118"],
-    "tests/Forma.Tests.Support/Localization/Rooted/Strings/Forma.Tests.Support.he.json": ["LOC0118"]
+    "tests/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/es.json": ["LOC0117"],
+    "tests/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/.locales/es.json": ["LOC0117"],
+    "tests/Forma.Tests.Support/Localization/Rooted/Strings/.locales/he.json": ["LOC0117"],
+    "tests/Forma.Tests.Support/Localization/Rooted/Strings/Forma.Tests.Support.he.json": ["LOC0117"]
   },
   // The fixtures are malformed on purpose, each proving what its test asserts.
   "excludeFiles": ["*/Fixtures/*"]
