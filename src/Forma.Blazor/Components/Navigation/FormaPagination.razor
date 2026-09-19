@@ -82,7 +82,7 @@
                  Disabled="@(direction is NavigationDirection.Previous ? ActivePage <= 1 : ActivePage >= PageCount)"
                  aria-label="@(direction is NavigationDirection.Previous ? L["Previous"] : L["Next"])"
                  OnClick="() => MoveAsync(direction, stride)">
-        <FormaIcon Icon="Glyph.ChevronRight" Size="IconSize.Small" Class="forma-pagination-navigation-button-glyph" />
+        <FormaIcon Icon="@(direction is NavigationDirection.Previous ? Glyph.ChevronLeft : Glyph.ChevronRight)" Size="IconSize.Small" Class="forma-pagination-navigation-button-glyph" />
         <span class="forma-pagination-navigation-button-text">@(direction is NavigationDirection.Previous ? L["Previous"] : L["Next"])</span>
     </FormaButton>;
 }

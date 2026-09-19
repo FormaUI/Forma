@@ -70,7 +70,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
         => Options.ScrollForwardLabel ?? (IsBlockAxis ? L["Scroll Down"] : L["Scroll Forward"]);
 
     private Glyph BackGlyph
-        => IsBlockAxis ? Glyph.ChevronUp : Glyph.ChevronRight;
+        => IsBlockAxis ? Glyph.ChevronUp : Glyph.ChevronLeft;
 
     private Glyph ForwardGlyph
         => IsBlockAxis ? Glyph.ChevronDown : Glyph.ChevronRight;

@@ -111,12 +111,14 @@ Every component must behave and look the same in both directions — mirrored, n
 - Do check which edge a logical property resolves to before using it; a divider between a sidebar and its content is `inline-end` in both directions, not `inline-start`.
 - Do use `dir` only on content with fixed directionality, such as a Latin or numeric field inside an RTL page.
 - Do let Unicode bidi-mirrored characters such as `❮`, `❯`, `‹`, `›`, `<`, and `>` mirror naturally.
-- Do explicitly mirror only glyphs that are not bidi-mirrored, such as most icon-font and SVG arrows.
+- Do leave a glyph's mirroring to `FormaIcon`: a glyph declared `GlyphDirectionSensitive("rtl")` turns over under `:dir(rtl)` on its own, so a component never rotates a glyph to follow the reading direction; a glyph that seems to need it is missing its declaration.
+- Do ask for the glyph that points the way rather than turning another one: `ChevronLeft` for back, `ChevronDown` for an open or expanded state; a rotation laid on a glyph that mirrors turns the wrong way under the other direction.
 - Do interpret horizontal arrow keys as previous/next in reading order and resolve them through `CultureInfo.CurrentCulture.TextInfo.IsRightToLeft`.
 - Do anchor popovers and menus to inline-start or inline-end.
 - Do format numbers, dates, and currency through `CultureInfo.CurrentCulture` and verify native bidi behavior before adding `<bdi>` or isolates.
 - Do visually inspect every showcase page in `he` and `en` or `es-419`, and add bUnit tests wherever direction affects logic.
 - Don't write physical CSS or `[dir="rtl"]` override blocks.
 - Don't flip bidi-mirrored characters in code; that double-flips them.
+- Don't rotate a glyph in a component's stylesheet to change what it points at; the set has a glyph for each way, and one turned by CSS is wrong in one direction or the other.
 - Don't swap unaffected keys such as `ArrowUp`, `ArrowDown`, `Home`, `End`, `Enter`, or `Escape`.
 - Don't rely on `textContent` or coordinates to verify glyph mirroring; screenshot the actual element.

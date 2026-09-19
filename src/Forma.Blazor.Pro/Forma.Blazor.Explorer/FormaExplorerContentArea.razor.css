@@ -81,27 +81,6 @@
     padding-block-end: var(--space-2);
 }
 
-.forma-explorer-spinner {
-    inline-size: var(--icon-size-md);
-    block-size: var(--icon-size-md);
-    border: 3px solid var(--border-subtle-color);
-    border-block-start-color: var(--primary-color);
-    border-radius: 50%;
-    animation: forma-explorer-spin 0.7s linear infinite;
-}
-
-@keyframes forma-explorer-spin {
-    to {
-        rotate: 360deg;
-    }
-}
-
-/* The ring stops; the count beside it states progress. */
-@media (prefers-reduced-motion: reduce) {
-    .forma-explorer-spinner {
-        animation: none;
-    }
-}
 
 .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
     display: inline-flex;

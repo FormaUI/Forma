@@ -32,6 +32,11 @@ arguments and reads its artwork once, on first use.
 | A `BrandIcon` | A `BrandIconArtwork`: the mark as one solid path, with the brand's name as its `Title`. The same mark answers every size. |
 | A `CharacterIcon` | An `IconCharacter` holding the character itself. |
 
+Every drawing is made for left-to-right reading. A glyph that points along the reading direction
+declares on its `Glyph` member the direction it adapts for, and `FormaIcon` turns the artwork over
+where text runs that way;
+the provider answers the one drawing either way.
+
 `Glyph.None` and `Brand.None` name no artwork, and both members throw
 `ArgumentOutOfRangeException` for them. A `Brand` value with no mark compiled answers `false`
 and `IconArtwork.None` from `TryGetArtwork`, and `GetArtwork` throws.

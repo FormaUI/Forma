@@ -78,10 +78,10 @@
         @if (children.Count > 0)
         {
             <button type="button"
-                    class="forma-explorer-folder-twisty @(expanded ? "is-expanded" : "")"
+                    class="forma-explorer-folder-twisty"
                     aria-label="@(expanded ? L["Collapse {Name}", Item.Name] : L["Expand {Name}", Item.Name])"
                     @onclick="() => Interaction.ToggleExpanded(Item.Key)">
-                <FormaIcon Icon="Glyph.ChevronRight" Size="IconSize.Small" />
+                <FormaIcon Icon="@(expanded ? Glyph.ChevronDown : Glyph.ChevronRight)" Size="IconSize.Small" />
             </button>
         }
         else

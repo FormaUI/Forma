@@ -144,19 +144,6 @@
     inset-inline-start: var(--forma-freeze-pane-frozen-extent);
 }
 
-/* The chevron is not bidi-mirrored, so each inline arrow is turned to point the way it scrolls. */
-.forma-freeze-pane-inline > ::deep .forma-freeze-pane-arrow-back {
-    rotate: 180deg;
-}
-
-.forma-freeze-pane-inline > ::deep .forma-freeze-pane-arrow-back:dir(rtl) {
-    rotate: 0deg;
-}
-
-.forma-freeze-pane-inline > ::deep .forma-freeze-pane-arrow-forward:dir(rtl) {
-    rotate: 180deg;
-}
-
 /* The arrows ring inward. */
 ::deep .forma-freeze-pane-arrow:focus-visible {
     outline: none;

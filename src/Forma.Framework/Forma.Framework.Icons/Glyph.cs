@@ -1,6 +1,6 @@
 namespace Forma.Framework.Icons;
 
-/// <summary>A mark the library draws, named for its recognizable form, or for that form's conventional meaning where the literal name would be obscure.</summary>
+/// <summary>A mark the library draws, named for its recognizable form, or for that form's conventional meaning where the literal name would be obscure. A glyph whose form points along the reading direction is marked <see cref="GlyphDirectionSensitiveAttribute"/> with the direction it adapts for, which <see cref="GlyphExtensions.GetDirectionSensitivity"/> reads.</summary>
 public enum Glyph
 {
     /// <summary>No glyph. Asking a provider for this is an error.</summary>
@@ -61,12 +61,15 @@ public enum Glyph
     ArrowDown,
 
     /// <summary>A leftward arrow.</summary>
+    [GlyphDirectionSensitive("rtl")]
     ArrowLeft,
 
     /// <summary>A rightward arrow.</summary>
+    [GlyphDirectionSensitive("rtl")]
     ArrowRight,
 
     /// <summary>An arrow turning down and then right, for a line return.</summary>
+    [GlyphDirectionSensitive("rtl")]
     ArrowTurnDownRight,
 
     /// <summary>An upward arrow.</summary>
@@ -160,9 +163,11 @@ public enum Glyph
     ChevronDown,
 
     /// <summary>A leftward chevron.</summary>
+    [GlyphDirectionSensitive("rtl")]
     ChevronLeft,
 
     /// <summary>A rightward chevron.</summary>
+    [GlyphDirectionSensitive("rtl")]
     ChevronRight,
 
     /// <summary>An upward chevron.</summary>
@@ -349,6 +354,7 @@ public enum Glyph
     Events,
 
     /// <summary>A door with an arrow leaving it, for signing out.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Exit,
 
     /// <summary>Two arrows pointing away from each other, for expanding a section.</summary>
@@ -430,6 +436,7 @@ public enum Glyph
     ForkKnife,
 
     /// <summary>An arrow bending up and to the right, for forwarding.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Forward,
 
     /// <summary>A large four-pointed star with a small one beside it, for generative AI.</summary>
@@ -529,6 +536,7 @@ public enum Glyph
     Incognito,
 
     /// <summary>Lines with a triangle pointing into them, for increasing indentation.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Indent,
 
     /// <summary>A magnifying glass with an eye in its lens, for inspecting.</summary>
@@ -544,6 +552,7 @@ public enum Glyph
     KeyAlt,
 
     /// <summary>A tag pointing left with a cross inside, the backspace key.</summary>
+    [GlyphDirectionSensitive("rtl")]
     KeyBackspace,
 
     /// <summary>A keyboard.</summary>
@@ -604,12 +613,15 @@ public enum Glyph
     Link,
 
     /// <summary>Stacked lines, for a list.</summary>
+    [GlyphDirectionSensitive("rtl")]
     List,
 
     /// <summary>Lines beside bullets, for an unordered list.</summary>
+    [GlyphDirectionSensitive("rtl")]
     ListBullet,
 
     /// <summary>Lines with bullets at stepped indents, for a multilevel list.</summary>
+    [GlyphDirectionSensitive("rtl")]
     ListMultilevel,
 
     /// <summary>Lines beside numerals, for an ordered list.</summary>
@@ -736,9 +748,11 @@ public enum Glyph
     NeuralNetwork,
 
     /// <summary>A square with an arrow leaving it, for opening elsewhere.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Open,
 
     /// <summary>Lines with a triangle pointing away from them, for decreasing indentation.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Outdent,
 
     /// <summary>An open carton, for something being packed or handled.</summary>
@@ -820,6 +834,7 @@ public enum Glyph
     Publish,
 
     /// <summary>An opening and a closing quotation mark, for a quoted passage.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Quote,
 
     /// <summary>A filled dot inside a circle, for a marked point.</summary>
@@ -832,6 +847,7 @@ public enum Glyph
     Read,
 
     /// <summary>A clockwise arrow, for redoing.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Redo,
 
     /// <summary>Two arrows chasing in a circle, for refreshing.</summary>
@@ -847,6 +863,7 @@ public enum Glyph
     RemoveLink,
 
     /// <summary>An arrow bending up and to the left, for replying.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Reply,
 
     /// <summary>Two triangles pointing left against a bar, for skipping back.</summary>
@@ -883,6 +900,7 @@ public enum Glyph
     SelectNone,
 
     /// <summary>A paper plane, for sending.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Send,
 
     /// <summary>A person inside corner brackets, for the current session.</summary>
@@ -907,6 +925,7 @@ public enum Glyph
     Signal,
 
     /// <summary>An arrow entering a bracket, for signing in.</summary>
+    [GlyphDirectionSensitive("rtl")]
     SignIn,
 
     /// <summary>A box over three boxes, for a site map.</summary>
@@ -982,12 +1001,14 @@ public enum Glyph
     Tablet,
 
     /// <summary>Lines beside ticks, for a task list.</summary>
+    [GlyphDirectionSensitive("rtl")]
     TaskList,
 
     /// <summary>A prompt and cursor, for a terminal.</summary>
     Terminal,
 
     /// <summary>Lines of text, for plain text.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Text,
 
     /// <summary>A rightward arrow to a bar, for left-to-right reading order.</summary>
@@ -1027,6 +1048,7 @@ public enum Glyph
     Underline,
 
     /// <summary>An anticlockwise arrow, for undoing.</summary>
+    [GlyphDirectionSensitive("rtl")]
     Undo,
 
     /// <summary>A speaker with one wave, for unmuting.</summary>

@@ -78,7 +78,6 @@
                                             ShowLabel="ShowLabels"
                                             Pressed="@(action is FormaToolbarToggle ? isToggleActive : null)"
                                             Disabled="@(Disabled || IsUnavailable(action))"
-                                            dir="auto"
                                             aria-keyshortcuts="@action.ShortcutAriaKeys"
                                             title="@GetActionTitle(action, showsLabel)"
                                             OnClick="() => OnCommand.InvokeAsync(action.Command)" />

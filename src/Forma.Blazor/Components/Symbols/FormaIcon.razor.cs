@@ -29,6 +29,11 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElement
 
     [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
 
+    // Only a glyph drawn as geometry turns: a character the browser mirrors itself where the script calls for it,
+    // and a brand mark never turns.
+    private string? Direction
+        => _artwork is IconVector and not BrandIconArtwork && Icon is GlyphIcon glyph ? glyph.Glyph.GetDirectionSensitivity() : null;
+
     private string? SizeClass
         => Size switch
         {
@@ -70,5 +75,6 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElement
         => builder
             .Add("forma-icon")
             .Add(SizeClass)
-            .Add("forma-icon-character", _characterText is not null);
+            .Add("forma-icon-character", _characterText is not null)
+            .Add("forma-icon-logical-direction", Direction is not null);
 }

@@ -68,6 +68,16 @@ conventional UI meaning of the form, the glyph takes that meaning instead: `Sear
 feature unless it was drawn specifically and exclusively for it — a bespoke `Checkout` glyph used
 only for checkout.
 
+A drawing is made for left-to-right reading, and a glyph is never drawn twice for direction. A
+glyph whose form points along the reading direction — an arrow or a chevron pointing left or
+right, `Undo` and `Redo`, `Reply` and `Forward`, an arrow leaving a frame, indentation and the
+marks a list starts with — is declared `GlyphDirectionSensitive("rtl")` on its enum member and
+turned over at run time where text runs that way. A glyph named for a side (`AlignLeft`, `LayoutLeft`,
+`AddColumnLeft`) keeps that side in both directions, as do a physical object (`Search`, `Pen`), a
+clockwise motion (`Refresh`, `History`), a media control (`TriangleRight`, `FastForward`), and
+anything carrying letters or digits (`ListNumbered`, `CircleHelp`), whose form would read wrong
+turned over.
+
 ## The grids
 
 A stroke is crisp only where its edges fall on pixel boundaries, so a drawing is sharp at the

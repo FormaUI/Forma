@@ -159,6 +159,60 @@
         }
 
         [Fact]
+        public void Should_mark_a_glyph_that_adapts_for_right_to_left()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var back = ctx.Render(@<FormaIcon Icon="Glyph.ArrowLeft" Size="IconSize.Small" />).Find("svg");
+            var check = ctx.Render(@<FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />).Find("svg");
+
+            // Assert
+            // The stylesheet turns the marked glyph over where text runs the direction it names; a tick reads the same either way.
+            Assert.Multiple(
+                () => Assert.Equal("forma-icon forma-icon-sm forma-icon-logical-direction", back.ClassName),
+                () => Assert.Equal("rtl", back.GetAttribute("data-direction")),
+                () => Assert.Equal("forma-icon forma-icon-sm", check.ClassName),
+                () => Assert.Null(check.GetAttribute("data-direction")));
+        }
+
+        [Fact]
+        public void Should_leave_a_brand_mark_and_a_character_as_drawn_under_right_to_left()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var mark = ctx.Render(@<FormaIcon Icon="Brand.GitHub" />).Find("svg");
+            var character = ctx.Render(@<FormaIcon Icon="new Rune('‹')" />).Find("span");
+
+            // Assert
+            // A mark is a trademark drawn one way, and the browser mirrors a character itself where its script calls for it.
+            Assert.Multiple(
+                () => Assert.DoesNotContain("forma-icon-logical-direction", mark.ClassName, StringComparison.Ordinal),
+                () => Assert.Null(mark.GetAttribute("data-direction")),
+                () => Assert.DoesNotContain("forma-icon-logical-direction", character.ClassName, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_leave_a_glyph_a_provider_draws_as_a_character_to_the_browser()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+            var characters = new CharacterGlyphProvider();
+
+            // Act
+            var span = ctx.Render(@<FormaIcon Icon="Glyph.ArrowLeft" Provider="characters" />).Find("span");
+
+            // Assert
+            // The glyph adapts for right-to-left, but a character is the browser's to mirror, so nothing marks it.
+            Assert.Multiple(
+                () => Assert.Equal("←", span.TextContent),
+                () => Assert.DoesNotContain("forma-icon-logical-direction", span.ClassName, StringComparison.Ordinal));
+        }
+
+        [Fact]
         public void Should_draw_the_grid_that_is_crisp_at_its_size()
         {
             // Arrange
@@ -333,6 +387,25 @@
             // Assert
             Assert.Equal("𝔸", cut.Find("span").TextContent);
         }
+    }
+
+    /// <summary>Answers every glyph with an arrow character, the way a provider with no drawings might.</summary>
+    private sealed class CharacterGlyphProvider : IIconProvider
+    {
+        public bool TryGetArtwork(Icon icon, IconSize size, out IconArtwork artwork)
+        {
+            if (icon is GlyphIcon)
+            {
+                artwork = IconArtwork.Character(new Rune('←'));
+                return true;
+            }
+
+            artwork = IconArtwork.None;
+            return false;
+        }
+
+        public IconArtwork GetArtwork(Icon icon, IconSize size)
+            => TryGetArtwork(icon, size, out var artwork) ? artwork : IconArtwork.None;
     }
 
     /// <summary>Answers every glyph with one recognizable path and declines everything else, so a test can tell which provider drew it.</summary>

@@ -85,6 +85,8 @@
     "A glyph carries no accessible name of its own, so the button around it has to be labeled.": "Un icono no aporta nombre accesible propio, así que el botón que lo rodea debe estar etiquetado.",
     "Upload": "Subir",
     "Delete": "Eliminar",
-    "Search": "Buscar"
+    "Search": "Buscar",
+    "Reading Direction": "Dirección de Lectura",
+    "A glyph whose form points along the reading direction is drawn once, for left-to-right, and turned over under right-to-left, so the same glyph reads as back, forward, undo or indent in both. A glyph named for a side, a physical object, a clockwise motion, a media control or one carrying letters keeps its form.": "Un icono cuya forma apunta a lo largo de la dirección de lectura se dibuja una sola vez, para izquierda a derecha, y se voltea bajo derecha a izquierda, de modo que el mismo icono se lee como atrás, adelante, deshacer o sangría en ambas direcciones. Un icono nombrado por un lado, un objeto físico, un movimiento en sentido horario, un control multimedia o uno que lleva letras conserva su forma."
   }
 }

@@ -85,6 +85,8 @@
     "A glyph carries no accessible name of its own, so the button around it has to be labeled.": "לסמל אין שם נגיש משלו, ולכן יש לתייג את הלחצן שסביבו.",
     "Upload": "העלאה",
     "Delete": "מחיקה",
-    "Search": "חיפוש"
+    "Search": "חיפוש",
+    "Reading Direction": "כיוון קריאה",
+    "A glyph whose form points along the reading direction is drawn once, for left-to-right, and turned over under right-to-left, so the same glyph reads as back, forward, undo or indent in both. A glyph named for a side, a physical object, a clockwise motion, a media control or one carrying letters keeps its form.": "סמל שצורתו מצביעה לאורך כיוון הקריאה מצויר פעם אחת, לכתיבה משמאל לימין, והופך תחת כתיבה מימין לשמאל, כך שאותו סמל נקרא כאחורה, קדימה, ביטול או הזחה בשני הכיוונים. סמל הקרוי על שם צד, חפץ פיזי, תנועה בכיוון השעון, פקד מדיה או סמל הנושא אותיות שומר על צורתו."
   }
 }

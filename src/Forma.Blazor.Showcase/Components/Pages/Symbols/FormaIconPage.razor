@@ -70,6 +70,23 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Reading Direction"] <span class="demo-count">@Mirrored.Count</span></h2>
+    <p class="description">@L["A glyph whose form points along the reading direction is drawn once, for left-to-right, and turned over under right-to-left, so the same glyph reads as back, forward, undo or indent in both. A glyph named for a side, a physical object, a clockwise motion, a media control or one carrying letters keeps its form."]</p>
+    <div class="demo-box">
+        <ul class="glyph-grid glyph-grid-named">
+            @foreach (var glyph in Mirrored)
+            {
+                <li>
+                    <span dir="ltr"><FormaIcon Icon="glyph" Size="IconSize.Medium" /></span>
+                    <span dir="rtl"><FormaIcon Icon="glyph" Size="IconSize.Medium" /></span>
+                    <code>@glyph</code>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Sizing"]</h2>
     <p class="description">@L["Each size an icon takes is a whole multiple of the grid its artwork is drawn on, so a stroke lands on whole pixels: 24px and 48px draw the 24-unit grid, 32px and 64px the 32-unit grid. A glyph inline with text follows the text instead."]</p>
     <div class="demo-box">

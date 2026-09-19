@@ -115,21 +115,9 @@
     text-align: center;
 }
 
-/* The glyph stands in for the words where they do not fit; it points forward and is turned for back and for right-to-left. */
+/* The glyph stands in for the words where they do not fit. */
 ::deep .forma-pagination-navigation-button-glyph {
     display: none;
-}
-
-::deep .forma-pagination-navigation-button-previous .forma-pagination-navigation-button-glyph {
-    rotate: 180deg;
-}
-
-::deep .forma-pagination-navigation-button-previous:dir(rtl) .forma-pagination-navigation-button-glyph {
-    rotate: 0deg;
-}
-
-::deep .forma-pagination-navigation-button-next:dir(rtl) .forma-pagination-navigation-button-glyph {
-    rotate: 180deg;
 }
 
 /* The input row needs the two navigation buttons (78px and 55px, in English), the 10em box (140px at the small

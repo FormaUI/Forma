@@ -46,6 +46,25 @@ Icon omega = new Rune('Ω');
 methods. Icons are records, so two naming the same glyph in the same variant are equal and two
 variants of one glyph are not.
 
+## Direction
+
+A glyph whose form points along the reading direction — an arrow or a chevron pointing left or
+right, the curve of `Undo` and `Redo`, `Reply` and `Forward`, an arrow leaving a frame as in `Exit`
+and `Open`, the marks a list starts with — is declared `GlyphDirectionSensitive` on its `Glyph`
+member with the direction it adapts for, as the HTML `dir` token. `glyph.GetDirectionSensitivity()`
+reads that direction, or null for a glyph that reads the same either way, and
+`glyph.IsDirectionSensitive("rtl")` asks about one direction. `FormaIcon` draws such a glyph
+turned over where text runs the direction it names, so `ArrowLeft` means back in both directions
+and a component never turns a glyph itself. A glyph named for a side, `AlignLeft` or `LayoutLeft`, keeps
+that side, as do a physical object such as `Search`, a clockwise motion such as `Refresh`, a media
+control such as `TriangleRight`, and anything carrying letters or digits.
+
+```csharp
+Glyph.ArrowLeft.GetDirectionSensitivity();    // "rtl"
+Glyph.ArrowLeft.IsDirectionSensitive("rtl");  // true
+Glyph.AlignLeft.IsDirectionSensitive("rtl");  // false
+```
+
 ## Artwork
 
 | Type | What it is |

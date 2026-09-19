@@ -86,23 +86,8 @@ span.forma-breadcrumb-item {
     flex-shrink: 0;
 }
 
-/* A chevron glyph is not bidi-mirrored, so the separator is turned to follow the reading direction. */
-.forma-breadcrumb-separator:dir(rtl) {
-    rotate: 180deg;
-}
-
-/* The chevron turns to follow the reading direction, and down to open. */
-::deep .forma-breadcrumb-chevron {
-    transition: rotate 0.15s ease;
-}
-
-::deep .forma-breadcrumb-chevron:dir(rtl) {
-    rotate: 180deg;
-}
-
-/* Down reads the same in both directions, so the open state is not mirrored. */
+/* The open menu's trigger takes the accent. */
 ::deep .forma-breadcrumb-chevron[aria-expanded="true"] {
     --forma-button-ghost-color: var(--primary-color);
-    rotate: 90deg;
 }
 

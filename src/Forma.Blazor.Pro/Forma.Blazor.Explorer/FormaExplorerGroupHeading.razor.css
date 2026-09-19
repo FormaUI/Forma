@@ -25,10 +25,6 @@
     color: var(--quiet-text-color);
 }
 
-/* The chevron pointing along the reading direction is turned to point the other way in right-to-left text. */
-.is-collapsed .forma-explorer-group-chevron:dir(rtl) {
-    rotate: 180deg;
-}
 
 .forma-explorer-group-count {
     color: var(--text-secondary-color);

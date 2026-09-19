@@ -28,6 +28,13 @@
     font-variant-emoji: text;
 }
 
+/* A glyph whose form points along the reading direction is drawn for one direction and turned over when text
+   runs the direction it is sensitive to, so the one glyph reads as back, forward, undo or indent in both. */
+.forma-icon-logical-direction[data-direction="rtl"]:dir(rtl),
+.forma-icon-logical-direction[data-direction="ltr"]:dir(ltr) {
+    scale: -1 1;
+}
+
 /* Each size is one the artwork is drawn crisp at; the provider picks the matching grid. */
 .forma-icon-sm {
     font-size: var(--icon-size-sm);
