@@ -86,7 +86,18 @@ public sealed class LocalePathMatcher
     private Regex CreateNameMatcher(LocalePath path)
     {
         var escapedSeparator = Regex.Escape(_separator.ToString());
-        var segment = $"[^{escapedSeparator}]+";
+
+        // A segment is a part of a type's name, written as a C# identifier is, so a folder that could not be one never reads as an anchor.
+        const string IdentifierRest = @"[\p{L}\p{Nl}\p{Nd}\p{Mn}\p{Mc}\p{Pc}\p{Cf}]";
+        var segment = $"[\\p{{L}}\\p{{Nl}}_]{IdentifierRest}*";
+
+        // The folder of locale files never completes a name either, so an anchor has no segment by its name, whatever it is set to.
+        if (_values.LocalesDir.Length > 0)
+        {
+            var localesDir = Regex.Escape(_values.LocalesDir.Replace(Path.AltDirectorySeparatorChar, _separator));
+            segment = $"(?!{localesDir}(?!{IdentifierRest})){segment}";
+        }
+
         var isRooted = _values.RootDir.Length > 0;
 
         // Each fragment is a piece of the expression, marked when it stands for a separator the path wrote as '/'.

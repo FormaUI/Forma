@@ -197,6 +197,33 @@ public sealed class LocalePathTests
         public void Should_not_read_a_locales_dir_as_a_name_segment()
             => Assert.False(TryGetAnchor(Beside, "Contoso.Widgets.Bars..locales.he.json", Embedded, '.', out _));
 
+        [Theory]
+        [InlineData("Contoso.Widgets/Bars/.locales/he.json")]
+        [InlineData("Contoso.Widgets/Bars/2024/he.json")]
+        [InlineData("Contoso.Widgets/Bars/Old Bars/he.json")]
+        public void Should_not_read_a_folder_that_is_not_part_of_a_name_as_a_segment_in_a_path(string name)
+            => Assert.False(TryGetAnchor(CultureInHostDir, name, Embedded, Path.AltDirectorySeparatorChar, out _));
+
+        [Theory]
+        [InlineData("strings", "Contoso.Widgets/Bars/strings/he.json", '/')]
+        [InlineData("strings", "Contoso.Widgets.Bars.strings.he.json", '.')]
+        [InlineData("i18n/strings", "Contoso.Widgets/Bars/i18n/strings/he.json", '/')]
+        public void Should_not_read_the_locales_dir_as_a_segment_whatever_it_is_named(string localesDir, string name, char separator)
+        {
+            // Arrange — a project may name its folder of locale files as a namespace segment could be named, and the folder still completes no name.
+            var values = Embedded with { LocalesDir = localesDir };
+
+            // Act
+            var isReadThroughTheFolder = TryGetAnchor(CultureInHostDir, name, values, separator, out _);
+            var isReadInTheFolder = TryGetAnchor(CultureInOwnDir, name, values, separator, out var anchor);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(isReadThroughTheFolder),
+                () => Assert.True(isReadInTheFolder),
+                () => Assert.Equal(["Bars"], anchor!));
+        }
+
         [Fact]
         public void Should_not_read_a_root_file_where_the_root_is_unknown()
             => Assert.False(TryGetAnchor("$RootDir/$LocalesDir/$Culture$Extension", ".locales/he.json", Unrooted, Path.AltDirectorySeparatorChar, out _));

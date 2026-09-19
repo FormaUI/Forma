@@ -8,6 +8,10 @@ are applied in. The contract a component reads strings through, holes, plural fo
 format are the `Forma.Framework.Localization` README's; the checks run over the files are the
 `Forma.Locali` linter's.
 
+Out of scope: a source reads its folder once and watches it for no change; a path names
+`$Culture` and nothing chooses a path by it; and a misplaced file is the linter's to report,
+since the build embeds files as it always has.
+
 ## Purpose
 
 A locale file stands for part of a type's name, and its sections complete the rest. Which part a
@@ -60,7 +64,10 @@ itself holds its entries at the top level.
 An anchor is counted from a **root namespace**, the prefix of a type's name a source completes
 from. Below it an anchor is a list of segments, empty for the root itself. The segments are the
 parts of a type's full name: namespace segments, a containing type's name for a nested type, and
-the type's own name at the deepest anchor. A folder and a namespace have no relation in .NET, and
+the type's own name at the deepest anchor, each written as a C# identifier is, so a folder whose
+name could not be part of one is never read as a segment; nor is the folder of locale files,
+whatever `$LocalesDir` names it, since that folder completes no name. A folder and a namespace
+have no relation in .NET, and
 the library assumes none: it builds names from segments and matches names, and the paths are the
 one place the relation between a file's location and the name it completes is stated.
 
@@ -77,10 +84,10 @@ written with `/` between folders and tokens for everything that varies:
 | `$AssemblyName` | The name of the assembly the type lives in. |
 | `$RootNamespace` | The root namespace anchors are counted from. |
 | `$RootDir` | Where the source's names begin (see *Roots*), written with `/` between folders. |
-| `$AnchorName` | The anchor's segments, joined with `/`; empty at the root. |
+| `$AnchorName` | The anchor's segments, each a part of a type's name, joined with `/`; empty at the root. |
 | `$ParentName` | The anchor's segments but the last, joined with `/`; empty at the root and one level below it. |
 | `$CurrentName` | The anchor's last segment; empty at the root. |
-| `$LocalesDir` | The name of a folder of locale files, `.locales` unless a setting says otherwise. |
+| `$LocalesDir` | The name of a folder of locale files, `.locales` unless a setting says otherwise; never a segment of an anchor. |
 | `$Culture` | The culture the file is for, such as `he` or `es-419`. |
 | `$Extension` | The extension the backend's files carry, such as `.json`. |
 

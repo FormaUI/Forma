@@ -86,7 +86,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <param name="name">The file's name in the source.</param>
     /// <param name="cultureName">The culture the file is read for.</param>
     /// <exception cref="LocaleConfigException">The assembly's config file is malformed, or the source holds more than one for it.</exception>
-    protected IReadOnlyList<string> GetAnchorNames(string assemblyName, string name, string cultureName)
+    public IReadOnlyList<string> GetAnchorNames(string assemblyName, string name, string cultureName)
     {
         ArgumentException.ThrowIfNullOrEmpty(assemblyName);
         ArgumentException.ThrowIfNullOrEmpty(name);
