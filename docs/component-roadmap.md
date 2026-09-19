@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**24 components not yet implemented, 1 in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
+**25 components not yet implemented, 1 in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -39,6 +39,10 @@ Forma.Blazor/Components/
 │   └── FormaCategorySelector
 └── (1) Windows/
     └── FormaLaunchBar
+
+Forma.Blazor.Pro/
+└── (1) Forma.Blazor.Gallery/
+    └── FormaGallery
 ```
 
 ## Build order
@@ -58,7 +62,8 @@ The components still to build, in the order dependency and reuse suggest.
 | 9 | `FormaSortMenu`, `FormaViewButton` | The two controls that exist for the managers' tile grids — a layout with no column headers to sort by and two layouts to switch between. The explorer composes them in place of the sort control and view switch it drew for itself |
 | 10 | `FormaLaunchBar` | The bar a workspace is launched from, hosting `FormaRestArea` beside its launchers, so the windows and the way back to them stand in one place |
 | 11 | `FormaComposer` | The largest component, and last of the composing ones — an editor engine rather than a single control, with every capability and every editing surface arriving as a plugin. It replaces both halves of Coi's authoring stack: the CKEditor rich text field *and* the `template.aspx` page designer. Its chrome is `FormaSelect`, `FormaDropDownMenu` and `FormaColorPicker`, it delegates image insertion to `FormaExplorer`, uploads through `FormaFilePicker` and `FormaFileUploader`, and inserts `FormaVideoPlayer`. It runs to eight phases of its own — see [the composer implementation plan](composer-implementation-plan.md) |
-| 12 | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
+| 12 | `FormaGallery` | A media-only surface of its own over the items package the explorer shares, built from the library's components with nothing of the explorer's, so it comes after any chrome both need has been abstracted into `Forma.Blazor` and before the editor that its tiles would launch — see [the gallery design](gallery-design.md) |
+| 13 | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
 
 ## Components
 
@@ -182,6 +187,15 @@ A searchable grid of fonts in a dialog, each cell set in the font it names.
 |---|---|
 | **Old pattern** | Google Fonts grid with Hebrew sample text preview, click-to-select |
 | **Used in** | design settings, page editor |
+
+### `FormaGallery`
+
+A media-only browsing surface: every image and video as a date-grouped thumbnail, and folders as date-labeled collections with favorites and categories.
+
+| | |
+|---|---|
+| **Old pattern** | The image library's tile grid in Coi, which listed every upload as a thumbnail with no grouping and no way to mark or categorize one |
+| **Used in** | The media module's own view of its library, beside the explorer that manages it; the picker a cover or a gallery tile is chosen from |
 
 ### `FormaImageEditor`
 
