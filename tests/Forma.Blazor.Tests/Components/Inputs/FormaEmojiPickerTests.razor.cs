@@ -1,35 +1,27 @@
 namespace Forma.Blazor.Tests.Components.Inputs;
 
+using Forma.Blazor.Features.Emojis;
+using Forma.Tests.Blazor.Emojis;
+
 public sealed partial class FormaEmojiPickerTests
 {
-    private readonly Action? _completeSpriteLoad;
-    private readonly Action? _failSpriteLoad;
-
-    public FormaEmojiPickerTests(bool autoResolveSpriteLoad = true)
+    public FormaEmojiPickerTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
 
-        // Configured explicitly even under Loose, so a test can hold the load pending.
-        var handler = JSInterop
+        // Configured explicitly even under Loose, so the sheets a test counts are fetched through the real loader.
+        JSInterop
             .SetupModule("./_content/forma/common/scripts/operations/Asset.js")
-            .Setup<bool>("loadSprite", _ => true);
-
-        if (autoResolveSpriteLoad)
-        {
-            handler.SetResult(true);
-        }
-        else
-        {
-            _completeSpriteLoad = () => handler.SetResult(true);
-            _failSpriteLoad = () => handler.SetException(new JSException("The sprite never arrived."));
-        }
+            .Setup<bool>("loadSprite", _ => true)
+            .SetResult(true);
     }
 
-    /// <summary>Resolves every sprite load left pending by <c>autoResolveSpriteLoad: false</c>.</summary>
-    internal void CompleteSpriteLoad()
-        => _completeSpriteLoad?.Invoke();
+    /// <summary>Puts a loader in place whose loads stay pending until the test finishes them.</summary>
+    internal FakeEmojiSpriteLoader HoldSpriteLoads()
+    {
+        var loader = new FakeEmojiSpriteLoader();
+        Services.AddScoped<IEmojiSpriteLoader>(_ => loader);
 
-    /// <summary>Fails every sprite load left pending by <c>autoResolveSpriteLoad: false</c>.</summary>
-    internal void FailSpriteLoad()
-        => _failSpriteLoad?.Invoke();
+        return loader;
+    }
 }

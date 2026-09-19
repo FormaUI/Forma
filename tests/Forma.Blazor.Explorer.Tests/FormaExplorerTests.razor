@@ -335,7 +335,7 @@
         }
 
         [Fact]
-        public void Should_sort_resources_by_name_and_size()
+        public async Task Should_sort_resources_by_name_and_size()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -354,7 +354,7 @@
             Assert.Equal("c.jpg", items[2].TextContent);
 
             // Act - Sort by Size
-            SortBy(cut, ExplorerSortField.Size);
+            await SortByAsync(cut, ExplorerSortField.Size);
             items = cut.FindAll(".forma-explorer-item-name");
             Assert.Equal("c.jpg", items[0].TextContent);
             Assert.Equal("b.jpg", items[1].TextContent);
@@ -362,7 +362,7 @@
         }
 
         [Fact]
-        public void Should_sort_resources_by_the_date_added_and_the_date_modified()
+        public async Task Should_sort_resources_by_the_date_added_and_the_date_modified()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -376,14 +376,14 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" />);
 
             // Act
-            SortBy(cut, ExplorerSortField.DateAdded);
+            await SortByAsync(cut, ExplorerSortField.DateAdded);
 
             // Assert
             var items = cut.FindAll(".forma-explorer-item-name");
             Assert.Equal(["b.jpg", "c.jpg", "a.jpg"], items.Select(i => i.TextContent));
 
             // Act
-            SortBy(cut, ExplorerSortField.DateModified);
+            await SortByAsync(cut, ExplorerSortField.DateModified);
 
             // Assert
             items = cut.FindAll(".forma-explorer-item-name");
@@ -391,7 +391,7 @@
         }
 
         [Fact]
-        public void Should_order_a_resource_without_a_date_first_when_sorting_by_date()
+        public async Task Should_order_a_resource_without_a_date_first_when_sorting_by_date()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -403,7 +403,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" />);
 
             // Act
-            SortBy(cut, ExplorerSortField.DateModified);
+            await SortByAsync(cut, ExplorerSortField.DateModified);
 
             // Assert
             var items = cut.FindAll(".forma-explorer-item-name");
@@ -1773,7 +1773,7 @@
         }
 
         [Fact]
-        public void Should_keep_the_sort_field_when_a_selection_change_re_renders_the_host()
+        public async Task Should_keep_the_sort_field_when_a_selection_change_re_renders_the_host()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1783,7 +1783,7 @@
                 new ImageResourceInfo("https://example.com/a.jpg") { Size = 90 }
             ];
             var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" SelectedChanged="@(_ => Task.CompletedTask)" />);
-            SortBy(cut, ExplorerSortField.Size);
+            await SortByAsync(cut, ExplorerSortField.Size);
             Assert.Equal("b.jpg", cut.FindAll(".forma-explorer-item-name")[0].TextContent);
             cut.Find(".forma-explorer-select-mode-button").Click();
 
@@ -2171,7 +2171,7 @@
         }
 
         [Fact]
-        public void Should_pass_the_sort_to_the_provider_rather_than_reordering_the_window()
+        public async Task Should_pass_the_sort_to_the_provider_rather_than_reordering_the_window()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2180,7 +2180,7 @@
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" PageSize="10" />);
 
             // Act
-            SortBy(cut, ExplorerSortField.Size);
+            await SortByAsync(cut, ExplorerSortField.Size);
 
             // Assert
             Assert.Equal(ExplorerSortField.Size, provider.Queries[^1].SortBy);
@@ -2288,7 +2288,7 @@
         }
 
         [Fact]
-        public void Should_show_the_newest_window_when_a_slower_query_is_superseded()
+        public async Task Should_show_the_newest_window_when_a_slower_query_is_superseded()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2299,10 +2299,10 @@
             };
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" PageSize="5" />);
 
-            // Act - a second window is asked for while the first is still held
-            SortBy(cut, ExplorerSortField.Name);
+            // Act - a second window is asked for while the first is still held, then both are let go
+            var sorting = SortByAsync(cut, ExplorerSortField.Name);
             provider.Gate.SetResult();
-            cut.WaitForState(() => cut.FindAll(".forma-explorer-item").Count > 0);
+            await sorting;
 
             // Assert
             Assert.True(provider.Queries.Count >= 2);
@@ -2358,11 +2358,12 @@
             Assert.Empty(cut.FindAll(".forma-explorer-scroll .forma-explorer-pagination"));
         }
 
-        private static void SortBy<TComponent>(IRenderedComponent<TComponent> cut, ExplorerSortField field)
+        // The trigger's handler is awaited before the menu is read, and the field's handler queries the provider, so the task completes once the new window is fetched.
+        private static async Task SortByAsync<TComponent>(IRenderedComponent<TComponent> cut, ExplorerSortField field)
             where TComponent : IComponent
         {
-            cut.Find(".forma-explorer-sort-trigger").Click();
-            cut.Find($"[data-sort-field='{field}']").Click();
+            await cut.Find(".forma-explorer-sort-trigger").ClickAsync(new());
+            await cut.Find($"[data-sort-field='{field}']").ClickAsync(new());
         }
     }
 

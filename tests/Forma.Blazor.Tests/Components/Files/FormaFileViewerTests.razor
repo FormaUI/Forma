@@ -508,7 +508,7 @@
         }
 
         [Fact]
-        public void Should_ignore_a_resolve_that_finished_after_the_source_changed()
+        public async Task Should_ignore_a_resolve_that_finished_after_the_source_changed()
         {
             // Arrange
             using var ctx = new FormaFileViewerTests();
@@ -518,15 +518,16 @@
 
             // Act
             cut.FindComponent<FormaFileViewer>().Render(parameters => parameters.Add(viewer => viewer.Source, "/media/current.bin"));
-            provider.Complete("/media/current.bin", new ResourceInfo("/media/current.bin") { Size = 512 });
-            provider.Complete("/media/slow.bin", new ResourceInfo("/media/slow.bin") { Size = 2048 });
+            await cut.ReleaseAsync(() =>
+            {
+                provider.Complete("/media/current.bin", new ResourceInfo("/media/current.bin") { Size = 512 });
+                provider.Complete("/media/slow.bin", new ResourceInfo("/media/slow.bin") { Size = 2048 });
+            });
 
             // Assert
-            cut.WaitForAssertion(() =>
-            {
-                Assert.Equal("current.bin", cut.Find(".forma-file-viewer-metadata-name").TextContent);
-                Assert.Equal("512 B", cut.Find(".forma-file-viewer-metadata-size").TextContent);
-            });
+            Assert.Multiple(
+                () => Assert.Equal("current.bin", cut.Find(".forma-file-viewer-metadata-name").TextContent),
+                () => Assert.Equal("512 B", cut.Find(".forma-file-viewer-metadata-size").TextContent));
         }
     }
 }

@@ -36,6 +36,17 @@ bUnit renders markup and drives its own synchronous JS interop, so a green suite
 - Do verify stylesheet-dependent states, touch targets, gestures, and direction in a real browser instead — the `forma-checking-a11y-touch-rtl` skill covers how.
 - Don't read a passing bUnit test as proof that the component works in the showcase.
 
+## Time and completion
+
+A test that passes alone and fails under load is broken, not unlucky: its assertion depends on how quickly a continuation is scheduled. Load only exposes the race.
+
+- Do hold a component's asynchronous work in a fake the test controls, and let it go through `cut.ReleaseAsync(...)` from the bUnit support project, which runs the release on the renderer; the component's continuation then runs there at once, so the test asserts directly after.
+- Do give such a fake a plain `TaskCompletionSource`; one created to run its continuations asynchronously queues the component's continuation instead of running it inline, and the assertion races it again.
+- Do await the handler's own task, from `ClickAsync` or `TriggerEventAsync`, where the component's work passes through a library that awaits with `ConfigureAwait(false)`; that work leaves the renderer, and nothing done on the renderer can wait for it.
+- Do give a component a contract to inject, as `IEmojiSpriteLoader` beside `EmojiSpriteLoader`, when a test needs to hold its work and the only way in was a pending script call.
+- Don't wait on the clock for a completion the test controls: no `WaitForAssertion` or `WaitForState` after completing a gate, no `Task.Delay`, and never a widened timeout or a retry, which hide the race rather than remove it.
+- Do prove a fix under the conditions that failed, repeating the project while something else loads the machine, before calling the test stable.
+
 ## JavaScript tests
 
 The script test project runs the `wwwroot/scripts/` modules of every assembly that ships scripts under Vitest and happy-dom. It reaches each assembly through an alias named for it and holds that assembly's tests in a folder of the same name, laid out as the assembly's `wwwroot/scripts/` is.

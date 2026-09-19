@@ -30,10 +30,11 @@
         }
 
         [Fact]
-        public void Should_show_a_single_spinner_in_place_of_a_still_loading_category()
+        public async Task Should_show_a_single_spinner_in_place_of_a_still_loading_category()
         {
             // Arrange
-            using var ctx = new FormaEmojiPickerTests(autoResolveSpriteLoad: false);
+            using var ctx = new FormaEmojiPickerTests();
+            var loader = ctx.HoldSpriteLoads();
 
             // Act
             var cut = ctx.Render(@<FormaEmojiPicker />);
@@ -43,10 +44,10 @@
             Assert.Empty(cut.FindAll(".forma-emoji-picker-emoji"));
 
             // Act
-            ctx.CompleteSpriteLoad();
+            await cut.ReleaseAsync(loader.CompleteAll);
 
             // Assert
-            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-emoji-picker-emoji")));
+            Assert.NotEmpty(cut.FindAll(".forma-emoji-picker-emoji"));
             Assert.Empty(cut.FindAll(".forma-emoji-picker-loading"));
         }
 
@@ -97,18 +98,19 @@
         }
 
         [Fact]
-        public void Should_stop_the_spinner_when_a_sprite_fails_rather_than_spinning_forever()
+        public async Task Should_stop_the_spinner_when_a_sprite_fails_rather_than_spinning_forever()
         {
             // Arrange
-            using var ctx = new FormaEmojiPickerTests(autoResolveSpriteLoad: false);
+            using var ctx = new FormaEmojiPickerTests();
+            var loader = ctx.HoldSpriteLoads();
             var cut = ctx.Render(@<FormaEmojiPicker />);
             Assert.NotNull(cut.Find(".forma-emoji-picker-loading"));
 
             // Act
-            ctx.FailSpriteLoad();
+            await cut.ReleaseAsync(loader.FailAll);
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-emoji-picker-loading")));
+            Assert.Empty(cut.FindAll(".forma-emoji-picker-loading"));
             Assert.NotEmpty(cut.FindAll(".forma-emoji-picker-emoji"));
         }
 

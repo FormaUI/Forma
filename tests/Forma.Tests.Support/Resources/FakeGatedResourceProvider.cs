@@ -7,7 +7,7 @@ public sealed class FakeGatedResourceProvider : IResourceProvider
 {
     private readonly Dictionary<string, TaskCompletionSource<ResourceInfo?>> _pending = new(StringComparer.Ordinal);
 
-    /// <summary>Finishes the pending resolution for an address with the given resource.</summary>
+    /// <summary>Finishes the pending resolution for an address with the given resource, running the awaiting surface's continuation where it is finished.</summary>
     public void Complete(string source, ResourceInfo resource)
         => _pending[source].SetResult(resource);
 
@@ -16,7 +16,7 @@ public sealed class FakeGatedResourceProvider : IResourceProvider
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
 
-        var completion = new TaskCompletionSource<ResourceInfo?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<ResourceInfo?>();
         _pending[source] = completion;
 
         return new ValueTask<ResourceInfo?>(completion.Task);
