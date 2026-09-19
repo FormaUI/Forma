@@ -1,0 +1,6 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "@.Fixtures.HostRooted": {
+    "Save": "rooted host file"
+  }
+}

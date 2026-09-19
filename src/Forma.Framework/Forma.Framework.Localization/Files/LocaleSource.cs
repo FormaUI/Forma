@@ -13,6 +13,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
 
     private readonly ConcurrentDictionary<string, LocaleRoot> _roots = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<AnchorsKey, FrozenDictionary<string, string[]>> _anchors = new();
+    private readonly ConcurrentDictionary<RootedSectionsKey, FrozenDictionary<string, string[]>> _rootedSections = new();
     private readonly ConcurrentDictionary<string, LocaleFile?> _files = new(StringComparer.Ordinal);
     private IReadOnlyList<string>? _names;
 
@@ -30,7 +31,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     protected virtual StringComparison NameComparison
         => StringComparison.Ordinal;
 
-    /// <summary>The translations for a type in one culture: anchor by anchor from the root down to the type, and within an anchor by the paths in their order, so a later entry overrides an earlier one.</summary>
+    /// <summary>The translations for a type in one culture: anchor by anchor from the root down to the type, within an anchor by the paths in their order and then the rooted sections naming the anchor, so a later entry overrides an earlier one.</summary>
     /// <param name="assemblyName">The name of the assembly the type lives in.</param>
     /// <param name="typeName">The type's full name.</param>
     /// <param name="cultureName">The culture the files are named for.</param>
@@ -48,6 +49,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         var isUnderRoot = IsUnderRootNamespace(segments, rootSegments);
         var anchor = isUnderRoot && segments.Length > 1 ? segments[rootSegments.Length..] : segments;
         var anchors = _anchors.GetOrAdd(new AnchorsKey(assemblyName, cultureName, !isUnderRoot), CreateAnchors);
+        var rootedSections = _rootedSections.GetOrAdd(new RootedSectionsKey(assemblyName, cultureName), CreateRootedSections);
 
         var entries = new List<LocaleSourceEntry>();
         var anchorKey = new StringBuilder();
@@ -64,16 +66,20 @@ public abstract class LocaleSource(ILocaleFileFormat format)
                 anchorKey.Append(anchor[depth - 1]);
             }
 
-            if (!anchors.TryGetValue(anchorKey.ToString(), out var names))
-            {
-                continue;
-            }
-
-            foreach (var name in names)
+            var key = anchorKey.ToString();
+            foreach (var name in anchors.GetValueOrDefault(key, []))
             {
                 if (_files.GetOrAdd(name, ReadFile, cultureName) is { } file)
                 {
-                    file.Collect(anchor.AsSpan(depth), entries, GetDisplayName(name));
+                    file.Collect(anchor, depth, entries, GetDisplayName(name));
+                }
+            }
+
+            foreach (var name in rootedSections.GetValueOrDefault(key, []))
+            {
+                if (_files.GetOrAdd(name, ReadFile, cultureName) is { } file)
+                {
+                    file.CollectRooted(anchor, depth, entries, GetDisplayName(name));
                 }
             }
         }
@@ -318,7 +324,51 @@ public abstract class LocaleSource(ILocaleFileFormat format)
             nameComparer);
     }
 
+    // A rooted section is found by reading every file the paths place in the culture once, and is placed at the anchor it names whatever file carries it.
+    private FrozenDictionary<string, string[]> CreateRootedSections(RootedSectionsKey key)
+    {
+        var names = new List<(string AnchorKey, string Name)>();
+
+        foreach (var isOutsideRootNamespace in (ReadOnlySpan<bool>)[false, true])
+        {
+            var anchors = _anchors.GetOrAdd(new AnchorsKey(key.AssemblyName, key.CultureName, isOutsideRootNamespace), CreateAnchors);
+            foreach (var name in anchors.Values.SelectMany(placed => placed).Distinct(StringComparer.Ordinal))
+            {
+                LocaleFile? file;
+                try
+                {
+                    file = _files.GetOrAdd(name, ReadFile, key.CultureName);
+                }
+                catch (LocaleFileException)
+                {
+                    // A file that cannot be read carries no rooted section; reading its own type reports what is wrong with it.
+                    continue;
+                }
+
+                if (file is null)
+                {
+                    continue;
+                }
+
+                foreach (var (sectionName, _) in file.Root.Sections)
+                {
+                    if (LocaleFile.GetRootedSegments(sectionName) is { } segments)
+                    {
+                        names.Add((string.Join(AnchorKeySeparator, segments), name));
+                    }
+                }
+            }
+        }
+
+        return names
+            .Distinct()
+            .GroupBy(placed => placed.AnchorKey, placed => placed.Name, StringComparer.Ordinal)
+            .ToFrozenDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+    }
+
     private readonly record struct AnchorsKey(string AssemblyName, string CultureName, bool IsOutsideRootNamespace);
+
+    private readonly record struct RootedSectionsKey(string AssemblyName, string CultureName);
 
     private readonly record struct PlacedFile(string Name, int PathIndex, int Order);
 }

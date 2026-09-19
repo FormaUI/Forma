@@ -52,6 +52,9 @@ public sealed class HostMistyped;
 /// <summary>No embedded file; a host file named for the type, directly in its folder, localizes it.</summary>
 public sealed class HostNamed;
 
+/// <summary>No embedded file; a host file in an unrelated folder names the type from the root.</summary>
+public sealed class HostRooted;
+
 /// <summary>A type whose file carries its own strings at the top level and its nested types as sections.</summary>
 public sealed class Outer
 {

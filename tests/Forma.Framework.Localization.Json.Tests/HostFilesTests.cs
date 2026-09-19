@@ -126,6 +126,20 @@ public sealed class HostFilesTests
             // Assert
             Assert.Equal("host file named for the type", localized.Value);
         }
+
+        [Fact]
+        public void Should_read_a_rooted_section_from_a_host_file_in_an_unrelated_folder()
+        {
+            // Arrange — the file sits under a folder no type is named for, and the culture holds host files that cannot be read, which the search for rooted sections passes over.
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<HostRooted>();
+
+            // Act
+            var localized = strings["Save"];
+
+            // Assert
+            Assert.Equal("rooted host file", localized.Value);
+        }
     }
 
     public sealed class RootNamespaces

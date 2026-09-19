@@ -66,6 +66,89 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
+    public void Should_read_a_rooted_section_from_the_assemblys_root_wherever_the_file_sits()
+    {
+        // Arrange — a file in another folder names the type from the root, and is read at the type's own anchor after the folder's file.
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "folder file"), ("Italic", "folder file"))))),
+                ["Contoso.Widgets/Strings/.locales/he.fake"] = new(CreateSections(("@.Bars.Toolbar", CreateEntries(("Italic", "rooted section"))))),
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, Toolbar, "he");
+
+        // Assert
+        Assert.Equal(
+            [
+                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Bold", "folder file"),
+                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Italic", "folder file"),
+                new("Contoso.Widgets/Strings/.locales/he.fake", "@.Bars.Toolbar", "Italic", "rooted section"),
+            ],
+            entries);
+    }
+
+    [Fact]
+    public void Should_read_a_rooted_section_naming_a_namespace_for_every_type_beneath_it()
+    {
+        // Arrange — a rooted section completes the name from the root, and the sections beneath it from there.
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/.locales/he.fake"] = new(CreateSections(("@.Bars", CreateSections(("Toolbar", CreateEntries(("Bold", "rooted namespace"))))))),
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, Toolbar, "he");
+
+        // Assert
+        Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/.locales/he.fake", "@.Bars.Toolbar", "Bold", "rooted namespace")], entries);
+    }
+
+    [Fact]
+    public void Should_read_a_rooted_section_for_a_type_outside_the_root_namespace_by_its_full_name()
+    {
+        // Arrange
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/.locales/he.fake"] = new(CreateSections(("@.Fabrikam.Gadgets.Dial", CreateEntries(("Bold", "full name"))))),
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, "Fabrikam.Gadgets.Dial", "he");
+
+        // Assert
+        Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/.locales/he.fake", "@.Fabrikam.Gadgets.Dial", "Bold", "full name")], entries);
+    }
+
+    [Fact]
+    public void Should_leave_a_rooted_section_beneath_the_top_level_unread()
+    {
+        // Arrange — the prefix means the root only at the file's top level, so a nested one names nothing.
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/.locales/he.fake"] = new(CreateSections(("Bars", CreateSections(("@.Bars.Toolbar", CreateEntries(("Bold", "nested"))))))),
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, Toolbar, "he");
+
+        // Assert
+        Assert.Empty(entries);
+    }
+
+    [Fact]
     public void Should_read_the_form_its_config_names_in_place_of_the_default()
     {
         // Arrange

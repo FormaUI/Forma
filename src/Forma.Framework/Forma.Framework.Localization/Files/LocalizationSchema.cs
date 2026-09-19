@@ -21,6 +21,9 @@ public static class LocalizationSchema
     /// <summary>The prefix that keeps a key shaped like a reserved entry as text; one dollar sign is dropped and the rest is read as written.</summary>
     public const string EscapePrefix = "$$";
 
+    /// <summary>The prefix marking a top-level section's name as counted from the assembly's root rather than from where the file sits.</summary>
+    public const string RootedSectionPrefix = "@.";
+
     /// <summary>The field naming the revision the translations are at.</summary>
     public const string RevisionField = "Revision";
 
