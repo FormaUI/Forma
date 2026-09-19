@@ -25,7 +25,7 @@
     <Project Path="src\Forma.Framework\Forma.Framework.Timing\Forma.Framework.Timing.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
-    <Project Path="src\Forma.Framework\Forma.Framework.Composer.Abstractions\Forma.Framework.Composer.Abstractions.csproj" />
+    <Project Path="src\Forma.Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Catalog\Forma.Framework.Catalog.csproj" />

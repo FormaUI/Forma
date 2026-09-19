@@ -1,4 +1,4 @@
-# Forma.Framework.Composer.Abstractions
+# Forma.Framework.Composer.Extensibility
 
 The contracts a `FormaComposer` plugin is written against: what a plugin contributes, what it
 reads of the composer while it runs, and what it can ask the composer to do. A package that
@@ -14,7 +14,7 @@ installs that for a working composer and a plugin author installs this to write 
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Composer.Abstractions
+dotnet add package 2Site.Forma.Framework.Composer.Extensibility
 ```
 
 The package has no registrar and constructs nothing. A host registers plugins with the composer;

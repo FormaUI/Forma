@@ -25,7 +25,7 @@ Every production assembly has exactly one test project named after it, and is ne
 - Do drive an interop wrapper in a test through `FakeJSRuntime` and `FakeJSObjectReference` from the support project's interop folder, wrapped in a `JSEnvironment` over a `FakeLoggerFactory` logger, so the test reads what the wrapper returned and what it logged.
 - Do let the namespace follow the support folder, and reference the support project from each test project that uses one.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
-- Don't test a type from a project other than the one named after its assembly, or — for an `.Abstractions` assembly — the one named after its sibling.
+- Don't test a type from a project other than the one named after its assembly, or — for an assembly holding only a feature's contracts, as the composer's extensibility package does — the one named after the engine that implements them.
 - Don't couple tests to implementation details or private fields.
 - Don't give a test project its own `Support/` folder or its own copy of a support type.
 

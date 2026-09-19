@@ -7,7 +7,7 @@ operations every editor would otherwise reinvent, and the registry converters ar
 
 The contracts all of this reads — the plugin interfaces, the document, the context and the
 interaction — are
-[`Forma.Framework.Composer.Abstractions`](../Forma.Framework.Composer.Abstractions/README.md).
+[`Forma.Framework.Composer.Extensibility`](../Forma.Framework.Composer.Extensibility/README.md).
 **That is the package to read to write a plugin**; this assembly is how the composer runs one.
 
 It ships inside `2Site.Forma.Blazor.Pro.Composer` rather than as a package of its own, because

@@ -16,7 +16,7 @@ dotnet add package 2Site.Forma.Blazor.Pro.Composer
 ```
 
 The package depends on `2Site.Forma.Blazor`, the library it is built on, and on
-`2Site.Forma.Framework.Composer.Abstractions`, the contracts a plugin is written against; both
+`2Site.Forma.Framework.Composer.Extensibility`, the contracts a plugin is written against; both
 restore beside it. The composer's engine and its browser script ship inside the package. Browsing
 the host's stored files from the composer is
 [`Forma.AddOns.Composer.Plugins.Explorer`](../../Forma.AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md),

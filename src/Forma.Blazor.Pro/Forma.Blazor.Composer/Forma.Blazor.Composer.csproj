@@ -21,7 +21,7 @@
 
     <!-- The contracts a plugin is written against, which ship as their own package so a plugin outside this one can be. -->
     <ItemGroup>
-        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Composer.Abstractions\Forma.Framework.Composer.Abstractions.csproj" />
+        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />
     </ItemGroup>
 
     <!-- The component's own feature vocabulary and interop assembly, which ship inside this package. -->
