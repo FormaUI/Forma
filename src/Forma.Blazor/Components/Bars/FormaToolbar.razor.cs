@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Bars;
 
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Layout;
-using Forma.Framework.Common.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;

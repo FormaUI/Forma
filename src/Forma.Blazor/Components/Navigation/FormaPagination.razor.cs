@@ -3,8 +3,8 @@ namespace Forma.Blazor.Components.Navigation;
 using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
-using Forma.Framework.Common.Interop.Behaviors;
-using Forma.Framework.Common.Interop.Operations;
+using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;

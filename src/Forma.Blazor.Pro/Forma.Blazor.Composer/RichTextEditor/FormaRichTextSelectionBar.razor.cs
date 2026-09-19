@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor;
 
-using Forma.Framework.Common.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Composer.Editing;
 
 using Microsoft.AspNetCore.Components;

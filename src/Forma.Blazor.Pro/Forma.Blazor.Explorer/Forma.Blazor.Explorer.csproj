@@ -35,7 +35,7 @@
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Common.Interop\Forma.Framework.Common.Interop.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" PrivateAssets="all" />

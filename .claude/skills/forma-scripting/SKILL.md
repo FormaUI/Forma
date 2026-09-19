@@ -31,7 +31,7 @@ service    → one instance per document that many callers register with
 Scripts and their wrappers ship together in an interop assembly, never in the components
 assembly. The JavaScript interop assembly is the floor: the interop bases every wrapper builds on,
 `JSModule`, `JSInterop` and the `IJSEnvironment` they take, and the scripts every other script
-builds on, directly under its `wwwroot/scripts/` with no wrapper. The common interop assembly
+builds on, directly under its `wwwroot/scripts/` with no wrapper. The browser interop assembly
 holds every behavior and operation any component may attach, with the wrappers of components
 that belong to no feature. A feature with scripts of its own ships them, and their wrappers, in
 an interop assembly of its own. Every interop assembly is built on the JavaScript one, and a
@@ -41,7 +41,7 @@ The assemblies are served side by side under one content root, each with its scr
 `scripts/`. A script reaches another assembly's script by climbing to that root, so the import
 stays relative to the module and survives a host path base.
 
-The common interop assembly serves many concepts, so it sorts by kind: a script lives in
+The browser interop assembly serves many concepts, so it sorts by kind: a script lives in
 `wwwroot/scripts/behaviors/`, `operations/` or `components/`, and its wrapper in the matching
 `Behaviors/`, `Operations/` or `Components/` folder. A feature interop assembly is named for its
 one concept, so its scripts sit directly under `wwwroot/scripts/` and its wrappers at the assembly
@@ -67,10 +67,10 @@ root, a service's script beside the wrapper that owns it.
 - Do name a behavior for what the target can do while it is attached: `DropZone`, `DragGesture`, `Focus`, `Scroll`, `Breakpoint`, `AnchoredPopover`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
 - Do name an operation module for the browser concern it serves: `TextEntry.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
-- Do lift a capability another component could want out into a behavior or an operation in the common interop assembly, however it arrived; a component script is for what only its own component wants.
+- Do lift a capability another component could want out into a behavior or an operation in the browser interop assembly, however it arrived; a component script is for what only its own component wants.
 - Do compose behaviors in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
 - Do leave a behavior no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
-- Do read the common interop assembly's `wwwroot/scripts/behaviors/` before writing a new behavior; capability names make the folder its own inventory.
+- Do read the browser interop assembly's `wwwroot/scripts/behaviors/` before writing a new behavior; capability names make the folder its own inventory.
 - Don't name a behavior after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
 - Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `Playback.js` and `Geometry.js` divide by what the calls are for.
 - Don't name a shared behavior or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each come to be written twice.

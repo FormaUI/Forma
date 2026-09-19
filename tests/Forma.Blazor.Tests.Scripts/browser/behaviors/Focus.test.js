@@ -1,0 +1,342 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { attach, focusablesIn } from '#browser/behaviors/Focus.js';
+
+function tab(shiftKey = false) {
+    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
+    document.activeElement.dispatchEvent(event);
+
+    return event;
+}
+
+const focus = id => document.querySelector(`#${id}`).focus();
+
+describe('Focus wrapping inside a surface', () => {
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="surface"><button id="one">One</button><button id="two" disabled>Two</button><button id="three">Three</button></div><button id="after">After</button>';
+    });
+
+    const start = () => attach(document.querySelector('#surface'), { wrap: true });
+
+    it('moves Tab to the next enabled control and wraps at the end', () => {
+        start();
+        focus('one');
+
+        const first = tab();
+        expect(document.activeElement.id).toBe('three');
+
+        tab();
+        expect(document.activeElement.id).toBe('one');
+        expect(first.defaultPrevented).toBe(true);
+    });
+
+    it('moves Shift+Tab back and wraps at the start', () => {
+        start();
+        focus('one');
+
+        tab(true);
+
+        expect(document.activeElement.id).toBe('three');
+    });
+
+    it('leaves a key other than Tab alone', () => {
+        start();
+        focus('one');
+
+        const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        document.activeElement.dispatchEvent(event);
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(document.activeElement.id).toBe('one');
+    });
+
+    it('stops once disposed', () => {
+        const handle = start();
+        focus('one');
+        handle.dispose();
+
+        const event = tab();
+
+        expect(event.defaultPrevented).toBe(false);
+    });
+});
+
+describe('Focus arranged inside a surface', () => {
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <button id="before">Before</button>
+            <div id="composer">
+                <div class="toolbar"><button id="bold">Bold</button><button id="italic">Italic</button></div>
+                <div class="canvas"><div id="editor" tabindex="0"></div><div class="bar" style="display: none"><button id="hidden">Hidden</button></div></div>
+                <button id="status">Status</button>
+            </div>
+            <button id="after">After</button>
+        `;
+    });
+
+    const start = () => attach(document.querySelector('#composer'), { order: ['.canvas'] });
+
+    it('visits the named region first, then the rest in document order', () => {
+        start();
+        focus('editor');
+
+        tab();
+        expect(document.activeElement.id).toBe('bold');
+        tab();
+        expect(document.activeElement.id).toBe('italic');
+        tab();
+        expect(document.activeElement.id).toBe('status');
+    });
+
+    it('leaves for the control after the surface past the last one', () => {
+        start();
+        focus('status');
+
+        const event = tab();
+
+        expect(document.activeElement.id).toBe('after');
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('leaves for the control before the surface ahead of the first one', () => {
+        start();
+        focus('editor');
+
+        tab(true);
+
+        expect(document.activeElement.id).toBe('before');
+    });
+
+    it('walks back from the rest into the named region', () => {
+        start();
+        focus('bold');
+
+        tab(true);
+
+        expect(document.activeElement.id).toBe('editor');
+    });
+
+    it('skips controls that are not displayed', () => {
+        expect(focusablesIn(document.querySelector('#composer')).map(control => control.id)).toEqual(['bold', 'italic', 'editor', 'status']);
+    });
+
+    it('skips a control parked at tabindex -1', () => {
+        document.querySelector('#italic').tabIndex = -1;
+
+        expect(focusablesIn(document.querySelector('#composer')).map(control => control.id)).toEqual(['bold', 'editor', 'status']);
+    });
+
+    it('leaves a Tab a nested surface already answered alone', () => {
+        start();
+        focus('editor');
+        document.querySelector('#editor').addEventListener('keydown', event => event.preventDefault());
+
+        tab();
+
+        expect(document.activeElement.id).toBe('editor');
+    });
+
+    it('stops arranging once disposed', () => {
+        const handle = start();
+        focus('editor');
+        handle.dispose();
+
+        const event = tab();
+
+        expect(event.defaultPrevented).toBe(false);
+    });
+});
+
+describe('Focus roving inside a surface', () => {
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <button id="before">Before</button>
+            <div id="toolbar">
+                <button id="bold">Bold</button>
+                <button id="italic">Italic</button>
+                <button id="underline" disabled>Underline</button>
+                <span id="custom" tabindex="0">Custom</span>
+                <input id="search" type="text">
+                <div popover><button id="option">Option</button></div>
+            </div>
+            <button id="after">After</button>
+        `;
+    });
+
+    const press = (key, init = {}) => {
+        const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+        document.activeElement.dispatchEvent(event);
+
+        return event;
+    };
+
+    const tabindexOf = id => document.querySelector(`#${id}`).getAttribute('tabindex');
+    const start = (roving = 'horizontal') => attach(document.querySelector('#toolbar'), { roving });
+    const settle = () => new Promise(resolve => setTimeout(resolve));
+
+    it('leaves the first control as the one Tab stop and parks the rest', () => {
+        start();
+
+        expect(tabindexOf('bold')).toBe('0');
+        expect(tabindexOf('italic')).toBe('-1');
+        expect(tabindexOf('custom')).toBe('-1');
+        expect(tabindexOf('search')).toBe('-1');
+        expect(tabindexOf('option')).toBeNull();
+    });
+
+    it('moves the stop with the arrow keys and wraps at either end', () => {
+        start();
+        focus('bold');
+
+        const first = press('ArrowRight');
+        expect(document.activeElement.id).toBe('italic');
+        expect(first.defaultPrevented).toBe(true);
+        expect(tabindexOf('italic')).toBe('0');
+        expect(tabindexOf('bold')).toBe('-1');
+
+        press('ArrowLeft');
+        press('ArrowLeft');
+        expect(document.activeElement.id).toBe('search');
+    });
+
+    it('reaches either end with Home and End', () => {
+        start();
+        focus('italic');
+
+        press('Home');
+        expect(document.activeElement.id).toBe('bold');
+
+        press('End');
+        expect(document.activeElement.id).toBe('search');
+    });
+
+    it('mirrors the arrow keys on a surface laid out right to left', () => {
+        document.querySelector('#toolbar').style.direction = 'rtl';
+        start();
+        focus('bold');
+
+        press('ArrowLeft');
+
+        expect(document.activeElement.id).toBe('italic');
+    });
+
+    it('roves up and down on a vertical surface and leaves the sideways keys alone', () => {
+        start('vertical');
+        focus('bold');
+
+        const sideways = press('ArrowRight');
+        expect(sideways.defaultPrevented).toBe(false);
+        expect(document.activeElement.id).toBe('bold');
+
+        press('ArrowDown');
+        expect(document.activeElement.id).toBe('italic');
+    });
+
+    it('leaves the up and down keys alone on a horizontal surface', () => {
+        start();
+        focus('bold');
+
+        const event = press('ArrowDown');
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(document.activeElement.id).toBe('bold');
+    });
+
+    it('leaves a caret key to a text field', () => {
+        start();
+        focus('search');
+
+        const event = press('ArrowLeft');
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(document.activeElement.id).toBe('search');
+    });
+
+    it('leaves a key with a modifier alone', () => {
+        start();
+        focus('bold');
+
+        const event = press('ArrowRight', { ctrlKey: true });
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(document.activeElement.id).toBe('bold');
+    });
+
+    it('leaves a key pressed inside a popover alone', () => {
+        start();
+        focus('option');
+
+        const event = press('ArrowRight');
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(document.activeElement.id).toBe('option');
+    });
+
+    it('leaves Tab to the page, with the stop the only control it can reach', () => {
+        start();
+        focus('italic');
+
+        const event = tab();
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(focusablesIn(document.querySelector('#toolbar')).filter(control => !control.closest('[popover]')).map(control => control.id)).toEqual(['italic']);
+    });
+
+    it('counts as one stop inside an arranged surface around it', () => {
+        document.body.innerHTML = `
+            <div id="composer">
+                <div id="toolbar"><button id="bold">Bold</button><button id="italic">Italic</button></div>
+                <div id="canvas" tabindex="0"></div>
+                <button id="status">Status</button>
+            </div>
+        `;
+        attach(document.querySelector('#composer'), { order: ['#canvas'] });
+        start();
+        focus('bold');
+
+        tab();
+        expect(document.activeElement.id).toBe('status');
+
+        tab(true);
+        expect(document.activeElement.id).toBe('bold');
+
+        tab(true);
+        expect(document.activeElement.id).toBe('canvas');
+    });
+
+    it('parks a control added later and keeps the stop where it was', async () => {
+        start();
+        focus('italic');
+        const added = document.createElement('button');
+        added.id = 'added';
+        document.querySelector('#toolbar').append(added);
+
+        await settle();
+
+        expect(tabindexOf('added')).toBe('-1');
+        expect(tabindexOf('italic')).toBe('0');
+    });
+
+    it('moves the stop to the first control once the one holding it is gone', async () => {
+        start();
+        focus('italic');
+        document.querySelector('#italic').remove();
+        document.querySelector('#before').focus();
+
+        await settle();
+
+        expect(tabindexOf('bold')).toBe('0');
+    });
+
+    it('hands every control its own tab stop back once disposed', () => {
+        const handle = start();
+        focus('bold');
+
+        handle.dispose();
+        const event = press('ArrowRight');
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(tabindexOf('bold')).toBeNull();
+        expect(tabindexOf('italic')).toBeNull();
+        expect(tabindexOf('custom')).toBe('0');
+    });
+});

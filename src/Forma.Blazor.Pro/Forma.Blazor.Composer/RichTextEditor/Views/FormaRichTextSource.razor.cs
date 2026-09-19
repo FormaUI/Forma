@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Views;
 
-using Forma.Framework.Common.Interop.Operations;
+using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;

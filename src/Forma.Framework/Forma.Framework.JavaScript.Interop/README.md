@@ -6,7 +6,7 @@ the other interop assemblies' scripts import. It is not a package; it ships insi
 
 Its static assets are served from `_content/forma/core`, so a script in another interop assembly
 imports one of these by climbing to that root, as `../../../core/scripts/Owner.js` does from a
-behavior in the common interop assembly. No C# reaches a script here; the scripts have no wrappers.
+behavior in the browser interop assembly. No C# reaches a script here; the scripts have no wrappers.
 
 ## The bases
 

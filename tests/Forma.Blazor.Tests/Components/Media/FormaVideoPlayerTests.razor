@@ -346,7 +346,7 @@
             // Arrange
             using var ctx = new FormaVideoPlayerTests();
             ctx.JSInterop
-                .SetupModule("./_content/forma/common/scripts/operations/Embedding.js")
+                .SetupModule("./_content/forma/browser/scripts/operations/Embedding.js")
                 .Setup<bool>("activate", _ => true)
                 .SetResult(true);
             var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";

@@ -6,7 +6,7 @@ using Forma.Blazor.Components.Composer.Assets;
 using Forma.Blazor.Components.Composer.PlainTextEditor;
 using Forma.Blazor.Components.Composer.Plugins;
 using Forma.Blazor.Components.Feedback;
-using Forma.Framework.Common.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Documents;

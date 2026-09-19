@@ -11,7 +11,7 @@ using Xunit;
 
 public sealed class JSModuleTests
 {
-    private const string Path = "./_content/forma/common/scripts/operations/Probe.js";
+    private const string Path = "./_content/forma/browser/scripts/operations/Probe.js";
 
     private static readonly Guid Owner = Guid.CreateVersion7();
 

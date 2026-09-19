@@ -9,7 +9,7 @@ const getInteropScriptsPath = name => resolved(`../../src/Forma.Framework/Forma.
 
 const scripts = {
     core: getInteropScriptsPath('JavaScript'),
-    common: getInteropScriptsPath('Common'),
+    browser: getInteropScriptsPath('Browser'),
     composer: getInteropScriptsPath('Composer'),
     input: getInteropScriptsPath('Input'),
 };

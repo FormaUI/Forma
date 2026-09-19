@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Media;
 
-using Forma.Framework.Common.Interop.Operations;
+using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
 using Forma.Framework.Media;
 using Forma.Framework.Media.Providers;

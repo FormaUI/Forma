@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Catalog.Queries;
-using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Explorer.Content.Queries;
 
 using Microsoft.AspNetCore.Components;

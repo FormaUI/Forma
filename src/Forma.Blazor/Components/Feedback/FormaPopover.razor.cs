@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Feedback;
 
-using Forma.Framework.Common.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;

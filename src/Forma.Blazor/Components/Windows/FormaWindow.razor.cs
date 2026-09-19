@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Windows;
 
 using Forma.Blazor.Components.Layout;
-using Forma.Framework.Common.Interop.Components;
+using Forma.Framework.Browser.Interop.Components;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;

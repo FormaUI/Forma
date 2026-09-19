@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 public sealed class EmojiSpriteLoaderTests
 {
-    private const string Module = "./_content/forma/common/scripts/operations/Asset.js";
+    private const string Module = "./_content/forma/browser/scripts/operations/Asset.js";
 
     [Fact]
     public async Task Should_share_a_load_still_in_flight()

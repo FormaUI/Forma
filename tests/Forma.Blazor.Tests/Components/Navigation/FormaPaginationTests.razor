@@ -603,7 +603,7 @@
         {
             // Arrange
             using var ctx = new FormaPaginationTests();
-            var module = ctx.JSInterop.SetupModule("./_content/forma/common/scripts/behaviors/Wheel.js");
+            var module = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/Wheel.js");
             module.SetupVoid("attach", _ => true).SetVoidResult();
 
             // Act
@@ -663,7 +663,7 @@
             using var ctx = new FormaPaginationTests();
             var received = new List<int>();
             ctx.JSInterop
-                .SetupModule("./_content/forma/common/scripts/operations/TextEntry.js")
+                .SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js")
                 .Setup<string>("take", _ => true)
                 .SetResult("3");
             var cut = ctx.Render(

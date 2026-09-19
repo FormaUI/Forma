@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Common.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;

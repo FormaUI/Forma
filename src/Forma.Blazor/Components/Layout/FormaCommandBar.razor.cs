@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Layout;
 
-using Forma.Framework.Common.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
