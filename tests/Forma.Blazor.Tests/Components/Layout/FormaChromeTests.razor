@@ -130,9 +130,9 @@
             // Arrange
             using var ctx = new FormaChromeTests();
             string? received = null;
-            var commands = new FormaToolbarItem[]
+            var commands = new ToolbarItem[]
             {
-                new FormaToolbarCommand { Id = "refresh", Command = "refresh", Title = "Refresh", Icon = Glyph.Pin },
+                new ToolbarCommand { Id = "refresh", Command = "refresh", Title = "Refresh", Icon = Glyph.Pin },
             };
 
             // Act

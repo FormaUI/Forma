@@ -58,15 +58,15 @@ public sealed class RichTextSourceViewPlugin : IComposerViewPlugin
     [
         new(SourceRow,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "source-view",
                 Title = "Source View",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "wrap", Title = "Wrap Lines", Icon = Glyph.ArrowTurnDownRight, Command = WrapCommand },
-                    new FormaToolbarCommand { Id = "copy", Title = "Copy Source", Icon = Glyph.Copy, Command = CopyCommand },
-                    new FormaToolbarCommand { Id = "download", Title = "Download Source", Icon = Glyph.Download, Command = DownloadCommand },
+                    new ToolbarToggle { Id = "wrap", Title = "Wrap Lines", Icon = Glyph.ArrowTurnDownRight, Command = WrapCommand },
+                    new ToolbarCommand { Id = "copy", Title = "Copy Source", Icon = Glyph.Copy, Command = CopyCommand },
+                    new ToolbarCommand { Id = "download", Title = "Download Source", Icon = Glyph.Download, Command = DownloadCommand },
                 ],
             },
         ]),

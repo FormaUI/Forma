@@ -2,8 +2,8 @@ namespace Forma.Framework.Toolbar;
 
 using Forma.Framework.Icons;
 
-/// <summary>One option inside a <see cref="FormaToolbarItem"/>'s menu.</summary>
-public sealed record FormaToolbarOption
+/// <summary>One option inside a <see cref="ToolbarItem"/>'s menu.</summary>
+public sealed record ToolbarOption
 {
     /// <summary>The unique identifier of the option within its item.</summary>
     public required string Id { get; init; }

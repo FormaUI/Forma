@@ -30,18 +30,18 @@ public sealed class SpecialCharacterPlugin(
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "insert",
                 Title = "Insert",
                 Items =
                 [
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "special-character",
                         Title = "Special Character",
                         Icon = new Rune('Ω'),
-                        Options = [.. Options.Characters.Select(c => new FormaToolbarOption
+                        Options = [.. Options.Characters.Select(c => new ToolbarOption
                         {
                             Id = $"char-{c}",
                             Title = c,

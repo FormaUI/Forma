@@ -24,7 +24,7 @@ public sealed partial class FormaInputInspector : FormaElementBase
     private readonly List<InputDecision> _history = [];
     private Inspector _inspector = default!;
     private DotNetObjectReference<FormaInputInspector> _selfReference = default!;
-    private IReadOnlyList<FormaToolbarItem> _tools = [];
+    private IReadOnlyList<ToolbarItem> _tools = [];
     private bool _paused;
 
     /// <summary>The latest decision, or <see langword="null"/> before any input has been resolved.</summary>
@@ -122,11 +122,11 @@ public sealed partial class FormaInputInspector : FormaElementBase
         return Task.CompletedTask;
     }
 
-    private IReadOnlyList<FormaToolbarItem> BuildTools()
+    private IReadOnlyList<ToolbarItem> BuildTools()
         =>
         [
-            new FormaToolbarToggle { Id = PauseCommand, Title = L["Pause"], AlternateTitle = L["Resume"], Icon = Glyph.CircleRecord, Command = PauseCommand, IsActive = _paused },
-            new FormaToolbarCommand { Id = ClearCommand, Title = L["Clear"], Icon = Glyph.Eraser, Command = ClearCommand },
+            new ToolbarToggle { Id = PauseCommand, Title = L["Pause"], AlternateTitle = L["Resume"], Icon = Glyph.CircleRecord, Command = PauseCommand, IsActive = _paused },
+            new ToolbarCommand { Id = ClearCommand, Title = L["Clear"], Icon = Glyph.Eraser, Command = ClearCommand },
         ];
 
     private string GetPlacement(string reason)

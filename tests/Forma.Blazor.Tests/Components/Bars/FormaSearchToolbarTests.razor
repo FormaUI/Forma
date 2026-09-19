@@ -102,7 +102,7 @@
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
-            IReadOnlyList<FormaToolbarItem> actions = [new FormaToolbarCommand { Id = "add", Title = "Add", Command = "add" }];
+            IReadOnlyList<ToolbarItem> actions = [new ToolbarCommand { Id = "add", Title = "Add", Command = "add" }];
 
             // Act
             var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" Label="Actions" Items="actions" />);
@@ -117,7 +117,7 @@
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
-            IReadOnlyList<FormaToolbarItem> actions = [new FormaToolbarCommand { Id = "add", Title = "Add", Command = "add.new" }];
+            IReadOnlyList<ToolbarItem> actions = [new ToolbarCommand { Id = "add", Title = "Add", Command = "add.new" }];
             string? invoked = null;
 
             // Act
@@ -133,7 +133,7 @@
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
-            IReadOnlyList<FormaToolbarItem> actions = [new FormaToolbarCommand { Id = "add", Title = "Add", Command = "add" }];
+            IReadOnlyList<ToolbarItem> actions = [new ToolbarCommand { Id = "add", Title = "Add", Command = "add" }];
 
             // Act
             var render = () => ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" Items="actions" />);

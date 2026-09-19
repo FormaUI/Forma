@@ -42,18 +42,18 @@ public sealed class TypographyPlugin(
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "typography",
                 Title = "Typography",
                 Items =
                 [
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "font-family",
                         Title = "Font Family",
                         Icon = Glyph.Font,
-                        Options = [.. Options.FontFamilies.Select(family => new FormaToolbarOption
+                        Options = [.. Options.FontFamilies.Select(family => new ToolbarOption
                         {
                             Id = $"font-family:{family}",
                             Title = family,
@@ -61,24 +61,24 @@ public sealed class TypographyPlugin(
                             PreviewStyle = $"font-family:{family}",
                         })],
                     },
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "font-size",
                         Title = "Font Size",
                         Icon = Glyph.FontSize,
-                        Options = [.. Options.FontSizes.Select(size => new FormaToolbarOption
+                        Options = [.. Options.FontSizes.Select(size => new ToolbarOption
                         {
                             Id = $"font-size:{ToCssSize(size)}",
                             Title = size,
                             Command = $"{FontSizeCommand}:{ToCssSize(size)}",
                         })],
                     },
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "line-height",
                         Title = "Line Height",
                         Icon = Glyph.LineHeight,
-                        Options = [.. Options.LineHeights.Select(height => new FormaToolbarOption
+                        Options = [.. Options.LineHeights.Select(height => new ToolbarOption
                         {
                             Id = $"line-height:{height}",
                             Title = height,
@@ -87,18 +87,18 @@ public sealed class TypographyPlugin(
                     },
                 ],
             },
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "color",
                 Title = "Color",
                 Items =
                 [
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "text-color",
                         Title = "Text Color",
                         Icon = Glyph.FontColor,
-                        Options = [.. Options.TextColors.Select(color => new FormaToolbarOption
+                        Options = [.. Options.TextColors.Select(color => new ToolbarOption
                         {
                             Id = $"text-color:{color}",
                             Title = color,
@@ -106,12 +106,12 @@ public sealed class TypographyPlugin(
                             Swatch = color,
                         })],
                     },
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "highlight-color",
                         Title = "Highlight Color",
                         Icon = Glyph.Highlight,
-                        Options = [.. Options.HighlightColors.Select(color => new FormaToolbarOption
+                        Options = [.. Options.HighlightColors.Select(color => new ToolbarOption
                         {
                             Id = $"highlight-color:{color}",
                             Title = color,

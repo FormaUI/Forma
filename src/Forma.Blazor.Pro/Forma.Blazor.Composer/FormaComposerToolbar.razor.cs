@@ -79,15 +79,15 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     private IEnumerable<ComposerToolbarRowLayout> EditorRows
         => _layout.Rows.Where(row => row.Id is not (ComposerRows.Plugins or ComposerRows.Selection));
 
-    private IReadOnlyList<FormaToolbarItem> PluginItems
+    private IReadOnlyList<ToolbarItem> PluginItems
         => _layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Plugins)?.Items ?? [];
 
     private void TogglePlugins()
         => _arePluginsShown = !_arePluginsShown;
 
     /// <summary>How many commands a row's items amount to, counting through a group rather than as one.</summary>
-    private static int CountLeaves(IEnumerable<FormaToolbarItem> items)
-        => items.Sum(item => item is FormaToolbarGroup group ? group.Items.Count : 1);
+    private static int CountLeaves(IEnumerable<ToolbarItem> items)
+        => items.Sum(item => item is ToolbarGroup group ? group.Items.Count : 1);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

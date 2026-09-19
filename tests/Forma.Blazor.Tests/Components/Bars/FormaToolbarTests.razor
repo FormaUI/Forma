@@ -4,15 +4,15 @@
 @code {
     public sealed class Component
     {
-        private static IReadOnlyList<FormaToolbarItem> Group(params FormaToolbarItem[] items)
-            => [new FormaToolbarGroup { Id = "group", Title = "Group", Items = items }];
+        private static IReadOnlyList<ToolbarItem> Group(params ToolbarItem[] items)
+            => [new ToolbarGroup { Id = "group", Title = "Group", Items = items }];
 
         [Fact]
         public void Should_render_a_command_as_a_button()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -28,7 +28,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -44,7 +44,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "format.bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "format.bold" });
             string? invoked = null;
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" OnCommand="c => invoked = c" />);
 
@@ -60,23 +60,23 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> groups =
+            IReadOnlyList<ToolbarItem> groups =
             [
-                new FormaToolbarGroup
+                new ToolbarGroup
                 {
                     Id = "inline",
                     Title = "Inline Style",
                     Items =
                     [
-                        new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" },
-                        new FormaToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" },
+                        new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" },
+                        new ToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" },
                     ],
                 },
-                new FormaToolbarGroup
+                new ToolbarGroup
                 {
                     Id = "align",
                     Title = "Alignment",
-                    Items = [new FormaToolbarCommand { Id = "align-left", Title = "Align Left", Command = "align-left" }],
+                    Items = [new ToolbarCommand { Id = "align-left", Title = "Align Left", Command = "align-left" }],
                 },
             ];
 
@@ -92,13 +92,13 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> groups =
+            IReadOnlyList<ToolbarItem> groups =
             [
-                new FormaToolbarGroup
+                new ToolbarGroup
                 {
                     Id = "align",
                     Title = "Alignment",
-                    Items = [new FormaToolbarCommand { Id = "align-left", Title = "Align Left", Command = "align-left" }],
+                    Items = [new ToolbarCommand { Id = "align-left", Title = "Align Left", Command = "align-left" }],
                 },
             ];
 
@@ -117,7 +117,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" }];
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
@@ -132,11 +132,11 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var items = Group(new FormaToolbarGroup
+            var items = Group(new ToolbarGroup
             {
                 Id = "nested",
                 Title = "Nested",
-                Items = [new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" }],
+                Items = [new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" }],
             });
 
             // Act
@@ -151,7 +151,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarToggle { Id = "bold", Title = "Bold", Command = "bold", IsActive = true });
+            var groups = Group(new ToolbarToggle { Id = "bold", Title = "Bold", Command = "bold", IsActive = true });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -168,7 +168,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarToggle { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarToggle { Id = "bold", Title = "Bold", Command = "bold" });
             var states = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "bold" };
 
             // Act
@@ -183,7 +183,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarToggle
+            var groups = Group(new ToolbarToggle
             {
                 Id = "link",
                 Title = "Insert Link",
@@ -204,7 +204,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand
+            var groups = Group(new ToolbarCommand
             {
                 Id = "link-remove",
                 Title = "Remove Link",
@@ -224,7 +224,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand
+            var groups = Group(new ToolbarCommand
             {
                 Id = "link-remove",
                 Title = "Remove Link",
@@ -245,7 +245,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "link-insert", Title = "Insert Link", Command = "link.insert" });
+            var groups = Group(new ToolbarCommand { Id = "link-insert", Title = "Insert Link", Command = "link.insert" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -259,7 +259,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarToggle { Id = "bold", Title = "Bold", Command = "bold", IsActive = false });
+            var groups = Group(new ToolbarToggle { Id = "bold", Title = "Bold", Command = "bold", IsActive = false });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -276,7 +276,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -290,7 +290,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutDisplay = "Ctrl+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutDisplay = "Ctrl+B" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -304,7 +304,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "count", Title = "Recount", Tooltip = "Count the words again", Command = "count" });
+            var groups = Group(new ToolbarCommand { Id = "count", Title = "Recount", Tooltip = "Count the words again", Command = "count" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Status" Items="groups" />);
@@ -318,7 +318,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus });
+            var groups = Group(new ToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Library" Items="groups" ShowLabels="true" />);
@@ -332,7 +332,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus, ShortcutDisplay = "Ctrl+N" });
+            var groups = Group(new ToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus, ShortcutDisplay = "Ctrl+N" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Library" Items="groups" ShowLabels="true" />);
@@ -346,7 +346,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarReadout { Id = "words", Title = "Word count", Value = "12 words" });
+            var groups = Group(new ToolbarReadout { Id = "words", Title = "Word count", Value = "12 words" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Status" Items="groups" />);
@@ -361,7 +361,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarReadout { Id = "words", Title = "Word count", Value = "12 words", IsAnnounced = true });
+            var groups = Group(new ToolbarReadout { Id = "words", Title = "Word count", Value = "12 words", IsAnnounced = true });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Status" Items="groups" />);
@@ -378,7 +378,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarReadout { Id = "words", Title = "Word count", Value = "12 words" });
+            var groups = Group(new ToolbarReadout { Id = "words", Title = "Word count", Value = "12 words" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Status" Items="groups" />);
@@ -392,7 +392,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarMenu
+            var groups = Group(new ToolbarMenu
             {
                 Id = "align",
                 Title = "Align",
@@ -415,7 +415,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarMenu
+            var groups = Group(new ToolbarMenu
             {
                 Id = "align",
                 Title = "Align",
@@ -441,7 +441,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarMenu
+            var groups = Group(new ToolbarMenu
             {
                 Id = "color",
                 Title = "Color",
@@ -460,7 +460,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarMenu { Id = "align", Title = "Align", Options = [] });
+            var groups = Group(new ToolbarMenu { Id = "align", Title = "Align", Options = [] });
 
             // Act
             var act = () => ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -474,7 +474,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCustomItem
+            var groups = Group(new ToolbarCustomItem
             {
                 Id = "clock",
                 Title = "Clock",
@@ -495,7 +495,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCustomItem
+            var groups = Group(new ToolbarCustomItem
             {
                 Id = "trash",
                 Title = "Delete",
@@ -515,7 +515,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -533,7 +533,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" ShowLabels="true" />);
@@ -550,7 +550,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" ShowLabels="true" />);
@@ -564,7 +564,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus });
+            var groups = Group(new ToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Library" Items="groups" ShowLabels="true" />);
@@ -578,7 +578,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -592,7 +592,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Disabled="true" />);
@@ -652,8 +652,8 @@
                 () => Assert.Equal("true", trigger.GetAttribute("aria-expanded")));
         }
 
-        private static FormaToolbarItem CreateMenuItem(string id)
-            => new FormaToolbarMenu
+        private static ToolbarItem CreateMenuItem(string id)
+            => new ToolbarMenu
             {
                 Id = id,
                 Title = id,
@@ -671,7 +671,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -687,7 +687,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
 
             // Act
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -701,7 +701,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
             var target = new ElementReference("toolbar-target");
 
             // Act
@@ -716,7 +716,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -730,7 +730,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Hidden="true" />);
@@ -747,7 +747,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Scrollable="false" />);
@@ -764,7 +764,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Scrollable="false" Hidden="true" />);
@@ -782,7 +782,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Scrollable="false">
@@ -798,7 +798,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
             var unrendered = new ElementReference();
 
             // Act
@@ -813,7 +813,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
             var unrendered = new ElementReference();
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="unrendered" />);
 
@@ -830,7 +830,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
             var first = new ElementReference("first");
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="first" />);
 
@@ -847,7 +847,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+Shift+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+Shift+B" });
             var target = new ElementReference("toolbar-target");
 
             // Act
@@ -871,8 +871,8 @@
             // Arrange
             using var ctx = new FormaToolbarTests();
             var groups = Group(
-                new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" },
-                new FormaToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" });
+                new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" },
+                new ToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" });
             var target = new ElementReference("toolbar-target");
 
             // Act
@@ -888,7 +888,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
             var target = new ElementReference("toolbar-target");
             string? invoked = null;
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" OnCommand="c => invoked = c" />);
@@ -906,7 +906,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
             var target = new ElementReference("toolbar-target");
             string? invoked = null;
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" Disabled="true" OnCommand="c => invoked = c" />);
@@ -925,8 +925,8 @@
             // Arrange
             using var ctx = new FormaToolbarTests();
             var groups = Group(
-                new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", IsDisabled = true },
-                new FormaToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" });
+                new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", IsDisabled = true },
+                new ToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
@@ -943,7 +943,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarMenu
+            var groups = Group(new ToolbarMenu
             {
                 Id = "align",
                 Title = "Align",
@@ -963,7 +963,7 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B", IsDisabled = true });
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B", IsDisabled = true });
             var target = new ElementReference("toolbar-target");
             string? invoked = null;
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" OnCommand="c => invoked = c" />);

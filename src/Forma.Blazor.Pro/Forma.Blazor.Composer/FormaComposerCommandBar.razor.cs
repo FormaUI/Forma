@@ -13,7 +13,7 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
     /// <summary>The items laid out on the bar, already in the reader's language, ready for a FormaToolbar to render as given.</summary>
-    [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
+    [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
     /// <summary>Whether the bar opens with the undo and redo commands.</summary>
     [Parameter] public bool ShowHistory { get; set; }
@@ -47,15 +47,15 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
         => Composer?.History.CanRedo ?? false;
 
     /// <summary>What the bar actually renders: the history group first when shown, then Items patched with the shortcuts they currently answer to.</summary>
-    private IReadOnlyList<FormaToolbarItem> RenderedItems
+    private IReadOnlyList<ToolbarItem> RenderedItems
     {
         get
         {
-            List<FormaToolbarItem> items = [];
+            List<ToolbarItem> items = [];
 
             if (ShowHistory)
             {
-                items.Add(new FormaToolbarGroup
+                items.Add(new ToolbarGroup
                 {
                     Id = "history",
                     Title = L["History"],
@@ -77,11 +77,11 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
-    private FormaToolbarCommand BuildHistoryCommand(string id, string title, Glyph icon, string command, bool isDisabled)
+    private ToolbarCommand BuildHistoryCommand(string id, string title, Glyph icon, string command, bool isDisabled)
     {
         var shortcut = KeyBindings.FindByCommand(command);
 
-        return new FormaToolbarCommand
+        return new ToolbarCommand
         {
             Id = id,
             Title = L[title],
@@ -94,10 +94,10 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     }
 
     // Layers on the state only render time knows: which shortcut a command currently answers to.
-    private FormaToolbarItem Patch(FormaToolbarItem item) => item switch
+    private ToolbarItem Patch(ToolbarItem item) => item switch
     {
-        FormaToolbarGroup group => group with { Items = [.. group.Items.Select(Patch)] },
-        FormaToolbarAction action => action with
+        ToolbarGroup group => group with { Items = [.. group.Items.Select(Patch)] },
+        ToolbarAction action => action with
         {
             ShortcutDisplay = KeyBindings.FindByCommand(action.Command)?.Display,
             ShortcutAriaKeys = KeyBindings.FindByCommand(action.Command)?.AriaKeyShortcuts,

@@ -75,21 +75,21 @@
     private string _lastCommand = "";
     private bool _showStrip = true;
 
-    private IReadOnlyList<FormaToolbarItem> ReadoutItems =>
+    private IReadOnlyList<ToolbarItem> ReadoutItems =>
     [
-        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
-        new FormaToolbarReadout { Id = "saved", Title = L["Save State"], Value = L["Saved"] },
+        new ToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
+        new ToolbarReadout { Id = "saved", Title = L["Save State"], Value = L["Saved"] },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> AnnouncedItems =>
+    private IReadOnlyList<ToolbarItem> AnnouncedItems =>
     [
-        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount], IsAnnounced = true },
+        new ToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount], IsAnnounced = true },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> CommandItems =>
+    private IReadOnlyList<ToolbarItem> CommandItems =>
     [
-        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
-        new FormaToolbarCommand { Id = "retry", Title = L["Retry"], Icon = Glyph.Undo, Command = "retry" },
+        new ToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
+        new ToolbarCommand { Id = "retry", Title = L["Retry"], Icon = Glyph.Undo, Command = "retry" },
     ];
 
     private void HandleCommand(string command)

@@ -28,16 +28,16 @@ public sealed partial class FormaComposerStatusStrip : FormaComponentBase
 
     // A pushed item's own role/aria-live stays off; the live region above already speaks the combined,
     // coherent text, so announcing each item again separately would talk over it.
-    private IReadOnlyList<FormaToolbarItem> Items
+    private IReadOnlyList<ToolbarItem> Items
         => Composer is null ? [] : [.. Composer.Regions.StatusItems.Select(ToItem)];
 
-    private static FormaToolbarItem ToItem(IComposerStatusItem item)
+    private static ToolbarItem ToItem(IComposerStatusItem item)
     {
         // A pushed item carries no identity of its own; its object identity is the only stable key it has.
         var id = RuntimeHelpers.GetHashCode(item).ToString(CultureInfo.InvariantCulture);
 
         return item.Command is { } command
-            ? new FormaToolbarCommand { Id = id, Title = item.Text, Tooltip = item.Tooltip, Command = command }
-            : new FormaToolbarReadout { Id = id, Title = item.Text, Tooltip = item.Tooltip, Value = item.Text };
+            ? new ToolbarCommand { Id = id, Title = item.Text, Tooltip = item.Tooltip, Command = command }
+            : new ToolbarReadout { Id = id, Title = item.Text, Tooltip = item.Tooltip, Value = item.Text };
     }
 }

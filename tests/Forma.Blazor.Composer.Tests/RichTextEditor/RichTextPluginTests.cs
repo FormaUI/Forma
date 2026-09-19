@@ -15,11 +15,11 @@ using Forma.Tests.Composer;
 public sealed class RichTextPluginTests
 {
 
-    private static FormaToolbarMenu FindMenu(IReadOnlyList<ComposerToolbarItem> items, string id)
-        => (FormaToolbarMenu)items.SelectMany(entry => entry.Items).SelectMany(Flatten).Single(item => item.Id == id);
+    private static ToolbarMenu FindMenu(IReadOnlyList<ComposerToolbarItem> items, string id)
+        => (ToolbarMenu)items.SelectMany(entry => entry.Items).SelectMany(Flatten).Single(item => item.Id == id);
 
-    private static IEnumerable<FormaToolbarItem> Flatten(FormaToolbarItem item)
-        => item is FormaToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
+    private static IEnumerable<ToolbarItem> Flatten(ToolbarItem item)
+        => item is ToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
 
     private static ComposerContext CreateState(string html = "<p>Test</p>", params string[] activeStyles)
         => ComposerContexts.Create(
@@ -360,7 +360,7 @@ public sealed class RichTextPluginTests
             var plugin = new EmojiPlugin(new RichTextEditorPlugin(), new EmojiPluginOptions { Picker = new() { MaxRecent = 12 } });
 
             // Act
-            var item = (FormaToolbarCustomItem)plugin.Items.SelectMany(entry => entry.Items).SelectMany(Flatten).Single(entry => entry.Id == "emoji");
+            var item = (ToolbarCustomItem)plugin.Items.SelectMany(entry => entry.Items).SelectMany(Flatten).Single(entry => entry.Id == "emoji");
 
             // Assert
             Assert.Equal(typeof(FormaComposerEmojiButton), item.Component);

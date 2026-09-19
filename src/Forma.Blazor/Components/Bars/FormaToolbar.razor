@@ -13,11 +13,11 @@
             {
                 @switch (item)
                 {
-                    case FormaToolbarCustomItem custom:
+                    case ToolbarCustomItem custom:
                         <DynamicComponent Type="custom.Component" Parameters="ToParameters(custom.Parameters)" @key="custom.Id" />
                         break;
 
-                    case FormaToolbarMenu menu:
+                    case ToolbarMenu menu:
                         <FormaDropDownMenu class="forma-toolbar-menu"
                                            @key="menu.Id"
                                            TriggerOptions="MenuTriggerOptions"
@@ -60,7 +60,7 @@
                         </FormaDropDownMenu>
                         break;
 
-                    case FormaToolbarReadout readout:
+                    case ToolbarReadout readout:
                         <span class="forma-toolbar-readout"
                               @key="readout.Id"
                               dir="auto"
@@ -69,14 +69,14 @@
                               aria-live="@(readout.IsAnnounced ? "polite" : null)">@readout.Value</span>
                         break;
 
-                    case FormaToolbarAction action:
+                    case ToolbarAction action:
                         var isToggleActive = IsToggleActive(action);
                         var showsLabel = action.Icon is null || ShowLabels;
                         <FormaToggleButton @key="action.Id"
                                             Icon="GetEffectiveIcon(action)"
                                             Label="@GetEffectiveTitle(action)"
                                             ShowLabel="ShowLabels"
-                                            Pressed="@(action is FormaToolbarToggle ? isToggleActive : null)"
+                                            Pressed="@(action is ToolbarToggle ? isToggleActive : null)"
                                             Disabled="@(Disabled || IsUnavailable(action))"
                                             aria-keyshortcuts="@action.ShortcutAriaKeys"
                                             title="@GetActionTitle(action, showsLabel)"

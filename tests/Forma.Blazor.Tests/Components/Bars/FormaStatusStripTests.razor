@@ -33,7 +33,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusStripTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
 
             // Act
             var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" Hidden="true" />);
@@ -51,7 +51,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusStripTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
 
             // Act
             var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" EmptyMode="StatusStripEmptyMode.Hidden" />);
@@ -65,7 +65,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusStripTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
 
             // Act
             var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" Hidden="true" Animated="true" />);
@@ -96,7 +96,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusStripTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
 
             // Act
             var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" />);
@@ -110,7 +110,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusStripTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
 
             // Act
             var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" />);
@@ -124,7 +124,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusStripTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "retry", Title = "Retry", Command = "status.retry" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarCommand { Id = "retry", Title = "Retry", Command = "status.retry" }];
             string? received = null;
             var cut = ctx.Render(
                 @<FormaStatusStrip Label="Status" Items="items" OnCommand="@((string c) => { received = c; return Task.CompletedTask; })" />);
@@ -141,7 +141,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusStripTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "retry", Title = "Retry", Command = "status.retry" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarCommand { Id = "retry", Title = "Retry", Command = "status.retry" }];
 
             // Act
             var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" Disabled="true" />);
@@ -155,7 +155,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusStripTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
 
             // Act
             void Act() => ctx.Render(@<FormaStatusStrip Items="items" />);

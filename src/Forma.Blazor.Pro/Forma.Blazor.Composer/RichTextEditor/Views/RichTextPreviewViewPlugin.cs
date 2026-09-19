@@ -78,37 +78,37 @@ public sealed class RichTextPreviewViewPlugin : IComposerViewPlugin
     [
         new(PageRow,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "page",
                 Title = "Page",
                 Items =
                 [
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "page-size",
                         Title = "Page Size",
                         Icon = Glyph.Ruler,
-                        Options = [.. PreviewPage.All.Select(page => new FormaToolbarOption
+                        Options = [.. PreviewPage.All.Select(page => new ToolbarOption
                         {
                             Id = $"page:{page.Id}",
                             Title = page.Title,
                             Command = PageCommandPrefix + page.Id,
                         })],
                     },
-                    new FormaToolbarToggle
+                    new ToolbarToggle
                     {
                         Id = "landscape",
                         Title = "Landscape",
                         Icon = Glyph.Tablet,
                         Command = LandscapeCommand,
                     },
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "zoom",
                         Title = "Zoom",
                         Icon = Glyph.ZoomIn,
-                        Options = [.. Zooms.Select(zoom => new FormaToolbarOption
+                        Options = [.. Zooms.Select(zoom => new ToolbarOption
                         {
                             Id = $"zoom:{zoom}",
                             Title = zoom.ToString(CultureInfo.InvariantCulture) + "%",
@@ -120,14 +120,14 @@ public sealed class RichTextPreviewViewPlugin : IComposerViewPlugin
         ]),
         new(OutputRow,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "output",
                 Title = "Output",
                 Items =
                 [
-                    new FormaToolbarCommand { Id = "print", Title = "Print", Icon = Glyph.Print, Command = PrintCommand },
-                    new FormaToolbarCommand { Id = "export-html", Title = "Export HTML", Icon = Glyph.ShareBox, Command = ExportHtmlCommand },
+                    new ToolbarCommand { Id = "print", Title = "Print", Icon = Glyph.Print, Command = PrintCommand },
+                    new ToolbarCommand { Id = "export-html", Title = "Export HTML", Icon = Glyph.ShareBox, Command = ExportHtmlCommand },
                 ],
             },
         ]),

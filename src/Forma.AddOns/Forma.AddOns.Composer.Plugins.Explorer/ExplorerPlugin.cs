@@ -28,13 +28,13 @@ public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : ICom
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "media",
                 Title = "Media",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "explorer-browse",
                         Title = "Browse Files",

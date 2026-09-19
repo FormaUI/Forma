@@ -13,7 +13,7 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
     public const int InlineLimit = 8;
 
     /// <summary>The items the bar carries.</summary>
-    [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
+    [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
     /// <summary>Whether every control on the bar is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
@@ -34,9 +34,9 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
     protected override Type LocalizationSourceType
         => typeof(FormaComposer);
 
-    private IReadOnlyList<FormaToolbarItem> _visibleItems = [];
+    private IReadOnlyList<ToolbarItem> _visibleItems = [];
 
-    private IReadOnlyList<FormaToolbarAction> _overflowingActions = [];
+    private IReadOnlyList<ToolbarAction> _overflowingActions = [];
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -45,13 +45,13 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
 
         // Skips before filtering, since the visible split counts every leaf toward the limit — filtering
         // first would misalign the index and drop an action that is neither shown nor in the menu.
-        _overflowingActions = [.. Items.SelectMany(GetLeaves).Skip(InlineLimit).OfType<FormaToolbarAction>()];
+        _overflowingActions = [.. Items.SelectMany(GetLeaves).Skip(InlineLimit).OfType<ToolbarAction>()];
     }
 
-    private List<FormaToolbarItem> SplitVisible()
+    private List<ToolbarItem> SplitVisible()
     {
         var remaining = InlineLimit;
-        List<FormaToolbarItem> visible = [];
+        List<ToolbarItem> visible = [];
 
         foreach (var item in Items)
         {
@@ -60,7 +60,7 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
                 break;
             }
 
-            if (item is FormaToolbarGroup group)
+            if (item is ToolbarGroup group)
             {
                 visible.Add(group.Items.Count <= remaining ? group : group with { Items = [.. group.Items.Take(remaining)] });
                 remaining -= group.Items.Count;
@@ -75,8 +75,8 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
         return visible;
     }
 
-    private static IEnumerable<FormaToolbarItem> GetLeaves(FormaToolbarItem item)
-        => item is FormaToolbarGroup group ? group.Items : [item];
+    private static IEnumerable<ToolbarItem> GetLeaves(ToolbarItem item)
+        => item is ToolbarGroup group ? group.Items : [item];
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

@@ -22,13 +22,13 @@ public sealed class HorizontalRulePlugin(RichTextEditorPlugin editor) : ICompose
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "insert",
                 Title = "Insert",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "horizontal-rule",
                         Title = "Horizontal Line",

@@ -1,7 +1,7 @@
 namespace Forma.Framework.Toolbar;
 
-/// <summary>A <see cref="FormaToolbarItem"/> that invokes a command when activated.</summary>
-public abstract record FormaToolbarAction : FormaToolbarItem
+/// <summary>A <see cref="ToolbarItem"/> that invokes a command when activated.</summary>
+public abstract record ToolbarAction : ToolbarItem
 {
     /// <summary>The command invoked when the item is activated.</summary>
     public required string Command { get; init; }

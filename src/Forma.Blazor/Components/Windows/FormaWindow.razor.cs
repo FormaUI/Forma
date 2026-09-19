@@ -87,7 +87,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>The host's own commands, shown in the title bar before the window's.</summary>
-    [Parameter] public IReadOnlyList<FormaToolbarItem> Commands { get; set; } = [];
+    [Parameter] public IReadOnlyList<ToolbarItem> Commands { get; set; } = [];
 
     /// <summary>Raised with the command of a host item pressed in the title bar.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
@@ -162,16 +162,16 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         => (Modal, Options.PressAway);
 
     // The host's commands, then the window's own: lock, minimize, maximize, close.
-    private IReadOnlyList<FormaToolbarItem> TitleBarItems
+    private IReadOnlyList<ToolbarItem> TitleBarItems
     {
         get
         {
-            var items = new List<FormaToolbarItem>(Commands.Count + 4);
+            var items = new List<ToolbarItem>(Commands.Count + 4);
             items.AddRange(Commands);
 
             if (Options.Lockable)
             {
-                items.Add(new FormaToolbarToggle
+                items.Add(new ToolbarToggle
                 {
                     Id = LockCommand,
                     Command = LockCommand,
@@ -185,7 +185,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 
             if (Options.Minimizable)
             {
-                items.Add(new FormaToolbarCommand
+                items.Add(new ToolbarCommand
                 {
                     Id = MinimizeCommand,
                     Command = MinimizeCommand,
@@ -196,7 +196,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 
             if (Options.Maximizable)
             {
-                items.Add(new FormaToolbarToggle
+                items.Add(new ToolbarToggle
                 {
                     Id = MaximizeCommand,
                     Command = MaximizeCommand,
@@ -211,7 +211,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 
             if (Options.Closable)
             {
-                items.Add(new FormaToolbarCommand
+                items.Add(new ToolbarCommand
                 {
                     Id = CloseCommand,
                     Command = CloseCommand,

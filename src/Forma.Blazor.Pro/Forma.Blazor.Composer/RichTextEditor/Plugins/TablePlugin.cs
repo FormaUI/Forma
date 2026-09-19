@@ -52,28 +52,28 @@ public sealed class TablePlugin(
     [
         new(ComposerRows.Paragraph,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "table",
                 Title = "Table",
                 Items =
                 [
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "table-menu",
                         Title = "Table",
                         Icon = Glyph.Table,
                         Options =
                         [
-                            new FormaToolbarOption { Id = "table-insert", Title = "Insert Table...", Icon = Glyph.Table, Command = InsertTableCommand },
-                            new FormaToolbarOption { Id = "table-row-before", Title = "Add Row Above", Icon = Glyph.AddRowAbove, Command = AddRowBeforeCommand },
-                            new FormaToolbarOption { Id = "table-row-after", Title = "Add Row Below", Icon = Glyph.AddRowBelow, Command = AddRowAfterCommand },
-                            new FormaToolbarOption { Id = "table-row-delete", Title = "Delete Row", Icon = Glyph.Rows, Command = DeleteRowCommand },
-                            new FormaToolbarOption { Id = "table-col-before", Title = "Add Column Left", Icon = Glyph.AddColumnLeft, Command = AddColBeforeCommand },
-                            new FormaToolbarOption { Id = "table-col-after", Title = "Add Column Right", Icon = Glyph.AddColumnRight, Command = AddColAfterCommand },
-                            new FormaToolbarOption { Id = "table-col-delete", Title = "Delete Column", Icon = Glyph.Columns, Command = DeleteColCommand },
-                            new FormaToolbarOption { Id = "table-toggle-header", Title = "Toggle Header Row", Icon = Glyph.LayoutTop, Command = ToggleHeaderCommand },
-                            new FormaToolbarOption { Id = "table-delete", Title = "Delete Table", Icon = Glyph.Delete, Command = DeleteTableCommand },
+                            new ToolbarOption { Id = "table-insert", Title = "Insert Table...", Icon = Glyph.Table, Command = InsertTableCommand },
+                            new ToolbarOption { Id = "table-row-before", Title = "Add Row Above", Icon = Glyph.AddRowAbove, Command = AddRowBeforeCommand },
+                            new ToolbarOption { Id = "table-row-after", Title = "Add Row Below", Icon = Glyph.AddRowBelow, Command = AddRowAfterCommand },
+                            new ToolbarOption { Id = "table-row-delete", Title = "Delete Row", Icon = Glyph.Rows, Command = DeleteRowCommand },
+                            new ToolbarOption { Id = "table-col-before", Title = "Add Column Left", Icon = Glyph.AddColumnLeft, Command = AddColBeforeCommand },
+                            new ToolbarOption { Id = "table-col-after", Title = "Add Column Right", Icon = Glyph.AddColumnRight, Command = AddColAfterCommand },
+                            new ToolbarOption { Id = "table-col-delete", Title = "Delete Column", Icon = Glyph.Columns, Command = DeleteColCommand },
+                            new ToolbarOption { Id = "table-toggle-header", Title = "Toggle Header Row", Icon = Glyph.LayoutTop, Command = ToggleHeaderCommand },
+                            new ToolbarOption { Id = "table-delete", Title = "Delete Table", Icon = Glyph.Delete, Command = DeleteTableCommand },
                         ],
                     },
                 ],

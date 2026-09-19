@@ -62,7 +62,7 @@ instances, each with its own options.
 
 | Type | What it is |
 | --- | --- |
-| `ComposerToolbarItem` | A row identifier and the `FormaToolbarItem`s to put on it, so a plugin contributes toolbar entries as data rather than markup. |
+| `ComposerToolbarItem` | A row identifier and the `ToolbarItem`s to put on it, so a plugin contributes toolbar entries as data rather than markup. |
 | `ComposerToolbarRow` | A row a plugin declares of its own: an identifier and the label it is announced by. |
 | `ComposerRows` | The rows the composer provides — `BuiltIn`, `Plugins`, `Formatting`, `Paragraph`, `Selection`. |
 | `ComposerKeyBinding` | A shortcut: the key, the modifiers, the command, and the display and ARIA spellings of it. |
@@ -190,7 +190,7 @@ public sealed class WordCountPlugin : IComposerFeaturePlugin, IDisposable
     [
         new(ComposerRows.Plugins,
         [
-            new FormaToolbarCommand
+            new ToolbarCommand
             {
                 Id = "word-count",
                 Title = "Word Count",

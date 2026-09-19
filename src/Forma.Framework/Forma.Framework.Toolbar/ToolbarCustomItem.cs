@@ -1,7 +1,7 @@
 namespace Forma.Framework.Toolbar;
 
-/// <summary>A <see cref="FormaToolbarItem"/> rendered by a caller-supplied component.</summary>
-public sealed record FormaToolbarCustomItem : FormaToolbarItem
+/// <summary>A <see cref="ToolbarItem"/> rendered by a caller-supplied component.</summary>
+public sealed record ToolbarCustomItem : ToolbarItem
 {
     /// <summary>The component type rendered in place of a standard toolbar control.</summary>
     public required Type Component { get; init; }

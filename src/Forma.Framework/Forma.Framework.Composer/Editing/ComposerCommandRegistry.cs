@@ -94,11 +94,11 @@ public sealed class ComposerCommandRegistry
     }
 
     /// <summary>Walks an item (and, for a group, its children) claiming whatever command each names.</summary>
-    private void RegisterCommands(FormaToolbarItem item, IComposerPlugin plugin)
+    private void RegisterCommands(ToolbarItem item, IComposerPlugin plugin)
     {
         switch (item)
         {
-            case FormaToolbarGroup group:
+            case ToolbarGroup group:
                 foreach (var child in group.Items)
                 {
                     RegisterCommands(child, plugin);
@@ -106,7 +106,7 @@ public sealed class ComposerCommandRegistry
 
                 break;
 
-            case FormaToolbarMenu menu:
+            case ToolbarMenu menu:
                 foreach (var option in menu.Options)
                 {
                     _pluginCommands[option.Command] = plugin;
@@ -114,7 +114,7 @@ public sealed class ComposerCommandRegistry
 
                 break;
 
-            case FormaToolbarAction action:
+            case ToolbarAction action:
                 _pluginCommands[action.Command] = plugin;
                 break;
         }

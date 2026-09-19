@@ -43,43 +43,43 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "inline-style",
                 Title = "Inline Style",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = BoldCommand },
-                    new FormaToolbarToggle { Id = "italic", Title = "Italic", Icon = Glyph.Italic, Command = ItalicCommand },
-                    new FormaToolbarToggle { Id = "underline", Title = "Underline", Icon = Glyph.Underline, Command = UnderlineCommand },
-                    new FormaToolbarToggle { Id = "strike", Title = "Strikethrough", Icon = Glyph.Strikethrough, Command = StrikeCommand },
+                    new ToolbarToggle { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = BoldCommand },
+                    new ToolbarToggle { Id = "italic", Title = "Italic", Icon = Glyph.Italic, Command = ItalicCommand },
+                    new ToolbarToggle { Id = "underline", Title = "Underline", Icon = Glyph.Underline, Command = UnderlineCommand },
+                    new ToolbarToggle { Id = "strike", Title = "Strikethrough", Icon = Glyph.Strikethrough, Command = StrikeCommand },
                 ],
             },
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "text-effects",
                 Title = "Text Effects",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "code", Title = "Code", Icon = Glyph.Code, Command = CodeCommand },
-                    new FormaToolbarToggle { Id = "subscript", Title = "Subscript", Icon = Glyph.Subscript, Command = SubscriptCommand },
-                    new FormaToolbarToggle { Id = "superscript", Title = "Superscript", Icon = Glyph.Superscript, Command = SuperscriptCommand },
-                    new FormaToolbarCommand { Id = "remove-format", Title = "Clear Formatting", Icon = Glyph.ClearFormatting, Command = RemoveFormatCommand },
+                    new ToolbarToggle { Id = "code", Title = "Code", Icon = Glyph.Code, Command = CodeCommand },
+                    new ToolbarToggle { Id = "subscript", Title = "Subscript", Icon = Glyph.Subscript, Command = SubscriptCommand },
+                    new ToolbarToggle { Id = "superscript", Title = "Superscript", Icon = Glyph.Superscript, Command = SuperscriptCommand },
+                    new ToolbarCommand { Id = "remove-format", Title = "Clear Formatting", Icon = Glyph.ClearFormatting, Command = RemoveFormatCommand },
                 ],
             },
         ]),
         new(ComposerRows.Selection,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "selection-inline",
                 Title = "Inline Style",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = BoldCommand },
-                    new FormaToolbarToggle { Id = "italic", Title = "Italic", Icon = Glyph.Italic, Command = ItalicCommand },
-                    new FormaToolbarToggle { Id = "underline", Title = "Underline", Icon = Glyph.Underline, Command = UnderlineCommand },
-                    new FormaToolbarToggle { Id = "code", Title = "Code", Icon = Glyph.Code, Command = CodeCommand },
+                    new ToolbarToggle { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = BoldCommand },
+                    new ToolbarToggle { Id = "italic", Title = "Italic", Icon = Glyph.Italic, Command = ItalicCommand },
+                    new ToolbarToggle { Id = "underline", Title = "Underline", Icon = Glyph.Underline, Command = UnderlineCommand },
+                    new ToolbarToggle { Id = "code", Title = "Code", Icon = Glyph.Code, Command = CodeCommand },
                 ],
             },
         ]),

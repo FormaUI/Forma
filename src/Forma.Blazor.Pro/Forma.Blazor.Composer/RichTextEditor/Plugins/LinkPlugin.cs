@@ -37,13 +37,13 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "links",
                 Title = "Links",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "link-insert",
                         Title = "Insert Link",
@@ -52,7 +52,7 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
                         ShortcutDisplay = "Ctrl+K",
                         ShortcutAriaKeys = "Control+k",
                     },
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "link-remove",
                         Title = "Remove Link",
@@ -60,14 +60,14 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
                         Command = RemoveLinkCommand,
                         RequiresState = LinkStyle,
                     },
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "anchor-insert",
                         Title = "Insert Anchor",
                         Icon = Glyph.Anchor,
                         Command = InsertAnchorCommand,
                     },
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "anchor-remove",
                         Title = "Remove Anchor",

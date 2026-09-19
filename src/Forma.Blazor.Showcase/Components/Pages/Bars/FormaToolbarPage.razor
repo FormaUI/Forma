@@ -9,7 +9,7 @@
 
 <div class="demo-section">
     <h2>@L["Grouped Commands"]</h2>
-    <p class="description">@L["Each group is a FormaToolbarGroup, separated from the next by a rule."]</p>
+    <p class="description">@L["Each group is a ToolbarGroup, separated from the next by a rule."]</p>
     <div class="demo-box demo-box-flush">
         <FormaToolbar Label="@L["Formatting"]" Items="FormattingGroups" OnCommand="HandleCommand" />
     </div>
@@ -26,7 +26,7 @@
 
 <div class="demo-section">
     <h2>@L["Toggle State"]</h2>
-    <p class="description">@L["A FormaToolbarToggle reflects its own IsActive, drawn with an underline as well as color so the state never rests on color alone."]</p>
+    <p class="description">@L["A ToolbarToggle reflects its own IsActive, drawn with an underline as well as color so the state never rests on color alone."]</p>
     <div class="demo-box demo-box-flush">
         <FormaToolbar Label="@L["Formatting"]" Items="ToggleGroups" OnCommand="HandleToggleCommand" />
     </div>
@@ -34,7 +34,7 @@
 
 <div class="demo-section">
     <h2>@L["Menu of Choices"]</h2>
-    <p class="description">@L["A FormaToolbarMenu renders as a dropdown, showing the active option's title or a color swatch."]</p>
+    <p class="description">@L["A ToolbarMenu renders as a dropdown, showing the active option's title or a color swatch."]</p>
     <div class="demo-box demo-box-flush">
         <FormaToolbar Label="@L["Typography"]" Items="MenuGroups" OnCommand="HandleMenuCommand" />
     </div>
@@ -42,7 +42,7 @@
 
 <div class="demo-section">
     <h2>@L["Readout"]</h2>
-    <p class="description">@L["A FormaToolbarReadout shows a value without being interactive. Marked IsAnnounced, its changes are read out politely."]</p>
+    <p class="description">@L["A ToolbarReadout shows a value without being interactive. Marked IsAnnounced, its changes are read out politely."]</p>
     <div class="demo-box demo-box-flush">
         <FormaToolbar Label="@L["Document Status"]" Items="ReadoutGroups" OnCommand="HandleCommand" />
     </div>
@@ -51,7 +51,7 @@
 
 <div class="demo-section">
     <h2>@L["Custom Item"]</h2>
-    <p class="description">@L["A FormaToolbarCustomItem renders a component of the caller's choosing, with its own parameters, in place of a standard control."]</p>
+    <p class="description">@L["A ToolbarCustomItem renders a component of the caller's choosing, with its own parameters, in place of a standard control."]</p>
     <div class="demo-box demo-box-flush">
         <FormaToolbar Label="@L["Publication"]" Items="CustomGroups" />
     </div>
@@ -149,64 +149,64 @@
         }
     }
 
-    private IReadOnlyList<FormaToolbarItem> FormattingGroups =>
+    private IReadOnlyList<ToolbarItem> FormattingGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "inline",
             Title = L["Inline Style"],
             Items =
             [
-                new FormaToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold" },
-                new FormaToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic" },
+                new ToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold" },
+                new ToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic" },
             ],
         },
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "align",
             Title = L["Alignment"],
             Items =
             [
-                new FormaToolbarCommand { Id = "align-left", Title = L["Align Left"], Icon = Glyph.AlignLeft, Command = "format.align-left" },
-                new FormaToolbarCommand { Id = "align-right", Title = L["Align Right"], Icon = Glyph.AlignRight, Command = "format.align-right" },
+                new ToolbarCommand { Id = "align-left", Title = L["Align Left"], Icon = Glyph.AlignLeft, Command = "format.align-left" },
+                new ToolbarCommand { Id = "align-right", Title = L["Align Right"], Icon = Glyph.AlignRight, Command = "format.align-right" },
             ],
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> LabelledGroups =>
+    private IReadOnlyList<ToolbarItem> LabelledGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "library",
             Title = L["Library Actions"],
             Items =
             [
-                new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
-                new FormaToolbarCommand { Id = "upload", Title = L["Upload"], Icon = Glyph.Upload, Command = "library.upload" },
-                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "library.delete" },
+                new ToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
+                new ToolbarCommand { Id = "upload", Title = L["Upload"], Icon = Glyph.Upload, Command = "library.upload" },
+                new ToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "library.delete" },
             ],
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> ToggleGroups =>
+    private IReadOnlyList<ToolbarItem> ToggleGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "inline",
             Title = L["Inline Style"],
-            Items = [new FormaToolbarToggle { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "toggle.bold", IsActive = _isBoldActive }],
+            Items = [new ToolbarToggle { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "toggle.bold", IsActive = _isBoldActive }],
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> MenuGroups =>
+    private IReadOnlyList<ToolbarItem> MenuGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "font",
             Title = L["Font"],
             Items =
             [
-                new FormaToolbarMenu
+                new ToolbarMenu
                 {
                     Id = "font-family",
                     Title = L["Font Family"],
@@ -219,13 +219,13 @@
                 },
             ],
         },
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "color",
             Title = L["Color"],
             Items =
             [
-                new FormaToolbarMenu
+                new ToolbarMenu
                 {
                     Id = "text-color",
                     Title = L["Text Color"],
@@ -240,35 +240,35 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> ReadoutGroups =>
+    private IReadOnlyList<ToolbarItem> ReadoutGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "counts",
             Title = L["Counts"],
             Items =
             [
-                new FormaToolbarReadout { Id = "words", Title = L["Word count"], Value = L["[$ plural; one: # word; other: # words; $]", _wordCount], IsAnnounced = true },
-                new FormaToolbarReadout { Id = "saved", Title = L["Save state"], Value = L["Saved"] },
+                new ToolbarReadout { Id = "words", Title = L["Word count"], Value = L["[$ plural; one: # word; other: # words; $]", _wordCount], IsAnnounced = true },
+                new ToolbarReadout { Id = "saved", Title = L["Save state"], Value = L["Saved"] },
             ],
         },
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "actions",
             Title = L["Actions"],
-            Items = [new FormaToolbarCommand { Id = "recount", Title = L["Recount"], Icon = Glyph.Refresh, Command = "document.recount" }],
+            Items = [new ToolbarCommand { Id = "recount", Title = L["Recount"], Icon = Glyph.Refresh, Command = "document.recount" }],
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> CustomGroups =>
+    private IReadOnlyList<ToolbarItem> CustomGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "custom",
             Title = L["Publication"],
             Items =
             [
-                new FormaToolbarCustomItem
+                new ToolbarCustomItem
                 {
                     Id = "state",
                     Title = L["Publication State"],
@@ -280,43 +280,43 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> ShortcutGroups =>
+    private IReadOnlyList<ToolbarItem> ShortcutGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "inline",
             Title = L["Inline Style"],
             Items =
             [
-                new FormaToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold", ShortcutDisplay = "Ctrl+B", ShortcutAriaKeys = "Control+B" },
-                new FormaToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic", ShortcutDisplay = "Ctrl+I", ShortcutAriaKeys = "Control+I" },
+                new ToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold", ShortcutDisplay = "Ctrl+B", ShortcutAriaKeys = "Control+B" },
+                new ToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic", ShortcutDisplay = "Ctrl+I", ShortcutAriaKeys = "Control+I" },
             ],
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> PartlyDisabledGroups =>
+    private IReadOnlyList<ToolbarItem> PartlyDisabledGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "library",
             Title = L["Library Actions"],
             Items =
             [
-                new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
-                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "library.delete", IsDisabled = !_canDelete, ShortcutDisplay = "Ctrl+D", ShortcutAriaKeys = "Control+D" },
+                new ToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
+                new ToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "library.delete", IsDisabled = !_canDelete, ShortcutDisplay = "Ctrl+D", ShortcutAriaKeys = "Control+D" },
             ],
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> ManyGroups =>
+    private IReadOnlyList<ToolbarItem> ManyGroups =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "many",
             Title = L["Commands"],
             Items =
             [
-                .. Enumerable.Range(1, 10).Select(i => new FormaToolbarCommand
+                .. Enumerable.Range(1, 10).Select(i => new ToolbarCommand
                 {
                     Id = $"command-{i}",
                     Title = $"{L["Command"]} {i}",

@@ -43,7 +43,7 @@ public sealed class ComposerToolbarLayoutTests
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
-    private static ComposerToolbarItem CreateRow(string rowId, params FormaToolbarItem[] items)
+    private static ComposerToolbarItem CreateRow(string rowId, params ToolbarItem[] items)
         => new(rowId, items);
 
     [Fact]
@@ -88,17 +88,17 @@ public sealed class ComposerToolbarLayoutTests
         Assert.DoesNotContain(layout.Rows, row => row.Id == "preview.page" || GetItemIds(row).Contains("paper"));
     }
 
-    private static FormaToolbarCommand CreateCommand(string id)
+    private static ToolbarCommand CreateCommand(string id)
         => new() { Id = id, Title = id, Command = id };
 
-    private static FormaToolbarGroup Group(string id, params FormaToolbarItem[] items)
+    private static ToolbarGroup Group(string id, params ToolbarItem[] items)
         => new() { Id = id, Title = id, Items = items };
 
     private static IEnumerable<string> GetItemIds(ComposerToolbarRowLayout row)
         => row.Items.SelectMany(Flatten).Select(i => i.Id);
 
-    private static IEnumerable<FormaToolbarItem> Flatten(FormaToolbarItem item)
-        => item is FormaToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
+    private static IEnumerable<ToolbarItem> Flatten(ToolbarItem item)
+        => item is ToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
 
     [Fact]
     public void Should_always_render_the_built_in_row_even_when_nothing_fills_it()
@@ -268,7 +268,7 @@ public sealed class ComposerToolbarLayoutTests
 
         // Assert
         var formatting = layout.Rows.Single(row => row.Id == ComposerRows.Formatting);
-        var media = Assert.IsType<FormaToolbarGroup>(Assert.Single(formatting.Items));
+        var media = Assert.IsType<ToolbarGroup>(Assert.Single(formatting.Items));
         Assert.Multiple(
             () => Assert.Equal("composer:Editor Commands", layout.Rows[0].Label),
             () => Assert.Equal("editor:Editor Row", layout.Rows.Single(row => row.Id == "editor.row").Label),
@@ -307,7 +307,7 @@ public sealed class ComposerToolbarLayoutTests
         var layout = ComposerToolbarLayout.Create(editor, [first, second]);
 
         // Assert
-        var group = Assert.IsType<FormaToolbarGroup>(Assert.Single(layout.Rows[0].Items));
+        var group = Assert.IsType<ToolbarGroup>(Assert.Single(layout.Rows[0].Items));
         Assert.Multiple(
             () => Assert.Equal("view", group.Id),
             () => Assert.Equal(["preview", "maximize"], group.Items.Select(i => i.Id)));

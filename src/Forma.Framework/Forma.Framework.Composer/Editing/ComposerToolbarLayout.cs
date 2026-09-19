@@ -12,7 +12,7 @@ public sealed record ComposerToolbarRowLayout(
     string Id,
     string Label,
     bool IsBuiltIn,
-    IReadOnlyList<FormaToolbarItem> Items);
+    IReadOnlyList<ToolbarItem> Items);
 
 /// <summary>The ordered command rows one surface's toolbar renders.</summary>
 public sealed class ComposerToolbarLayout
@@ -80,7 +80,7 @@ public sealed class ComposerToolbarLayout
     {
         var external = plugins.Where(p => !ReferenceEquals(p, owner) && p is not IComposerEditorPlugin and not IComposerViewPlugin).ToList();
         var order = Order(owner, external, standardRows, localize);
-        var items = order.ToDictionary(r => r.Id, _ => new List<FormaToolbarItem>(), StringComparer.Ordinal);
+        var items = order.ToDictionary(r => r.Id, _ => new List<ToolbarItem>(), StringComparer.Ordinal);
         var catchesStrays = items.ContainsKey(ComposerRows.Plugins);
 
         Place(owner);
@@ -117,16 +117,16 @@ public sealed class ComposerToolbarLayout
         }
     }
 
-    private static FormaToolbarItem Localize(FormaToolbarItem item, Func<string, string> localize)
+    private static ToolbarItem Localize(ToolbarItem item, Func<string, string> localize)
         => item switch
         {
-            FormaToolbarGroup group => group with { Title = localize(group.Title), Items = [.. group.Items.Select(child => Localize(child, localize))] },
-            FormaToolbarToggle toggle => toggle with
+            ToolbarGroup group => group with { Title = localize(group.Title), Items = [.. group.Items.Select(child => Localize(child, localize))] },
+            ToolbarToggle toggle => toggle with
             {
                 Title = localize(toggle.Title),
                 AlternateTitle = toggle.AlternateTitle is { } alternateTitle ? localize(alternateTitle) : null,
             },
-            FormaToolbarMenu menu => menu with
+            ToolbarMenu menu => menu with
             {
                 Title = localize(menu.Title),
                 Options = [.. menu.Options.Select(option => option with { Title = localize(option.Title) })],
@@ -135,14 +135,14 @@ public sealed class ComposerToolbarLayout
         };
 
     /// <summary>Folds groups sharing an identifier into the first of them, so one named cluster holds every contribution to it.</summary>
-    private static List<FormaToolbarItem> Coalesce(List<FormaToolbarItem> placed)
+    private static List<ToolbarItem> Coalesce(List<ToolbarItem> placed)
     {
-        var merged = new List<FormaToolbarItem>(placed.Count);
+        var merged = new List<ToolbarItem>(placed.Count);
         var groupIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
 
         foreach (var item in placed)
         {
-            if (item is not FormaToolbarGroup group)
+            if (item is not ToolbarGroup group)
             {
                 merged.Add(item);
 
@@ -151,7 +151,7 @@ public sealed class ComposerToolbarLayout
 
             if (groupIndexes.TryGetValue(group.Id, out var index))
             {
-                var existing = (FormaToolbarGroup)merged[index];
+                var existing = (ToolbarGroup)merged[index];
                 merged[index] = existing with { Items = [.. existing.Items, .. group.Items] };
 
                 continue;

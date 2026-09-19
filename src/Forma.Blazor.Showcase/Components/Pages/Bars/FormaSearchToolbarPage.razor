@@ -36,10 +36,10 @@
     private SearchBoxOptions Search
         => new() { Placeholder = L["Search..."], DebounceDelay = TimeSpan.FromMilliseconds(300) };
 
-    private IReadOnlyList<FormaToolbarItem> Actions =>
+    private IReadOnlyList<ToolbarItem> Actions =>
     [
-        new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "add-new" },
-        new FormaToolbarCommand { Id = "export", Title = L["Export"], Icon = Glyph.Download, Command = "export" },
+        new ToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "add-new" },
+        new ToolbarCommand { Id = "export", Title = L["Export"], Icon = Glyph.Download, Command = "export" },
     ];
 
     private void HandleCommand(string command)

@@ -172,7 +172,7 @@
         {
             // Arrange
             using var ctx = new FormaSelectionToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
 
             // Act
             var cut = ctx.Render(@<FormaSelectionToolbar Count="2" Label="Selection Actions" Items="items" />);
@@ -186,7 +186,7 @@
         {
             // Arrange
             using var ctx = new FormaSelectionToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
             var command = "";
 
             // Act
@@ -202,7 +202,7 @@
         {
             // Arrange
             using var ctx = new FormaSelectionToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
+            IReadOnlyList<ToolbarItem> items = [new ToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
 
             // Act
             var act = () => ctx.Render(@<FormaSelectionToolbar Count="2" Items="items" />);

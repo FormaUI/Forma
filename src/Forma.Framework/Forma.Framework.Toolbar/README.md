@@ -17,20 +17,20 @@ types live in the `Forma.Framework.Toolbar` namespace.
 
 | Type | What it is |
 | --- | --- |
-| `FormaToolbarItem` | The base of every item: its identity, its title, its icon, and whether it alone is disabled. |
-| `FormaToolbarGroup` | A named cluster of items, drawn as one `role="group"` and parted from its neighbors by a rule. |
-| `FormaToolbarAction` | The base of an item that raises a command: a command, an optional shortcut, and an optional state it needs. |
-| `FormaToolbarCommand` | An action that fires once when activated. |
-| `FormaToolbarToggle` | An action that reflects an on/off state, with an alternate title and icon while on. |
-| `FormaToolbarMenu` | An item presenting a menu of `FormaToolbarOption`s, each raising its own command. |
-| `FormaToolbarOption` | One choice inside a menu; not an item itself, so it stands only inside a `FormaToolbarMenu`. |
-| `FormaToolbarReadout` | A non-interactive value, optionally announced to a screen reader as it changes. |
-| `FormaToolbarCustomItem` | An item rendered by a component the caller names, in place of a standard control. |
+| `ToolbarItem` | The base of every item: its identity, its title, its icon, and whether it alone is disabled. |
+| `ToolbarGroup` | A named cluster of items, drawn as one `role="group"` and parted from its neighbors by a rule. |
+| `ToolbarAction` | The base of an item that raises a command: a command, an optional shortcut, and an optional state it needs. |
+| `ToolbarCommand` | An action that fires once when activated. |
+| `ToolbarToggle` | An action that reflects an on/off state, with an alternate title and icon while on. |
+| `ToolbarMenu` | An item presenting a menu of `ToolbarOption`s, each raising its own command. |
+| `ToolbarOption` | One choice inside a menu; not an item itself, so it stands only inside a `ToolbarMenu`. |
+| `ToolbarReadout` | A non-interactive value, optionally announced to a screen reader as it changes. |
+| `ToolbarCustomItem` | An item rendered by a component the caller names, in place of a standard control. |
 
 A toolbar's `Items` list mixes bare items and groups; a group holds items and never another
 group, and a menu offers at least one option. The toolbar rejects a list that breaks either.
 
-### `FormaToolbarItem`
+### `ToolbarItem`
 
 | Member | What it is |
 | --- | --- |
@@ -40,13 +40,13 @@ group, and a menu offers at least one option. The toolbar rejects a list that br
 | `Icon` | The icon shown for the item, or `null` when its title stands alone. |
 | `IsDisabled` | Whether this item alone is disabled, whatever the toolbar's own `Disabled` says. |
 
-### `FormaToolbarGroup`
+### `ToolbarGroup`
 
 | Member | What it is |
 | --- | --- |
 | `Items` | The items the group contains. |
 
-### `FormaToolbarAction`
+### `ToolbarAction`
 
 | Member | What it is |
 | --- | --- |
@@ -55,7 +55,7 @@ group, and a menu offers at least one option. The toolbar rejects a list that br
 | `ShortcutAriaKeys` | The shortcut in `aria-keyshortcuts` notation, such as `Control+B`, or `null`. |
 | `RequiresState` | The state the host must report before the action can run, or `null` when it is always available. |
 
-`FormaToolbarCommand` adds nothing. `FormaToolbarToggle` adds:
+`ToolbarCommand` adds nothing. `ToolbarToggle` adds:
 
 | Member | What it is |
 | --- | --- |
@@ -63,7 +63,7 @@ group, and a menu offers at least one option. The toolbar rejects a list that br
 | `AlternateTitle` | The title shown while on, or `null` to keep `Title`. |
 | `AlternateIcon` | The icon shown while on, or `null` to keep `Icon`. |
 
-### `FormaToolbarMenu` and `FormaToolbarOption`
+### `ToolbarMenu` and `ToolbarOption`
 
 A menu carries `Options`, the choices it presents. Each option is:
 
@@ -80,14 +80,14 @@ A menu carries `Options`, the choices it presents. Each option is:
 The menu's trigger shows the active option's title, or its swatch when it has one; while no
 option is active the first stands in.
 
-### `FormaToolbarReadout`
+### `ToolbarReadout`
 
 | Member | What it is |
 | --- | --- |
 | `Value` | The value displayed, formatted and localized by the caller. |
 | `IsAnnounced` | Whether a screen reader announces the value as it changes. |
 
-### `FormaToolbarCustomItem`
+### `ToolbarCustomItem`
 
 | Member | What it is |
 | --- | --- |
@@ -150,20 +150,20 @@ reports which toggle is on, which heading is chosen, and whether the link comman
     private int WordCount
         => _text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
 
-    private IReadOnlyList<FormaToolbarItem> Items =>
+    private IReadOnlyList<ToolbarItem> Items =>
     [
-        new FormaToolbarGroup
+        new ToolbarGroup
         {
             Id = "inline",
             Title = "Inline Style",
             Items =
             [
-                new FormaToolbarToggle { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = "format.bold", ShortcutDisplay = "Ctrl+B", ShortcutAriaKeys = "Control+B" },
-                new FormaToolbarToggle { Id = "link", Title = "Link", Icon = Glyph.Link, Command = "format.link", ShortcutDisplay = "Ctrl+K", ShortcutAriaKeys = "Control+K" },
-                new FormaToolbarCommand { Id = "unlink", Title = "Remove Link", Icon = Glyph.RemoveLink, Command = "format.unlink", RequiresState = "link" },
+                new ToolbarToggle { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = "format.bold", ShortcutDisplay = "Ctrl+B", ShortcutAriaKeys = "Control+B" },
+                new ToolbarToggle { Id = "link", Title = "Link", Icon = Glyph.Link, Command = "format.link", ShortcutDisplay = "Ctrl+K", ShortcutAriaKeys = "Control+K" },
+                new ToolbarCommand { Id = "unlink", Title = "Remove Link", Icon = Glyph.RemoveLink, Command = "format.unlink", RequiresState = "link" },
             ],
         },
-        new FormaToolbarMenu
+        new ToolbarMenu
         {
             Id = "heading",
             Title = "Heading",
@@ -174,7 +174,7 @@ reports which toggle is on, which heading is chosen, and whether the link comman
                 new() { Id = "h2", Title = "Heading 2", Command = HeadingPrefix + "h2", PreviewStyle = "font-size:1.25em" },
             ],
         },
-        new FormaToolbarReadout { Id = "words", Title = "Word count", Value = $"{WordCount} words", IsAnnounced = true },
+        new ToolbarReadout { Id = "words", Title = "Word count", Value = $"{WordCount} words", IsAnnounced = true },
     ];
 
     // The element reference is captured after the first render, so the toolbar is rendered once more to receive it.
@@ -229,11 +229,11 @@ A status strip of readouts and one command, the same records on a different bar:
     private bool _isSaved;
     private int _wordCount;
 
-    private IReadOnlyList<FormaToolbarItem> Status =>
+    private IReadOnlyList<ToolbarItem> Status =>
     [
-        new FormaToolbarReadout { Id = "saved", Title = "Save state", Value = _isSaved ? "Saved" : "Unsaved", IsAnnounced = true },
-        new FormaToolbarReadout { Id = "words", Title = "Word count", Value = $"{_wordCount} words" },
-        new FormaToolbarCommand { Id = "save", Title = "Save", Icon = Glyph.Save, Command = "document.save", IsDisabled = _isSaved },
+        new ToolbarReadout { Id = "saved", Title = "Save state", Value = _isSaved ? "Saved" : "Unsaved", IsAnnounced = true },
+        new ToolbarReadout { Id = "words", Title = "Word count", Value = $"{_wordCount} words" },
+        new ToolbarCommand { Id = "save", Title = "Save", Icon = Glyph.Save, Command = "document.save", IsDisabled = _isSaved },
     ];
 
     private void HandleCommand(string command)

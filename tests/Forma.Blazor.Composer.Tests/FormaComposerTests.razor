@@ -116,11 +116,11 @@
             [
                 new(ComposerRows.Plugins,
                 [
-                    new FormaToolbarGroup
+                    new ToolbarGroup
                     {
                         Id = "grouped-commands",
                         Title = "Grouped Commands",
-                        Items = [new FormaToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }],
+                        Items = [new ToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }],
                     },
                 ]),
             ];
@@ -132,7 +132,7 @@
             public string Id => "commands";
             public List<string> Executed { get; } = [];
             public IReadOnlyList<ComposerToolbarItem> Items =>
-                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }])];
+                [new(ComposerRows.Plugins, [new ToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }])];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
                 [new() { Key = "k", Command = "demo.shout", Control = true, Shift = true }];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
@@ -148,7 +148,7 @@
         {
             public string Id => "many";
             public IReadOnlyList<ComposerToolbarItem> Items =>
-                [new(ComposerRows.Plugins, [.. Enumerable.Range(0, count).Select(i => new FormaToolbarCommand
+                [new(ComposerRows.Plugins, [.. Enumerable.Range(0, count).Select(i => new ToolbarCommand
                 {
                     Id = $"many-{i}",
                     Title = $"Command {i}",
@@ -166,13 +166,13 @@
             public IReadOnlyList<ComposerToolbarItem> Items =>
                 [new(ComposerRows.Plugins,
                 [
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "picker",
                         Title = "Picker",
                         Options = [new() { Id = "one", Title = "One", Command = "pick.one" }],
                     },
-                    .. Enumerable.Range(0, count).Select(i => new FormaToolbarCommand
+                    .. Enumerable.Range(0, count).Select(i => new ToolbarCommand
                     {
                         Id = $"many-{i}",
                         Title = $"Command {i}",
@@ -197,7 +197,7 @@
         {
             public string Id => "scoped";
             public IReadOnlyList<ComposerToolbarItem> Items =>
-                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "scoped", Title = "Scoped", Icon = Glyph.File, Command = "demo.scoped" }])];
+                [new(ComposerRows.Plugins, [new ToolbarCommand { Id = "scoped", Title = "Scoped", Icon = Glyph.File, Command = "demo.scoped" }])];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
@@ -209,7 +209,7 @@
 
             public string Id => "status";
             public IReadOnlyList<ComposerToolbarItem> Items =>
-                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "wordcount", Title = "Word Count", Icon = Glyph.File, Command = "demo.wordcount" }])];
+                [new(ComposerRows.Plugins, [new ToolbarCommand { Id = "wordcount", Title = "Word Count", Icon = Glyph.File, Command = "demo.wordcount" }])];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
             public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
@@ -235,7 +235,7 @@
         {
             public string Id => "announcing";
             public IReadOnlyList<ComposerToolbarItem> Items =>
-                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "save", Title = "Save", Icon = Glyph.File, Command = "demo.save" }])];
+                [new(ComposerRows.Plugins, [new ToolbarCommand { Id = "save", Title = "Save", Icon = Glyph.File, Command = "demo.save" }])];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
             public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)

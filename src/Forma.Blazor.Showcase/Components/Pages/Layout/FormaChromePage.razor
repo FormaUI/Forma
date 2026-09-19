@@ -118,19 +118,19 @@
 
     private string FoldersStyle => FormattableString.Invariant($"--demo-chrome-side-size: {_foldersWidth}rem");
 
-    private IReadOnlyList<FormaToolbarItem> MediaCommands =>
+    private IReadOnlyList<ToolbarItem> MediaCommands =>
     [
-        new FormaToolbarCommand { Id = "refresh", Command = "refresh", Title = L["Refresh"], Icon = Glyph.Refresh },
-        new FormaToolbarCommand { Id = "upload", Command = "upload", Title = L["Upload"], Icon = Glyph.Upload },
+        new ToolbarCommand { Id = "refresh", Command = "refresh", Title = L["Refresh"], Icon = Glyph.Refresh },
+        new ToolbarCommand { Id = "upload", Command = "upload", Title = L["Upload"], Icon = Glyph.Upload },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> OutputCommands =>
+    private IReadOnlyList<ToolbarItem> OutputCommands =>
     [
-        new FormaToolbarCommand { Id = "clear", Command = "clear", Title = L["Clear"], Icon = Glyph.Delete },
+        new ToolbarCommand { Id = "clear", Command = "clear", Title = L["Clear"], Icon = Glyph.Delete },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> NotesCommands =>
+    private IReadOnlyList<ToolbarItem> NotesCommands =>
     [
-        new FormaToolbarToggle { Id = "maximize", Command = "maximize", Title = L["Maximize"], Icon = Glyph.Maximize, IsActive = _isNotesMaximized, AlternateTitle = L["Restore"], AlternateIcon = Glyph.Minimize },
+        new ToolbarToggle { Id = "maximize", Command = "maximize", Title = L["Maximize"], Icon = Glyph.Maximize, IsActive = _isNotesMaximized, AlternateTitle = L["Restore"], AlternateIcon = Glyph.Minimize },
     ];
 }

@@ -30,13 +30,13 @@ public sealed class EmojiPlugin(
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "insert",
                 Title = "Insert",
                 Items =
                 [
-                    new FormaToolbarCustomItem
+                    new ToolbarCustomItem
                     {
                         Id = "emoji",
                         Title = "Emoji",

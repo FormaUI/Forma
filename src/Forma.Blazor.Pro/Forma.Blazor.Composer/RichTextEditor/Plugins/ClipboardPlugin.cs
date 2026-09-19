@@ -28,13 +28,13 @@ public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerFeat
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "clipboard",
                 Title = "Clipboard",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "select-all",
                         Title = "Select All",
@@ -43,14 +43,14 @@ public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerFeat
                         ShortcutDisplay = "Ctrl+A",
                         ShortcutAriaKeys = "Control+a",
                     },
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "paste-text",
                         Title = "Paste as Plain Text",
                         Icon = Glyph.Paste,
                         Command = PasteTextCommand,
                     },
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "paste-word",
                         Title = "Paste from Word",

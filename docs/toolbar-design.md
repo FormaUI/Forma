@@ -17,16 +17,16 @@ a command by adding an item rather than markup.
 
 ## The item model
 
-`FormaToolbarItem` is abstract, carrying `Id`, `Title`, `Tooltip`, `Icon` and
-`IsDisabled`; the subtype decides the rendering. `FormaToolbarGroup` adds `Items`, so one
+`ToolbarItem` is abstract, carrying `Id`, `Title`, `Tooltip`, `Icon` and
+`IsDisabled`; the subtype decides the rendering. `ToolbarGroup` adds `Items`, so one
 `Items` list mixes bare items and clusters and a caller with nothing to group skips the
-ceremony; groups do not nest, and the guard says so. `FormaToolbarAction` adds `Command`,
+ceremony; groups do not nest, and the guard says so. `ToolbarAction` adds `Command`,
 the shortcut's display and ARIA forms, and `RequiresState`, the state the host must report
-before the action can run; it is specialized by `FormaToolbarCommand`, which fires once,
-and `FormaToolbarToggle`, which adds `IsActive` and an alternate title and icon shown while
-on. `FormaToolbarMenu` adds `Options`, at least one, each a `FormaToolbarOption` with an
+before the action can run; it is specialized by `ToolbarCommand`, which fires once,
+and `ToolbarToggle`, which adds `IsActive` and an alternate title and icon shown while
+on. `ToolbarMenu` adds `Options`, at least one, each a `ToolbarOption` with an
 `Id`, a `Title`, a `Command`, `IsActive`, and an optional icon, preview style or swatch.
-`FormaToolbarReadout` adds `Value` and `IsAnnounced`. `FormaToolbarCustomItem` adds
+`ToolbarReadout` adds `Value` and `IsAnnounced`. `ToolbarCustomItem` adds
 `Component` and `Parameters`.
 
 ## Decision summary

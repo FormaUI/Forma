@@ -43,7 +43,7 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new(RefactorRow, [new FormaToolbarCommand { Id = "rename", Title = "Rename Symbol", Icon = Glyph.Edit, Command = RenameCommand }]),
+        new(RefactorRow, [new ToolbarCommand { Id = "rename", Title = "Rename Symbol", Icon = Glyph.Edit, Command = RenameCommand }]),
     ];
 
     /// <inheritdoc />
@@ -115,13 +115,13 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
     [
         new(ComposerRows.BuiltIn,
         [
-            new FormaToolbarCommand { Id = "number-lines", Title = "Number Lines", Icon = Glyph.ListNumbered, Command = NumberLinesCommand },
-            new FormaToolbarCommand { Id = "word-count", Title = "Word Count", Icon = Glyph.Count, Command = WordCountCommand },
+            new ToolbarCommand { Id = "number-lines", Title = "Number Lines", Icon = Glyph.ListNumbered, Command = NumberLinesCommand },
+            new ToolbarCommand { Id = "word-count", Title = "Word Count", Icon = Glyph.Count, Command = WordCountCommand },
         ]),
         new(SortingRow,
         [
-            new FormaToolbarCommand { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.SortAlphaAscending, Command = SortAscendingCommand },
-            new FormaToolbarCommand { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.SortAlphaDescending, Command = SortDescendingCommand },
+            new ToolbarCommand { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.SortAlphaAscending, Command = SortAscendingCommand },
+            new ToolbarCommand { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.SortAlphaDescending, Command = SortDescendingCommand },
         ]),
     ];
 
@@ -212,7 +212,7 @@ public sealed class TimestampPlugin : IComposerFeaturePlugin
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
-        [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "timestamp", Title = "Insert Timestamp", Icon = Glyph.Clock, Command = TimestampCommand }])];
+        [new(ComposerRows.Plugins, [new ToolbarCommand { Id = "timestamp", Title = "Insert Timestamp", Icon = Glyph.Clock, Command = TimestampCommand }])];
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
@@ -257,14 +257,14 @@ public sealed class CleanupPlugin : IComposerFeaturePlugin
     [
         new(ComposerRows.Plugins,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "cleanup",
                 Title = "Cleanup",
                 Items =
                 [
-                    new FormaToolbarCommand { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.Collapse, Command = RemoveBlankLinesCommand },
-                    new FormaToolbarCommand { Id = "clear", Title = "Clear", Icon = Glyph.Eraser, Command = ClearCommand },
+                    new ToolbarCommand { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.Collapse, Command = RemoveBlankLinesCommand },
+                    new ToolbarCommand { Id = "clear", Title = "Clear", Icon = Glyph.Eraser, Command = ClearCommand },
                 ],
             },
         ]),

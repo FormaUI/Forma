@@ -37,26 +37,26 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
     [
         new(ComposerRows.Paragraph,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "alignment",
                 Title = "Alignment",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "align-left", Title = "Align Left", Icon = Glyph.AlignLeft, Command = AlignLeftCommand },
-                    new FormaToolbarToggle { Id = "align-center", Title = "Align Center", Icon = Glyph.AlignCenter, Command = AlignCenterCommand },
-                    new FormaToolbarToggle { Id = "align-right", Title = "Align Right", Icon = Glyph.AlignRight, Command = AlignRightCommand },
-                    new FormaToolbarToggle { Id = "align-justify", Title = "Justify", Icon = Glyph.AlignJustify, Command = AlignJustifyCommand },
+                    new ToolbarToggle { Id = "align-left", Title = "Align Left", Icon = Glyph.AlignLeft, Command = AlignLeftCommand },
+                    new ToolbarToggle { Id = "align-center", Title = "Align Center", Icon = Glyph.AlignCenter, Command = AlignCenterCommand },
+                    new ToolbarToggle { Id = "align-right", Title = "Align Right", Icon = Glyph.AlignRight, Command = AlignRightCommand },
+                    new ToolbarToggle { Id = "align-justify", Title = "Justify", Icon = Glyph.AlignJustify, Command = AlignJustifyCommand },
                 ],
             },
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "text-direction",
                 Title = "Text Direction",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "dir-ltr", Title = "Left to Right", Icon = Glyph.TextDirectionLtr, Command = DirectionLtrCommand },
-                    new FormaToolbarToggle { Id = "dir-rtl", Title = "Right to Left", Icon = Glyph.TextDirectionRtl, Command = DirectionRtlCommand },
+                    new ToolbarToggle { Id = "dir-ltr", Title = "Left to Right", Icon = Glyph.TextDirectionLtr, Command = DirectionLtrCommand },
+                    new ToolbarToggle { Id = "dir-rtl", Title = "Right to Left", Icon = Glyph.TextDirectionRtl, Command = DirectionRtlCommand },
                 ],
             },
         ]),

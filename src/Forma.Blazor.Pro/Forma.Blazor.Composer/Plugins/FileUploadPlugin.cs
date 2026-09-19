@@ -21,13 +21,13 @@ public sealed class FileUploadPlugin(FileUploadPluginOptions? options = null) : 
     [
         new(ComposerRows.BuiltIn,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "attachments",
                 Title = "Attachments",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "attach",
                         Title = "Attach Files",

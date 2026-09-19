@@ -17,7 +17,7 @@ public sealed class ComposerCommandRegistryTests
         public string Id => id;
         public List<string> Executed { get; } = [];
         public IReadOnlyList<ComposerToolbarItem> Items { get; } =
-            [new(ComposerRows.Plugins, [.. commands.Select(c => new FormaToolbarCommand { Id = c, Title = c, Command = c })])];
+            [new(ComposerRows.Plugins, [.. commands.Select(c => new ToolbarCommand { Id = c, Title = c, Command = c })])];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
         public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
@@ -35,11 +35,11 @@ public sealed class ComposerCommandRegistryTests
         [
             new(ComposerRows.Plugins,
             [
-                new FormaToolbarMenu
+                new ToolbarMenu
                 {
                     Id = itemId,
                     Title = itemId,
-                    Options = [.. optionCommands.Select(c => new FormaToolbarOption { Id = c, Title = c, Command = c })],
+                    Options = [.. optionCommands.Select(c => new ToolbarOption { Id = c, Title = c, Command = c })],
                 },
             ]),
         ];

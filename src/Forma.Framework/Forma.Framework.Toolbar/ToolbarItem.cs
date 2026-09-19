@@ -3,7 +3,7 @@ namespace Forma.Framework.Toolbar;
 using Forma.Framework.Icons;
 
 /// <summary>An item a <see cref="FormaToolbar"/> renders.</summary>
-public abstract record FormaToolbarItem
+public abstract record ToolbarItem
 {
     /// <summary>The unique identifier of the item within its group.</summary>
     public required string Id { get; init; }

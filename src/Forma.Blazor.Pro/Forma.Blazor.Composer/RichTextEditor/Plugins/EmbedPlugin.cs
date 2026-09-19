@@ -22,13 +22,13 @@ public sealed class EmbedPlugin(RichTextEditorPlugin editor) : IComposerFeatureP
     [
         new(ComposerRows.Plugins,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "embed",
                 Title = "Embed",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "embed-insert",
                         Title = "Insert Embed",

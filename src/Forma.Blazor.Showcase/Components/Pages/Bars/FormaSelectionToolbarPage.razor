@@ -64,34 +64,34 @@
     private int _wideCount = 4;
     private string _lastCommand = "";
 
-    private IReadOnlyList<FormaToolbarItem> BasicItems =>
+    private IReadOnlyList<ToolbarItem> BasicItems =>
     [
         Delete, Publish,
     ];
 
-    private IReadOnlyList<FormaToolbarItem> DeleteOnly =>
+    private IReadOnlyList<ToolbarItem> DeleteOnly =>
     [
         Delete,
     ];
 
-    private IReadOnlyList<FormaToolbarItem> PublishOnly =>
+    private IReadOnlyList<ToolbarItem> PublishOnly =>
     [
         Publish,
     ];
 
-    private IReadOnlyList<FormaToolbarItem> WideItems =>
+    private IReadOnlyList<ToolbarItem> WideItems =>
     [
         Delete,
         Publish,
-        new FormaToolbarCommand { Id = "unpublish", Title = L["Unpublish"], Icon = Glyph.EyeSlash, Command = "unpublish" },
-        new FormaToolbarCommand { Id = "export", Title = L["Export"], Icon = Glyph.Download, Command = "export" },
+        new ToolbarCommand { Id = "unpublish", Title = L["Unpublish"], Icon = Glyph.EyeSlash, Command = "unpublish" },
+        new ToolbarCommand { Id = "export", Title = L["Export"], Icon = Glyph.Download, Command = "export" },
     ];
 
-    private FormaToolbarItem Delete
-        => new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "delete" };
+    private ToolbarItem Delete
+        => new ToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "delete" };
 
-    private FormaToolbarItem Publish
-        => new FormaToolbarCommand { Id = "publish", Title = L["Publish"], Icon = Glyph.CloudUpload, Command = "publish" };
+    private ToolbarItem Publish
+        => new ToolbarCommand { Id = "publish", Title = L["Publish"], Icon = Glyph.CloudUpload, Command = "publish" };
 
     private void HandleCommand(string command)
         => _lastCommand = command;

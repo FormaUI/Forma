@@ -17,13 +17,13 @@ public sealed class SelectionBarPlugin : IComposerFeaturePlugin
     [
         new(ComposerRows.BuiltIn,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "view",
                 Title = "View",
                 Items =
                 [
-                    new FormaToolbarToggle
+                    new ToolbarToggle
                     {
                         Id = "selection-bar",
                         Title = "Selection Bar",

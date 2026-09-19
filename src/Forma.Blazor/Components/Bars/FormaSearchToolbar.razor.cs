@@ -13,7 +13,7 @@ public sealed partial class FormaSearchToolbar : FormaElementBase
     [Parameter] public string? Label { get; set; }
 
     /// <summary>The items shown beside the search field.</summary>
-    [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
+    [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }

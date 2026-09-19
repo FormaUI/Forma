@@ -32,8 +32,8 @@ public sealed partial class FormaToolbar : FormaElementBase
     /// <summary>The accessible name of the toolbar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>The items the toolbar renders; a <see cref="FormaToolbarGroup"/> clusters the items it holds.</summary>
-    [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
+    /// <summary>The items the toolbar renders; a <see cref="ToolbarGroup"/> clusters the items it holds.</summary>
+    [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
     /// <summary>Whether every control in the toolbar is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
@@ -78,8 +78,8 @@ public sealed partial class FormaToolbar : FormaElementBase
         => [.. Actions.Where(action => action.ShortcutAriaKeys is not null)
                       .Select(action => (action.Command, action.ShortcutAriaKeys!))];
 
-    private IEnumerable<FormaToolbarAction> Actions
-        => Items.SelectMany(GetLeaves).OfType<FormaToolbarAction>();
+    private IEnumerable<ToolbarAction> Actions
+        => Items.SelectMany(GetLeaves).OfType<ToolbarAction>();
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -96,12 +96,12 @@ public sealed partial class FormaToolbar : FormaElementBase
 
         foreach (var item in Items.SelectMany(GetLeaves))
         {
-            if (item is FormaToolbarGroup nested)
+            if (item is ToolbarGroup nested)
             {
                 throw new ArgumentException($"Toolbar group '{nested.Id}' is nested inside another group; groups do not nest.", nameof(Items));
             }
 
-            if (item is FormaToolbarMenu { Options.Count: 0 } menu)
+            if (item is ToolbarMenu { Options.Count: 0 } menu)
             {
                 throw new ArgumentException($"Toolbar menu '{menu.Id}' must offer at least one option.", nameof(Items));
             }
@@ -225,8 +225,8 @@ public sealed partial class FormaToolbar : FormaElementBase
     }
 
     /// <summary>Every item a top-level entry contributes, so a group is checked through its own contents.</summary>
-    private static IEnumerable<FormaToolbarItem> GetLeaves(FormaToolbarItem item)
-        => item is FormaToolbarGroup group ? group.Items : [item];
+    private static IEnumerable<ToolbarItem> GetLeaves(ToolbarItem item)
+        => item is ToolbarGroup group ? group.Items : [item];
 
     private static string GetAction(string command)
         => InputRoute.Qualify(ActionOwner, command);
@@ -262,44 +262,44 @@ public sealed partial class FormaToolbar : FormaElementBase
     }
 
     private IEnumerable<Row> Rows
-        => Items.Select(item => item is FormaToolbarGroup group
+        => Items.Select(item => item is ToolbarGroup group
             ? new Row(group.Id, group, group.Items)
             : new Row(item.Id, null, [item]));
 
-    private FormaToolbarOption GetActiveOption(FormaToolbarMenu menu)
+    private ToolbarOption GetActiveOption(ToolbarMenu menu)
         => menu.Options.FirstOrDefault(IsOptionActive) ?? menu.Options[0];
 
     /// <summary>Whether a toggle is on, because it says so itself or because the host reports its id active.</summary>
-    private bool IsToggleActive(FormaToolbarAction action)
-        => action is FormaToolbarToggle toggle && (toggle.IsActive || ActiveStates.Contains(toggle.Id));
+    private bool IsToggleActive(ToolbarAction action)
+        => action is ToolbarToggle toggle && (toggle.IsActive || ActiveStates.Contains(toggle.Id));
 
     /// <summary>Whether a menu option is the chosen one, by its own say-so or because the host reports its id active.</summary>
-    private bool IsOptionActive(FormaToolbarOption option)
+    private bool IsOptionActive(ToolbarOption option)
         => option.IsActive || ActiveStates.Contains(option.Id);
 
     /// <summary>Whether an action cannot be run, because it is disabled outright or the state it needs is absent.</summary>
-    private bool IsUnavailable(FormaToolbarAction action)
+    private bool IsUnavailable(ToolbarAction action)
         => action.IsDisabled || (action.RequiresState is { } state && !ActiveStates.Contains(state));
 
-    private string GetTooltip(FormaToolbarItem item)
+    private string GetTooltip(ToolbarItem item)
     {
-        var label = item.Tooltip ?? (item is FormaToolbarAction action ? GetEffectiveTitle(action) : item.Title);
+        var label = item.Tooltip ?? (item is ToolbarAction action ? GetEffectiveTitle(action) : item.Title);
 
-        return item is FormaToolbarAction { ShortcutDisplay: { } shortcut }
+        return item is ToolbarAction { ShortcutDisplay: { } shortcut }
             ? $"{label} ({shortcut})"
             : label;
     }
 
-    /// <summary>The label an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateTitle"/> while it is on, otherwise its own title.</summary>
-    private string GetEffectiveTitle(FormaToolbarAction action)
-        => action is FormaToolbarToggle { AlternateTitle: { } alternateTitle } && IsToggleActive(action) ? alternateTitle : action.Title;
+    /// <summary>The label an action currently shows: a toggle's <see cref="ToolbarToggle.AlternateTitle"/> while it is on, otherwise its own title.</summary>
+    private string GetEffectiveTitle(ToolbarAction action)
+        => action is ToolbarToggle { AlternateTitle: { } alternateTitle } && IsToggleActive(action) ? alternateTitle : action.Title;
 
-    /// <summary>The icon an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateIcon"/> while it is on, otherwise its own icon.</summary>
-    private Icon? GetEffectiveIcon(FormaToolbarAction action)
-        => action is FormaToolbarToggle { AlternateIcon: { } alternateIcon } && IsToggleActive(action) ? alternateIcon : action.Icon;
+    /// <summary>The icon an action currently shows: a toggle's <see cref="ToolbarToggle.AlternateIcon"/> while it is on, otherwise its own icon.</summary>
+    private Icon? GetEffectiveIcon(ToolbarAction action)
+        => action is ToolbarToggle { AlternateIcon: { } alternateIcon } && IsToggleActive(action) ? alternateIcon : action.Icon;
 
     /// <summary>The hover text for an action, or null when its visible label already says the same thing.</summary>
-    private string? GetActionTitle(FormaToolbarAction action, bool showsLabel)
+    private string? GetActionTitle(ToolbarAction action, bool showsLabel)
     {
         var tooltip = GetTooltip(action);
 
@@ -310,5 +310,5 @@ public sealed partial class FormaToolbar : FormaElementBase
         => parameters is null ? null : new Dictionary<string, object>(parameters);
 
     /// <summary>One rendered run of items: a group and its contents, or a single ungrouped item.</summary>
-    private sealed record Row(string Key, FormaToolbarGroup? Group, IReadOnlyList<FormaToolbarItem> Items);
+    private sealed record Row(string Key, ToolbarGroup? Group, IReadOnlyList<ToolbarItem> Items);
 }

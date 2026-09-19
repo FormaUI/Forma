@@ -16,7 +16,7 @@ public sealed partial class FormaChrome : FormaElementBase
     [Parameter] public Icon? Icon { get; set; }
 
     /// <summary>The host's commands, shown in the title bar after the title.</summary>
-    [Parameter] public IReadOnlyList<FormaToolbarItem> Commands { get; set; } = [];
+    [Parameter] public IReadOnlyList<ToolbarItem> Commands { get; set; } = [];
 
     /// <summary>Raised with the command of an item pressed in the title bar.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }

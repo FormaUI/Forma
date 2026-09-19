@@ -37,7 +37,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
     public const string LeadCommand = "paragraph.lead";
 
     /// <summary>The block styles on offer, from a paragraph through the six headings to a quote.</summary>
-    private static readonly FormaToolbarMenu BlockStyleMenu = new()
+    private static readonly ToolbarMenu BlockStyleMenu = new()
     {
         Id = "block-style",
         Title = "Block Style",
@@ -65,7 +65,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "paragraph-style",
                 Title = "Paragraph Style",
@@ -74,16 +74,16 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
         ]),
         new(ComposerRows.Paragraph,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "paragraph-style",
                 Title = "Paragraph Style",
-                Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.Paragraph, Command = LeadCommand }],
+                Items = [new ToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.Paragraph, Command = LeadCommand }],
             },
         ]),
         new(ComposerRows.Selection,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "selection-paragraph",
                 Title = "Paragraph Style",

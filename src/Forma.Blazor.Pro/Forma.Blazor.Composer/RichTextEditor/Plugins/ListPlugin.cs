@@ -31,24 +31,24 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
     [
         new(ComposerRows.Paragraph,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "lists",
                 Title = "Lists",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "bullet-list", Title = "Bulleted List", Icon = Glyph.ListBullet, Command = BulletListCommand },
-                    new FormaToolbarToggle { Id = "ordered-list", Title = "Numbered List", Icon = Glyph.ListNumbered, Command = OrderedListCommand },
+                    new ToolbarToggle { Id = "bullet-list", Title = "Bulleted List", Icon = Glyph.ListBullet, Command = BulletListCommand },
+                    new ToolbarToggle { Id = "ordered-list", Title = "Numbered List", Icon = Glyph.ListNumbered, Command = OrderedListCommand },
                 ],
             },
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "indentation",
                 Title = "Indentation",
                 Items =
                 [
-                    new FormaToolbarCommand { Id = "indent", Title = "Indent", Icon = Glyph.Indent, Command = IndentCommand },
-                    new FormaToolbarCommand { Id = "outdent", Title = "Outdent", Icon = Glyph.Outdent, Command = OutdentCommand },
+                    new ToolbarCommand { Id = "indent", Title = "Indent", Icon = Glyph.Indent, Command = IndentCommand },
+                    new ToolbarCommand { Id = "outdent", Title = "Outdent", Icon = Glyph.Outdent, Command = OutdentCommand },
                 ],
             },
         ]),

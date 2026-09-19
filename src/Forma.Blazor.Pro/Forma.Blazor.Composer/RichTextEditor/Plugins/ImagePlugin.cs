@@ -22,13 +22,13 @@ public sealed class ImagePlugin(RichTextEditorPlugin editor) : IComposerFeatureP
     [
         new(ComposerRows.Formatting,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "media",
                 Title = "Media",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new ToolbarCommand
                     {
                         Id = "image-insert",
                         Title = "Insert Image",

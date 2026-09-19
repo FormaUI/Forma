@@ -28,18 +28,18 @@ public sealed class TemplatePlugin(
     [
         new(ComposerRows.BuiltIn,
         [
-            new FormaToolbarGroup
+            new ToolbarGroup
             {
                 Id = "templates",
                 Title = "Templates",
                 Items =
                 [
-                    new FormaToolbarMenu
+                    new ToolbarMenu
                     {
                         Id = "template-menu",
                         Title = "Templates",
                         Icon = Glyph.Layout,
-                        Options = [.. Options.Templates.Select(t => new FormaToolbarOption
+                        Options = [.. Options.Templates.Select(t => new ToolbarOption
                         {
                             Id = $"tpl-{t.Id}",
                             Title = t.Title,
