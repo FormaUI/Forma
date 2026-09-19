@@ -2,24 +2,18 @@ namespace Forma.Framework.Localization.Files;
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
+using System.Globalization;
 
 using Forma.Framework.Localization.Parser.Syntax;
 
 /// <summary>Reads the anchor a file's name stands for under a locale path, for one source and one culture.</summary>
 public sealed class LocalePathMatcher
 {
-    private const string AnchorGroup = "anchor";
-    private const string LastSegmentGroup = "last";
-    private const string ParentGroup = "parent";
-    private const string CurrentGroup = "current";
-
-    private static readonly TimeSpan MatchTimeout = TimeSpan.FromSeconds(1);
-
     private readonly LocalePathValues _values;
     private readonly char _separator;
     private readonly StringComparison _comparison;
-    private readonly ConcurrentDictionary<LocalePath, Regex> _nameMatchers = new();
+    private readonly string _localesDir;
+    private readonly ConcurrentDictionary<LocalePath, IReadOnlyList<Piece>> _pieces = new();
 
     /// <summary>Creates a matcher for one source and one culture.</summary>
     /// <param name="values">What the path's tokens stand for apart from the anchor.</param>
@@ -35,6 +29,25 @@ public sealed class LocalePathMatcher
         _values = values;
         _separator = separator;
         _comparison = comparison;
+        _localesDir = values.LocalesDir.Replace(Path.AltDirectorySeparatorChar, separator);
+    }
+
+    private enum Kind
+    {
+        Text,
+        Separator,
+        SeparatorIfGroup,
+        Anchor,
+        Parent,
+        Current,
+        LastIfAnchor,
+    }
+
+    private enum Group
+    {
+        Anchor,
+        Parent,
+        Current,
     }
 
     /// <summary>Reads the anchor a file's name stands for under a path.</summary>
@@ -48,28 +61,24 @@ public sealed class LocalePathMatcher
 
         anchor = null;
 
-        var match = _nameMatchers.GetOrAdd(path, CreateNameMatcher).Match(name);
-        if (!match.Success)
+        var pieces = _pieces.GetOrAdd(path, Compile);
+        if (!TryMatch(pieces, 0, name, 0, Captures.None, out var captures))
         {
             return false;
         }
 
-        var anchorGroup = match.Groups[AnchorGroup];
-        var parentGroup = match.Groups[ParentGroup];
-        var currentGroup = match.Groups[CurrentGroup];
-
         // A name written before the anchor is present exactly when the anchor is.
-        if (path.IsCurrentNameBeforeAnchorName && anchorGroup.Success != currentGroup.Success)
+        if (path.IsCurrentNameBeforeAnchorName && captures.Anchor.IsPresent != captures.Current.IsPresent)
         {
             return false;
         }
 
         string[] segments = (path.HasAnchorName, path.HasParentName) switch
         {
-            (true, _) when anchorGroup.Success => anchorGroup.Value.Split(_separator),
+            (true, _) when captures.Anchor.IsPresent => captures.Anchor.Read(name).Split(_separator),
             (true, _) => [],
-            (false, true) when parentGroup.Success => [.. parentGroup.Value.Split(_separator), currentGroup.Value],
-            (false, true) => [currentGroup.Value],
+            (false, true) when captures.Parent.IsPresent => [.. captures.Parent.Read(name).Split(_separator), captures.Current.Read(name)],
+            (false, true) => [captures.Current.Read(name)],
             (false, false) => [],
         };
 
@@ -83,41 +92,34 @@ public sealed class LocalePathMatcher
         return true;
     }
 
-    private Regex CreateNameMatcher(LocalePath path)
+    // A segment is a part of a type's name, written as a C# identifier is.
+    private static bool IsSegmentStart(char character)
+        => character == '_' || CharUnicodeInfo.GetUnicodeCategory(character) is UnicodeCategory.UppercaseLetter or UnicodeCategory.LowercaseLetter or UnicodeCategory.TitlecaseLetter or UnicodeCategory.ModifierLetter or UnicodeCategory.OtherLetter or UnicodeCategory.LetterNumber;
+
+    private static bool IsSegmentPart(char character)
+        => IsSegmentStart(character) || CharUnicodeInfo.GetUnicodeCategory(character) is UnicodeCategory.DecimalDigitNumber or UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.ConnectorPunctuation or UnicodeCategory.Format;
+
+    // The path's runs become pieces in order; an optional group takes the separator before it into itself, so an absent value leaves no separator behind, and a separator right after a leading optional group is written only when that group was.
+    private IReadOnlyList<Piece> Compile(LocalePath path)
     {
-        var escapedSeparator = Regex.Escape(_separator.ToString());
-
-        // A segment is a part of a type's name, written as a C# identifier is, so a folder that could not be one never reads as an anchor.
-        const string IdentifierRest = @"[\p{L}\p{Nl}\p{Nd}\p{Mn}\p{Mc}\p{Pc}\p{Cf}]";
-        var segment = $"[\\p{{L}}\\p{{Nl}}_]{IdentifierRest}*";
-
-        // The folder of locale files never completes a name either, so an anchor has no segment by its name, whatever it is set to.
-        if (_values.LocalesDir.Length > 0)
-        {
-            var localesDir = Regex.Escape(_values.LocalesDir.Replace(Path.AltDirectorySeparatorChar, _separator));
-            segment = $"(?!{localesDir}(?!{IdentifierRest})){segment}";
-        }
-
+        var pieces = new List<Piece>();
         var isRooted = _values.RootDir.Length > 0;
+        Group? leadingGroup = null;
 
-        // Each fragment is a piece of the expression, marked when it stands for a separator the path wrote as '/'.
-        var fragments = new List<(string Expression, bool IsFolderSeparator)>();
-        string? optionalLeadingGroup = null;
-
-        // An optional group takes the separator before it into itself, so an absent value leaves no separator behind.
-        void AddOptional(string group, string body)
+        void AddOptional(Group group, Kind kind)
         {
-            if (fragments is [.., (_, true)])
+            var endsWithCurrent = kind == Kind.Anchor && path.IsCurrentNameBeforeAnchorName;
+            if (pieces is [.., { Kind: Kind.Separator }])
             {
-                fragments.RemoveAt(fragments.Count - 1);
-                fragments.Add(($"(?:{escapedSeparator}{body})?", false));
+                pieces.RemoveAt(pieces.Count - 1);
+                pieces.Add(new Piece(kind, IsOptional: true, HasSeparatorBefore: true, EndsWithCurrent: endsWithCurrent));
             }
             else
             {
-                fragments.Add(($"(?:{body})?", false));
-                if (fragments.Count == 1)
+                pieces.Add(new Piece(kind, IsOptional: true, EndsWithCurrent: endsWithCurrent));
+                if (pieces.Count == 1)
                 {
-                    optionalLeadingGroup = group;
+                    leadingGroup = group;
                 }
             }
         }
@@ -130,18 +132,17 @@ public sealed class LocalePathMatcher
                 {
                     if (character != Path.AltDirectorySeparatorChar)
                     {
-                        fragments.Add((Regex.Escape(character.ToString()), false));
-                        optionalLeadingGroup = null;
+                        pieces.Add(new Piece(Kind.Text, Text: character.ToString()));
+                        leadingGroup = null;
                     }
-                    else if (optionalLeadingGroup is { } group)
+                    else if (leadingGroup is { } group)
                     {
-                        // A separator after a leading token is written only when that token was.
-                        fragments.Add(($"(?({group}){escapedSeparator})", false));
-                        optionalLeadingGroup = null;
+                        pieces.Add(new Piece(Kind.SeparatorIfGroup, Group: group));
+                        leadingGroup = null;
                     }
-                    else if (fragments.Count > 0)
+                    else if (pieces.Count > 0)
                     {
-                        fragments.Add((escapedSeparator, true));
+                        pieces.Add(new Piece(Kind.Separator));
                     }
                 }
 
@@ -150,73 +151,300 @@ public sealed class LocalePathMatcher
 
             switch (token)
             {
-                case LocalePathToken.AnchorName:
-                    var anchorBody = path.IsCurrentNameBeforeAnchorName
-                        ? $"(?<{AnchorGroup}>(?:{segment}{escapedSeparator})*\\k<{CurrentGroup}>)"
-                        : $"(?<{AnchorGroup}>(?:{segment}{escapedSeparator})*(?<{LastSegmentGroup}>{segment}))";
-                    if (isRooted)
-                    {
-                        AddOptional(AnchorGroup, anchorBody);
-                    }
-                    else
-                    {
-                        fragments.Add((anchorBody, false));
-                    }
+                case LocalePathToken.AnchorName when isRooted:
+                    AddOptional(Group.Anchor, Kind.Anchor);
+                    break;
 
+                case LocalePathToken.AnchorName:
+                    pieces.Add(new Piece(Kind.Anchor, EndsWithCurrent: path.IsCurrentNameBeforeAnchorName));
                     break;
 
                 case LocalePathToken.ParentName:
-                    AddOptional(ParentGroup, $"(?<{ParentGroup}>{segment}(?:{escapedSeparator}{segment})*)");
+                    AddOptional(Group.Parent, Kind.Parent);
                     break;
 
                 case LocalePathToken.CurrentName when path.HasAnchorName && !path.IsCurrentNameBeforeAnchorName:
                     // The last segment again wherever the anchor is present, and nothing at the root, separator included.
-                    if (fragments is [.., (_, true)])
+                    if (pieces is [.., { Kind: Kind.Separator }])
                     {
-                        fragments.RemoveAt(fragments.Count - 1);
-                        fragments.Add(($"(?({AnchorGroup}){escapedSeparator}\\k<{LastSegmentGroup}>)", false));
+                        pieces.RemoveAt(pieces.Count - 1);
+                        pieces.Add(new Piece(Kind.LastIfAnchor, HasSeparatorBefore: true));
                     }
                     else
                     {
-                        fragments.Add(($"(?({AnchorGroup})\\k<{LastSegmentGroup}>)", false));
+                        pieces.Add(new Piece(Kind.LastIfAnchor));
                     }
 
-                    optionalLeadingGroup = null;
+                    leadingGroup = null;
                     break;
 
                 case LocalePathToken.CurrentName when path.IsCurrentNameBeforeAnchorName && isRooted:
-                    AddOptional(CurrentGroup, $"(?<{CurrentGroup}>{segment})");
+                    AddOptional(Group.Current, Kind.Current);
                     break;
 
                 case LocalePathToken.CurrentName:
-                    fragments.Add(($"(?<{CurrentGroup}>{segment})", false));
-                    optionalLeadingGroup = null;
+                    pieces.Add(new Piece(Kind.Current));
+                    leadingGroup = null;
                     break;
 
                 default:
                     var value = LocalePathBinder.GetLiteral(token, _values)!.Replace(Path.AltDirectorySeparatorChar, _separator);
                     if (value.Length == 0)
                     {
-                        if (fragments is [.., (_, true)])
+                        if (pieces is [.., { Kind: Kind.Separator }])
                         {
-                            fragments.RemoveAt(fragments.Count - 1);
+                            pieces.RemoveAt(pieces.Count - 1);
                         }
 
                         break;
                     }
 
-                    fragments.Add((Regex.Escape(value), false));
-                    optionalLeadingGroup = null;
+                    pieces.Add(new Piece(Kind.Text, Text: value));
+                    leadingGroup = null;
                     break;
             }
         }
 
-        var options = RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture;
-        if (_comparison == StringComparison.OrdinalIgnoreCase)
+        return pieces;
+    }
+
+    // Matches the pieces from one onward against the name from one position, trying every way a run of segments can end before giving up on it.
+    private bool TryMatch(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matched)
+    {
+        if (index == pieces.Count)
         {
-            options |= RegexOptions.IgnoreCase;
+            matched = captures;
+
+            return position == name.Length;
         }
 
-        return new Regex($"^{string.Concat(fragments.Select(fragment => fragment.Expression))}$", options, MatchTimeout);
+        var piece = pieces[index];
+        switch (piece.Kind)
+        {
+            case Kind.Text:
+                if (name.AsSpan(position).StartsWith(piece.Text, _comparison))
+                {
+                    return TryMatch(pieces, index + 1, name, position + piece.Text.Length, captures, out matched);
+                }
+
+                break;
+
+            case Kind.Separator:
+                if (TryReadSeparator(name, position))
+                {
+                    return TryMatch(pieces, index + 1, name, position + 1, captures, out matched);
+                }
+
+                break;
+
+            case Kind.SeparatorIfGroup:
+                if (!captures.IsPresent(piece.Group!.Value))
+                {
+                    return TryMatch(pieces, index + 1, name, position, captures, out matched);
+                }
+
+                if (TryReadSeparator(name, position))
+                {
+                    return TryMatch(pieces, index + 1, name, position + 1, captures, out matched);
+                }
+
+                break;
+
+            case Kind.Anchor:
+            case Kind.Parent:
+                if (TryMatchSegments(pieces, index, name, position, captures, out matched))
+                {
+                    return true;
+                }
+
+                if (piece.IsOptional)
+                {
+                    return TryMatch(pieces, index + 1, name, position, captures, out matched);
+                }
+
+                break;
+
+            case Kind.Current:
+                if (TryMatchCurrent(pieces, index, name, position, captures, out matched))
+                {
+                    return true;
+                }
+
+                if (piece.IsOptional)
+                {
+                    return TryMatch(pieces, index + 1, name, position, captures, out matched);
+                }
+
+                break;
+
+            case Kind.LastIfAnchor:
+                if (!captures.Anchor.IsPresent)
+                {
+                    return TryMatch(pieces, index + 1, name, position, captures, out matched);
+                }
+
+                if (piece.HasSeparatorBefore)
+                {
+                    if (!TryReadSeparator(name, position))
+                    {
+                        break;
+                    }
+
+                    position++;
+                }
+
+                var last = captures.Last.Read(name);
+                if (name.AsSpan(position).StartsWith(last, _comparison))
+                {
+                    return TryMatch(pieces, index + 1, name, position + last.Length, captures, out matched);
+                }
+
+                break;
+
+            default:
+                throw new InvalidOperationException($"'{piece.Kind}' is not a piece of a path.");
+        }
+
+        matched = Captures.None;
+
+        return false;
+    }
+
+    // A run of one or more segments, the anchor or the parent, longest first; an anchor written after the name it ends with ends with that name.
+    private bool TryMatchSegments(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matched)
+    {
+        var piece = pieces[index];
+
+        // An anchor written after the name it ends with has nothing to end with where that name is absent.
+        if ((piece.HasSeparatorBefore && !TryReadSeparator(name, position)) || (piece.EndsWithCurrent && !captures.Current.IsPresent))
+        {
+            matched = Captures.None;
+
+            return false;
+        }
+
+        if (piece.HasSeparatorBefore)
+        {
+            position++;
+        }
+
+        var ends = new List<int>();
+        var cursor = position;
+        while (TryReadSegment(name, cursor, out var end))
+        {
+            ends.Add(end);
+            if (!TryReadSeparator(name, end))
+            {
+                break;
+            }
+
+            cursor = end + 1;
+        }
+
+        for (var candidate = ends.Count - 1; candidate >= 0; candidate--)
+        {
+            var end = ends[candidate];
+            var lastStart = candidate == 0 ? position : ends[candidate - 1] + 1;
+            var run = new Capture(position, end);
+            var last = new Capture(lastStart, end);
+            var next = piece.Kind == Kind.Anchor ? captures with { Anchor = run, Last = last } : captures with { Parent = run };
+
+            // An anchor written after the name it ends with ends with exactly that name.
+            if (piece.EndsWithCurrent && !name.AsSpan(lastStart, end - lastStart).Equals(captures.Current.Read(name), _comparison))
+            {
+                continue;
+            }
+
+            if (TryMatch(pieces, index + 1, name, end, next, out matched))
+            {
+                return true;
+            }
+        }
+
+        matched = Captures.None;
+
+        return false;
+    }
+
+    private bool TryMatchCurrent(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matched)
+    {
+        var piece = pieces[index];
+        if (piece.HasSeparatorBefore)
+        {
+            if (!TryReadSeparator(name, position))
+            {
+                matched = Captures.None;
+
+                return false;
+            }
+
+            position++;
+        }
+
+        if (TryReadSegment(name, position, out var end))
+        {
+            return TryMatch(pieces, index + 1, name, end, captures with { Current = new Capture(position, end) }, out matched);
+        }
+
+        matched = Captures.None;
+
+        return false;
+    }
+
+    private bool TryReadSeparator(string name, int position)
+        => position < name.Length && name[position] == _separator;
+
+    // A segment is written as a C# identifier is, and never spells the folder of locale files, which completes no name.
+    private bool TryReadSegment(string name, int position, out int end)
+    {
+        end = position;
+        if (position >= name.Length || !IsSegmentStart(name[position]))
+        {
+            return false;
+        }
+
+        if (_localesDir.Length > 0 && name.AsSpan(position).StartsWith(_localesDir, _comparison))
+        {
+            var after = position + _localesDir.Length;
+            if (after == name.Length || !IsSegmentPart(name[after]))
+            {
+                return false;
+            }
+        }
+
+        end = position + 1;
+        while (end < name.Length && IsSegmentPart(name[end]))
+        {
+            end++;
+        }
+
+        return true;
+    }
+
+    private readonly record struct Piece(Kind Kind, string Text = "", bool IsOptional = false, bool HasSeparatorBefore = false, bool EndsWithCurrent = false, Group? Group = null);
+
+    private readonly record struct Capture(int Start, int End)
+    {
+        public static Capture Absent { get; } = new(-1, -1);
+
+        public bool IsPresent
+            => Start >= 0;
+
+        public string Read(string name)
+            => name[Start..End];
+    }
+
+    private readonly record struct Captures(Capture Anchor, Capture Parent, Capture Current, Capture Last)
+    {
+        public static Captures None { get; } = new(Capture.Absent, Capture.Absent, Capture.Absent, Capture.Absent);
+
+        public bool IsPresent(Group group)
+            => group switch
+            {
+                Group.Anchor => Anchor.IsPresent,
+                Group.Parent => Parent.IsPresent,
+                Group.Current => Current.IsPresent,
+                _ => throw new ArgumentOutOfRangeException(nameof(group), group, null),
+            };
     }
 }
