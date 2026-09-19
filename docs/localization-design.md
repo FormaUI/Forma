@@ -31,8 +31,8 @@ another form states it.
   file it holds, read once, so finding a type's files never guesses at names.
 - The default path is one form, `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension`: a
   folder's own `.locales` folder, holding a file per culture named for the culture alone. A host's
-  folder also reads a folder's file lying directly in it, since that folder is itself a folder of
-  locale files.
+  folder is itself a folder of locale files, so inside it a folder's file may as well sit directly
+  in the folder; the two forms resolve equally, at one anchor.
 - The runtime's configuration lives in `.locale.json`, one optional file per assembly, embedded
   at the assembly's root. It applies to every file of that assembly and to nothing else: it is a
   runtime file the assembly ships, not a compile-time file a tree cascades. A host's folder holds
@@ -109,18 +109,16 @@ Every source reads one path unless a setting states others:
 |---|---|
 | `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension` | `Components/Bars/.locales/he.json`, a type's own `Components/Bars/FormaToolbar/.locales/he.json`, and `.locales/he.json` at the root |
 
-A host's folder reads two, in the order it applies them at one anchor:
+A host's folder reads a second path beside it:
 
 | Path | Reads |
 |---|---|
 | `$RootDir/$AnchorName/$Culture$Extension` | `Forma.Blazor/Components/Bars/he.json`, and `Forma.Blazor/he.json` at the root |
-| `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension` | `Forma.Blazor/Components/Bars/.locales/he.json`, and `Forma.Blazor/.locales/he.json` at the root |
 
-The host's folder is itself a folder of locale files, so the first path reads a file lying
-directly in the folder it translates, and the second the file in that folder's own `.locales`,
-which is the path every source reads. The two say different things: the outer form speaks for the
-host's root as a whole, and the inner one holds translations for its folder alone, so the inner one
-wins where both stand for one anchor. Paths a setting declares replace the default ones whole, so a
+The host's folder is itself a folder of locale files, so inside it the `$LocalesDir` step is already
+taken: a folder's file sits in the folder's own `.locales` or directly in the folder, and the two
+forms resolve equally, at one anchor, with no precedence between them, so a file in both places is
+a duplicate rather than an override. Paths a setting declares replace the default ones whole, so a
 project that wants another form states it, as
 `$RootDir/$AnchorName.$Culture$Extension` reads `Components/Bars.he.json` beside its folder.
 
@@ -254,7 +252,7 @@ holds translations alone, and what a tool keeps per file belongs in the tool's o
 | # | Question | Decision |
 |---|---|---|
 | L1 | Is a file's placement a build setting or a library feature? | A library feature. A project embeds its files as it always has, and the paths are read at runtime, so every consumer gets it by referencing the package. |
-| L2 | One canonical form or many? | One canonical form, a folder's own `.locales` folder with a file per culture, as every source's default, and one mechanism for any other form a project or a host states. A host's folder reads a folder's file lying directly in it as well, since that folder is itself a folder of locale files: the outer form speaks for the host's root, the inner one for its folder alone, and the inner one wins. |
+| L2 | One canonical form or many? | One canonical form, a folder's own `.locales` folder with a file per culture, as every source's default, and one mechanism for any other form a project states. A host's folder is itself a folder of locale files, so inside it a folder's file sits in the folder's own `.locales` or directly in the folder; the two forms resolve equally, at one anchor, with no precedence between them, and a file in both places is a duplicate. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
 | L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds translations alone, so neither carries the other's keys and `$tools` is gone. |
 | L5 | What marks an assembly's root? | Its `.locale.json`, which sits at the assembly's root and nowhere else; an assembly with none is rooted where its names begin and read by the defaults. |

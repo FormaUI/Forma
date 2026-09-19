@@ -240,8 +240,8 @@ public sealed class LocalePathTests
             => Assert.Equal([CultureInOwnDir], LocalePath.Defaults.Select(path => path.Text));
 
         [Fact]
-        public void Should_read_a_hosts_folder_as_its_locales_root_and_then_as_every_source_does()
-            => Assert.Equal([CultureInHostDir, CultureInOwnDir], LocalePath.HostDefaults.Select(path => path.Text));
+        public void Should_read_a_hosts_folder_as_every_source_does_and_then_as_its_locales_root()
+            => Assert.Equal([CultureInOwnDir, CultureInHostDir], LocalePath.HostDefaults.Select(path => path.Text));
     }
 
     public sealed class Parsing

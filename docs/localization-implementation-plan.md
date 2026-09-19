@@ -190,10 +190,11 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
      folder they serve, named for the culture alone, and every source reads that form without a
      `.locale.json`, so this repository states no paths of its own. The forms the library read
      before are no longer defaults; a project keeping one states it.
-   - **A host reads two forms.** The host's folder is itself a folder of locale files, so beside
-     the default it reads a folder's file lying directly in it, the outer form speaking for the
-     host's root and the inner one for its folder alone, the inner one winning where both stand for
-     one anchor.
+   - **A host reads two forms as one.** The host's folder is itself a folder of locale files, so
+     inside it a folder's file sits in the folder's own `.locales` or directly in the folder; the
+     two forms resolve equally, at one anchor, with no precedence between them, and a file in both
+     places is a duplicate. Neither form is the layout a host is asked for, and no file moves for
+     the rule; an earlier reading gave one form precedence, and was corrected.
    - **Files that shared a folder merged.** Where a folder held a file for its category and files
      for single types, they became one file per culture with a section per type.
    - **The satellite form keeps a fixture.** A file whose name ends in its culture is the one form

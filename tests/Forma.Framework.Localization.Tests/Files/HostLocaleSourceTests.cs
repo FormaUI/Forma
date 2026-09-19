@@ -28,43 +28,43 @@ public sealed class HostLocaleSourceTests
     public sealed class Layouts
     {
         [Fact]
-        public void Should_read_a_folders_culture_file_directly_inside_the_hosts_folder()
+        public void Should_read_a_folders_file_from_the_folder_itself()
         {
-            // Arrange
+            // Arrange — the host's folder is itself a folder of locale files, so a folder's file may sit directly in it.
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
-            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the host's root"));
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the file in the folder itself"));
 
             // Act
             var entries = Read(folder, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "the host's root")], entries);
+            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "the file in the folder itself")], entries);
         }
 
         [Fact]
-        public void Should_read_a_folders_own_locales_folder_as_every_source_does()
+        public void Should_read_a_folders_file_from_the_folders_own_locales_folder()
         {
-            // Arrange
+            // Arrange — the path every source reads is the host's too.
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
-            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the folder's own"));
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the file in the folder's own .locales"));
 
             // Act
             var entries = Read(folder, format);
 
             // Assert
-            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "the folder's own")], entries);
+            Assert.Equal([new LocaleSourceEntry(fullPath, "Toolbar", "Bold", "the file in the folder's own .locales")], entries);
         }
 
         [Fact]
-        public void Should_let_a_folders_own_locales_folder_win_where_both_layouts_stand_for_it()
+        public void Should_read_a_file_in_both_places_as_a_duplicate()
         {
-            // Arrange
+            // Arrange — the two forms stand for one anchor, so both files are read as its entries and neither is an override of the other.
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
-            var rootFile = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the host's root"));
-            var ownFile = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the folder's own"));
+            var folderFile = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the file in the folder itself"));
+            var localesFile = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the file in the folder's own .locales"));
 
             // Act
             var entries = Read(folder, format);
@@ -72,8 +72,8 @@ public sealed class HostLocaleSourceTests
             // Assert
             Assert.Equal(
                 [
-                    new LocaleSourceEntry(rootFile, "Toolbar", "Bold", "the host's root"),
-                    new LocaleSourceEntry(ownFile, "Toolbar", "Bold", "the folder's own"),
+                    new LocaleSourceEntry(localesFile, "Toolbar", "Bold", "the file in the folder's own .locales"),
+                    new LocaleSourceEntry(folderFile, "Toolbar", "Bold", "the file in the folder itself"),
                 ],
                 entries);
         }

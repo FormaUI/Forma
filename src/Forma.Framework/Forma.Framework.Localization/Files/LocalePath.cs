@@ -12,11 +12,11 @@ public sealed class LocalePath
         Parse("$RootDir/$AnchorName/$LocalesDir/$Culture$Extension"),
     ];
 
-    /// <summary>The paths a host's folder reads by unless a setting states others: a folder's culture file directly inside the host's folder, which is itself the host's <c>.locales</c> root, and then the path every source reads, which wins where both stand for one anchor.</summary>
+    /// <summary>The paths a host's folder reads by: the path every source reads, and a folder's culture file directly inside the folder, since the host's folder is itself a folder of locale files; the two forms stand for one anchor, neither overriding the other, and a file in both places is a duplicate.</summary>
     public static IReadOnlyList<LocalePath> HostDefaults { get; } =
     [
-        Parse("$RootDir/$AnchorName/$Culture$Extension"),
         .. Defaults,
+        Parse("$RootDir/$AnchorName/$Culture$Extension"),
     ];
 
     private LocalePath(string text, IReadOnlyList<LocalePathPart> parts)

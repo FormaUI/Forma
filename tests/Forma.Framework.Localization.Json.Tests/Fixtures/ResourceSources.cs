@@ -40,7 +40,7 @@ public sealed class HostOverridden;
 /// <summary>No embedded file; the host's files alone localize it.</summary>
 public sealed class HostLocalized;
 
-/// <summary>An embedded file whose entry a host file lying directly in the type's folder overrides, a form the assembly does not use.</summary>
+/// <summary>An embedded file whose entry a host file lying directly in the type's folder overrides, keeping the entries it leaves out.</summary>
 public sealed class HostDotted;
 
 /// <summary>A host file carrying no metadata entry.</summary>

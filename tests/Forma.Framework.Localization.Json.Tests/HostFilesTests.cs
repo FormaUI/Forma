@@ -85,7 +85,7 @@ public sealed class HostFilesTests
         }
 
         [Fact]
-        public void Should_prefer_a_host_file_in_a_form_the_assembly_does_not_use()
+        public void Should_prefer_a_host_file_directly_in_the_types_folder()
         {
             // Arrange
             using var culture = new CultureScope("he");
@@ -95,11 +95,11 @@ public sealed class HostFilesTests
             var localized = strings["Save"];
 
             // Assert
-            Assert.Equal("flat host file", localized.Value);
+            Assert.Equal("host file in the folder itself", localized.Value);
         }
 
         [Fact]
-        public void Should_keep_the_assemblys_entry_the_host_file_in_another_form_leaves_out()
+        public void Should_keep_the_assemblys_entry_a_host_file_directly_in_the_folder_leaves_out()
         {
             // Arrange
             using var culture = new CultureScope("he");

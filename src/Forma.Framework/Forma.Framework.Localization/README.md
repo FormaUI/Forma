@@ -297,11 +297,11 @@ assembly's own files are. Each of these, shown with the JSON backend's extension
 .locales/Forma.Blazor/Components/Composer/FormaComposer/.locales/es.json   { "Bold": "Negrita" }
 ```
 
-The host's folder is itself a folder of locale files, so a host file may also sit directly in the
-folder it localizes: `.locales/Forma.Blazor/es.json` is the root's file and
-`.locales/Forma.Blazor/Components/es.json` the `Components` folder's. The outer form speaks for the
-host's root as a whole and the inner one for the folder alone, and where both stand for one
-folder, the file in the folder's own `.locales` wins.
+The host's folder is itself a folder of locale files, so a folder's file may as well sit directly in
+the folder: `.locales/Forma.Blazor/es.json`, `.locales/Forma.Blazor/Components/es.json` and
+`.locales/Forma.Blazor/Components/Composer/FormaComposer/es.json` say the same as the three above.
+The two forms resolve equally, at one anchor, with no precedence between them, so a file in both
+places is a duplicate rather than an override.
 
 The same precedence applies, and a host's entry wins over the assembly's own at the same position,
 so a host file holds only the keys it changes and every other key keeps the assembly's translation.
