@@ -11,9 +11,10 @@ public sealed class LocalePathTests
     private const string NamedInOwnDir = "$RootDir/$AnchorName/$LocalesDir/$CurrentName.$Culture$Extension";
     private const string CultureInOwnDir = "$RootDir/$AnchorName/$LocalesDir/$Culture$Extension";
     private const string CultureInHostDir = "$RootDir/$AnchorName/$Culture$Extension";
+    private const string NamedInHostDir = "$RootDir/$ParentName/$CurrentName.$Culture$Extension";
 
     // Every form a config file might name, the defaults among them, so the binder and matcher agree on each.
-    private static readonly string[] Forms = [Beside, Inside, NamedForAssembly, InParentsDir, NamedInOwnDir, CultureInOwnDir, CultureInHostDir];
+    private static readonly string[] Forms = [Beside, Inside, NamedForAssembly, InParentsDir, NamedInOwnDir, CultureInOwnDir, CultureInHostDir, NamedInHostDir];
 
     private static readonly LocalePathValues Embedded = new("Contoso.Widgets", "Contoso.Widgets", "Contoso.Widgets", ".locales", "he", ".json");
 
@@ -263,12 +264,12 @@ public sealed class LocalePathTests
     public sealed class Defaults
     {
         [Fact]
-        public void Should_read_a_folders_own_locales_folder_by_default()
-            => Assert.Equal([CultureInOwnDir], LocalePath.Defaults.Select(path => path.Text));
+        public void Should_read_a_folders_own_locales_folder_and_a_file_named_for_a_segment_by_default()
+            => Assert.Equal([CultureInOwnDir, InParentsDir], LocalePath.Defaults.Select(path => path.Text));
 
         [Fact]
         public void Should_read_a_hosts_folder_as_every_source_does_and_then_as_its_locales_root()
-            => Assert.Equal([CultureInOwnDir, CultureInHostDir], LocalePath.HostDefaults.Select(path => path.Text));
+            => Assert.Equal([CultureInOwnDir, InParentsDir, CultureInHostDir, NamedInHostDir], LocalePath.HostDefaults.Select(path => path.Text));
     }
 
     public sealed class Parsing

@@ -40,6 +40,32 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
+    public void Should_read_a_file_named_for_the_type_in_its_folders_locales_folder()
+    {
+        // Arrange — the folder's own file and the type's own file beside it, both in the folder's .locales, the type's read last.
+        var source = new FakeLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "folder file"), ("Italic", "folder file"))))),
+                ["Contoso.Widgets/Bars/.locales/Toolbar.he.fake"] = new(CreateEntries(("Italic", "type's own file"))),
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, Toolbar, "he");
+
+        // Assert
+        Assert.Equal(
+            [
+                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Bold", "folder file"),
+                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Italic", "folder file"),
+                new("Contoso.Widgets/Bars/.locales/Toolbar.he.fake", string.Empty, "Italic", "type's own file"),
+            ],
+            entries);
+    }
+
+    [Fact]
     public void Should_read_the_form_its_config_names_in_place_of_the_default()
     {
         // Arrange

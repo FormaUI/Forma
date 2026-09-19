@@ -49,6 +49,9 @@ public sealed class HostUnmarked;
 /// <summary>A host file giving a key a value that is not text.</summary>
 public sealed class HostMistyped;
 
+/// <summary>No embedded file; a host file named for the type, directly in its folder, localizes it.</summary>
+public sealed class HostNamed;
+
 /// <summary>A type whose file carries its own strings at the top level and its nested types as sections.</summary>
 public sealed class Outer
 {

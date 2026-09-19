@@ -111,6 +111,23 @@ public sealed class HostFilesTests
         }
     }
 
+    public sealed class Forms
+    {
+        [Fact]
+        public void Should_read_a_host_file_named_for_the_type_directly_in_its_folder()
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            var strings = CreateLocale<HostNamed>();
+
+            // Act
+            var localized = strings["Save"];
+
+            // Assert
+            Assert.Equal("host file named for the type", localized.Value);
+        }
+    }
+
     public sealed class RootNamespaces
     {
         private static IStringLocale CreateRootedLocale<T>()

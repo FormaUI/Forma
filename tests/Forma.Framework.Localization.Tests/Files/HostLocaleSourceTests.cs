@@ -28,6 +28,21 @@ public sealed class HostLocaleSourceTests
     public sealed class Layouts
     {
         [Fact]
+        public void Should_read_a_file_named_for_a_segment_directly_in_its_folder()
+        {
+            // Arrange — the type's own file, in the host's form.
+            using var folder = new TempDirectory();
+            var format = new FakeLocaleFileFormat();
+            var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/Toolbar.he.fake", CreateEntries(("Bold", "the type's own file")));
+
+            // Act
+            var entries = Read(folder, format);
+
+            // Assert
+            Assert.Equal([new LocaleSourceEntry(fullPath, string.Empty, "Bold", "the type's own file")], entries);
+        }
+
+        [Fact]
         public void Should_read_a_folders_file_from_the_folder_itself()
         {
             // Arrange — the host's folder is itself a folder of locale files, so a folder's file may sit directly in it.
@@ -136,10 +151,10 @@ public sealed class HostLocaleSourceTests
         {
             // Arrange — a config file is the assembly's own, embedded at its root; one a host lays in its folder, above or inside an assembly's, configures nothing.
             using var folder = new TempDirectory();
-            folder.Write(".locale.json", """{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }""");
-            folder.Write("Contoso.Widgets/.locale.json", """{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }""");
+            folder.Write(".locale.json", """{ "paths": ["$RootDir/strings/$AnchorName.$Culture$Extension"] }""");
+            folder.Write("Contoso.Widgets/.locale.json", """{ "paths": ["$RootDir/strings/$AnchorName.$Culture$Extension"] }""");
             var format = new FakeLocaleFileFormat();
-            WriteFile(folder, format, "Contoso.Widgets/Bars.he.fake", CreateToolbarSection("the form the files name"));
+            WriteFile(folder, format, "Contoso.Widgets/strings/Bars.he.fake", CreateToolbarSection("the form the files name"));
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the default form"));
 
             // Act

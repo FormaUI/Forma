@@ -27,13 +27,6 @@ public sealed class FakeLocaleSource : LocaleSource
     /// <summary>The names opened so far, in order.</summary>
     public List<string> Requests { get; } = [];
 
-    /// <summary>The full name of every type or namespace the paths in force place a file at in one culture.</summary>
-    /// <param name="assemblyName">The name of the assembly the file belongs to.</param>
-    /// <param name="name">The file's name.</param>
-    /// <param name="cultureName">The culture the file is read for.</param>
-    public new IReadOnlyList<string> GetAnchorNames(string assemblyName, string name, string cultureName)
-        => base.GetAnchorNames(assemblyName, name, cultureName);
-
     /// <inheritdoc />
     protected override char FolderSeparator
         => Path.AltDirectorySeparatorChar;
