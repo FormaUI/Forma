@@ -2,8 +2,14 @@
 
 The JSON backend for `Forma.Framework.Localization`: it implements `IStringLocaleFactory` and
 `IStringLocale<T>` over JSON locale files that sit in a `.locales` folder beside the types they
-localize and ship inside their assembly, with the host's own files laid over them. A lookup resolves the right file
-from the type asking and the culture in force, and a key with no translation renders as written.
+localize and ship inside their assembly, with the host's own files laid over them. A lookup
+resolves the right file from the type asking and the culture in force, and a key with no
+translation renders as written.
+
+This document covers what is JSON's: registering the backend, the file's shape, and how a lookup
+resolves. Where a file sits, what a host lays over it, and the paths behind both are
+`Forma.Framework.Localization`'s, whose README walks one type through every file that can
+localize it.
 
 ## Install and register
 
@@ -54,10 +60,12 @@ Uploads/.locales/he.json
 ```
 
 The SDK embeds no JSON by default, so the item names the files. A file named for its culture alone
-stays in the assembly itself rather than moving into a satellite assembly.
+stays in the assembly itself rather than moving into a satellite assembly; a file named for the
+type, `Uploads/.locales/UploadStatus.es.json`, ends in its culture, so the item sets
+`WithCulture="false"` to keep it there too, or the runtime reads it from the satellite.
 
-A file is a JSON object whose sections complete the type's name from its folder, keyed by the
-source text and opening with the metadata entry:
+A file is a JSON object opening with the metadata entry, whose sections complete the type's name
+from its folder and whose entries are keyed by the source text:
 
 ```json
 {
@@ -102,11 +110,11 @@ section completing a type's name, and `null` says the translation is deliberatel
 itself. Comments and trailing commas are allowed.
 
 `Forma.Framework.Localization` owns the layout: a type's translations are read from the root down
-to the type, each folder's from the `.locales` folder inside it unless the assembly's `.locale.json`
-states other paths, embedded in the assembly or laid in the host's `.locales` folder. It also
-defines the `$shared` section any node may hold and the `$$` escape
-for a key shaped like a reserved entry. This backend adds the format alone: the extension is
-`.json`, and the metadata entry is the `$localization` property.
+to the type, from each folder's `.locales` folder, unless the assembly's `.locale.json` at its
+root states other paths. It also defines the `$shared` section any node may hold, the `@.` a
+top-level section counts its name from the assembly's root with, and the `$$` escape for a key
+shaped like a reserved entry. This backend adds the format alone: the extension is `.json`, and
+the metadata entry is the `$localization` property.
 
 ### Metadata
 
@@ -118,15 +126,19 @@ for a key shaped like a reserved entry. This backend adds the format alone: the 
 ```
 
 The value is a list of `Name: value;` fields. `SchemaVersion` and `Culture` are required, and a
-file may add `Author` and `Revision`. Where a file belongs is the business of the assembly's `.locale.json`,
-never of the entry. The entry is removed before lookup, so it
-appears in neither a key search nor `GetAllStrings`.
+file may add `Author` and `Revision`. Where a file belongs is the business of the assembly's
+`.locale.json`, never of the entry. The entry is removed before lookup, so it appears in neither
+a key search nor `GetAllStrings`.
 
 Reading a file without the entry throws `LocalizationMetadataException`, as does a malformed
 value, a `Culture` other than the one the file's own name gives it, or a `SchemaVersion` this
 build cannot read. The version is compared by part: a differing **major** is refused, a differing
 **minor** is accepted in either direction, and **patch** is ignored. A field this build does not
 recognize is ignored, so a file written by a newer minor schema still loads.
+
+A file that is not readable JSON, not an object, or that gives a key a value that is neither
+text, `null` nor a section throws `LocaleFileException`, which the metadata exception is one of,
+so a caller catches one type for a file that cannot be read.
 
 ### Source-text entries
 

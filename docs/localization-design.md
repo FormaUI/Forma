@@ -24,8 +24,9 @@ forms the library used.
 
 Forma answers this with one mechanism: an ordered list of **paths** written in tokens,
 which every source reads its files by, and one canonical form as the default: every folder keeps
-its files in a `.locales` folder of its own, one per culture. A project or a host that wants
-another form states it.
+its files in a `.locales` folder of its own, one per culture for the folder and one per culture
+for a type or namespace beneath it. A project that wants another form states it; a host never
+needs to.
 
 ## Decision summary
 
@@ -33,10 +34,15 @@ another form states it.
   A file's anchor is read from its name against the paths in force, and from nothing else.
 - Embedded and host files are read by paths in the same tokens. A source knows every
   file it holds, read once, so finding a type's files never guesses at names.
-- The default path is one form, `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension`: a
-  folder's own `.locales` folder, holding a file per culture named for the culture alone. A host's
-  folder is itself a folder of locale files, so inside it a folder's file may as well sit directly
-  in the folder; the two forms resolve equally, at one anchor.
+- The default is two paths into one folder: `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension`,
+  the folder's own file named for the culture alone, whose sections complete the rest of the
+  name, and `$RootDir/$ParentName/$LocalesDir/$CurrentName.$Culture$Extension`, a file named
+  for a type or namespace beneath the folder, whose entries are that name's own. A folder is a
+  namespace, never a type. A host's folder is itself a folder of locale files, so inside it both
+  files may as well sit directly in the folder; the two forms resolve equally, at one anchor.
+- A section completes a type's name from where the file sits, or from the assembly's root when
+  its name starts with `@.` at the file's top level, so a file anywhere can name any type of its
+  assembly outright; nothing is guessed, and no pattern is matched.
 - The runtime's configuration lives in `.locale.json`, one optional file per assembly, embedded
   at the assembly's root. It applies to every file of that assembly and to nothing else: it is a
   runtime file the assembly ships, not a compile-time file a tree cascades. A host's folder holds
@@ -66,13 +72,23 @@ from. Below it an anchor is a list of segments, empty for the root itself. The s
 parts of a type's full name: namespace segments, a containing type's name for a nested type, and
 the type's own name at the deepest anchor, each written as a C# identifier is, so a folder whose
 name could not be part of one is never read as a segment; nor is the folder of locale files,
-whatever `$LocalesDir` names it, since that folder completes no name. A folder and a namespace
-have no relation in .NET, and
+whatever `$LocalesDir` names it, since that folder completes no name. A folder is a namespace,
+never a type: a type's own file is named for the type among its namespace folder's locale files,
+and a folder named for a type, which the runtime would read all the same, is the linter's to
+report. A folder and a namespace have no relation in .NET, and
 the library assumes none: it builds names from segments and matches names, and the paths are the
 one place the relation between a file's location and the name it completes is stated.
 
 A type reads, in order, every file whose anchor is a prefix of its name, from the root down to the
 type. A deeper anchor is closer to the type and wins over a shallower one.
+
+A section completes the name from the file's anchor, one segment or several at a time. A section
+at the file's top level whose name starts with `@.` completes it from the root namespace instead,
+so `@.Components.Bars.FormaToolbar` names that type from any file of the assembly, wherever the file
+sits; for a type outside the root namespace it spells the full name, as the folders do. Such a
+section is placed at the anchor it names, after the files whose position places them there. The
+source finds rooted sections by reading every file the paths place in a culture once; a file that
+cannot be read carries none, and reports what is wrong with it when its own type is read.
 
 ## Paths and tokens
 
@@ -110,22 +126,24 @@ outright, since no anchor token stands for it.
 
 ### The default paths
 
-Every source reads one path unless a setting states others:
+Every source reads two paths unless a setting states others, both into a folder's own `.locales`:
 
 | Path | Reads |
 |---|---|
-| `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension` | `Components/Bars/.locales/he.json`, a type's own `Components/Bars/FormaToolbar/.locales/he.json`, and `.locales/he.json` at the root |
+| `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension` | The folder's file: `Components/Bars/.locales/he.json`, and `.locales/he.json` at the root |
+| `$RootDir/$ParentName/$LocalesDir/$CurrentName.$Culture$Extension` | A file named for a type or namespace beneath the folder: `Components/Bars/.locales/FormaToolbar.he.json` |
 
-A host's folder reads a second path beside it:
+A host's folder reads the same two directly inside the folder as well:
 
 | Path | Reads |
 |---|---|
 | `$RootDir/$AnchorName/$Culture$Extension` | `Forma.Blazor/Components/Bars/he.json`, and `Forma.Blazor/he.json` at the root |
+| `$RootDir/$ParentName/$CurrentName.$Culture$Extension` | `Forma.Blazor/Components/Bars/FormaToolbar.he.json` |
 
 The host's folder is itself a folder of locale files, so inside it the `$LocalesDir` step is already
-taken: a folder's file sits in the folder's own `.locales` or directly in the folder, and the two
-forms resolve equally, at one anchor, with no precedence between them, so a file in both places is
-a duplicate rather than an override. Paths a setting declares replace the default ones whole, so a
+taken: a file sits in the folder's own `.locales` or directly in the folder, and the two forms
+resolve equally, at one anchor, with no precedence between them, so a file in both places is a
+duplicate rather than an override. Paths a setting declares replace the default ones whole, so a
 project that wants another form states it, as
 `$RootDir/$AnchorName.$Culture$Extension` reads `Components/Bars.he.json` beside its folder.
 
@@ -236,7 +254,8 @@ For one type and one culture, entries are applied in this order, each overriding
 
 1. Embedded files, then host files.
 2. Within a source, shallower anchors, then deeper ones.
-3. Within one anchor, files in the order of the assembly's paths.
+3. Within one anchor, files in the order of the assembly's paths, then the files whose rooted
+   sections name the anchor.
 4. Within a file, what the file's own ordering rules say: shared entries before a type's own, a
    higher node's shared entries before a deeper node's.
 
@@ -259,12 +278,14 @@ holds translations alone, and what a tool keeps per file belongs in the tool's o
 | # | Question | Decision |
 |---|---|---|
 | L1 | Is a file's placement a build setting or a library feature? | A library feature. A project embeds its files as it always has, and the paths are read at runtime, so every consumer gets it by referencing the package. |
-| L2 | One canonical form or many? | One canonical form, a folder's own `.locales` folder with a file per culture, as every source's default, and one mechanism for any other form a project states. A host's folder is itself a folder of locale files, so inside it a folder's file sits in the folder's own `.locales` or directly in the folder; the two forms resolve equally, at one anchor, with no precedence between them, and a file in both places is a duplicate. |
+| L2 | One canonical form or many? | One canonical form with two files: a folder's own `.locales` folder holding the folder's file per culture and, beside it, a file per culture named for a type or namespace beneath the folder, as every source's default, and one mechanism for any other form a project states. A host's folder is itself a folder of locale files, so inside it both may sit directly in the folder; the two forms resolve equally, at one anchor, with no precedence between them, and a file in both places is a duplicate. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
 | L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds translations alone, so neither carries the other's keys and `$tools` is gone. |
 | L5 | What marks an assembly's root? | Its `.locale.json`, which sits at the assembly's root and nowhere else; an assembly with none is rooted where its names begin and read by the defaults. |
-| L6 | Do a host's paths have to match the library's? | No. Host entries are applied after every embedded entry whatever paths either uses, and a host's `.locale.json` for the assembly states its own paths. |
+| L6 | Do a host's paths have to match the library's? | No. A host's folder is always the canonical form, a folder per anchor with its files in the folder's own `.locales` or directly in it, whatever paths the assembly states for its own files; the anchor is the one currency both sides trade in, so an override or a contribution is written the same way for every assembly, and host entries are applied after every embedded entry. |
 | L7 | Can a file be named for an assembly whose root namespace is not its name? | Yes. A path names `$AssemblyName` outright, which a project keeping such a file states in its config. |
 | L8 | Are the anchor tokens namespaces? | No. An anchor's segments are parts of a type's full name, which take in containing types and the type itself, and the library relates a folder to a name only through the paths. The tokens say *name*. |
 | L9 | Does `.locale.json` cascade? | No. It is per assembly: one file, applying to every file of the assembly, with nothing layered above or beneath it. A cascade is how a compile-time file such as `.locali.json` or `.editorconfig` reaches a tree, and a runtime file an assembly ships has no tree to reach. |
 | L10 | Does a host configure an assembly's folder? | No. A host's folder holds no `.locale.json`; each assembly's folder is laid out by the root namespace the assembly's own file declares, which the runtime carries over. The root namespace is the assembly's fact, stated once, and a host repeating it would give one fact two places to drift apart. |
+| L11 | Can a file name a type it does not sit under? | Yes, with a top-level section whose name starts with `@.`, counted from the root namespace as the folders are; a type outside the root namespace is spelled in full. It names one type or namespace exactly, never a pattern, so the linter can prove it exists and two types sharing a short name never share a file by accident. |
+| L12 | Is a folder ever a type? | No. A folder is a namespace; a type's own file is named for the type among its namespace folder's locale files, so a file always says what it localizes by its name or its sections, and never by a folder a reader has to know is a type. The runtime reads a type-named folder all the same, and the linter reports it. |

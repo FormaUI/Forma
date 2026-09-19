@@ -99,6 +99,8 @@ two forms resolving equally.
 | `HostDotted` | A host file directly in the type's folder overriding an embedded entry, and leaving the ones it does not name | `.locales/{assembly}/Fixtures/HostDotted/he.json` |
 | `HostUnmarked` | A host file carrying no metadata entry | `.locales/{assembly}/Fixtures/HostUnmarked/.locales/he.json` |
 | `HostMistyped` | A host file giving a key a value that is not text | `.locales/{assembly}/Fixtures/HostMistyped/.locales/he.json` |
+| `HostNamed` | A host file named for the type, directly in its folder | `.locales/{assembly}/Fixtures/HostNamed.he.json` |
+| `HostRooted` | A host file in an unrelated folder naming the type from the root with `@.`, found although the culture holds files that cannot be read | `.locales/{assembly}/Strings/he.json` |
 
 The keys the host files change on `PathScoped` and `ForeignRoot` are not the ones the other tests
 read, so those tests see the embedded translation as before.
