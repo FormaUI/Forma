@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 

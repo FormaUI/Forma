@@ -1,12 +1,13 @@
 namespace Forma.Blazor.Showcase.Features.Media;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Resources;
 
 /// <summary>The stored images the composer's insert dialog browses in this application.</summary>
-internal sealed class ShowcaseImageLibrary : IExplorerItemsProvider
+internal sealed class ShowcaseImageLibrary : ICatalogProvider
 {
     private static readonly DateTimeOffset Seeded = new(2026, 3, 14, 9, 30, 0, TimeSpan.Zero);
 
@@ -21,7 +22,7 @@ internal sealed class ShowcaseImageLibrary : IExplorerItemsProvider
     ];
 
     /// <inheritdoc />
-    public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
+    public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
         IEnumerable<ResourceInfo> matching = Images;
 
@@ -30,24 +31,24 @@ internal sealed class ShowcaseImageLibrary : IExplorerItemsProvider
             matching = matching.Where(image => image.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
-        var descending = query.Direction == ExplorerSortDirection.Descending;
+        var descending = query.Direction == CatalogSortDirection.Descending;
 
         matching = (query.SortBy, descending) switch
         {
-            (ExplorerSortField.Size, false) => matching.OrderBy(image => image.Size ?? 0),
-            (ExplorerSortField.Size, true) => matching.OrderByDescending(image => image.Size ?? 0),
-            (ExplorerSortField.DateAdded, false) => matching.OrderBy(image => image.CreatedAt),
-            (ExplorerSortField.DateAdded, true) => matching.OrderByDescending(image => image.CreatedAt),
-            (ExplorerSortField.DateModified, false) => matching.OrderBy(image => image.ModifiedAt),
-            (ExplorerSortField.DateModified, true) => matching.OrderByDescending(image => image.ModifiedAt),
+            (CatalogSortField.Size, false) => matching.OrderBy(image => image.Size ?? 0),
+            (CatalogSortField.Size, true) => matching.OrderByDescending(image => image.Size ?? 0),
+            (CatalogSortField.DateAdded, false) => matching.OrderBy(image => image.CreatedAt),
+            (CatalogSortField.DateAdded, true) => matching.OrderByDescending(image => image.CreatedAt),
+            (CatalogSortField.DateModified, false) => matching.OrderBy(image => image.ModifiedAt),
+            (CatalogSortField.DateModified, true) => matching.OrderByDescending(image => image.ModifiedAt),
             (_, true) => matching.OrderByDescending(image => image.Name, StringComparer.OrdinalIgnoreCase),
             _ => matching.OrderBy(image => image.Name, StringComparer.OrdinalIgnoreCase)
         };
 
         var ordered = matching.ToList();
 
-        return ValueTask.FromResult(new ExplorerItemPage(
-            ExplorerItem.ForAll(ordered.Skip(query.Skip).Take(query.Take)),
+        return ValueTask.FromResult(new CatalogPage(
+            CatalogItem.ForAll(ordered.Skip(query.Skip).Take(query.Take)),
             ordered.Count));
     }
 }

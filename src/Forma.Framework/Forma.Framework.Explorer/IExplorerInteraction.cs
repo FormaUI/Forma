@@ -1,10 +1,10 @@
 namespace Forma.Framework.Explorer;
 
+using Forma.Framework.Catalog.Navigation;
+using Forma.Framework.Catalog.Queries;
+using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
-using Forma.Framework.Explorer.Items.Navigation;
-using Forma.Framework.Explorer.Items.Queries;
-using Forma.Framework.Explorer.Items.Selection;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Explorer.Selection;
 

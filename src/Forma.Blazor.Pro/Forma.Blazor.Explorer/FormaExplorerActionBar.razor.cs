@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaExplorerActionBar : FormaComponentBase
 {
     /// <summary>The item the actions run against.</summary>
-    [Parameter, EditorRequired] public IExplorerItem Item { get; set; } = default!;
+    [Parameter, EditorRequired] public ICatalogItem Item { get; set; } = default!;
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 

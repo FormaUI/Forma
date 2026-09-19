@@ -1,17 +1,17 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content.Queries;
-using Forma.Framework.Explorer.Items.Queries;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The items of a sort menu: every field with the current one checked, both directions with the current one checked, and every grouping with the current one checked.</summary>
 public sealed partial class FormaExplorerSortMenuItems : FormaComponentBase
 {
-    private static readonly ExplorerSortField[] SortFields = Enum.GetValues<ExplorerSortField>();
+    private static readonly CatalogSortField[] SortFields = Enum.GetValues<CatalogSortField>();
 
-    private static readonly ExplorerSortDirection[] SortDirections = Enum.GetValues<ExplorerSortDirection>();
+    private static readonly CatalogSortDirection[] SortDirections = Enum.GetValues<CatalogSortDirection>();
 
     private static readonly ExplorerGroupField[] GroupFields = Enum.GetValues<ExplorerGroupField>();
 

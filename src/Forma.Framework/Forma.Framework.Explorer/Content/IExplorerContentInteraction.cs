@@ -1,16 +1,16 @@
 namespace Forma.Framework.Explorer.Content;
 
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content.Queries;
-using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>What components presenting an explorer's current content may ask it to do.</summary>
 public interface IExplorerContentInteraction
 {
     /// <summary>Sorts by the field, reversing the direction when it is already the sorted field.</summary>
-    Task SortByAsync(ExplorerSortField field);
+    Task SortByAsync(CatalogSortField field);
 
     /// <summary>Sets the sort direction outright.</summary>
-    Task SetSortDirectionAsync(ExplorerSortDirection direction);
+    Task SetSortDirectionAsync(CatalogSortDirection direction);
 
     /// <summary>Gathers the items into groups by the field, or by none.</summary>
     Task GroupByAsync(ExplorerGroupField field);

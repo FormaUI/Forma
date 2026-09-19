@@ -1,17 +1,18 @@
 namespace Forma.Framework.Explorer.Content;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>What components presenting an explorer's current content may read.</summary>
 public interface IExplorerContentView
 {
     /// <summary>The field the content is sorted by.</summary>
-    ExplorerSortField SortField { get; }
+    CatalogSortField SortField { get; }
 
     /// <summary>The direction that order runs in.</summary>
-    ExplorerSortDirection SortDirection { get; }
+    CatalogSortDirection SortDirection { get; }
 
     /// <summary>Which layout the content is shown in.</summary>
     ExplorerViewMode ViewMode { get; }
@@ -26,7 +27,7 @@ public interface IExplorerContentView
     ExplorerGroupField GroupField { get; }
 
     /// <summary>The items currently shown.</summary>
-    IReadOnlyList<IExplorerItem> VisibleItems { get; }
+    IReadOnlyList<ICatalogItem> VisibleItems { get; }
 
     /// <summary>The shown items gathered by <see cref="GroupField"/>; empty while nothing groups them.</summary>
     IReadOnlyList<ExplorerItemGroup> VisibleGroups { get; }

@@ -1,8 +1,8 @@
 namespace Forma.Framework.Explorer;
 
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
-using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>How a <see cref="FormaExplorer"/> presents itself: which surfaces it shows, and how it moves through a collection.</summary>
 public sealed record ExplorerOptions

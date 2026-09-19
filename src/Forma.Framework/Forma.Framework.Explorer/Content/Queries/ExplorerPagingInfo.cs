@@ -1,6 +1,6 @@
 namespace Forma.Framework.Explorer.Content.Queries;
 
-using Forma.Framework.Explorer.Items.Queries;
+using Forma.Framework.Catalog.Queries;
 
 /// <summary>How the currently shown items are paged.</summary>
 /// <param name="PageSize">How many items a page holds.</param>

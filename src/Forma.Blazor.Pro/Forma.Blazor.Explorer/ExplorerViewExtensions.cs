@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 
@@ -14,10 +15,10 @@ internal static class ExplorerViewExtensions
     public static bool ShowsNewFolderAction(this IExplorerView view)
         => !view.ShowsSidebar
             && (view.CurrentFolder is { } folder
-                ? folder.Permits(view.Item.ItemOptions, ExplorerItemCapabilities.Create)
-                : view.Item.ItemOptions.AllowedFolderCapabilities.HasFlag(ExplorerItemCapabilities.Create));
+                ? folder.Permits(view.Item.ItemOptions, CatalogItemCapabilities.Create)
+                : view.Item.ItemOptions.AllowedFolderCapabilities.HasFlag(CatalogItemCapabilities.Create));
 
     /// <summary>Whether anything selected may be deleted.</summary>
     public static bool ShowsDeleteAction(this IExplorerView view)
-        => view.Selection.Items.Any(item => item.Permits(view.Item.ItemOptions, ExplorerItemCapabilities.Delete));
+        => view.Selection.Items.Any(item => item.Permits(view.Item.ItemOptions, CatalogItemCapabilities.Delete));
 }

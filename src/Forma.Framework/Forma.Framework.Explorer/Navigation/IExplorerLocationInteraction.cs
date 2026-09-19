@@ -1,7 +1,8 @@
 namespace Forma.Framework.Explorer.Navigation;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Navigation;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Navigation;
 
 /// <summary>What the components drawing an explorer may ask its location to do.</summary>
 public interface IExplorerLocationInteraction
@@ -16,5 +17,5 @@ public interface IExplorerLocationInteraction
     Task GoUpAsync();
 
     /// <summary>Goes to the given folder, or the top level when null.</summary>
-    Task SelectFolderAsync(IExplorerFolderItem? folder);
+    Task SelectFolderAsync(ICatalogFolderItem? folder);
 }

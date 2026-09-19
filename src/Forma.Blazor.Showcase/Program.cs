@@ -3,10 +3,10 @@ using Forma.Blazor.Showcase;
 using Forma.Blazor.Showcase.Components.Pages.Menus;
 using Forma.Blazor.Showcase.Features.Media;
 using Forma.Blazor.Showcase.Features.Upload;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis.Twemoji;
 using Forma.Framework.Explorer.Content.Queries;
-using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Feedback;
 using Forma.Framework.Globalization;
 using Forma.Framework.Icons;
@@ -51,7 +51,7 @@ builder.Services.AddScoped<ShowcaseShareTarget>();
 builder.Services.AddScoped<IShareTarget>(services => services.GetRequiredService<ShowcaseShareTarget>());
 
 // What the composer's image dialog browses and uploads into; without these it offers an address alone.
-builder.Services.AddScoped<IExplorerItemsProvider>(_ => new ShowcaseImageLibrary());
+builder.Services.AddScoped<ICatalogProvider>(_ => new ShowcaseImageLibrary());
 builder.Services.AddScoped<IFileStore, DefaultFileStore>();
 
 // The statuses this application defines for itself — the library ships none.

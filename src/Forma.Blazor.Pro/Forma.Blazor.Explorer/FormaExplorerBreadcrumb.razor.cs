@@ -1,9 +1,10 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.Navigation;
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Navigation;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Navigation;
 using Forma.Framework.Explorer.Navigation;
 
 using Microsoft.AspNetCore.Components;
@@ -32,11 +33,11 @@ public sealed partial class FormaExplorerBreadcrumb : FormaComponentBase
         }
     }
 
-    private IReadOnlyList<BreadcrumbItem<IExplorerFolderItem>> Items
+    private IReadOnlyList<BreadcrumbItem<ICatalogFolderItem>> Items
     {
         get
         {
-            var items = new List<BreadcrumbItem<IExplorerFolderItem>>
+            var items = new List<BreadcrumbItem<ICatalogFolderItem>>
             {
                 new(L["All Media"].Value)
                 {
@@ -47,7 +48,7 @@ public sealed partial class FormaExplorerBreadcrumb : FormaComponentBase
 
             foreach (var segment in Location.Breadcrumbs)
             {
-                items.Add(new BreadcrumbItem<IExplorerFolderItem>(segment.Name)
+                items.Add(new BreadcrumbItem<ICatalogFolderItem>(segment.Name)
                 {
                     Value = segment,
                     IsCurrent = Location.CurrentFolder?.Key == segment.Key,
@@ -59,7 +60,7 @@ public sealed partial class FormaExplorerBreadcrumb : FormaComponentBase
         }
     }
 
-    private List<BreadcrumbItem<IExplorerFolderItem>>? GetChildItems(string? folderKey)
+    private List<BreadcrumbItem<ICatalogFolderItem>>? GetChildItems(string? folderKey)
     {
         if (!Configuration.Options.ShowFolderMenu)
         {
@@ -70,6 +71,6 @@ public sealed partial class FormaExplorerBreadcrumb : FormaComponentBase
 
         return children.Count == 0
             ? null
-            : [.. children.Select(child => new BreadcrumbItem<IExplorerFolderItem>(child.Name) { Value = child })];
+            : [.. children.Select(child => new BreadcrumbItem<ICatalogFolderItem>(child.Name) { Value = child })];
     }
 }

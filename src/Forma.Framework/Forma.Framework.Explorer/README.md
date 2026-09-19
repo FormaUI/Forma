@@ -7,7 +7,7 @@ listed items, and the preview.
 
 The items the explorer lists, the provider that answers it, the requests it hands back, the
 ceilings it keeps and the bookkeeping every browsing surface repeats are
-[`Forma.Framework.Explorer.Items`](../Forma.Framework.Explorer.Items/README.md). **That is the
+[`Forma.Framework.Catalog`](../Forma.Framework.Catalog/README.md). **That is the
 package to read to write items or a provider**; this assembly is how the explorer draws them.
 
 It ships inside `2Site.Forma.Blazor.Pro.Explorer` rather than as a package of its own, because
@@ -41,7 +41,7 @@ each with a preset: `ExplorerOptions.Default`, `ExplorerItemOptions.Default` and
 
 `IExplorerView` is everything the parts drawing an explorer read, composed of
 `IExplorerConfigurationView`, `IExplorerLocationView`, `IExplorerContentView` and
-`IExplorerSearchView`, with the `Selection` as an `IExplorerSelectionView` and the `Item` state as
+`IExplorerSearchView`, with the `Selection` as an `ICatalogSelectionView` and the `Item` state as
 an `IExplorerItemView`. `IExplorerInteraction` is everything they ask, composed of
 `IExplorerContentInteraction`, `IExplorerLocationInteraction`, `IExplorerSelectionInteraction` and
 `IExplorerSearchInteraction`. The sidebar's nodes read `IExplorerSidebarView` and

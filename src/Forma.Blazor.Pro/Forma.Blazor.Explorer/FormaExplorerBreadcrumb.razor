@@ -2,11 +2,12 @@
 @inherits FormaComponentBase
 @using Forma.Blazor.Components.Navigation
 @using Forma.Framework.Explorer.Items
+@using Forma.Framework.Catalog
 
 <div class="forma-explorer-breadcrumb-bar">
     <FormaBreadcrumb Items="Items"
                      RootIcon="Glyph.FolderOpen"
                      AriaLabel="@L["Folder Path"]"
-                     OnItemClick="(IExplorerFolderItem? item) => LocationInteraction.SelectFolderAsync(item)"
-                     OnItemDrop="(IExplorerFolderItem? item) => ItemInteraction.DropOnItemAsync(item)" />
+                     OnItemClick="(ICatalogFolderItem? item) => LocationInteraction.SelectFolderAsync(item)"
+                     OnItemDrop="(ICatalogFolderItem? item) => ItemInteraction.DropOnItemAsync(item)" />
 </div>

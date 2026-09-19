@@ -1,13 +1,14 @@
 namespace Forma.Framework.Explorer.Content;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>A run of items that share a band, in the order they are listed.</summary>
 /// <param name="Band">The band the items fall in.</param>
 /// <param name="KindLabel">The kind the items share, for a <see cref="ExplorerGroupBand.Kind"/> group; null for every other band.</param>
 /// <param name="Items">The items in the group, in list order.</param>
-public sealed record ExplorerItemGroup(ExplorerGroupBand Band, string? KindLabel, IReadOnlyList<IExplorerItem> Items)
+public sealed record ExplorerItemGroup(ExplorerGroupBand Band, string? KindLabel, IReadOnlyList<ICatalogItem> Items)
 {
     /// <summary>A key naming the group among the groups of one list.</summary>
     public string Key

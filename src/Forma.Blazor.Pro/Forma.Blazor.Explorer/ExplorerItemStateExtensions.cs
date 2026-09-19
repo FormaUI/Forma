@@ -1,16 +1,17 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 
 /// <summary>Reads an explorer item's state as the CSS classes that draw it.</summary>
 internal static class ExplorerItemStateExtensions
 {
     /// <summary>The state classes the item's element carries: disabled, invisible, both, or none.</summary>
-    internal static string GetStateClasses(this IExplorerItem item)
+    internal static string GetStateClasses(this ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        return (item.IsDisabled, item.Visibility == ExplorerItemVisibility.Invisible) switch
+        return (item.IsDisabled, item.Visibility == CatalogItemVisibility.Invisible) switch
         {
             (true, true) => "is-disabled is-invisible",
             (true, false) => "is-disabled",

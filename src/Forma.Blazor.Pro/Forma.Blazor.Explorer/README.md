@@ -18,9 +18,9 @@ dotnet add package 2Site.Forma.Blazor.Pro.Explorer
 ```
 
 The package depends on `2Site.Forma.Blazor`, the product, and on
-`2Site.Forma.Framework.Explorer.Items`, which install beside it. The component lives in
+`2Site.Forma.Framework.Catalog`, which install beside it. The component lives in
 `Forma.Blazor.Components.Explorer`. The items it lists, the provider that answers it, the requests it
-raises and the ceilings it keeps are the items package's, under `Forma.Framework.Explorer.Items`,
+raises and the ceilings it keeps are the items package's, under `Forma.Framework.Catalog`,
 so a host writes them once for every surface that browses them; the explorer's own vocabulary — its
 options and what its parts read — ships inside the package under `Forma.Framework.Explorer`.
 
@@ -60,14 +60,14 @@ explorer's items carry are documented in
 
 ### Items and folders
 
-The explorer lists `IExplorerItem`s. A folder is an `IExplorerFolderItem`, placed in the tree by
+The explorer lists `ICatalogItem`s. A folder is an `ICatalogFolderItem`, placed in the tree by
 the key of its parent, so a folder needs no resource behind it to be a folder.
 
 | Member | What it is |
 | --- | --- |
 | `Key` | The stable identifier, unique among the explorer's items and unchanged across refreshing, sorting and paging. |
 | `Name` | The displayed name. |
-| `Capabilities` | The operations the item itself supports, as `ExplorerItemCapabilities` flags. |
+| `Capabilities` | The operations the item itself supports, as `CatalogItemCapabilities` flags. |
 | `Visibility` | `Visible`, `Hidden` (leaves the listing and every count), or `Invisible` (keeps its place, undrawn). |
 | `IsDisabled` | Whether the item is drawn muted, offers no operation, and cannot be selected. |
 | `CreatedAt`, `ModifiedAt` | When the item was created and last changed, or null when unknown. |
@@ -76,8 +76,8 @@ the key of its parent, so a folder needs no resource behind it to be a folder.
 | `ParentKey` | On a folder, the key of the folder it sits inside, or null at the top level. |
 | `Count` | On a folder, how many items it holds, or null when unknown. |
 
-`ExplorerItem` and `ExplorerFolderItem` are ready implementations with init-only members, and
-`ExplorerItem.For(resource)`, `ForAll(resources)` and `ForFolder(folder)` wrap a `ResourceInfo`,
+`CatalogItem` and `CatalogFolderItem` are ready implementations with init-only members, and
+`CatalogItem.For(resource)`, `ForAll(resources)` and `ForFolder(folder)` wrap a `ResourceInfo`,
 a list of them, or a `FolderResourceInfo`, deriving the capabilities each kind supports.
 
 `Folders` takes the folder items; the sidebar tree, the breadcrumbs and the drop targets are built
@@ -93,10 +93,10 @@ Exactly one of two parameters supplies the items:
 | Parameter | What it takes | Right for |
 | --- | --- | --- |
 | `Items` | The whole collection, which the explorer searches, sorts and pages itself. | A few hundred items. |
-| `ItemsProvider` | An `IExplorerItemsProvider` answering one window at a time; the explorer holds only what it shows. | A library too large to enumerate. |
+| `ItemsProvider` | An `ICatalogProvider` answering one window at a time; the explorer holds only what it shows. | A library too large to enumerate. |
 
-A provider's `GetItemsAsync(ExplorerItemQuery, CancellationToken)` receives what the explorer
-owns — `Skip`, `Take`, `Search`, `SortBy` and `Direction` — and returns an `ExplorerItemPage` of
+A provider's `GetItemsAsync(CatalogQuery, CancellationToken)` receives what the explorer
+owns — `Skip`, `Take`, `Search`, `SortBy` and `Direction` — and returns an `CatalogPage` of
 the items and a `TotalCount`. The folder is not in the query, because the host already has it. A
 store that cannot count cheaply returns a null total, which leaves the explorer without a page
 count; infinite scrolling keeps asking for as long as windows come back full.
@@ -113,18 +113,18 @@ re-reads its window on its own once a rename, deletion, drop or upload is report
 
 | Callback | Carries | Raised when |
 | --- | --- | --- |
-| `OnFolderChanged` | `IExplorerFolderItem?` | The reader navigates; null is the root. |
-| `OnRename` | `ExplorerRenameRequest` (`Item`, `NewName`) | A rename is confirmed. |
-| `OnDelete` | `ExplorerDeleteRequest` (`Items`) | A deletion is confirmed, of one item or the selection. |
-| `OnDrop` | `ExplorerDropRequest` (`Items`, `TargetFolder`) | Items land on a folder; dragging a selected item moves the whole selection, and a null target is the root. |
-| `OnFolderCreate` | `ExplorerFolderCreateRequest` (`ParentFolder`, `Name`) | A new folder is confirmed. |
-| `OnFolderRename` | `ExplorerFolderRenameRequest` (`Folder`, `NewName`) | A folder rename is confirmed. |
-| `OnFolderDelete` | `ExplorerFolderDeleteRequest` (`Folder`) | A folder deletion is confirmed, once per folder. |
-| `OnFolderDrop` | `ExplorerFolderDropRequest` (`SourceFolder`, `TargetFolder`) | A folder lands on another, or on the root. |
+| `OnFolderChanged` | `ICatalogFolderItem?` | The reader navigates; null is the root. |
+| `OnRename` | `CatalogRenameRequest` (`Item`, `NewName`) | A rename is confirmed. |
+| `OnDelete` | `CatalogDeleteRequest` (`Items`) | A deletion is confirmed, of one item or the selection. |
+| `OnDrop` | `CatalogDropRequest` (`Items`, `TargetFolder`) | Items land on a folder; dragging a selected item moves the whole selection, and a null target is the root. |
+| `OnFolderCreate` | `CatalogFolderCreateRequest` (`ParentFolder`, `Name`) | A new folder is confirmed. |
+| `OnFolderRename` | `CatalogFolderRenameRequest` (`Folder`, `NewName`) | A folder rename is confirmed. |
+| `OnFolderDelete` | `CatalogFolderDeleteRequest` (`Folder`) | A folder deletion is confirmed, once per folder. |
+| `OnFolderDrop` | `CatalogFolderDropRequest` (`SourceFolder`, `TargetFolder`) | A folder lands on another, or on the root. |
 | `OnUploaded` | `IReadOnlyList<ResourceInfo>` | The store has taken the uploaded files. |
-| `OnRejected` | `ExplorerRejection` (`Reason`, `Allowed`, `Message`) | A ceiling refused an upload, a folder or a drop. |
+| `OnRejected` | `CatalogRejection` (`Reason`, `Allowed`, `Message`) | A ceiling refused an upload, a folder or a drop. |
 | `OnRefresh` | — | The refresh action is pressed. |
-| `SelectedChanged` | `IReadOnlyList<IExplorerItem>` | The selection changes; pairs with `Selected` as `@bind-Selected`. |
+| `SelectedChanged` | `IReadOnlyList<ICatalogItem>` | The selection changes; pairs with `Selected` as `@bind-Selected`. |
 | `OnPageChanged` | `int` | The page changes; pairs with `CurrentPage`. |
 | `ViewModeChanged`, `GroupFieldChanged`, `DetailsColumnsChanged`, `DetailsHeaderVisibleChanged` | The new value | The reader changes the presentation, for a host that remembers it. |
 
@@ -185,7 +185,7 @@ inside a dialog, stepping through the other items in view.
 
 `Constraints` names the ceilings the explorer refuses to cross, each unlimited at zero. A refusal
 is announced under the header and reported through `OnRejected`, whose `Reason` is one of
-`ExplorerRejectionReason`.
+`CatalogRejectionReason`.
 
 | Ceiling | What it limits |
 | --- | --- |
@@ -220,8 +220,9 @@ and carrying out what the reader asks:
 @page "/media"
 @rendermode InteractiveServer
 @using Forma.Blazor.Components.Explorer
-@using Forma.Framework.Explorer.Items
-@using Forma.Framework.Explorer.Items.Requests
+@using Forma.Framework.Catalog
+@using Forma.Framework.Catalog
+@using Forma.Framework.Catalog.Requests
 @using Forma.Framework.Resources
 
 <FormaExplorer Items="_items"
@@ -237,40 +238,40 @@ and carrying out what the reader asks:
 @code {
     [Inject] private IMediaCatalog Catalog { get; set; } = default!;
 
-    private IReadOnlyList<IExplorerItem> _items = [];
-    private IReadOnlyList<IExplorerItem> _folders = [];
-    private IReadOnlyList<IExplorerItem> _selected = [];
-    private IExplorerFolderItem? _currentFolder;
+    private IReadOnlyList<ICatalogItem> _items = [];
+    private IReadOnlyList<ICatalogItem> _folders = [];
+    private IReadOnlyList<ICatalogItem> _selected = [];
+    private ICatalogFolderItem? _currentFolder;
 
     protected override Task OnInitializedAsync()
         => LoadAsync();
 
     private async Task LoadAsync()
     {
-        _folders = ExplorerItem.ForAll(await Catalog.GetFoldersAsync());
-        _items = ExplorerItem.ForAll(await Catalog.GetFilesAsync(_currentFolder?.Key));
+        _folders = CatalogItem.ForAll(await Catalog.GetFoldersAsync());
+        _items = CatalogItem.ForAll(await Catalog.GetFilesAsync(_currentFolder?.Key));
     }
 
-    private Task HandleFolderChangedAsync(IExplorerFolderItem? folder)
+    private Task HandleFolderChangedAsync(ICatalogFolderItem? folder)
     {
         _currentFolder = folder;
 
         return LoadAsync();
     }
 
-    private async Task HandleRenameAsync(ExplorerRenameRequest request)
+    private async Task HandleRenameAsync(CatalogRenameRequest request)
     {
         await Catalog.RenameAsync(request.Item.Key, request.NewName);
         await LoadAsync();
     }
 
-    private async Task HandleDeleteAsync(ExplorerDeleteRequest request)
+    private async Task HandleDeleteAsync(CatalogDeleteRequest request)
     {
         await Catalog.DeleteAsync(request.Items.Select(item => item.Key));
         await LoadAsync();
     }
 
-    private async Task HandleDropAsync(ExplorerDropRequest request)
+    private async Task HandleDropAsync(CatalogDropRequest request)
     {
         await Catalog.MoveAsync(request.Items.Select(item => item.Key), request.TargetFolder?.Key);
         await LoadAsync();
@@ -282,24 +283,25 @@ The same page over a library too large to hold, answering one window at a time f
 the page knows:
 
 ```csharp
-using Forma.Framework.Explorer.Items.Queries;
-using Forma.Framework.Explorer.Items;
+using Forma.Framework.Catalog.Queries;
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog;
 
-public sealed class CatalogItemsProvider(IMediaCatalog catalog, Func<string?> currentFolder) : IExplorerItemsProvider
+public sealed class CatalogItemsProvider(IMediaCatalog catalog, Func<string?> currentFolder) : ICatalogProvider
 {
-    public async ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
+    public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
         var page = await catalog.SearchAsync(
             currentFolder(), query.Search, query.SortBy, query.Direction, query.Skip, query.Take, cancellationToken);
 
-        return new ExplorerItemPage(ExplorerItem.ForAll(page.Files), page.Total);
+        return new CatalogPage(CatalogItem.ForAll(page.Files), page.Total);
     }
 }
 ```
 
 ```razor
 @using Forma.Framework.Explorer
-@using Forma.Framework.Explorer.Items.Queries
+@using Forma.Framework.Catalog.Queries
 
 <FormaExplorer ItemsProvider="_provider"
                Folders="_folders"
@@ -310,13 +312,13 @@ public sealed class CatalogItemsProvider(IMediaCatalog catalog, Func<string?> cu
                OnFolderChanged="folder => _currentFolder = folder" />
 
 @code {
-    private IExplorerItemsProvider _provider = default!;
+    private ICatalogProvider _provider = default!;
     private int _libraryCount;
 
     protected override async Task OnInitializedAsync()
     {
         _provider = new CatalogItemsProvider(Catalog, () => _currentFolder?.Key);
-        _folders = ExplorerItem.ForAll(await Catalog.GetFoldersAsync());
+        _folders = CatalogItem.ForAll(await Catalog.GetFoldersAsync());
         _libraryCount = await Catalog.CountAsync();
     }
 }

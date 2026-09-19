@@ -1,10 +1,11 @@
 namespace Forma.Framework.Explorer.Actions;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 
 /// <summary>The single item being renamed, and its draft name.</summary>
 public sealed class ExplorerRenameAction<TTarget> : ExplorerNamedAction<TTarget>
-    where TTarget : class, IExplorerItem
+    where TTarget : class, ICatalogItem
 {
     /// <summary>The item being renamed, or null when nothing is.</summary>
     public TTarget? Target => Item;

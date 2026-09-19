@@ -2,18 +2,19 @@
 @inherits FormaComponentBase
 @using Forma.Blazor.Components.Layout
 @using Forma.Framework.Explorer.Content
-@using Forma.Framework.Explorer.Items.Queries
+@using Forma.Framework.Catalog.Queries
 @using Forma.Framework.Explorer.Content.Queries
 @using Forma.Framework.Explorer.Items
+@using Forma.Framework.Catalog
 
 @{
-    RenderFragment<IExplorerItem> entry = item =>
+    RenderFragment<ICatalogItem> entry = item =>
         @<text>
         @{
             var selected = View.Selection.IsSelected(item);
             var labels = item.GetLocalizedLabels(L, View.Selection);
             var capabilities = item.GetCapabilities(View.Item.ItemOptions);
-            var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+            var draggable = capabilities.HasFlag(CatalogItemCapabilities.Drag) ? "true" : "false";
         }
         <div class="forma-explorer-list-item @FormaFreezePane.StopClass @(selected ? "is-selected" : "") @item.GetStateClasses()"
              role="listitem"

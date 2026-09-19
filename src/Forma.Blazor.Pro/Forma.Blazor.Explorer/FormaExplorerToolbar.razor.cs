@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.Buttons;
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Icons;

@@ -1,16 +1,18 @@
 namespace Forma.Framework.Explorer.Items;
 
+using Forma.Framework.Catalog;
+
 /// <summary>What components presenting an explorer's items may ask it to do.</summary>
 public interface IExplorerItemInteraction
 {
     /// <summary>Toggles the selection of an enabled item in selection mode, and previews it otherwise.</summary>
-    Task ActivateAsync(IExplorerItem item);
+    Task ActivateAsync(ICatalogItem item);
 
     /// <summary>Records a draggable item as the one being dragged.</summary>
-    void BeginDrag(IExplorerItem item);
+    void BeginDrag(ICatalogItem item);
 
     /// <summary>Drops the movable item being dragged onto a folder that accepts drops, or the top level when null.</summary>
-    Task DropOnItemAsync(IExplorerItem? target);
+    Task DropOnItemAsync(ICatalogItem? target);
 
     /// <summary>Forgets the item being dragged.</summary>
     void EndDrag();
@@ -19,7 +21,7 @@ public interface IExplorerItemInteraction
     Task RequestNewFolderAsync();
 
     /// <summary>Opens the rename dialog for an item that can be renamed, with its current name as the draft.</summary>
-    void RequestRename(IExplorerItem item);
+    void RequestRename(ICatalogItem item);
 
     /// <summary>Opens confirmation for deleting those of the selected items that can be deleted.</summary>
     void RequestDeleteSelected();

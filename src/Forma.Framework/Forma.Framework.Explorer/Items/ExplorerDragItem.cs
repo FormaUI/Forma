@@ -1,13 +1,15 @@
 namespace Forma.Framework.Explorer.Items;
 
+using Forma.Framework.Catalog;
+
 /// <summary>The item currently being dragged.</summary>
 public sealed class ExplorerDragItem
 {
     /// <summary>The item being dragged, or null when nothing is.</summary>
-    public IExplorerItem? Target { get; private set; }
+    public ICatalogItem? Target { get; private set; }
 
     /// <summary>Starts dragging the given item.</summary>
-    public void Begin(IExplorerItem target)
+    public void Begin(ICatalogItem target)
     {
         ArgumentNullException.ThrowIfNull(target);
 

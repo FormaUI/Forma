@@ -3,12 +3,13 @@ namespace Forma.Blazor.Components.Explorer;
 using System.Globalization;
 
 using Forma.Blazor.Components.Layout;
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Css;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
@@ -17,7 +18,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaExplorerDetailsView : FormaComponentBase
 {
     /// <summary>The collection of items to display.</summary>
-    [Parameter] public IReadOnlyList<IExplorerItem> Items { get; set; } = [];
+    [Parameter] public IReadOnlyList<ICatalogItem> Items { get; set; } = [];
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
@@ -84,13 +85,13 @@ public sealed partial class FormaExplorerDetailsView : FormaComponentBase
     private static string DisplayDate(DateTimeOffset? value)
         => value?.LocalDateTime.ToString("g", CultureInfo.CurrentCulture) ?? Placeholder;
 
-    private string SortState(ExplorerSortField field)
+    private string SortState(CatalogSortField field)
     {
         if (View.SortField != field)
         {
             return "none";
         }
 
-        return View.SortDirection == ExplorerSortDirection.Ascending ? "ascending" : "descending";
+        return View.SortDirection == CatalogSortDirection.Ascending ? "ascending" : "descending";
     }
 }

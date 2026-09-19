@@ -2,9 +2,10 @@ namespace Forma.Framework.Explorer.Content;
 
 using System.Globalization;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>Gathers a list of items into the groups a field bands them by.</summary>
 public static class ExplorerGrouping
@@ -17,10 +18,10 @@ public static class ExplorerGrouping
 
     /// <summary>Gathers <paramref name="items"/> into groups by <paramref name="field"/>, keeping each group's items in list order and standing the groups in band order, reversed for a descending <paramref name="direction"/>; kinds are named through <paramref name="kindLabel"/> and dates banded against <paramref name="now"/> with weeks starting on <paramref name="firstDayOfWeek"/>.</summary>
     public static IReadOnlyList<ExplorerItemGroup> GroupBy(
-        IReadOnlyList<IExplorerItem> items,
+        IReadOnlyList<ICatalogItem> items,
         ExplorerGroupField field,
-        ExplorerSortDirection direction,
-        Func<IExplorerItem, string> kindLabel,
+        CatalogSortDirection direction,
+        Func<ICatalogItem, string> kindLabel,
         DateTimeOffset now,
         DayOfWeek firstDayOfWeek)
     {
@@ -32,7 +33,7 @@ public static class ExplorerGrouping
             return [];
         }
 
-        var groups = new Dictionary<string, (ExplorerGroupBand Band, string? KindLabel, List<IExplorerItem> Items)>(StringComparer.Ordinal);
+        var groups = new Dictionary<string, (ExplorerGroupBand Band, string? KindLabel, List<ICatalogItem> Items)>(StringComparer.Ordinal);
 
         foreach (var item in items)
         {
@@ -55,10 +56,10 @@ public static class ExplorerGrouping
 
         var result = ordered.Select(group => new ExplorerItemGroup(group.Band, group.KindLabel, group.Items));
 
-        return direction == ExplorerSortDirection.Descending ? [.. result.Reverse()] : [.. result];
+        return direction == CatalogSortDirection.Descending ? [.. result.Reverse()] : [.. result];
     }
 
-    private static (ExplorerGroupBand Band, string? KindLabel) GetBand(IExplorerItem item, ExplorerGroupField field, Func<IExplorerItem, string> kindLabel, DateTimeOffset now, DayOfWeek firstDayOfWeek)
+    private static (ExplorerGroupBand Band, string? KindLabel) GetBand(ICatalogItem item, ExplorerGroupField field, Func<ICatalogItem, string> kindLabel, DateTimeOffset now, DayOfWeek firstDayOfWeek)
         => field switch
         {
             ExplorerGroupField.Name => (GetNameBand(item.Name), null),

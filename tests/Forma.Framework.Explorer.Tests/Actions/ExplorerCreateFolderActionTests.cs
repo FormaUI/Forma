@@ -1,5 +1,6 @@
 namespace Forma.Framework.Explorer.Tests.Actions;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Actions;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Resources;
@@ -15,7 +16,7 @@ public sealed class ExplorerCreateFolderActionTests
         var create = new ExplorerCreateFolderAction();
 
         // Act
-        var parent = ExplorerItem.ForFolder(new FolderResourceInfo("/photos"));
+        var parent = CatalogItem.ForFolder(new FolderResourceInfo("/photos"));
         create.Request(parent);
 
         // Assert

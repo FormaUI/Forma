@@ -1,5 +1,6 @@
 namespace Forma.Framework.Explorer.Tests.Actions;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Actions;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Resources;
@@ -8,14 +9,14 @@ using Xunit;
 
 public sealed class ExplorerBatchActionTests
 {
-    private static ExplorerItem CreateItem(string source)
-        => ExplorerItem.For(new FileResourceInfo(source));
+    private static CatalogItem CreateItem(string source)
+        => CatalogItem.For(new FileResourceInfo(source));
 
     [Fact]
     public void Should_hold_the_requested_targets()
     {
         // Arrange
-        var batch = new ExplorerBatchAction<IExplorerItem>();
+        var batch = new ExplorerBatchAction<ICatalogItem>();
 
         // Act
         batch.Request([CreateItem("/media/photo.png")]);
@@ -30,7 +31,7 @@ public sealed class ExplorerBatchActionTests
     public void Should_replace_the_previous_request_on_a_new_one()
     {
         // Arrange
-        var batch = new ExplorerBatchAction<IExplorerItem>();
+        var batch = new ExplorerBatchAction<ICatalogItem>();
         batch.Request([CreateItem("/media/photo.png")]);
 
         // Act
@@ -42,14 +43,14 @@ public sealed class ExplorerBatchActionTests
 
     [Fact]
     public void Should_reject_an_empty_request()
-        => Assert.Throws<ArgumentException>(() => new ExplorerBatchAction<IExplorerItem>().Request([]));
+        => Assert.Throws<ArgumentException>(() => new ExplorerBatchAction<ICatalogItem>().Request([]));
 
     [Fact]
     public void Should_keep_its_own_copy_of_the_requested_targets()
     {
         // Arrange
-        var batch = new ExplorerBatchAction<IExplorerItem>();
-        var requested = new List<IExplorerItem> { CreateItem("/media/photo.png") };
+        var batch = new ExplorerBatchAction<ICatalogItem>();
+        var requested = new List<ICatalogItem> { CreateItem("/media/photo.png") };
 
         // Act
         batch.Request(requested);
@@ -63,10 +64,10 @@ public sealed class ExplorerBatchActionTests
     public void Should_work_for_folder_targets()
     {
         // Arrange
-        var batch = new ExplorerBatchAction<IExplorerFolderItem>();
+        var batch = new ExplorerBatchAction<ICatalogFolderItem>();
 
         // Act
-        batch.Request([ExplorerItem.ForFolder(new FolderResourceInfo("/photos"))]);
+        batch.Request([CatalogItem.ForFolder(new FolderResourceInfo("/photos"))]);
 
         // Assert
         Assert.Single(batch.Targets);

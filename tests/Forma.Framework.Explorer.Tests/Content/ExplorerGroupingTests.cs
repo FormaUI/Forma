@@ -1,9 +1,10 @@
 namespace Forma.Framework.Explorer.Tests.Content;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Resources;
 
 using Xunit;
@@ -12,14 +13,14 @@ public sealed class ExplorerGroupingTests
 {
     private static readonly DateTimeOffset Now = new(2026, 9, 16, 12, 0, 0, TimeSpan.Zero);
 
-    private static string GetTypeNameKindLabel(IExplorerItem item)
+    private static string GetTypeNameKindLabel(ICatalogItem item)
         => item.Resource?.GetType().Name ?? string.Empty;
 
     private static FileResourceInfo CreateFile(string name, long? size = null, DateTimeOffset? modifiedAt = null)
         => new($"/media/{name}") { Size = size, ModifiedAt = modifiedAt };
 
-    private static IReadOnlyList<ExplorerItemGroup> Group(ExplorerGroupField field, ExplorerSortDirection direction = ExplorerSortDirection.Ascending, params ResourceInfo[] resources)
-        => ExplorerGrouping.GroupBy(ExplorerItem.ForAll(resources), field, direction, GetTypeNameKindLabel, Now, DayOfWeek.Monday);
+    private static IReadOnlyList<ExplorerItemGroup> Group(ExplorerGroupField field, CatalogSortDirection direction = CatalogSortDirection.Ascending, params ResourceInfo[] resources)
+        => ExplorerGrouping.GroupBy(CatalogItem.ForAll(resources), field, direction, GetTypeNameKindLabel, Now, DayOfWeek.Monday);
 
     [Fact]
     public void Should_yield_no_groups_when_nothing_groups_the_items()
@@ -117,7 +118,7 @@ public sealed class ExplorerGroupingTests
     public void Should_reverse_the_groups_for_a_descending_direction()
     {
         // Act
-        var groups = Group(ExplorerGroupField.Name, ExplorerSortDirection.Descending, CreateFile("apple.png"), CreateFile("zebra.png"));
+        var groups = Group(ExplorerGroupField.Name, CatalogSortDirection.Descending, CreateFile("apple.png"), CreateFile("zebra.png"));
 
         // Assert
         Assert.Equal([ExplorerGroupBand.NameQToZ, ExplorerGroupBand.NameAToH], groups.Select(group => group.Band));

@@ -1,10 +1,11 @@
 namespace Forma.Framework.Explorer.Actions;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 
 /// <summary>A list of items pending confirmation, replaced wholesale on each request.</summary>
 public sealed class ExplorerBatchAction<TTarget> : ExplorerPendingAction
-    where TTarget : IExplorerItem
+    where TTarget : ICatalogItem
 {
     /// <summary>The items currently pending, or empty when none are.</summary>
     public IReadOnlyList<TTarget> Targets { get; private set; } = [];

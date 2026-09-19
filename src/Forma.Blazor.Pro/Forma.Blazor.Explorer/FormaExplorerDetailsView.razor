@@ -2,20 +2,21 @@
 @inherits FormaComponentBase
 @using Forma.Blazor.Components.Layout
 @using Forma.Framework.Explorer.Content
-@using Forma.Framework.Explorer.Items.Queries
+@using Forma.Framework.Catalog.Queries
 @using Forma.Framework.Explorer.Content.Queries
 @using Forma.Framework.Explorer.Items
+@using Forma.Framework.Catalog
 
 @{
     var selecting = View.Selection.IsSelectionModeActive;
 
-    RenderFragment<IExplorerItem> row = item =>
+    RenderFragment<ICatalogItem> row = item =>
         @<text>
         @{
             var selected = View.Selection.IsSelected(item);
             var labels = item.GetLocalizedLabels(L, View.Selection);
             var capabilities = item.GetCapabilities(View.Item.ItemOptions);
-            var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+            var draggable = capabilities.HasFlag(CatalogItemCapabilities.Drag) ? "true" : "false";
         }
         <tr class="forma-explorer-details-row @(selected ? "is-selected" : "") @item.GetStateClasses()"
             aria-disabled="@(item.IsDisabled ? "true" : null)"
@@ -63,60 +64,60 @@
         <thead>
             <tr>
                 <th class="forma-explorer-column-actions @FormaFreezePane.FrozenClass"><span class="forma-explorer-visually-hidden">@(selecting ? L["Select"] : L["Actions"])</span></th>
-                <th class="forma-explorer-column-name @FormaFreezePane.FrozenClass @(View.SortField == ExplorerSortField.Name ? "is-sorted" : "")"
-                    aria-sort="@SortState(ExplorerSortField.Name)"
-                    @onclick="() => Interaction.SortByAsync(ExplorerSortField.Name)">
+                <th class="forma-explorer-column-name @FormaFreezePane.FrozenClass @(View.SortField == CatalogSortField.Name ? "is-sorted" : "")"
+                    aria-sort="@SortState(CatalogSortField.Name)"
+                    @onclick="() => Interaction.SortByAsync(CatalogSortField.Name)">
                     <span>@L["Name"]</span>
-                    @if (View.SortField == ExplorerSortField.Name)
+                    @if (View.SortField == CatalogSortField.Name)
                     {
-                        <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
+                        <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == CatalogSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
                     }
                 </th>
                 @if (ShowsKind)
                 {
-                    <th class="forma-explorer-column-kind @FormaFreezePane.StopClass @(View.SortField == ExplorerSortField.Kind ? "is-sorted" : "")"
-                        aria-sort="@SortState(ExplorerSortField.Kind)"
-                        @onclick="() => Interaction.SortByAsync(ExplorerSortField.Kind)">
+                    <th class="forma-explorer-column-kind @FormaFreezePane.StopClass @(View.SortField == CatalogSortField.Kind ? "is-sorted" : "")"
+                        aria-sort="@SortState(CatalogSortField.Kind)"
+                        @onclick="() => Interaction.SortByAsync(CatalogSortField.Kind)">
                         <span>@L["Type"]</span>
-                        @if (View.SortField == ExplorerSortField.Kind)
+                        @if (View.SortField == CatalogSortField.Kind)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == CatalogSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
                         }
                     </th>
                 }
                 @if (ShowsSize)
                 {
-                    <th class="forma-explorer-column-size @FormaFreezePane.StopClass @(View.SortField == ExplorerSortField.Size ? "is-sorted" : "")"
-                        aria-sort="@SortState(ExplorerSortField.Size)"
-                        @onclick="() => Interaction.SortByAsync(ExplorerSortField.Size)">
+                    <th class="forma-explorer-column-size @FormaFreezePane.StopClass @(View.SortField == CatalogSortField.Size ? "is-sorted" : "")"
+                        aria-sort="@SortState(CatalogSortField.Size)"
+                        @onclick="() => Interaction.SortByAsync(CatalogSortField.Size)">
                         <span>@L["Size"]</span>
-                        @if (View.SortField == ExplorerSortField.Size)
+                        @if (View.SortField == CatalogSortField.Size)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == CatalogSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
                         }
                     </th>
                 }
                 @if (ShowsModified)
                 {
-                    <th class="forma-explorer-column-modified @FormaFreezePane.StopClass @(View.SortField == ExplorerSortField.DateModified ? "is-sorted" : "")"
-                        aria-sort="@SortState(ExplorerSortField.DateModified)"
-                        @onclick="() => Interaction.SortByAsync(ExplorerSortField.DateModified)">
+                    <th class="forma-explorer-column-modified @FormaFreezePane.StopClass @(View.SortField == CatalogSortField.DateModified ? "is-sorted" : "")"
+                        aria-sort="@SortState(CatalogSortField.DateModified)"
+                        @onclick="() => Interaction.SortByAsync(CatalogSortField.DateModified)">
                         <span>@L["Modified"]</span>
-                        @if (View.SortField == ExplorerSortField.DateModified)
+                        @if (View.SortField == CatalogSortField.DateModified)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == CatalogSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
                         }
                     </th>
                 }
                 @if (ShowsAdded)
                 {
-                    <th class="forma-explorer-column-added @FormaFreezePane.StopClass @(View.SortField == ExplorerSortField.DateAdded ? "is-sorted" : "")"
-                        aria-sort="@SortState(ExplorerSortField.DateAdded)"
-                        @onclick="() => Interaction.SortByAsync(ExplorerSortField.DateAdded)">
+                    <th class="forma-explorer-column-added @FormaFreezePane.StopClass @(View.SortField == CatalogSortField.DateAdded ? "is-sorted" : "")"
+                        aria-sort="@SortState(CatalogSortField.DateAdded)"
+                        @onclick="() => Interaction.SortByAsync(CatalogSortField.DateAdded)">
                         <span>@L["Added"]</span>
-                        @if (View.SortField == ExplorerSortField.DateAdded)
+                        @if (View.SortField == CatalogSortField.DateAdded)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == CatalogSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" /></span>
                         }
                     </th>
                 }

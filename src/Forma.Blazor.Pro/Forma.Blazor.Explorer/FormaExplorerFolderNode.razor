@@ -2,6 +2,7 @@
 @inherits FormaComponentBase
 @using Forma.Blazor.Components.Menus
 @using Forma.Framework.Explorer.Items
+@using Forma.Framework.Catalog
 
 @{
     var children = Sidebar.GetChildren(Item.Key);
@@ -10,10 +11,10 @@
     var selected = Sidebar.Selection.IsSelected(Item);
     var selectable = Sidebar.Selection.IsSelectionModeActive;
     var allowed = Item.GetCapabilities(Sidebar.ItemOptions);
-    var hasActions = !selectable && (allowed & (ExplorerItemCapabilities.Create | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete)) != ExplorerItemCapabilities.None;
-    var draggable = allowed.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
-    var acceptsDrop = allowed.HasFlag(ExplorerItemCapabilities.Drop);
-    var opens = allowed.HasFlag(ExplorerItemCapabilities.Open);
+    var hasActions = !selectable && (allowed & (CatalogItemCapabilities.Create | CatalogItemCapabilities.Rename | CatalogItemCapabilities.Delete)) != CatalogItemCapabilities.None;
+    var draggable = allowed.HasFlag(CatalogItemCapabilities.Drag) ? "true" : "false";
+    var acceptsDrop = allowed.HasFlag(CatalogItemCapabilities.Drop);
+    var opens = allowed.HasFlag(CatalogItemCapabilities.Open);
 }
 
 <li role="treeitem"
@@ -37,21 +38,21 @@
                         <span title="@Item.Name">@Item.Name</span>
                     </HeaderContent>
                     <ChildContent>
-                        @if (allowed.HasFlag(ExplorerItemCapabilities.Create))
+                        @if (allowed.HasFlag(CatalogItemCapabilities.Create))
                         {
                             <FormaDropDownMenuItem data-action="folder-create" OnClick="() => Interaction.CreateFolderAsync(Item)">
                                 <FormaIcon Icon="Glyph.FolderAdd" Size="IconSize.Small" />
                                 <span>@L["New Folder"]</span>
                             </FormaDropDownMenuItem>
                         }
-                        @if (allowed.HasFlag(ExplorerItemCapabilities.Rename))
+                        @if (allowed.HasFlag(CatalogItemCapabilities.Rename))
                         {
                             <FormaDropDownMenuItem data-action="folder-rename" OnClick="() => Interaction.RenameFolderAsync(Item)">
                                 <FormaIcon Icon="Glyph.Pen" Size="IconSize.Small" />
                                 <span>@L["Rename Folder"]</span>
                             </FormaDropDownMenuItem>
                         }
-                        @if (allowed.HasFlag(ExplorerItemCapabilities.Delete))
+                        @if (allowed.HasFlag(CatalogItemCapabilities.Delete))
                         {
                             <FormaDropDownMenuItem data-action="folder-delete" IsDestructive="true" OnClick="() => Interaction.DeleteFolderAsync(Item)">
                                 <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />

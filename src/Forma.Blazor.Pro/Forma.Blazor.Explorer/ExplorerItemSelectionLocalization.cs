@@ -1,21 +1,22 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Selection;
 using Forma.Framework.Explorer.Selection;
 using Forma.Framework.Localization;
 
 /// <summary>Produces localized selection labels for an explorer item.</summary>
 internal readonly struct ExplorerItemSelectionLocalization
 {
-    private readonly IExplorerItem _item;
+    private readonly ICatalogItem _item;
     private readonly IStringLocale _locale;
-    private readonly IExplorerSelectionView _selection;
+    private readonly ICatalogSelectionView _selection;
 
     internal ExplorerItemSelectionLocalization(
-        IExplorerItem item,
+        ICatalogItem item,
         IStringLocale locale,
-        IExplorerSelectionView selection)
+        ICatalogSelectionView selection)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(locale);

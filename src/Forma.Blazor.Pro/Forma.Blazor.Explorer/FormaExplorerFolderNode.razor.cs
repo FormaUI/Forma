@@ -1,7 +1,8 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Navigation;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Navigation;
 using Forma.Framework.Explorer.Navigation;
 
 using Microsoft.AspNetCore.Components;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaExplorerFolderNode : FormaComponentBase
 {
     /// <summary>The folder item this node represents.</summary>
-    [Parameter, EditorRequired] public IExplorerFolderItem Item { get; set; } = default!;
+    [Parameter, EditorRequired] public ICatalogFolderItem Item { get; set; } = default!;
 
     /// <summary>How many levels below the root this node sits, driving its indent.</summary>
     [Parameter] public int Depth { get; set; }

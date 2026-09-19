@@ -1,6 +1,6 @@
 namespace Forma.Framework.Explorer.Content.Queries;
 
-using Forma.Framework.Explorer.Items.Queries;
+using Forma.Framework.Catalog.Queries;
 
 /// <summary>Specifies the field explorer items are gathered into groups by.</summary>
 public enum ExplorerGroupField

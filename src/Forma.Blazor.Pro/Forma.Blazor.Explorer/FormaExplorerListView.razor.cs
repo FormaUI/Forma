@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.Layout;
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaExplorerListView : FormaComponentBase
 {
     /// <summary>The collection of items to display.</summary>
-    [Parameter] public IReadOnlyList<IExplorerItem> Items { get; set; } = [];
+    [Parameter] public IReadOnlyList<ICatalogItem> Items { get; set; } = [];
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 

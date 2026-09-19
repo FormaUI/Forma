@@ -1,6 +1,6 @@
 namespace Forma.Framework.Explorer.Content;
 
-using Forma.Framework.Explorer.Items.Queries;
+using Forma.Framework.Catalog.Queries;
 
 /// <summary>Specifies which optional columns a details view renders.</summary>
 [Flags]

@@ -1,6 +1,6 @@
 namespace Forma.Framework.Explorer.Content;
 
-using Forma.Framework.Explorer.Items.Queries;
+using Forma.Framework.Catalog.Queries;
 
 using Forma.Framework.Resources;
 

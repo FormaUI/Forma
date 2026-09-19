@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
@@ -7,11 +8,11 @@ using Forma.Framework.Resources;
 /// <summary>Produces localized presentation labels for an explorer item.</summary>
 internal readonly struct ExplorerItemLocalization
 {
-    private readonly IExplorerItem _item;
+    private readonly ICatalogItem _item;
     private readonly IStringLocale _locale;
 
     internal ExplorerItemLocalization(
-        IExplorerItem item,
+        ICatalogItem item,
         IStringLocale locale)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -25,7 +26,7 @@ internal readonly struct ExplorerItemLocalization
     internal string KindLabel
         => _item switch
         {
-            IExplorerFolderItem => _locale["Folder"].Value,
+            ICatalogFolderItem => _locale["Folder"].Value,
             { Resource: ImageResourceInfo } => _locale["Image"].Value,
             { Resource: VideoResourceInfo } => _locale["Video"].Value,
             { Resource: AudioResourceInfo } => _locale["Audio"].Value,

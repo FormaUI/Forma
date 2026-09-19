@@ -28,20 +28,20 @@ callback, and an upload goes into the host's `IFileStore`.
   all: an image draws its thumbnail, anything else the glyph of its kind, and
   the details view lists kind, size and dates for all of them. It browses the server; it
   never picks from the device, which is `FormaFilePicker`'s job.
-- **Items, not resources.** The host supplies `IExplorerItem`s, a folder being an
-  `IExplorerFolderItem` whose parentage is a key, and every callback and request hands
+- **Items, not resources.** The host supplies `ICatalogItem`s, a folder being an
+  `ICatalogFolderItem` whose parentage is a key, and every callback and request hands
   back the item the host supplied, so a folder with no resource behind it is a first-class
-  folder. `ExplorerItem.For`, `ForAll` and `ForFolder` wrap resources for a host that has
+  folder. `CatalogItem.For`, `ForAll` and `ForFolder` wrap resources for a host that has
   them.
 - **Two ways in, exactly one supplied.** `Items` hands over a collection the explorer
   holds and filters, sorts and pages itself, right for a few hundred items.
-  `ItemsProvider` answers one `ExplorerItemQuery` at a time and the explorer holds only
+  `ItemsProvider` answers one `CatalogQuery` at a time and the explorer holds only
   the window it is showing, so a collection far too large to enumerate stays browsable.
   The split follows `FormaDataGrid`'s.
 - **The query carries only what the explorer owns.** The window, the search box and the
   sort. The folder is the host's own `CurrentFolder` parameter and its implementation
   already has it, and the same closure supplies any other filter the explorer never needs
-  to learn about. `ExplorerItemPage.TotalCount` is optional, so a store that cannot count
+  to learn about. `CatalogPage.TotalCount` is optional, so a store that cannot count
   cheaply returns null and the explorer drops its pager rather than demanding a number.
 - **Hidden items count in the store's total.** A store that returns hidden items counts
   them; the explorer pages and asks for the next window in the store's own count, and
@@ -54,7 +54,7 @@ callback, and an upload goes into the host's `IFileStore`.
   the collection is paged or scrolls infinitely, the search debounce, and `SelectOnOpen`
   for a caller that exists only to choose, which starts in selection mode with the toggle
   out of the toolbar.
-- **Constraints are ceilings the explorer refuses to cross.** `ExplorerConstraints` names
+- **Constraints are ceilings the explorer refuses to cross.** `CatalogConstraints` names
   the resource kinds it lists and accepts, and the most top-level folders, subfolders,
   nesting depth, items per folder, items and bytes it holds; an upload, a new folder or a
   drop that would cross one is refused, announced in an alert region under the header and
@@ -124,7 +124,7 @@ scroll inside their own panel so the toolbar, folder tree and pager stay put.
 
 Two assemblies, foldered by concern with the namespace following the folder.
 
-**`Forma.Framework.Explorer.Items` is the model every browsing surface shares**, packable, rooted in
+**`Forma.Framework.Catalog` is the model every browsing surface shares**, packable, rooted in
 its own namespace: the items and folders, the provider with its query and page, the sort, the resource
 filter, the requests and the rejection, the constraints, and the bookkeeping a surface repeats — the
 view over a held collection, the window over a provider, the folder tree, the history and the

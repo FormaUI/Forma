@@ -1,9 +1,10 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
 using Forma.Blazor.Components.Explorer;
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Resources;
 
 /// <summary>An in-memory store standing in for one the explorer would reach over IO.</summary>
@@ -15,13 +16,13 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
     public int QueryCount { get; private set; }
 
     /// <summary>The last window asked for, so a demo can show what the explorer requested.</summary>
-    public ExplorerItemQuery? LastQuery { get; private set; }
+    public CatalogQuery? LastQuery { get; private set; }
 
     /// <summary>Raised once a window has been answered, so a demo can redraw its own reporting.</summary>
     public Func<Task>? Queried { get; set; }
 
     /// <summary>Answers for one window of the named folder, or of everything when none is named, after a delay standing in for the round trip.</summary>
-    public async ValueTask<ExplorerItemPage> GetPageAsync(string? folder, ExplorerItemQuery query, CancellationToken cancellationToken)
+    public async ValueTask<CatalogPage> GetPageAsync(string? folder, CatalogQuery query, CancellationToken cancellationToken)
     {
         QueryCount++;
         LastQuery = query;
@@ -38,25 +39,25 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
             matching = matching.Where(resource => resource.Resource.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
-        var descending = query.Direction == ExplorerSortDirection.Descending;
+        var descending = query.Direction == CatalogSortDirection.Descending;
 
         matching = (query.SortBy, descending) switch
         {
-            (ExplorerSortField.Size, false) => matching.OrderBy(resource => resource.Resource.Size ?? 0),
-            (ExplorerSortField.Size, true) => matching.OrderByDescending(resource => resource.Resource.Size ?? 0),
-            (ExplorerSortField.Kind, false) => matching.OrderBy(resource => resource.Resource.GetType().Name, StringComparer.Ordinal),
-            (ExplorerSortField.Kind, true) => matching.OrderByDescending(resource => resource.Resource.GetType().Name, StringComparer.Ordinal),
-            (ExplorerSortField.DateAdded, false) => matching.OrderBy(resource => resource.Resource.CreatedAt),
-            (ExplorerSortField.DateAdded, true) => matching.OrderByDescending(resource => resource.Resource.CreatedAt),
-            (ExplorerSortField.DateModified, false) => matching.OrderBy(resource => resource.Resource.ModifiedAt),
-            (ExplorerSortField.DateModified, true) => matching.OrderByDescending(resource => resource.Resource.ModifiedAt),
+            (CatalogSortField.Size, false) => matching.OrderBy(resource => resource.Resource.Size ?? 0),
+            (CatalogSortField.Size, true) => matching.OrderByDescending(resource => resource.Resource.Size ?? 0),
+            (CatalogSortField.Kind, false) => matching.OrderBy(resource => resource.Resource.GetType().Name, StringComparer.Ordinal),
+            (CatalogSortField.Kind, true) => matching.OrderByDescending(resource => resource.Resource.GetType().Name, StringComparer.Ordinal),
+            (CatalogSortField.DateAdded, false) => matching.OrderBy(resource => resource.Resource.CreatedAt),
+            (CatalogSortField.DateAdded, true) => matching.OrderByDescending(resource => resource.Resource.CreatedAt),
+            (CatalogSortField.DateModified, false) => matching.OrderBy(resource => resource.Resource.ModifiedAt),
+            (CatalogSortField.DateModified, true) => matching.OrderByDescending(resource => resource.Resource.ModifiedAt),
             (_, true) => matching.OrderByDescending(resource => resource.Resource.Name, StringComparer.OrdinalIgnoreCase),
             _ => matching.OrderBy(resource => resource.Resource.Name, StringComparer.OrdinalIgnoreCase)
         };
 
         var ordered = matching.ToList();
-        var page = new ExplorerItemPage(
-            ExplorerItem.ForAll(ordered.Skip(query.Skip).Take(query.Take).Select(resource => resource.Resource)),
+        var page = new CatalogPage(
+            CatalogItem.ForAll(ordered.Skip(query.Skip).Take(query.Take).Select(resource => resource.Resource)),
             ordered.Count);
 
         if (Queried is { } queried)

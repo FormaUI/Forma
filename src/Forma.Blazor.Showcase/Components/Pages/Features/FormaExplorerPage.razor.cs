@@ -1,12 +1,13 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
 using Forma.Blazor.Components.Explorer;
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
+using Forma.Framework.Catalog.Requests;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
-using Forma.Framework.Explorer.Items.Requests;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 
@@ -16,18 +17,18 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaExplorerPage : ComponentBase
 {
     // The folder is the page's to know, so the explorer never has to send it back in a query.
-    private sealed class FolderScopedProvider(SampleMediaStore store, Func<string?> folder) : IExplorerItemsProvider
+    private sealed class FolderScopedProvider(SampleMediaStore store, Func<string?> folder) : ICatalogProvider
     {
-        public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
+        public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
             => store.GetPageAsync(folder(), query, cancellationToken);
     }
 
     private readonly ExplorerItemOptions _fixedFolderOptions = new()
     {
-        AllowedFolderCapabilities = ExplorerItemCapabilities.Drag
-            | ExplorerItemCapabilities.Drop
-            | ExplorerItemCapabilities.Open
-            | ExplorerItemCapabilities.Move
+        AllowedFolderCapabilities = CatalogItemCapabilities.Drag
+            | CatalogItemCapabilities.Drop
+            | CatalogItemCapabilities.Open
+            | CatalogItemCapabilities.Move
     };
 
     private readonly Dictionary<string, List<string>> _logs = [];
@@ -44,11 +45,11 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private List<ResourceInfo> _allMedia = [];
 
-    private IReadOnlyList<IExplorerItem> _allMediaItems = [];
+    private IReadOnlyList<ICatalogItem> _allMediaItems = [];
 
-    private IReadOnlyList<IExplorerItem> _sampleFolderItems = [];
+    private IReadOnlyList<ICatalogItem> _sampleFolderItems = [];
 
-    private readonly Dictionary<string, IExplorerItemsProvider> _providers = [];
+    private readonly Dictionary<string, ICatalogProvider> _providers = [];
 
     private SampleMediaStore _mediaStore = default!;
 
@@ -58,7 +59,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private int _libraryCount;
 
-    private IExplorerItemsProvider GetProvider(string key)
+    private ICatalogProvider GetProvider(string key)
         => _providers[key];
 
     private string LibraryQueryDescription
@@ -68,24 +69,24 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private List<ResourceInfo> _singleSelectResources = [];
 
-    private IReadOnlyList<IExplorerItem> _singleSelectItems = [];
+    private IReadOnlyList<ICatalogItem> _singleSelectItems = [];
 
-    private IReadOnlyList<IExplorerItem> _constrainedItems = [];
+    private IReadOnlyList<ICatalogItem> _constrainedItems = [];
 
-    private IReadOnlyList<IExplorerItem> _constrainedFolderItems = [];
+    private IReadOnlyList<ICatalogItem> _constrainedFolderItems = [];
 
-    private IReadOnlyList<IExplorerItem> _stateItems = [];
+    private IReadOnlyList<ICatalogItem> _stateItems = [];
 
-    private IReadOnlyList<IExplorerItem> _stateFolderItems = [];
+    private IReadOnlyList<ICatalogItem> _stateFolderItems = [];
 
     private readonly ExplorerItemOptions _stateOptions = new()
     {
-        AllowedFolderCapabilities = ExplorerItemCapabilities.Drag
-            | ExplorerItemCapabilities.Drop
-            | ExplorerItemCapabilities.Open
-            | ExplorerItemCapabilities.Move
-            | ExplorerItemCapabilities.Rename
-            | ExplorerItemCapabilities.Delete
+        AllowedFolderCapabilities = CatalogItemCapabilities.Drag
+            | CatalogItemCapabilities.Drop
+            | CatalogItemCapabilities.Open
+            | CatalogItemCapabilities.Move
+            | CatalogItemCapabilities.Rename
+            | CatalogItemCapabilities.Delete
     };
 
     private static ExplorerDetailsColumns[] ColumnChoices
@@ -143,36 +144,36 @@ public sealed partial class FormaExplorerPage : ComponentBase
             new ImageResourceInfo("/media/sample-poster.svg?proof=1") { Size = 340000, CreatedAt = seeded.AddDays(-1), ModifiedAt = seeded.AddDays(-1) }
         ];
 
-        _singleSelectItems = ExplorerItem.ForAll(_singleSelectResources);
-        _constrainedItems = ExplorerItem.ForAll(_constrainedResources);
-        _constrainedFolderItems = ExplorerItem.ForAll(_constrainedFolders);
+        _singleSelectItems = CatalogItem.ForAll(_singleSelectResources);
+        _constrainedItems = CatalogItem.ForAll(_constrainedResources);
+        _constrainedFolderItems = CatalogItem.ForAll(_constrainedFolders);
 
-        const ExplorerItemCapabilities everyMediaCapability = ExplorerItemCapabilities.Drag
-            | ExplorerItemCapabilities.Open
-            | ExplorerItemCapabilities.View
-            | ExplorerItemCapabilities.Move
-            | ExplorerItemCapabilities.Rename
-            | ExplorerItemCapabilities.Delete;
+        const CatalogItemCapabilities everyMediaCapability = CatalogItemCapabilities.Drag
+            | CatalogItemCapabilities.Open
+            | CatalogItemCapabilities.View
+            | CatalogItemCapabilities.Move
+            | CatalogItemCapabilities.Rename
+            | CatalogItemCapabilities.Delete;
 
-        const ExplorerItemCapabilities everyFolderCapability = ExplorerItemCapabilities.Drag
-            | ExplorerItemCapabilities.Drop
-            | ExplorerItemCapabilities.Open
-            | ExplorerItemCapabilities.Create
-            | ExplorerItemCapabilities.Move
-            | ExplorerItemCapabilities.Rename
-            | ExplorerItemCapabilities.Delete;
+        const CatalogItemCapabilities everyFolderCapability = CatalogItemCapabilities.Drag
+            | CatalogItemCapabilities.Drop
+            | CatalogItemCapabilities.Open
+            | CatalogItemCapabilities.Create
+            | CatalogItemCapabilities.Move
+            | CatalogItemCapabilities.Rename
+            | CatalogItemCapabilities.Delete;
 
         _stateItems =
         [
-            ExplorerItem.For(new ImageResourceInfo("/media/sample-poster.svg?state=live") { Name = "live.svg", Size = 12400, CreatedAt = seeded.AddDays(-5), ModifiedAt = seeded.AddDays(-1) }),
-            new ExplorerItem
+            CatalogItem.For(new ImageResourceInfo("/media/sample-poster.svg?state=live") { Name = "live.svg", Size = 12400, CreatedAt = seeded.AddDays(-5), ModifiedAt = seeded.AddDays(-1) }),
+            new CatalogItem
             {
                 Key = "state-fixed",
                 Name = "fixed.svg",
-                Capabilities = ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Open | ExplorerItemCapabilities.View,
+                Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Open | CatalogItemCapabilities.View,
                 Resource = new ImageResourceInfo("/media/sample-poster.svg?state=fixed") { Name = "fixed.svg", Size = 9600, CreatedAt = seeded.AddDays(-4), ModifiedAt = seeded.AddDays(-4) }
             },
-            new ExplorerItem
+            new CatalogItem
             {
                 Key = "state-disabled",
                 Name = "disabled.svg",
@@ -180,35 +181,35 @@ public sealed partial class FormaExplorerPage : ComponentBase
                 IsDisabled = true,
                 Resource = new ImageResourceInfo("/media/sample-poster.svg?state=disabled") { Name = "disabled.svg", Size = 8200, CreatedAt = seeded.AddDays(-3), ModifiedAt = seeded.AddDays(-3) }
             },
-            new ExplorerItem
+            new CatalogItem
             {
                 Key = "state-invisible",
                 Name = "invisible.svg",
                 Capabilities = everyMediaCapability,
-                Visibility = ExplorerItemVisibility.Invisible,
+                Visibility = CatalogItemVisibility.Invisible,
                 Resource = new ImageResourceInfo("/media/sample-poster.svg?state=invisible") { Name = "invisible.svg", Size = 7100, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) }
             },
-            new ExplorerItem
+            new CatalogItem
             {
                 Key = "state-hidden",
                 Name = "hidden.svg",
                 Capabilities = everyMediaCapability,
-                Visibility = ExplorerItemVisibility.Hidden,
+                Visibility = CatalogItemVisibility.Hidden,
                 Resource = new ImageResourceInfo("/media/sample-poster.svg?state=hidden") { Name = "hidden.svg", Size = 6400, CreatedAt = seeded.AddDays(-1), ModifiedAt = seeded.AddDays(-1) }
             }
         ];
 
         _stateFolderItems =
         [
-            ExplorerItem.ForFolder(new FolderResourceInfo("state-open") { Name = "Open", Count = 0 }),
-            new ExplorerFolderItem
+            CatalogItem.ForFolder(new FolderResourceInfo("state-open") { Name = "Open", Count = 0 }),
+            new CatalogFolderItem
             {
                 Key = "state-sealed",
                 Name = "Sealed",
-                Capabilities = ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Move | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete,
+                Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Move | CatalogItemCapabilities.Rename | CatalogItemCapabilities.Delete,
                 Resource = new FolderResourceInfo("state-sealed") { Name = "Sealed", Count = 0 }
             },
-            new ExplorerFolderItem
+            new CatalogFolderItem
             {
                 Key = "state-disabled-folder",
                 Name = "Disabled",
@@ -255,7 +256,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private SampleMediaStore Store(IReadOnlyList<SampleResource> resources)
         => new(resources, TimeSpan.FromMilliseconds(180)) { Queried = () => InvokeAsync(StateHasChanged) };
 
-    private static readonly ExplorerConstraints _demoConstraints = new()
+    private static readonly CatalogConstraints _demoConstraints = new()
     {
         AcceptedResourceKinds = "contentType:image",
         MaxFolderDepth = 2,
@@ -274,7 +275,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private List<ResourceInfo> _constrainedResources = [];
 
-    private Task HandleRejectedAsync(string key, ExplorerRejection rejection)
+    private Task HandleRejectedAsync(string key, CatalogRejection rejection)
     {
         LogAction(key, L["Refused ({Reason}): {Message}", rejection.Reason, rejection.Message]);
 
@@ -285,7 +286,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private void SyncFromStore()
     {
         _allMedia = [.. _mediaStore.GetAll()];
-        _allMediaItems = ExplorerItem.ForAll(_allMedia);
+        _allMediaItems = CatalogItem.ForAll(_allMedia);
 
         for (var index = 0; index < _sampleFolders.Count; index++)
         {
@@ -293,18 +294,18 @@ public sealed partial class FormaExplorerPage : ComponentBase
             _sampleFolders[index] = folder with { Count = _mediaStore.CountIn(folder.Source), Size = _mediaStore.GetSize(folder.Source) };
         }
 
-        _sampleFolderItems = ExplorerItem.ForAll(_sampleFolders);
+        _sampleFolderItems = CatalogItem.ForAll(_sampleFolders);
     }
 
-    private IExplorerFolderItem? GetCurrentFolder(string key)
+    private ICatalogFolderItem? GetCurrentFolder(string key)
         => _currentFolderSources.GetValueOrDefault(key) is { } source
-            ? GetFolders(key).OfType<IExplorerFolderItem>().FirstOrDefault(folder => folder.Key == source)
+            ? GetFolders(key).OfType<ICatalogFolderItem>().FirstOrDefault(folder => folder.Key == source)
             : null;
 
-    private IReadOnlyList<IExplorerItem> GetFolders(string key)
+    private IReadOnlyList<ICatalogItem> GetFolders(string key)
         => key == "states" ? _stateFolderItems : _sampleFolderItems;
 
-    private Task HandleFolderChangedAsync(string key, IExplorerFolderItem? folder)
+    private Task HandleFolderChangedAsync(string key, ICatalogFolderItem? folder)
     {
         _currentFolderSources[key] = folder?.Key;
         LogAction(key, folder is null ? L["Opened all media"] : L["Opened folder \"{Name}\"", folder.Name]);
@@ -312,7 +313,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    private Task HandleDeleteAsync(string key, ExplorerDeleteRequest request)
+    private Task HandleDeleteAsync(string key, CatalogDeleteRequest request)
     {
         _mediaStore.Remove(GetResources(request.Items));
         SyncFromStore();
@@ -321,7 +322,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    private Task HandleDropAsync(string key, ExplorerDropRequest request)
+    private Task HandleDropAsync(string key, CatalogDropRequest request)
     {
         var count = request.Items.Count;
         var folderName = GetFolderName(request.TargetFolder);
@@ -334,13 +335,13 @@ public sealed partial class FormaExplorerPage : ComponentBase
     }
 
     /// <summary>The resources behind the items, for the store that holds them.</summary>
-    private static List<ResourceInfo> GetResources(IEnumerable<IExplorerItem> items)
+    private static List<ResourceInfo> GetResources(IEnumerable<ICatalogItem> items)
         => [.. items.Select(item => item.Resource).OfType<ResourceInfo>()];
 
-    private string GetFolderName(IExplorerFolderItem? folder)
+    private string GetFolderName(ICatalogFolderItem? folder)
         => folder?.Name ?? L["All media"].Value;
 
-    private Task HandleFolderCreateAsync(string key, ExplorerFolderCreateRequest request)
+    private Task HandleFolderCreateAsync(string key, CatalogFolderCreateRequest request)
     {
         var parent = request.ParentFolder;
         var source = $"folder-{Guid.NewGuid():N}";
@@ -353,7 +354,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    private Task HandleFolderDeleteAsync(string key, ExplorerFolderDeleteRequest request)
+    private Task HandleFolderDeleteAsync(string key, CatalogFolderDeleteRequest request)
     {
         var removed = request.Folder;
         _sampleFolders.RemoveAll(folder => folder.Source == removed.Key);
@@ -370,7 +371,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    private Task HandleFolderDropAsync(string key, ExplorerFolderDropRequest request)
+    private Task HandleFolderDropAsync(string key, CatalogFolderDropRequest request)
     {
         var index = _sampleFolders.FindIndex(folder => folder.Source == request.SourceFolder.Key);
 
@@ -385,7 +386,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    private Task HandleFolderRenameAsync(string key, ExplorerFolderRenameRequest request)
+    private Task HandleFolderRenameAsync(string key, CatalogFolderRenameRequest request)
     {
         var index = _sampleFolders.FindIndex(folder => folder.Source == request.Folder.Key);
 
@@ -400,7 +401,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    private Task HandleRenameAsync(string key, ExplorerRenameRequest request)
+    private Task HandleRenameAsync(string key, CatalogRenameRequest request)
     {
         if (request.Item.Resource is { } resource)
         {
@@ -413,7 +414,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    private Task HandleSelectedAsync(string key, IReadOnlyList<IExplorerItem> items)
+    private Task HandleSelectedAsync(string key, IReadOnlyList<ICatalogItem> items)
     {
         var names = string.Join(", ", items.Select(item => item.Name));
         LogAction(key, L["Selected: {Names}", names]);

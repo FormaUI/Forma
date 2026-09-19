@@ -1,10 +1,11 @@
 namespace Forma.Framework.Explorer.Actions;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 
 /// <summary>An item and an editable name, held from Set until Clear.</summary>
 public abstract class ExplorerNamedAction<TItem> : ExplorerPendingNamedAction
-    where TItem : class, IExplorerItem
+    where TItem : class, ICatalogItem
 {
     private bool _isActive;
     private TItem? _item;

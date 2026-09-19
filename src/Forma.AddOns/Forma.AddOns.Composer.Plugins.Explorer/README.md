@@ -47,14 +47,14 @@ dialog open and says so.
 
 | Registration | What it enables |
 | --- | --- |
-| `IExplorerItemsProvider` (`Forma.Framework.Explorer.Items.Queries`) | Browsing; without it the dialog says there is nothing to browse and offers no files. |
+| `ICatalogProvider` (`Forma.Framework.Catalog.Queries`) | Browsing; without it the dialog says there is nothing to browse and offers no files. |
 | `IFileStore` (`Forma.Framework.Resources`) | Uploading into the library from the dialog; without it the dialog offers no upload. |
 
 ```csharp
-using Forma.Framework.Explorer.Items.Queries;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Resources;
 
-builder.Services.AddScoped<IExplorerItemsProvider, MediaLibrary>();
+builder.Services.AddScoped<ICatalogProvider, MediaLibrary>();
 builder.Services.AddScoped<IFileStore, UploadFolderStore>();
 ```
 

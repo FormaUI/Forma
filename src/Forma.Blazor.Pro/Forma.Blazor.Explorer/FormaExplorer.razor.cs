@@ -4,16 +4,17 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Files;
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Navigation;
+using Forma.Framework.Catalog.Queries;
+using Forma.Framework.Catalog.Requests;
+using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Css;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Actions;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Navigation;
-using Forma.Framework.Explorer.Items.Queries;
-using Forma.Framework.Explorer.Items.Requests;
-using Forma.Framework.Explorer.Items.Selection;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Explorer.Selection;
 using Forma.Framework.Files;
@@ -39,19 +40,19 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private static readonly FilePickerOptions UploadPickerOptions = new() { Accept = "image/*,video/*,audio/*" };
 
     /// <summary>The currently active folder, or null for every item.</summary>
-    [Parameter] public IExplorerFolderItem? CurrentFolder { get; set; }
+    [Parameter] public ICatalogFolderItem? CurrentFolder { get; set; }
 
     /// <summary>The active page, 1-based.</summary>
     [Parameter] public int CurrentPage { get; set; } = 1;
 
     /// <summary>The items to display, held in full. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
-    [Parameter] public IReadOnlyList<IExplorerItem>? Items { get; set; }
+    [Parameter] public IReadOnlyList<ICatalogItem>? Items { get; set; }
 
     /// <summary>Answers for one window of items at a time, for collections too large to hold. Supply this or <see cref="Items"/>, not both.</summary>
-    [Parameter] public IExplorerItemsProvider? ItemsProvider { get; set; }
+    [Parameter] public ICatalogProvider? ItemsProvider { get; set; }
 
     /// <summary>The folders the sidebar's tree shows and items are moved between.</summary>
-    [Parameter] public IReadOnlyList<IExplorerItem>? Folders { get; set; }
+    [Parameter] public IReadOnlyList<ICatalogItem>? Folders { get; set; }
 
     private bool ShowsSidebar
         => Options.ShowSidebar && Folders is { Count: > 0 };
@@ -63,10 +64,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     [Parameter] public long? TotalBytes { get; set; }
 
     /// <summary>The ceilings the explorer keeps, refusing anything that would cross one.</summary>
-    [Parameter] public ExplorerConstraints Constraints { get; set; } = ExplorerConstraints.None;
+    [Parameter] public CatalogConstraints Constraints { get; set; } = CatalogConstraints.None;
 
     /// <summary>Raised when a ceiling stopped an operation, with the reason already written for a reader.</summary>
-    [Parameter] public EventCallback<ExplorerRejection> OnRejected { get; set; }
+    [Parameter] public EventCallback<CatalogRejection> OnRejected { get; set; }
 
     /// <summary>How the explorer presents itself and moves through the collection.</summary>
     [Parameter] public ExplorerOptions Options { get; set; } = ExplorerOptions.Default;
@@ -75,25 +76,25 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     [Parameter] public ExplorerItemOptions ItemOptions { get; set; } = ExplorerItemOptions.Default;
 
     /// <summary>Raised when items are deleted.</summary>
-    [Parameter] public EventCallback<ExplorerDeleteRequest> OnDelete { get; set; }
+    [Parameter] public EventCallback<CatalogDeleteRequest> OnDelete { get; set; }
 
     /// <summary>Raised when items are dropped onto a target folder.</summary>
-    [Parameter] public EventCallback<ExplorerDropRequest> OnDrop { get; set; }
+    [Parameter] public EventCallback<CatalogDropRequest> OnDrop { get; set; }
 
     /// <summary>Raised when the active folder changes.</summary>
-    [Parameter] public EventCallback<IExplorerFolderItem?> OnFolderChanged { get; set; }
+    [Parameter] public EventCallback<ICatalogFolderItem?> OnFolderChanged { get; set; }
 
     /// <summary>Raised when a request is made to create a new folder.</summary>
-    [Parameter] public EventCallback<ExplorerFolderCreateRequest> OnFolderCreate { get; set; }
+    [Parameter] public EventCallback<CatalogFolderCreateRequest> OnFolderCreate { get; set; }
 
     /// <summary>Raised when a folder is deleted.</summary>
-    [Parameter] public EventCallback<ExplorerFolderDeleteRequest> OnFolderDelete { get; set; }
+    [Parameter] public EventCallback<CatalogFolderDeleteRequest> OnFolderDelete { get; set; }
 
     /// <summary>Raised when a folder is dropped onto another folder.</summary>
-    [Parameter] public EventCallback<ExplorerFolderDropRequest> OnFolderDrop { get; set; }
+    [Parameter] public EventCallback<CatalogFolderDropRequest> OnFolderDrop { get; set; }
 
     /// <summary>Raised when a folder rename is confirmed.</summary>
-    [Parameter] public EventCallback<ExplorerFolderRenameRequest> OnFolderRename { get; set; }
+    [Parameter] public EventCallback<CatalogFolderRenameRequest> OnFolderRename { get; set; }
 
     /// <summary>Raised when the page changes.</summary>
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
@@ -102,7 +103,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     [Parameter] public EventCallback OnRefresh { get; set; }
 
     /// <summary>Raised when an item rename is confirmed.</summary>
-    [Parameter] public EventCallback<ExplorerRenameRequest> OnRename { get; set; }
+    [Parameter] public EventCallback<CatalogRenameRequest> OnRename { get; set; }
 
     /// <summary>Raised when new files have been uploaded.</summary>
     [Parameter] public EventCallback<IReadOnlyList<ResourceInfo>> OnUploaded { get; set; }
@@ -114,16 +115,16 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     [Parameter] public string? SearchPlaceholder { get; set; }
 
     /// <summary>The currently selected items.</summary>
-    [Parameter] public IReadOnlyList<IExplorerItem> Selected { get; set; } = [];
+    [Parameter] public IReadOnlyList<ICatalogItem> Selected { get; set; } = [];
 
     /// <summary>Raised when the selected items change.</summary>
-    [Parameter] public EventCallback<IReadOnlyList<IExplorerItem>> SelectedChanged { get; set; }
+    [Parameter] public EventCallback<IReadOnlyList<ICatalogItem>> SelectedChanged { get; set; }
 
     /// <summary>Active sort direction.</summary>
-    [Parameter] public ExplorerSortDirection SortDirection { get; set; } = ExplorerSortDirection.Ascending;
+    [Parameter] public CatalogSortDirection SortDirection { get; set; } = CatalogSortDirection.Ascending;
 
     /// <summary>Active sort field.</summary>
-    [Parameter] public ExplorerSortField SortField { get; set; } = ExplorerSortField.Name;
+    [Parameter] public CatalogSortField SortField { get; set; } = CatalogSortField.Name;
 
     /// <summary>File store used to persist uploads.</summary>
     [Parameter] public IFileStore? Store { get; set; }
@@ -150,7 +151,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     [Inject] private TimeProvider Clock { get; set; } = default!;
 
-    private readonly ExplorerHistory _history = new();
+    private readonly CatalogHistory _history = new();
 
     private readonly ExplorerUploadPanel _uploadPanel = new();
 
@@ -162,7 +163,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private readonly ExplorerItemManager _itemManager = new();
 
-    private readonly ExplorerSelection _selection = new();
+    private readonly CatalogSelection _selection = new();
 
     private const double MinSidebarWidth = 10;
 
@@ -182,28 +183,28 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private readonly HashSet<string> _collapsedGroups = new(StringComparer.Ordinal);
 
-    private ExplorerCollectionView _collection = default!;
+    private CatalogCollectionView _collection = default!;
 
-    private readonly ExplorerProviderWindow _providerWindow = new();
+    private readonly CatalogProviderWindow _providerWindow = new();
 
     private readonly ExplorerQueryParameters _queryParameters = new();
 
     private IReadOnlyList<ExplorerItemAction>? _actions;
 
-    private ExplorerFolderTree? _folderTree;
+    private CatalogFolderTree? _folderTree;
 
-    private IReadOnlyList<IExplorerFolderItem>? _breadcrumbs;
+    private IReadOnlyList<ICatalogFolderItem>? _breadcrumbs;
 
     /// <summary>The folder list indexed, rebuilt once per parameter set because a host may mutate the list it passed.</summary>
-    private ExplorerFolderTree FolderTree
-        => _folderTree ??= new ExplorerFolderTree(Folders);
+    private CatalogFolderTree FolderTree
+        => _folderTree ??= new CatalogFolderTree(Folders);
 
-    private IReadOnlyList<IExplorerFolderItem> Breadcrumbs
+    private IReadOnlyList<ICatalogFolderItem> Breadcrumbs
         => _breadcrumbs ??= CurrentFolder is { } current ? BuildBreadcrumbs(FolderTree, current) : [];
 
-    private static List<IExplorerFolderItem> BuildBreadcrumbs(ExplorerFolderTree tree, IExplorerFolderItem current)
+    private static List<ICatalogFolderItem> BuildBreadcrumbs(CatalogFolderTree tree, ICatalogFolderItem current)
     {
-        var path = new List<IExplorerFolderItem>();
+        var path = new List<ICatalogFolderItem>();
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var item = tree.Find(current.Key) ?? current;
 
@@ -227,7 +228,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         get
         {
-            if (_itemManager.PendingAction is not ExplorerBatchAction<IExplorerItem> { IsActive: true } deletion)
+            if (_itemManager.PendingAction is not ExplorerBatchAction<ICatalogItem> { IsActive: true } deletion)
             {
                 return string.Empty;
             }
@@ -248,20 +249,20 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private int EffectivePage
         => Math.Clamp(_collection.PageNumber, 1, PageCount);
 
-    private ExplorerRenameAction<IExplorerItem>? PendingRename
-        => _itemManager.PendingAction as ExplorerRenameAction<IExplorerItem>;
+    private ExplorerRenameAction<ICatalogItem>? PendingRename
+        => _itemManager.PendingAction as ExplorerRenameAction<ICatalogItem>;
 
     private string RenameDialogTitle
-        => PendingRename?.Target is IExplorerFolderItem ? L["Rename Folder"].Value : L["Rename Media"].Value;
+        => PendingRename?.Target is ICatalogFolderItem ? L["Rename Folder"].Value : L["Rename Media"].Value;
 
     private string RenameDialogFieldLabel
-        => PendingRename?.Target is IExplorerFolderItem ? L["Folder Name"].Value : L["New Name"].Value;
+        => PendingRename?.Target is ICatalogFolderItem ? L["Folder Name"].Value : L["New Name"].Value;
 
     private string FolderDeleteConfirmMessage
     {
         get
         {
-            if (_itemManager.PendingAction is not ExplorerBatchAction<IExplorerFolderItem> { IsActive: true } deletion)
+            if (_itemManager.PendingAction is not ExplorerBatchAction<ICatalogFolderItem> { IsActive: true } deletion)
             {
                 return string.Empty;
             }
@@ -325,13 +326,13 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         => Options.InfiniteScroll != ExplorerInfiniteScrollMode.Off;
 
     /// <summary>The items on screen; a provider supplies its own window, and a held collection is sliced into one.</summary>
-    private IReadOnlyList<IExplorerItem> VisibleItems
+    private IReadOnlyList<ICatalogItem> VisibleItems
         => IsProviderMode ? _providerWindow.Items : _collection.VisibleItems;
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _collection = new ExplorerCollectionView(item => item.GetLocalizedLabels(L).KindLabel)
+        _collection = new CatalogCollectionView(item => item.GetLocalizedLabels(L).KindLabel)
         {
             PageNumber = CurrentPage,
             PageSize = PageSize,
@@ -344,7 +345,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _detailsColumns = Options.DetailsColumns;
         _showsDetailsHeader = Options.ShowDetailsHeader;
 
-        _paramStateTracker.Track(() => Constraints.AcceptedResourceKinds, accepted => _collection.Filter = ExplorerResourceFilter.Parse(accepted));
+        _paramStateTracker.Track(() => Constraints.AcceptedResourceKinds, accepted => _collection.Filter = CatalogResourceFilter.Parse(accepted));
         _paramStateTracker.Track(() => CurrentPage, page => _collection.PageNumber = page);
         _paramStateTracker.Track(() => ViewMode, mode => _viewMode = mode);
         _paramStateTracker.Track(() => GroupField, field =>
@@ -428,7 +429,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return Task.CompletedTask;
         }
 
-        var query = new ExplorerItemQuery(
+        var query = new CatalogQuery(
             append ? _providerWindow.FetchedCount : (EffectivePage - 1) * PageSize,
             PageSize,
             string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery,
@@ -464,13 +465,13 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         => TotalCount ?? Items?.Count ?? MatchingCount ?? 0;
 
     private int ListedItemCount
-        => TotalCount ?? Items?.Count(item => item.Visibility != ExplorerItemVisibility.Hidden) ?? MatchingCount ?? 0;
+        => TotalCount ?? Items?.Count(item => item.Visibility != CatalogItemVisibility.Hidden) ?? MatchingCount ?? 0;
 
     private long KnownByteCount
         => TotalBytes ?? Items?.Sum(item => item.Resource?.Size ?? 0) ?? 0;
 
     // A top-level folder counts as one, so the root itself is zero.
-    private int GetDepth(IExplorerFolderItem? folder)
+    private int GetDepth(ICatalogFolderItem? folder)
     {
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var depth = 0;
@@ -486,7 +487,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     }
 
     // How many levels the folder's own subtree spans, so moving it can be measured before it lands.
-    private int GetHeight(IExplorerFolderItem folder)
+    private int GetHeight(ICatalogFolderItem folder)
     {
         var tallest = 0;
 
@@ -498,14 +499,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return tallest + 1;
     }
 
-    private async Task RejectAsync(ExplorerRejectionReason reason, long? allowed, string message)
+    private async Task RejectAsync(CatalogRejectionReason reason, long? allowed, string message)
     {
         _rejectionMessage = message;
 
-        await OnRejected.InvokeAsync(new ExplorerRejection(reason, allowed, message));
+        await OnRejected.InvokeAsync(new CatalogRejection(reason, allowed, message));
     }
 
-    private async Task<bool> EnsureFolderHasRoomAsync(IExplorerFolderItem? folder, int adding)
+    private async Task<bool> EnsureFolderHasRoomAsync(ICatalogFolderItem? folder, int adding)
     {
         if (Constraints.MaxFolderItemCount <= 0 || folder is null || (folder.Count ?? 0) + adding <= Constraints.MaxFolderItemCount)
         {
@@ -513,7 +514,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         await RejectAsync(
-            ExplorerRejectionReason.FolderItemCount,
+            CatalogRejectionReason.FolderItemCount,
             Constraints.MaxFolderItemCount,
             L["[$ plural; one: A folder holds at most # item.; other: A folder holds at most # items.; $]", Constraints.MaxFolderItemCount].Value);
 
@@ -525,7 +526,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         if (Constraints.MaxItemCount > 0 && KnownItemCount + adding > Constraints.MaxItemCount)
         {
             await RejectAsync(
-                ExplorerRejectionReason.ItemCount,
+                CatalogRejectionReason.ItemCount,
                 Constraints.MaxItemCount,
                 L["[$ plural; one: This explorer holds at most # item.; other: This explorer holds at most # items.; $]", Constraints.MaxItemCount].Value);
 
@@ -535,7 +536,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         if (Constraints.MaxTotalBytes > 0 && KnownByteCount + bytes > Constraints.MaxTotalBytes)
         {
             await RejectAsync(
-                ExplorerRejectionReason.TotalBytes,
+                CatalogRejectionReason.TotalBytes,
                 Constraints.MaxTotalBytes,
                 L["This explorer holds at most {Size}.", ResourceFormatter.FromByteCount(Constraints.MaxTotalBytes)].Value);
 
@@ -545,12 +546,12 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return true;
     }
 
-    private async Task<bool> EnsureFolderFitsAsync(IExplorerFolderItem? parent, int height)
+    private async Task<bool> EnsureFolderFitsAsync(ICatalogFolderItem? parent, int height)
     {
         if (Constraints.MaxFolderDepth > 0 && GetDepth(parent) + height > Constraints.MaxFolderDepth)
         {
             await RejectAsync(
-                ExplorerRejectionReason.FolderDepth,
+                CatalogRejectionReason.FolderDepth,
                 Constraints.MaxFolderDepth,
                 L["[$ plural; one: Folders cannot nest more than # level deep.; other: Folders cannot nest more than # levels deep.; $]", Constraints.MaxFolderDepth].Value);
 
@@ -560,7 +561,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         if (parent is null && Constraints.MaxFolderRootCount > 0 && RootFolderCount >= Constraints.MaxFolderRootCount)
         {
             await RejectAsync(
-                ExplorerRejectionReason.FolderRootCount,
+                CatalogRejectionReason.FolderRootCount,
                 Constraints.MaxFolderRootCount,
                 L["[$ plural; one: This explorer holds at most # top-level folder.; other: This explorer holds at most # top-level folders.; $]", Constraints.MaxFolderRootCount].Value);
 
@@ -570,7 +571,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         if (parent is not null && Constraints.MaxSubfolderCount > 0 && FolderTree.GetChildren(parent.Key).Count >= Constraints.MaxSubfolderCount)
         {
             await RejectAsync(
-                ExplorerRejectionReason.SubfolderCount,
+                CatalogRejectionReason.SubfolderCount,
                 Constraints.MaxSubfolderCount,
                 L["[$ plural; one: A folder holds at most # folder inside it.; other: A folder holds at most # folders inside it.; $]", Constraints.MaxSubfolderCount].Value);
 
@@ -587,11 +588,11 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     bool IExplorerConfigurationView.ShowsSidebar => ShowsSidebar;
 
-    IExplorerFolderItem? IExplorerLocationView.CurrentFolder => CurrentFolder;
+    ICatalogFolderItem? IExplorerLocationView.CurrentFolder => CurrentFolder;
 
-    IReadOnlyList<IExplorerFolderItem> IExplorerLocationView.Breadcrumbs => Breadcrumbs;
+    IReadOnlyList<ICatalogFolderItem> IExplorerLocationView.Breadcrumbs => Breadcrumbs;
 
-    ExplorerFolderTree IExplorerLocationView.FolderTree => FolderTree;
+    CatalogFolderTree IExplorerLocationView.FolderTree => FolderTree;
 
     bool IExplorerLocationView.CanGoBack => CanGoBack;
 
@@ -599,9 +600,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     bool IExplorerLocationView.CanGoUp => CanGoUp;
 
-    ExplorerSortField IExplorerContentView.SortField => _collection.SortField;
+    CatalogSortField IExplorerContentView.SortField => _collection.SortField;
 
-    ExplorerSortDirection IExplorerContentView.SortDirection => _collection.SortDirection;
+    CatalogSortDirection IExplorerContentView.SortDirection => _collection.SortDirection;
 
     ExplorerViewMode IExplorerContentView.ViewMode => _viewMode;
 
@@ -627,11 +628,11 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return _collapsedGroups.Contains(group.Key);
     }
 
-    IExplorerSelectionView IExplorerView.Selection => _selection;
+    ICatalogSelectionView IExplorerView.Selection => _selection;
 
     IExplorerItemView IExplorerView.Item => _itemManager;
 
-    IReadOnlyList<IExplorerItem> IExplorerContentView.VisibleItems => VisibleItems;
+    IReadOnlyList<ICatalogItem> IExplorerContentView.VisibleItems => VisibleItems;
 
     bool IExplorerContentView.IsFetching => _providerWindow.IsFetching;
 
@@ -659,14 +660,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await InvokeAsync(StateHasChanged);
     }
 
-    Task IExplorerSelectionInteraction.ToggleSelectionAsync(IExplorerItem item)
+    Task IExplorerSelectionInteraction.ToggleSelectionAsync(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
         return item.IsDisabled ? Task.CompletedTask : ChangeSelectionAsync(selection => selection.Toggle(item));
     }
 
-    Task IExplorerContentInteraction.SortByAsync(ExplorerSortField field)
+    Task IExplorerContentInteraction.SortByAsync(CatalogSortField field)
         => RunAsync(() => HandleSortFieldChangedAsync(field));
 
     Task IExplorerContentInteraction.ChangeViewModeAsync(ExplorerViewMode mode)
@@ -711,10 +712,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     Task IExplorerLocationInteraction.GoUpAsync()
         => RunAsync(HandleUpAsync);
 
-    Task IExplorerLocationInteraction.SelectFolderAsync(IExplorerFolderItem? folder)
+    Task IExplorerLocationInteraction.SelectFolderAsync(ICatalogFolderItem? folder)
         => RunAsync(() => HandleFolderSelectedAsync(folder));
 
-    Task IExplorerContentInteraction.SetSortDirectionAsync(ExplorerSortDirection direction)
+    Task IExplorerContentInteraction.SetSortDirectionAsync(CatalogSortDirection direction)
         => RunAsync(() => HandleSortDirectionChangedAsync(direction));
 
     Task IExplorerSelectionInteraction.ToggleSelectionModeAsync()
@@ -734,7 +735,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 Id = "preview",
                 Icon = Glyph.Inspect,
                 Label = () => L["Preview"].Value,
-                Requires = ExplorerItemCapabilities.View,
+                Requires = CatalogItemCapabilities.View,
                 InvokeAsync = item =>
                 {
                     if (item.Resource is { } resource)
@@ -751,7 +752,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 Id = "rename",
                 Icon = Glyph.Pen,
                 Label = () => L["Rename"].Value,
-                Requires = ExplorerItemCapabilities.Rename,
+                Requires = CatalogItemCapabilities.Rename,
                 InvokeAsync = item => { _itemManager.RequestRename(item); return Task.CompletedTask; }
             },
             new()
@@ -759,14 +760,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 Id = "delete",
                 Icon = Glyph.Delete,
                 Label = () => L["Delete"].Value,
-                Requires = ExplorerItemCapabilities.Delete,
+                Requires = CatalogItemCapabilities.Delete,
                 InvokeAsync = item => { _itemManager.RequestDelete(item); return Task.CompletedTask; },
                 IsDestructive = true
             }
         ];
 
     /// <summary>Changes the selection and reports it, so no caller can do the one without the other.</summary>
-    private async Task ChangeSelectionAsync(Action<ExplorerSelection> change)
+    private async Task ChangeSelectionAsync(Action<CatalogSelection> change)
     {
         change(_selection);
 
@@ -776,7 +777,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     }
 
     // Adopting what the host already supplied must not report it straight back at them.
-    private void AdoptSelection(IReadOnlyList<IExplorerItem> selected)
+    private void AdoptSelection(IReadOnlyList<ICatalogItem> selected)
         => _selection.Replace(selected);
 
     private async Task ToggleSelectModeAsync()
@@ -816,10 +817,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    private Task ApplyCreateFolderAsync(IExplorerFolderItem? parent, string name)
-        => OnFolderCreate.InvokeAsync(new ExplorerFolderCreateRequest(parent, name));
+    private Task ApplyCreateFolderAsync(ICatalogFolderItem? parent, string name)
+        => OnFolderCreate.InvokeAsync(new CatalogFolderCreateRequest(parent, name));
 
-    private async Task ApplyDeleteAsync(IReadOnlyList<IExplorerItem> targets)
+    private async Task ApplyDeleteAsync(IReadOnlyList<ICatalogItem> targets)
     {
         await ChangeSelectionAsync(selection =>
         {
@@ -829,23 +830,23 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             }
         });
 
-        await OnDelete.InvokeAsync(new ExplorerDeleteRequest(targets));
+        await OnDelete.InvokeAsync(new CatalogDeleteRequest(targets));
         await RefreshProviderAsync();
     }
 
-    private async Task ApplyFolderDeleteAsync(IReadOnlyList<IExplorerFolderItem> folders)
+    private async Task ApplyFolderDeleteAsync(IReadOnlyList<ICatalogFolderItem> folders)
     {
         await ClearSelectionAsync();
 
         foreach (var folder in folders)
         {
-            await OnFolderDelete.InvokeAsync(new ExplorerFolderDeleteRequest(folder));
+            await OnFolderDelete.InvokeAsync(new CatalogFolderDeleteRequest(folder));
         }
     }
 
-    private async Task HandleFolderSelectedAsync(IExplorerFolderItem? folder)
+    private async Task HandleFolderSelectedAsync(ICatalogFolderItem? folder)
     {
-        if (CurrentFolder?.Key == folder?.Key || (folder is not null && !folder.Permits(ItemOptions, ExplorerItemCapabilities.Open)))
+        if (CurrentFolder?.Key == folder?.Key || (folder is not null && !folder.Permits(ItemOptions, CatalogItemCapabilities.Open)))
         {
             return;
         }
@@ -868,14 +869,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    private async Task HandleDropOnFolderAsync(IExplorerItem target, IExplorerFolderItem? targetFolder)
+    private async Task HandleDropOnFolderAsync(ICatalogItem target, ICatalogFolderItem? targetFolder)
     {
-        if (target is IExplorerFolderItem draggedFolder)
+        if (target is ICatalogFolderItem draggedFolder)
         {
             if (CanMoveFolder(draggedFolder, targetFolder)
                 && await EnsureFolderFitsAsync(targetFolder, GetHeight(draggedFolder)))
             {
-                await OnFolderDrop.InvokeAsync(new ExplorerFolderDropRequest(draggedFolder, targetFolder));
+                await OnFolderDrop.InvokeAsync(new CatalogFolderDropRequest(draggedFolder, targetFolder));
                 await RefreshProviderAsync();
             }
 
@@ -883,8 +884,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         var selected = _selection.Items;
-        IReadOnlyList<IExplorerItem> items = _selection.IsSelected(target) && selected.Count > 1
-            ? [.. selected.Where(item => item.Permits(ItemOptions, ExplorerItemCapabilities.Move))]
+        IReadOnlyList<ICatalogItem> items = _selection.IsSelected(target) && selected.Count > 1
+            ? [.. selected.Where(item => item.Permits(ItemOptions, CatalogItemCapabilities.Move))]
             : [target];
 
         if (!await EnsureFolderHasRoomAsync(targetFolder, items.Count))
@@ -892,7 +893,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return;
         }
 
-        await OnDrop.InvokeAsync(new ExplorerDropRequest(items, targetFolder));
+        await OnDrop.InvokeAsync(new CatalogDropRequest(items, targetFolder));
 
         // A move takes the resources out of the window they were dragged from, which only a re-read will show.
         await ClearSelectionAsync();
@@ -920,7 +921,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await OnPageChanged.InvokeAsync(page);
     }
 
-    private bool CanMoveFolder(IExplorerFolderItem folder, IExplorerFolderItem? target)
+    private bool CanMoveFolder(ICatalogFolderItem folder, ICatalogFolderItem? target)
     {
         if (target is null)
         {
@@ -931,7 +932,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return folder.Key != target.Key && !IsSelfOrDescendant(target, folder);
     }
 
-    private bool IsSelfOrDescendant(IExplorerFolderItem candidate, IExplorerFolderItem ancestor)
+    private bool IsSelfOrDescendant(ICatalogFolderItem candidate, ICatalogFolderItem ancestor)
     {
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var current = candidate;
@@ -959,15 +960,15 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    private async Task ApplyRenameAsync(IExplorerItem target, string newName)
+    private async Task ApplyRenameAsync(ICatalogItem target, string newName)
     {
-        if (target is IExplorerFolderItem folder)
+        if (target is ICatalogFolderItem folder)
         {
-            await OnFolderRename.InvokeAsync(new ExplorerFolderRenameRequest(folder, newName));
+            await OnFolderRename.InvokeAsync(new CatalogFolderRenameRequest(folder, newName));
             return;
         }
 
-        await OnRename.InvokeAsync(new ExplorerRenameRequest(target, newName));
+        await OnRename.InvokeAsync(new CatalogRenameRequest(target, newName));
         await RefreshProviderAsync();
     }
 
@@ -985,7 +986,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await SearchDebouncer.DebounceAsync(token => InvokeAsync(() => QueryAsync(append: false, token)), Options.SearchDebounceDelay);
     }
 
-    private async Task HandleSortDirectionChangedAsync(ExplorerSortDirection direction)
+    private async Task HandleSortDirectionChangedAsync(CatalogSortDirection direction)
     {
         _collection.SortDirection = direction;
         _collection.PageNumber = 1;
@@ -993,18 +994,18 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await QueryAsync(append: false);
     }
 
-    private async Task HandleSortFieldChangedAsync(ExplorerSortField field)
+    private async Task HandleSortFieldChangedAsync(CatalogSortField field)
     {
         if (_collection.SortField == field)
         {
-            _collection.SortDirection = _collection.SortDirection == ExplorerSortDirection.Ascending
-                ? ExplorerSortDirection.Descending
-                : ExplorerSortDirection.Ascending;
+            _collection.SortDirection = _collection.SortDirection == CatalogSortDirection.Ascending
+                ? CatalogSortDirection.Descending
+                : CatalogSortDirection.Ascending;
         }
         else
         {
             _collection.SortField = field;
-            _collection.SortDirection = ExplorerSortDirection.Ascending;
+            _collection.SortDirection = CatalogSortDirection.Ascending;
         }
 
         _collection.PageNumber = 1;
@@ -1036,7 +1037,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             && files.FirstOrDefault(file => !filter.Accepts(file.Name, file.ContentType)) is { } refused)
         {
             await RejectAsync(
-                ExplorerRejectionReason.ResourceKind,
+                CatalogRejectionReason.ResourceKind,
                 0,
                 L["\"{Name}\" is not a kind of file this explorer accepts.", refused.Name].Value);
 
@@ -1092,7 +1093,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     }
 
     // Every caller names the parent it means, so no folder here is the root rather than wherever the reader happens to be.
-    private async Task OpenFolderDialogAsync(IExplorerFolderItem? parent)
+    private async Task OpenFolderDialogAsync(ICatalogFolderItem? parent)
     {
         _rejectionMessage = null;
 
@@ -1104,14 +1105,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _itemManager.BeginCreateFolder(parent);
     }
 
-    private Task ActivateItemAsync(IExplorerItem item)
+    private Task ActivateItemAsync(ICatalogItem item)
     {
         if (_selection.IsSelectionModeActive)
         {
             return ChangeSelectionAsync(selection => selection.Toggle(item));
         }
 
-        if (item.Resource is { } resource && item.Permits(ItemOptions, ExplorerItemCapabilities.View))
+        if (item.Resource is { } resource && item.Permits(ItemOptions, CatalogItemCapabilities.View))
         {
             OpenPreview(resource);
             StateHasChanged();
@@ -1126,7 +1127,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         IReadOnlyList<string> siblings =
         [
             .. VisibleItems
-                .Where(sibling => sibling.Permits(ItemOptions, ExplorerItemCapabilities.View))
+                .Where(sibling => sibling.Permits(ItemOptions, CatalogItemCapabilities.View))
                 .Select(sibling => sibling.Resource?.Source)
                 .OfType<string>()
         ];

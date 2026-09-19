@@ -12,10 +12,10 @@
 @code {
     public sealed class Component
     {
-        private sealed class StubLibrary(params ResourceInfo[] resources) : IExplorerItemsProvider
+        private sealed class StubLibrary(params ResourceInfo[] resources) : ICatalogProvider
         {
-            public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
-                => ValueTask.FromResult(new ExplorerItemPage(ExplorerItem.ForAll(resources), resources.Length));
+            public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+                => ValueTask.FromResult(new CatalogPage(CatalogItem.ForAll(resources), resources.Length));
         }
 
         private static readonly ResourceInfo Picture = new ImageResourceInfo("/media/podium.png");
@@ -36,7 +36,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture));
 
             // Act
             var cut = ctx.Render(@<FormaComposerExplorerDialog />);
@@ -82,7 +82,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture));
 
             // Act
             var cut = ctx.Render(@<FormaComposerExplorerDialog />);
@@ -96,7 +96,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture, Clip, Report));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture, Clip, Report));
 
             // Act
             var cut = ctx.Render(@<FormaComposerExplorerDialog />);
@@ -110,7 +110,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture, Clip, Report));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture, Clip, Report));
             var options = new ExplorerPluginOptions { AcceptedResourceKinds = "contentType:image" };
 
             // Act
@@ -126,7 +126,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture));
             var cut = ctx.Render(@<FormaComposerExplorerDialog />);
 
             // Act
@@ -142,7 +142,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture));
             var cut = ctx.Render(@<FormaComposerExplorerDialog />);
             Choose(cut, "podium.png");
 
@@ -162,7 +162,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Clip));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Clip));
             var options = new ExplorerPluginOptions { InsertMode = MediaInsertMode.Both };
             var cut = ctx.Render(@<FormaComposerExplorerDialog Options="options" />);
             Choose(cut, "finish.mp4");
@@ -183,7 +183,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Report));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Report));
             var options = new ExplorerPluginOptions { InsertMode = MediaInsertMode.Embed };
             var cut = ctx.Render(@<FormaComposerExplorerDialog Options="options" />);
             Choose(cut, "report.pdf");
@@ -204,10 +204,10 @@
     // inside it, and the insertion arriving at the rich text editor as a canvas command.
     public sealed class ThroughTheComposer
     {
-        private sealed class StubLibrary(params ResourceInfo[] resources) : IExplorerItemsProvider
+        private sealed class StubLibrary(params ResourceInfo[] resources) : ICatalogProvider
         {
-            public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
-                => ValueTask.FromResult(new ExplorerItemPage(ExplorerItem.ForAll(resources), resources.Length));
+            public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+                => ValueTask.FromResult(new CatalogPage(CatalogItem.ForAll(resources), resources.Length));
         }
 
         private sealed class HtmlModel
@@ -253,7 +253,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture));
             var cut = RenderComposer(ctx, new HtmlModel(), new RichTextEditorPlugin());
 
             // Act
@@ -269,7 +269,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture));
             var richText = new RichTextEditorPlugin();
             object? inserted = null;
             richText.CommandRequested += (command, value) => inserted = command == "insertResource" ? value : inserted;

@@ -1,15 +1,17 @@
 namespace Forma.Framework.Explorer.Items;
 
+using Forma.Framework.Catalog;
+
 using Forma.Framework.Explorer.Actions;
 
 /// <summary>Actions, pending confirmations, and drag state shared by every region an explorer renders its items in.</summary>
 public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemInteraction
 {
     private readonly ExplorerDragItem _drag = new();
-    private readonly ExplorerRenameAction<IExplorerItem> _rename = new();
+    private readonly ExplorerRenameAction<ICatalogItem> _rename = new();
     private readonly ExplorerCreateFolderAction _createFolder = new();
-    private readonly ExplorerBatchAction<IExplorerItem> _itemDeletion = new();
-    private readonly ExplorerBatchAction<IExplorerFolderItem> _folderDeletion = new();
+    private readonly ExplorerBatchAction<ICatalogItem> _itemDeletion = new();
+    private readonly ExplorerBatchAction<ICatalogFolderItem> _folderDeletion = new();
 
     /// <inheritdoc />
     public IReadOnlyList<ExplorerItemAction> Actions { get; set; } = [];
@@ -24,34 +26,34 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     public Action? OnChanged { get; set; }
 
     /// <summary>Called to activate an item: preview it, or toggle its selection in selection mode.</summary>
-    public Func<IExplorerItem, Task>? OnActivate { get; set; }
+    public Func<ICatalogItem, Task>? OnActivate { get; set; }
 
     /// <summary>Called to apply a drop of the given dragged item onto the given folder, or the top level when null.</summary>
-    public Func<IExplorerItem, IExplorerFolderItem?, Task>? OnDrop { get; set; }
+    public Func<ICatalogItem, ICatalogFolderItem?, Task>? OnDrop { get; set; }
 
     /// <summary>Called to open the new-folder dialog under the current folder.</summary>
     public Func<Task>? OnRequestNewFolder { get; set; }
 
     /// <summary>Called to apply a confirmed rename.</summary>
-    public Func<IExplorerItem, string, Task>? OnRenameConfirmed { get; set; }
+    public Func<ICatalogItem, string, Task>? OnRenameConfirmed { get; set; }
 
     /// <summary>Called to apply a confirmed folder creation.</summary>
-    public Func<IExplorerFolderItem?, string, Task>? OnCreateFolderConfirmed { get; set; }
+    public Func<ICatalogFolderItem?, string, Task>? OnCreateFolderConfirmed { get; set; }
 
     /// <summary>Called to apply a confirmed item deletion.</summary>
-    public Func<IReadOnlyList<IExplorerItem>, Task>? OnDeleteConfirmed { get; set; }
+    public Func<IReadOnlyList<ICatalogItem>, Task>? OnDeleteConfirmed { get; set; }
 
     /// <summary>Called to apply a confirmed folder deletion.</summary>
-    public Func<IReadOnlyList<IExplorerFolderItem>, Task>? OnFolderDeleteConfirmed { get; set; }
+    public Func<IReadOnlyList<ICatalogFolderItem>, Task>? OnFolderDeleteConfirmed { get; set; }
 
     /// <summary>Called to show or hide the upload panel.</summary>
     public Action? OnToggleUpload { get; set; }
 
     /// <summary>Supplies the currently selected items.</summary>
-    public Func<IReadOnlyList<IExplorerItem>>? SelectedItems { get; set; }
+    public Func<IReadOnlyList<ICatalogItem>>? SelectedItems { get; set; }
 
     /// <inheritdoc />
-    public Task ActivateAsync(IExplorerItem item)
+    public Task ActivateAsync(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
@@ -64,23 +66,23 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     }
 
     /// <inheritdoc />
-    public void BeginDrag(IExplorerItem item)
+    public void BeginDrag(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (item.Permits(ItemOptions, ExplorerItemCapabilities.Drag))
+        if (item.Permits(ItemOptions, CatalogItemCapabilities.Drag))
         {
             _drag.Begin(item);
         }
     }
 
     /// <inheritdoc />
-    public Task DropOnItemAsync(IExplorerItem? target)
+    public Task DropOnItemAsync(ICatalogItem? target)
     {
         var dragged = _drag.Target;
         _drag.End();
 
-        if (dragged is null || !dragged.Permits(ItemOptions, ExplorerItemCapabilities.Move))
+        if (dragged is null || !dragged.Permits(ItemOptions, CatalogItemCapabilities.Move))
         {
             return Task.CompletedTask;
         }
@@ -89,7 +91,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         return target switch
         {
             null => OnDrop?.Invoke(dragged, null) ?? Task.CompletedTask,
-            IExplorerFolderItem folder when folder.Permits(ItemOptions, ExplorerItemCapabilities.Drop) => OnDrop?.Invoke(dragged, folder) ?? Task.CompletedTask,
+            ICatalogFolderItem folder when folder.Permits(ItemOptions, CatalogItemCapabilities.Drop) => OnDrop?.Invoke(dragged, folder) ?? Task.CompletedTask,
             _ => Task.CompletedTask,
         };
     }
@@ -103,11 +105,11 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         => OnRequestNewFolder?.Invoke() ?? Task.CompletedTask;
 
     /// <summary>Opens the new-folder dialog under a parent that accepts new folders, or at a top level that does when null.</summary>
-    public void BeginCreateFolder(IExplorerFolderItem? parent)
+    public void BeginCreateFolder(ICatalogFolderItem? parent)
     {
         var permitted = parent is null
-            ? ItemOptions.AllowedFolderCapabilities.HasFlag(ExplorerItemCapabilities.Create)
-            : parent.Permits(ItemOptions, ExplorerItemCapabilities.Create);
+            ? ItemOptions.AllowedFolderCapabilities.HasFlag(CatalogItemCapabilities.Create)
+            : parent.Permits(ItemOptions, CatalogItemCapabilities.Create);
 
         if (!permitted)
         {
@@ -120,11 +122,11 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     }
 
     /// <inheritdoc />
-    public void RequestRename(IExplorerItem item)
+    public void RequestRename(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (!item.Permits(ItemOptions, ExplorerItemCapabilities.Rename))
+        if (!item.Permits(ItemOptions, CatalogItemCapabilities.Rename))
         {
             return;
         }
@@ -139,7 +141,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     {
         var items = SelectedItems?.Invoke() ?? [];
 
-        List<IExplorerFolderItem> folders = [.. items.OfType<IExplorerFolderItem>().Where(folder => folder.Permits(ItemOptions, ExplorerItemCapabilities.Delete))];
+        List<ICatalogFolderItem> folders = [.. items.OfType<ICatalogFolderItem>().Where(folder => folder.Permits(ItemOptions, CatalogItemCapabilities.Delete))];
 
         if (folders.Count > 0)
         {
@@ -148,7 +150,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         }
         else
         {
-            List<IExplorerItem> deletable = [.. items.Where(item => item is not IExplorerFolderItem && item.Permits(ItemOptions, ExplorerItemCapabilities.Delete))];
+            List<ICatalogItem> deletable = [.. items.Where(item => item is not ICatalogFolderItem && item.Permits(ItemOptions, CatalogItemCapabilities.Delete))];
 
             if (deletable.Count == 0)
             {
@@ -163,17 +165,17 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     }
 
     /// <summary>Opens confirmation for deleting the single item when it can be deleted, as a folder when it is one.</summary>
-    public void RequestDelete(IExplorerItem item)
+    public void RequestDelete(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (item is IExplorerFolderItem folder)
+        if (item is ICatalogFolderItem folder)
         {
             RequestFolderDelete(folder);
             return;
         }
 
-        if (!item.Permits(ItemOptions, ExplorerItemCapabilities.Delete))
+        if (!item.Permits(ItemOptions, CatalogItemCapabilities.Delete))
         {
             return;
         }
@@ -184,11 +186,11 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     }
 
     /// <summary>Opens confirmation for deleting the single folder when it can be deleted.</summary>
-    public void RequestFolderDelete(IExplorerFolderItem folder)
+    public void RequestFolderDelete(ICatalogFolderItem folder)
     {
         ArgumentNullException.ThrowIfNull(folder);
 
-        if (!folder.Permits(ItemOptions, ExplorerItemCapabilities.Delete))
+        if (!folder.Permits(ItemOptions, CatalogItemCapabilities.Delete))
         {
             return;
         }
@@ -241,19 +243,19 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
                 await InvokeAsync(OnCreateFolderConfirmed, parent, folderName).ConfigureAwait(false);
                 break;
 
-            case ExplorerRenameAction<IExplorerItem> rename when rename.Target is { } target:
+            case ExplorerRenameAction<ICatalogItem> rename when rename.Target is { } target:
                 var newName = rename.NameToConfirm;
                 rename.Clear();
                 await InvokeAsync(OnRenameConfirmed, target, newName).ConfigureAwait(false);
                 break;
 
-            case ExplorerBatchAction<IExplorerFolderItem> folders:
+            case ExplorerBatchAction<ICatalogFolderItem> folders:
                 var folderTargets = folders.Targets;
                 folders.Clear();
                 await InvokeAsync(OnFolderDeleteConfirmed, folderTargets).ConfigureAwait(false);
                 break;
 
-            case ExplorerBatchAction<IExplorerItem> items:
+            case ExplorerBatchAction<ICatalogItem> items:
                 var itemTargets = items.Targets;
                 items.Clear();
                 await InvokeAsync(OnDeleteConfirmed, itemTargets).ConfigureAwait(false);

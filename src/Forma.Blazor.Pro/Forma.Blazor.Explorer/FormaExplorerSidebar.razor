@@ -2,8 +2,9 @@
 @inherits FormaComponentBase
 @using Forma.Blazor.Components.Layout
 @using Forma.Framework.Explorer.Items
+@using Forma.Framework.Catalog
 @using Forma.Framework.Explorer.Navigation
-@using Forma.Framework.Explorer.Items.Navigation
+@using Forma.Framework.Catalog.Navigation
 
 <CascadingValue Value="(IExplorerSidebarView)this" IsFixed="true">
 <CascadingValue Value="(IExplorerSidebarInteraction)this" IsFixed="true">
@@ -12,7 +13,7 @@
         <span class="forma-explorer-sidebar-title" id="@TitleId">@L["Folders"]</span>
 
         <div class="forma-explorer-sidebar-tools">
-            @if (ItemOptions.AllowedFolderCapabilities.HasFlag(ExplorerItemCapabilities.Create))
+            @if (ItemOptions.AllowedFolderCapabilities.HasFlag(CatalogItemCapabilities.Create))
             {
                 <FormaButton Variant="ButtonVariant.Ghost"
                              Size="ButtonSize.Mini"

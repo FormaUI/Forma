@@ -1,5 +1,6 @@
 namespace Forma.Framework.Explorer.Tests.Items;
 
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Resources;
 
@@ -7,15 +8,15 @@ using Xunit;
 
 public sealed class ExplorerItemExtensionsTests
 {
-    private const ExplorerItemCapabilities EveryMediaCapability =
-        ExplorerItemCapabilities.Drag
-        | ExplorerItemCapabilities.Open
-        | ExplorerItemCapabilities.View
-        | ExplorerItemCapabilities.Move
-        | ExplorerItemCapabilities.Rename
-        | ExplorerItemCapabilities.Delete;
+    private const CatalogItemCapabilities EveryMediaCapability =
+        CatalogItemCapabilities.Drag
+        | CatalogItemCapabilities.Open
+        | CatalogItemCapabilities.View
+        | CatalogItemCapabilities.Move
+        | CatalogItemCapabilities.Rename
+        | CatalogItemCapabilities.Delete;
 
-    private static ExplorerItem CreateItem(ExplorerItemCapabilities capabilities, bool isDisabled = false)
+    private static CatalogItem CreateItem(CatalogItemCapabilities capabilities, bool isDisabled = false)
         => new()
         {
             Key = "/media/photo.png",
@@ -31,18 +32,18 @@ public sealed class ExplorerItemExtensionsTests
         // Arrange
         var options = new ExplorerItemOptions
         {
-            AllowedCapabilities = ExplorerItemCapabilities.Open | ExplorerItemCapabilities.View | ExplorerItemCapabilities.Rename
+            AllowedCapabilities = CatalogItemCapabilities.Open | CatalogItemCapabilities.View | CatalogItemCapabilities.Rename
         };
-        var item = CreateItem(ExplorerItemCapabilities.Open | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete);
+        var item = CreateItem(CatalogItemCapabilities.Open | CatalogItemCapabilities.Rename | CatalogItemCapabilities.Delete);
 
         // Act
         var capabilities = item.GetCapabilities(options);
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ExplorerItemCapabilities.Open | ExplorerItemCapabilities.Rename, capabilities),
-            () => Assert.True(item.Permits(options, ExplorerItemCapabilities.Rename)),
-            () => Assert.False(item.Permits(options, ExplorerItemCapabilities.Delete)));
+            () => Assert.Equal(CatalogItemCapabilities.Open | CatalogItemCapabilities.Rename, capabilities),
+            () => Assert.True(item.Permits(options, CatalogItemCapabilities.Rename)),
+            () => Assert.False(item.Permits(options, CatalogItemCapabilities.Delete)));
     }
 
     [Fact]
@@ -51,16 +52,16 @@ public sealed class ExplorerItemExtensionsTests
         // Arrange
         var options = new ExplorerItemOptions
         {
-            AllowedCapabilities = ExplorerItemCapabilities.None,
-            AllowedFolderCapabilities = ExplorerItemCapabilities.Open | ExplorerItemCapabilities.Drop
+            AllowedCapabilities = CatalogItemCapabilities.None,
+            AllowedFolderCapabilities = CatalogItemCapabilities.Open | CatalogItemCapabilities.Drop
         };
-        var folder = ExplorerItem.ForFolder(new FolderResourceInfo("/photos"));
+        var folder = CatalogItem.ForFolder(new FolderResourceInfo("/photos"));
 
         // Act
         var capabilities = folder.GetCapabilities(options);
 
         // Assert
-        Assert.Equal(ExplorerItemCapabilities.Open | ExplorerItemCapabilities.Drop, capabilities);
+        Assert.Equal(CatalogItemCapabilities.Open | CatalogItemCapabilities.Drop, capabilities);
     }
 
     [Fact]
@@ -75,8 +76,8 @@ public sealed class ExplorerItemExtensionsTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ExplorerItemCapabilities.None, capabilities),
-            () => Assert.False(item.Permits(options, ExplorerItemCapabilities.View)));
+            () => Assert.Equal(CatalogItemCapabilities.None, capabilities),
+            () => Assert.False(item.Permits(options, CatalogItemCapabilities.View)));
     }
 
     [Fact]
@@ -87,7 +88,7 @@ public sealed class ExplorerItemExtensionsTests
 
         // Act & Assert
         Assert.Multiple(
-            () => Assert.Throws<ArgumentNullException>(() => ((IExplorerItem)null!).GetCapabilities(ExplorerItemOptions.Default)),
+            () => Assert.Throws<ArgumentNullException>(() => ((ICatalogItem)null!).GetCapabilities(ExplorerItemOptions.Default)),
             () => Assert.Throws<ArgumentNullException>(() => item.GetCapabilities(null!)));
     }
 }

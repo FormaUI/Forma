@@ -8,6 +8,7 @@
 @using Forma.Framework.Explorer
 @using Forma.Framework.Explorer.Actions
 @using Forma.Framework.Explorer.Items
+@using Forma.Framework.Catalog
 
 <CascadingValue Value="(IExplorerView)this">
 <CascadingValue Value="(IExplorerInteraction)this" IsFixed="true">
@@ -104,7 +105,7 @@
     }
 
     <!-- Rename Dialog -->
-    @if (_itemManager.PendingAction is ExplorerRenameAction<IExplorerItem> rename)
+    @if (_itemManager.PendingAction is ExplorerRenameAction<ICatalogItem> rename)
     {
         <FormaDialog Opened="true"
                     Size="DialogSize.Small"
@@ -133,7 +134,7 @@
     }
 
     <!-- Delete Media Dialog -->
-    @if (_itemManager.PendingAction is ExplorerBatchAction<IExplorerItem>)
+    @if (_itemManager.PendingAction is ExplorerBatchAction<ICatalogItem>)
     {
         <FormaDialog Opened="true"
                     Size="DialogSize.Small"
@@ -184,7 +185,7 @@
     }
 
     <!-- Delete Folder Dialog -->
-    @if (_itemManager.PendingAction is ExplorerBatchAction<IExplorerFolderItem>)
+    @if (_itemManager.PendingAction is ExplorerBatchAction<ICatalogFolderItem>)
     {
         <FormaDialog Opened="true"
                     Size="DialogSize.Small"

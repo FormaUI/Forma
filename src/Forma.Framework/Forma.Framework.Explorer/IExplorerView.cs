@@ -1,11 +1,12 @@
 namespace Forma.Framework.Explorer;
 
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Navigation;
+using Forma.Framework.Catalog.Queries;
+using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Navigation;
-using Forma.Framework.Explorer.Items.Queries;
-using Forma.Framework.Explorer.Items.Selection;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Explorer.Selection;
 
@@ -17,7 +18,7 @@ public interface IExplorerView :
     IExplorerSearchView
 {
     /// <summary>What the explorer has selected.</summary>
-    IExplorerSelectionView Selection { get; }
+    ICatalogSelectionView Selection { get; }
 
     /// <summary>The explorer's items.</summary>
     IExplorerItemView Item { get; }

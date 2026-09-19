@@ -1,5 +1,7 @@
 namespace Forma.Framework.Explorer.Items;
 
+using Forma.Framework.Catalog;
+
 using Forma.Framework.Icons;
 
 /// <summary>One operation an explorer offers on a single item.</summary>
@@ -15,10 +17,10 @@ public sealed record ExplorerItemAction
     public required Func<string> Label { get; init; }
 
     /// <summary>The capabilities an item must support for the action to be offered on it.</summary>
-    public ExplorerItemCapabilities Requires { get; init; }
+    public CatalogItemCapabilities Requires { get; init; }
 
     /// <summary>Runs the operation against an item.</summary>
-    public required Func<IExplorerItem, Task> InvokeAsync { get; init; }
+    public required Func<ICatalogItem, Task> InvokeAsync { get; init; }
 
     /// <summary>Whether the operation destroys data and reads as destructive.</summary>
     public bool IsDestructive { get; init; }

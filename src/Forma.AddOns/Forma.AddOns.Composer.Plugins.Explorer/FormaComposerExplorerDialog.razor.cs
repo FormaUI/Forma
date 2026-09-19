@@ -1,12 +1,13 @@
 namespace Forma.Blazor.Components.Composer.Plugins;
 
 using Forma.Blazor.Components.Explorer;
+using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Dialog body for choosing one of the host's stored files and inserting it.</summary>
 /// <param name="itemsProvider">The host's registered provider, or null to offer no browsing.</param>
 /// <param name="store">The host's registered store, or null to offer no upload.</param>
-public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? itemsProvider = null, IFileStore? store = null)
+public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsProvider = null, IFileStore? store = null)
     : FormaComponentBase, IComposerInsertionDialog
 {
     private static readonly ExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true, MaxSelection = 1 };
@@ -22,14 +23,14 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? 
     /// <summary>What the dialog browses, takes in, and inserts.</summary>
     [Parameter] public ExplorerPluginOptions Options { get; set; } = ExplorerPluginOptions.Default;
 
-    private readonly IExplorerItemsProvider? _registeredItemsProvider = itemsProvider;
+    private readonly ICatalogProvider? _registeredItemsProvider = itemsProvider;
     private readonly IFileStore? _store = store;
     private readonly List<string> _messages = [];
-    private IExplorerItemsProvider? _itemsProvider;
+    private ICatalogProvider? _itemsProvider;
     private ExplorerItemOptions _itemOptions = ExplorerItemOptions.ReadOnly;
-    private ExplorerConstraints _constraints = ExplorerConstraints.None;
+    private CatalogConstraints _constraints = CatalogConstraints.None;
     private readonly ParameterState<ExplorerPluginOptions?> _optionsParameter = new();
-    private IReadOnlyList<IExplorerItem> _selected = [];
+    private IReadOnlyList<ICatalogItem> _selected = [];
 
     string IComposerInsertionDialog.Title
         => L["Browse Files"].Value;
@@ -48,7 +49,7 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? 
     private ExplorerItemOptions LibraryItemOptions
         => _itemOptions;
 
-    private ExplorerConstraints UploadConstraints
+    private CatalogConstraints UploadConstraints
         => _constraints;
 
     /// <inheritdoc />
@@ -67,7 +68,7 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? 
 
         _itemsProvider = _registeredItemsProvider is null
             ? null
-            : ExplorerResourceFilter.Parse(Options.AcceptedResourceKinds) is { } filter
+            : CatalogResourceFilter.Parse(Options.AcceptedResourceKinds) is { } filter
                 ? new FilteredItems(_registeredItemsProvider, filter)
                 : _registeredItemsProvider;
 
@@ -112,7 +113,7 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? 
             _ => "file",
         };
 
-    private void HandleSelectedChanged(IReadOnlyList<IExplorerItem> selected)
+    private void HandleSelectedChanged(IReadOnlyList<ICatalogItem> selected)
     {
         _selected = selected;
 
@@ -123,15 +124,15 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? 
     }
 
     // The explorer lists whatever its provider answers, so limiting what may be browsed means limiting the answer.
-    private sealed class FilteredItems(IExplorerItemsProvider inner, ExplorerResourceFilter filter) : IExplorerItemsProvider
+    private sealed class FilteredItems(ICatalogProvider inner, CatalogResourceFilter filter) : ICatalogProvider
     {
-        public async ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
+        public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
         {
             var page = await inner.GetItemsAsync(query, cancellationToken).ConfigureAwait(false);
             var accepted = page.Items.Where(item => item.Resource is { } resource && filter.Accepts(resource)).ToList();
 
             // A count taken before filtering would page past the end, so it is dropped rather than reported wrongly.
-            return new ExplorerItemPage(accepted, accepted.Count == page.Items.Count ? page.TotalCount : null);
+            return new CatalogPage(accepted, accepted.Count == page.Items.Count ? page.TotalCount : null);
         }
     }
 }
