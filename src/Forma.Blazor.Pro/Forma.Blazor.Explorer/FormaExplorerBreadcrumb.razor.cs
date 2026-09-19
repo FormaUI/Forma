@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Explorer;
 using Forma.Blazor.Components.Navigation;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Navigation;
 using Forma.Framework.Explorer.Navigation;
 
 using Microsoft.AspNetCore.Components;

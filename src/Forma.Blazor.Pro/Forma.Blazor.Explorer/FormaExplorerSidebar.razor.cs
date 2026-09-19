@@ -3,6 +3,8 @@ namespace Forma.Blazor.Components.Explorer;
 using Forma.Framework.Css;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Navigation;
+using Forma.Framework.Explorer.Items.Selection;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Explorer.Selection;
 

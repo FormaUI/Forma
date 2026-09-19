@@ -4,6 +4,8 @@ using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items.Navigation;
+using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Explorer.Navigation;
 
 using Microsoft.AspNetCore.Components;

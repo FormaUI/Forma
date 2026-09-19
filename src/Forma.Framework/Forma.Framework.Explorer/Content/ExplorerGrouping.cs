@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>Gathers a list of items into the groups a field bands them by.</summary>
 public static class ExplorerGrouping

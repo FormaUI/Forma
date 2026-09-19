@@ -1,5 +1,7 @@
 namespace Forma.Framework.Explorer.Content;
 
+using Forma.Framework.Explorer.Items.Queries;
+
 /// <summary>Specifies which optional columns a details view renders.</summary>
 [Flags]
 public enum ExplorerDetailsColumns

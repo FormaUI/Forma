@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Localization;
 
 /// <summary>The labels the explorer's grouping draws a field and a group with.</summary>

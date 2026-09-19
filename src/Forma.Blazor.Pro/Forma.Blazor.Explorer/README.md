@@ -17,10 +17,12 @@ it, and the same locale file layout localizes it.
 dotnet add package 2Site.Forma.Blazor.Pro.Explorer
 ```
 
-The package depends on `2Site.Forma.Blazor`, the product, which installs beside it. The component
-lives in `Forma.Blazor.Components.Explorer`. The vocabulary it speaks ships inside the package under
-`Forma.Framework.Explorer`: items in `.Items`, views and queries in `.Content` and
-`.Content.Queries`, and the requests it raises in `.Requests`.
+The package depends on `2Site.Forma.Blazor`, the product, and on
+`2Site.Forma.Framework.Explorer.Items`, which install beside it. The component lives in
+`Forma.Blazor.Components.Explorer`. The items it lists, the provider that answers it, the requests it
+raises and the ceilings it keeps are the items package's, under `Forma.Framework.Explorer.Items`,
+so a host writes them once for every surface that browses them; the explorer's own vocabulary — its
+options and what its parts read — ships inside the package under `Forma.Framework.Explorer`.
 
 ## Register
 
@@ -219,7 +221,7 @@ and carrying out what the reader asks:
 @rendermode InteractiveServer
 @using Forma.Blazor.Components.Explorer
 @using Forma.Framework.Explorer.Items
-@using Forma.Framework.Explorer.Requests
+@using Forma.Framework.Explorer.Items.Requests
 @using Forma.Framework.Resources
 
 <FormaExplorer Items="_items"
@@ -280,7 +282,7 @@ The same page over a library too large to hold, answering one window at a time f
 the page knows:
 
 ```csharp
-using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Explorer.Items;
 
 public sealed class CatalogItemsProvider(IMediaCatalog catalog, Func<string?> currentFolder) : IExplorerItemsProvider
@@ -297,7 +299,7 @@ public sealed class CatalogItemsProvider(IMediaCatalog catalog, Func<string?> cu
 
 ```razor
 @using Forma.Framework.Explorer
-@using Forma.Framework.Explorer.Content.Queries
+@using Forma.Framework.Explorer.Items.Queries
 
 <FormaExplorer ItemsProvider="_provider"
                Folders="_folders"

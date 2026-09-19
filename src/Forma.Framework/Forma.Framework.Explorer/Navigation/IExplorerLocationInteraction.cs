@@ -1,6 +1,7 @@
 namespace Forma.Framework.Explorer.Navigation;
 
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Navigation;
 
 /// <summary>What the components drawing an explorer may ask its location to do.</summary>
 public interface IExplorerLocationInteraction

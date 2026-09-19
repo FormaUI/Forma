@@ -5,7 +5,8 @@ using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Explorer.Requests;
+using Forma.Framework.Explorer.Items.Queries;
+using Forma.Framework.Explorer.Items.Requests;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 

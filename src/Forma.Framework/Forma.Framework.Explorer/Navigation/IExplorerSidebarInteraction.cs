@@ -1,6 +1,7 @@
 namespace Forma.Framework.Explorer.Navigation;
 
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Navigation;
 
 /// <summary>What the nodes drawing an explorer's folder tree may ask it to do.</summary>
 public interface IExplorerSidebarInteraction

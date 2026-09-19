@@ -3,6 +3,7 @@ namespace Forma.Blazor.Showcase.Components.Pages.Features;
 using Forma.Blazor.Components.Explorer;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Resources;
 
 /// <summary>An in-memory store standing in for one the explorer would reach over IO.</summary>

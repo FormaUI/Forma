@@ -21,6 +21,7 @@
 
     <!-- The component's own feature vocabulary, which ships inside this package. -->
     <ItemGroup>
+        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Explorer.Items\Forma.Framework.Explorer.Items.csproj" />
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" PrivateAssets="all" />
     </ItemGroup>
 

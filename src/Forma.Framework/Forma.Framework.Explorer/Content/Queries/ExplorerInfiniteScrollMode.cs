@@ -1,5 +1,7 @@
 namespace Forma.Framework.Explorer.Content.Queries;
 
+using Forma.Framework.Explorer.Items.Queries;
+
 /// <summary>Specifies whether an explorer appends pages as the reader scrolls, and how.</summary>
 public enum ExplorerInfiniteScrollMode
 {

@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>The provider, folder, and page size driving the current query, watched together for any change.</summary>
 internal sealed class ExplorerQueryParameters

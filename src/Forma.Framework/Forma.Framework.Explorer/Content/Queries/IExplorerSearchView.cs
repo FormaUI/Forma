@@ -1,5 +1,7 @@
 namespace Forma.Framework.Explorer.Content.Queries;
 
+using Forma.Framework.Explorer.Items.Queries;
+
 /// <summary>An explorer's search state, as the components drawing it read it.</summary>
 public interface IExplorerSearchView
 {

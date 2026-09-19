@@ -120,6 +120,26 @@ Typing in the search box filters a held collection at once and is debounced thro
 rather than merely ignored, and a mutation of the items re-reads the window. The items
 scroll inside their own panel so the toolbar, folder tree and pager stay put.
 
+## File layout
+
+Two assemblies, foldered by concern with the namespace following the folder.
+
+**`Forma.Framework.Explorer.Items` is the model every browsing surface shares**, packable, rooted in
+its own namespace: the items and folders, the provider with its query and page, the sort, the resource
+filter, the requests and the rejection, the constraints, and the bookkeeping a surface repeats — the
+view over a held collection, the window over a provider, the folder tree, the history and the
+selection with what parts read of it. A host writes its items and its provider against this package
+alone, and a second surface such as the gallery builds on it without reaching the explorer.
+
+**`Forma.Framework.Explorer` is the explorer's own engine**, bundled inside the component's package:
+its options and item options, every view and interaction contract its parts read and ask, the item
+manager with its actions, pending confirmations and drag state, the grouping and its bands, the
+preview, and the paging and infinite-scroll choices. Nothing here is written for another surface.
+
+**`Forma.Blazor.Explorer` is the component**, one namespace, its parts reading the engine's contracts
+through cascades. The tests mirror the three: the items package and the engine each have a test
+project named after them, and the component's tests drive it whole.
+
 ## Non-goals
 
 - Storage. The explorer reports intent; the host moves bytes.

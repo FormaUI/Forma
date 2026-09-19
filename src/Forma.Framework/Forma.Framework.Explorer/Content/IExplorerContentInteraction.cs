@@ -1,6 +1,7 @@
 namespace Forma.Framework.Explorer.Content;
 
 using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>What components presenting an explorer's current content may ask it to do.</summary>
 public interface IExplorerContentInteraction

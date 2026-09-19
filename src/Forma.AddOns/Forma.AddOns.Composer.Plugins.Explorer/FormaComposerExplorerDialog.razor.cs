@@ -6,6 +6,7 @@ using Forma.Framework.Composer.Editing;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;

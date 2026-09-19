@@ -1,6 +1,7 @@
 namespace Forma.Framework.Explorer.Navigation;
 
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Navigation;
 
 /// <summary>An explorer's location in its folders, as the components drawing it read it.</summary>
 public interface IExplorerLocationView

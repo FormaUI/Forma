@@ -1,5 +1,7 @@
 namespace Forma.Framework.Explorer.Content;
 
+using Forma.Framework.Explorer.Items.Queries;
+
 /// <summary>The band a group of items falls in, in the order the bands stand in.</summary>
 public enum ExplorerGroupBand
 {

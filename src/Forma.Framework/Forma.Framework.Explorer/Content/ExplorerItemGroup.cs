@@ -1,6 +1,7 @@
 namespace Forma.Framework.Explorer.Content;
 
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Queries;
 
 /// <summary>A run of items that share a band, in the order they are listed.</summary>
 /// <param name="Band">The band the items fall in.</param>

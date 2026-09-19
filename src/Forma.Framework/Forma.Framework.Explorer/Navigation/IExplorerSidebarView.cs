@@ -1,6 +1,8 @@
 namespace Forma.Framework.Explorer.Navigation;
 
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Navigation;
+using Forma.Framework.Explorer.Items.Selection;
 using Forma.Framework.Explorer.Selection;
 
 /// <summary>What an explorer's folder tree shows, as the nodes drawing it read it.</summary>

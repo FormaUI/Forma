@@ -1,5 +1,7 @@
 namespace Forma.Framework.Explorer.Content;
 
+using Forma.Framework.Explorer.Items.Queries;
+
 using Forma.Framework.Resources;
 
 /// <summary>The resource currently shown full-size, and the siblings a viewer can step through.</summary>

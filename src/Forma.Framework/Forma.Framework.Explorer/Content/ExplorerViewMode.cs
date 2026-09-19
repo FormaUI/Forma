@@ -1,5 +1,7 @@
 namespace Forma.Framework.Explorer.Content;
 
+using Forma.Framework.Explorer.Items.Queries;
+
 /// <summary>Specifies the presentation mode for media in the explorer.</summary>
 public enum ExplorerViewMode
 {

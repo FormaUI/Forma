@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Icons;
 using Forma.Framework.Localization;
 

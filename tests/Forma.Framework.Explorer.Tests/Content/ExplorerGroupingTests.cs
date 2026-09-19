@@ -3,6 +3,7 @@ namespace Forma.Framework.Explorer.Tests.Content;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Queries;
 using Forma.Framework.Resources;
 
 using Xunit;

@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Items.Selection;
 using Forma.Framework.Explorer.Selection;
 using Forma.Framework.Localization;
 
