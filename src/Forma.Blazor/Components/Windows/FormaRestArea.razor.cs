@@ -24,6 +24,7 @@ public sealed partial class FormaRestArea : FormaElementBase
     public WindowManager Manager
         => CascadedManager ?? InjectedManager;
 
+    // Handles keep the workspace's registration order, so they never shuffle as windows are activated.
     private IEnumerable<RestAreaGroup> Groups
         => Options.Grouping switch
         {

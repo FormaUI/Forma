@@ -8,10 +8,11 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A styled checkbox bound to a Boolean, with a script-driven indeterminate state, optionally leaving the checked state to the caller.</summary>
+/// <summary>A styled checkbox bound to a Boolean, with an indeterminate state, optionally leaving the checked state to the caller.</summary>
 public sealed partial class FormaCheckBox : FormaInputBase<bool>
 {
-    /// <summary>Shows the "some but not all" visual. Set from script, since it has no content attribute.</summary>
+    /// <summary>Shows the "some but not all" visual.</summary>
+    /// <remarks>The state has no content attribute, so it is set on the element through script, and only once a checkbox becomes indeterminate.</remarks>
     [Parameter] public bool Indeterminate { get; set; }
 
     /// <summary>Blocks interaction and dims the checkbox.</summary>

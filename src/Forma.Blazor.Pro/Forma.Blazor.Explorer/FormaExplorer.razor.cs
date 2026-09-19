@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A server-side file manager with thumbnail/details/list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
+/// <summary>A file manager for what is already on the server: thumbnail, details and list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
 public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IExplorerInteraction
 {
     private const int DefaultPageSize = 24;
@@ -47,7 +47,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Answers for one window of items at a time, for collections too large to hold. Supply this or <see cref="Items"/>, not both.</summary>
     [Parameter] public IExplorerItemsProvider? ItemsProvider { get; set; }
 
-    /// <summary>Available folders for grouping items.</summary>
+    /// <summary>The folders the sidebar's tree shows and items are moved between.</summary>
     [Parameter] public IReadOnlyList<IExplorerItem>? Folders { get; set; }
 
     private bool ShowsSidebar

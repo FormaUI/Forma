@@ -3,7 +3,8 @@
  *
  * Every key, press, and wheel turn on the page is resolved again, without dispatching it,
  * and the decision and the active ordering are described to the .NET owner in words a
- * panel can show. Wheel turns are reported at most once per interval.
+ * panel can show. Wheel turns are reported at most once per interval, so the panel stays
+ * readable through a scroll.
  */
 
 import { resolve, stack } from './InputRouter.js';

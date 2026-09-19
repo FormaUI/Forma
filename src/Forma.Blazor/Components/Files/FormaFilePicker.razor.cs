@@ -66,6 +66,7 @@ public sealed partial class FormaFilePicker : FormaElementBase
         }
     }
 
+    // The dialog filters by Accept on its own, but a drop never consults it, so every file is checked here whichever way it arrived.
     private static bool MatchesAccept(string accept, IBrowserFile file)
     {
         foreach (var pattern in accept.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))

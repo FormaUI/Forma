@@ -4,7 +4,7 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Collapses its content to nothing while keeping it mounted, so Context.JS-attached state on the content survives being hidden and shown again.</summary>
+/// <summary>Collapses its content to nothing while keeping it mounted, so a behavior attached to the content survives being hidden and shown again.</summary>
 public sealed partial class FormaVisibility : FormaElementBase
 {
     /// <summary>The content to show or collapse.</summary>

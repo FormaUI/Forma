@@ -7,7 +7,7 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A multi-line text field carrying the same chrome as FormaInput.</summary>
+/// <summary>A multi-line text field wearing the shared field chrome.</summary>
 public sealed partial class FormaTextArea : FormaInputBase<string?>
 {
     /// <summary>The floating label text.</summary>
