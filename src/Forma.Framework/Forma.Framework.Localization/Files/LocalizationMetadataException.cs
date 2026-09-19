@@ -3,7 +3,7 @@ namespace Forma.Framework.Localization.Files;
 using Forma.Framework.Localization;
 
 /// <summary>Thrown when a localization file's metadata is absent, malformed, or written for a schema this build cannot read.</summary>
-public sealed class LocalizationMetadataException : Exception
+public sealed class LocalizationMetadataException : LocaleFileException
 {
     /// <summary>Creates an exception describing what is wrong with a file's metadata.</summary>
     /// <param name="message">What is wrong.</param>

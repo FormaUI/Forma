@@ -10,5 +10,6 @@ public interface ILocaleFileFormat
     /// <param name="stream">The file's content.</param>
     /// <param name="fileName">The file's name, named in anything thrown.</param>
     /// <param name="cultureName">The culture the file's name gives it.</param>
+    /// <exception cref="LocaleFileException">The content is not what the format reads, or the metadata does not let the file be read.</exception>
     LocaleFile Read(Stream stream, string fileName, string cultureName);
 }

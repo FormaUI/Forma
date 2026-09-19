@@ -23,16 +23,28 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
         ArgumentException.ThrowIfNullOrEmpty(fileName);
         ArgumentException.ThrowIfNullOrEmpty(cultureName);
 
-        using var document = JsonDocument.Parse(stream, DocumentOptions);
+        using var document = Parse(stream, fileName);
         if (document.RootElement.ValueKind != JsonValueKind.Object)
         {
-            throw new JsonException($"'{fileName}' is not a JSON object.");
+            throw new LocaleFileException($"'{fileName}' is not a JSON object.");
         }
 
         var marker = document.RootElement.TryGetProperty(LocalizationSchema.Marker, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
         LocalizationMetadata.Validate(marker, fileName, cultureName);
 
         return new LocaleFile(ReadSection(document.RootElement, fileName));
+    }
+
+    private static JsonDocument Parse(Stream stream, string fileName)
+    {
+        try
+        {
+            return JsonDocument.Parse(stream, DocumentOptions);
+        }
+        catch (JsonException exception)
+        {
+            throw new LocaleFileException($"'{fileName}' is not readable JSON: {exception.Message}", exception);
+        }
     }
 
     // The reserved names are read as written, before any escape: the marker is the file's own, and the shared section's entries go to everything beneath the node. Every other key is read as the text behind its escape; an object is a section, text or null a translation.
@@ -53,13 +65,13 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
             {
                 if (property.Value.ValueKind != JsonValueKind.Object)
                 {
-                    throw new JsonException($"'{fileName}' gives '{property.Name}' a value that is not an object.");
+                    throw new LocaleFileException($"'{fileName}' gives '{property.Name}' a value that is not an object.");
                 }
 
                 var section = ReadSection(property.Value, fileName);
                 if (section.Sections.Count > 0 || section.SharedEntries.Count > 0)
                 {
-                    throw new JsonException($"'{fileName}' nests '{(section.Sections.Count > 0 ? section.Sections[0].Key : LocalizationSchema.SharedKey)}' inside '{property.Name}', which holds translations alone.");
+                    throw new LocaleFileException($"'{fileName}' nests '{(section.Sections.Count > 0 ? section.Sections[0].Key : LocalizationSchema.SharedKey)}' inside '{property.Name}', which holds translations alone.");
                 }
 
                 shared.AddRange(section.Entries);
@@ -80,7 +92,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
                     entries.Add(new(key, null));
                     break;
                 default:
-                    throw new JsonException($"'{fileName}' gives '{property.Name}' a value that is not text.");
+                    throw new LocaleFileException($"'{fileName}' gives '{property.Name}' a value that is not text.");
             }
         }
 
@@ -97,7 +109,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
 
         if (LocalizationSchema.IsReservedShape(name) && name is not (LocalizationSchema.Marker or LocalizationSchema.SharedKey))
         {
-            throw new JsonException($"'{fileName}' names '{name}', which is shaped like a reserved entry the runtime does not define.");
+            throw new LocaleFileException($"'{fileName}' names '{name}', which is shaped like a reserved entry the runtime does not define.");
         }
 
         return name;

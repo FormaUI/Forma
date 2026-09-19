@@ -1,8 +1,6 @@
 namespace Forma.Framework.Localization.Json.Tests;
 
 using System.Text;
-using System.Text.Json;
-
 public sealed class JsonLocaleFileFormatTests
 {
     private static LocaleFile Read(string json, string cultureName = "he")
@@ -49,7 +47,7 @@ public sealed class JsonLocaleFileFormatTests
     public void Should_reject_a_key_shaped_like_a_reserved_entry_it_does_not_define()
     {
         // Act
-        var thrown = Assert.Throws<JsonException>(() => Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$import": "x" }"""));
+        var thrown = Assert.Throws<LocaleFileException>(() => Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$import": "x" }"""));
 
         // Assert
         Assert.Contains("'$import'", thrown.Message, StringComparison.Ordinal);
@@ -59,7 +57,7 @@ public sealed class JsonLocaleFileFormatTests
     public void Should_reject_a_key_shaped_like_a_reserved_entry_inside_a_section_too()
     {
         // Act
-        var thrown = Assert.Throws<JsonException>(() => Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Toolbar": { "$import": "x" } }"""));
+        var thrown = Assert.Throws<LocaleFileException>(() => Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Toolbar": { "$import": "x" } }"""));
 
         // Assert
         Assert.Contains("'$import'", thrown.Message, StringComparison.Ordinal);
@@ -95,7 +93,7 @@ public sealed class JsonLocaleFileFormatTests
     public void Should_reject_a_section_nested_inside_the_shared_one(string content, string nested)
     {
         // Act — the shared section holds translations alone, so a section inside it would otherwise vanish without a word.
-        var thrown = Assert.Throws<JsonException>(() => Read(content));
+        var thrown = Assert.Throws<LocaleFileException>(() => Read(content));
 
         // Assert
         Assert.Contains(nested, thrown.Message, StringComparison.Ordinal);
@@ -105,7 +103,7 @@ public sealed class JsonLocaleFileFormatTests
     public void Should_reject_a_shared_entry_that_is_not_an_object()
     {
         // Act
-        var thrown = Assert.Throws<JsonException>(() => Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$shared": "x" }"""));
+        var thrown = Assert.Throws<LocaleFileException>(() => Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$shared": "x" }"""));
 
         // Assert
         Assert.Contains("'$shared'", thrown.Message, StringComparison.Ordinal);
@@ -156,7 +154,7 @@ public sealed class JsonLocaleFileFormatTests
     public void Should_reject_a_value_that_is_not_text()
     {
         // Act
-        var thrown = Assert.Throws<JsonException>(() => Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Save": 1 }"""));
+        var thrown = Assert.Throws<LocaleFileException>(() => Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Save": 1 }"""));
 
         // Assert
         Assert.Contains("'Save'", thrown.Message, StringComparison.Ordinal);
@@ -166,7 +164,7 @@ public sealed class JsonLocaleFileFormatTests
     public void Should_reject_a_file_that_is_not_an_object()
     {
         // Assert
-        Assert.Throws<JsonException>(() => Read("""[ "Save" ]"""));
+        Assert.Throws<LocaleFileException>(() => Read("""[ "Save" ]"""));
     }
 
     [Fact]

@@ -1,7 +1,5 @@
 namespace Forma.Framework.Localization.Json.Tests;
 
-using System.Text.Json;
-
 using Forma.Framework.Localization.Json.Tests.Fixtures;
 using Forma.Tests.Localization.Rooted;
 
@@ -353,7 +351,7 @@ public sealed class HostFilesTests
             var strings = CreateLocale<HostMistyped>();
 
             // Act
-            var thrown = Assert.Throws<JsonException>(() => strings["Save"]);
+            var thrown = Assert.Throws<LocaleFileException>(() => strings["Save"]);
 
             // Assert
             Assert.Contains("'Save'", thrown.Message, StringComparison.Ordinal);
