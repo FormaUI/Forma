@@ -22,8 +22,8 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    without `$Culture` and `$Extension`; the value of every token for an anchor; the name a path
    gives an anchor, as a file path and as a resource name; the anchor a path reads from a name; and
    the default paths. The settings a `.locale.json` carries are read into a record by a reader in
-   the same package, which passes over keys it does not own, so the linter's `ignore` and
-   `exclude` never trouble it, and holds `rootDir` as written for a source to resolve. A locale
+   the same package, which passes over keys it does not own, so the linter's `ignoreDiagnostics`
+   and `excludeFiles` never trouble it, and holds `rootDir` as written for a source to resolve. A locale
    file's `$localization` gains nothing: it describes the file, and the paths are the settings
    file's to state.
 
@@ -212,9 +212,9 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    `.locale.json`, read by `LocaleConfig`: one optional file per assembly, embedded with its files
    or laid in its folder inside the host's, applying to every file of the assembly and cascading
    nowhere, since it is a runtime file the assembly ships. `.locali.json` keeps the linter's
-   `ignore` and `exclude` alone and its `.editorconfig`-style cascade, and the runtime never
-   reads it. `$tools` leaves the locale files, so a file holds translations and nothing a tool
-   reads; a per-file exception is written in `.locali.json`.
+   `ignoreDiagnostics` and `excludeFiles` alone and its `.editorconfig`-style cascade, and the
+   runtime never reads it. `$tools` leaves the locale files, so a file holds translations and
+   nothing a tool reads; a per-file exception is written in `.locali.json`.
 
    **Gate:** the suites green in both repositories, the linter reporting nothing over
    `Forma.slnx`, and a `.locale.json` the runtime would refuse reported where it is written.

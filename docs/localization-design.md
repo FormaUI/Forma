@@ -197,7 +197,8 @@ assembly's config.
 
 The runtime's config file carries the runtime's keys and nothing else. The linter reads it through
 the runtime's own reader, so the two can never disagree about where a file belongs, and keeps its
-own `ignore` and `exclude` in `.locali.json`, which the runtime never reads. The keys:
+own `ignoreDiagnostics` and `excludeFiles` in `.locali.json`, which the runtime never reads. The
+keys:
 
 | Key | Value |
 |---|---|

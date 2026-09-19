@@ -1,5 +1,5 @@
 {
-  "ignore": {
+  "ignoreDiagnostics": {
     // The page shows a hit and a miss side by side, so its miss is a sentence no file translates.
     "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0209"],
     // The test proves the metadata entry is never served, which takes looking it up by its reserved name.
@@ -12,5 +12,5 @@
     "src/Forma.Blazor.Showcase/Components/Pages/Menus/.locales/es.json": ["LOC0113"]
   },
   // The fixtures are malformed on purpose, each proving what its test asserts.
-  "exclude": ["*/Fixtures/*"]
+  "excludeFiles": ["*/Fixtures/*"]
 }
