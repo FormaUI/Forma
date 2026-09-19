@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 
-using Forma.Blazor.Components.Inputs;
+using Forma.Blazor.Components.Symbols;
 
 /// <summary>Options configuring the emoji picker.</summary>
 public sealed record EmojiPluginOptions

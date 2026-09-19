@@ -48,13 +48,12 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaFileUploader
 │   ├── ✅ FormaFileViewer
 │   └── ✅ FormaImagePicker
-├── (14 / 14) Inputs/
+├── (13 / 13) Inputs/
 │   ├── ✅ FormaCalendar
 │   ├── ✅ FormaCheckBox
 │   ├── ✅ FormaColorPicker
 │   ├── ✅ FormaDatePicker
 │   ├── ✅ FormaDateRangePicker
-│   ├── ✅ FormaEmojiPicker
 │   ├── ✅ FormaMultiSelect
 │   ├── ✅ FormaPasswordBox
 │   ├── ✅ FormaSearchBox
@@ -87,8 +86,9 @@ Forma.Blazor/Components/
 ├── (2 / 2) Page/
 │   ├── ✅ FormaPageHead
 │   └── ✅ FormaPageTitle
-├── (2 / 2) Symbols/
+├── (3 / 3) Symbols/
 │   ├── ✅ FormaEmoji
+│   ├── ✅ FormaEmojiPicker
 │   └── ✅ FormaIcon
 └── (2 / 2) Windows/
     ├── ✅ FormaRestArea

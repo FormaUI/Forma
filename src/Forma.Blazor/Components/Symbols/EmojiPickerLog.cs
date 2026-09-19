@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Inputs;
+namespace Forma.Blazor.Components.Symbols;
 
 using Microsoft.Extensions.Logging;
 

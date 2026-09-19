@@ -23,25 +23,6 @@
     "This Month": "החודש",
     "Last Month": "חודש שעבר"
   },
-  "FormaEmojiPicker": {
-    "Emoji Categories": "קטגוריות אמוג'י",
-    "Search Emoji": "חיפוש אמוג'י",
-    "Search Results": "תוצאות החיפוש",
-    "Recently Used": "בשימוש לאחרונה",
-    "Smileys & Emotion": "פרצופים ורגשות",
-    "People & Body": "אנשים וגוף",
-    "Animals & Nature": "חיות וטבע",
-    "Food & Drink": "אוכל ומשקאות",
-    "Activities": "פעילויות",
-    "Travel & Places": "נסיעות ומקומות",
-    "Objects": "חפצים",
-    "Symbols": "סמלים",
-    "Flags": "דגלים",
-    "No emoji match \"{Query}\".": "אין אמוג'י התואם ל\"{Query}\".",
-    "Loading {Category}": "טוען {Category}",
-    "Loading More Emoji": "טוען עוד אמוג'י",
-    "{Count} emoji found.": "{Count, plural, one {נמצא אמוג'י אחד.} two {נמצאו # אמוג'י.} other {נמצאו # אמוג'י.}}"
-  },
   "FormaMultiSelect": {
     "Search": "חיפוש",
     "No matches": "אין תוצאות",

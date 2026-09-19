@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Tests.Components.Inputs;
+namespace Forma.Blazor.Tests.Components.Symbols;
 
 using Forma.Blazor.Features.Emojis;
 using Forma.Tests.Blazor.Emojis;

@@ -1,4 +1,6 @@
-namespace Forma.Blazor.Components.Inputs;
+namespace Forma.Blazor.Components.Symbols;
+
+using Forma.Blazor.Components.Inputs;
 
 /// <summary>How the emoji picker browses: its search box, its category tabs, and the recents it keeps.</summary>
 public sealed record EmojiPickerOptions

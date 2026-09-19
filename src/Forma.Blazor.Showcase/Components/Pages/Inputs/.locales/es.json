@@ -71,21 +71,6 @@
     "Campaign": "Campaña",
     "A campaign period is required.": "Se requiere un periodo de campaña."
   },
-  "FormaEmojiPickerPage": {
-    "A categorized emoji palette over the full Unicode set, with a tab per category, keyword search, and recently used entries. Artwork is resolved through IEmojiProvider, drawn from Forma's own sprites by default and falling back to the reader's platform font for anything the shipped set does not cover.": "Una paleta de emojis categorizada sobre el conjunto completo de Unicode, con una pestaña por categoría, búsqueda por palabras clave y entradas usadas recientemente. El arte se resuelve mediante IEmojiProvider, dibujado por defecto con los sprites propios de Forma y recurriendo a la fuente de emojis de la plataforma del lector para lo que el conjunto incluido no cubra.",
-    "Default": "Predeterminado",
-    "Every category is a tab, and every emoji carries its name as an accessible label. Type in the search box to match against names and keywords; search \"zzzz\" to see the no-match state.": "Cada categoría es una pestaña, y cada emoji lleva su nombre como etiqueta accesible. Escriba en el cuadro de búsqueda para buscar por nombres y palabras clave; busque «zzzz» para ver el estado sin coincidencias.",
-    "Nothing chosen yet.": "Aún no se ha elegido nada.",
-    "Chose {Emoji}.": "Se eligió {Emoji}.",
-    "Recently Used": "Usados Recientemente",
-    "A host that persists the recent list gets an extra leading tab. Choose an emoji here and it moves to the front.": "Un anfitrión que conserve la lista de recientes obtiene una pestaña inicial adicional. Elija un emoji aquí y pasará al principio.",
-    "Recent: {Emoji}": "Recientes: {Emoji}",
-    "Recent Limit": "Límite de Recientes",
-    "MaxRecent caps how many are kept. This one keeps three.": "MaxRecent limita cuántos se conservan. Este conserva tres.",
-    "Without Search": "Sin Búsqueda",
-    "Without Category Tabs": "Sin Pestañas de Categoría",
-    "Only the first category is reachable, so this suits a picker narrowed to one category.": "Solo se puede acceder a la primera categoría, por lo que esto conviene a un selector reducido a una sola categoría."
-  },
   "FormaMultiSelectPage": {
     "A chip-style multi-select with a searchable checkbox-list popover. Selected values render as removable tags; the popover stays anchored to its trigger wherever the page scrolls.": "Un selector múltiple con etiquetas y un menú emergente con casillas de verificación con búsqueda. Los valores seleccionados se muestran como etiquetas que se pueden quitar; el menú se mantiene anclado a su disparador sin importar el desplazamiento de la página.",
     "With Label and Placeholder": "Con Etiqueta y Marcador",

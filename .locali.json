@@ -10,6 +10,7 @@
     "src/Forma.Blazor.Showcase/Components/Pages/Inputs/.locales/es.json": ["LOC0113"],
     "src/Forma.Blazor.Showcase/Components/Pages/Layout/.locales/*.json": ["LOC0113"],
     "src/Forma.Blazor.Showcase/Components/Pages/Menus/.locales/es.json": ["LOC0113"],
+    "src/Forma.Blazor.Showcase/Components/Pages/Symbols/.locales/es.json": ["LOC0113"],
     // The fixtures prove two files standing for one anchor are both read: a host's root file in both forms, and a root's file beside one named for the assembly.
     "tests/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/es.json": ["LOC0117"],
     "tests/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/.locales/es.json": ["LOC0117"],

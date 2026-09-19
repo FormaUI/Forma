@@ -30,6 +30,21 @@
     "Medical car": "רכב רפואי",
     "This tab draws them from the Twemoji artwork package, which a host adds and registers itself: one drawing per emoji, identical on every device, fetched as a sprite sheet the first time one of its emoji is drawn.": "לשונית זו מציירת אותם מחבילת האומנות Twemoji, שהמארח מוסיף ורושם בעצמו: ציור אחד לכל אימוג'י, זהה בכל מכשיר, הנטען כגיליון ספרייטים בפעם הראשונה שאחד מהאימוג'ים שלו מצויר."
   },
+  "FormaEmojiPickerPage": {
+    "A categorized emoji palette over the full Unicode set, with a tab per category, keyword search, and recently used entries. Artwork is resolved through IEmojiProvider, drawn from Forma's own sprites by default and falling back to the reader's platform font for anything the shipped set does not cover.": "לוח אמוג'י מסודר בקטגוריות על פני מלוא ערכת Unicode, עם לשונית לכל קטגוריה, חיפוש לפי מילות מפתח ופריטים בשימוש לאחרונה. האמנות נפתרת דרך IEmojiProvider, מצוירת כברירת מחדל מהספרייטים של Forma עצמה, ונסוגה לגופן האמוג'י של הפלטפורמה עבור כל מה שהקטלוג המובנה אינו מכסה.",
+    "Default": "ברירת מחדל",
+    "Every category is a tab, and every emoji carries its name as an accessible label. Type in the search box to match against names and keywords; search \"zzzz\" to see the no-match state.": "כל קטגוריה היא לשונית, וכל אמוג'י נושא את שמו כתווית נגישה. הקלידו בתיבת החיפוש כדי להתאים לשמות ולמילות מפתח; חפשו \"zzzz\" כדי לראות את מצב חוסר ההתאמה.",
+    "Nothing chosen yet.": "עדיין לא נבחר דבר.",
+    "Chose {Emoji}.": "נבחר {Emoji}.",
+    "Recently Used": "בשימוש לאחרונה",
+    "A host that persists the recent list gets an extra leading tab. Choose an emoji here and it moves to the front.": "מארח ששומר את רשימת האחרונים מקבל לשונית נוספת בראש. בחרו כאן אמוג'י והוא יעבור לראש הרשימה.",
+    "Recent: {Emoji}": "אחרונים: {Emoji}",
+    "Recent Limit": "מגבלת אחרונים",
+    "MaxRecent caps how many are kept. This one keeps three.": "‏MaxRecent מגביל כמה נשמרים. זה שומר שלושה.",
+    "Without Search": "ללא חיפוש",
+    "Without Category Tabs": "ללא לשוניות קטגוריה",
+    "Only the first category is reachable, so this suits a picker narrowed to one category.": "רק הקטגוריה הראשונה נגישה, ולכן זה מתאים לבורר המצומצם לקטגוריה אחת."
+  },
   "FormaIconPage": {
     "The library's own glyphs, named for what they mean rather than for the set they are drawn from.": "הסמלים של הספרייה עצמה, הנקראים על שם המשמעות שלהם ולא על שם הערכה שממנה הם מצוירים.",
     "Every glyph ships as artwork inside the library, drawn as inline SVG, so a host registers nothing and loads no icon font; a host that wants a different set registers its own provider instead.": "כל סמל מגיע כאומנות בתוך הספרייה, מצויר כ-SVG מוטבע, כך שהמארח אינו רושם דבר ואינו טוען גופן סמלים; מארח שרוצה ערכה אחרת רושם ספק משלו.",

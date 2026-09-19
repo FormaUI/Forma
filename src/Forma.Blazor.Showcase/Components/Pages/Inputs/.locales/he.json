@@ -68,21 +68,6 @@
     "Campaign": "קמפיין",
     "A campaign period is required.": "יש לבחור תקופת קמפיין."
   },
-  "FormaEmojiPickerPage": {
-    "A categorized emoji palette over the full Unicode set, with a tab per category, keyword search, and recently used entries. Artwork is resolved through IEmojiProvider, drawn from Forma's own sprites by default and falling back to the reader's platform font for anything the shipped set does not cover.": "לוח אמוג'י מסודר בקטגוריות על פני מלוא ערכת Unicode, עם לשונית לכל קטגוריה, חיפוש לפי מילות מפתח ופריטים בשימוש לאחרונה. האמנות נפתרת דרך IEmojiProvider, מצוירת כברירת מחדל מהספרייטים של Forma עצמה, ונסוגה לגופן האמוג'י של הפלטפורמה עבור כל מה שהקטלוג המובנה אינו מכסה.",
-    "Default": "ברירת מחדל",
-    "Every category is a tab, and every emoji carries its name as an accessible label. Type in the search box to match against names and keywords; search \"zzzz\" to see the no-match state.": "כל קטגוריה היא לשונית, וכל אמוג'י נושא את שמו כתווית נגישה. הקלידו בתיבת החיפוש כדי להתאים לשמות ולמילות מפתח; חפשו \"zzzz\" כדי לראות את מצב חוסר ההתאמה.",
-    "Nothing chosen yet.": "עדיין לא נבחר דבר.",
-    "Chose {Emoji}.": "נבחר {Emoji}.",
-    "Recently Used": "בשימוש לאחרונה",
-    "A host that persists the recent list gets an extra leading tab. Choose an emoji here and it moves to the front.": "מארח ששומר את רשימת האחרונים מקבל לשונית נוספת בראש. בחרו כאן אמוג'י והוא יעבור לראש הרשימה.",
-    "Recent: {Emoji}": "אחרונים: {Emoji}",
-    "Recent Limit": "מגבלת אחרונים",
-    "MaxRecent caps how many are kept. This one keeps three.": "‏MaxRecent מגביל כמה נשמרים. זה שומר שלושה.",
-    "Without Search": "ללא חיפוש",
-    "Without Category Tabs": "ללא לשוניות קטגוריה",
-    "Only the first category is reachable, so this suits a picker narrowed to one category.": "רק הקטגוריה הראשונה נגישה, ולכן זה מתאים לבורר המצומצם לקטגוריה אחת."
-  },
   "FormaMultiSelectPage": {
     "A chip-style multi-select with a searchable checkbox-list popover. Selected values render as removable tags; the popover stays anchored to its trigger wherever the page scrolls.": "בורר רב-ערכי בסגנון תגיות עם חלונית קופצת הניתנת לחיפוש עם תיבות סימון. הערכים שנבחרו מוצגים כתגיות הניתנות להסרה; החלונית נשארת מעוגנת לכפתור המפעיל אותה בכל מקום שהדף גולל אליו.",
     "With Label and Placeholder": "עם תווית וטקסט מציין מקום",
