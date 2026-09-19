@@ -78,7 +78,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     /// <summary>The categories the tab strip offers, defaulting to the nine standard ones.</summary>
     [Parameter] public IReadOnlyList<EmojiGroup> Groups { get; set; } = DefaultGroups;
 
-    [Inject] private EmojiSpriteLoader SpriteLoader { get; set; } = default!;
+    [Inject] private IEmojiSpriteLoader SpriteLoader { get; set; } = default!;
 
     private List<EmojiGroup>? _tabs;
     private IReadOnlyList<EmojiInfo>? _matchingEmojis;

@@ -44,7 +44,7 @@ public static class ServiceCollectionExtensions
 
         services.AddFormaEmojiServices();
         // Scoped, because the sheets it has adopted are the ones in this circuit's own document.
-        services.TryAddScoped<EmojiSpriteLoader>();
+        services.TryAddScoped<IEmojiSpriteLoader, EmojiSpriteLoader>();
         services.AddFormaGlyphServices();
 
         services.AddFormaInputRouter(inputRouting);

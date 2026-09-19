@@ -23,8 +23,10 @@ public sealed class ServiceCollectionExtensionsTests
         var services = new ServiceCollection().AddFormaUI();
 
         // Assert
-        var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(EmojiSpriteLoader));
-        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+        var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IEmojiSpriteLoader));
+        Assert.Multiple(
+            () => Assert.Equal(typeof(EmojiSpriteLoader), descriptor.ImplementationType),
+            () => Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime));
     }
 
     [Fact]

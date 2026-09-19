@@ -14,7 +14,7 @@ using Microsoft.JSInterop;
 /// loader keeps a surface drawing hundreds of emoji from asking for the same sheet once per emoji. A navigation
 /// replaces the document's body, symbols included, so what the loader remembers is forgotten with it.
 /// </remarks>
-public sealed class EmojiSpriteLoader : IAsyncDisposable, IDisposable
+public sealed class EmojiSpriteLoader : IEmojiSpriteLoader, IAsyncDisposable, IDisposable
 {
     private readonly Dictionary<string, Task<bool>> _loadsBySheet = new(StringComparer.Ordinal);
     private readonly JSEnvironment _environment;
@@ -36,9 +36,7 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable, IDisposable
         _navigation?.LocationChanged += HandleLocationChanged;
     }
 
-    /// <summary>Adopts a sheet's symbols into the document, reporting whether they arrived.</summary>
-    /// <param name="sheet">The address of the sheet to load.</param>
-    /// <returns>Whether the sheet's symbols are in the document.</returns>
+    /// <inheritdoc />
     public Task<bool> LoadAsync(string sheet)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sheet);

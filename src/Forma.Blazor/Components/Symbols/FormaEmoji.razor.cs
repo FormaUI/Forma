@@ -23,7 +23,7 @@ public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : FormaElem
     /// <summary>The provider supplying this emoji's artwork, taken from the surrounding subtree or the registered provider when unset.</summary>
     [Parameter] public IEmojiProvider? Provider { get; set; }
 
-    [Inject] private EmojiSpriteLoader SpriteLoader { get; set; } = default!;
+    [Inject] private IEmojiSpriteLoader SpriteLoader { get; set; } = default!;
 
     [CascadingParameter] private IEmojiProvider? CascadingProvider { get; set; }
 
