@@ -29,12 +29,12 @@ service    → one instance per document that many callers register with
 ```
 
 Scripts and their wrappers ship together in an interop assembly, never in the components
-assembly. The core interop assembly is the floor: the interop bases every wrapper builds on,
+assembly. The JavaScript interop assembly is the floor: the interop bases every wrapper builds on,
 `JSModule`, `JSInterop` and the `IJSEnvironment` they take, and the scripts every other script
 builds on, directly under its `wwwroot/scripts/` with no wrapper. The common interop assembly
 holds every behavior and operation any component may attach, with the wrappers of components
 that belong to no feature. A feature with scripts of its own ships them, and their wrappers, in
-an interop assembly of its own. Every interop assembly is built on the core one, and a
+an interop assembly of its own. Every interop assembly is built on the JavaScript one, and a
 dependency between two others is declared as a project reference, so the graph stays visible.
 
 The assemblies are served side by side under one content root, each with its scripts under
@@ -58,7 +58,7 @@ root, a service's script beside the wrapper that owns it.
 - Do file a script as an operation when it is a stateless DOM operation, or a set of related ones.
 - Do file a script as a component when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
 - Do file a script as a service when there is one of it per document and its callers register with it rather than attach it: an input router keeps every scope's routes and the active ordering across the whole page.
-- Do file what several scripts share, and nothing in C# reaches, in the core interop assembly: a module that tells a .NET owner what happened, a module naming what native controls claim for themselves. A shared piece is never filed as an operation merely because it is stateless.
+- Do file what several scripts share, and nothing in C# reaches, in the JavaScript interop assembly: a module that tells a .NET owner what happened, a module naming what native controls claim for themselves. A shared piece is never filed as an operation merely because it is stateless.
 - Do name a service for what it is to the page: `InputRouter`.
 - Do name a component script after the component it supports with the `Forma` prefix dropped, so a dialog component is served by `Dialog.js` and a rich-text editor by `RichTextEditor.js`.
 - Do split a component script that has grown past one concern into `{Name}/*.mjs` modules behind a `{Name}.js` entry point beside them; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.

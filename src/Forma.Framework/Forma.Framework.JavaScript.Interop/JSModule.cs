@@ -1,4 +1,4 @@
-namespace Forma.Framework.Core.Interop;
+namespace Forma.Framework.JavaScript.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 

@@ -2,7 +2,7 @@ namespace Forma.Framework.Common.Interop.Operations;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Core.Interop;
+using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

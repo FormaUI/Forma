@@ -1,6 +1,6 @@
 namespace Forma.Framework.Input.Interop.Tests;
 
-using Forma.Framework.Core.Interop;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 

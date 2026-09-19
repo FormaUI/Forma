@@ -1,4 +1,4 @@
-namespace Forma.Framework.Core.Interop;
+namespace Forma.Framework.JavaScript.Interop;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;

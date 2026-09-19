@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Features.Emojis;
 
 using Forma.Framework.Common.Interop.Operations;
-using Forma.Framework.Core.Interop;
+using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;

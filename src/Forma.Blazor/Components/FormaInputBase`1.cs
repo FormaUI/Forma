@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components;
 
-using Forma.Framework.Core.Interop;
 using Forma.Framework.Css;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

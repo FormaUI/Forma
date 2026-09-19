@@ -1,6 +1,6 @@
 namespace Forma.Framework.Input.Interop;
 
-using Forma.Framework.Core.Interop;
+using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;

@@ -8,13 +8,13 @@ const resolved = path => decodeURIComponent(new URL(path, import.meta.url).pathn
 const getInteropScriptsPath = name => resolved(`../../src/Forma.Framework/Forma.Framework.${name}.Interop/wwwroot/scripts/`);
 
 const scripts = {
-    core: getInteropScriptsPath('Core'),
+    core: getInteropScriptsPath('JavaScript'),
     common: getInteropScriptsPath('Common'),
     composer: getInteropScriptsPath('Composer'),
     input: getInteropScriptsPath('Input'),
 };
 
-// One alias per assembly that ships scripts, each pointing at that assembly's scripts root. The
+// One alias per assembly that ships scripts, named for the root it is served under and pointing at its scripts root. The
 // assemblies are served side by side under _content/forma/, so a script reaches another assembly
 // by climbing to that root, `../../../core/scripts/FrameScheduler.js`; here each such climb is resolved to
 // the assembly's source folder instead.

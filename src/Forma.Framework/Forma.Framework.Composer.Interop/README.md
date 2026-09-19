@@ -3,7 +3,7 @@
 The browser side of the composer's rich text editor: the `contenteditable` canvas, the formatting
 commands that act on it, and the selection they act on, with the C# wrapper the editor component
 reaches it through. It is not a package; it ships inside `2Site.Forma.Blazor.Pro.Composer`, and a
-host never references it. It is built on `Forma.Framework.Core.Interop`, whose `JSInterop` the
+host never references it. It is built on `Forma.Framework.JavaScript.Interop`, whose `JSInterop` the
 wrapper derives from and whose `Sanitizer.js` the script imports.
 
 The assembly is named for one concept, so its script sits directly under `wwwroot/scripts/` and

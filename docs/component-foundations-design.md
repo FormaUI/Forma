@@ -75,7 +75,7 @@ that fails to load, reaches a host through the log the host already configures.
   and `JS` for the environment, never `ComposerContext` or `JSEnvironment`.
 - **The JS environment is a runtime.** `IJSEnvironment : IJSRuntime` adds the owner's
   `RuntimeId` and `Logger` to the runtime, so a wrapper calls it as the runtime it is
-  and logs through it as its owner. It lives in `Forma.Framework.Core.Interop`, which
+  and logs through it as its owner. It lives in `Forma.Framework.JavaScript.Interop`, which
   knows nothing of components; the component context builds its environment from its
   own identity and log, so the two can never disagree. `JSInterop` and `JSModule` take
   the `JS` casing of `Microsoft.JSInterop` and of every Forma type named for it.
@@ -253,7 +253,7 @@ A dialog base a composite owns derives from `FormaComponentBase` and overrides
 
 | Contract | Null object | Lives in | Behavior |
 | --- | --- | --- | --- |
-| `IJSRuntime` | `UnavailableJSRuntime.Instance` | `Forma.Framework.Core.Interop` | Throws `JSRuntimeUnavailableException` on any call. |
+| `IJSRuntime` | `UnavailableJSRuntime.Instance` | `Forma.Framework.JavaScript.Interop` | Throws `JSRuntimeUnavailableException` on any call. |
 | `ILoggerFactory` | `NullLoggerFactory.Instance` | `Microsoft.Extensions.Logging.Abstractions` | Discards. |
 | `ILogger<T>` | `NullLogger<T>` | `Microsoft.Extensions.Logging.Abstractions` | Discards; for services that inject a typed logger. |
 | `IStringLocaleFactory` | `NullStringLocaleFactory.Instance` | `Forma.Framework.Localization` | Every key is its own text, holes and plurals resolved for the source language, as the JSON locale does when no file matches. |

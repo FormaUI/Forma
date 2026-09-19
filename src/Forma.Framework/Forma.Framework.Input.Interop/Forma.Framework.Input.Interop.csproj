@@ -11,7 +11,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.Framework.Input\Forma.Framework.Input.csproj" />
-        <ProjectReference Include="..\Forma.Framework.Core.Interop\Forma.Framework.Core.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
     </ItemGroup>
 
 </Project>

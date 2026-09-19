@@ -1,12 +1,12 @@
 namespace Forma.Blazor;
 
 using Forma.Blazor.Features.Emojis;
-using Forma.Framework.Core.Interop;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Feedback;
 using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 using Forma.Framework.Sanitization;
 using Forma.Framework.Timing;

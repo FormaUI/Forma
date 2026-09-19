@@ -1,13 +1,13 @@
 namespace Forma.Blazor.Tests;
 
 using Forma.Blazor.Features.Emojis;
-using Forma.Framework.Core.Interop;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Icons;
 using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Localization;
 using Forma.Tests.Shared;
 

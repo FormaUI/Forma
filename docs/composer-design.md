@@ -74,7 +74,7 @@ The split exists because a plugin may live outside the composer's own package, a
 |---|---|---|
 | `Forma.Framework.Composer.Extensibility` | `Forma.Framework.Composer` | `Forma.Framework.Plugins`, `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
 | `Forma.Framework.Composer` | `Forma.Framework.Composer` | the contracts, `Forma.Framework.Icons`, `Forma.Framework.Toolbar` |
-| `Forma.Framework.Composer.Interop` | `Forma.Framework.Composer.Interop` | `Forma.Framework.Core.Interop` + ASP.NET Core |
+| `Forma.Framework.Composer.Interop` | `Forma.Framework.Composer.Interop` | `Forma.Framework.JavaScript.Interop` + ASP.NET Core |
 | `Forma.AddOns.Composer.Markdown` | `Forma.Framework.Composer.Markdown` | the contracts + Markdig |
 | `Forma.AddOns.Composer.TextMate` | `Forma.Framework.Composer.TextMate` | the contracts + TextMateSharp |
 | `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the contracts + KaTeX browser assets |

@@ -49,7 +49,7 @@ A test that passes alone and fails under load is broken, not unlucky: its assert
 
 ## JavaScript tests
 
-The script test project runs the `wwwroot/scripts/` modules of every assembly that ships scripts under Vitest and happy-dom. It reaches each assembly through an alias named for it and holds that assembly's tests in a folder of the same name, laid out as the assembly's `wwwroot/scripts/` is.
+The script test project runs the `wwwroot/scripts/` modules of every assembly that ships scripts under Vitest and happy-dom. It reaches each assembly through an alias named for the root the assembly is served under and holds that assembly's tests in a folder of the same name, laid out as the assembly's `wwwroot/scripts/` is.
 
 - Do add a `{Name}.test.js` beside its siblings whenever you add or change a behavior, operation, component or service module.
 - Do drive it with `npm test` from that project; it is a separate runner and `dotnet test` does not reach it.

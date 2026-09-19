@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Composer.Assets;
 
 using Forma.Framework.Common.Interop.Operations;
 using Forma.Framework.Composer.Assets;
-using Forma.Framework.Core.Interop;
+using Forma.Framework.JavaScript.Interop;
 
 /// <summary>Loads browser assets a plugin declares, caching what has already loaded per circuit.</summary>
 internal sealed class JSComposerAssetLoader(IJSEnvironment js) : IComposerAssetLoader

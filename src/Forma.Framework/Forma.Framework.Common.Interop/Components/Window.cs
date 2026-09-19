@@ -1,6 +1,6 @@
 namespace Forma.Framework.Common.Interop.Components;
 
-using Forma.Framework.Core.Interop;
+using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

@@ -1,4 +1,4 @@
-# Forma.Framework.Core.Interop
+# Forma.Framework.JavaScript.Interop
 
 The floor every interop assembly stands on: the C# bases a wrapper is built from, and the scripts
 the other interop assemblies' scripts import. It is not a package; it ships inside

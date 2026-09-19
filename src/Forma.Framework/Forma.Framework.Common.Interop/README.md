@@ -3,7 +3,7 @@
 The behaviors and operations any component may attach or call, and the browser side of the
 components that belong to no feature, each script beside the C# wrapper that reaches it. It is not
 a package; it ships inside `2Site.Forma.Blazor`, and a host never references it. It is built on
-`Forma.Framework.Core.Interop`, whose bases every wrapper derives from and whose scripts its own
+`Forma.Framework.JavaScript.Interop`, whose bases every wrapper derives from and whose scripts its own
 scripts import.
 
 The assembly serves many concepts, so it sorts by kind: a script lives under

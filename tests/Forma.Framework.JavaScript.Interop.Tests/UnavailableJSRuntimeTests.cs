@@ -1,6 +1,6 @@
-namespace Forma.Framework.Core.Interop.Tests;
+namespace Forma.Framework.JavaScript.Interop.Tests;
 
-using Forma.Framework.Core.Interop;
+using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.JSInterop;
 
