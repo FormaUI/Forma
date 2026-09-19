@@ -126,6 +126,16 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return [.. anchorNames.Distinct(StringComparer.Ordinal)];
     }
 
+    /// <summary>The root namespace an assembly's anchors are counted from: the one its config declares, or its name.</summary>
+    /// <param name="assemblyName">The assembly's name.</param>
+    /// <exception cref="LocaleConfigException">The assembly's config file is malformed, or the source holds more than one for it.</exception>
+    public string GetRootNamespace(string assemblyName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(assemblyName);
+
+        return _roots.GetOrAdd(assemblyName, CreateRoot).RootNamespace;
+    }
+
     /// <summary>Every name the source's own store holds, config files included, written with <see cref="FolderSeparator"/> between folders.</summary>
     protected abstract IEnumerable<string> EnumerateNames();
 
@@ -134,7 +144,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     protected virtual IEnumerable<string> EnumerateCultureNames(string cultureName)
         => [];
 
-    /// <summary>Where an assembly's names begin when it has no config file or its file names no <c>rootDir</c>.</summary>
+    /// <summary>Where an assembly's names begin when it has no config file.</summary>
     /// <param name="assemblyName">The assembly's name.</param>
     protected abstract string GetDefaultRootDir(string assemblyName);
 
@@ -142,21 +152,6 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <param name="rootDir">Where the root's names begin.</param>
     protected virtual string GetRootDirOutsideRootNamespace(string rootDir)
         => rootDir;
-
-    /// <summary>Where names begin when a root's <c>rootDir</c> climbs to or past where the source's names start; refused unless the source says where such a root lands.</summary>
-    /// <param name="configName">The config file naming the <c>rootDir</c>.</param>
-    /// <param name="rootDir">The <c>rootDir</c> as written.</param>
-    /// <param name="rootNamespace">The root namespace the config file puts in force.</param>
-    /// <exception cref="LocaleConfigException">The source refuses such a root.</exception>
-    protected virtual string GetRootDirPastStart(string configName, string rootDir, string rootNamespace)
-        => throw new LocaleConfigException(
-            $"'{GetDisplayName(configName)}' names '{rootDir}' as '{LocaleConfig.RootDirKey}', which climbs to or past where the source's names begin.");
-
-    /// <summary>Whether a config file in a folder belongs to an assembly's files; every file does in a source holding one assembly's.</summary>
-    /// <param name="folder">The folder the file sits in.</param>
-    /// <param name="assemblyName">The assembly's name.</param>
-    protected virtual bool BelongsToAssembly(string folder, string assemblyName)
-        => true;
 
     /// <summary>The name a file has in anything thrown or reported, the name itself unless the source knows it better.</summary>
     /// <param name="name">The file's name in the source.</param>
@@ -167,6 +162,30 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <param name="name">The file's name in the source.</param>
     protected virtual Stream? OpenFile(string name)
         => null;
+
+    /// <summary>The assembly's config file with the folder it sits in, or null where the assembly ships none: the one config file among the source's names, unless a derived source knows the assembly's config another way.</summary>
+    /// <param name="assemblyName">The assembly's name.</param>
+    /// <exception cref="LocaleConfigException">The source holds more than one config file, or the file is malformed.</exception>
+    protected virtual (string Folder, LocaleConfig Config)? GetConfig(string assemblyName)
+    {
+        var configFiles = new List<(string Folder, string Name)>();
+
+        foreach (var name in GetNames())
+        {
+            if (TryGetConfigFolder(name, out var folder))
+            {
+                configFiles.Add((folder, name));
+            }
+        }
+
+        if (configFiles is [var first, var second, ..])
+        {
+            throw new LocaleConfigException(
+                $"'{GetDisplayName(first.Name)}' and '{GetDisplayName(second.Name)}' both configure '{assemblyName}'; an assembly has one '{LocaleConfig.FileName}', at its root.");
+        }
+
+        return configFiles is [var configFile] ? (configFile.Folder, ReadConfig(configFile.Name)) : null;
+    }
 
     /// <summary>Reads a locale file the source lists, or null when it cannot be opened; opens it for the format to read unless a derived class already holds it read.</summary>
     /// <param name="name">The file's name in the source.</param>
@@ -205,16 +224,6 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         => segments.Length == 1
             || (segments.Length > rootSegments.Length && segments.AsSpan(0, rootSegments.Length).SequenceEqual(rootSegments));
 
-    // A project or solution file stands for the folder it sits in.
-    private static bool IsProjectOrSolutionFile(string name)
-    {
-        var extension = Path.GetExtension(name);
-
-        return extension.Equals(".sln", StringComparison.OrdinalIgnoreCase)
-            || extension.Equals(".slnx", StringComparison.OrdinalIgnoreCase)
-            || (extension.Length >= ".proj".Length && extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase));
-    }
-
     private IReadOnlyList<string> GetNames()
         => LazyInitializer.EnsureInitialized(ref _names, () => [.. EnumerateNames()]);
 
@@ -237,67 +246,25 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return false;
     }
 
-    // An assembly has at most one config file, which marks where its names begin and puts its keys in force for every file beneath; without one its files read by the defaults.
+    // An assembly has at most one config file, at its root, which puts its keys in force for every file beneath; without one its files read by the defaults.
     private LocaleRoot CreateRoot(string assemblyName)
     {
-        var configFiles = new List<(string Folder, string Name)>();
-
-        foreach (var name in GetNames())
-        {
-            if (TryGetConfigFolder(name, out var folder) && BelongsToAssembly(folder, assemblyName))
-            {
-                configFiles.Add((folder, name));
-            }
-        }
-
-        if (configFiles is [var first, var second, ..])
-        {
-            throw new LocaleConfigException(
-                $"'{GetDisplayName(first.Name)}' and '{GetDisplayName(second.Name)}' both configure '{assemblyName}'; an assembly has one '{LocaleConfig.FileName}'.");
-        }
-
-        if (configFiles is not [var configFile])
+        if (GetConfig(assemblyName) is not var (folder, config))
         {
             return new LocaleRoot(GetDefaultRootDir(assemblyName), assemblyName, LocaleConfig.DefaultLocalesDir, DefaultPaths);
         }
 
-        var config = ReadConfig(configFile.Name);
-        var rootNamespace = config.RootNamespace ?? assemblyName;
-        var rootDir = config.RootDir is { } written ? ResolveRootDir(configFile, written, rootNamespace) : configFile.Folder;
+        var rootDir = config.RootDir is { } written ? JoinFolders(folder, written) : folder;
 
-        return new LocaleRoot(rootDir, rootNamespace, config.LocalesDir ?? LocaleConfig.DefaultLocalesDir, config.Paths ?? DefaultPaths);
+        return new LocaleRoot(rootDir, config.RootNamespace ?? assemblyName, config.LocalesDir ?? LocaleConfig.DefaultLocalesDir, config.Paths ?? DefaultPaths);
     }
 
-    // A rootDir is walked from the config file's own folder, and one ending in a project or solution file names that file's folder.
-    private string ResolveRootDir((string Folder, string Name) configFile, string rootDir, string rootNamespace)
+    // A rootDir is written with '/' and sits beneath the config file's own folder.
+    private string JoinFolders(string folder, string rootDir)
     {
-        List<string> segments = configFile.Folder.Length == 0 ? [] : [.. configFile.Folder.Split(FolderSeparator)];
-        var parts = rootDir.Split(Path.AltDirectorySeparatorChar);
-        var folderCount = IsProjectOrSolutionFile(parts[^1]) ? parts.Length - 1 : parts.Length;
+        var written = rootDir.Replace(Path.AltDirectorySeparatorChar, FolderSeparator);
 
-        foreach (var part in parts.AsSpan(0, folderCount))
-        {
-            switch (part)
-            {
-                case ".":
-                    break;
-
-                case "..":
-                    if (segments.Count <= 1)
-                    {
-                        return GetRootDirPastStart(configFile.Name, rootDir, rootNamespace);
-                    }
-
-                    segments.RemoveAt(segments.Count - 1);
-                    break;
-
-                default:
-                    segments.Add(part);
-                    break;
-            }
-        }
-
-        return string.Join(FolderSeparator, segments);
+        return folder.Length == 0 ? written : $"{folder}{FolderSeparator}{written}";
     }
 
     // Each file is placed at every anchor the assembly's paths read it for, in the order of the paths.

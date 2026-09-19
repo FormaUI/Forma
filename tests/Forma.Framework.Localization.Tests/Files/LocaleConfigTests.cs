@@ -20,7 +20,7 @@ public sealed class LocaleConfigTests
             var settings = Read("""
                 {
                   "rootNamespace": "Contoso.Widgets.Plugins",
-                  "rootDir": "../../../Contoso.slnx",
+                  "rootDir": "Strings/Main",
                   "localesDir": "i18n/strings",
                   "paths": ["$RootDir/$AnchorName/$LocalesDir/$Culture$Extension", "$RootDir/$AnchorName.$Culture$Extension"]
                 }
@@ -29,7 +29,7 @@ public sealed class LocaleConfigTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal("Contoso.Widgets.Plugins", settings.RootNamespace),
-                () => Assert.Equal("../../../Contoso.slnx", settings.RootDir),
+                () => Assert.Equal("Strings/Main", settings.RootDir),
                 () => Assert.Equal("i18n/strings", settings.LocalesDir),
                 () => Assert.Equal(
                     ["$RootDir/$AnchorName/$LocalesDir/$Culture$Extension", "$RootDir/$AnchorName.$Culture$Extension"],
@@ -37,11 +37,8 @@ public sealed class LocaleConfigTests
         }
 
         [Theory]
-        [InlineData("./Contoso.csproj")]
-        [InlineData("./Widgets/Contoso.csproj")]
-        [InlineData("../../../Contoso.slnx")]
         [InlineData("strings")]
-        [InlineData("..")]
+        [InlineData("strings/main")]
         public void Should_read_a_relative_root_dir_as_written(string rootDir)
             => Assert.Equal(rootDir, Read($$"""{ "rootDir": "{{rootDir}}" }""").RootDir);
 
@@ -78,10 +75,12 @@ public sealed class LocaleConfigTests
         [InlineData("""{ "rootNamespace": "Contoso..Widgets" }""", "not a namespace")]
         [InlineData("""{ "rootNamespace": "Contoso Widgets" }""", "not a namespace")]
         [InlineData("""{ "rootDir": "" }""", "'rootDir'")]
-        [InlineData("""{ "rootDir": "/strings" }""", "relative path")]
-        [InlineData("""{ "rootDir": "C:/strings" }""", "relative path")]
-        [InlineData("""{ "rootDir": "strings\\here" }""", "relative path")]
-        [InlineData("""{ "rootDir": "strings//here" }""", "relative path")]
+        [InlineData("""{ "rootDir": "/strings" }""", "relative folder")]
+        [InlineData("""{ "rootDir": "C:/strings" }""", "relative folder")]
+        [InlineData("""{ "rootDir": "strings\\here" }""", "relative folder")]
+        [InlineData("""{ "rootDir": "strings//here" }""", "relative folder")]
+        [InlineData("""{ "rootDir": "../strings" }""", "relative folder")]
+        [InlineData("""{ "rootDir": "./Contoso.csproj" }""", "relative folder")]
         [InlineData("""{ "localesDir": "../strings" }""", "relative folder")]
         [InlineData("""{ "localesDir": "i18n\\strings" }""", "relative folder")]
         [InlineData("""{ "localesDir": "/strings" }""", "relative folder")]
@@ -109,7 +108,7 @@ public sealed class LocaleConfigTests
     {
         [Theory]
         [InlineData(LocaleConfig.RootNamespaceKey, "Contoso.Widgets")]
-        [InlineData(LocaleConfig.RootDirKey, "./Contoso.csproj")]
+        [InlineData(LocaleConfig.RootDirKey, "strings/main")]
         [InlineData(LocaleConfig.LocalesDirKey, "i18n/strings")]
         public void Should_accept_a_value_a_key_owns(string key, string value)
         {
@@ -125,7 +124,7 @@ public sealed class LocaleConfigTests
         [Theory]
         [InlineData(LocaleConfig.RootNamespaceKey, "", "names nothing")]
         [InlineData(LocaleConfig.RootNamespaceKey, "Contoso..Widgets", "not a namespace")]
-        [InlineData(LocaleConfig.RootDirKey, "/strings", "relative path")]
+        [InlineData(LocaleConfig.RootDirKey, "/strings", "relative folder")]
         [InlineData(LocaleConfig.LocalesDirKey, "../strings", "relative folder")]
         public void Should_say_what_is_wrong_with_a_value_a_key_refuses(string key, string value, string expected)
         {

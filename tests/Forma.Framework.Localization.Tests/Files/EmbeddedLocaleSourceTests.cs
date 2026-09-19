@@ -150,10 +150,8 @@ public sealed class EmbeddedLocaleSourceTests
     public sealed class RootDirs
     {
         [Theory]
+        [InlineData("Contoso.Widgets..locale.json", "Strings", "Contoso.Widgets.Strings.Bars..locales.he.fake")]
         [InlineData("Contoso.Widgets..locale.json", "Strings/Main", "Contoso.Widgets.Strings.Main.Bars..locales.he.fake")]
-        [InlineData("Contoso.Widgets.Build..locale.json", "../Contoso.Widgets.csproj", "Contoso.Widgets.Bars..locales.he.fake")]
-        [InlineData("Contoso.Widgets.Src.Core..locale.json", "../../Contoso.slnx", "Contoso.Widgets.Bars..locales.he.fake")]
-        [InlineData("Contoso.Widgets..locale.json", "./Contoso.Widgets.csproj", "Contoso.Widgets.Bars..locales.he.fake")]
         public void Should_begin_the_names_where_the_root_dir_leads(string configName, string rootDir, string fileName)
         {
             // Arrange
@@ -168,21 +166,6 @@ public sealed class EmbeddedLocaleSourceTests
             Assert.Equal([new LocaleSourceEntry(fileName, "Toolbar", "Bold", "found")], entries);
         }
 
-        [Fact]
-        public void Should_begin_the_names_at_the_root_namespace_when_the_root_dir_climbs_past_it()
-        {
-            // Arrange
-            var assembly = new FakeAssembly(Assembly) { Resources = { ["Contoso.Widgets.Deep.Nest..locale.json"] = """{ "rootNamespace": "Contoso.Widgets", "rootDir": "../../../.." }""" } };
-            var format = new FakeLocaleFileFormat();
-            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("at the root namespace"));
-            AddFile(assembly, format, "Contoso.Widgets.Deep.Nest.Bars..locales.he.fake", CreateToolbarSection("where the settings sit"));
-
-            // Act
-            var entries = Read(assembly, format);
-
-            // Assert
-            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Bars..locales.he.fake", "Toolbar", "Bold", "at the root namespace")], entries);
-        }
     }
 
     // A file named for its culture alone never reaches a satellite, so these read a form the build moves there.

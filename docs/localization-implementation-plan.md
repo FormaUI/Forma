@@ -209,12 +209,12 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
    describes.
 
 8. **Two files, one concern each.** The runtime's configuration moves out of `.locali.json` into
-   `.locale.json`, read by `LocaleConfig`: one optional file per assembly, embedded with its files
-   or laid in its folder inside the host's, applying to every file of the assembly and cascading
-   nowhere, since it is a runtime file the assembly ships. `.locali.json` keeps the linter's
-   `ignoreDiagnostics` and `excludeFiles` alone and its `.editorconfig`-style cascade, and the
-   runtime never reads it. `$tools` leaves the locale files, so a file holds translations and
-   nothing a tool reads; a per-file exception is written in `.locali.json`.
+   `.locale.json`, read by `LocaleConfig`: one optional file per assembly, embedded at its root,
+   applying to every file of the assembly and cascading nowhere, since it is a runtime file the
+   assembly ships. `.locali.json` keeps the linter's `ignoreDiagnostics` and `excludeFiles`
+   alone and its `.editorconfig`-style cascade, and the runtime never reads it. `$tools` leaves
+   the locale files, so a file holds translations and nothing a tool reads; a per-file exception
+   is written in `.locali.json`.
 
    **Gate:** the suites green in both repositories, the linter reporting nothing over
    `Forma.slnx`, and a `.locale.json` the runtime would refuse reported where it is written.
@@ -226,8 +226,15 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
      assembly. A folder read differently states that in the assembly's paths. The nested rule
      step 5 planned to write is gone with it.
    - **The linter reads `.locale.json` as a file of its own.** LOC0022 reports one the runtime
-     would refuse, a key the runtime does not read, or two files for one assembly. LOC0114
-     retires with `$tools`.
+     would refuse, a key the runtime does not read, two files for one assembly, one embedded
+     anywhere but the project's root, or one laid in a host's folder. LOC0114 retires with
+     `$tools`.
+   - **The config sits at the assembly's root.** Its `rootDir` is a folder beneath it, so the
+     climbing and project-file forms are gone, and with them the rule step 5 planned for a
+     `rootDir` climbing past the root namespace.
+   - **A host lays no config.** The host's folder for an assembly is laid out by the root
+     namespace the assembly's own file declares, which the runtime carries over; the assemblies
+     whose root namespace is not their name declare it in a file of their own.
 
 ## Deliberately out of scope
 
@@ -238,5 +245,4 @@ step changes what the Showcase reads, a visible-browser walk of its pages in `en
 
 ## Open
 
-Step 5's two remaining rules: two files of one source standing for one anchor, and a `rootDir`
-climbing past the project's root namespace.
+Step 5's one remaining rule: two files of one source standing for one anchor.

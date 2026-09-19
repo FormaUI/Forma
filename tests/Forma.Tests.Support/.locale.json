@@ -1,7 +1,7 @@
 {
-  // This assembly's root namespace is not its name, so the root is named here, with the strings in a folder of their own.
+  // The localized types sit under a root namespace of their own, with their strings in a folder of their own.
   "rootNamespace": "Forma.Tests.Localization.Rooted",
-  "rootDir": "Strings",
+  "rootDir": "Localization/Rooted/Strings",
   // The root's own file is named for the assembly, beside the default layout.
   "paths": ["$RootDir/$AssemblyName.$Culture$Extension", "$RootDir/$AnchorName/$LocalesDir/$Culture$Extension"]
 }

@@ -35,11 +35,6 @@ public sealed class EmbeddedLocaleSource(Assembly assembly, ILocaleFileFormat fo
     protected override string GetRootDirOutsideRootNamespace(string rootDir)
         => string.Empty;
 
-    // No resource name reaches above the project's root namespace, so a root climbing past it lands there.
-    /// <inheritdoc />
-    protected override string GetRootDirPastStart(string configName, string rootDir, string rootNamespace)
-        => rootNamespace;
-
     /// <inheritdoc />
     protected override Stream? OpenFile(string name)
         => _assembly.GetManifestResourceStream(name)

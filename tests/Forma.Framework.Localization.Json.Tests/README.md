@@ -58,14 +58,15 @@ never to one folder.
 ## Settings embedded beside the files
 
 A `.locale.json` in this assembly naming a root would move every fixture above, so the fixture
-proving a root named by an embedded config sits in the `Forma.Tests.Support` assembly instead,
-under `Localization/Rooted/`. That assembly's root namespace, `Forma.Tests`, is not its name, which
-is the case the config exists for.
+proving a root named by an embedded config sits in the `Forma.Tests.Support` assembly instead: its
+`.locale.json` at the project root names `Forma.Tests.Localization.Rooted` as the root namespace,
+which is not the assembly's name, and `Localization/Rooted/Strings` as the folder its files
+begin in.
 
 | Type | What it covers | Files |
 |---|---|---|
-| `RootedWidget` | A root named by an embedded `.locale.json`, by its `rootNamespace` and a `rootDir` naming a folder, read through the root's `.locales` file and a file named for the assembly, a form the config adds to the default | `Rooted/.locale.json`, `Rooted/Strings/.locales/he.json`, `Rooted/Strings/Forma.Tests.Support.he.json` |
-| `RootedToolbar` | A folder beneath the declared root, read by the root's paths as any folder is | `Rooted/Strings/Bars/.locales/he.json` |
+| `RootedWidget` | A root named by the embedded `.locale.json`, by its `rootNamespace` and a `rootDir` naming a folder beneath the project's root, read through the root's `.locales` file and a file named for the assembly, a form the config adds to the default | `.locale.json`, `Localization/Rooted/Strings/.locales/he.json`, `Localization/Rooted/Strings/Forma.Tests.Support.he.json` |
+| `RootedToolbar` | A folder beneath the declared root, read by the root's paths as any folder is | `Localization/Rooted/Strings/Bars/.locales/he.json` |
 
 ## The csproj entries
 
@@ -101,10 +102,10 @@ is the type's name, and each folder's files sit in its own `.locales` folder or 
 The keys the host files change on `PathScoped` and `ForeignRoot` are not the ones the other tests
 read, so those tests see the embedded translation as before.
 
-`Hosts/` holds host folders a test names in place of the default one, since a root named in the
-default folder would move every other fixture there. `Hosts/Rooted/` names `Contoso.Widgets` as the
-root in its assembly folder's `.locale.json`, so `ForeignRoot` is read from its own folder's file and
-through the sections of the root's file, and a file whose path does not meet that root is ignored.
+`Hosts/` holds host folders a test names in place of the default one. `Hosts/Rooted/` holds the
+support assembly's folder, laid out by the root namespace that assembly's own `.locale.json`
+declares and holding no config of its own, so `RootedWidget` is read from its own folder's file and
+through the sections of the root's file, and a file laid out by the type's full name is ignored.
 
 ## Before you move anything
 

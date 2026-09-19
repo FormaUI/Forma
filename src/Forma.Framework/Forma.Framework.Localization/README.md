@@ -243,11 +243,11 @@ each file beside the folder or type it localizes, as `Components/Bars.es.json` o
 { "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }
 ```
 
-`localesDir` renames the `.locales` folder, and the file marks where the assembly's files begin,
-naming the root namespace with `rootNamespace` where it is not the assembly's name and the folder
-its files begin in with `rootDir`. An assembly has one such file at most, applying to every file
-it embeds, and none where the defaults serve; the file is the runtime's alone, and a tool's
-configuration never sits in it.
+`localesDir` renames the `.locales` folder, and the file, embedded at the assembly's root, marks
+where its files begin, naming the root namespace with `rootNamespace` where it is not the
+assembly's name and a folder beneath the root where its files begin with `rootDir`. An assembly
+has one such file at most, at its root, applying to every file it embeds, and none where the
+defaults serve; the file is the runtime's alone, and a tool's configuration never sits in it.
 
 Any node may hold a `$shared` section, whose entries every type reached through that node gets.
 Here the assembly's file shares `Bold` and `Italic` with every type it reaches, `Composer` shares
@@ -306,14 +306,14 @@ folder, the file in the folder's own `.locales` wins.
 The same precedence applies, and a host's entry wins over the assembly's own at the same position,
 so a host file holds only the keys it changes and every other key keeps the assembly's translation.
 
-A host file completes a type's name from the assembly's name, so the host's layout follows the
-namespace rather than the embedding. For an assembly whose root namespace is not its name, a
-`.locale.json` in the assembly's folder names the root, as
-`{ "rootNamespace": "Forma.Framework.Resources.Office" }`, and the paths and sections then complete
-the name from there: beneath that file,
+A host file completes a type's name from the assembly's root namespace, so the host's layout
+follows the namespace rather than the embedding, and a host lays no config of its own. For an
+assembly whose root namespace is not its name, the assembly's own `.locale.json` declares it, as
+`{ "rootNamespace": "Forma.Framework.Resources.Office" }`, and the host's folder follows:
 `.locales/Forma.AddOns.Resources.Office/.locales/es.json` with an `OfficeResourceProvider` section
-localizes `Forma.Framework.Resources.Office.OfficeResourceProvider`. Where no config file names a
-root, a type whose namespace does not start with the assembly's name is laid out by its full name.
+localizes `Forma.Framework.Resources.Office.OfficeResourceProvider`. Where an assembly declares no
+root namespace, a type whose namespace does not start with the assembly's name is laid out by its
+full name.
 
 The folder has to reach the application's output, and a project marks it as content copied to the
 output directory, web project or not: the SDK's own globs pass over a folder whose name starts

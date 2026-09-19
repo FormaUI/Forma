@@ -6,7 +6,7 @@ using System.Text.Json;
 
 /// <summary>What an assembly's <c>.locale.json</c> says about its locale files; a key the file leaves out is null.</summary>
 /// <param name="RootNamespace">The root namespace the assembly's anchors are counted from.</param>
-/// <param name="RootDir">Where the source's names begin, as a path relative to the file's own folder; one ending in a project or solution file means that file's folder.</param>
+/// <param name="RootDir">The folder beneath the assembly's root where its files begin, written with <c>/</c> between folders.</param>
 /// <param name="LocalesDir">The name a folder of locale files has, written with <c>/</c> between folders.</param>
 /// <param name="Paths">The paths the assembly's files are read by, replacing the default ones.</param>
 public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string? LocalesDir, IReadOnlyList<LocalePath>? Paths)
@@ -17,7 +17,7 @@ public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string
     /// <summary>The key naming the root namespace.</summary>
     public const string RootNamespaceKey = "rootNamespace";
 
-    /// <summary>The key naming where the source's names begin.</summary>
+    /// <summary>The key naming the folder the assembly's files begin in.</summary>
     public const string RootDirKey = "rootDir";
 
     /// <summary>The key naming the folder of locale files.</summary>
@@ -109,7 +109,7 @@ public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string
         {
             (_, "") => $"'{key}' names nothing.",
             (RootNamespaceKey, _) when !IsNamespace(value) => $"'{key}' names '{value}', which is not a namespace.",
-            (RootDirKey, _) when !IsRelativePath(value) => $"'{key}' names '{value}', which is not a relative path written with '/'.",
+            (RootDirKey, _) when !IsRelativePath(value) || IsDotted(value) => $"'{key}' names '{value}', which is not a relative folder written with '/'.",
             (LocalesDirKey, _) when !IsRelativePath(value) || IsDotted(value) => $"'{key}' names '{value}', which is not a relative folder written with '/'.",
             _ => null,
         };

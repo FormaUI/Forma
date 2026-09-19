@@ -3,6 +3,7 @@ namespace Forma.Framework.Localization.Json.Tests;
 using System.Text.Json;
 
 using Forma.Framework.Localization.Json.Tests.Fixtures;
+using Forma.Tests.Localization.Rooted;
 
 public sealed class HostFilesTests
 {
@@ -112,45 +113,45 @@ public sealed class HostFilesTests
         }
     }
 
-    public sealed class Roots
+    public sealed class RootNamespaces
     {
         private static IStringLocale CreateRootedLocale<T>()
             => CreateLocale<T>(new LocalizationOptions { LocalesPath = "Hosts/Rooted" });
 
         [Fact]
-        public void Should_complete_the_types_name_from_the_root_namespace_the_hosts_settings_name()
+        public void Should_lay_the_hosts_files_out_by_the_root_namespace_the_assembly_declares()
         {
             // Arrange
             using var culture = new CultureScope("es");
-            var strings = CreateRootedLocale<Contoso.Widgets.ForeignRoot>();
+            var strings = CreateRootedLocale<RootedWidget>();
 
             // Act
             var localized = strings["Open"];
 
             // Assert
-            Assert.Equal("type folder file under a declared root namespace", localized.Value);
+            Assert.Equal("type folder file under the assembly's root namespace", localized.Value);
         }
 
         [Fact]
-        public void Should_read_the_roots_file_under_a_declared_root_namespace()
+        public void Should_read_the_roots_file_under_the_assemblys_root_namespace()
         {
             // Arrange
             using var culture = new CultureScope("es");
-            var strings = CreateRootedLocale<Contoso.Widgets.ForeignRoot>();
+            var strings = CreateRootedLocale<RootedWidget>();
 
             // Act
             var localized = strings["Save"];
 
             // Assert
-            Assert.Equal("root file under a declared root namespace", localized.Value);
+            Assert.Equal("root file under the assembly's root namespace", localized.Value);
         }
 
         [Fact]
-        public void Should_ignore_a_file_whose_path_does_not_meet_the_declared_root_namespace()
+        public void Should_ignore_a_file_laid_out_by_the_full_name_the_root_namespace_shortens()
         {
             // Arrange
             using var culture = new CultureScope("es");
-            var strings = CreateRootedLocale<Contoso.Widgets.ForeignRoot>();
+            var strings = CreateRootedLocale<RootedWidget>();
 
             // Act
             var localized = strings["Delete"];

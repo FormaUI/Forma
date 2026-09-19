@@ -34,11 +34,12 @@ another form states it.
   folder also reads a folder's file lying directly in it, since that folder is itself a folder of
   locale files.
 - The runtime's configuration lives in `.locale.json`, one optional file per assembly, embedded
-  with the assembly's locale files or laid in the assembly's folder inside the host's. It applies
-  to every file of that assembly and to nothing else: it is a runtime file the assembly ships,
-  not a compile-time file a tree cascades. The linter's own configuration is `.locali.json`,
-  which the runtime never reads. A locale file holds translations alone: its `$localization`
-  entry carries facts about the file, and nothing in it steers the loader or a tool.
+  at the assembly's root. It applies to every file of that assembly and to nothing else: it is a
+  runtime file the assembly ships, not a compile-time file a tree cascades. A host's folder holds
+  none; each assembly's folder inside it follows what the assembly's own file declares. The
+  linter's own configuration is `.locali.json`, which the runtime never reads. A locale file holds
+  translations alone: its `$localization` entry carries facts about the file, and nothing in it
+  steers the loader or a tool.
 - An assembly's `.locale.json` marks where its files begin. An assembly with none is rooted where
   its names begin and read by the defaults, so a project laid out by the default needs no config
   file.
@@ -151,24 +152,21 @@ hidden and skips them unless told not to.
 
 A source needs two things to place anchors: where its names begin, which `$RootDir` stands for,
 and the root namespace anchors are counted from, which `$RootNamespace` stands for. The
-assembly's `.locale.json` fixes both. An assembly has one config file, so a second one anywhere
-among its files is refused. For a host, each assembly's folder holds that assembly's file.
+assembly's `.locale.json` fixes both, and it sits at the assembly's root: embedded at the
+project's root, so its resource name is the project's root namespace and `.locale.json`, and
+nowhere else. An assembly has one config file, so a second one anywhere among its files is
+refused, and the linter reports one embedded beneath the root.
 
-`$RootDir` is where that file sits, unless the file names `rootDir`: for embedded files, the
-prefix the file's own resource name carries before `.locale.json`; for a host's, the folder inside
-the host's folder the file was found in. The root namespace is the file's `rootNamespace`, or the
-assembly's name when it names none.
+`$RootDir` is where that file sits, the project's root namespace as the build spells it, unless
+the file names `rootDir`: a folder beneath it, written with `/`, where the assembly's files
+begin, so `Strings` begins them at the root namespace followed by `Strings`. The root namespace
+is the file's `rootNamespace`, or the assembly's name when it names none.
 
-A `rootDir` moves where names begin. It is a path relative to the config file's own folder,
-written with `/`, and may climb with `..`; one ending in a project or solution file means that
-file's folder, so `./Contoso.csproj` beside a project file is the project's root and
-`../../../Contoso.slnx` the solution's. For embedded files the path is walked over the resource
-name's segments. No resource name reaches above the project's root namespace, so one climbing
-past the config file's own name is read by the runtime as the root namespace itself. The
-runtime cannot see where a project's root namespace ends, and the linter, which can, reports a
-`rootDir` climbing past it. For a host's files the path is walked on disk. A root is a folder
-inside the host's folder, so one that reaches the host's folder or leaves it is refused. A
-config file naming no `rootDir` leaves names beginning where the file sits, as above.
+A host's folder holds no config file. Each assembly's folder inside it is that assembly's root,
+laid out by the root namespace the assembly's own `.locale.json` declares, which the runtime
+carries over from the assembly's embedded files. The root namespace is the assembly's fact,
+stated once; a `.locale.json` a host lays in its folder, above or inside an assembly's,
+configures nothing, and the linter reports it.
 
 An assembly with no `.locale.json` is rooted where its names begin: for embedded files, at the
 project's root namespace the build puts at the front of every resource name; for a host's, at the
@@ -188,8 +186,7 @@ it and nothing beneath it overrides it, because it is a runtime file the assembl
 than a compile-time file a tree cascades, as `.locali.json` and `.editorconfig` do. A folder
 holding strings arranged differently states that in the assembly's paths, with the folder written
 as literal text where it sits; the paths are where such a relation is written, and nothing is
-inferred. A file above the root, such as one beside a host's assembly folder, is read under the
-assembly's config.
+inferred.
 
 ## Configuration
 
@@ -203,14 +200,13 @@ keys:
 | Key | Value |
 |---|---|
 | `rootNamespace` | The root namespace the assembly's anchors are counted from. |
-| `rootDir` | Where the source's names begin, as a path relative to the file's own folder: `strings`, `./Contoso.csproj`, `../../../Contoso.slnx`. One ending in a project or solution file means that file's folder. |
+| `rootDir` | The folder beneath the assembly's root where its files begin, written with `/`: `Strings`, `Localization/Strings`. |
 | `localesDir` | The name `$LocalesDir` stands for. |
 | `paths` | The paths, in order, replacing the default ones. |
 
 ```json
 {
   "rootNamespace": "Forma.Blazor.Components.Composer.Plugins",
-  "rootDir": "./Forma.AddOns.Composer.Plugins.Explorer.csproj",
   "paths": ["$RootDir/$AnchorName/$LocalesDir/$CurrentName.$Culture$Extension"]
 }
 ```
@@ -219,9 +215,9 @@ A file applies to every file of its assembly, and an assembly with none reads by
 runtime passes over a key it does not read, so a file written for a later runtime still loads;
 the linter reports such a key, since a misspelled one steers nothing.
 
-A project embeds its `.locale.json` like any other file, and a host lays one in an assembly's
-folder inside its own. A file in the host's folder itself configures no assembly and is left
-unread.
+A project embeds its `.locale.json` like any other file, at its root, naming it in an item of its
+own where its glob passes over a name starting with a dot. A host lays none: its folders are
+laid out by what each assembly declares.
 
 ### `$localization`
 
@@ -260,9 +256,10 @@ holds translations alone, and what a tool keeps per file belongs in the tool's o
 | L1 | Is a file's placement a build setting or a library feature? | A library feature. A project embeds its files as it always has, and the paths are read at runtime, so every consumer gets it by referencing the package. |
 | L2 | One canonical form or many? | One canonical form, a folder's own `.locales` folder with a file per culture, as every source's default, and one mechanism for any other form a project or a host states. A host's folder reads a folder's file lying directly in it as well, since that folder is itself a folder of locale files: the outer form speaks for the host's root, the inner one for its folder alone, and the inner one wins. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
-| L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded in it or laid in its folder inside the host's. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds translations alone, so neither carries the other's keys and `$tools` is gone. |
-| L5 | What marks an assembly's root? | Its `.locale.json`; an assembly with none is rooted where its names begin and read by the defaults. |
+| L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds translations alone, so neither carries the other's keys and `$tools` is gone. |
+| L5 | What marks an assembly's root? | Its `.locale.json`, which sits at the assembly's root and nowhere else; an assembly with none is rooted where its names begin and read by the defaults. |
 | L6 | Do a host's paths have to match the library's? | No. Host entries are applied after every embedded entry whatever paths either uses, and a host's `.locale.json` for the assembly states its own paths. |
 | L7 | Can a file be named for an assembly whose root namespace is not its name? | Yes. A path names `$AssemblyName` outright, which a project keeping such a file states in its config. |
 | L8 | Are the anchor tokens namespaces? | No. An anchor's segments are parts of a type's full name, which take in containing types and the type itself, and the library relates a folder to a name only through the paths. The tokens say *name*. |
 | L9 | Does `.locale.json` cascade? | No. It is per assembly: one file, applying to every file of the assembly, with nothing layered above or beneath it. A cascade is how a compile-time file such as `.locali.json` or `.editorconfig` reaches a tree, and a runtime file an assembly ships has no tree to reach. |
+| L10 | Does a host configure an assembly's folder? | No. A host's folder holds no `.locale.json`; each assembly's folder is laid out by the root namespace the assembly's own file declares, which the runtime carries over. The root namespace is the assembly's fact, stated once, and a host repeating it would give one fact two places to drift apart. |
