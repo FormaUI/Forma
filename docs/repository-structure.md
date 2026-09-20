@@ -90,6 +90,8 @@ Every production assembly should have one test project named after it under `tes
 
 ## Build and verification
 
+`scripts/Invoke-Gate.ps1` runs the gate as one command, so a person and a machine run the same checks; `-Target` narrows it to `DotNet` or `Scripts`. It covers the first four commands below. The locale lint runs where `locali` is on the path and is reported as skipped where it is not. The showcase never exits, so it stays a check made by hand.
+
 ```powershell
 dotnet build Forma.slnx
 dotnet test Forma.slnx
