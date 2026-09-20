@@ -1,3 +1,13 @@
+[*.{cs,razor}]
+# ------------------------------------------------------------
+# Diagnostics that do not apply to test sources
+# ------------------------------------------------------------
+
+# Disable IDE0017 and IDE0028 - Arrange builds the subject and Act mutates it, so folding the
+# two together is not an improvement.
+dotnet_diagnostic.IDE0017.severity = none
+dotnet_diagnostic.IDE0028.severity = none
+
 [{*Tests.cs,*Tests.*.cs}]
 # ------------------------------------------------------------
 # Disable specific diagnostics that are not relevant or too noisy in test projects

@@ -504,13 +504,4 @@ dotnet_diagnostic.IDE0301.severity = error              # Use collection express
 dotnet_diagnostic.IDE0302.severity = error              # Use collection expression for stackalloc
 dotnet_diagnostic.IDE0305.severity = warning            # Use collection expression for fluent
 
-# ------------------------------------------------------------
-# Test sources
-# ------------------------------------------------------------
-[tests/**/*.{cs,razor}]
-
-# Arrange builds the subject and Act mutates it, so folding the two together is not an improvement
-dotnet_diagnostic.IDE0017.severity = none               # Use object initializers
-dotnet_diagnostic.IDE0028.severity = none               # Use collection initializers
-
 # End of .editorconfig
