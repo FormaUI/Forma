@@ -5,7 +5,7 @@ using Forma.Framework.Composer.Plugins;
 /// <summary>The key bindings one composer answers to, merged from every source that contributes them.</summary>
 public sealed class ComposerKeyBindingCatalog
 {
-    private readonly Dictionary<string, ComposerKeyBinding> _bindingsByCommand = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ComposerKeyBinding> _bindingsByCommand = [with(StringComparer.Ordinal)];
     private readonly List<ComposerKeyBinding> _bindings = [];
 
     /// <summary>Merges the bindings of the given sources, letting the earliest source win a contested command.</summary>

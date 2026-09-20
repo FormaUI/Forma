@@ -5,9 +5,9 @@ namespace Forma.Framework.Catalog.Selection;
 public sealed class CatalogSelection : ICatalogSelectionView
 {
     // The selection outlives the window a provider-backed surface holds, so it keeps the items rather than keys into a list it may no longer have.
-    private readonly Dictionary<string, ICatalogItem> _items = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ICatalogItem> _items = [with(StringComparer.Ordinal)];
 
-    private readonly Dictionary<string, ICatalogItem> _folderItems = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ICatalogItem> _folderItems = [with(StringComparer.Ordinal)];
 
     private IReadOnlyList<ICatalogItem>? _resolvedItems;
 

@@ -16,7 +16,7 @@ using Microsoft.JSInterop;
 /// </remarks>
 public sealed class EmojiSpriteLoader : IEmojiSpriteLoader, IAsyncDisposable, IDisposable
 {
-    private readonly Dictionary<string, Task<bool>> _loadsBySheet = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Task<bool>> _loadsBySheet = [with(StringComparer.Ordinal)];
     private readonly JSEnvironment _environment;
     private readonly NavigationManager? _navigation;
 

@@ -6,8 +6,9 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
     /// <summary>The policy a sanitizer applies when a host names none.</summary>
     public static RichContentMarkupPolicy Default { get; } = new();
 
-    private static readonly HashSet<string> Tags = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> Tags =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "code",
         "b", "strong", "i", "em", "u", "s", "strike", "sub", "sup", "mark", "small",
         "ul", "ol", "li",
@@ -16,34 +17,37 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         "hr", "br",
         "span", "div",
         "details", "summary", "figure", "figcaption"
-    };
+    ];
 
-    private static readonly HashSet<string> DiscardedWithContent = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> DiscardedWithContent =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "script", "style", "iframe", "object", "svg", "math", "noscript", "template", "applet", "frameset"
-    };
+    ];
 
-    private static readonly HashSet<string> GlobalAttributes = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> GlobalAttributes =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "class", "id", "style", "dir", "title", "lang"
-    };
+    ];
 
     private static readonly Dictionary<string, HashSet<string>> TagAttributes = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["a"] = new(StringComparer.OrdinalIgnoreCase) { "href", "target", "rel", "download", "name" },
-        ["img"] = new(StringComparer.OrdinalIgnoreCase) { "src", "alt", "width", "height", "loading" },
-        ["video"] = new(StringComparer.OrdinalIgnoreCase) { "src", "poster", "controls", "autoplay", "loop", "muted", "preload", "width", "height" },
-        ["audio"] = new(StringComparer.OrdinalIgnoreCase) { "src", "controls", "autoplay", "loop", "muted", "preload" },
-        ["source"] = new(StringComparer.OrdinalIgnoreCase) { "src", "type" },
-        ["th"] = new(StringComparer.OrdinalIgnoreCase) { "colspan", "rowspan", "scope", "headers", "align" },
-        ["td"] = new(StringComparer.OrdinalIgnoreCase) { "colspan", "rowspan", "headers", "align" },
-        ["table"] = new(StringComparer.OrdinalIgnoreCase) { "border", "cellpadding", "cellspacing" },
-        ["ol"] = new(StringComparer.OrdinalIgnoreCase) { "start", "type", "reversed" },
-        ["li"] = new(StringComparer.OrdinalIgnoreCase) { "value" }
+        ["a"] = [with(StringComparer.OrdinalIgnoreCase), "href", "target", "rel", "download", "name"],
+        ["img"] = [with(StringComparer.OrdinalIgnoreCase), "src", "alt", "width", "height", "loading"],
+        ["video"] = [with(StringComparer.OrdinalIgnoreCase), "src", "poster", "controls", "autoplay", "loop", "muted", "preload", "width", "height"],
+        ["audio"] = [with(StringComparer.OrdinalIgnoreCase), "src", "controls", "autoplay", "loop", "muted", "preload"],
+        ["source"] = [with(StringComparer.OrdinalIgnoreCase), "src", "type"],
+        ["th"] = [with(StringComparer.OrdinalIgnoreCase), "colspan", "rowspan", "scope", "headers", "align"],
+        ["td"] = [with(StringComparer.OrdinalIgnoreCase), "colspan", "rowspan", "headers", "align"],
+        ["table"] = [with(StringComparer.OrdinalIgnoreCase), "border", "cellpadding", "cellspacing"],
+        ["ol"] = [with(StringComparer.OrdinalIgnoreCase), "start", "type", "reversed"],
+        ["li"] = [with(StringComparer.OrdinalIgnoreCase), "value"]
     };
 
-    private static readonly HashSet<string> StyleProperties = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> StyleProperties =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "color", "background-color", "font-family", "font-size", "font-weight", "font-style",
         "text-align", "text-decoration", "line-height",
         "margin", "margin-block", "margin-block-start", "margin-block-end",
@@ -52,7 +56,7 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         "padding-inline", "padding-inline-start", "padding-inline-end",
         "border", "border-color", "border-width", "border-style",
         "width", "height", "max-width", "max-height", "min-width", "min-height"
-    };
+    ];
 
     private static readonly string[] StyleDenyList =
     [

@@ -13,3 +13,9 @@ dotnet_diagnostic.CA2007.severity = none
 dotnet_diagnostic.CA1054.severity = none
 dotnet_diagnostic.CA1055.severity = none
 dotnet_diagnostic.CA1056.severity = none
+
+# Disable BL0016 - this assembly is where guarding is centralized rather than where it is
+# reached: JSEnvironment's overloads pass a call through to the runtime, JSModule's import is
+# guarded by the caller awaiting it, and a runtime answering every call by throwing has
+# nothing to guard at all.
+dotnet_diagnostic.BL0016.severity = none

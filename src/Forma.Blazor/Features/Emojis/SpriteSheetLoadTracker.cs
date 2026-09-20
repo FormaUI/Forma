@@ -3,9 +3,9 @@ namespace Forma.Blazor.Features.Emojis;
 /// <summary>Tracks the lifecycle of sprite sheets being loaded, where arriving and failing both complete a sheet.</summary>
 public sealed class SpriteSheetLoadTracker
 {
-    private readonly HashSet<string> _loadedSheets = new(StringComparer.Ordinal);
-    private readonly HashSet<string> _loadingSheets = new(StringComparer.Ordinal);
-    private readonly HashSet<string> _failedSheets = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _loadedSheets = [with(StringComparer.Ordinal)];
+    private readonly HashSet<string> _loadingSheets = [with(StringComparer.Ordinal)];
+    private readonly HashSet<string> _failedSheets = [with(StringComparer.Ordinal)];
 
     /// <summary>Whether the sheet has arrived or failed, either way no longer worth waiting for.</summary>
     public bool IsCompleted(string sheet)

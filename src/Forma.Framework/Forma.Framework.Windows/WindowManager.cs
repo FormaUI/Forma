@@ -10,7 +10,7 @@ public sealed class WindowManager
     private readonly HashSet<Guid> _closingIds = [];
     private readonly HashSet<Guid> _blockedIds = [];
     private readonly Dictionary<Guid, int> _instanceNumbers = [];
-    private readonly Dictionary<string, int> _lastInstanceNumbers = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, int> _lastInstanceNumbers = [with(StringComparer.Ordinal)];
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     /// <summary>The origin a window without one of its own resolves to.</summary>

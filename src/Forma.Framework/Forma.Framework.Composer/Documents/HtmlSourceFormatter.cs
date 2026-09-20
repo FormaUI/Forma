@@ -5,15 +5,16 @@ using System.Text;
 /// <summary>Lays HTML out one block per line, indented by nesting, for reading rather than rendering.</summary>
 public static class HtmlSourceFormatter
 {
-    private static readonly HashSet<string> BlockTags = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> BlockTags =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "ul", "ol", "li", "hr", "div",
         "table", "thead", "tbody", "tfoot", "tr", "td", "th", "caption", "colgroup", "col",
         "figure", "figcaption", "details", "summary", "video", "audio", "source", "article", "section", "header", "footer", "nav", "aside",
-    };
+    ];
 
     /// <summary>Tags whose content is kept exactly as written.</summary>
-    private static readonly HashSet<string> LiteralTags = new(StringComparer.OrdinalIgnoreCase) { "pre", "textarea", "script", "style" };
+    private static readonly HashSet<string> LiteralTags = [with(StringComparer.OrdinalIgnoreCase), "pre", "textarea", "script", "style"];
 
     private const string Indent = "  ";
 

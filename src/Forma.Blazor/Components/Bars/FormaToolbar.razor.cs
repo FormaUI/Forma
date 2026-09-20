@@ -307,7 +307,7 @@ public sealed partial class FormaToolbar : FormaElementBase
     }
 
     private static Dictionary<string, object>? ToParameters(IReadOnlyDictionary<string, object>? parameters)
-        => parameters is null ? null : new Dictionary<string, object>(parameters);
+        => parameters is null ? null : [with(parameters)];
 
     /// <summary>One rendered run of items: a group and its contents, or a single ungrouped item.</summary>
     private sealed record Row(string Key, ToolbarGroup? Group, IReadOnlyList<ToolbarItem> Items);

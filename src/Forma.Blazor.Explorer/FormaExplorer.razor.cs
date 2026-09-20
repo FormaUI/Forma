@@ -181,7 +181,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private ExplorerGroupField _groupField;
 
-    private readonly HashSet<string> _collapsedGroups = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _collapsedGroups = [with(StringComparer.Ordinal)];
 
     private CatalogCollectionView _collection = default!;
 

@@ -133,7 +133,6 @@ public sealed partial class FormaFilePicker : FormaElementBase
         finally
         {
             _isBusy = false;
-            StateHasChanged();
         }
     }
 

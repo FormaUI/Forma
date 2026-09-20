@@ -6,11 +6,11 @@ public sealed class CatalogFolderTree
 {
     private static readonly List<ICatalogFolderItem> NoChildren = [];
 
-    private readonly Dictionary<string, ICatalogFolderItem> _foldersByKey = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ICatalogFolderItem> _foldersByKey = [with(StringComparer.Ordinal)];
 
-    private readonly Dictionary<string, List<ICatalogFolderItem>> _childrenByParent = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, List<ICatalogFolderItem>> _childrenByParent = [with(StringComparer.Ordinal)];
 
-    private readonly Dictionary<string, List<ICatalogFolderItem>> _listedChildrenByParent = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, List<ICatalogFolderItem>> _listedChildrenByParent = [with(StringComparer.Ordinal)];
 
     private readonly List<ICatalogFolderItem> _roots = [];
 

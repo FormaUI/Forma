@@ -75,7 +75,7 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
         _sentinel.Invalidate();
         _isLoadingPage = true;
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
 
         try
         {
@@ -86,7 +86,7 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
             _isLoadingPage = false;
         }
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     private Task HandlePageChangedAsync(int page)

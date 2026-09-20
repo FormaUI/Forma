@@ -11,7 +11,7 @@ public sealed class ShowcaseShareAccounts : IShareTokenSource, IShareServerSourc
     private static readonly Uri MastodonServer = new("https://mastodon.social/");
 
     private readonly StateNotifier _notifier = new();
-    private readonly HashSet<string> _connected = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _connected = [with(StringComparer.Ordinal)];
 
     /// <summary>Whether the visitor counts as connected to the vault.</summary>
     public bool IsVaultConnected

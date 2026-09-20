@@ -15,16 +15,18 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
     // These are facts about HTML rather than choices a policy makes, so no host redefines them.
 
     /// <summary>Elements that carry no closing tag.</summary>
-    private static readonly HashSet<string> VoidTags = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> VoidTags =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "img", "hr", "br", "source", "col", "wbr"
-    };
+    ];
 
     /// <summary>Attributes whose value is an address, checked before the attribute is kept.</summary>
-    private static readonly HashSet<string> UrlAttributes = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> UrlAttributes =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "href", "src", "poster"
-    };
+    ];
 
     /// <summary>The characters an attribute value may not carry unescaped.</summary>
     private static readonly SearchValues<char> EscapeTargets = SearchValues.Create("&\"<>");

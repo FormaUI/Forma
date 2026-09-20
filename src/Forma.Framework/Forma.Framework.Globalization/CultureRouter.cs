@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 /// <summary>The validated cultures an application serves, and the URLs addressing them.</summary>
 public sealed partial class CultureRouter
 {
-    private readonly Dictionary<string, CultureRoute> _routesByToken = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, CultureRoute> _routesByToken = [with(StringComparer.OrdinalIgnoreCase)];
     private readonly CulturePrefix _prefix;
 
     /// <summary>Validates <paramref name="options"/> and builds the token lookup.</summary>

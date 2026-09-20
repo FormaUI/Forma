@@ -5,9 +5,14 @@
     <RunSettingsFilePath>$(MSBuildThisFileDirectory)test.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
-  <!-- Nothing under tests/ ships as a package, and a test method's Should_x_y name is meant to carry an underscore. -->
+  <!--
+    Nothing under tests/ ships as a package, and a test method's Should_x_y name is meant to carry an
+    underscore. BL0016 asks for a try/catch around an interop call in the method that makes it, which a test
+    driving a fake runtime is there to make unguarded; it is settled here rather than in the severity table
+    because that table reaches a C# file but not a test written as a component.
+  -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA1707</NoWarn>
+    <NoWarn>CA1707;BL0016</NoWarn>
   </PropertyGroup>
 </Project>

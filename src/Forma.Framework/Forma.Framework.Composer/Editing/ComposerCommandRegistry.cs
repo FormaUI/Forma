@@ -6,8 +6,8 @@ using Forma.Framework.Toolbar;
 /// <summary>The commands one composer can run, and the layer that runs each of them.</summary>
 public sealed class ComposerCommandRegistry
 {
-    private readonly Dictionary<string, Func<Task>> _engineCommands = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, IComposerPlugin> _pluginCommands = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Func<Task>> _engineCommands = [with(StringComparer.Ordinal)];
+    private readonly Dictionary<string, IComposerPlugin> _pluginCommands = [with(StringComparer.Ordinal)];
     private readonly List<(string Prefix, IComposerPlugin Plugin)> _pluginCommandPrefixes = [];
 
     /// <summary>Every command name the registry can run.</summary>

@@ -8,7 +8,7 @@ using Forma.Framework.JavaScript.Interop;
 internal sealed class JSComposerAssetLoader(IJSEnvironment js) : IComposerAssetLoader
 {
     private readonly Asset _asset = new(js);
-    private readonly HashSet<string> _loadedUrls = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _loadedUrls = [with(StringComparer.OrdinalIgnoreCase)];
 
     /// <inheritdoc />
     public async ValueTask LoadAssetAsync(ComposerAsset asset, CancellationToken cancellationToken = default)
