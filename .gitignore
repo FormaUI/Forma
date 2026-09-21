@@ -1,9 +1,7 @@
 ###############################################################################
 #  PROJECT-SPECIFIC                                                           #
 ###############################################################################
-sandbox/
-scratch/
-spikes/
+.local/
 **/Forma.Blazor.Showcase/Sandbox/Assets/
 **/Forma.Blazor.Showcase/Sandbox/Upload/
 appsettings.*.json
@@ -52,18 +50,18 @@ Generated/
 Generated\ Files/
 project.lock.json
 project.fragment.lock.json
+*.binlog
 
 # Configuration-specific
 [Dd]ebug/
 [Dd]ebugPublic/
-[Rr]elease*/
+[Rr]elease/
 [Ww][Ii][Nn]32/
-[Aa][Rr][Mm]*/
-**/Properties/*
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+**/Properties/launchSettings.json
 **/PublishProfiles/*.pubxml
 **/PublishProfiles/*.pubxml.*
-Benchmarks/
-BenchmarkDotNet.Artifacts/
 
 ###############################################################################
 #  TEST & COVERAGE                                                            #

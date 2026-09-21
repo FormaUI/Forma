@@ -107,6 +107,8 @@ dotnet build Forma.slnx -p:GenerateDocumentationFile=true --no-incremental -v:q 
     Select-String CS1591
 ```
 
+Work that belongs to a person rather than to the repository lives under `.local/`, ignored in its entirety: the benchmarks, the spikes, and a document written for a piece of work rather than for the repository itself. One ignored root takes the place of a rule per directory, so something new that is nobody else's business needs no rule at all, and nothing kept there can be staged by accident.
+
 Task scripts live in `scripts/` and are PowerShell 7, cross-platform, such as `Get-TwemojiPack.ps1`, `Build-GlyphPack.ps1` and `Update-PluralRules.ps1`. The C# extension rewrites `Forma.slnx` with a duplicate `<Folder>` entry and drops `<Configurations>` when a project is added, which fails the build with `MSB4025` until the file is reopened.
 
 ## Origins
