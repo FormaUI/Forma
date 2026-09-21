@@ -12,8 +12,11 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # A superseded pull request run is worth cancelling; a superseded run on main is a record worth keeping.
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # A run superseded before it finished is answering about a tree that no longer exists, whichever branch
+  # it was on. Pushes arrive in bursts here, so cancelling is what keeps the gate reporting on the commit
+  # anyone is actually waiting for. The cost is that a commit passed over mid-burst is never judged on its
+  # own, which matters only to a bisect that reaches for it later.
+  cancel-in-progress: true
 
 permissions:
   contents: read
