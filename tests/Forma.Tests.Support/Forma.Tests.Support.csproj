@@ -27,9 +27,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="OfficeIMO.Excel" Version="3.2.0" />
-        <PackageReference Include="OfficeIMO.PowerPoint" Version="3.2.0" />
-        <PackageReference Include="OfficeIMO.Word" Version="3.2.0" />
+        <PackageReference Include="OfficeIMO.Excel" />
+        <PackageReference Include="OfficeIMO.PowerPoint" />
+        <PackageReference Include="OfficeIMO.Word" />
     </ItemGroup>
 
 </Project>
