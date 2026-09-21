@@ -1,0 +1,56 @@
+# Builds against a toolchain the repository has not pinned itself to, so that a change arriving in it is
+# read on a quiet morning rather than discovered in the middle of unrelated work. Nothing here gates
+# anything: it runs on a schedule, and a schedule blocks no branch and no pull request.
+name: Canary
+
+on:
+  schedule:
+    # Monday morning, UTC. Early enough in the week that a break has somewhere to go.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    name: canary (newest SDK)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The pin exists to stop the toolchain moving underneath the build. This is the one run that wants
+      # it to move, and leaving the pin in place would install a newer compiler and then decline to use
+      # it — or fail outright once the pinned build is no longer published.
+      - name: Set the pin aside
+        run: rm global.json
+
+      - name: Set up the newest .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '11.0.x'
+          dotnet-quality: 'preview'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/Forma.Blazor.Tests.Scripts/package-lock.json
+
+      - name: Report the compiler this run used
+        run: dotnet --version
+
+      # Allowed to fail loudly. A scheduled run is not a required check, so failing here blocks nothing,
+      # and a run that reported itself green would hide the single thing it exists to say.
+      - name: Run the gate
+        run: pwsh ./scripts/Invoke-Gate.ps1
+
+      # Reported rather than built against: upgrading a package is the update service's business, one at
+      # a time, where the gate judges each in a pull request. Reporting costs nothing and duplicates none
+      # of it, and a hiccup here must not mask what the gate said.
+      - name: Report packages left behind
+        if: always()
+        continue-on-error: true
+        run: dotnet list Forma.slnx package --outdated
