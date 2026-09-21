@@ -1,0 +1,73 @@
+# Runs the same gate a person runs, on both the platform the library is developed on and the one a
+# contributor is most likely to use. The gate itself lives in the repository, not here, so the two
+# cannot drift: this file installs a toolchain and invokes one script.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # A superseded pull request run is worth cancelling; a superseded run on main is a record worth keeping.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  # On a pull request the change detection below reads the changed files through the API rather than
+  # from git, which this scope is what allows.
+  pull-requests: read
+
+jobs:
+  gate:
+    name: gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # One platform failing is the interesting case, so the other is allowed to finish and say so.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # A commit touching only prose still reports a passing check, so a branch protected on this job
+      # stays satisfied without a toolchain being installed to read a paragraph.
+      - name: Detect changes
+        id: filter
+        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3
+        with:
+          filters: |
+            code:
+              - '**/*'
+              - '!**/*.md'
+              - '!docs/**'
+              - '!assets/**'
+              - '!.github/ISSUE_TEMPLATE/**'
+
+      # The pinned SDK, read from the pin itself rather than restated here where it could fall behind it.
+      - name: Set up .NET
+        if: steps.filter.outputs.code == 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node
+        if: steps.filter.outputs.code == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/Forma.Blazor.Tests.Scripts/package-lock.json
+
+      - name: Run the gate
+        if: steps.filter.outputs.code == 'true'
+        run: pwsh ./scripts/Invoke-Gate.ps1
+
+      - name: Report the gate was not needed
+        if: steps.filter.outputs.code != 'true'
+        run: echo 'Only prose changed, so the gate did not need to run.'
