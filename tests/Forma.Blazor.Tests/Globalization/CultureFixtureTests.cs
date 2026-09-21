@@ -29,6 +29,30 @@ public sealed class CultureFixtureTests
         });
     }
 
+    [Fact]
+    public void Should_restore_both_cultures_without_switching()
+    {
+        // Arrange
+        using var outer = new CultureFixture("he-IL");
+
+        // Act
+        var fixture = new CultureFixture();
+        var capturedCulture = CultureInfo.CurrentCulture;
+        var capturedUiCulture = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
+        fixture.Dispose();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("he-IL", capturedCulture.Name);
+            Assert.Equal("he-IL", capturedUiCulture.Name);
+            Assert.Equal("he-IL", CultureInfo.CurrentCulture.Name);
+            Assert.Equal("he-IL", CultureInfo.CurrentUICulture.Name);
+        });
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

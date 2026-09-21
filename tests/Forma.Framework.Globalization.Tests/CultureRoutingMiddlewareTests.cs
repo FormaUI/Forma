@@ -20,7 +20,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_serve_a_canonical_url(CulturePrefix prefix, string requested, string forwarded, string culture)
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         string? reached = null;
         var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, CreateRouter(prefix));
         var context = CreateContext(requested);
@@ -51,7 +51,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_redirect_a_url_that_is_not_canonical(CulturePrefix prefix, string requested, string location)
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var reachedNext = false;
         var middleware = new CultureRoutingMiddleware(_ => { reachedNext = true; return Task.CompletedTask; }, CreateRouter(prefix));
         var context = CreateContext(requested);
@@ -77,7 +77,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_forward_an_unknown_first_segment_unchanged(string requested)
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         string? reached = null;
         var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext(requested);
@@ -102,7 +102,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_reject_a_url_naming_consecutive_cultures(string requested)
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var reachedNext = false;
         var middleware = new CultureRoutingMiddleware(_ => { reachedNext = true; return Task.CompletedTask; }, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext(requested);
@@ -123,7 +123,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_carry_the_query_string_through_a_redirect()
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/en/file-viewer");
         context.Request.QueryString = new QueryString("?tab=2&q=a%20b");
@@ -139,7 +139,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_carry_the_path_base_through_a_redirect()
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/en/file-viewer");
         context.Request.PathBase = new PathString("/app");
@@ -155,7 +155,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_escape_a_reserved_character_in_a_redirect()
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/en/a b");
 
@@ -174,7 +174,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_neither_redirect_nor_cookie_a_request_that_is_not_a_document(string requested, string forwarded)
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         string? reached = null;
         var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext(requested);
@@ -195,7 +195,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_write_the_culture_cookie_for_a_document()
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/he/file-viewer");
 
@@ -217,7 +217,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_write_the_canonical_token_rather_than_the_alias_that_was_requested()
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/es/file-viewer");
 
@@ -232,7 +232,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_leave_the_culture_cookie_alone_when_it_already_matches()
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/he/file-viewer");
         context.Request.Headers.Cookie = "forma-culture=he";
@@ -249,7 +249,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_ignore_the_culture_cookie_when_choosing_the_culture()
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/file-viewer");
         context.Request.Headers.Cookie = "forma-culture=he";
@@ -273,7 +273,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_take_the_culture_from_the_cookie_for_a_framework_endpoint(string requested)
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext(requested);
         context.Request.Headers.Cookie = "forma-culture=he";
@@ -292,7 +292,7 @@ public sealed class CultureRoutingMiddlewareTests
     public async Task Should_fall_back_to_the_default_culture_when_the_cookie_names_no_route(string cookie)
     {
         // Arrange
-        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/_blazor");
         context.Request.Headers.Cookie = cookie;
