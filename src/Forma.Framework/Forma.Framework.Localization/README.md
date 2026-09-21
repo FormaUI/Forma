@@ -11,7 +11,7 @@ assembly whose types they localize and JSON files the host lays beside the appli
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Localization
+dotnet add package Forma.Framework.Localization
 ```
 
 A host installs a backend alongside it, `Forma.Framework.Localization.Json` unless it brings its

@@ -6,7 +6,7 @@ statuses an application's badges are named after. A caller talks to the service;
 that draws the surface — `FormaToastContainer`, `FormaConfirmDialog`, `FormaStatusBadge` — is
 placed once and listens.
 
-The assembly ships inside `2Site.Forma.Blazor`, and `AddFormaUI` registers its services, so
+The assembly ships inside `Forma.Blazor`, and `AddFormaUI` registers its services, so
 nothing is installed for it. Its types live in the `Forma.Framework.Feedback` namespace.
 
 ## Register

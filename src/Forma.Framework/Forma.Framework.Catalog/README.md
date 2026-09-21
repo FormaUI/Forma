@@ -1,4 +1,4 @@
-# Forma.Framework.Explorer.Items
+# Forma.Framework.Catalog
 
 The items a browsing surface lists: what an item and a folder are, the provider that answers a
 surface one window of them at a time, the requests a surface hands back to its host, the ceilings
@@ -14,10 +14,10 @@ share the model without either depending on the other.
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Explorer.Items
+dotnet add package Forma.Framework.Catalog
 ```
 
-A host of `2Site.Forma.Blazor.Explorer` already has it, restored beside the component. Install
+A host of `Forma.Blazor.Explorer` already has it, restored beside the component. Install
 it directly in the project that implements items or a provider, which needs no component behind
 it. The package references nothing from ASP.NET Core, so an item or a provider is written in a
 plain class library, and it registers nothing.
@@ -26,7 +26,7 @@ plain class library, and it registers nothing.
 
 | Namespace | What it holds |
 | --- | --- |
-| `Forma.Framework.Explorer.Items` | The item model: `ICatalogItem` and `ICatalogFolderItem`, the ready `CatalogItem` and `CatalogFolderItem`, the capabilities and visibility of an item, and `CatalogConstraints`, the ceilings a collection keeps. |
+| `Forma.Framework.Catalog` | The item model: `ICatalogItem` and `ICatalogFolderItem`, the ready `CatalogItem` and `CatalogFolderItem`, the capabilities and visibility of an item, and `CatalogConstraints`, the ceilings a collection keeps. |
 | `.Queries` | `ICatalogProvider` and the query and page it exchanges, the sort field and direction, the resource filter, the view over a held collection and the window fetched from a provider. |
 | `.Requests` | The records every change a reader asks for comes back to the host as, and the rejection a ceiling reports. |
 | `.Navigation` | The folder tree indexed by key and by parent, and the history of folders visited. |

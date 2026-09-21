@@ -7,7 +7,7 @@ paste can be rendered as raw markup.
 ## Install and register
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Sanitization
+dotnet add package Forma.Framework.Sanitization
 ```
 
 ```csharp

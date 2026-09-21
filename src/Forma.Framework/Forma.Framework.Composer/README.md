@@ -10,7 +10,7 @@ interaction — are
 [`Forma.Framework.Composer.Extensibility`](../Forma.Framework.Composer.Extensibility/README.md).
 **That is the package to read to write a plugin**; this assembly is how the composer runs one.
 
-It ships inside `2Site.Forma.Blazor.Composer` rather than as a package of its own, because
+It ships inside `Forma.Blazor.Composer` rather than as a package of its own, because
 nothing outside the composer has reason to reach it. It references nothing from ASP.NET Core, so
 every piece of it is testable from a plain class library. How the component is consumed is in
 [`Forma.Blazor.Composer`](../../Forma.Blazor.Composer/README.md).
@@ -104,4 +104,4 @@ highlighter, so a code surface renders unhighlighted rather than failing.
 ## License
 
 MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md). The assembly ships inside
-`2Site.Forma.Blazor.Composer`.
+`Forma.Blazor.Composer`.

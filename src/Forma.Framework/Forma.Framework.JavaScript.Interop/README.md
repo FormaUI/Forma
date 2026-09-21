@@ -2,7 +2,7 @@
 
 The floor every interop assembly stands on: the C# bases a wrapper is built from, and the scripts
 the other interop assemblies' scripts import. It is not a package; it ships inside
-`2Site.Forma.Blazor`, and a host never references it.
+`Forma.Blazor`, and a host never references it.
 
 Its static assets are served from `_content/forma/core`, so a script in another interop assembly
 imports one of these by climbing to that root, as `../../../core/scripts/Owner.js` does from a

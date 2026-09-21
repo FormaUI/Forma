@@ -9,7 +9,7 @@ them in an `UploadBatch`, and reports the `ResourceInfo` each one became or an `
 for each it could not store. The store and the resource are the contracts of
 [`Forma.Framework.Resources`](../Forma.Framework.Resources/README.md).
 
-The assembly ships inside `2Site.Forma.Blazor`; nothing is installed or registered for it. Its
+The assembly ships inside `Forma.Blazor`; nothing is installed or registered for it. Its
 types live in the `Forma.Framework.Files` namespace.
 
 ## Rejections

@@ -8,7 +8,7 @@ is embedded in the assembly, so a host loads no icon font and serves no asset. I
 ## Install and register
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Icons.Glyphs
+dotnet add package Forma.Framework.Icons.Glyphs
 ```
 
 ```csharp

@@ -12,11 +12,11 @@ and the explorer is [`Forma.Blazor.Explorer`](../../Forma.Blazor.Explorer/README
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.AddOns.Composer.Plugins.Explorer
+dotnet add package Forma.AddOns.Composer.Plugins.Explorer
 ```
 
-The package depends on `2Site.Forma.Blazor.Explorer`, `2Site.Forma.Framework.Composer.Extensibility`
-and `2Site.Forma.Blazor`, which restore beside it. The code lives in the composer's own
+The package depends on `Forma.Blazor.Explorer`, `Forma.Framework.Composer.Extensibility`
+and `Forma.Blazor`, which restore beside it. The code lives in the composer's own
 `Forma.Blazor.Components.Composer.Plugins` namespace, beside the plugins the composer ships for any
 editor. Hebrew and Spanish translations ship with it.
 

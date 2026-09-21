@@ -14,7 +14,7 @@ The host owns its own `App.razor` and `Routes.razor`; the package ships componen
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.Blazor
+dotnet add package Forma.Blazor
 ```
 
 ## Quick start
@@ -134,7 +134,7 @@ for. To draw the bundled artwork and browse the bundled catalog, add the
 [Twemoji artwork pack](src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md):
 
 ```pwsh
-dotnet add package 2Site.Forma.AddOns.Emojis.Twemoji
+dotnet add package Forma.AddOns.Emojis.Twemoji
 ```
 
 ```csharp

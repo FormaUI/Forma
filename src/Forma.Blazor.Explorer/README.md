@@ -14,11 +14,11 @@ it, and the same locale file layout localizes it.
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.Blazor.Explorer
+dotnet add package Forma.Blazor.Explorer
 ```
 
-The package depends on `2Site.Forma.Blazor`, the product, and on
-`2Site.Forma.Framework.Catalog`, which install beside it. The component lives in
+The package depends on `Forma.Blazor`, the product, and on
+`Forma.Framework.Catalog`, which install beside it. The component lives in
 `Forma.Blazor.Components.Explorer`. The items it lists, the provider that answers it, the requests it
 raises and the ceilings it keeps are the items package's, under `Forma.Framework.Catalog`,
 so a host writes them once for every surface that browses them; the explorer's own vocabulary — its

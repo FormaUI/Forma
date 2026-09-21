@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Eyal Alon <forma@2site.net>
+Copyright (c) 2026 Eyal Alon <eyal@formaui.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

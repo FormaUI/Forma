@@ -10,7 +10,7 @@ which reads the Open XML packages.
 ## Install and register
 
 ```pwsh
-dotnet add package 2Site.Forma.AddOns.Resources.Office
+dotnet add package Forma.AddOns.Resources.Office
 ```
 
 ```csharp
@@ -27,7 +27,7 @@ The provider takes two services from the host. `IResourceContentReader` is the c
 `Forma.Framework.Resources` defines for opening the bytes behind an address; that package's README
 shows a reader over an upload folder, and the stream it returns need not be seekable.
 `IStringLocale<OfficeResourceProvider>` comes from a `Forma.Framework.Localization` backend, and
-`AddJsonLocalization()` from `2Site.Forma.Framework.Localization.Json` registers the one Forma
+`AddJsonLocalization()` from `Forma.Framework.Localization.Json` registers the one Forma
 ships.
 
 `FormaFileViewer` asks each registered `IResourceProvider` in registration order, so once the

@@ -6,7 +6,7 @@ of providers in turn: those the host registered, then the hosting services the a
 recognizes, then any file the browser can fetch. A host registers an `IPlayerProvider` to teach
 the player an address of its own, or to take over one a bundled service would otherwise claim.
 
-The assembly ships inside `2Site.Forma.Blazor`; nothing is installed or registered for it
+The assembly ships inside `Forma.Blazor`; nothing is installed or registered for it
 beyond a provider a host adds. Its types live in the `Forma.Framework.Media` namespace and the
 bundled providers in `Forma.Framework.Media.Providers`.
 

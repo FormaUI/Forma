@@ -7,7 +7,7 @@ The default emoji provider for `Forma.Blazor`. It implements `IEmojiProvider` fr
 ## Install and register
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Emojis.Unicode
+dotnet add package Forma.Framework.Emojis.Unicode
 ```
 
 ```csharp

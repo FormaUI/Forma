@@ -1,6 +1,6 @@
 # Third-party notices
 
-`2Site.Forma.Framework.Icons.Glyphs` embeds work from the project below. The notice is reproduced
+`Forma.Framework.Icons.Glyphs` embeds work from the project below. The notice is reproduced
 here because that content ships inside the package rather than being fetched at run time.
 
 ## Bootstrap Icons

@@ -7,7 +7,7 @@ instead of waiting.
 ## Install and register
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Timing
+dotnet add package Forma.Framework.Timing
 ```
 
 ```csharp

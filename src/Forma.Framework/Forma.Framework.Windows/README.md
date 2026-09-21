@@ -5,7 +5,7 @@ parent, the workspace that holds every window and knows which one is current, th
 query and operation takes, and what an operation reports. A host reads it to find and drive windows
 from code; a component that is a window implements it to join a workspace.
 
-The assembly is not a package. It ships inside `2Site.Forma.Blazor`, so a host that installed the
+The assembly is not a package. It ships inside `Forma.Blazor`, so a host that installed the
 product writes against it with nothing more to add, and `AddFormaUI()` registers the workspace its
 windows need.
 

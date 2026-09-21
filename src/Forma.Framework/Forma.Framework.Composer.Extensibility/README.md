@@ -8,13 +8,13 @@ compiles against this one alone and never against the engine behind it.
 Everything here is free of Blazor, so a plugin's contracts and its tests need no renderer. A
 plugin that draws something surfaces a `Type` and the composer hosts it.
 
-The engine that reads these contracts ships inside `2Site.Forma.Blazor.Composer`, so a host
+The engine that reads these contracts ships inside `Forma.Blazor.Composer`, so a host
 installs that for a working composer and a plugin author installs this to write one.
 
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Composer.Extensibility
+dotnet add package Forma.Framework.Composer.Extensibility
 ```
 
 The package has no registrar and constructs nothing. A host registers plugins with the composer;
@@ -22,7 +22,7 @@ this package only describes them.
 
 ## The plugin families
 
-Every plugin is an `IComposerPlugin` — an `IPlugin` from `2Site.Forma.Framework.Plugins`, which
+Every plugin is an `IComposerPlugin` — an `IPlugin` from `Forma.Framework.Plugins`, which
 the composer's registry is built on — and one of three kinds.
 
 | Type | What it is |

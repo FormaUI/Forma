@@ -6,7 +6,7 @@ policy a host sets for the whole application, and the records an owner reads an 
 router per page resolves every key, press, wheel turn and drop to one owner, so a component
 implements its actions and never arbitrates against the components around it.
 
-The assembly is not a package of its own; it ships inside `2Site.Forma.Blazor`, and `AddFormaUI`
+The assembly is not a package of its own; it ships inside `Forma.Blazor`, and `AddFormaUI`
 registers its policy. Its types live in `Forma.Framework.Input`, with a binding and an input
 record per family under `.Keyboard`, `.Pointer`, `.Wheel` and `.Drop`.
 

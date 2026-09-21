@@ -10,7 +10,7 @@ The same list feeds the toolbars composed over `FormaToolbar` — `FormaSearchTo
 `FormaSelectionToolbar` and `FormaStatusStrip` — and the `Commands` a host places on the title
 bar of `FormaWindow` and `FormaChrome`.
 
-The assembly ships inside `2Site.Forma.Blazor`; nothing is installed or registered for it. Its
+The assembly ships inside `Forma.Blazor`; nothing is installed or registered for it. Its
 types live in the `Forma.Framework.Toolbar` namespace.
 
 ## The items

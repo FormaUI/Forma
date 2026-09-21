@@ -14,7 +14,7 @@ localize it.
 ## Install and register
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Localization.Json
+dotnet add package Forma.Framework.Localization.Json
 ```
 
 ```csharp

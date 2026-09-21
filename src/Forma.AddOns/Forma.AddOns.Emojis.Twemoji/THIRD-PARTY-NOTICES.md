@@ -1,6 +1,6 @@
 # Third-party notices
 
-`2Site.Forma.AddOns.Emojis.Twemoji` embeds work from the projects below. Each notice is reproduced
+`Forma.AddOns.Emojis.Twemoji` embeds work from the projects below. Each notice is reproduced
 here because that content ships inside the package rather than being fetched at run time.
 
 ## Twemoji

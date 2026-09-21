@@ -9,7 +9,7 @@ the contracts from a plain class library.
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.Framework.Resources
+dotnet add package Forma.Framework.Resources
 ```
 
 ## Resources
@@ -87,7 +87,7 @@ builder.Services.AddScoped<IResourceProvider, MarkdownResourceProvider>();
 builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();
 ```
 
-`2Site.Forma.AddOns.Resources.Markdown` and `2Site.Forma.AddOns.Resources.Office` ship the
+`Forma.AddOns.Resources.Markdown` and `Forma.AddOns.Resources.Office` ship the
 `MarkdownResourceProvider` and `OfficeResourceProvider` above, each an `IResourceProvider` that
 converts its documents into a `MarkupResourceInfo` through the host's `IResourceContentReader`.
 

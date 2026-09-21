@@ -10,7 +10,7 @@ on, and the credential sources a host answers are documented in
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.AddOns.Share.Targets
+dotnet add package Forma.AddOns.Share.Targets
 ```
 
 The code lives in the `Forma.Framework.Share.Targets` namespace.

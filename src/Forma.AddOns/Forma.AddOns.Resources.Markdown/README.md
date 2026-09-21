@@ -10,7 +10,7 @@ its advanced extensions, so pipe tables and the other syntax that set covers ren
 ## Install and register
 
 ```pwsh
-dotnet add package 2Site.Forma.AddOns.Resources.Markdown
+dotnet add package Forma.AddOns.Resources.Markdown
 ```
 
 ```csharp

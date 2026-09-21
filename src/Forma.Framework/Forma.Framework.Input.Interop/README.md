@@ -5,7 +5,7 @@ owner, the script that reports its decisions, and the C# that carries a circuit'
 registrations to them. A host sets policy through `Forma.Framework.Input` and never reaches this
 assembly; a component that owns its root element does.
 
-The assembly is not a package of its own; it ships inside `2Site.Forma.Blazor`. It is built on
+The assembly is not a package of its own; it ships inside `Forma.Blazor`. It is built on
 `Forma.Framework.Input` for the vocabulary and on `Forma.Framework.JavaScript.Interop` for the interop
 bases, and its scripts are served under `_content/forma/input/scripts/`.
 
