@@ -24,6 +24,9 @@ public sealed class FakeAssembly : Assembly
     /// <summary>The satellite assemblies, each keyed by the culture it is for.</summary>
     public Dictionary<string, FakeAssembly> Satellites { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>The attributes the assembly carries, in the order a build would have written them.</summary>
+    public List<Attribute> Attributes { get; } = [];
+
     /// <inheritdoc />
     public override string FullName
         => GetName().FullName;
@@ -43,6 +46,27 @@ public sealed class FakeAssembly : Assembly
     /// <inheritdoc />
     public override Stream? GetManifestResourceStream(string name)
         => Resources.TryGetValue(name, out var content) ? new MemoryStream(Encoding.UTF8.GetBytes(content), writable: false) : null;
+
+    /// <inheritdoc />
+    public override object[] GetCustomAttributes(bool inherit)
+        => GetCustomAttributes(typeof(Attribute), inherit);
+
+    // The runtime hands back an array of the attribute type asked for, which a typed enumeration over the result relies on.
+    /// <inheritdoc />
+    public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+    {
+        ArgumentNullException.ThrowIfNull(attributeType);
+
+        var matching = Attributes.Where(attributeType.IsInstanceOfType).ToArray();
+        var typed = Array.CreateInstance(attributeType, matching.Length);
+        Array.Copy(matching, typed, matching.Length);
+
+        return (object[])typed;
+    }
+
+    /// <inheritdoc />
+    public override bool IsDefined(Type attributeType, bool inherit)
+        => GetCustomAttributes(attributeType, inherit).Length > 0;
 
     /// <inheritdoc />
     public override Assembly GetSatelliteAssembly(CultureInfo culture)

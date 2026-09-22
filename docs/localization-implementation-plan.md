@@ -5,7 +5,7 @@ record of what has landed.
 
 ## Status
 
-Steps 1 to 5 are built. `LocalePackSource` reads a pack, `LocalePackAttribute` and
+Steps 1 to 6 are built. `LocalePackSource` reads a pack, `LocalePackAttribute` and
 `LocalePackLoader` find one, `LocalizationOptions.LocalePacks` names them outright, and
 `JsonResourceCache` lays each pack over the assembly's own files and under the host's. A project
 is a pack by declaring `IsLocalePack`, which ships with the library and makes a project of nothing
@@ -17,11 +17,12 @@ locale files now. The Showcase references both packs, so its assembly names them
 component tests' shared context, which reads the packs its own assembly was built against rather
 than its runner's; step 5 is built with that.
 
-Three routes were proved by hand and await the gate check of step 6: the Showcase's assembly
-carries both packs' names; a consumer outside the repository taking the Hebrew package from a feed
-is stamped and loads the pack; and a project outside the repository with nothing but the flag and
-the library package packs as a pack, with its own name in its targets file and its files under
-their own paths.
+The tests cover the source, the layering and the loading, and prove on every run that a project
+referencing a pack directly is stamped with its name. Two routes were proved by hand and stay that
+way until a release pipeline exists to run them: a consumer outside the repository taking the
+Hebrew package from a feed is stamped and loads the pack, and a project outside the repository
+with nothing but the flag and the library package packs as a pack, with its own name in its
+targets file and its files under their own paths.
 
 ## What is in place
 
@@ -113,9 +114,10 @@ carries nothing, a pack overriding what the assembly ships, a host's file overri
 packs read in the order given, and a pack named in an attribute but missing reported rather than
 thrown past.
 
-Over the build, in the gate: the Showcase is built and its `LocalePack` attributes read, so the
-targets file being imported, the attribute being generated and the name being right are proved on a
-real consumer rather than reasoned about.
+Over the build, in the component tests: the shared context's assembly names both packs and loads
+them, so the attribute being generated for a project reference and the name being right are proved
+on a real consumer every run rather than reasoned about. The Showcase's own references need no
+check of their own, since a project reference that is missing fails the build.
 
 ### 7. The prose
 
