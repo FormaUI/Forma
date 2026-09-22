@@ -1,7 +1,9 @@
+#!/usr/bin/env pwsh
 #Requires -Version 7
 <#
 .SYNOPSIS
-    Runs the gate a change has to pass: the build, the tests, the format check and the script tests.
+    Runs the gate a change has to pass: the build, the tests, the format check, the task scripts and the
+    script tests.
 .DESCRIPTION
     One command, so that a person and a machine run the same checks and neither can drift from the other.
     Warnings are errors across the solution, so a diagnostic firing and the build breaking are one event.
@@ -13,8 +15,8 @@
     but the tool ships from a sibling repository rather than this one, so a machine without it is told
     that the step was skipped instead of being failed for it.
 .PARAMETER Target
-    Narrows the run. DotNet covers the build, the tests, the format check and the locale lint; Scripts
-    covers the module tests; All covers both, and is what running it with no argument does.
+    Narrows the run. DotNet covers the build, the tests, the format check, the task scripts and the locale
+    lint; Scripts covers the module tests; All covers both, and is what running it with no argument does.
 .EXAMPLE
     ./scripts/Invoke-Gate.ps1
 .EXAMPLE
@@ -26,6 +28,7 @@ param(
     [string] $Target = 'All'
 )
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 # Each step reads its own exit code, so a failing command must not also throw before it can be recorded.
@@ -85,6 +88,29 @@ if ($Target -in 'DotNet', 'All') {
     else {
         Write-Host ''
         Write-Host 'Skipped the tests and the format check: neither reads a build that did not produce one.'
+    }
+
+    # The task scripts written in C# are file-based programs outside the solution, so the build above never
+    # reaches them. Nothing did, and they broke unnoticed: central package management refused the versions
+    # their headers declare, and the pinned compiler added rules they had never been held to. An entry point
+    # is the one marked by a shebang; a file included into another is compiled with whatever includes it.
+    Invoke-GateStep 'tasks' {
+        $programs = @(Get-ChildItem (Join-Path $root 'scripts' 'cs') -Filter '*.cs' |
+            Where-Object { (Get-Content -LiteralPath $_.FullName -TotalCount 1) -like '#!*' })
+
+        # Finding nothing and reporting success would be the same silence this step exists to break, and
+        # these programs have moved folder before, so the absence is worth failing on rather than passing.
+        if ($programs.Count -eq 0) {
+            throw 'No task script was found to build: nothing under scripts/cs opens with a shebang.'
+        }
+
+        foreach ($program in $programs) {
+            dotnet build $program.FullName --nologo -v:q
+
+            if ($LASTEXITCODE -ne 0) {
+                break
+            }
+        }
     }
 
     if (Get-Command locali -ErrorAction SilentlyContinue) {
