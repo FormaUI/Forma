@@ -1,0 +1,13 @@
+<Project>
+
+    <!--
+        Task scripts are file-based programs rather than projects in the solution, and each names the
+        packages it needs in its own header, where someone reading the script finds them beside the code
+        that uses them. Central package management forbids a version declared that way, so it stops at this
+        folder instead of reaching into it; the versions it governs are the ones the library ships.
+    -->
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+</Project>

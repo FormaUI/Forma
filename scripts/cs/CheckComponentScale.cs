@@ -1,19 +1,41 @@
+#!/usr/bin/env dotnet
 #:package Microsoft.Playwright@1.*
 #:property JsonSerializerIsReflectionEnabledByDefault=true
 #:property PublishAot=false
 #:property NoWarn=CA1303;CA1812
 
-// Measures every control the Showcase renders and reports any whose height is off the control scale.
+// Measures the controls Forma’s components render across the Showcase and reports any standing on no
+// step of the scale. The steps are the target sizes the tokens set, which is what a coarse pointer is
+// judged against, so a control off them is off the one measure a reader feels rather than reads.
 using Microsoft.Playwright;
 
 var baseUrl = args.Length > 0 ? args[0].TrimEnd('/') : "http://localhost:5000";
 var show = args.Contains("--show");
 
-// The steps of the control scale, in pixels at the 16px root: sm, md, touch, lg and xl.
+// The browser this drives is not the repository's to install, so the script fetches it on request rather
+// than leaving someone to work out what a binding's failure was asking for.
+if (args.Contains("--install"))
+{
+    return Microsoft.Playwright.Program.Main(["install", "chrome"]);
+}
+
+// The steps, in pixels at the 16px root: sm, md, touch, lg and xl.
 int[] scale = [24, 32, 40, 44, 48];
 
 using var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
-var browser = await playwright.Chromium.LaunchAsync(new() { Channel = "chrome", Headless = !show, SlowMo = show ? 200 : 0 }).ConfigureAwait(false);
+
+IBrowser browser;
+try
+{
+    browser = await playwright.Chromium.LaunchAsync(new() { Channel = "chrome", Headless = !show, SlowMo = show ? 200 : 0 }).ConfigureAwait(false);
+}
+catch (PlaywrightException exception)
+{
+    await Console.Error.WriteLineAsync("Could not start Chrome, which this script drives to measure the Showcase as a reader sees it.").ConfigureAwait(false);
+    await Console.Error.WriteLineAsync("Install what it needs, once, with: dotnet run scripts/cs/CheckComponentScale.cs -- --install").ConfigureAwait(false);
+    await Console.Error.WriteLineAsync($"  {exception.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()}").ConfigureAwait(false);
+    return 3;
+}
 var page = await browser.NewPageAsync(new() { ViewportSize = new() { Width = 1280, Height = 1000 } }).ConfigureAwait(false);
 
 await page.GotoAsync(baseUrl + "/", new() { WaitUntil = WaitUntilState.Load }).ConfigureAwait(false);

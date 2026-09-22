@@ -110,7 +110,7 @@ it, so the two can never drift apart in style:
 | Variant | Source | Drawing |
 |---|---|---|
 | `Default` | `{Name}.svg` | The stroke drawing: stroke 2, `fill="none"`. |
-| `Alternate` | derived by `scripts/GlyphPack.cs` | The stroke drawing's silhouette: each body — a closed contour of some size — filled together with its own round-capped outline, every other mark kept as its outline, and whatever of those marks lies inside a body cut out of it. A drawing with no body draws its strokes at 3 instead. |
+| `Alternate` | derived by `scripts/cs/BuildGlyphPack.cs` | The stroke drawing's silhouette: each body — a closed contour of some size — filled together with its own round-capped outline, every other mark kept as its outline, and whatever of those marks lies inside a body cut out of it. A drawing with no body draws its strokes at 3 instead. |
 
 The derivation follows these rules, which a stroke drawing is judged against when its filled
 variant comes out wrong — the fix is to the stroke drawing, since nothing else is drawn:
