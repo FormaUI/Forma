@@ -5,11 +5,20 @@ record of what has landed.
 
 ## Status
 
-Step 1 is built: `LocalePackSource` reads a pack, `LocalePackAttribute` and `LocalePackLoader` find
-one, `LocalizationOptions.LocalePacks` names them outright, and `JsonResourceCache` lays each pack
-over the assembly's own files and under the host's. Nothing yet builds a pack or reads one: the
-build a pack brings, the packs themselves, and the move of `he` and `es` into them are steps 2 to 4,
-and the tests that prove any of it are still to write.
+Steps 1 to 3 are built. `LocalePackSource` reads a pack, `LocalePackAttribute` and
+`LocalePackLoader` find one, `LocalizationOptions.LocalePacks` names them outright, and
+`JsonResourceCache` lays each pack over the assembly's own files and under the host's. A project
+is a pack by declaring `IsLocalePack`, which ships with the library and makes a project of nothing
+but locale files embed each under its own path and carry a targets file that records the pack in
+whatever references its package; a project referencing a pack directly is stamped by the root
+build instead. `Forma.Locale.Hebrew` and `Forma.Locale.Spanish` exist and the Showcase references
+both, so its assembly names them, though they hold no files until step 4 moves them.
+
+Three routes were proved by hand and await the gate check of step 6: the Showcase's assembly
+carries both packs' names; a consumer outside the repository taking the Hebrew package from a feed
+is stamped and loads the pack; and a project outside the repository with nothing but the flag and
+the library package packs as a pack, with its own name in its targets file and its files under
+their own paths.
 
 ## What is in place
 

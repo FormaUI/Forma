@@ -39,6 +39,12 @@
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     </ItemGroup>
 
+    <!-- The languages the Showcase ships in, each a locale pack; an application names its packs, and a library never does. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Locales\Forma.Locale.Hebrew\Forma.Locale.Hebrew.csproj" />
+        <ProjectReference Include="..\Forma.Locales\Forma.Locale.Spanish\Forma.Locale.Spanish.csproj" />
+    </ItemGroup>
+
     <!-- The translations embed in the assembly itself rather than in satellite assemblies. -->
     <ItemGroup>
         <EmbeddedResource Include="Components\**\*.json" WithCulture="false" />

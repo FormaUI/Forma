@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <IsLocalePack>true</IsLocalePack>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+    </ItemGroup>
+
+</Project>

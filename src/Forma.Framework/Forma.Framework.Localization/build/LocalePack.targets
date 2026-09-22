@@ -1,0 +1,16 @@
+<Project>
+
+    <!--
+        Records this locale pack in the project referencing its package. A pack declares no type, so
+        nothing the project writes names it: the compiler records no reference, and a trimmed publish
+        would delete it. The attribute is what the runtime reads the pack's name from, and the root
+        keeps the trimmer's hands off it.
+    -->
+    <ItemGroup>
+        <AssemblyAttribute Include="Forma.Framework.Localization.LocalePackAttribute">
+            <_Parameter1>{AssemblyName}</_Parameter1>
+        </AssemblyAttribute>
+        <TrimmerRootAssembly Include="{AssemblyName}" />
+    </ItemGroup>
+
+</Project>

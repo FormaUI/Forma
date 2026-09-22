@@ -4,4 +4,10 @@
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 
+    <!-- What makes a project a locale pack ships with the library, so a pack can be written by anyone who references it; the files are named without a recursive wildcard, since NuGet appends a recursive match's folder to the package path. -->
+    <ItemGroup>
+        <None Remove="build\*.targets" />
+        <None Include="build\*.targets" Pack="true" PackagePath="build/" />
+    </ItemGroup>
+
 </Project>

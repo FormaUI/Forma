@@ -1,0 +1,41 @@
+<Project>
+
+    <!--
+        What a locale pack is, as a build. This file ships in the Forma.Framework.Localization package
+        and is imported into every project that references it, so it does nothing unless the project
+        declared IsLocalePack. A pack is a project of nothing but locale files, for other assemblies'
+        types: it compiles no code, embeds every locale file beneath it under its own path so that a
+        resource name spells the tree a reader sees, and carries in its own package a targets file
+        that records the pack in whatever references it, since nothing else would.
+    -->
+
+    <PropertyGroup Condition="'$(IsLocalePack)' == 'true'">
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeLocalePackTargetsInPackage</TargetsForTfmSpecificContentInPackage>
+    </PropertyGroup>
+
+    <!-- A file's resource name is its path with the folders joined by dots, which is the name the runtime reads a pack's files by. -->
+    <ItemGroup Condition="'$(IsLocalePack)' == 'true'">
+        <EmbeddedResource Include="**\*.json" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" WithCulture="false" LogicalName="$([System.String]::Copy('%(RelativeDir)%(Filename)%(Extension)').Replace('\', '.').Replace('/', '.'))" />
+    </ItemGroup>
+
+    <!--
+        The targets file NuGet imports into a project referencing this pack's package, written at pack
+        time with this assembly's name in place, because the name a consumer records is the one the
+        runtime loads, whatever the package is called.
+    -->
+    <Target Name="IncludeLocalePackTargetsInPackage" Condition="'$(IsLocalePack)' == 'true'">
+        <PropertyGroup>
+            <_LocalePackTargetsPath>$(IntermediateOutputPath)$(PackageId).targets</_LocalePackTargetsPath>
+            <_LocalePackTargetsContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)LocalePack.targets').Replace('{AssemblyName}', '$(AssemblyName)'))</_LocalePackTargetsContent>
+        </PropertyGroup>
+        <WriteLinesToFile File="$(_LocalePackTargetsPath)" Lines="$(_LocalePackTargetsContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(_LocalePackTargetsPath)" PackagePath="build\$(PackageId).targets" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Answers a project that references this pack directly rather than through its package, which imports no targets file, so that it can record the pack itself. -->
+    <Target Name="GetLocalePackName" Condition="'$(IsLocalePack)' == 'true'" Returns="$(AssemblyName)" />
+
+</Project>
