@@ -45,7 +45,7 @@ jobs:
       # Allowed to fail loudly. A scheduled run is not a required check, so failing here blocks nothing,
       # and a run that reported itself green would hide the single thing it exists to say.
       - name: Run the gate
-        run: pwsh ./scripts/Invoke-Gate.ps1
+        run: pwsh ./build.ps1
 
       # Reported rather than built against: upgrading a package is the update service's business, one at
       # a time, where the gate judges each in a pull request. Reporting costs nothing and duplicates none

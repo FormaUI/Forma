@@ -69,7 +69,13 @@ jobs:
 
       - name: Run the gate
         if: steps.filter.outputs.code == 'true'
-        run: pwsh ./scripts/Invoke-Gate.ps1
+        run: pwsh ./build.ps1
+
+      # The build decides what runs, and only this checks that decision. A step that quietly ran nothing
+      # would look exactly like one that passed, which is how the task programs went unbuilt for weeks.
+      - name: Check the build entry point
+        if: steps.filter.outputs.code == 'true'
+        run: pwsh ./scripts/build/build.tests.ps1
 
       - name: Report the gate was not needed
         if: steps.filter.outputs.code != 'true'
