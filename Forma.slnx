@@ -36,8 +36,8 @@
     <Project Path="src\Forma.AddOns\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
     <Project Path="src\Forma.AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
     <Project Path="src\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
-    <Project Path="src\Forma.Locales\Forma.Locale.Hebrew\Forma.Locale.Hebrew.csproj" />
-    <Project Path="src\Forma.Locales\Forma.Locale.Spanish\Forma.Locale.Spanish.csproj" />
+    <Project Path="src\Forma.Locales\Forma.Blazor.Locales.Hebrew\Forma.Blazor.Locales.Hebrew.csproj" />
+    <Project Path="src\Forma.Locales\Forma.Blazor.Locales.Spanish\Forma.Blazor.Locales.Spanish.csproj" />
 
     <!-- Tests -->
     <Project Path="tests\Forma.Tests.Support\Forma.Tests.Support.csproj" />

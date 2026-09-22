@@ -13,8 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- The assembly's one config file, included on its own since no glob reaches it. -->
-        <EmbeddedResource Include=".locale.json" />
         <EmbeddedResource Include="Fixtures\**\*.json" />
         <!-- Files gathered under a folder of their own, which a path in the config file reads by the type's name. -->
         <EmbeddedResource Include="Resources\**\*.json" />

@@ -5,14 +5,17 @@ record of what has landed.
 
 ## Status
 
-Steps 1 to 3 are built. `LocalePackSource` reads a pack, `LocalePackAttribute` and
+Steps 1 to 5 are built. `LocalePackSource` reads a pack, `LocalePackAttribute` and
 `LocalePackLoader` find one, `LocalizationOptions.LocalePacks` names them outright, and
 `JsonResourceCache` lays each pack over the assembly's own files and under the host's. A project
 is a pack by declaring `IsLocalePack`, which ships with the library and makes a project of nothing
 but locale files embed each under its own path and carry a targets file that records the pack in
 whatever references its package; a project referencing a pack directly is stamped by the root
-build instead. `Forma.Locale.Hebrew` and `Forma.Locale.Spanish` exist and the Showcase references
-both, so its assembly names them, though they hold no files until step 4 moves them.
+build instead. `Forma.Blazor.Locales.Hebrew` and `Forma.Blazor.Locales.Spanish` carry the `he` and
+`es` files of `Forma.Blazor`, `Forma.Blazor.Composer` and `Forma.Blazor.Explorer`, which ship no
+locale files now. The Showcase references both packs, so its assembly names them, and so does the
+component tests' shared context, which reads the packs its own assembly was built against rather
+than its runner's; step 5 is built with that.
 
 Three routes were proved by hand and await the gate check of step 6: the Showcase's assembly
 carries both packs' names; a consumer outside the repository taking the Hebrew package from a feed
@@ -29,7 +32,7 @@ their own paths.
   carrying no config of its own.
 - `JsonResourceCache` composes the sources for a type in one culture, and `JsonStringLocaleFactory`
   builds it from `LocalizationOptions`.
-- `he` and `es` sit beside the components they localize, in
+- `he` and `es` sat beside the components they localize until step 4 moved them, in
   `Forma.Blazor/Components/{Category}/.locales/`, in `Forma.Blazor.Composer/.locales/` and in
   `Forma.Blazor.Explorer/.locales/`. The Showcase and the AddOns carry their own files the same way
   and keep them.
@@ -60,7 +63,12 @@ sits, so any project anywhere can be one. What the flag does ships with the libr
 beneath the project but the build's own under `bin/` and `obj/` embedded under its own path as its
 resource name, packable, and a consumer targets file packed as `build/{PackageId}.targets`. That
 second file, shipped in every pack's package, stamps the project referencing the pack with the
-attribute and roots the pack for the trimmer.
+attribute and roots the pack for the trimmer. A pack declares `LocalePackCulture`, which the build
+requires, refusing a file of any other culture, and which the assembly carries as metadata.
+
+The same targets file embeds an assembly's `.locale.json` whenever one sits at the project root,
+for every project and not only a pack, so no project names its config file any more; the root
+`Directory.Build.targets` imports the file for every project here for that reason.
 
 This repository's own packs reference the library as a project rather than as a package, which
 imports no targets file, so the root `Directory.Build.targets` imports the same file when the flag
@@ -73,16 +81,16 @@ stamps the attribute for each that says so, matching no name.
 
 ### 3. The packs
 
-`Forma.Locale.Hebrew` and `Forma.Locale.Spanish` in `src/Forma.Locales/`, each carrying
-`Forma.Blazor`, `Forma.Blazor.Composer` and `Forma.Blazor.Explorer`.
+`Forma.Blazor.Locales.Hebrew` and `Forma.Blazor.Locales.Spanish` in `src/Forma.Locales/`, each
+carrying `Forma.Blazor`, `Forma.Blazor.Composer` and `Forma.Blazor.Explorer`.
 
 ### 4. The move
 
-The `he` files of those three projects move into `Forma.Locale.Hebrew` and the `es` files into
-`Forma.Locale.Spanish`, each under a folder named for the assembly it belongs to. The three projects
-keep their `.locale.json` where they have one, since a pack lays an assembly's folder out by the
-root namespace the assembly declares, and lose the `EmbeddedResource` items for files they no longer
-hold.
+The `he` files of those three projects move into `Forma.Blazor.Locales.Hebrew` and the `es` files
+into `Forma.Blazor.Locales.Spanish`, each under a folder named for the assembly it belongs to. The
+three projects keep their `.locale.json` where they have one, since a pack lays an assembly's
+folder out by the root namespace the assembly declares, and lose the `EmbeddedResource` items for
+files they no longer hold.
 
 The Showcase keeps every locale file it has, embedded in its own assembly exactly as today, and so
 do the AddOns. What they do is not a legacy arrangement, and the Showcase is where the repository

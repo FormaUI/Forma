@@ -48,10 +48,4 @@
 
     <Import Project="$(BundledPackageTargets)" />
 
-    <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
-    <ItemGroup>
-        <EmbeddedResource Include="Components\**\*.json" WithCulture="false" />
-        <Content Remove="Components\**\*.json" />
-    </ItemGroup>
-
 </Project>

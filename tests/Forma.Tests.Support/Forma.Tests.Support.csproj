@@ -20,9 +20,8 @@
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     </ItemGroup>
 
-    <!-- Locale files under a root namespace that is not the assembly's name, and the config file at the root that names it; no glob reaches the config. -->
+    <!-- Locale files under a root namespace that is not the assembly's name, which the config file at the root declares. -->
     <ItemGroup>
-        <EmbeddedResource Include=".locale.json" />
         <EmbeddedResource Include="Localization\Rooted\**\*.json" />
     </ItemGroup>
 

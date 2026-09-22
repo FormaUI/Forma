@@ -1,13 +1,21 @@
 <Project>
 
     <!--
-        What a locale pack is, as a build. This file ships in the Forma.Framework.Localization package
-        and is imported into every project that references it, so it does nothing unless the project
-        declared IsLocalePack. A pack is a project of nothing but locale files, for other assemblies'
-        types: it compiles no code, embeds every locale file beneath it under its own path so that a
-        resource name spells the tree a reader sees, and carries in its own package a targets file
-        that records the pack in whatever references it, since nothing else would.
+        What the build does for an assembly that localizes. This file ships in the
+        Forma.Framework.Localization package and is imported into every project that references it.
+        For any project it embeds the config file, and for a locale pack, a project that declared
+        IsLocalePack, it does the rest: a pack is a project of nothing but locale files, for other
+        assemblies' types, so it compiles no code, embeds every locale file beneath it under its own
+        path so that a resource name spells the tree a reader sees, and carries in its own package a
+        targets file that records the pack in whatever references it, since nothing else would.
     -->
+
+    <!-- An assembly's config file sits at its root and is embedded whenever it is there, since the SDK embeds nothing by default and would ship it as content instead. -->
+    <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)/.locale.json')">
+        <EmbeddedResource Include=".locale.json" />
+        <Content Remove=".locale.json" />
+        <None Remove=".locale.json" />
+    </ItemGroup>
 
     <PropertyGroup Condition="'$(IsLocalePack)' == 'true'">
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -33,6 +41,30 @@
         <ItemGroup>
             <TfmSpecificPackageFile Include="$(_LocalePackTargetsPath)" PackagePath="build\$(PackageId).targets" />
         </ItemGroup>
+    </Target>
+
+    <!--
+        A pack declares the culture it carries, or several separated by semicolons, which its own
+        assembly then states as metadata, and the build refuses a file of any other culture, so one
+        package is one language by construction rather than by care. A file's culture is the last
+        dotted part of its name.
+    -->
+    <ItemGroup Condition="'$(IsLocalePack)' == 'true' and '$(LocalePackCulture)' != ''">
+        <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+            <_Parameter1>LocalePackCulture</_Parameter1>
+            <_Parameter2>$(LocalePackCulture)</_Parameter2>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+    <Target Name="CheckLocalePackCulture" BeforeTargets="CoreCompile" Condition="'$(IsLocalePack)' == 'true'">
+        <Error Condition="'$(LocalePackCulture)' == ''" Text="A locale pack declares the culture it carries in LocalePackCulture, one or several separated by semicolons; this project declares none." />
+        <ItemGroup>
+            <_LocaleFile Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.json'">
+                <Culture>$([System.String]::Copy('%(Filename)').Substring($([MSBuild]::Add($([System.String]::Copy('%(Filename)').LastIndexOf('.')), 1))))</Culture>
+            </_LocaleFile>
+            <_LocaleFileOfAnotherCulture Include="@(_LocaleFile)" Condition="!$([System.String]::Copy(';$(LocalePackCulture);').Contains(';%(Culture);'))" />
+        </ItemGroup>
+        <Error Condition="'@(_LocaleFileOfAnotherCulture)' != ''" Text="This locale pack declares the culture '$(LocalePackCulture)', and @(_LocaleFileOfAnotherCulture->'%(Identity)', ', ') is for another." />
     </Target>
 
     <!-- Answers a project that references this pack directly rather than through its package, which imports no targets file, so that it can record the pack itself. -->

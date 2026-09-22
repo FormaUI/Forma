@@ -5,10 +5,12 @@ using Bunit.Rendering;
 
 using Forma.Blazor;
 using Forma.Framework.Emojis.Twemoji;
+using Forma.Framework.Localization;
 using Forma.Framework.Localization.Json;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>A bUnit context with the services every Forma component expects already registered, rendering as an interactive server circuit unless a test says otherwise.</summary>
 public abstract class FormaBunitContext : BunitContext
@@ -20,7 +22,9 @@ public abstract class FormaBunitContext : BunitContext
     /// <summary>Creates a context carrying Forma's own service registrations.</summary>
     protected FormaBunitContext()
     {
-        Services.AddJsonLocalization();
+        // The locale packs this project references are recorded in its own assembly by the build, as an
+        // application's are in its; a test's entry assembly is its runner's, so the packs are read from here.
+        Services.AddJsonLocalization(new LocalizationOptions { LocalePacks = LocalePackLoader.Load(typeof(FormaBunitContext).Assembly, NullLogger.Instance) });
         Services.AddFormaTwemojiPack();
         Services.AddFormaUI();
     }

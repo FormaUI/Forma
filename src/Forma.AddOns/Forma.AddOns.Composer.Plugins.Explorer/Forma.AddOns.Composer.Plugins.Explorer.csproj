@@ -27,8 +27,8 @@
 
     <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
     <ItemGroup>
-        <EmbeddedResource Include="**\*.json" Exclude="$(DefaultItemExcludes)" WithCulture="false" />
-        <Content Remove="**\*.json" />
+        <EmbeddedResource Include=".locales\**\*.json" WithCulture="false" />
+        <Content Remove=".locales\**\*.json" />
     </ItemGroup>
 
 </Project>

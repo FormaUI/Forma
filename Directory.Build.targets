@@ -42,8 +42,8 @@
         <None Update="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
-    <!-- A locale pack is a project that says so, and what that means ships with the localization library; a project here references the library rather than its package, which imports nothing, so it is imported here. -->
-    <Import Project="$(MSBuildThisFileDirectory)src\Forma.Framework\Forma.Framework.Localization\build\Forma.Framework.Localization.targets" Condition="'$(IsLocalePack)' == 'true'" />
+    <!-- What the build does for an assembly that localizes ships with the localization library, and a project here references the library rather than its package, which imports nothing, so it is imported here for every project; it does nothing to one that has no locale files. -->
+    <Import Project="$(MSBuildThisFileDirectory)src\Forma.Framework\Forma.Framework.Localization\build\Forma.Framework.Localization.targets" />
 
     <!-- A project referencing a pack directly rather than through its package imports no targets file from it, so it asks each referenced project whether it is a pack and records the ones that say so, as the package's own targets file would. -->
     <Target Name="RecordReferencedLocalePacks" BeforeTargets="GetAssemblyAttributes" Condition="'@(ProjectReference)' != ''">

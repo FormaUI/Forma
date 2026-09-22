@@ -18,6 +18,13 @@
         <ProjectReference Include="..\..\src\Forma.AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+    </ItemGroup>
+
+    <!-- The languages the library ships, each a locale pack, so a component test reads the same strings the Showcase renders; the build records them in this assembly as it would in an application's. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Locales\Forma.Blazor.Locales.Hebrew\Forma.Blazor.Locales.Hebrew.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Locales\Forma.Blazor.Locales.Spanish\Forma.Blazor.Locales.Spanish.csproj" />
     </ItemGroup>
 
 </Project>
