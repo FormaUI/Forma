@@ -53,18 +53,32 @@ if ($PSCmdlet.ShouldProcess('the .NET build servers', 'dotnet build-server shutd
 # when it is running out of this repository, which is what makes it ours rather than someone else's.
 $builders = @(Get-Process -Name 'MSBuild', 'VBCSCompiler', 'testhost' -ErrorAction SilentlyContinue)
 
-$running = @(Get-CimInstance Win32_Process -Filter "Name = 'dotnet.exe'" -ErrorAction SilentlyContinue)
+# Read through Get-Process rather than a process query, which exists only on Windows; a task script here
+# runs wherever PowerShell does.
+$running = @(Get-Process -Name 'dotnet' -ErrorAction SilentlyContinue)
+
+# What this repository builds runs as an executable of its own out of bin, not as dotnet, so it is found
+# by where it was started from rather than by what it is called. That is the Showcase, which holds the
+# very files a rebuild has to replace, and looking only at dotnet misses it entirely while stopping the
+# launcher that happened to start it. Nothing outside the repository can match, so an editor and this
+# shell are never in reach.
+$built = @(Get-Process -ErrorAction SilentlyContinue | Where-Object {
+        try { $_.Path -and $_.Path.StartsWith($repositoryRoot, [StringComparison]::OrdinalIgnoreCase) }
+        catch { $false }
+    })
 
 # Compared without regard to case, because a path is not case-sensitive where this runs and the drive
 # letter alone is written both ways by different tools. Matching ordinally would spare a running Showcase
 # for no better reason than which case its launcher happened to use, which is the one thing this is for.
-$hosted = @($running | Where-Object {
+$launchers = @($running | Where-Object {
         $All -or ($_.CommandLine -and $_.CommandLine.Contains($repositoryRoot, [StringComparison]::OrdinalIgnoreCase))
     })
 
+$hosted = @($built) + @($launchers)
+
 # Taken one at a time rather than off the collection, which has no such property to read when it is empty.
-$hostedIds = @($hosted | ForEach-Object { $_.ProcessId })
-$spared = @($running | Where-Object { $_.ProcessId -notin $hostedIds })
+$hostedIds = @($hosted | ForEach-Object { $_.Id })
+$spared = @($running | Where-Object { $_.Id -notin $hostedIds })
 
 foreach ($process in $builders) {
     if ($PSCmdlet.ShouldProcess("$($process.ProcessName) ($($process.Id))", 'stop')) {
@@ -73,8 +87,8 @@ foreach ($process in $builders) {
 }
 
 foreach ($process in $hosted) {
-    if ($PSCmdlet.ShouldProcess("dotnet ($($process.ProcessId))", 'stop')) {
-        Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
+    if ($PSCmdlet.ShouldProcess("$($process.ProcessName) ($($process.Id))", 'stop')) {
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
     }
 }
 
