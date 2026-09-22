@@ -80,7 +80,7 @@ if ($Target -in 'All', 'DotNet') {
 }
 
 if ($Target -in 'All', 'Scripts') {
-    $results.AddRange([psobject[]]@(Test-ScriptModule -Context $context -WhatIf:$WhatIfPreference))
+    $results.AddRange([psobject[]]@(Test-BrowserScript -Context $context -WhatIf:$WhatIfPreference))
 }
 
 exit (Write-BuildSummary -Result @($results))

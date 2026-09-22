@@ -2,14 +2,15 @@
 #:package Microsoft.Playwright@1.*
 #:property JsonSerializerIsReflectionEnabledByDefault=true
 #:property PublishAot=false
-#:property NoWarn=CA1303;CA1812
 
 // Measures the controls Forma’s components render across the Showcase and reports any standing on no
 // step of the scale. The steps are the target sizes the tokens set, which is what a coarse pointer is
 // judged against, so a control off them is off the one measure a reader feels rather than reads.
 using Microsoft.Playwright;
 
-var baseUrl = args.Length > 0 ? args[0].TrimEnd('/') : "http://localhost:5000";
+// The address is whichever argument is not a switch, so a switch given on its own is not read as a place
+// to go.
+var baseUrl = args.FirstOrDefault(argument => !argument.StartsWith("--", StringComparison.Ordinal))?.TrimEnd('/') ?? "http://localhost:5000";
 var show = args.Contains("--show");
 
 // The browser this drives is not the repository's to install, so the script fetches it on request rather
@@ -24,18 +25,15 @@ int[] scale = [24, 32, 40, 44, 48];
 
 using var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
 
-IBrowser browser;
-try
+var browser = await LaunchChromeAsync(playwright, show).ConfigureAwait(false);
+if (browser is null)
 {
-    browser = await playwright.Chromium.LaunchAsync(new() { Channel = "chrome", Headless = !show, SlowMo = show ? 200 : 0 }).ConfigureAwait(false);
-}
-catch (PlaywrightException exception)
-{
-    await Console.Error.WriteLineAsync("Could not start Chrome, which this script drives to measure the Showcase as a reader sees it.").ConfigureAwait(false);
-    await Console.Error.WriteLineAsync("Install what it needs, once, with: dotnet run scripts/cs/CheckComponentScale.cs -- --install").ConfigureAwait(false);
-    await Console.Error.WriteLineAsync($"  {exception.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()}").ConfigureAwait(false);
     return 3;
 }
+
+// Closed when the run ends, whichever way it ends.
+await using var closing = browser.ConfigureAwait(false);
+
 var page = await browser.NewPageAsync(new() { ViewportSize = new() { Width = 1280, Height = 1000 } }).ConfigureAwait(false);
 
 await page.GotoAsync(baseUrl + "/", new() { WaitUntil = WaitUntilState.Load }).ConfigureAwait(false);
@@ -102,7 +100,6 @@ Console.WriteLine();
 if (offenders.Count == 0)
 {
     Console.WriteLine("Every control stands on the scale.");
-    await browser.DisposeAsync().ConfigureAwait(false);
     return 0;
 }
 
@@ -113,8 +110,24 @@ foreach (var offender in offenders)
     Console.WriteLine("  " + offender);
 }
 
-await browser.DisposeAsync().ConfigureAwait(false);
 return 1;
+
+// Chrome is not the repository's to install, so its absence is reported with what to run rather than left
+// as a binding's exception to interpret.
+static async Task<IBrowser?> LaunchChromeAsync(IPlaywright playwright, bool visible)
+{
+    try
+    {
+        return await playwright.Chromium.LaunchAsync(new() { Channel = "chrome", Headless = !visible, SlowMo = visible ? 200 : 0 }).ConfigureAwait(false);
+    }
+    catch (PlaywrightException exception)
+    {
+        await Console.Error.WriteLineAsync("Could not start Chrome, which this script drives to measure the Showcase as a reader sees it.").ConfigureAwait(false);
+        await Console.Error.WriteLineAsync("Install what it needs, once, with: dotnet run scripts/cs/CheckComponentScale.cs -- --install").ConfigureAwait(false);
+        await Console.Error.WriteLineAsync($"  {exception.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()}").ConfigureAwait(false);
+        return null;
+    }
+}
 
 internal sealed class Measurement
 {

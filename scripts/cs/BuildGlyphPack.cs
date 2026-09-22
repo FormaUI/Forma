@@ -66,8 +66,8 @@ if (stray.Length > 0)
 
 var expected = declared.Select(name => $"{name}.svg").ToHashSet(StringComparer.Ordinal);
 
-// glyph name -> grid size -> style name -> style
-var glyphs = new SortedDictionary<string, SortedDictionary<int, Dictionary<string, object>>>(StringComparer.Ordinal);
+// glyph name -> grid size -> both styles on that grid
+var glyphs = new SortedDictionary<string, SortedDictionary<int, GlyphVariants>>(StringComparer.Ordinal);
 var complete = false;
 var report = new StringBuilder();
 
@@ -101,7 +101,7 @@ foreach (var (folder, size) in grids)
             glyphs[name] = byGrid = [];
         }
 
-        byGrid[size] = new Dictionary<string, object> { ["regular"] = stroke.ToStyle(), ["filled"] = Derive(stroke, size) };
+        byGrid[size] = new GlyphVariants(stroke.ToStyle(), Derive(stroke, size));
         drawn++;
     }
 
@@ -129,16 +129,14 @@ using (var output = File.Create(outputPath))
     {
         writer.WritePropertyName(name);
         writer.WriteStartObject();
-        foreach (var (size, styles) in byGrid)
+        foreach (var (size, variants) in byGrid)
         {
             writer.WritePropertyName(size.ToString(CultureInfo.InvariantCulture));
             writer.WriteStartObject();
-            foreach (var (styleName, style) in styles)
-            {
-                writer.WritePropertyName(styleName);
-                WriteStyle(writer, (Dictionary<string, object>)style);
-            }
-
+            writer.WritePropertyName("regular");
+            WriteStyle(writer, variants.Regular);
+            writer.WritePropertyName("filled");
+            WriteStyle(writer, variants.Filled);
             writer.WriteEndObject();
         }
 
@@ -179,22 +177,24 @@ static int Draft(string glyphsFolder, int from, int to)
     return 0;
 }
 
-static void WriteStyle(Utf8JsonWriter writer, Dictionary<string, object> style)
+// A path is written with only what a reader would otherwise assume: full opacity and a stroked mark are
+// the defaults, so a path at either says nothing about them.
+static void WriteStyle(Utf8JsonWriter writer, GlyphStyle style)
 {
     writer.WriteStartObject();
-    writer.WriteNumber("stroke", Convert.ToDouble(style["stroke"], CultureInfo.InvariantCulture));
+    writer.WriteNumber("stroke", style.Stroke);
     writer.WritePropertyName("paths");
     writer.WriteStartArray();
-    foreach (var entry in (Dictionary<string, object>[])style["paths"])
+    foreach (var path in style.Paths)
     {
         writer.WriteStartObject();
-        writer.WriteString("d", (string)entry["d"]);
-        if (entry.TryGetValue("o", out var opacity))
+        writer.WriteString("d", path.Data);
+        if (path.Opacity < 1)
         {
-            writer.WriteNumber("o", Convert.ToDouble(opacity, CultureInfo.InvariantCulture));
+            writer.WriteNumber("o", path.Opacity);
         }
 
-        if (entry.ContainsKey("f"))
+        if (path.Filled)
         {
             writer.WriteBoolean("f", true);
         }
@@ -210,7 +210,7 @@ static void WriteStyle(Utf8JsonWriter writer, Dictionary<string, object> style)
 // size) is filled together with its own outline, every other mark keeps its stroked outline, and
 // whatever of those marks lies inside a body is cut out of it. A drawing with no body has nothing
 // to fill and draws its strokes heavier instead.
-static object Derive(Drawing stroke, int grid)
+static GlyphStyle Derive(Drawing stroke, int grid)
 {
     using var paint = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = StrokeWidth, StrokeCap = SKStrokeCap.Round, StrokeJoin = SKStrokeJoin.Round };
     var bodyArea = ReferenceBodyArea * (grid / ReferenceGrid) * (grid / ReferenceGrid);
@@ -259,11 +259,7 @@ static object Derive(Drawing stroke, int grid)
 
         if (bodies.Count == 0)
         {
-            return new Dictionary<string, object>
-            {
-                ["stroke"] = HeavyStrokeWidth,
-                ["paths"] = stroke.Paths.Select(path => path.ToEntry()).ToArray(),
-            };
+            return new GlyphStyle(HeavyStrokeWidth, stroke.Paths);
         }
 
         var body = new SKPath();
@@ -308,10 +304,10 @@ static object Derive(Drawing stroke, int grid)
             result = Combine(result, outside, SKPathOp.Union);
         }
 
-        var entries = new List<Dictionary<string, object>> { new() { ["d"] = Data(result) } };
-        entries.AddRange(faded.Select(item => new Dictionary<string, object> { ["d"] = Data(item.Path), ["o"] = item.Opacity }));
+        var paths = new List<DrawingPath> { new(Data(result), Filled: false, Opacity: 1) };
+        paths.AddRange(faded.Select(item => new DrawingPath(Data(item.Path), Filled: false, item.Opacity)));
 
-        return new Dictionary<string, object> { ["stroke"] = 0, ["paths"] = entries.ToArray() };
+        return new GlyphStyle(0, paths);
 
         // Keeps the path the operation could not produce, as the operation itself does, and takes ownership
         // of the one it did so that neither the old nor the new is released while the other is still read.
@@ -399,3 +395,5 @@ static string Data(SKPath path)
     return Regex.Replace((simplified ?? path).ToSvgPathData(), @"-?\d+\.\d+", match => float.Parse(match.Value, CultureInfo.InvariantCulture).ToString("0.##", CultureInfo.InvariantCulture));
 }
 
+/// <summary>Both styles of one glyph on one grid.</summary>
+internal sealed record GlyphVariants(GlyphStyle Regular, GlyphStyle Filled);

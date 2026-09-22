@@ -64,47 +64,31 @@ $files = @(
 foreach ($entry in $files) {
     $file = $entry.File
     $text = Get-Content -LiteralPath $file.FullName -Raw
-    $problems = [System.Collections.Generic.List[string]]::new()
-
     $errors = $null
     [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$errors) | Out-Null
-    if ($errors.Count -gt 0) {
-        $problems.Add("does not parse: $($errors[0].Message)")
-    }
 
-    # A module is imported rather than run, so it carries no shebang.
-    if ($entry.Kind -ne 'module' -and -not $text.StartsWith('#!/usr/bin/env pwsh')) {
-        $problems.Add('does not open with a shebang')
-    }
+    # Each rule speaks when it is broken and says nothing when it is kept, so the problems are what was said.
+    $problems = @(
+        if ($errors.Count -gt 0) { "does not parse: $($errors[0].Message)" }
 
-    if ($text -notmatch '(?m)^#Requires -Version 7') {
-        $problems.Add('does not declare the PowerShell it needs')
-    }
+        # A module is imported rather than run, so it carries no shebang.
+        if ($entry.Kind -ne 'module' -and -not $text.StartsWith('#!/usr/bin/env pwsh')) { 'does not open with a shebang' }
 
-    if ($text -notmatch '(?m)^Set-StrictMode -Version Latest') {
-        $problems.Add('does not run under strict mode')
-    }
+        if ($text -notmatch '(?m)^#Requires -Version 7') { 'does not declare the PowerShell it needs' }
+        if ($text -notmatch '(?m)^Set-StrictMode -Version Latest') { 'does not run under strict mode' }
+        if ($text -notmatch '\.SYNOPSIS') { 'carries no comment-based help, so Get-Help cannot answer for it' }
 
-    if ($text -notmatch '\.SYNOPSIS') {
-        $problems.Add('carries no comment-based help, so Get-Help cannot answer for it')
-    }
-
-    switch ($entry.Kind) {
-        'task' {
-            $parts = $file.BaseName -split '-'
-            if ($parts.Count -ne 2) {
-                $problems.Add("is not named Verb-Noun")
+        switch ($entry.Kind) {
+            'task' {
+                $parts = $file.BaseName -split '-'
+                if ($parts.Count -ne 2) { 'is not named Verb-Noun' }
+                elseif ($parts[0] -notin $approved) { "opens with '$($parts[0])', which is not a verb PowerShell approves" }
             }
-            elseif ($parts[0] -notin $approved) {
-                $problems.Add("opens with '$($parts[0])', which is not a verb PowerShell approves")
+            'build' {
+                if ($file.BaseName -cnotmatch '^[a-z][a-z.]*$') { 'is a build script, so its name is the action in lowercase' }
             }
         }
-        'build' {
-            if ($file.BaseName -cnotmatch '^[a-z][a-z.]*$') {
-                $problems.Add('is a build script, so its name is the action in lowercase')
-            }
-        }
-    }
+    )
 
     Add-Result -Name "$($file.Name) keeps the contract" -Problem $problems
 }
@@ -131,21 +115,12 @@ function Test-Case {
     )
 
     $run = Invoke-Script -Script $Script -Arguments $Arguments
-    $problems = [System.Collections.Generic.List[string]]::new()
 
-    if ($Fails -and $run.Succeeded) {
-        $problems.Add('the run succeeded where it should have been refused')
-    }
-
-    if (-not $Fails -and -not $run.Succeeded) {
-        $problems.Add('the run failed')
-    }
-
-    foreach ($text in $Expect) {
-        if ($run.Output -notmatch [regex]::Escape($text)) {
-            $problems.Add("nothing said '$text'")
-        }
-    }
+    $problems = @(
+        if ($Fails -and $run.Succeeded) { 'the run succeeded where it should have been refused' }
+        if (-not $Fails -and -not $run.Succeeded) { 'the run failed' }
+        foreach ($text in $Expect) { if ($run.Output -notmatch [regex]::Escape($text)) { "nothing said '$text'" } }
+    )
 
     Add-Result -Name $Name -Problem $problems -Output $run.Output
 }

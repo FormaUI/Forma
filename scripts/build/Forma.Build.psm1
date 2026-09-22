@@ -511,7 +511,7 @@ The build context.
 .OUTPUTS
 The steps' results, which include the restore where one was needed.
 #>
-function Test-ScriptModule {
+function Test-BrowserScript {
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([psobject])]
     param(
@@ -700,7 +700,7 @@ function Invoke-Gate {
     }
 
     if ($Target -in 'Scripts', 'All') {
-        $results.AddRange([psobject[]]@(Test-ScriptModule -Context $Context -WhatIf:$WhatIfPreference))
+        $results.AddRange([psobject[]]@(Test-BrowserScript -Context $Context -WhatIf:$WhatIfPreference))
     }
 
     $results

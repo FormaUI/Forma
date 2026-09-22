@@ -1,0 +1,14 @@
+<Project>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
+
+    <!--
+        A task program talks to the person running it, so CA1303, which asks that a string reaching the
+        console come from a resource, has nothing to protect: nothing a program here prints is localized.
+        CA1812 reports a class nothing constructs, which is what a type the browser binding fills from
+        JSON looks like to the compiler. Both are settled here rather than in the severity table because
+        that table governs the library, where each rule is right.
+    -->
+    <PropertyGroup>
+        <NoWarn>$(NoWarn);CA1303;CA1812</NoWarn>
+    </PropertyGroup>
+</Project>

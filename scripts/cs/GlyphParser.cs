@@ -103,8 +103,8 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
         return new Drawing(stroke, paths);
     }
 
-    public object ToStyle()
-        => new Dictionary<string, object> { ["stroke"] = Stroke, ["paths"] = Paths.Select(path => path.ToEntry()).ToArray() };
+    public GlyphStyle ToStyle()
+        => new(Stroke, Paths);
 
     // A circle drawn as two half-turn arcs is round only when its two points sit a diameter apart;
     // any other spacing draws a lens.
@@ -166,24 +166,11 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
 }
 
 /// <summary>One path of a drawing: its data, whether it is a solid mark inside a stroke drawing, and its opacity.</summary>
-internal sealed record DrawingPath(string Data, bool Filled, double Opacity)
-{
-    public Dictionary<string, object> ToEntry()
-    {
-        var entry = new Dictionary<string, object> { ["d"] = Data };
-        if (Opacity < 1)
-        {
-            entry["o"] = Opacity;
-        }
+internal sealed record DrawingPath(string Data, bool Filled, double Opacity);
 
-        if (Filled)
-        {
-            entry["f"] = true;
-        }
-
-        return entry;
-    }
-}
+/// <summary>One style of a glyph as the asset carries it: the width its paths are stroked at, and the paths.</summary>
+/// <remarks>A stroke of zero is the filled form, where each path is a silhouette rather than a line.</remarks>
+internal sealed record GlyphStyle(double Stroke, IReadOnlyList<DrawingPath> Paths);
 
 /// <summary>Scales a drawing from one grid to another as a starting point for one the target grid lacks.</summary>
 internal static class GlyphDraft

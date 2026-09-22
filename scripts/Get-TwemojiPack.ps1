@@ -201,8 +201,7 @@ foreach ($groupId in $groupIds.Values) {
 
                 # A sprite shares one document, so gradient and clip ids have to be unique across all of it.
                 foreach ($id in ([regex]::Matches($inner, '\sid="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })) {
-                    $escaped = [regex]::Escape($id)
-                    $inner = $inner -replace "(\s(?:xlink:)?href=`"#|url\(#|\sid=`")$escaped\b", "`${1}$($entry.s)-$id"
+                    $inner = $inner -replace ('(\s(?:xlink:)?href="#|url\(#|\sid=")' + [regex]::Escape($id) + '\b'), ('${1}' + $entry.s + '-' + $id)
                 }
 
                 '    <symbol id="emoji-{0}" viewBox="{1}">{2}</symbol>' -f $entry.s, $viewBox, $inner

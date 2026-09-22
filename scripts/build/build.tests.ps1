@@ -75,27 +75,15 @@ function Invoke-Case {
     $succeeded = $LASTEXITCODE -eq 0
 
     $shouldFail = [bool]$Case['Fails']
-    $problems = [System.Collections.Generic.List[string]]::new()
 
-    if ($shouldFail -and $succeeded) {
-        $problems.Add('the run succeeded where it should have been refused')
-    }
-
-    if (-not $shouldFail -and -not $succeeded) {
-        $problems.Add('the run failed')
-    }
-
-    foreach ($text in @($Case['Expect'])) {
-        if ($text -and $output -notmatch [regex]::Escape($text)) {
-            $problems.Add("nothing said '$text'")
-        }
-    }
-
-    foreach ($text in @($Case['Reject'])) {
-        if ($text -and $output -match [regex]::Escape($text)) {
-            $problems.Add("something said '$text', which this action does not do")
-        }
-    }
+    # Each expectation speaks when it is missed and says nothing when it is met, so the problems are what
+    # was said.
+    $problems = @(
+        if ($shouldFail -and $succeeded) { 'the run succeeded where it should have been refused' }
+        if (-not $shouldFail -and -not $succeeded) { 'the run failed' }
+        foreach ($text in @($Case['Expect'])) { if ($text -and $output -notmatch [regex]::Escape($text)) { "nothing said '$text'" } }
+        foreach ($text in @($Case['Reject'])) { if ($text -and $output -match [regex]::Escape($text)) { "something said '$text', which this action does not do" } }
+    )
 
     [pscustomobject]@{
         Name     = $Case['Name']
@@ -183,23 +171,12 @@ try {
 
     $step = Clear-BuildOutput -Context $cleaned 6>$null
 
-    $wrong = [System.Collections.Generic.List[string]]::new()
-
-    if (-not $step.Passed) {
-        $wrong.Add('the step failed')
-    }
-
-    if (Test-Path (Join-Path $tree 'src/Thing/bin')) {
-        $wrong.Add('build output was left behind')
-    }
-
-    if (-not (Test-Path (Join-Path $tree 'tests/Scripts/node_modules/some-package/bin/tool'))) {
-        $wrong.Add('an installed package was deleted')
-    }
-
-    if (-not (Test-Path (Join-Path $tree '.local/benchmarks/Thing/bin/result'))) {
-        $wrong.Add('work belonging to a person was deleted')
-    }
+    $wrong = @(
+        if (-not $step.Passed) { 'the step failed' }
+        if (Test-Path (Join-Path $tree 'src/Thing/bin')) { 'build output was left behind' }
+        if (-not (Test-Path (Join-Path $tree 'tests/Scripts/node_modules/some-package/bin/tool'))) { 'an installed package was deleted' }
+        if (-not (Test-Path (Join-Path $tree '.local/benchmarks/Thing/bin/result'))) { 'work belonging to a person was deleted' }
+    )
 
     $cleaning = [pscustomobject]@{
         Name     = 'cleaning deletes build output and nothing else'

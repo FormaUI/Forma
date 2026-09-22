@@ -18,7 +18,7 @@
         'Build-TaskProgram',
         'Clear-BuildOutput',
         'Invoke-Gate',
-        'Test-ScriptModule',
+        'Test-BrowserScript',
         'Test-Solution',
         'Test-SolutionFormat',
         'Write-BuildSummary'
