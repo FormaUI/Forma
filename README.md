@@ -15,7 +15,11 @@ The host owns its own `App.razor` and `Routes.razor`; the package ships componen
 
 ```pwsh
 dotnet add package Forma.Blazor
+dotnet add package Forma.Blazor.Locales.Hebrew
 ```
+
+The second line is a language; the library's own strings are English, and each other language is
+a package of its own.
 
 ## Quick start
 
@@ -163,6 +167,14 @@ A host rewords a string the library ships, or adds a language it never had, by l
 in a `.locales` folder beside the application, in a folder named for the assembly laid out as the
 assembly's own files are.
 
+The library's keys are its English, and each other language it ships is a **locale pack**, one
+package per language: `Forma.Blazor.Locales.Hebrew`, `Forma.Blazor.Locales.Spanish`. A language is
+installed by referencing its package and nothing else; the pack records itself in the application
+at build time, and `AddJsonLocalization()` finds it. A pack is referenced by the application, never
+by a library the application uses, since which languages ship is the application's decision. A
+host's own `.locales` folder still overrides a pack, so a reworded string is written the same way
+whichever package shipped it.
+
 [`Forma.Framework.Localization`](src/Forma.Framework/Forma.Framework.Localization/README.md)
 documents the contract, the ways to fill a hole, the plural syntax, and how a file is found.
 [`Forma.Framework.Localization.Json`](src/Forma.Framework/Forma.Framework.Localization.Json/README.md) documents the
@@ -209,8 +221,9 @@ dotnet run --project src/Forma.Blazor.Showcase
 ```
 
 All four checks must pass before a change is offered for review. The Showcase serves an interactive
-page per component, in English, Hebrew, and Spanish — every state a component can enter is rendered
-there, and reviewing a component means looking at it in all three cultures. Its localization page
+page per component, in English, Hebrew, and Spanish, the last two from the locale packs it
+references — every state a component can enter is rendered there, and reviewing a component means
+looking at it in all three cultures. Its localization page
 also shows French, which the library never shipped: the Showcase's `.locales` folder supplies a few
 components' strings in it, to show a host adding a language, and a link opens the page in French
 with everything else falling back to English.

@@ -2,9 +2,9 @@
 
 The JSON backend for `Forma.Framework.Localization`: it implements `IStringLocaleFactory` and
 `IStringLocale<T>` over JSON locale files that sit in a `.locales` folder beside the types they
-localize and ship inside their assembly, with the host's own files laid over them. A lookup
-resolves the right file from the type asking and the culture in force, and a key with no
-translation renders as written.
+localize and ship inside their assembly or in a locale pack, with the host's own files laid over
+both. A lookup resolves the right file from the type asking and the culture in force, and a key
+with no translation renders as written.
 
 This document covers what is JSON's: registering the backend, the file's shape, and how a lookup
 resolves. Where a file sits, what a host lays over it, and the paths behind both are

@@ -53,6 +53,20 @@ A library may prefer another shape for its own files, such as `Components/Bars.h
 the folder; it states that in a `.locale.json` (see *Where a file may sit*), and nothing below
 changes because of it.
 
+**A locale pack.** A language may ship apart from the assembly it localizes, as an assembly of
+nothing but locale files: a folder per assembly, laid out exactly as a host's folder is below, and
+embedded rather than lying beside a binary. A pack is read between the assembly's own files and
+the host's, so it completes or corrects what the assembly ships and the host still overrides it.
+An application takes a language by referencing the pack's package and nothing else: the package
+records the pack in the application at build time, and the runtime reads the packs recorded. A
+project becomes a pack by declaring `IsLocalePack`, naming the culture it carries in
+`LocalePackCulture`, and referencing this library, which ships the build that does the rest:
+
+```text
+Forma.Blazor/Components/Bars/he.json                               { "FormaToolbar": { "Bold": "מודגש" } }
+Forma.Blazor.Composer/he.json                                      { "FormaComposer": { "Bold": "מודגש" } }
+```
+
 **The host's override.** An application rewords a string in a `.locales` folder beside its
 binary. The first folder is the assembly's name; beneath it the layout is the type's name as
 folders, whatever form the library chose for itself, and the host's folder is already a folder
@@ -267,6 +281,7 @@ CommonPluralRuleSet.Default.Select(CultureInfo.GetCultureInfo("he"), 2)   // Plu
 | `SourceLanguage` | `en` | The language the keys are written in. A key with no translation resolves its plural forms under it rather than the language on screen, while its count is still formatted for the reader. |
 | `RequireMatchingLocalization` | `false` | Turns a missing translation from a fallback into a `LocalizationNotFoundException`. `GetAllStrings` never throws under it, so a host can survey what is untranslated. |
 | `LocalesPath` | `.locales` | The folder the host keeps its own locale files in, resolved against the application's base directory when relative; empty reads none. |
+| `LocalePacks` | the entry assembly's | The locale packs read for every assembly beside its own files, in the order given. Null reads the packs the entry assembly was built against; empty reads none. A host whose packs are not the entry assembly's, or a test, names them here. |
 
 Where an assembly keeps its own embedded files is no option's to say: the paths its `.locale.json`
 states place them.
