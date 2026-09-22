@@ -1,5 +1,7 @@
 namespace Forma.Framework.Localization;
 
+using System.Reflection;
+
 using Forma.Framework.Localization.Files;
 
 /// <summary>Settings shared by every localization backend.</summary>
@@ -13,4 +15,7 @@ public class LocalizationOptions
 
     /// <summary>Folder holding the host's own locale files, resolved against the application's base directory when relative; empty to read none.</summary>
     public string LocalesPath { get; init; } = LocaleConfig.DefaultLocalesDir;
+
+    /// <summary>The locale packs read for every assembly beside its own files, null to read the ones the entry assembly was built against and empty to read none; a host names them itself where its packs are not the entry assembly's, as a test whose entry assembly is its runner's does.</summary>
+    public IReadOnlyList<Assembly>? LocalePacks { get; init; }
 }
