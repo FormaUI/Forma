@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+        The glyph pack is a task script rather than an assembly, so the rules it applies to a drawing are
+        compiled here from the file the script includes rather than reached through a project reference. A
+        rule is then written once and exercised without a folder of drawings or a run of the pack.
+    -->
+    <ItemGroup>
+        <Compile Include="..\..\scripts\cs\GlyphParser.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    </ItemGroup>
+
+</Project>
