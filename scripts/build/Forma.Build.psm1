@@ -682,6 +682,14 @@ function Invoke-Gate {
 
         $results.Add((Build-TaskProgram -Context $Context -WhatIf:$WhatIfPreference))
 
+        # The scripts broke once and stayed broken because nothing ran them. This reads every one of them
+        # for the shape a script here keeps and exercises the ones that can be run without a side effect,
+        # so a script added and covered by nothing fails rather than accumulating quietly.
+        $contract = Join-Path $Context.Scripts 'Test-TaskScript.ps1'
+        $results.Add((Invoke-BuildStep -Name 'tooling' -Target $contract -Description 'check every script keeps its contract' -WhatIf:$WhatIfPreference -Command {
+                    pwsh -NoProfile -File $contract
+                }.GetNewClosure()))
+
         if (Get-Command locali -ErrorAction SilentlyContinue) {
             $results.Add((Invoke-BuildStep -Name 'locales' -Target $Context.RepositoryRoot -Description 'locali' -WhatIf:$WhatIfPreference -Command { locali }))
         }

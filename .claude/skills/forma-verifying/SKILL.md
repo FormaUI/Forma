@@ -43,8 +43,14 @@ the narrower loops live under `scripts/build/`.
   gate and a single action cannot disagree about what a build is, and name the function in the manifest,
   so the build's surface grows deliberately.
 - Do give every action `SupportsShouldProcess`, so `-WhatIf` describes the run rather than making it.
-- Do add a case to `scripts/build/build.tests.ps1` for a script or an argument you add; a step that
-  quietly ran nothing looks exactly like a step that passed.
+- Do add a case to `scripts/build/build.tests.ps1` for a build script or an argument you add, and to
+  `scripts/Test-TaskScript.ps1` for a task script; a step that quietly ran nothing looks exactly like a
+  step that passed, and the gate reads every script in `scripts/`, so one nothing covers fails there.
+- Do run a step for real against a tree made for the purpose where its body can be wrong, rather than
+  only describing it: `-WhatIf` shows which steps run, never what they do, and the one bug the clean
+  step has had was inside its body while every described run passed.
+- Do decide, for a script nothing can reasonably cover, that it is nobody's to maintain and move it
+  under `.local/` rather than leaving it in `scripts/` to rot unnoticed.
 - Don't let an argument one action reads be ignored by another; refuse it instead.
 
 ## Task scripts

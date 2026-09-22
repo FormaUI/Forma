@@ -35,8 +35,8 @@ $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 # Each case names the script it runs, the arguments it runs it with, whether the run should succeed, and
 # what its output must and must not mention. Adding a case is adding a row.
 $cases = @(
-    @{ Name = 'the gate runs every step'; Script = 'build.ps1'; Arguments = @(); Expect = @('-- build', '-- test', '-- format', '-- tasks', '-- scripts') }
-    @{ Name = 'the gate narrowed to .NET leaves the script tests out'; Script = 'build.ps1'; Arguments = @('DotNet'); Expect = @('-- build', '-- tasks'); Reject = @('-- scripts') }
+    @{ Name = 'the gate runs every step'; Script = 'build.ps1'; Arguments = @(); Expect = @('-- build', '-- test', '-- format', '-- tasks', '-- tooling', '-- scripts') }
+    @{ Name = 'the gate narrowed to .NET leaves the script tests out'; Script = 'build.ps1'; Arguments = @('DotNet'); Expect = @('-- build', '-- tasks', '-- tooling'); Reject = @('-- scripts') }
     @{ Name = 'the gate narrowed to scripts leaves the solution out'; Script = 'build.ps1'; Arguments = @('Scripts'); Expect = @('-- scripts'); Reject = @('-- build', '-- format') }
     @{ Name = 'a clean on its own does not run the gate'; Script = 'build.ps1'; Arguments = @('-Clean'); Expect = @('-- clean'); Reject = @('-- build', '-- test') }
     @{ Name = 'a clean with a target cleans and then gates'; Script = 'build.ps1'; Arguments = @('All', '-Clean'); Expect = @('-- clean', '-- build', '-- scripts') }
@@ -147,8 +147,84 @@ try {
         Output   = ''
     }
 }
+catch {
+    # Setting the check up is part of the check. Letting this escape would end the run on a variable that
+    # was never assigned, naming neither the check nor what actually went wrong.
+    $guard = [pscustomobject]@{
+        Name     = 'building no task program at all is a failure'
+        Passed   = $false
+        Problems = @("the check could not be made: $($_.Exception.Message)")
+        Output   = ''
+    }
+}
 finally {
     Remove-Item -LiteralPath $empty -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Every case above describes a run without making it, which is what -WhatIf is for and also what it cannot
+# see past: a step whose body is wrong describes itself perfectly and fails only when something actually
+# runs it. Cleaning is therefore done here for real, against a tree made for the purpose, because the one
+# bug this step has had was inside its body and every described run passed while it was there.
+$tree = Join-Path ([System.IO.Path]::GetTempPath()) ("forma-clean-" + [guid]::NewGuid().ToString('N'))
+
+foreach ($folder in 'src/Thing/bin', 'src/Thing/obj', 'scripts/cs',
+    'tests/Scripts/node_modules/some-package/bin', '.local/benchmarks/Thing/bin') {
+    New-Item -ItemType Directory -Path (Join-Path $tree $folder) -Force | Out-Null
+}
+
+Set-Content -LiteralPath (Join-Path $tree 'src/Thing/bin/output.dll') -Value 'build output'
+Set-Content -LiteralPath (Join-Path $tree 'tests/Scripts/node_modules/some-package/bin/tool') -Value 'an installed package'
+Set-Content -LiteralPath (Join-Path $tree '.local/benchmarks/Thing/bin/result') -Value "someone's own work"
+
+try {
+    $cleaned = Initialize-BuildContext -RepositoryRoot $repositoryRoot
+    $cleaned.RepositoryRoot = $tree
+    $cleaned.TaskPrograms = Join-Path $tree 'scripts/cs'
+
+    $step = Clear-BuildOutput -Context $cleaned 6>$null
+
+    $wrong = [System.Collections.Generic.List[string]]::new()
+
+    if (-not $step.Passed) {
+        $wrong.Add('the step failed')
+    }
+
+    if (Test-Path (Join-Path $tree 'src/Thing/bin')) {
+        $wrong.Add('build output was left behind')
+    }
+
+    if (-not (Test-Path (Join-Path $tree 'tests/Scripts/node_modules/some-package/bin/tool'))) {
+        $wrong.Add('an installed package was deleted')
+    }
+
+    if (-not (Test-Path (Join-Path $tree '.local/benchmarks/Thing/bin/result'))) {
+        $wrong.Add('work belonging to a person was deleted')
+    }
+
+    $cleaning = [pscustomobject]@{
+        Name     = 'cleaning deletes build output and nothing else'
+        Passed   = $wrong.Count -eq 0
+        Problems = $wrong
+        Output   = ''
+    }
+}
+catch {
+    $cleaning = [pscustomobject]@{
+        Name     = 'cleaning deletes build output and nothing else'
+        Passed   = $false
+        Problems = @("the check could not be made: $($_.Exception.Message)")
+        Output   = ''
+    }
+}
+finally {
+    Remove-Item -LiteralPath $tree -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+$mark = if ($cleaning.Passed) { 'ok  ' } else { 'FAIL' }
+Write-Host ("  {0} {1}" -f $mark, $cleaning.Name)
+
+foreach ($problem in $cleaning.Problems) {
+    Write-Host ("        {0}" -f $problem)
 }
 
 $mark = if ($guard.Passed) { 'ok  ' } else { 'FAIL' }
@@ -158,7 +234,7 @@ foreach ($problem in $guard.Problems) {
     Write-Host ("        {0}" -f $problem)
 }
 
-$all = @($results) + $guard
+$all = @($results) + $guard + $cleaning
 $failed = @($all | Where-Object { -not $_.Passed })
 
 Write-Host ''
