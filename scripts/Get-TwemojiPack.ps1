@@ -1,9 +1,24 @@
-param([switch] $Format)
-$ErrorActionPreference = 'Stop'
+#!/usr/bin/env pwsh
+#Requires -Version 7
 
-# Regenerates the emoji catalog and its SVG sprite from the Unicode emoji test data,
-# the CLDR English annotations, and the Twemoji artwork. The catalog is written compact;
-# -Format writes it indented for reading.
+<#
+.SYNOPSIS
+Regenerates the emoji catalog and its SVG sprites.
+
+.DESCRIPTION
+Reads the Unicode emoji test data for what exists and how it is grouped, the CLDR English annotations for
+what each emoji is called and searched by, and the Twemoji artwork for how it is drawn. Writes one catalog
+per category and a sprite per chunk of it, so a picker scrolling a category fetches only the artwork it
+reaches rather than every drawing at once.
+
+.PARAMETER Format
+Writes each catalog indented for reading. They are written compact otherwise, which is how they ship.
+#>
+[CmdletBinding()]
+param([switch] $Format)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
 $emojiVersion = '15.1'
 $emojiTestUrl = "https://unicode.org/Public/emoji/$emojiVersion/emoji-test.txt"
@@ -25,7 +40,7 @@ $groupIds = [ordered]@{
 }
 
 function Get-SpriteId {
-    param([string] $CodePoints)
+    param([Parameter(Mandatory)] [string] $CodePoints)
 
     $parts = $CodePoints.Split(' ', [StringSplitOptions]::RemoveEmptyEntries)
 
@@ -38,7 +53,7 @@ function Get-SpriteId {
 }
 
 function Get-Annotation {
-    param([string] $Emoji)
+    param([Parameter(Mandatory)] [string] $Emoji)
 
     # CLDR keys omit the emoji presentation selector that the test data carries.
     # These two never collapse to one candidate: culture-sensitive comparison treats
@@ -91,12 +106,24 @@ foreach ($line in ($testData -split "`r?`n")) {
 
     $emoji = $Matches['emoji']
     $annotation = Get-Annotation -Emoji $emoji
+    # An annotation is whatever CLDR published, so each field is asked for rather than assumed: a derived
+    # annotation carries no keywords, and an emoji CLDR has not named at all carries neither field.
     $keywords = @()
+    $spoken = $null
+
     if ($null -ne $annotation) {
-        $keywords = @($annotation.default | Where-Object { $_ })
+        $default = $annotation.PSObject.Properties['default']
+        if ($null -ne $default) {
+            $keywords = @($default.Value | Where-Object { $_ })
+        }
+
+        $tts = $annotation.PSObject.Properties['tts']
+        if ($null -ne $tts) {
+            $spoken = $tts.Value | Select-Object -First 1
+        }
     }
 
-    $name = if ($null -ne $annotation -and $annotation.tts) { [string]($annotation.tts | Select-Object -First 1) } else { $Matches['name'] }
+    $name = if ($spoken) { [string]$spoken } else { $Matches['name'] }
 
     $entries.Add([PSCustomObject]@{
             c = $emoji
@@ -140,9 +167,13 @@ if ($missing.Count -gt 0) {
     throw "No Twemoji drawing for $($missing.Count) emoji: $named"
 }
 
-$utf8 = New-Object System.Text.UTF8Encoding $false
-$catalogFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.AddOns' 'Forma.AddOns.Emojis.Twemoji' '_assets'
-$spriteFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.AddOns' 'Forma.AddOns.Emojis.Twemoji' 'wwwroot' 'assets'
+# The catalogs and sprites are checked in, so they are written with the endings they are stored with
+# rather than the ones this machine happens to use.
+$utf8 = [System.Text.UTF8Encoding]::new($false)
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
+$twemojiRoot = Join-Path $repositoryRoot 'src' 'Forma.AddOns' 'Forma.AddOns.Emojis.Twemoji'
+$catalogFolder = Join-Path $twemojiRoot '_assets'
+$spriteFolder = Join-Path $twemojiRoot 'wwwroot' 'assets'
 
 foreach ($folder in @($catalogFolder, $spriteFolder)) {
     if (-not (Test-Path -LiteralPath $folder)) {
@@ -163,25 +194,28 @@ foreach ($groupId in $groupIds.Values) {
     $spriteSizes[$groupId] = 0
 
     for ($chunk = 0; $chunk -lt $chunkCount; $chunk++) {
-        $symbols = [System.Text.StringBuilder]::new()
+        $symbols = @(foreach ($entry in ($members | Select-Object -Skip ($chunk * $chunkSize) -First $chunkSize)) {
+                $markup = $drawings[$entry.s]
+                $viewBox = [regex]::Match($markup, 'viewBox="([^"]+)"').Groups[1].Value
+                $inner = [regex]::Match($markup, '(?s)<svg[^>]*>(.*)</svg>').Groups[1].Value.Trim()
 
-        foreach ($entry in ($members | Select-Object -Skip ($chunk * $chunkSize) -First $chunkSize)) {
-            $markup = $drawings[$entry.s]
-            $viewBox = [regex]::Match($markup, 'viewBox="([^"]+)"').Groups[1].Value
-            $inner = [regex]::Match($markup, '(?s)<svg[^>]*>(.*)</svg>').Groups[1].Value.Trim()
+                # A sprite shares one document, so gradient and clip ids have to be unique across all of it.
+                foreach ($id in ([regex]::Matches($inner, '\sid="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })) {
+                    $escaped = [regex]::Escape($id)
+                    $inner = $inner -replace "(\s(?:xlink:)?href=`"#|url\(#|\sid=`")$escaped\b", "`${1}$($entry.s)-$id"
+                }
 
-            # A sprite shares one document, so gradient and clip ids have to be unique across all of it.
-            foreach ($id in ([regex]::Matches($inner, '\sid="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })) {
-                $escaped = [regex]::Escape($id)
-                $inner = $inner -replace "(\s(?:xlink:)?href=`"#|url\(#|\sid=`")$escaped\b", "`${1}$($entry.s)-$id"
-            }
+                '    <symbol id="emoji-{0}" viewBox="{1}">{2}</symbol>' -f $entry.s, $viewBox, $inner
+            })
 
-            [void]$symbols.AppendLine("    <symbol id=`"emoji-$($entry.s)`" viewBox=`"$viewBox`">$inner</symbol>")
-        }
+        $sprite = @"
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+$($symbols -join "`n")
+</svg>
+"@
 
-        $sprite = "<svg xmlns=`"http://www.w3.org/2000/svg`" xmlns:xlink=`"http://www.w3.org/1999/xlink`">`n$($symbols.ToString())</svg>`n"
         $spriteTarget = Join-Path $spriteFolder "$groupId-$chunk.svg"
-        [System.IO.File]::WriteAllText($spriteTarget, $sprite, $utf8)
+        [System.IO.File]::WriteAllText($spriteTarget, (($sprite -replace "`r`n", "`n") + "`n"), $utf8)
         $spriteSizes[$groupId] += (Get-Item $spriteTarget).Length
     }
 

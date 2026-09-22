@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 #Requires -Version 7
 
 <#
@@ -20,8 +21,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$rulesPath = Join-Path $repositoryRoot 'src/Forma.Framework/Forma.Framework.Localization/Language/CommonPluralRuleSet.Generated.cs'
-$samplesPath = Join-Path $repositoryRoot 'tests/Forma.Framework.Localization.Tests/Language/PluralRuleSamples.Generated.cs'
+$rulesPath = Join-Path $repositoryRoot 'src' 'Forma.Framework' 'Forma.Framework.Localization' 'Language' 'CommonPluralRuleSet.Generated.cs'
+$samplesPath = Join-Path $repositoryRoot 'tests' 'Forma.Framework.Localization.Tests' 'Language' 'PluralRuleSamples.Generated.cs'
 
 $reference = if ($CldrVersion -eq 'latest') { 'main' } else { $CldrVersion }
 $sourceUrl = "https://raw.githubusercontent.com/unicode-org/cldr-json/$reference/cldr-json/cldr-core/supplemental/plurals.json"
@@ -44,10 +45,23 @@ $decimalOperands = @('n')
 $categoryOrder = @('zero', 'one', 'two', 'few', 'many')
 
 # Emitted C# must not vary with the culture the generator happens to run under.
-$invariantText = [Globalization.CultureInfo]::InvariantCulture.TextInfo
+$invariant = [Globalization.CultureInfo]::InvariantCulture
+
+# A generated C# file is checked in, and .gitattributes declares every .cs file to be LF, so it is written
+# with the endings it is stored with rather than the ones the generating machine happens to use. Writing it
+# any other way makes the same run on another platform produce a different file.
+function Write-GeneratedSource {
+    param(
+        [Parameter(Mandatory)] [string] $Path,
+        [Parameter(Mandatory)] [string] $Source
+    )
+
+    $text = ($Source -replace "`r`n", "`n").TrimEnd() + "`n"
+    [System.IO.File]::WriteAllText($Path, $text, [System.Text.UTF8Encoding]::new($false))
+}
 
 function ConvertTo-Relation {
-    param([string] $Text)
+    param([Parameter(Mandatory)] [string] $Text)
 
     $pattern = '^\s*(?<operand>[nivwftec])\s*(?:%\s*(?<modulus>\d+)\s*)?(?<comparison>!=|=)\s*(?<ranges>.+?)\s*$'
     if ($Text -notmatch $pattern) {
@@ -74,32 +88,31 @@ function ConvertTo-Relation {
         }
     }
 
-    $tests = foreach ($range in $ranges -split ',') {
-        $range = $range.Trim()
-        if ($range -match '^(?<low>\d+)\.\.(?<high>\d+)$') {
-            $low = $Matches['low']
-            $high = $Matches['high']
-            if ($isDecimal) {
-                "InRange($expression, $low, $high)"
+    $tests = @(foreach ($range in $ranges -split ',') {
+            $range = $range.Trim()
+            if ($range -match '^(?<low>\d+)\.\.(?<high>\d+)$') {
+                $low = $Matches['low']
+                $high = $Matches['high']
+                if ($isDecimal) {
+                    "InRange($expression, $low, $high)"
+                }
+                else {
+                    "$expression >= $low && $expression <= $high"
+                }
+            }
+            elseif ($range -match '^\d+$') {
+                "$expression == $range"
             }
             else {
-                "$expression >= $low && $expression <= $high"
+                throw "Cannot parse the range '$range'."
             }
-        }
-        elseif ($range -match '^\d+$') {
-            "$expression == $range"
-        }
-        else {
-            throw "Cannot parse the range '$range'."
-        }
-    }
+        })
 
-    $tests = @($tests)
     $joined = if ($tests.Count -eq 1) { $tests[0] } else { '(' + ($tests -join ' || ') + ')' }
 
     # A relation whose range list needs an inner && has to be bracketed before it is negated or joined.
     if ($tests.Count -eq 1 -and $joined -match '&&') {
-        $joined = '(' + $joined + ')'
+        $joined = "($joined)"
     }
 
     if (-not $negated) {
@@ -107,21 +120,19 @@ function ConvertTo-Relation {
     }
 
     # The leading bracket may belong to a modulus rather than the whole relation, so always add one.
-    return '!(' + $joined + ')'
+    return "!($joined)"
 }
 
 function ConvertTo-Condition {
-    param([string] $Text)
+    param([Parameter(Mandatory)] [string] $Text)
 
-    $alternatives = foreach ($alternative in [regex]::Split($Text, '\s+or\s+')) {
-        $relations = @(foreach ($relation in [regex]::Split($alternative, '\s+and\s+')) {
-                ConvertTo-Relation -Text $relation
-            })
+    $alternatives = @(foreach ($alternative in [regex]::Split($Text, '\s+or\s+')) {
+            $relations = @(foreach ($relation in [regex]::Split($alternative, '\s+and\s+')) {
+                    ConvertTo-Relation -Text $relation
+                })
 
-        if ($relations.Count -eq 1) { $relations[0] } else { '(' + ($relations -join ' && ') + ')' }
-    }
-
-    $alternatives = @($alternatives)
+            if ($relations.Count -eq 1) { $relations[0] } else { '(' + ($relations -join ' && ') + ')' }
+        })
 
     if ($alternatives.Count -eq 1) {
         return $alternatives[0]
@@ -131,9 +142,7 @@ function ConvertTo-Condition {
 }
 
 function Expand-Sample {
-    param([string] $Text)
-
-    $values = [System.Collections.Generic.List[string]]::new()
+    param([Parameter(Mandatory)] [AllowEmptyString()] [string] $Text)
 
     foreach ($item in $Text -split ',') {
         $item = $item.Trim()
@@ -149,20 +158,18 @@ function Expand-Sample {
             $decimals = if ($low.Contains('.')) { $low.Length - $low.IndexOf('.') - 1 } else { 0 }
             $step = [decimal][Math]::Pow(10, -$decimals)
 
-            $current = [decimal]::Parse($low, [Globalization.CultureInfo]::InvariantCulture)
-            $ceiling = [decimal]::Parse($high, [Globalization.CultureInfo]::InvariantCulture)
+            $current = [decimal]::Parse($low, $invariant)
+            $ceiling = [decimal]::Parse($high, $invariant)
 
             while ($current -le $ceiling) {
-                $values.Add($current.ToString("F$decimals", [Globalization.CultureInfo]::InvariantCulture))
+                $current.ToString("F$decimals", $invariant)
                 $current += $step
             }
         }
         elseif ($item -match '^[\d.]+$') {
-            $values.Add($item)
+            $item
         }
     }
-
-    return $values
 }
 
 Write-Host "Reading $sourceUrl"
@@ -172,8 +179,10 @@ $cardinals = $document.supplemental.'plurals-type-cardinal'
 
 Write-Host "CLDR $version"
 
+# One entry per distinct rule body, holding every locale that shares it, so the generated switch groups
+# the locales that behave alike rather than repeating a body per locale.
 $bodies = [ordered]@{}
-$samples = [System.Collections.Generic.List[string]]::new()
+$samples = [System.Collections.Generic.List[object]]::new()
 $localeCount = 0
 
 foreach ($property in $cardinals.PSObject.Properties) {
@@ -181,27 +190,28 @@ foreach ($property in $cardinals.PSObject.Properties) {
     $rules = $property.Value
     $localeCount++
 
-    $arms = [System.Collections.Generic.List[string]]::new()
+    $arms = @(foreach ($category in $categoryOrder) {
+            $rule = $rules.PSObject.Properties["pluralRule-count-$category"]
+            if (-not $rule) {
+                continue
+            }
 
-    foreach ($category in $categoryOrder) {
-        $key = "pluralRule-count-$category"
-        $rule = $rules.PSObject.Properties[$key]
-        if (-not $rule) {
-            continue
-        }
+            $text = $rule.Value
+            $at = $text.IndexOf('@')
+            $condition = if ($at -ge 0) { $text.Substring(0, $at).Trim() } else { $text.Trim() }
 
-        $text = $rule.Value
-        $at = $text.IndexOf('@')
-        $condition = if ($at -ge 0) { $text.Substring(0, $at).Trim() } else { $text.Trim() }
-
-        if ($condition) {
-            $name = $invariantText.ToTitleCase($category)
-            $arms.Add("$(ConvertTo-Condition -Text $condition) ? PluralCategory.$name")
-        }
-    }
+            if ($condition) {
+                '{0} ? PluralCategory.{1}' -f (ConvertTo-Condition -Text $condition), $invariant.TextInfo.ToTitleCase($category)
+            }
+        })
 
     # Every locale ends at other, so a locale with no condition at all reaches it directly.
-    $body = if ($arms.Count -eq 0) { 'PluralCategory.Other' } else { ($arms -join "`n                : ") + "`n                : PluralCategory.Other" }
+    $body = if ($arms.Count -eq 0) {
+        'PluralCategory.Other'
+    }
+    else {
+        ($arms -join "`n                : ") + "`n                : PluralCategory.Other"
+    }
 
     if (-not $bodies.Contains($body)) {
         $bodies[$body] = [System.Collections.Generic.List[string]]::new()
@@ -220,60 +230,61 @@ foreach ($property in $cardinals.PSObject.Properties) {
             continue
         }
 
-        $name = $invariantText.ToTitleCase($category)
+        $name = $invariant.TextInfo.ToTitleCase($category)
         foreach ($sample in Expand-Sample -Text ($rule.Value.Substring($at) -replace '@integer|@decimal', ',')) {
-            $samples.Add("        (`"$locale`", `"$sample`", PluralCategory.$name),")
+            $samples.Add([pscustomobject]@{ Locale = $locale; Count = $sample; Category = $name })
         }
     }
 }
 
 Write-Host "$localeCount locales, $($bodies.Count) distinct rule shapes, $($samples.Count) samples"
 
-$builder = [System.Text.StringBuilder]::new()
-[void]$builder.AppendLine('// <auto-generated>')
-[void]$builder.AppendLine("//     Generated from CLDR $version by scripts/Update-PluralRules.ps1. Do not edit.")
-[void]$builder.AppendLine('// </auto-generated>')
-[void]$builder.AppendLine()
-[void]$builder.AppendLine('namespace Forma.Framework.Localization.Language;')
-[void]$builder.AppendLine()
-[void]$builder.AppendLine('public sealed partial class CommonPluralRuleSet')
-[void]$builder.AppendLine('{')
-[void]$builder.AppendLine('    private static PluralCategory? SelectExact(string locale, PluralOperands operands)')
-[void]$builder.AppendLine('        => locale switch')
-[void]$builder.AppendLine('        {')
+$switchArms = @(foreach ($entry in $bodies.GetEnumerator()) {
+        $labels = ($entry.Value | ForEach-Object { '"{0}"' -f $_ }) -join ' or '
+        "            $labels`n                => $($entry.Key),"
+    })
 
-foreach ($entry in $bodies.GetEnumerator()) {
-    $labels = ($entry.Value | ForEach-Object { "`"$_`"" }) -join ' or '
-    [void]$builder.AppendLine("            $labels")
-    [void]$builder.AppendLine("                => $($entry.Key),")
-    [void]$builder.AppendLine()
+$rulesSource = @"
+// <auto-generated>
+//     Generated from CLDR $version by scripts/Update-PluralRules.ps1. Do not edit.
+// </auto-generated>
+
+namespace Forma.Framework.Localization.Language;
+
+public sealed partial class CommonPluralRuleSet
+{
+    private static PluralCategory? SelectExact(string locale, PluralOperands operands)
+        => locale switch
+        {
+$($switchArms -join "`n`n")
+
+            _ => null,
+        };
 }
+"@
 
-[void]$builder.AppendLine('            _ => null,')
-[void]$builder.AppendLine('        };')
-[void]$builder.AppendLine('}')
-
-Set-Content -Path $rulesPath -Value $builder.ToString().TrimEnd() -Encoding utf8NoBOM
+Write-GeneratedSource -Path $rulesPath -Source $rulesSource
 Write-Host "Wrote $rulesPath"
 
-$sampleBuilder = [System.Text.StringBuilder]::new()
-[void]$sampleBuilder.AppendLine('// <auto-generated>')
-[void]$sampleBuilder.AppendLine("//     Generated from CLDR $version by scripts/Update-PluralRules.ps1. Do not edit.")
-[void]$sampleBuilder.AppendLine('// </auto-generated>')
-[void]$sampleBuilder.AppendLine()
-[void]$sampleBuilder.AppendLine('namespace Forma.Framework.Localization.Tests.Language;')
-[void]$sampleBuilder.AppendLine()
-[void]$sampleBuilder.AppendLine('public static class PluralRuleSamples')
-[void]$sampleBuilder.AppendLine('{')
-[void]$sampleBuilder.AppendLine("    public const string CldrVersion = `"$version`";")
-[void]$sampleBuilder.AppendLine()
-[void]$sampleBuilder.AppendLine('    public static readonly (string Locale, string Count, PluralCategory Expected)[] All =')
-[void]$sampleBuilder.AppendLine('    [')
-foreach ($sample in $samples) {
-    [void]$sampleBuilder.AppendLine($sample)
-}
-[void]$sampleBuilder.AppendLine('    ];')
-[void]$sampleBuilder.AppendLine('}')
+$sampleRows = $samples | ForEach-Object { '        ("{0}", "{1}", PluralCategory.{2}),' -f $_.Locale, $_.Count, $_.Category }
 
-Set-Content -Path $samplesPath -Value $sampleBuilder.ToString().TrimEnd() -Encoding utf8NoBOM
+$samplesSource = @"
+// <auto-generated>
+//     Generated from CLDR $version by scripts/Update-PluralRules.ps1. Do not edit.
+// </auto-generated>
+
+namespace Forma.Framework.Localization.Tests.Language;
+
+public static class PluralRuleSamples
+{
+    public const string CldrVersion = "$version";
+
+    public static readonly (string Locale, string Count, PluralCategory Expected)[] All =
+    [
+$($sampleRows -join "`n")
+    ];
+}
+"@
+
+Write-GeneratedSource -Path $samplesPath -Source $samplesSource
 Write-Host "Wrote $samplesPath"

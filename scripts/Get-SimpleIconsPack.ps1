@@ -1,18 +1,34 @@
-$ErrorActionPreference = 'Stop'
+#!/usr/bin/env pwsh
+#Requires -Version 7
 
-# Fetches every brand mark listed in assets/Brands/simple-icons.txt from a pinned Simple Icons
-# release into assets/Brands as {Name}.svg, and removes marks no list there names.
+<#
+.SYNOPSIS
+Fetches the brand marks Simple Icons publishes into assets/Brands.
+
+.DESCRIPTION
+Reads assets/Brands/simple-icons.txt, fetches each brand's mark from a pinned Simple Icons release, and
+writes it as assets/Brands/{Name}.svg. A brand the release has no drawing for fails the run rather than
+being skipped, since Simple Icons withdraws a mark at the brand's request and the list is what has to
+change. Marks that no list beside them names are removed, so a brand dropped from a list does not go on
+being compiled into the asset.
+#>
+[CmdletBinding()]
+param()
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path $PSScriptRoot 'BrandMarks.psm1') -Force
 
 $simpleIconsVersion = '16.28.0'
 $artworkBaseUrl = "https://cdn.jsdelivr.net/npm/simple-icons@$simpleIconsVersion/icons"
 
-$brandsFolder = Join-Path $PSScriptRoot '..' 'assets' 'Brands'
-$entries = Read-BrandList -Path (Join-Path $brandsFolder 'simple-icons.txt')
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
+$brandsFolder = Join-Path $repositoryRoot 'assets' 'Brands'
+$entries = @(Read-BrandList -Path (Join-Path $brandsFolder 'simple-icons.txt'))
 
 Write-Host ("Fetching {0} brand marks from Simple Icons {1}..." -f $entries.Count, $simpleIconsVersion)
-$artwork = Get-BrandMarkup -Entries $entries -BaseUrl $artworkBaseUrl
+$artwork = @(Get-BrandMarkup -Entries $entries -BaseUrl $artworkBaseUrl)
 
 $missing = @($artwork | Where-Object { -not $_.Markup })
 if ($missing.Count -gt 0) {
@@ -30,4 +46,4 @@ foreach ($item in ($artwork | Sort-Object -Property Name)) {
 
 $removed = Remove-UnlistedBrandMarks -Folder $brandsFolder
 
-Write-Host ("Wrote {0} brand marks to {1}; removed {2} no longer listed." -f $artwork.Count, (Resolve-Path $brandsFolder), $removed)
+Write-Host ("Wrote {0} brand marks to {1}; removed {2} no longer listed." -f $artwork.Count, $brandsFolder, $removed)
