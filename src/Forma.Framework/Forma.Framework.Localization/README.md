@@ -281,7 +281,7 @@ CommonPluralRuleSet.Default.Select(CultureInfo.GetCultureInfo("he"), 2)   // Plu
 | `SourceLanguage` | `en` | The language the keys are written in. A key with no translation resolves its plural forms under it rather than the language on screen, while its count is still formatted for the reader. |
 | `RequireMatchingLocalization` | `false` | Turns a missing translation from a fallback into a `LocalizationNotFoundException`. `GetAllStrings` never throws under it, so a host can survey what is untranslated. |
 | `LocalesPath` | `.locales` | The folder the host keeps its own locale files in, resolved against the application's base directory when relative; empty reads none. |
-| `LocalePacks` | the entry assembly's | The locale packs read for every assembly beside its own files, in the order given. Null reads the packs the entry assembly was built against; empty reads none. A host whose packs are not the entry assembly's, or a test, names them here. |
+| `LocalePacks` | none | The locale packs read for every assembly beside its own files, in the order given. A registrar lays the packs the application was built against before these through `WithRecordedPacks`, so a host names here only what its build did not record, as a test whose entry assembly is its runner's does. |
 
 Where an assembly keeps its own embedded files is no option's to say: the paths its `.locale.json`
 states place them.

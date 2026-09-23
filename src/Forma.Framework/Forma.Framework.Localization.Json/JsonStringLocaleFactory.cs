@@ -11,7 +11,7 @@ using Forma.Framework.Localization.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-/// <summary>Creates locales that read their strings from JSON files embedded in the assembly owning the type, with the locale packs and then the host's own files laid over them.</summary>
+/// <summary>Creates locales that read their strings from JSON files embedded in the assembly owning the type, with the locale packs the options name and then the host's own files laid over them.</summary>
 public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
     private readonly ConcurrentDictionary<string, IStringLocale> _locales = new(StringComparer.Ordinal);
@@ -46,7 +46,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var format = new JsonLocaleFileFormat();
 
         _context = new JsonLocaleContext(
-            new JsonResourceCache(format, GetLocalesPath(options.LocalesPath), GetPacks(options, loggerFactory)),
+            new JsonResourceCache(format, GetLocalesPath(options.LocalesPath), options.LocalePacks),
             sourceCulture,
             new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>()),
             options);
@@ -77,15 +77,6 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 
         return GetOrAdd(assembly, Qualify(location, relativeName), $"{location}.{relativeName}");
     }
-
-    // A pack declares no type, so the only record of one is the attribute its targets file stamped the
-    // entry assembly with; a host that names its packs outright is taken at its word, and one the runtime
-    // entered without an entry assembly has none to read.
-    private static IReadOnlyList<Assembly> GetPacks(LocalizationOptions options, ILoggerFactory loggerFactory)
-        => options.LocalePacks
-            ?? (Assembly.GetEntryAssembly() is { } entry
-                ? LocalePackLoader.Load(entry, loggerFactory.CreateLogger(typeof(LocalePackLoader)))
-                : []);
 
     // A relative folder sits beside the application, wherever it runs from.
     private static string GetLocalesPath(string path)

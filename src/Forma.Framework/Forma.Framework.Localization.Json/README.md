@@ -31,14 +31,16 @@ builder.Services.AddJsonLocalization(new LocalizationOptions
 
 That registers `IStringLocaleFactory` and `IStringLocale<T>` as singletons, so a consumer
 injecting either resolves. Registration uses `TryAdd`, so a host that registered either contract
-first keeps its own. The locales log through the host's `ILoggerFactory`, and discard their
-messages where none is registered. The options are the `LocalizationOptions` every backend shares,
-which `Forma.Framework.Localization` documents.
+first keeps its own. Registration is also where the locale packs the application was built against
+are found, read from the application's own assembly and laid before any the options name; a
+factory constructed by hand reads only the packs its options name. The locales log through the
+host's `ILoggerFactory`, and discard their messages where none is registered. The options are the
+`LocalizationOptions` every backend shares, which `Forma.Framework.Localization` documents.
 
 | Type | What it is |
 | --- | --- |
-| `ServiceCollectionExtensions` | `AddJsonLocalization`, with or without options. |
-| `JsonStringLocaleFactory` | Creates locales reading JSON files embedded in the assembly owning the type, with the host's files laid over them; constructed with no arguments, with options, or with options and an `ILoggerFactory`. |
+| `ServiceCollectionExtensions` | `AddJsonLocalization`, with or without options; finds the locale packs the application was built against. |
+| `JsonStringLocaleFactory` | Creates locales reading JSON files embedded in the assembly owning the type, with the locale packs the options name and then the host's files laid over them; constructed with no arguments, with options, or with options and an `ILoggerFactory`. |
 | `JsonStringLocale<T>` | The `IStringLocale<T>` the container resolves, reading the strings belonging to `T`. |
 | `JsonLocaleFileFormat` | The `ILocaleFileFormat` a JSON locale file is written in, for a tool reading files by the runtime's rule. |
 
