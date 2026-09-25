@@ -451,6 +451,46 @@ function Test-SolutionFormat {
 
 <#
 .SYNOPSIS
+Lints the locale files and the lookups that key them.
+
+.DESCRIPTION
+The linter is pinned in the tool manifest and restored before it runs, so a machine without it fetches
+the pinned version rather than skipping the step, and one that cannot fetch it fails on the pin. It runs
+from the repository root, where the manifest and the linting configuration both sit.
+
+.PARAMETER Context
+The build context.
+
+.OUTPUTS
+The step's result.
+#>
+function Test-SolutionLocale {
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([psobject])]
+    param(
+        [Parameter(Mandatory)] [psobject] $Context
+    )
+
+    $root = $Context.RepositoryRoot
+    $solution = $Context.Solution
+
+    Invoke-BuildStep -Name 'locales' -Target $solution -Description 'dotnet tool restore, dotnet locali' -WhatIf:$WhatIfPreference -Command {
+        Push-Location -LiteralPath $root
+        try {
+            dotnet tool restore --verbosity quiet
+
+            if ($LASTEXITCODE -eq 0) {
+                dotnet locali --path $solution
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    }.GetNewClosure()
+}
+
+<#
+.SYNOPSIS
 Builds the task programs written in C#.
 
 .DESCRIPTION
@@ -641,9 +681,8 @@ and a machine run the same checks and neither can drift from the other.
 
 A build that fails skips the tests and the format check, since neither reads output that was never
 produced. The task programs are built whatever the solution did, because nothing they contain depends on
-it. The locale lint runs only where locali is on the path: the repository configures it, but the tool
-ships from a sibling repository, so a machine without it is told the step was skipped rather than failed
-for it.
+it. The locale lint restores the linter the tool manifest pins before it runs, so a machine without it
+fetches the pinned version rather than skipping the step.
 
 The showcase is not a step. It is a foreground server that never exits, so it cannot belong to a run that
 completes; it stays a check made by hand.
@@ -690,13 +729,7 @@ function Invoke-Gate {
                     pwsh -NoProfile -File $contract
                 }.GetNewClosure()))
 
-        if (Get-Command locali -ErrorAction SilentlyContinue) {
-            $results.Add((Invoke-BuildStep -Name 'locales' -Target $Context.RepositoryRoot -Description 'locali' -WhatIf:$WhatIfPreference -Command { locali }))
-        }
-        else {
-            Write-Host ''
-            Write-Host 'Skipped the locale lint: locali is not on the path.'
-        }
+        $results.Add((Test-SolutionLocale -Context $Context -WhatIf:$WhatIfPreference))
     }
 
     if ($Target -in 'Scripts', 'All') {

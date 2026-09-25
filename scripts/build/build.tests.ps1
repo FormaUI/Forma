@@ -35,8 +35,8 @@ $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 # Each case names the script it runs, the arguments it runs it with, whether the run should succeed, and
 # what its output must and must not mention. Adding a case is adding a row.
 $cases = @(
-    @{ Name = 'the gate runs every step'; Script = 'build.ps1'; Arguments = @(); Expect = @('-- build', '-- test', '-- format', '-- tasks', '-- tooling', '-- scripts') }
-    @{ Name = 'the gate narrowed to .NET leaves the script tests out'; Script = 'build.ps1'; Arguments = @('DotNet'); Expect = @('-- build', '-- tasks', '-- tooling'); Reject = @('-- scripts') }
+    @{ Name = 'the gate runs every step'; Script = 'build.ps1'; Arguments = @(); Expect = @('-- build', '-- test', '-- format', '-- tasks', '-- tooling', '-- locales', '-- scripts') }
+    @{ Name = 'the gate narrowed to .NET leaves the script tests out'; Script = 'build.ps1'; Arguments = @('DotNet'); Expect = @('-- build', '-- tasks', '-- tooling', '-- locales'); Reject = @('-- scripts') }
     @{ Name = 'the gate narrowed to scripts leaves the solution out'; Script = 'build.ps1'; Arguments = @('Scripts'); Expect = @('-- scripts'); Reject = @('-- build', '-- format') }
     @{ Name = 'a clean on its own does not run the gate'; Script = 'build.ps1'; Arguments = @('-Clean'); Expect = @('-- clean'); Reject = @('-- build', '-- test') }
     @{ Name = 'a clean with a target cleans and then gates'; Script = 'build.ps1'; Arguments = @('All', '-Clean'); Expect = @('-- clean', '-- build', '-- scripts') }

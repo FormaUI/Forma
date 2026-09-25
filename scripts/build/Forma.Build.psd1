@@ -21,6 +21,7 @@
         'Test-BrowserScript',
         'Test-Solution',
         'Test-SolutionFormat',
+        'Test-SolutionLocale',
         'Write-BuildSummary'
     )
 

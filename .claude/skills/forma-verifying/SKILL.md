@@ -5,7 +5,7 @@ description: The build and verification gate — the build, tests, format check 
 
 # Build and verification
 
-The gate is the build, every test project, the format check and the script tests, all passing, and the showcase for anything that renders. The repository's own documentation lists the commands.
+The gate is the build, every test project, the format check, the locale lint and the script tests, all passing, and the showcase for anything that renders. The repository's own documentation lists the commands.
 
 Every compiler warning is a build failure: warnings are errors for source and tests alike, the `.editorconfig` severity table decides what the compiler reports, and the answer to an unwanted diagnostic is that table, never a local suppression.
 
