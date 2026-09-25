@@ -1,4 +1,16 @@
 {
+  // The library ships its translations in locale packs and a host overrides them from its folder; a tree that keeps them another way says so on a later line.
+  "localeSources": {
+    "**": ["pack", "host"],
+    // An add-on embeds its own translations, since it ships as one package with no pack beside it.
+    "src/Forma.AddOns/**": ["embedded"],
+    // The pages embed their own translations, and the folder beside the application holds the host's.
+    "src/Forma.Blazor.Showcase/**": ["embedded", "host"],
+    // The tests read a host's folder; every other arrangement they cover is a fixture, left unread on purpose.
+    "tests/Forma.Framework.Localization.Json.Tests/**": ["host"],
+    // The support strings cover a file embedded in the assembly and one the build moves into a satellite.
+    "tests/Forma.Tests.Support/**": ["embedded", "satellite"]
+  },
   "ignoreDiagnostics": {
     // The page shows a hit and a miss side by side, so its miss is a sentence no file translates.
     "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0207"],

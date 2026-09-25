@@ -220,7 +220,7 @@ outside any namespace belongs to the root, completed from the root namespace lik
 
 A `.locale.json` applies to the whole assembly and nowhere else. Nothing above it is layered under
 it and nothing beneath it overrides it, because it is a runtime file the assembly ships rather
-than a compile-time file a tree cascades, as `.locali.json` and `.editorconfig` do. A folder
+than a compile-time file a tree cascades, as `.editorconfig` does. A folder
 holding strings arranged differently states that in the assembly's paths, with the folder written
 as literal text where it sits; the paths are where such a relation is written, and nothing is
 inferred.
@@ -334,8 +334,8 @@ the host's own folder is nearer still and overrides both without either being to
 
 The runtime's config file carries the runtime's keys and nothing else. The linter reads it through
 the runtime's own reader, so the two can never disagree about where a file belongs, and keeps its
-own `ignoreDiagnostics` and `excludeFiles` in `.locali.json`, which the runtime never reads. The
-keys:
+own `localeSources`, `ignoreDiagnostics` and `excludeFiles` in `.locali.json`, which the runtime
+never reads. The keys:
 
 | Key | Value |
 |---|---|
@@ -404,7 +404,7 @@ holds translations alone, and what a tool keeps per file belongs in the tool's o
 | L6 | Do a host's paths have to match the library's? | No. A host's folder is always the canonical form, a folder per anchor with its files in the folder's own `.locales` or directly in it, whatever paths the assembly states for its own files; the anchor is the one currency both sides trade in, so an override or a contribution is written the same way for every assembly, and host entries are applied after every embedded entry. |
 | L7 | Can a file be named for an assembly whose root namespace is not its name? | Yes. A path names `$AssemblyName` outright, which a project keeping such a file states in its config. |
 | L8 | Are the anchor tokens namespaces? | No. An anchor's segments are parts of a type's full name, which take in containing types and the type itself, and the library relates a folder to a name only through the paths. The tokens say *name*. |
-| L9 | Does `.locale.json` cascade? | No. It is per assembly: one file, applying to every file of the assembly, with nothing layered above or beneath it. A cascade is how a compile-time file such as `.locali.json` or `.editorconfig` reaches a tree, and a runtime file an assembly ships has no tree to reach. |
+| L9 | Does `.locale.json` cascade? | No. It is per assembly: one file, applying to every file of the assembly, with nothing layered above or beneath it. A cascade is how a compile-time file such as `.editorconfig` reaches a tree, and a runtime file an assembly ships has no tree to reach. |
 | L10 | Does a host configure an assembly's folder? | No. A host's folder holds no `.locale.json`; each assembly's folder is laid out by the root namespace the assembly's own file declares, which the runtime carries over. The root namespace is the assembly's fact, stated once, and a host repeating it would give one fact two places to drift apart. |
 | L11 | Can a file name a type it does not sit under? | Yes, with a top-level section whose name starts with `@.`, counted from the root namespace as the folders are; a type outside the root namespace is spelled in full. It names one type or namespace exactly, never a pattern, so the linter can prove it exists and two types sharing a short name never share a file by accident. |
 | L12 | Is a folder ever a type? | No. A folder is a namespace; a type's own file is named for the type among its namespace folder's locale files, so a file always says what it localizes by its name or its sections, and never by a folder a reader has to know is a type. The runtime reads a type-named folder all the same, and the linter reports it. |
