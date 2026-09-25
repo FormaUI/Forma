@@ -1,8 +1,8 @@
 <Project>
 
     <!--
-        What the build does for an assembly that localizes. This file ships in the
-        Forma.Framework.Localization package and is imported into every project that references it.
+        What the build does for an assembly that localizes. This file ships in the library's package,
+        named for the package there, and is imported into every project that references it.
         For any project it embeds the config file, and for a locale pack, a project that declared
         IsLocalePack, it does the rest: a pack is a project of nothing but locale files, for other
         assemblies' types, so it compiles no code, embeds every locale file beneath it under its own

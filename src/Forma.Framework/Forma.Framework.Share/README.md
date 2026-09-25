@@ -12,7 +12,7 @@ installs that package beside this one.
 ## Install
 
 ```pwsh
-dotnet add package Forma.Framework.Share
+dotnet add package FormaUI.NET-Framework.Share
 ```
 
 The package has no registrar of its own. A host registers each `IShareTarget` it wants offered,

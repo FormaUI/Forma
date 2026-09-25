@@ -9,7 +9,7 @@ the contracts from a plain class library.
 ## Install
 
 ```pwsh
-dotnet add package Forma.Framework.Resources
+dotnet add package FormaUI.NET-Framework.Resources
 ```
 
 ## Resources

@@ -7,7 +7,7 @@ that addresses any page in any culture. The package references the shared ASP.NE
 ## Install and register
 
 ```pwsh
-dotnet add package Forma.Framework.Globalization
+dotnet add package FormaUI.NET-Framework.Globalization
 ```
 
 ```csharp

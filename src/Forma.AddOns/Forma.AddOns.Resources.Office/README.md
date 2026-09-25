@@ -10,7 +10,7 @@ which reads the Open XML packages.
 ## Install and register
 
 ```pwsh
-dotnet add package Forma.AddOns.Resources.Office
+dotnet add package FormaUI.NET-AddOns.Resources.Office
 ```
 
 ```csharp

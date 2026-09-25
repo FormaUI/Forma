@@ -8,7 +8,7 @@ search keywords, and groups — that ships beside them.
 ## Install and register
 
 ```pwsh
-dotnet add package Forma.AddOns.Emojis.Twemoji
+dotnet add package FormaUI.NET-AddOns.Emojis.Twemoji
 ```
 
 ```csharp

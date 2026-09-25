@@ -8,7 +8,7 @@ data implements one of these and registers it.
 ## Install
 
 ```pwsh
-dotnet add package Forma.Framework.Emojis
+dotnet add package FormaUI.NET-Framework.Emojis
 ```
 
 The package holds contracts and value types only. `Forma.Framework.Emojis.Unicode` ships the

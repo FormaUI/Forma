@@ -14,7 +14,7 @@ it, and the same locale file layout localizes it.
 ## Install
 
 ```pwsh
-dotnet add package Forma.Blazor.Explorer
+dotnet add package FormaUI.NET-Blazor.Explorer
 ```
 
 The package depends on `Forma.Blazor`, the product, and on

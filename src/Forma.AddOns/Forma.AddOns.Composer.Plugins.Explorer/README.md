@@ -12,7 +12,7 @@ and the explorer is [`Forma.Blazor.Explorer`](../../Forma.Blazor.Explorer/README
 ## Install
 
 ```pwsh
-dotnet add package Forma.AddOns.Composer.Plugins.Explorer
+dotnet add package FormaUI.NET-AddOns.Composer.Plugins.Explorer
 ```
 
 The package depends on `Forma.Blazor.Explorer`, `Forma.Framework.Composer.Extensibility`

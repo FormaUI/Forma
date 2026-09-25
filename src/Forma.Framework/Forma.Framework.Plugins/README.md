@@ -11,7 +11,7 @@ tests need no renderer and no service collection beyond an `IServiceProvider`.
 ## Install
 
 ```pwsh
-dotnet add package Forma.Framework.Plugins
+dotnet add package FormaUI.NET-Framework.Plugins
 ```
 
 ## The contracts

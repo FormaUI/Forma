@@ -7,7 +7,7 @@ instead of waiting.
 ## Install and register
 
 ```pwsh
-dotnet add package Forma.Framework.Timing
+dotnet add package FormaUI.NET-Framework.Timing
 ```
 
 ```csharp

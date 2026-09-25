@@ -6,13 +6,18 @@
         Runs after each project's own properties, so a condition here can read what a project set.
     -->
 
-    <!-- Where a package comes from, which the feed shows rather than the identifier carrying it. -->
+    <!-- Where a package comes from, as the feed shows it. -->
     <PropertyGroup>
         <Authors>Eyal Alon</Authors>
         <Company>FormaUI</Company>
         <PackageProjectUrl>https://github.com/FormaUI/Forma</PackageProjectUrl>
         <RepositoryUrl>https://github.com/FormaUI/Forma</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
+
+    <!-- A package is named under the reserved prefix for its project without the product's own, FormaUI.NET-Blazor for Forma.Blazor; the assembly, its namespace and its asset path keep the plain name, and so does a project that ships inside another's package, whose assets that package finds by it. -->
+    <PropertyGroup Condition="'$(PackageId)' == '' and '$(IsPackable)' != 'false' and $(MSBuildProjectName.StartsWith('Forma.'))">
+        <PackageId>FormaUI.NET-$(MSBuildProjectName.Substring(6))</PackageId>
     </PropertyGroup>
 
     <!-- Every project ships the root MIT license if it gets packed, unless it named its own source file first. -->

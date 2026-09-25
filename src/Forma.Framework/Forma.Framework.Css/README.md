@@ -7,7 +7,7 @@ collects what an element carries and renders it once as one attribute.
 ## Install
 
 ```pwsh
-dotnet add package Forma.Framework.Css
+dotnet add package FormaUI.NET-Framework.Css
 ```
 
 The package has no dependencies and registers nothing; every type is a plain value or builder.

@@ -12,7 +12,7 @@ renders the library adds this package and the same `AddFormaUI()` registers what
 ## Install and register
 
 ```pwsh
-dotnet add package Forma.Blazor.Composer
+dotnet add package FormaUI.NET-Blazor.Composer
 ```
 
 The package depends on `Forma.Blazor`, the library it is built on, and on

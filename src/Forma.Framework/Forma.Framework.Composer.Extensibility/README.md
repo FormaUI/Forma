@@ -14,7 +14,7 @@ installs that for a working composer and a plugin author installs this to write 
 ## Install
 
 ```pwsh
-dotnet add package Forma.Framework.Composer.Extensibility
+dotnet add package FormaUI.NET-Framework.Composer.Extensibility
 ```
 
 The package has no registrar and constructs nothing. A host registers plugins with the composer;

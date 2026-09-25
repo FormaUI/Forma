@@ -9,7 +9,7 @@ against this package.
 ## Install
 
 ```pwsh
-dotnet add package Forma.Framework.Icons
+dotnet add package FormaUI.NET-Framework.Icons
 ```
 
 A host of `Forma.Blazor` already has it, restored beside the library. Install it directly in a

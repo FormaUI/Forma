@@ -14,8 +14,8 @@ The host owns its own `App.razor` and `Routes.razor`; the package ships componen
 ## Install
 
 ```pwsh
-dotnet add package Forma.Blazor
-dotnet add package Forma.Blazor.Locales.Hebrew
+dotnet add package FormaUI.NET-Blazor
+dotnet add package FormaUI.NET-Blazor.Locales.Hebrew
 ```
 
 The second line is a language; the library's own strings are English, and each other language is
@@ -138,7 +138,7 @@ for. To draw the bundled artwork and browse the bundled catalog, add the
 [Twemoji artwork pack](src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md):
 
 ```pwsh
-dotnet add package Forma.AddOns.Emojis.Twemoji
+dotnet add package FormaUI.NET-AddOns.Emojis.Twemoji
 ```
 
 ```csharp
@@ -168,12 +168,12 @@ in a `.locales` folder beside the application, in a folder named for the assembl
 assembly's own files are.
 
 The library's keys are its English, and each other language it ships is a **locale pack**, one
-package per language: `Forma.Blazor.Locales.Hebrew`, `Forma.Blazor.Locales.Spanish`. A language is
-installed by referencing its package and nothing else; the pack records itself in the application
-at build time, and `AddJsonLocalization()` finds it. A pack is referenced by the application, never
-by a library the application uses, since which languages ship is the application's decision. A
-host's own `.locales` folder still overrides a pack, so a reworded string is written the same way
-whichever package shipped it.
+package per language: `FormaUI.NET-Blazor.Locales.Hebrew`, `FormaUI.NET-Blazor.Locales.Spanish`. A
+language is installed by referencing its package and nothing else; the pack records itself in the
+application at build time, and `AddJsonLocalization()` finds it. A pack is referenced by the
+application, never by a library the application uses, since which languages ship is the
+application's decision. A host's own `.locales` folder still overrides a pack, so a reworded string
+is written the same way whichever package shipped it.
 
 [`Forma.Framework.Localization`](src/Forma.Framework/Forma.Framework.Localization/README.md)
 documents the contract, the ways to fill a hole, the plural syntax, and how a file is found.

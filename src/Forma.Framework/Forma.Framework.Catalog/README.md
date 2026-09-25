@@ -14,7 +14,7 @@ share the model without either depending on the other.
 ## Install
 
 ```pwsh
-dotnet add package Forma.Framework.Catalog
+dotnet add package FormaUI.NET-Framework.Catalog
 ```
 
 A host of `Forma.Blazor.Explorer` already has it, restored beside the component. Install
