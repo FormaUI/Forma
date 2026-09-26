@@ -4,14 +4,17 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Inputs;
+using Forma.Blazor.Components.Interaction;
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis;
 using Forma.Framework.Icons;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
+using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>A categorized emoji palette with search, recently used entries, and a tab per category.</summary>
@@ -20,6 +23,15 @@ using Microsoft.JSInterop;
 public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmojiCatalog? registeredCatalog = null)
     : FormaElementBase
 {
+    private const string NextGroupAction = "emoji-picker.next-group";
+    private const string PreviousGroupAction = "emoji-picker.previous-group";
+    private const string FirstGroupAction = "emoji-picker.first-group";
+    private const string LastGroupAction = "emoji-picker.last-group";
+
+    // The arrow along the reading direction moves to the next group and the one against it to the previous.
+    private static readonly InputProfile LeftToRightTabsProfile = CreateTabsProfile(next: "ArrowRight", previous: "ArrowLeft");
+    private static readonly InputProfile RightToLeftTabsProfile = CreateTabsProfile(next: "ArrowLeft", previous: "ArrowRight");
+
     private readonly IEmojiCatalog _catalog = registeredCatalog ?? NullEmojiCatalog.Instance;
     private readonly IEmojiProvider _provider = emojiProvider;
 
@@ -57,12 +69,17 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     };
 
     private readonly SpriteSheetLoadTracker _sheetLoadTracker = new();
+    private readonly Dictionary<string, ElementReference> _tabButtons = [];
     private string _searchQuery = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
     private SentinelObserver<FormaEmojiPicker> _sentinel = default!;
+    private DotNetObjectReference<FormaEmojiPicker> _selfReference = default!;
+    private InputScope? _tabsScope;
+    private Task _tabsSync = Task.CompletedTask;
     private ElementReference _sentinelElement;
     private ElementReference _panelElement;
+    private ElementReference _tabListElement;
 
     /// <summary>Raised with the chosen emoji's sequence.</summary>
     [Parameter] public EventCallback<string> OnSelect { get; set; }
@@ -80,6 +97,8 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     [Parameter] public IReadOnlyList<EmojiGroup> Groups { get; set; } = DefaultGroups;
 
     [Inject] private IEmojiSpriteLoader SpriteLoader { get; set; } = default!;
+
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private List<EmojiGroup>? _tabs;
     private IReadOnlyList<EmojiInfo>? _matchingEmojis;
@@ -135,7 +154,10 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _sentinel = new SentinelObserver<FormaEmojiPicker>(Context.JS);
+    {
+        _sentinel = new SentinelObserver<FormaEmojiPicker>(Context.JS);
+        _selfReference = DotNetObjectReference.Create(this);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -162,12 +184,48 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         }
 
         await WatchSentinelAsync();
+
+        // Renders can overlap, so each sync waits for the one before it and none registers the strip twice.
+        var previous = _tabsSync;
+        _tabsSync = SyncTabsScopeAsync(previous);
+        await _tabsSync;
     }
 
     /// <summary>Loads the next sprite sheet as the sentinel below the loaded cells comes into view.</summary>
     [JSInvokable]
     public async Task HandleReachedAsync()
         => await LoadNextSheetAsync();
+
+    /// <summary>Shows the group the router's action names, counted from the active one and wrapping at either end, and focuses its tab.</summary>
+    [JSInvokable]
+    public async Task HandleInputActionAsync(string action, InputInfo input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        var current = Math.Max(0, IndexOfTab(ActiveGroupId));
+        var target = action switch
+        {
+            NextGroupAction => (current + 1) % Tabs.Count,
+            PreviousGroupAction => (current + Tabs.Count - 1) % Tabs.Count,
+            FirstGroupAction => 0,
+            LastGroupAction => Tabs.Count - 1,
+            _ => -1,
+        };
+
+        if (target < 0)
+        {
+            return;
+        }
+
+        var groupId = Tabs[target].Id;
+        await SelectGroupAsync(groupId);
+        StateHasChanged();
+
+        if (_tabButtons.TryGetValue(groupId, out var button))
+        {
+            await button.FocusAsync();
+        }
+    }
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
@@ -176,9 +234,57 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _sentinel.DisposeAsync();
+        try
+        {
+            await _sentinel.DisposeAsync();
+
+            if (_tabsScope is { } tabsScope)
+            {
+                _tabsScope = null;
+                await tabsScope.DisposeAsync();
+            }
+        }
+        finally
+        {
+            _selfReference.Dispose();
+        }
+
         await base.DisposeAsyncCore();
     }
+
+    // The strip is a scope only while shown, so the keys have nothing to act on once the host hides it.
+    private async Task SyncTabsScopeAsync(Task previous)
+    {
+        await previous;
+
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (Options.ShowGroupTabs && _tabsScope is null)
+        {
+            var profile = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftTabsProfile : LeftToRightTabsProfile;
+            _tabsScope = await InputRouter.RegisterUnlessDisposedAsync(_tabListElement, profile, _selfReference, () => IsDisposed);
+        }
+        else if (!Options.ShowGroupTabs && _tabsScope is { } tabsScope)
+        {
+            _tabsScope = null;
+            await tabsScope.DisposeAsync();
+        }
+    }
+
+    private static InputProfile CreateTabsProfile(string next, string previous)
+        => new()
+        {
+            InputRoutes =
+            [
+                new InputRoute(NextGroupAction, new KeyBinding(next)),
+                new InputRoute(PreviousGroupAction, new KeyBinding(previous)),
+                new InputRoute(FirstGroupAction, new KeyBinding("Home")),
+                new InputRoute(LastGroupAction, new KeyBinding("End")),
+            ],
+        };
 
     private string GetTabElementId(string groupId)
         => $"{ElementId}-tab-{groupId}";
@@ -290,32 +396,5 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         Recent = updated;
         InvalidateView();
         await RecentChanged.InvokeAsync(updated);
-    }
-
-    private async Task OnTabKeyDownAsync(KeyboardEventArgs args)
-    {
-        var isRightToLeft = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
-
-        var step = args.Key switch
-        {
-            "ArrowRight" => isRightToLeft ? -1 : 1,
-            "ArrowLeft" => isRightToLeft ? 1 : -1,
-            _ => 0,
-        };
-
-        if (step == 0 && args.Key is not ("Home" or "End"))
-        {
-            return;
-        }
-
-        var current = IndexOfTab(ActiveGroupId);
-        var next = args.Key switch
-        {
-            "Home" => 0,
-            "End" => Tabs.Count - 1,
-            _ => Math.Clamp(current + step, 0, Tabs.Count - 1),
-        };
-
-        await SelectGroupAsync(Tabs[next].Id);
     }
 }

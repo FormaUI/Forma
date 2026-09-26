@@ -40,7 +40,9 @@ on Tab through the popover's key callback, since Tab is not routed. `FormaTabs`,
 no keys of its own before, routes the arrows, Home and End on its tab list alone, so an arrow
 inside a panel stays the panel's; the arrow along the reading direction is next. Activation is
 manual, since a panel can be as costly as an editor switch: the arrows move focus and the tab
-order with it, and Enter or Space selects.
+order with it, and Enter or Space selects. `FormaEmojiPicker`'s category strip routes the same
+keys on the strip alone, activating as it goes since a category is cheap to show, and the strip
+is a scope only while the options show it.
 
 ## Input owners before the router
 
@@ -137,7 +139,7 @@ existing components, landing as several coherent commits.
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Wheel`, `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
    `Focus.js`, and the components that own navigation keys — `FormaSelect`,
-   `FormaDropDownMenu` and `FormaTabs` (done), `FormaEmojiPicker`, `FormaFileViewer`,
+   `FormaDropDownMenu`, `FormaTabs` and `FormaEmojiPicker` (done), `FormaFileViewer`,
    `FormaSplitter`, `FormaSortableList` (open). `NavigationGuard` is retired in favour of the
    router's `preventDefault` (done); the per-component text-entry exclusions are retired in
    favour of the native table (open).

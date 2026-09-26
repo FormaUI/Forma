@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using Forma.Framework.Emojis.Twemoji
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 
@@ -386,33 +388,99 @@
         }
 
         [Fact]
-        public void Should_move_between_tabs_with_the_arrow_keys()
+        public void Should_route_the_arrows_home_and_end_on_the_tab_strip()
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
-            var cut = ctx.Render(@<FormaEmojiPicker />);
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
 
             // Act
-            cut.FindAll("[role='tab']")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+            ctx.Render(@<FormaEmojiPicker />);
 
             // Assert
-            Assert.Equal("true", cut.FindAll("[role='tab']")[1].GetAttribute("aria-selected"));
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["emoji-picker.next-group:ArrowRight", "emoji-picker.previous-group:ArrowLeft", "emoji-picker.first-group:Home", "emoji-picker.last-group:End"], GetRoutes(registration));
         }
 
         [Fact]
-        public void Should_jump_to_the_last_tab_with_the_end_key()
+        public void Should_swap_the_arrows_under_right_to_left()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaEmojiPickerTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+
+            // Act
+            ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["emoji-picker.next-group:ArrowLeft", "emoji-picker.previous-group:ArrowRight", "emoji-picker.first-group:Home", "emoji-picker.last-group:End"], GetRoutes(registration));
+        }
+
+        [Fact]
+        public void Should_register_no_strip_when_the_tabs_are_turned_off()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+
+            // Act
+            ctx.Render(@<FormaEmojiPicker Options="@(new EmojiPickerOptions { ShowGroupTabs = false })" />);
+
+            // Assert
+            Assert.DoesNotContain(router.Invocations, invocation => invocation.Identifier == "register");
+        }
+
+        [Fact]
+        public async Task Should_show_the_next_group_and_focus_its_tab_when_the_router_routes_next()
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
-            cut.FindAll("[role='tab']")[0].KeyDown(new KeyboardEventArgs { Key = "End" });
+            await cut.InvokeAsync(() => cut.FindComponent<FormaEmojiPicker>().Instance.HandleInputActionAsync("emoji-picker.next-group", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
 
             // Assert
             var tabs = cut.FindAll("[role='tab']");
-            Assert.Equal("true", tabs[^1].GetAttribute("aria-selected"));
+            Assert.Multiple(
+                () => Assert.Equal("true", tabs[1].GetAttribute("aria-selected")),
+                () => Assert.Equal("0", tabs[1].GetAttribute("tabindex")),
+                () => Assert.Single(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus"));
         }
+
+        [Fact]
+        public async Task Should_jump_to_the_last_group_on_last()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaEmojiPicker>().Instance.HandleInputActionAsync("emoji-picker.last-group", new InputKeyInfo { Type = "keydown", Key = "End" }));
+
+            // Assert
+            Assert.Equal("true", cut.FindAll("[role='tab']")[^1].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public async Task Should_wrap_from_the_first_group_to_the_last_on_previous()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaEmojiPicker>().Instance.HandleInputActionAsync("emoji-picker.previous-group", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
+
+            // Assert
+            Assert.Equal("true", cut.FindAll("[role='tab']")[^1].GetAttribute("aria-selected"));
+        }
+
+        private static List<string> GetRoutes(JSRuntimeInvocation registration)
+            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
+                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
 
         [Fact]
         public void Should_start_with_an_empty_search_box()

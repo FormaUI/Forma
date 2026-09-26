@@ -10,7 +10,7 @@
      @ref="RootElement">
     @if (Options.ShowGroupTabs)
     {
-        <div class="forma-emoji-picker-tabs" role="tablist" aria-label="@L["Emoji Categories"]" aria-orientation="horizontal">
+        <div class="forma-emoji-picker-tabs" role="tablist" aria-label="@L["Emoji Categories"]" aria-orientation="horizontal" @ref="_tabListElement">
             @foreach (var tab in Tabs)
             {
                 var isActive = !IsSearching && tab.Id == ActiveGroupId;
@@ -25,8 +25,8 @@
                         aria-selected="@isActive.ToString().ToLowerInvariant()"
                         aria-controls="@PanelElementId"
                         tabindex="@(isActive ? "0" : "-1")"
-                        @onclick="() => SelectGroupAsync(tab.Id)"
-                        @onkeydown="OnTabKeyDownAsync">
+                        @ref="_tabButtons[tab.Id]"
+                        @onclick="() => SelectGroupAsync(tab.Id)">
                     <FormaIcon Icon="GetTabIcon(tab.Id)" Size="IconSize.Small" />
                 </button>
             }
