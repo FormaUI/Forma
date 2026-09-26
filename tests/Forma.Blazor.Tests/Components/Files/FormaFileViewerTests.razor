@@ -2,6 +2,8 @@
 @using Forma.Tests.Resources
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
 @using Microsoft.Extensions.DependencyInjection
 
 @code {
@@ -406,7 +408,72 @@
         }
 
         [Fact]
-        public async Task Should_navigate_with_arrow_keys()
+        public void Should_route_the_arrows_while_it_has_somewhere_to_navigate()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var siblings = new List<string> { Image, Video };
+
+            // Act
+            ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["file-viewer.next:ArrowRight", "file-viewer.previous:ArrowLeft"], GetRoutes(registration));
+        }
+
+        [Fact]
+        public void Should_swap_the_arrows_under_right_to_left()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaFileViewerTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var siblings = new List<string> { Image, Video };
+
+            // Act
+            ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["file-viewer.next:ArrowLeft", "file-viewer.previous:ArrowRight"], GetRoutes(registration));
+        }
+
+        [Fact]
+        public void Should_route_nothing_with_nowhere_to_navigate()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+
+            // Act
+            ctx.Render(@<FormaFileViewer Source="@Image" />);
+
+            // Assert
+            Assert.DoesNotContain(router.Invocations, invocation => invocation.Identifier == "register");
+        }
+
+        [Fact]
+        public void Should_route_the_arrows_again_once_siblings_return()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var siblings = new List<string> { Image, Video };
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
+            var viewer = cut.FindComponent<FormaFileViewer>();
+
+            // Act
+            viewer.Render(parameters => parameters.Add(p => p.Siblings, null));
+            viewer.Render(parameters => parameters.Add(p => p.Siblings, siblings));
+
+            // Assert
+            Assert.Equal(2, router.Invocations.Count(invocation => invocation.Identifier == "register"));
+        }
+
+        [Fact]
+        public async Task Should_navigate_to_the_next_sibling_when_the_router_routes_next()
         {
             // Arrange
             using var ctx = new FormaFileViewerTests();
@@ -415,28 +482,31 @@
             var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
 
             // Act
-            await cut.Find("div.forma-file-viewer").KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
+            await cut.InvokeAsync(() => cut.FindComponent<FormaFileViewer>().Instance.HandleInputActionAsync("file-viewer.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
 
             // Assert
             Assert.Equal(Video, navigatedTo);
         }
 
         [Fact]
-        public async Task Should_reverse_arrow_keys_under_right_to_left()
+        public async Task Should_stay_put_when_the_router_routes_previous_at_the_first_sibling()
         {
             // Arrange
-            using var culture = new CultureFixture("he");
             using var ctx = new FormaFileViewerTests();
             string? navigatedTo = null;
             var siblings = new List<string> { Image, Video };
             var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
 
             // Act
-            await cut.Find("div.forma-file-viewer").KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
+            await cut.InvokeAsync(() => cut.FindComponent<FormaFileViewer>().Instance.HandleInputActionAsync("file-viewer.previous", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
 
             // Assert
-            Assert.Equal(Video, navigatedTo);
+            Assert.Null(navigatedTo);
         }
+
+        private static List<string> GetRoutes(JSRuntimeInvocation registration)
+            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
+                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
 
         [Fact]
         public void Should_reject_a_blank_source()

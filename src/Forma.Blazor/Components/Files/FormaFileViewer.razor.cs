@@ -2,22 +2,31 @@ namespace Forma.Blazor.Components.Files;
 
 using System.Globalization;
 
+using Forma.Blazor.Components.Interaction;
 using Forma.Blazor.Models;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
+using Forma.Framework.Input.Keyboard;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Extensions;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>Renders whatever resource a source address resolves to, through the first provider that claims it.</summary>
 public sealed partial class FormaFileViewer : FormaElementBase
 {
     private const string ZoomedClass = "zoomed";
+    private const string NextAction = "file-viewer.next";
+    private const string PreviousAction = "file-viewer.previous";
 
     private static readonly int[] ZoomSteps = [100, 150, 200, 300, 400];
+
+    // The arrow along the reading direction steps to the next sibling and the one against it to the previous.
+    private static readonly InputProfile LeftToRightProfile = CreateProfile(next: "ArrowRight", previous: "ArrowLeft");
+    private static readonly InputProfile RightToLeftProfile = CreateProfile(next: "ArrowLeft", previous: "ArrowRight");
 
     // Last in the chain: it claims only what a browser renders unaided, leaving richer formats to a registered provider.
     private static readonly BrowserResourceProvider BrowserProvider = new();
@@ -43,14 +52,21 @@ public sealed partial class FormaFileViewer : FormaElementBase
     /// <summary>Providers the host registered, tried before the browser's own handling.</summary>
     [Inject] private IEnumerable<IResourceProvider> RegisteredProviders { get; set; } = default!;
 
-    private PanGesture _pan = default!;
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    private PanGesture _pan = default!;
 
     private Scroll _scroll = default!;
 
     private Wheel _wheel = default!;
 
     private DotNetObjectReference<FormaFileViewer>? _selfReference;
+
+    private InputScope? _navigationScope;
+
+    private Task? _navigationRegistration;
+
+    private bool _isNavigationRegistered;
 
     private ElementReference _imageFrameElement;
 
@@ -155,33 +171,36 @@ public sealed partial class FormaFileViewer : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Resource is not ImageResourceInfo)
+        // The registration and the image's behaviors are independent, so they are made side by side.
+        var navigation = SyncNavigationScopeAsync();
+
+        if (Resource is ImageResourceInfo)
         {
-            return;
+            if (!_isDragAttached)
+            {
+                _isDragAttached = await _pan.AttachAsync(_imageFrameElement, ZoomedClass);
+            }
+
+            // Ctrl with the wheel zooms the image.
+            if (ZoomOnWheelGesture && !_isWheelAttached)
+            {
+                _selfReference ??= DotNetObjectReference.Create(this);
+                _isWheelAttached = await _wheel.AttachAsync(_imageFrameElement, ScrollWheel.Tells(WheelModifier.Ctrl), _selfReference);
+            }
+            else if (!ZoomOnWheelGesture && _isWheelAttached)
+            {
+                _isWheelAttached = false;
+                await _wheel.DetachAsync();
+            }
+
+            if (_hasZoomChanged)
+            {
+                _hasZoomChanged = false;
+                await _scroll.ToCenterAsync(_imageFrameElement);
+            }
         }
 
-        if (!_isDragAttached)
-        {
-            _isDragAttached = await _pan.AttachAsync(_imageFrameElement, ZoomedClass);
-        }
-
-        // Ctrl with the wheel zooms the image.
-        if (ZoomOnWheelGesture && !_isWheelAttached)
-        {
-            _selfReference ??= DotNetObjectReference.Create(this);
-            _isWheelAttached = await _wheel.AttachAsync(_imageFrameElement, ScrollWheel.Tells(WheelModifier.Ctrl), _selfReference);
-        }
-        else if (!ZoomOnWheelGesture && _isWheelAttached)
-        {
-            _isWheelAttached = false;
-            await _wheel.DetachAsync();
-        }
-
-        if (_hasZoomChanged)
-        {
-            _hasZoomChanged = false;
-            await _scroll.ToCenterAsync(_imageFrameElement);
-        }
+        await navigation;
     }
 
     /// <summary>Zooms a step in for a wheel rolled up and a step out for one rolled down.</summary>
@@ -192,6 +211,20 @@ public sealed partial class FormaFileViewer : FormaElementBase
             _hasZoomChanged |= direction < 0 ? _zoom.TryZoomIn() : _zoom.TryZoomOut();
             StateHasChanged();
         });
+
+    /// <summary>Steps to the sibling the router's action names.</summary>
+    [JSInvokable]
+    public Task HandleInputActionAsync(string action, InputInfo input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        return action switch
+        {
+            NextAction => NavigateAsync(1),
+            PreviousAction => NavigateAsync(-1),
+            _ => Task.CompletedTask,
+        };
+    }
 
     private void ZoomIn()
         => _hasZoomChanged |= _zoom.TryZoomIn();
@@ -230,19 +263,66 @@ public sealed partial class FormaFileViewer : FormaElementBase
             : OnNavigate.InvokeAsync(siblings[target]);
     }
 
-    private Task HandleKeyDown(KeyboardEventArgs args)
+    // The viewer owns the arrows only while they have somewhere to go, so a lone image keeps them for scrolling its frame.
+    // A registration the router refused is not asked for again until the siblings change.
+    private Task SyncNavigationScopeAsync()
     {
-        // Left/right read as previous/next in reading order, which reverses under RTL.
-        var isRightToLeft = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
-        var delta = args.Key switch
+        if (IsNavigable && !_isNavigationRegistered)
         {
-            "ArrowLeft" => isRightToLeft ? 1 : -1,
-            "ArrowRight" => isRightToLeft ? -1 : 1,
-            _ => 0,
-        };
+            _isNavigationRegistered = true;
+            _selfReference ??= DotNetObjectReference.Create(this);
+            _navigationRegistration = RegisterNavigationAsync(CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile);
 
-        return delta == 0 ? Task.CompletedTask : NavigateAsync(delta);
+            return _navigationRegistration;
+        }
+
+        if (!IsNavigable && _isNavigationRegistered)
+        {
+            _isNavigationRegistered = false;
+
+            return ReleaseNavigationScopeAsync();
+        }
+
+        return Task.CompletedTask;
     }
+
+    private async Task RegisterNavigationAsync(InputProfile profile)
+    {
+        var navigationScope = await InputRouter.RegisterUnlessDisposedAsync(RootElement, profile, _selfReference!, () => IsDisposed);
+
+        if (navigationScope is null)
+        {
+            return;
+        }
+
+        // The siblings may have gone, or the viewer with them, while the registration was being made.
+        if (!_isNavigationRegistered || IsDisposed)
+        {
+            await navigationScope.DisposeAsync();
+            return;
+        }
+
+        _navigationScope = navigationScope;
+    }
+
+    private async Task ReleaseNavigationScopeAsync()
+    {
+        if (_navigationScope is { } navigationScope)
+        {
+            _navigationScope = null;
+            await navigationScope.DisposeAsync();
+        }
+    }
+
+    private static InputProfile CreateProfile(string next, string previous)
+        => new()
+        {
+            InputRoutes =
+            [
+                new InputRoute(NextAction, new KeyBinding(next)),
+                new InputRoute(PreviousAction, new KeyBinding(previous)),
+            ],
+        };
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
@@ -251,17 +331,32 @@ public sealed partial class FormaFileViewer : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        if (_resolveCancellation is not null)
+        try
         {
-            await _resolveCancellation.CancelAsync();
+            if (_resolveCancellation is not null)
+            {
+                await _resolveCancellation.CancelAsync();
+            }
+
+            _resolveCancellation?.Dispose();
+
+            await _pan.DisposeAsync();
+            await _scroll.DisposeAsync();
+            await _wheel.DisposeAsync();
+
+            // A registration still in flight settles before the reference it carries goes.
+            if (_navigationRegistration is { } navigationRegistration)
+            {
+                await Task.WhenAny(navigationRegistration);
+            }
+
+            await ReleaseNavigationScopeAsync();
+        }
+        finally
+        {
+            _selfReference?.Dispose();
         }
 
-        _resolveCancellation?.Dispose();
-
-        await _pan.DisposeAsync();
-        await _scroll.DisposeAsync();
-        await _wheel.DisposeAsync();
-        _selfReference?.Dispose();
         await base.DisposeAsyncCore();
     }
 }

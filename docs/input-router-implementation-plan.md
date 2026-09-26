@@ -43,7 +43,10 @@ manual, since a panel can be as costly as an editor switch: the arrows move focu
 order with it, and Enter or Space selects. `FormaEmojiPicker`'s category strip routes the same
 keys on the strip alone, activating as it goes since a category is cheap to show; the strip is a
 `FormaInputScope`, so its scope lives and dies with it as the options show and hide it. The two
-strips share their key table and wrap arithmetic.
+strips share their key table and wrap arithmetic. `FormaFileViewer` routes the arrows on its
+root as next and previous sibling, in reading order, and only while it has siblings to step
+between, so a lone image keeps the arrows for scrolling its frame; the native table gained the
+browser's media controls, so the arrows on a focused video seek rather than step.
 
 ## Input owners before the router
 
@@ -140,7 +143,7 @@ existing components, landing as several coherent commits.
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Wheel`, `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
    `Focus.js`, and the components that own navigation keys — `FormaSelect`,
-   `FormaDropDownMenu`, `FormaTabs` and `FormaEmojiPicker` (done), `FormaFileViewer`,
+   `FormaDropDownMenu`, `FormaTabs`, `FormaEmojiPicker` and `FormaFileViewer` (done),
    `FormaSplitter`, `FormaSortableList` (open). `NavigationGuard` is retired in favour of the
    router's `preventDefault` (done); the per-component text-entry exclusions are retired in
    favour of the native table (open).

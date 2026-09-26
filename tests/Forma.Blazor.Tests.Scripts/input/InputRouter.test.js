@@ -551,6 +551,32 @@ describe('InputRouter registrations', () => {
 });
 
 describe('InputRouter native controls', () => {
+    it.each(['video', 'audio'])('leaves the arrows, Home, End, Enter and Space to a %s with the browser\'s controls', tag => {
+        const steps = vi.fn();
+        const media = document.createElement(tag);
+        media.setAttribute('controls', '');
+        grid().append(media);
+        scope(grid(), { routes: [route('test.next', steps, keyBinding('ArrowRight')), route('test.first', steps, keyBinding('Home')), route('test.play', steps, keyBinding(' '))] });
+
+        const seek = key(media, 'ArrowRight');
+        key(media, 'Home');
+        key(media, ' ');
+
+        expect(steps).not.toHaveBeenCalled();
+        expect(resolve(seek)).toMatchObject({ owner: media, precedence: 'native', action: null });
+    });
+
+    it('routes the arrows over a media element without controls', () => {
+        const steps = vi.fn();
+        const media = document.createElement('video');
+        grid().append(media);
+        scope(grid(), { routes: [route('test.next', steps, keyBinding('ArrowRight'))] });
+
+        key(media, 'ArrowRight');
+
+        expect(steps).toHaveBeenCalledOnce();
+    });
+
     it('leaves the keys a text field consumes to the field', () => {
         const gridMoves = vi.fn();
         scope(grid(), { routes: [...arrowsTo(gridMoves), route('test.first', gridMoves, keyBinding('Home')), route('test.select-all', gridMoves, keyBinding('a', { control: true }))] });

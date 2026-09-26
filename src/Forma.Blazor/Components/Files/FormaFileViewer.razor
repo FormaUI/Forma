@@ -11,8 +11,7 @@
      @ref="RootElement"
      tabindex="@(IsNavigable ? "0" : null)"
      role="@(IsNavigable ? "group" : null)"
-     aria-label="@(IsNavigable ? DisplayName : null)"
-     @onkeydown="HandleKeyDown">
+     aria-label="@(IsNavigable ? DisplayName : null)">
     <div class="forma-file-viewer-content">
         @if (Resource is MarkupResourceInfo markup)
         {

@@ -978,6 +978,11 @@ function nativeClaims(element, event) {
         return event.key === 'Enter' || event.key === ' ';
     }
 
+    // The browser's own transport: arrows seek and set the volume, Home and End jump, Enter and Space play and pause.
+    if (event.type === 'keydown' && element.matches('video[controls], audio[controls]')) {
+        return HorizontalKeys.has(event.key) || VerticalKeys.has(event.key) || event.key === 'Enter' || event.key === ' ';
+    }
+
     return false;
 }
 

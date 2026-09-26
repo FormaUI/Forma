@@ -209,6 +209,7 @@ input**, of what the control consumes natively:
 | `input[type=checkbox]` | Space |
 | `select` | Arrows, Home, End, PageUp, PageDown, typing, Enter, Space |
 | `button`, button-like `input` types, `a[href]`, `summary`, `[role=button]`, `[role=link]` | Enter, Space |
+| `video[controls]`, `audio[controls]` | Arrows, Home, End, Enter, Space |
 | `[contenteditable]` | Typing, every arrow, Home, End, PageUp, PageDown, Enter, Backspace, Delete, the editing shortcuts, Ctrl+B/I/U, wheel when it scrolls |
 
 A disabled control consumes nothing. Input a native control consumes is owned by that control. Input it does not consume —
