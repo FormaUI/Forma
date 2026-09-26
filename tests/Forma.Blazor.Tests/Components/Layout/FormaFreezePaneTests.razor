@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using Forma.Framework.Browser.Interop.Behaviors
+@using Forma.Framework.Input.Keyboard
 @code {
     private static readonly FreezePaneOptions BlockArrows = new() { Axis = ScrollAxis.Block, Navigation = ScrollNavigation.Arrows };
 
@@ -218,8 +219,8 @@
                 () => Assert.Equal("120", answering.Find(".forma-freeze-pane-edge").GetAttribute("aria-valuenow")),
                 () => Assert.Equal("500", answering.Find(".forma-freeze-pane-edge").GetAttribute("aria-valuemax")));
 
-            // Act - a key press on the edge asks the content for a wider frozen region
-            answering.Find(".forma-freeze-pane-edge").KeyDown("ArrowRight");
+            // Act - the router's grow on the edge asks the content for a wider frozen region
+            await answering.InvokeAsync(() => answering.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
 
             // Assert
             Assert.Equal([128], asked);

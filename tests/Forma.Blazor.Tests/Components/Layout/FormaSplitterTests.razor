@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using Microsoft.AspNetCore.Components.Web
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
 
 @code {
     public sealed class Component
@@ -73,186 +75,166 @@
         }
 
         [Fact]
-        public void Should_grow_on_the_forward_arrow_of_a_vertical_splitter()
+        public void Should_route_the_inline_arrows_home_and_end_on_a_vertical_splitter()
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            double? reported = null;
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
 
             // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+            ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
 
             // Assert
-            Assert.Equal(19d, reported);
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["splitter.grow:ArrowRight", "splitter.shrink:ArrowLeft", "splitter.min:Home", "splitter.max:End"], GetRoutes(registration));
         }
 
         [Fact]
-        public void Should_shrink_on_the_backward_arrow_of_a_vertical_splitter()
-        {
-            // Arrange
-            using var ctx = new FormaSplitterTests();
-            double? reported = null;
-
-            // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowLeft");
-
-            // Assert
-            Assert.Equal(17d, reported);
-        }
-
-        [Fact]
-        public void Should_use_the_vertical_arrows_for_a_horizontal_splitter()
-        {
-            // Arrange
-            using var ctx = new FormaSplitterTests();
-            double? reported = null;
-
-            // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowDown");
-
-            // Assert
-            Assert.Equal(19d, reported);
-        }
-
-        [Fact]
-        public void Should_ignore_the_horizontal_arrows_on_a_horizontal_splitter()
-        {
-            // Arrange
-            using var ctx = new FormaSplitterTests();
-            double? reported = null;
-
-            // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowRight");
-
-            // Assert
-            Assert.Null(reported);
-        }
-
-        [Fact]
-        public void Should_grow_on_the_leading_arrow_of_a_right_to_left_vertical_splitter()
+        public void Should_swap_the_inline_arrows_under_right_to_left()
         {
             // Arrange
             using var fixture = new CultureFixture("he");
             using var ctx = new FormaSplitterTests();
-            double? reported = null;
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
 
             // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowLeft");
+            ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
 
             // Assert
-            Assert.Equal(19d, reported);
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["splitter.grow:ArrowLeft", "splitter.shrink:ArrowRight", "splitter.min:Home", "splitter.max:End"], GetRoutes(registration));
         }
 
         [Fact]
-        public void Should_shrink_on_the_trailing_arrow_of_a_right_to_left_vertical_splitter()
+        public void Should_route_the_block_arrows_on_a_horizontal_splitter_whatever_the_direction()
         {
             // Arrange
             using var fixture = new CultureFixture("he");
             using var ctx = new FormaSplitterTests();
-            double? reported = null;
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
 
             // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+            ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" />);
 
             // Assert
-            Assert.Equal(17d, reported);
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["splitter.grow:ArrowDown", "splitter.shrink:ArrowUp", "splitter.min:Home", "splitter.max:End"], GetRoutes(registration));
         }
 
         [Fact]
-        public void Should_leave_the_vertical_arrows_alone_in_a_right_to_left_layout()
+        public void Should_take_the_keys_of_a_new_orientation()
         {
             // Arrange
-            using var fixture = new CultureFixture("he");
             using var ctx = new FormaSplitterTests();
-            double? reported = null;
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var registration = router.SetupModule("register", _ => true);
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
 
             // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowDown");
+            cut.FindComponent<FormaSplitter>().Render(parameters => parameters.Add(p => p.Orientation, SplitterOrientation.Horizontal));
 
             // Assert
-            Assert.Equal(19d, reported);
+            var update = Assert.Single(registration.Invocations, invocation => invocation.Identifier == "update");
+            Assert.Equal("ArrowDown", Assert.IsType<KeyBinding>(Assert.IsType<InputProfile>(update.Arguments[0]).InputRoutes[0].Bindings[0]).Key);
         }
 
         [Fact]
-        public void Should_move_by_the_step_given()        {
+        public async Task Should_grow_by_the_step_when_the_router_routes_grow()
+        {
             // Arrange
             using var ctx = new FormaSplitterTests();
             double? reported = null;
-
-            // Act
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Step="4" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
 
             // Assert
             Assert.Equal(22d, reported);
         }
 
         [Fact]
-        public void Should_jump_to_the_minimum_on_home()
+        public async Task Should_shrink_by_the_step_when_the_router_routes_shrink()
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
             double? reported = null;
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
 
             // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("Home");
+            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.shrink", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
 
             // Assert
-            Assert.Equal(10d, reported);
+            Assert.Equal(17d, reported);
         }
 
         [Fact]
-        public void Should_jump_to_the_maximum_on_end()
+        public async Task Should_jump_to_either_bound_when_the_router_routes_min_or_max()
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
             double? reported = null;
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            var splitter = cut.FindComponent<FormaSplitter>().Instance;
 
             // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("End");
+            await cut.InvokeAsync(() => splitter.HandleInputActionAsync("splitter.min", new InputKeyInfo { Type = "keydown", Key = "Home" }));
+            var atMin = reported;
+            await cut.InvokeAsync(() => splitter.HandleInputActionAsync("splitter.max", new InputKeyInfo { Type = "keydown", Key = "End" }));
 
             // Assert
-            Assert.Equal(28d, reported);
+            Assert.Multiple(
+                () => Assert.Equal(10d, atMin),
+                () => Assert.Equal(28d, reported));
         }
 
         [Fact]
-        public void Should_clamp_at_the_maximum()
+        public async Task Should_clamp_at_the_maximum()
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
             double? reported = null;
-
-            // Act
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="28" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
 
             // Assert
             Assert.Null(reported);
         }
 
         [Fact]
-        public void Should_clamp_at_the_minimum()
+        public async Task Should_clamp_at_the_minimum()
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
             double? reported = null;
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="10" Min="10" Max="28" ValueChanged="v => reported = v" />);
 
             // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="10" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").KeyDown("ArrowLeft");
+            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.shrink", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
 
             // Assert
             Assert.Null(reported);
         }
+
+        [Fact]
+        public async Task Should_show_the_new_size_after_a_routed_move()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+
+            // Assert
+            Assert.Equal("19", cut.Find(".forma-splitter").GetAttribute("aria-valuenow"));
+        }
+
+        private static List<string> GetRoutes(JSRuntimeInvocation registration)
+            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
+                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
 
         [Fact]
         public void Should_report_resizing_across_a_drag()

@@ -2,15 +2,30 @@ namespace Forma.Blazor.Components.Layout;
 
 using System.Globalization;
 
+using Forma.Blazor.Components.Interaction;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
+using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 /// <summary>A draggable divider between two panes, reporting the size the pane before it should take.</summary>
 public sealed partial class FormaSplitter : FormaElementBase
 {
+    private const string GrowAction = "splitter.grow";
+    private const string ShrinkAction = "splitter.shrink";
+    private const string MinAction = "splitter.min";
+    private const string MaxAction = "splitter.max";
+
+    // A vertical bar moves along the inline axis, where the arrow along the reading direction grows the pane before it; a horizontal bar moves down the block axis.
+    private static readonly InputProfile VerticalLeftToRightProfile = CreateProfile(grow: "ArrowRight", shrink: "ArrowLeft");
+    private static readonly InputProfile VerticalRightToLeftProfile = CreateProfile(grow: "ArrowLeft", shrink: "ArrowRight");
+    private static readonly InputProfile HorizontalProfile = CreateProfile(grow: "ArrowDown", shrink: "ArrowUp");
+
     /// <summary>The size of the pane the splitter governs, in whatever unit the caller works in.</summary>
     [Parameter] public double Value { get; set; }
 
@@ -38,7 +53,13 @@ public sealed partial class FormaSplitter : FormaElementBase
     /// <summary>Raised when a drag starts and again when it ends, so a host can suppress selection while it runs.</summary>
     [Parameter] public EventCallback<bool> OnResizingChanged { get; set; }
 
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
+
     private Pointer _pointer = default!;
+    private DotNetObjectReference<FormaSplitter> _selfReference = default!;
+    private InputScope? _inputScope;
+    private Task? _registration;
+    private InputProfile? _registeredProfile;
     private double _dragOrigin;
     private double _dragStartValue;
     private bool _isResizing;
@@ -49,12 +70,20 @@ public sealed partial class FormaSplitter : FormaElementBase
     private string AriaOrientation
         => IsVertical ? "vertical" : "horizontal";
 
+    private InputProfile Profile
+        => IsVertical
+            ? CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? VerticalRightToLeftProfile : VerticalLeftToRightProfile
+            : HorizontalProfile;
+
     private static string FormatRounded(double value)
         => Math.Round(value).ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _pointer = new Pointer(Context.JS);
+    {
+        _pointer = new Pointer(Context.JS);
+        _selfReference = DotNetObjectReference.Create(this);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -62,6 +91,48 @@ public sealed partial class FormaSplitter : FormaElementBase
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(Step, 0);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(Min, Max);
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _registration = RegisterAsync(Profile);
+            await _registration;
+        }
+
+        // The orientation, and with it the keys, can change after the registration was made.
+        if (_inputScope is { } inputScope && !ReferenceEquals(_registeredProfile, Profile))
+        {
+            var profile = Profile;
+
+            if (await inputScope.UpdateAsync(profile))
+            {
+                _registeredProfile = profile;
+            }
+        }
+    }
+
+    /// <summary>Moves the divider as the router's action says: a step either way, or to either bound.</summary>
+    [JSInvokable]
+    public async Task HandleInputActionAsync(string action, InputInfo input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        double? target = action switch
+        {
+            GrowAction => Value + Step,
+            ShrinkAction => Value - Step,
+            MinAction => Min,
+            MaxAction => Max,
+            _ => null,
+        };
+
+        if (target is { } size && await SetValueAsync(size))
+        {
+            StateHasChanged();
+        }
     }
 
     private async Task HandlePointerDownAsync(PointerEventArgs args)
@@ -102,43 +173,40 @@ public sealed partial class FormaSplitter : FormaElementBase
         await _pointer.ReleaseAsync(RootElement, args.PointerId);
     }
 
-    private async Task HandleKeyDownAsync(KeyboardEventArgs args)
-    {
-        var isRightToLeft = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
-        var grow = IsVertical ? (isRightToLeft ? "ArrowLeft" : "ArrowRight") : "ArrowDown";
-        var shrink = IsVertical ? (isRightToLeft ? "ArrowRight" : "ArrowLeft") : "ArrowUp";
-
-        if (args.Key == grow)
-        {
-            await SetValueAsync(Value + Step);
-        }
-        else if (args.Key == shrink)
-        {
-            await SetValueAsync(Value - Step);
-        }
-        else if (args.Key == "Home")
-        {
-            await SetValueAsync(Min);
-        }
-        else if (args.Key == "End")
-        {
-            await SetValueAsync(Max);
-        }
-    }
-
-    private async Task SetValueAsync(double value)
+    /// <summary>Takes the size, clamped to the bounds, and reports whether it differs from the current one.</summary>
+    private async Task<bool> SetValueAsync(double value)
     {
         var clamped = Math.Clamp(value, Min, Max);
 
         if (clamped.Equals(Value))
         {
-            return;
+            return false;
         }
 
         Value = clamped;
 
         await ValueChanged.InvokeAsync(clamped);
+
+        return true;
     }
+
+    private async Task RegisterAsync(InputProfile profile)
+    {
+        _inputScope = await InputRouter.RegisterUnlessDisposedAsync(RootElement, profile, _selfReference, () => IsDisposed);
+        _registeredProfile = profile;
+    }
+
+    private static InputProfile CreateProfile(string grow, string shrink)
+        => new()
+        {
+            InputRoutes =
+            [
+                new InputRoute(GrowAction, new KeyBinding(grow)),
+                new InputRoute(ShrinkAction, new KeyBinding(shrink)),
+                new InputRoute(MinAction, new KeyBinding("Home")),
+                new InputRoute(MaxAction, new KeyBinding("End")),
+            ],
+        };
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
@@ -150,7 +218,27 @@ public sealed partial class FormaSplitter : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _pointer.DisposeAsync();
+        try
+        {
+            // A registration still in flight settles before the reference it carries goes.
+            if (_registration is { } registration)
+            {
+                await Task.WhenAny(registration);
+            }
+
+            if (_inputScope is { } inputScope)
+            {
+                _inputScope = null;
+                await inputScope.DisposeAsync();
+            }
+
+            await _pointer.DisposeAsync();
+        }
+        finally
+        {
+            _selfReference.Dispose();
+        }
+
         await base.DisposeAsyncCore();
     }
 }

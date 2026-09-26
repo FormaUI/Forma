@@ -47,6 +47,8 @@ strips share their key table and wrap arithmetic. `FormaFileViewer` routes the a
 root as next and previous sibling, in reading order, and only while it has siblings to step
 between, so a lone image keeps the arrows for scrolling its frame; the native table gained the
 browser's media controls, so the arrows on a focused video seek rather than step.
+`FormaSplitter` routes grow, shrink, Home and End on its bar, the arrows along the axis it moves
+on, and swaps them for the orientation it is given after registering.
 
 ## Input owners before the router
 
@@ -143,8 +145,8 @@ existing components, landing as several coherent commits.
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Wheel`, `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
    `Focus.js`, and the components that own navigation keys — `FormaSelect`,
-   `FormaDropDownMenu`, `FormaTabs`, `FormaEmojiPicker` and `FormaFileViewer` (done),
-   `FormaSplitter`, `FormaSortableList` (open). `NavigationGuard` is retired in favour of the
+   `FormaDropDownMenu`, `FormaTabs`, `FormaEmojiPicker`, `FormaFileViewer` and
+   `FormaSplitter` (done), `FormaSortableList` (open). `NavigationGuard` is retired in favour of the
    router's `preventDefault` (done); the per-component text-entry exclusions are retired in
    favour of the native table (open).
 4. **Verification** across combinations, in a visible browser: select in a grid cell; popup
