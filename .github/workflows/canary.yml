@@ -11,11 +11,17 @@ on:
 
 permissions:
   contents: read
+  # The locale lint is a tool the organization publishes to its own private feed.
+  packages: read
 
 jobs:
   canary:
     name: canary (newest SDK)
     runs-on: ubuntu-latest
+
+    # Every step that reads the package sources needs it, the report of packages left behind included.
+    env:
+      NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v7
