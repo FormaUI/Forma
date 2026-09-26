@@ -6,7 +6,6 @@ using Forma.Blazor.Components.Interaction;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
-using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -14,14 +13,10 @@ using Microsoft.JSInterop;
 /// <summary>A tabbed panel showing one <see cref="FormaTab"/> at a time, its tabs walked by the arrow keys, Home and End and selected by Enter or Space.</summary>
 public sealed partial class FormaTabs : FormaElementBase
 {
-    private const string NextAction = "tabs.next";
-    private const string PreviousAction = "tabs.previous";
-    private const string FirstAction = "tabs.first";
-    private const string LastAction = "tabs.last";
+    private const string ActionOwner = "tabs";
 
-    // The arrow along the reading direction moves to the next tab and the one against it to the previous.
-    private static readonly InputProfile LeftToRightProfile = CreateProfile(next: "ArrowRight", previous: "ArrowLeft");
-    private static readonly InputProfile RightToLeftProfile = CreateProfile(next: "ArrowLeft", previous: "ArrowRight");
+    private static readonly InputProfile LeftToRightProfile = TabStripNavigation.CreateProfile(ActionOwner, isRightToLeft: false);
+    private static readonly InputProfile RightToLeftProfile = TabStripNavigation.CreateProfile(ActionOwner, isRightToLeft: true);
 
     private readonly List<FormaTab> _tabs = [];
     private readonly Dictionary<FormaTab, ElementReference> _tabButtons = [];
@@ -94,22 +89,7 @@ public sealed partial class FormaTabs : FormaElementBase
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        if (FocusableTab is not { } focusable)
-        {
-            return;
-        }
-
-        var current = _tabs.IndexOf(focusable);
-        var target = action switch
-        {
-            NextAction => (current + 1) % _tabs.Count,
-            PreviousAction => (current + _tabs.Count - 1) % _tabs.Count,
-            FirstAction => 0,
-            LastAction => _tabs.Count - 1,
-            _ => -1,
-        };
-
-        if (target < 0)
+        if (FocusableTab is not { } focusable || TabStripNavigation.FindTarget(ActionOwner, action, _tabs.IndexOf(focusable), _tabs.Count) is not { } target)
         {
             return;
         }
@@ -170,18 +150,6 @@ public sealed partial class FormaTabs : FormaElementBase
 
         await ActiveTabIdChanged.InvokeAsync(tab.EffectiveTabId);
     }
-
-    private static InputProfile CreateProfile(string next, string previous)
-        => new()
-        {
-            InputRoutes =
-            [
-                new InputRoute(NextAction, new KeyBinding(next)),
-                new InputRoute(PreviousAction, new KeyBinding(previous)),
-                new InputRoute(FirstAction, new KeyBinding("Home")),
-                new InputRoute(LastAction, new KeyBinding("End")),
-            ],
-        };
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

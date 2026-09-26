@@ -11,7 +11,8 @@
     overflow: hidden;
 }
 
-.forma-emoji-picker-tabs {
+/* The strip is an input scope of its own, so it is reached through its root. */
+::deep .forma-emoji-picker-tabs {
     display: flex;
     gap: var(--space-1);
     padding: var(--space-1);

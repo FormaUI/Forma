@@ -11,8 +11,6 @@ using Forma.Framework.Css;
 using Forma.Framework.Emojis;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
-using Forma.Framework.Input.Interop;
-using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -23,14 +21,10 @@ using Microsoft.JSInterop;
 public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmojiCatalog? registeredCatalog = null)
     : FormaElementBase
 {
-    private const string NextGroupAction = "emoji-picker.next-group";
-    private const string PreviousGroupAction = "emoji-picker.previous-group";
-    private const string FirstGroupAction = "emoji-picker.first-group";
-    private const string LastGroupAction = "emoji-picker.last-group";
+    private const string ActionOwner = "emoji-picker";
 
-    // The arrow along the reading direction moves to the next group and the one against it to the previous.
-    private static readonly InputProfile LeftToRightTabsProfile = CreateTabsProfile(next: "ArrowRight", previous: "ArrowLeft");
-    private static readonly InputProfile RightToLeftTabsProfile = CreateTabsProfile(next: "ArrowLeft", previous: "ArrowRight");
+    private static readonly InputProfile LeftToRightTabsProfile = TabStripNavigation.CreateProfile(ActionOwner, isRightToLeft: false);
+    private static readonly InputProfile RightToLeftTabsProfile = TabStripNavigation.CreateProfile(ActionOwner, isRightToLeft: true);
 
     private readonly IEmojiCatalog _catalog = registeredCatalog ?? NullEmojiCatalog.Instance;
     private readonly IEmojiProvider _provider = emojiProvider;
@@ -74,12 +68,8 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private string? _activeGroupId;
     private string _announcement = string.Empty;
     private SentinelObserver<FormaEmojiPicker> _sentinel = default!;
-    private DotNetObjectReference<FormaEmojiPicker> _selfReference = default!;
-    private InputScope? _tabsScope;
-    private Task _tabsSync = Task.CompletedTask;
     private ElementReference _sentinelElement;
     private ElementReference _panelElement;
-    private ElementReference _tabListElement;
 
     /// <summary>Raised with the chosen emoji's sequence.</summary>
     [Parameter] public EventCallback<string> OnSelect { get; set; }
@@ -98,8 +88,6 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
 
     [Inject] private IEmojiSpriteLoader SpriteLoader { get; set; } = default!;
 
-    [Inject] private InputRouter InputRouter { get; set; } = default!;
-
     private List<EmojiGroup>? _tabs;
     private IReadOnlyList<EmojiInfo>? _matchingEmojis;
     private IReadOnlyList<string>? _requiredSheets;
@@ -110,6 +98,9 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private string PanelElementId => $"{ElementId}-panel";
 
     private bool IsSearching => !string.IsNullOrWhiteSpace(_searchQuery);
+
+    private static InputProfile TabsProfile
+        => CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftTabsProfile : LeftToRightTabsProfile;
 
     private IReadOnlyList<EmojiGroup> Tabs
         => _tabs ??= Recent.Count == 0
@@ -154,10 +145,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
 
     /// <inheritdoc />
     protected override void OnInitialized()
-    {
-        _sentinel = new SentinelObserver<FormaEmojiPicker>(Context.JS);
-        _selfReference = DotNetObjectReference.Create(this);
-    }
+        => _sentinel = new SentinelObserver<FormaEmojiPicker>(Context.JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -184,11 +172,6 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         }
 
         await WatchSentinelAsync();
-
-        // Renders can overlap, so each sync waits for the one before it and none registers the strip twice.
-        var previous = _tabsSync;
-        _tabsSync = SyncTabsScopeAsync(previous);
-        await _tabsSync;
     }
 
     /// <summary>Loads the next sprite sheet as the sentinel below the loaded cells comes into view.</summary>
@@ -196,36 +179,6 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     public async Task HandleReachedAsync()
         => await LoadNextSheetAsync();
 
-    /// <summary>Shows the group the router's action names, counted from the active one and wrapping at either end, and focuses its tab.</summary>
-    [JSInvokable]
-    public async Task HandleInputActionAsync(string action, InputInfo input)
-    {
-        ArgumentNullException.ThrowIfNull(input);
-
-        var current = Math.Max(0, IndexOfTab(ActiveGroupId));
-        var target = action switch
-        {
-            NextGroupAction => (current + 1) % Tabs.Count,
-            PreviousGroupAction => (current + Tabs.Count - 1) % Tabs.Count,
-            FirstGroupAction => 0,
-            LastGroupAction => Tabs.Count - 1,
-            _ => -1,
-        };
-
-        if (target < 0)
-        {
-            return;
-        }
-
-        var groupId = Tabs[target].Id;
-        await SelectGroupAsync(groupId);
-        StateHasChanged();
-
-        if (_tabButtons.TryGetValue(groupId, out var button))
-        {
-            await button.FocusAsync();
-        }
-    }
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
@@ -234,57 +187,9 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        try
-        {
-            await _sentinel.DisposeAsync();
-
-            if (_tabsScope is { } tabsScope)
-            {
-                _tabsScope = null;
-                await tabsScope.DisposeAsync();
-            }
-        }
-        finally
-        {
-            _selfReference.Dispose();
-        }
-
+        await _sentinel.DisposeAsync();
         await base.DisposeAsyncCore();
     }
-
-    // The strip is a scope only while shown, so the keys have nothing to act on once the host hides it.
-    private async Task SyncTabsScopeAsync(Task previous)
-    {
-        await previous;
-
-        if (IsDisposed)
-        {
-            return;
-        }
-
-        if (Options.ShowGroupTabs && _tabsScope is null)
-        {
-            var profile = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftTabsProfile : LeftToRightTabsProfile;
-            _tabsScope = await InputRouter.RegisterUnlessDisposedAsync(_tabListElement, profile, _selfReference, () => IsDisposed);
-        }
-        else if (!Options.ShowGroupTabs && _tabsScope is { } tabsScope)
-        {
-            _tabsScope = null;
-            await tabsScope.DisposeAsync();
-        }
-    }
-
-    private static InputProfile CreateTabsProfile(string next, string previous)
-        => new()
-        {
-            InputRoutes =
-            [
-                new InputRoute(NextGroupAction, new KeyBinding(next)),
-                new InputRoute(PreviousGroupAction, new KeyBinding(previous)),
-                new InputRoute(FirstGroupAction, new KeyBinding("Home")),
-                new InputRoute(LastGroupAction, new KeyBinding("End")),
-            ],
-        };
 
     private string GetTabElementId(string groupId)
         => $"{ElementId}-tab-{groupId}";
@@ -371,6 +276,23 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
             : string.Empty;
 
         await ResetChunkWindowAsync();
+    }
+
+    // Shows the group the strip's action names, counted from the active one, and focuses its tab.
+    private async Task HandleTabsActionAsync(InputAction action)
+    {
+        if (TabStripNavigation.FindTarget(ActionOwner, action.Action, Math.Max(0, IndexOfTab(ActiveGroupId)), Tabs.Count) is not { } target)
+        {
+            return;
+        }
+
+        var groupId = Tabs[target].Id;
+        await SelectGroupAsync(groupId);
+
+        if (_tabButtons.TryGetValue(groupId, out var button))
+        {
+            await button.FocusAsync();
+        }
     }
 
     private async Task SelectGroupAsync(string groupId)

@@ -41,8 +41,9 @@ no keys of its own before, routes the arrows, Home and End on its tab list alone
 inside a panel stays the panel's; the arrow along the reading direction is next. Activation is
 manual, since a panel can be as costly as an editor switch: the arrows move focus and the tab
 order with it, and Enter or Space selects. `FormaEmojiPicker`'s category strip routes the same
-keys on the strip alone, activating as it goes since a category is cheap to show, and the strip
-is a scope only while the options show it.
+keys on the strip alone, activating as it goes since a category is cheap to show; the strip is a
+`FormaInputScope`, so its scope lives and dies with it as the options show and hide it. The two
+strips share their key table and wrap arithmetic.
 
 ## Input owners before the router
 

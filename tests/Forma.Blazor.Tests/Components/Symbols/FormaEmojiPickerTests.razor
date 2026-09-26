@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using Forma.Framework.Emojis.Twemoji
+@using Forma.Blazor.Components.Interaction
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
 @using Microsoft.AspNetCore.Components.Web
@@ -399,7 +400,7 @@
 
             // Assert
             var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["emoji-picker.next-group:ArrowRight", "emoji-picker.previous-group:ArrowLeft", "emoji-picker.first-group:Home", "emoji-picker.last-group:End"], GetRoutes(registration));
+            Assert.Equal(["emoji-picker.next:ArrowRight", "emoji-picker.previous:ArrowLeft", "emoji-picker.first:Home", "emoji-picker.last:End"], GetRoutes(registration));
         }
 
         [Fact]
@@ -415,7 +416,7 @@
 
             // Assert
             var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["emoji-picker.next-group:ArrowLeft", "emoji-picker.previous-group:ArrowRight", "emoji-picker.first-group:Home", "emoji-picker.last-group:End"], GetRoutes(registration));
+            Assert.Equal(["emoji-picker.next:ArrowLeft", "emoji-picker.previous:ArrowRight", "emoji-picker.first:Home", "emoji-picker.last:End"], GetRoutes(registration));
         }
 
         [Fact]
@@ -433,6 +434,25 @@
         }
 
         [Fact]
+        public void Should_register_the_strip_again_once_it_is_shown_again()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Act
+            cut.FindComponent<FormaEmojiPicker>().Render(parameters => parameters.Add(p => p.Options, new EmojiPickerOptions { ShowGroupTabs = false }));
+            var scopesWhileHidden = cut.FindComponents<FormaInputScope>().Count;
+            cut.FindComponent<FormaEmojiPicker>().Render(parameters => parameters.Add(p => p.Options, EmojiPickerOptions.Default));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, scopesWhileHidden),
+                () => Assert.Equal(2, router.Invocations.Count(invocation => invocation.Identifier == "register")));
+        }
+
+        [Fact]
         public async Task Should_show_the_next_group_and_focus_its_tab_when_the_router_routes_next()
         {
             // Arrange
@@ -440,7 +460,7 @@
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaEmojiPicker>().Instance.HandleInputActionAsync("emoji-picker.next-group", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleInputActionAsync("emoji-picker.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
 
             // Assert
             var tabs = cut.FindAll("[role='tab']");
@@ -458,7 +478,7 @@
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaEmojiPicker>().Instance.HandleInputActionAsync("emoji-picker.last-group", new InputKeyInfo { Type = "keydown", Key = "End" }));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleInputActionAsync("emoji-picker.last", new InputKeyInfo { Type = "keydown", Key = "End" }));
 
             // Assert
             Assert.Equal("true", cut.FindAll("[role='tab']")[^1].GetAttribute("aria-selected"));
@@ -472,7 +492,7 @@
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaEmojiPicker>().Instance.HandleInputActionAsync("emoji-picker.previous-group", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleInputActionAsync("emoji-picker.previous", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
 
             // Assert
             Assert.Equal("true", cut.FindAll("[role='tab']")[^1].GetAttribute("aria-selected"));
