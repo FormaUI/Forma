@@ -895,12 +895,12 @@ function specificity(binding) {
         + (modifiers.primary === true ? 1 : 0);
 }
 
-/** Whether a binding matches the event, by the rules of the event's family. */
+/** Whether a binding matches the event, by the rules of the event's family; its predicate is asked last, once the vocabulary has agreed. */
 function matches(binding, event) {
-    if (binding.type !== event.type || (binding.when && !binding.when(event))) {
-        return false;
-    }
+    return binding.type === event.type && matchesFamily(binding, event) && (!binding.when || binding.when(event));
+}
 
+function matchesFamily(binding, event) {
     switch (Families[event.type]) {
         case 'keyboard':
             return (binding.key == null || binding.key.toLowerCase() === event.key.toLowerCase()) && modifiersMatch(binding, event, true);

@@ -3,14 +3,25 @@
  *
  * The press-move-release gesture, its pointer capture and the edge auto-scroll all belong
  * to DragGesture; what remains here is what a reorder means — which item a pointer is
- * over, which side of it, and the keyboard equivalent. Only the resulting position crosses
- * to .NET, once per completed move, since a pointermove fires many times a second and
- * round-tripping each one through Blazor Server would lag badly.
+ * over, which side of it, and the keyboard equivalent, declared as routes on the input
+ * router so a key on a handle is the list's and a key anywhere else in an item is not.
+ * Only the resulting position crosses to .NET, once per completed move, since a
+ * pointermove fires many times a second and round-tripping each one through Blazor
+ * Server would lag badly.
  */
 
 import { attach as attachDragGesture } from './DragGesture.js';
 import { Controls } from '../../../core/scripts/Controls.js';
 import { tell } from '../../../core/scripts/Owner.js';
+import { register } from '../../../input/scripts/InputRouter.js';
+
+/** Where each key sends the item: a step either way, or to either end. */
+const Moves = [
+    { action: 'sortable-list.move-up', key: 'ArrowUp', target: (index, count) => index - 1, insertAfter: false },
+    { action: 'sortable-list.move-down', key: 'ArrowDown', target: (index, count) => index + 1, insertAfter: true },
+    { action: 'sortable-list.move-first', key: 'Home', target: (index, count) => 0, insertAfter: false },
+    { action: 'sortable-list.move-last', key: 'End', target: (index, count) => count - 1, insertAfter: true },
+];
 
 /** How long a touch rests on an item before it lifts, leaving shorter swipes to scroll. */
 const TouchHold = 400;
@@ -44,7 +55,7 @@ class ReorderInteraction {
     #beforeClass;
     #afterClass;
     #gesture;
-    #controller = new AbortController();
+    #registration;
     #sourceIndex = -1;
 
     /** The item currently marked as the drop target, or null. */
@@ -82,12 +93,20 @@ class ReorderInteraction {
             onCancel: ({ subject }) => this.#endDrag(subject),
         });
 
-        list.addEventListener('keydown', event => this.#handleKeyDown(event), { signal: this.#controller.signal });
+        // A key on a handle that has somewhere to move is the list's; one at the edge it was asked to move
+        // toward matches nothing, so it keeps its default and the page still scrolls rather than swallowing the press.
+        this.#registration = register(list, {
+            routes: Moves.map(move => ({
+                action: move.action,
+                bindings: [{ type: 'keydown', key: move.key, when: event => this.#planMove(event, move) !== null }],
+                handle: event => this.#move(event, move),
+            })),
+        });
     }
 
     dispose() {
         this.#gesture.dispose();
-        this.#controller.abort();
+        this.#registration?.dispose();
     }
 
     #items() {
@@ -179,44 +198,33 @@ class ReorderInteraction {
         this.#list.classList.remove(this.#activeClass);
     }
 
-    #handleKeyDown(event) {
-        if (!Controls.NavigationKeys.has(event.key)) {
-            return;
-        }
-
+    /** The list's own item whose enabled handle the event was raised on, or null. */
+    #handleItemOf(event) {
         const handle = event.target.closest(this.#handleSelector);
-        const item = handle ? this.#ownItemOf(handle) : null;
+
+        return handle && !handle.disabled ? this.#ownItemOf(handle) : null;
+    }
+
+    /** Where the move would take the item the event's handle belongs to, or null when it has nowhere to go. */
+    #planMove(event, { target }) {
+        const item = this.#handleItemOf(event);
 
         if (!item) {
-            return;
+            return null;
         }
 
         const all = this.#items();
         const currentIndex = all.indexOf(item);
-        let targetIndex;
-        let insertAfter;
+        const targetIndex = target(currentIndex, all.length);
 
-        if (event.key === 'Home') {
-            targetIndex = 0;
-            insertAfter = false;
-        } else if (event.key === 'End') {
-            targetIndex = all.length - 1;
-            insertAfter = true;
-        } else if (event.key === 'ArrowUp') {
-            targetIndex = currentIndex - 1;
-            insertAfter = false;
-        } else {
-            targetIndex = currentIndex + 1;
-            insertAfter = true;
+        return targetIndex === currentIndex || targetIndex < 0 || targetIndex >= all.length ? null : { currentIndex, targetIndex };
+    }
+
+    #move(event, move) {
+        const plan = this.#planMove(event, move);
+
+        if (plan) {
+            tell(this.#owner, 'HandleReorderAsync', plan.currentIndex, plan.targetIndex, move.insertAfter);
         }
-
-        // An item already at the edge it was asked to move toward stays put, and the key
-        // keeps its default so the page still scrolls rather than swallowing the press.
-        if (targetIndex === currentIndex || targetIndex < 0 || targetIndex >= all.length) {
-            return;
-        }
-
-        event.preventDefault();
-        tell(this.#owner, 'HandleReorderAsync', currentIndex, targetIndex, insertAfter);
     }
 }

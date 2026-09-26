@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Collections;
 
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
+using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -27,6 +28,8 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
 
     /// <summary>Where on a row a drag may start.</summary>
     [Parameter] public SortableDragFrom DragFrom { get; set; }
+
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private ReorderInteraction _reorderInteraction = default!;
     private DotNetObjectReference<FormaSortableList<TItem>>? _selfReference;
@@ -64,6 +67,9 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
         _isAttached = true;
         _attachedDragFrom = DragFrom;
         _selfReference ??= DotNetObjectReference.Create(this);
+
+        // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
+        await InputRouter.ConfigureAsync();
         _isAttached = await _reorderInteraction.AttachAsync(RootElement, _selfReference, DragFrom == SortableDragFrom.Item);
     }
 

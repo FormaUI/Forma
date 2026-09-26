@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#browser/behaviors/ReorderInteraction.js';
+import { configure, resolve } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 import { pointerEvent, stackRows, stubPointerCapture } from '#support/platform.js';
 
@@ -37,7 +38,20 @@ describe('ReorderInteraction', () => {
         stackRows(items());
     });
 
-    afterEach(() => vi.useRealTimers());
+    // The router keeps every registration until it is disposed, so each test's list is released after it.
+    const handles = [];
+    const attachList = options => {
+        const handle = attach(list, options);
+        handles.push(handle);
+
+        return handle;
+    };
+
+    afterEach(() => {
+        handles.splice(0).forEach(handle => handle.dispose());
+        configure({ bindings: {} });
+        vi.useRealTimers();
+    });
 
     const items = () => [...list.querySelectorAll('.forma-sortable-list-item')];
     const handleOf = index => items()[index].querySelector('.forma-sortable-list-handle');
@@ -63,7 +77,7 @@ describe('ReorderInteraction', () => {
 
     describe('from the keyboard', () => {
         it('moves an item down one place', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             key(handleOf(0), 'ArrowDown');
 
@@ -71,7 +85,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('moves an item up one place', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             key(handleOf(2), 'ArrowUp');
 
@@ -79,7 +93,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('sends an item to the front of the list', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             key(handleOf(2), 'Home');
 
@@ -87,7 +101,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('sends an item to the end of the list', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             key(handleOf(0), 'End');
 
@@ -95,14 +109,14 @@ describe('ReorderInteraction', () => {
         });
 
         it('claims the key it moved with', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             expect(key(handleOf(0), 'ArrowDown').defaultPrevented).toBe(true);
         });
 
         // An item already at the edge stays put, and the key still scrolls the page.
         it('leaves the first item where it is on ArrowUp', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             const event = key(handleOf(0), 'ArrowUp');
 
@@ -111,7 +125,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('leaves the last item where it is on ArrowDown', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             const event = key(handleOf(3), 'ArrowDown');
 
@@ -120,7 +134,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('ignores a key pressed outside a handle', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             key(labelOf(0), 'ArrowDown');
 
@@ -128,17 +142,70 @@ describe('ReorderInteraction', () => {
         });
 
         it('ignores a key it does not move with', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             key(handleOf(0), 'Enter');
 
             reordered().not.toHaveBeenCalled();
         });
+
+        it('declares its keys as routes on the input router', () => {
+            attachList({ owner });
+
+            const event = key(handleOf(0), 'ArrowDown');
+
+            expect(resolve(event)).toMatchObject({ owner: list, action: 'sortable-list.move-down', precedence: 'structural' });
+        });
+
+        it('leaves a key that moves nothing to the page', () => {
+            attachList({ owner });
+            const reached = vi.fn();
+            document.body.addEventListener('keydown', reached, { once: true });
+
+            const event = key(handleOf(0), 'Home');
+
+            reordered().not.toHaveBeenCalled();
+            expect(resolve(event).action).toBeNull();
+            expect(reached).toHaveBeenCalledOnce();
+        });
+
+        it('takes the host\'s remap of a move', () => {
+            configure({ bindings: { 'sortable-list.move-down': [{ type: 'keydown', key: 'j' }] } });
+            attachList({ owner });
+
+            key(handleOf(0), 'j');
+            key(handleOf(0), 'ArrowDown');
+
+            reordered().toHaveBeenCalledExactlyOnceWith('HandleReorderAsync', 0, 1, true);
+        });
+
+        it('answers for its own items alone when a list is nested', () => {
+            labelOf(0).insertAdjacentHTML('afterend', `<ul id="inner">${row('Inner one')}${row('Inner two')}</ul>`);
+            const inner = document.querySelector('#inner');
+            const innerOwner = fakeOwner();
+            attachList({ owner });
+            handles.push(attach(inner, { owner: innerOwner }));
+
+            key(inner.querySelector('.forma-sortable-list-handle'), 'ArrowDown');
+
+            expect(innerOwner.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('HandleReorderAsync', 0, 1, true);
+            reordered().not.toHaveBeenCalled();
+        });
+
+        it('leaves a key on a disabled handle alone', () => {
+            attachList({ owner });
+            handleOf(0).disabled = true;
+
+            const event = key(handleOf(0), 'ArrowDown');
+
+            reordered().not.toHaveBeenCalled();
+            expect(event.defaultPrevented).toBe(false);
+        });
     });
 
     describe('by dragging a handle', () => {
         it('marks the item being dragged and the list around it', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(2).middle);
@@ -148,7 +215,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('shows the drop landing after the item the pointer has passed the middle of', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(2).middle + 10);
@@ -157,7 +224,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('shows the drop landing before the item the pointer is above the middle of', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(2).middle - 10);
@@ -166,7 +233,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('clears the previous landing as the pointer crosses on', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(1).middle - 10);
@@ -177,7 +244,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('moves the landing to the other side of an item as the pointer crosses its middle', () => {
-            attach(list, { owner });
+            attachList({ owner });
             press(handleOf(0), rowOf(0).middle);
 
             move(rowOf(1).top + 5);
@@ -190,7 +257,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('shows no landing over the item being dragged', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(0).middle - 6);
@@ -200,7 +267,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('reports where the item landed', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(2).middle + 10);
@@ -212,7 +279,7 @@ describe('ReorderInteraction', () => {
         // Releasing in the empty space under the list sends the item to the end rather
         // than doing nothing.
         it('sends an item released below the list to the end', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(600);
@@ -222,7 +289,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('reports nothing when an item is released on itself', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(0).middle - 6);
@@ -232,7 +299,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('clears every mark once the item lands', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(2).middle + 10);
@@ -243,7 +310,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('abandons the move on Escape', () => {
-            attach(list, { owner });
+            attachList({ owner });
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(2).middle + 10);
 
@@ -255,7 +322,7 @@ describe('ReorderInteraction', () => {
 
         it('refuses to drag from a disabled handle', () => {
             handleOf(0).disabled = true;
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle);
             move(rowOf(2).middle);
@@ -264,7 +331,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('stops dragging and keying once disposed', () => {
-            const handle = attach(list, { owner });
+            const handle = attachList({ owner });
 
             handle.dispose();
             press(handleOf(0), rowOf(0).middle);
@@ -279,7 +346,7 @@ describe('ReorderInteraction', () => {
 
     describe('by dragging the item itself', () => {
         it('ignores a press on the item body by default', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(labelOf(0), rowOf(0).middle);
             move(rowOf(2).middle + 10);
@@ -288,7 +355,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('drags from the item body when the list allows it', () => {
-            attach(list, { owner, dragFromItem: true });
+            attachList({ owner, dragFromItem: true });
 
             press(labelOf(0), rowOf(0).middle);
             move(rowOf(2).middle + 10);
@@ -299,7 +366,7 @@ describe('ReorderInteraction', () => {
 
         // A link inside the item owns its own press.
         it('leaves a press on a link inside the item to that link', () => {
-            attach(list, { owner, dragFromItem: true });
+            attachList({ owner, dragFromItem: true });
 
             press(items()[3].querySelector('a'), rowOf(3).middle);
             move(rowOf(0).middle);
@@ -309,7 +376,7 @@ describe('ReorderInteraction', () => {
 
         it('refuses to drag an item whose handle is disabled', () => {
             handleOf(0).disabled = true;
-            attach(list, { owner, dragFromItem: true });
+            attachList({ owner, dragFromItem: true });
 
             press(labelOf(0), rowOf(0).middle);
             move(rowOf(2).middle);
@@ -323,7 +390,7 @@ describe('ReorderInteraction', () => {
         beforeEach(() => vi.useFakeTimers());
 
         it('leaves an ordinary swipe to scroll the list', () => {
-            attach(list, { owner, dragFromItem: true });
+            attachList({ owner, dragFromItem: true });
 
             press(labelOf(0), rowOf(0).middle, 'touch');
             move(rowOf(2).middle, 'touch');
@@ -335,7 +402,7 @@ describe('ReorderInteraction', () => {
         });
 
         it('drags once the finger has rested on the item', () => {
-            attach(list, { owner, dragFromItem: true });
+            attachList({ owner, dragFromItem: true });
 
             press(labelOf(0), rowOf(0).middle, 'touch');
             vi.advanceTimersByTime(400);
@@ -347,7 +414,7 @@ describe('ReorderInteraction', () => {
 
         // A handle carries touch-action: none, so it never competes with a scroll.
         it('drags from a handle without waiting', () => {
-            attach(list, { owner });
+            attachList({ owner });
 
             press(handleOf(0), rowOf(0).middle, 'touch');
             move(rowOf(2).middle + 10, 'touch');

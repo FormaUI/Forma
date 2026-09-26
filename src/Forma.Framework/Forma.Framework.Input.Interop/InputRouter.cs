@@ -44,6 +44,21 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
         return handle is null ? null : new InputScope(handle, _environment);
     }
 
+    /// <summary>Carries the host's policy and routes to the script, once per circuit, yielding whether the script has them; a behavior that registers with the router from script calls this before attaching, since only a registration made from here pushes them otherwise.</summary>
+    public async Task<bool> ConfigureAsync()
+    {
+        var configuration = _configuration ??= PushAsync();
+        var configured = await configuration;
+
+        // A push that failed is retried by the next call.
+        if (!configured && ReferenceEquals(_configuration, configuration))
+        {
+            _configuration = null;
+        }
+
+        return configured;
+    }
+
     /// <summary>Performs a host route's action through the host's handler.</summary>
     [JSInvokable]
     public Task HandleInputActionAsync(string action, InputInfo input)
@@ -70,20 +85,6 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
     /// <summary>Releases the managed state alone; a scope disposing synchronously has no JS runtime left to talk to.</summary>
     public void Dispose()
         => _selfReference?.Dispose();
-
-    // A push that failed is retried by the next registration.
-    private async Task<bool> ConfigureAsync()
-    {
-        var configuration = _configuration ??= PushAsync();
-        var configured = await configuration;
-
-        if (!configured && ReferenceEquals(_configuration, configuration))
-        {
-            _configuration = null;
-        }
-
-        return configured;
-    }
 
     private async Task<bool> PushAsync()
     {

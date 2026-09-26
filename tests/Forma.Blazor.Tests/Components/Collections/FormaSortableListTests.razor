@@ -25,6 +25,26 @@
         }
 
         [Fact]
+        public void Should_push_the_host_s_input_policy_before_attaching_the_reordering()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = CreateItems(2);
+
+            // Act
+            ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+
+            // Assert
+            var identifiers = ctx.JSInterop.Invocations.Select(invocation => invocation.Identifier).ToList();
+            Assert.Multiple(
+                () => Assert.Contains("configure", identifiers),
+                () => Assert.True(identifiers.IndexOf("configure") < identifiers.IndexOf("attach")));
+        }
+
+        [Fact]
         public void Should_label_each_handle_with_its_position()
         {
             // Arrange
