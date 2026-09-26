@@ -1,9 +1,7 @@
 @namespace Forma.Blazor.Components.Menus
 @inherits FormaElementBase
 <CascadingValue Value="this" IsFixed="true">
-    @* Keydown is caught on the wrapper because it bubbles from the button, which a
-       component tag cannot carry a handler for directly. *@
-    <span class="@(IsOpen ? "forma-dropdown-menu-anchor forma-dropdown-menu-anchor-open" : "forma-dropdown-menu-anchor")" @ref="_anchorElement" @onkeydown="HandleTriggerKeyDownAsync">
+    <span class="@(IsOpen ? "forma-dropdown-menu-anchor forma-dropdown-menu-anchor-open" : "forma-dropdown-menu-anchor")" @ref="_anchorElement">
         <FormaButton @ref="TriggerButton"
                      Id="@Id"
                      Class="@RootClass"
@@ -26,7 +24,8 @@
                 Alignment="Alignment"
                 OnOpenChanged="_ => { }"
                 OnOpened="HandleOpenedAsync"
-                OnKeyDown="HandlePopoverKeyDownAsync">
+                InputRoutes="MenuRoutes"
+                OnInputAction="HandleMenuActionAsync">
         <div class="forma-dropdown-menu" id="@PopoverId" role="menu">
             @if (HeaderContent is not null)
             {

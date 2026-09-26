@@ -31,9 +31,12 @@ stylesheet reads it. A profile carries no `focus` field, in the script or in `In
 `Focus.js` is not on the router and answers Tab from its own listener, yielding to a nested
 surface through `defaultPrevented`. Active drags and the selection bar are not on the router
 either: `DragGesture` cancels a drag from its own Escape listener, and `SelectionFollower`
-returns focus to the editor from its own. Of the owners in step 3, only the two shortcut
-sets have moved; `NavigationGuard` is still attached by `FormaSelect` and
-`FormaDropDownMenu`.
+returns focus to the editor from its own. Of the owners in step 3, the two shortcut sets,
+`FormaSelect` and `FormaDropDownMenu` have moved: each routes its trigger's arrows on the
+trigger, and its list's arrows, Home and End through `FormaPopover`, which carries its
+content's routes on the registration it already makes while open, so the router prevents the
+page from scrolling under the list and `NavigationGuard` is gone. `FormaSelect` still closes
+on Tab through the popover's key callback, since Tab is not routed.
 
 ## Input owners before the router
 
@@ -129,11 +132,11 @@ existing components, landing as several coherent commits.
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: `FormaComposer`'s
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Wheel`, `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
-   `Focus.js`, and the components that own navigation keys — `FormaSelect`,
-   `FormaDropDownMenu`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`,
-   `FormaSortableList`, `FormaTabs` (all open). `NavigationGuard` and the per-component
-   text-entry exclusions are retired in favour of the router's `preventDefault` and native
-   table (open).
+   `Focus.js`, and the components that own navigation keys — `FormaSelect` and
+   `FormaDropDownMenu` (done), `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`,
+   `FormaSortableList`, `FormaTabs` (open). `NavigationGuard` is retired in favour of the
+   router's `preventDefault` (done); the per-component text-entry exclusions are retired in
+   favour of the native table (open).
 4. **Verification** across combinations, in a visible browser: select in a grid cell; popup
    on a toolbar; emoji picker over `FormaComposer`; drag started in a popup; nested popups;
    popup in a dialog and dialog over a popup; nested explorer drops; a host `<input>` in a

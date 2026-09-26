@@ -1,5 +1,7 @@
 namespace Forma.Framework.Input;
 
+using System.Text.Json.Serialization;
+
 /// <summary>What a registration contributes to an input scope: routes, boundaries, and how the scope treats ambient input while foremost.</summary>
 public sealed record InputProfile
 {
@@ -22,5 +24,6 @@ public sealed record InputProfile
     public IReadOnlyList<string> Boundary { get; init; } = [];
 
     /// <summary>The inputs the registration answers; the most specific matching route wins.</summary>
-    public IReadOnlyList<InputRoute> Routes { get; init; } = [];
+    [JsonPropertyName("routes")]
+    public IReadOnlyList<InputRoute> InputRoutes { get; init; } = [];
 }

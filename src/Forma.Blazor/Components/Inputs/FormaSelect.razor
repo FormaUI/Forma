@@ -18,8 +18,7 @@
                     aria-expanded="@(IsOpen ? "true" : "false")"
                     aria-controls="@(IsOpen ? PopoverId : null)"
                     aria-required="@(Required ? "true" : null)"
-                    @onclick="ToggleAsync"
-                    @onkeydown="HandleTriggerKeyDownAsync">
+                    @onclick="ToggleAsync">
                 <span class="forma-select-trigger-text@(FindSelectedOption() is null ? " placeholder" : "")">@TriggerText</span>
                 <span class="forma-select-arrow" aria-hidden="true">&#9662;</span>
             </button>
@@ -28,7 +27,9 @@
                     Anchor="_anchorElement"
                     OnOpenChanged="_ => { }"
                     OnOpened="HandleOpenedAsync"
-                    OnKeyDown="HandlePopoverKeyDownAsync">
+                    OnKeyDown="HandlePopoverKeyDownAsync"
+                    InputRoutes="ListRoutes"
+                    OnInputAction="HandleListActionAsync">
             <div class="forma-select-popover"
                  id="@PopoverId"
                  role="listbox"

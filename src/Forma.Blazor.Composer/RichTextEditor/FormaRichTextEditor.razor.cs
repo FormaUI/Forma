@@ -95,7 +95,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             // An editable claims its shortcuts natively, so the composer's routes are registered on it to be answered first.
             if (Composer is { } context)
             {
-                _inputScope = await InputRouter.RegisterAsync(_editorElement, new InputProfile { Routes = context.KeyBindings.ToInputRoutes() }, _selfReference);
+                _inputScope = await InputRouter.RegisterAsync(_editorElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() }, _selfReference);
             }
 
             var initialContent = Composer?.Document.Content;

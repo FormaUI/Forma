@@ -2,15 +2,43 @@ namespace Forma.Blazor.Components.Menus;
 
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Feedback;
+using Forma.Blazor.Components.Interaction;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
+using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 /// <summary>A trigger button that opens an anchored menu of commands.</summary>
 public sealed partial class FormaDropDownMenu : FormaElementBase
 {
+    private const string OpenFirstAction = "menu.open-first";
+    private const string OpenLastAction = "menu.open-last";
+    private const string NextAction = "menu.next";
+    private const string PreviousAction = "menu.previous";
+    private const string FirstAction = "menu.first";
+    private const string LastAction = "menu.last";
+
+    private static readonly InputProfile TriggerProfile = new()
+    {
+        InputRoutes =
+        [
+            new InputRoute(OpenFirstAction, new KeyBinding("ArrowDown")),
+            new InputRoute(OpenLastAction, new KeyBinding("ArrowUp")),
+        ],
+    };
+
+    private static readonly IReadOnlyList<InputRoute> MenuRoutes =
+    [
+        new InputRoute(NextAction, new KeyBinding("ArrowDown")),
+        new InputRoute(PreviousAction, new KeyBinding("ArrowUp")),
+        new InputRoute(FirstAction, new KeyBinding("Home")),
+        new InputRoute(LastAction, new KeyBinding("End")),
+    ];
+
     /// <summary>Content rendered inside the trigger button.</summary>
     [Parameter, EditorRequired] public RenderFragment Trigger { get; set; } = default!;
 
@@ -26,6 +54,8 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     /// <summary>The inline edge of the trigger the menu lines up with.</summary>
     [Parameter] public PopoverAlignment Alignment { get; set; }
 
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
+
     private readonly List<FormaDropDownMenuItem> _items = [];
 
     private bool _openAtLastItem;
@@ -33,7 +63,8 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     private ElementReference _anchorElement;
     private FormaButton TriggerButton { get; set; } = default!;
     private FormaPopover Popover { get; set; } = default!;
-    private NavigationGuard _keyGuard = default!;
+    private DotNetObjectReference<FormaDropDownMenu> _selfReference = default!;
+    private InputScope? _triggerScope;
 
     /// <inheritdoc />
     public override ElementReference RootElement
@@ -56,7 +87,17 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _keyGuard = new NavigationGuard(Context.JS);
+        => _selfReference = DotNetObjectReference.Create(this);
+
+    // The trigger's keys are routes on the trigger, which is in the document whether or not the menu is; the menu's ride on the popover.
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _triggerScope = await InputRouter.RegisterUnlessDisposedAsync(TriggerButton.RootElement, TriggerProfile, _selfReference, () => IsDisposed);
+        }
+    }
 
     internal void RegisterItem(FormaDropDownMenuItem item)
         => _items.Add(item);
@@ -67,6 +108,27 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     /// <summary>Closes the menu and returns focus to the trigger, for an item that has just been activated.</summary>
     internal Task RequestActivateAsync()
         => Popover.CloseAsync();
+
+    /// <summary>Opens the menu, or moves through it, as the router matched the key.</summary>
+    [JSInvokable]
+    public Task HandleInputActionAsync(string action, InputInfo input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        return action switch
+        {
+            OpenFirstAction when !IsOpen => OpenAsync(atLastItem: false),
+            OpenLastAction when !IsOpen => OpenAsync(atLastItem: true),
+            NextAction => MoveFocusAsync(1),
+            PreviousAction => MoveFocusAsync(-1),
+            FirstAction => FocusIndexAsync(FindEnabledIndex(0, 1)),
+            LastAction => FocusIndexAsync(FindEnabledIndex(_items.Count - 1, -1)),
+            _ => Task.CompletedTask,
+        };
+    }
+
+    private Task HandleMenuActionAsync(InputAction action)
+        => HandleInputActionAsync(action.Action, action.Input);
 
     private Task ToggleAsync()
     {
@@ -83,48 +145,8 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         await Popover.OpenAsync(TriggerButton.RootElement);
     }
 
-    private async Task HandleTriggerKeyDownAsync(KeyboardEventArgs args)
-    {
-        if (IsOpen)
-        {
-            return;
-        }
-
-        switch (args.Key)
-        {
-            case "ArrowDown":
-                await OpenAsync(atLastItem: false);
-                break;
-            case "ArrowUp":
-                await OpenAsync(atLastItem: true);
-                break;
-        }
-    }
-
-    private async Task HandlePopoverKeyDownAsync(KeyboardEventArgs args)
-    {
-        switch (args.Key)
-        {
-            case "ArrowDown":
-                await MoveFocusAsync(1);
-                break;
-            case "ArrowUp":
-                await MoveFocusAsync(-1);
-                break;
-            case "Home":
-                await FocusIndexAsync(FindEnabledIndex(0, 1));
-                break;
-            case "End":
-                await FocusIndexAsync(FindEnabledIndex(_items.Count - 1, -1));
-                break;
-        }
-    }
-
-    private async Task HandleOpenedAsync()
-    {
-        await _keyGuard.AttachAsync(Popover.RootElement);
-        await FocusIndexAsync(_openAtLastItem ? FindEnabledIndex(_items.Count - 1, -1) : FindEnabledIndex(0, 1));
-    }
+    private Task HandleOpenedAsync()
+        => FocusIndexAsync(_openAtLastItem ? FindEnabledIndex(_items.Count - 1, -1) : FindEnabledIndex(0, 1));
 
     private Task MoveFocusAsync(int delta)
         => FocusIndexAsync(FindEnabledIndex(_focusedIndex + delta, delta));
@@ -163,7 +185,19 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _keyGuard.DisposeAsync();
+        try
+        {
+            if (_triggerScope is { } triggerScope)
+            {
+                _triggerScope = null;
+                await triggerScope.DisposeAsync();
+            }
+        }
+        finally
+        {
+            _selfReference.Dispose();
+        }
+
         await base.DisposeAsyncCore();
     }
 }

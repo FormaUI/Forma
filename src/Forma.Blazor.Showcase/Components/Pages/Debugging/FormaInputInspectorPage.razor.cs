@@ -13,7 +13,7 @@ public sealed partial class FormaInputInspectorPage
 {
     private static readonly InputProfile _gridProfile = new()
     {
-        Routes =
+        InputRoutes =
         [
             new InputRoute("grid.next", new KeyBinding("ArrowDown")),
             new InputRoute("grid.previous", new KeyBinding("ArrowUp")),
@@ -27,7 +27,7 @@ public sealed partial class FormaInputInspectorPage
 
     private static readonly InputProfile _listProfile = new()
     {
-        Routes =
+        InputRoutes =
         [
             new InputRoute("list.next", new KeyBinding("ArrowDown")),
             new InputRoute("list.previous", new KeyBinding("ArrowUp")),

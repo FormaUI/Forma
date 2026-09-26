@@ -855,7 +855,7 @@
 
             // Assert - the command becomes the toolbar's action, and Control stands for the platform's shortcut key
             var profile = Assert.Single(GetRegistrations(ctx));
-            var route = Assert.Single(profile.Routes);
+            var route = Assert.Single(profile.InputRoutes);
             var binding = Assert.IsType<KeyBinding>(Assert.Single(route.Bindings));
             Assert.Multiple(
                 () => Assert.Equal("toolbar.bold", route.Action),
@@ -880,7 +880,7 @@
 
             // Assert
             var profile = Assert.Single(GetRegistrations(ctx));
-            Assert.Single(profile.Routes);
+            Assert.Single(profile.InputRoutes);
         }
 
         [Fact]

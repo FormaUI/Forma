@@ -291,7 +291,7 @@ public sealed partial class FormaComposer(
         _isJsStarted = true;
 
         // The composer's shortcuts route through its scope wherever focus rests inside it; the active editor registers them on its editable element as well, where a native control would otherwise claim them.
-        _inputScope = await InputRouter.RegisterAsync(RootElement, new InputProfile { Routes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
+        _inputScope = await InputRouter.RegisterAsync(RootElement, new InputProfile { InputRoutes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
         await _focus.AttachAsync(RootElement, order: [".forma-composer-canvas"]);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);

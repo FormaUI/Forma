@@ -129,7 +129,7 @@ public sealed partial class FormaToolbar : FormaElementBase
             return;
         }
 
-        var profile = new InputProfile { Routes = ToRoutes(shortcuts) };
+        var profile = new InputProfile { InputRoutes = ToRoutes(shortcuts) };
 
         // The same element keeps its scope and takes the new shortcuts; another element starts afresh.
         if (_inputScope is { } inputScope && target.Id == _registeredTargetId)

@@ -59,7 +59,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         // A textarea claims its shortcuts natively, so the composer's routes are registered on it to be answered first.
         if (firstRender && Composer is { } context)
         {
-            _inputScope = await InputRouter.RegisterAsync(_textareaElement, new InputProfile { Routes = context.KeyBindings.ToInputRoutes() }, _selfReference);
+            _inputScope = await InputRouter.RegisterAsync(_textareaElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() }, _selfReference);
         }
     }
 

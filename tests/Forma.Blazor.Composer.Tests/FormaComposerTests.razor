@@ -366,8 +366,8 @@
                 .ToList();
             Assert.Multiple(
                 () => Assert.Equal(2, profiles.Count),
-                () => Assert.All(profiles, profile => Assert.Contains(profile.Routes, route => route.Action == ComposerCommands.Undo)),
-                () => Assert.All(profiles, profile => Assert.Contains(profile.Routes, route => route.Action == ComposerCommands.Redo && route.Bindings.Count == 2)));
+                () => Assert.All(profiles, profile => Assert.Contains(profile.InputRoutes, route => route.Action == ComposerCommands.Undo)),
+                () => Assert.All(profiles, profile => Assert.Contains(profile.InputRoutes, route => route.Action == ComposerCommands.Redo && route.Bindings.Count == 2)));
         }
 
         [Fact]

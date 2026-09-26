@@ -29,7 +29,6 @@ have no wrapper because only other scripts attach them.
 | `Focus.js` | `Focus` | Decides where Tab and the arrow keys go inside a surface: wrapping among its controls, visiting named regions first, or roving as one Tab stop. |
 | `HeightReservation.js` | `HeightReservation` | Holds a container at the tallest height its content has needed. |
 | `ImplicitSubmitGuard.js` | `ImplicitSubmitGuard` | Stops Enter from submitting the form around a control. |
-| `NavigationGuard.js` | `NavigationGuard` | Keeps the arrow, Home and End keys from scrolling the page under a list that owns them. |
 | `PanGesture.js` | `PanGesture` | Drags a scroll container's contents with the mouse while a class marks it eligible. |
 | `ReorderInteraction.js` | `ReorderInteraction` | Drags or keys an item into a new position in its list, telling the owner through `HandleReorderAsync`. |
 | `Scroll.js` | `Scroll` | Tells the owner how far a surface can still scroll through `HandleOverflowAsync` and when a sentinel comes into view through `HandleReachedAsync`; exports `toCenter` and `step` beside the attachment. |

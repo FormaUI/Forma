@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Feedback;
 
+using Forma.Blazor.Components.Interaction;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-/// <summary>An anchored popover shown in the browser's top layer, registered with the input router while open so Escape and a press away dismiss it, and returning focus to its trigger after keyboard dismissal.</summary>
+/// <summary>An anchored popover shown in the browser's top layer, registered with the input router while open so Escape and a press away dismiss it and its content's routes are answered, and returning focus to its trigger after keyboard dismissal.</summary>
 public sealed partial class FormaPopover : FormaElementBase
 {
     /// <summary>The element the popover hangs from.</summary>
@@ -36,6 +37,12 @@ public sealed partial class FormaPopover : FormaElementBase
     /// <summary>Raised once the popover is open and positioned, for content that takes focus or attaches a behavior of its own.</summary>
     [Parameter] public EventCallback OnOpened { get; set; }
 
+    /// <summary>The routes the popover's content answers while it is open.</summary>
+    [Parameter] public IReadOnlyList<InputRoute> InputRoutes { get; set; } = [];
+
+    /// <summary>Raised with each action the router resolves to the popover.</summary>
+    [Parameter] public EventCallback<InputAction> OnInputAction { get; set; }
+
     /// <summary>Raised for every key pressed inside the popover other than Escape, which the router answers by dismissing it.</summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
@@ -57,6 +64,7 @@ public sealed partial class FormaPopover : FormaElementBase
         {
             Escape = DismissBehavior.Dismiss,
             PressAway = PressAway ? PressAwayBehavior.PassThrough : PressAwayBehavior.Ignore,
+            InputRoutes = InputRoutes,
         };
 
     /// <inheritdoc />
@@ -86,6 +94,11 @@ public sealed partial class FormaPopover : FormaElementBase
     /// <summary>Opens the popover from the trigger, or closes it when it is open.</summary>
     public Task ToggleAsync(ElementReference trigger)
         => IsOpen ? CloseAsync() : OpenAsync(trigger);
+
+    /// <summary>Performs an action the router resolved to the popover's content.</summary>
+    [JSInvokable]
+    public Task HandleInputActionAsync(string action, InputInfo input)
+        => OnInputAction.InvokeAsync(new InputAction(action, input));
 
     /// <summary>Closes the popover as the router dismissed it: a press away leaves focus where it is, and anything else returns it to the trigger.</summary>
     [JSInvokable]

@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Forma.Blazor.Components.Interaction
+@using Forma.Framework.Input.Keyboard
 @code {
     public sealed class Component
     {
@@ -88,6 +90,42 @@
                 () => Assert.Same(cut.FindComponent<FormaPopover>().Instance, Assert.IsType<DotNetObjectReference<FormaPopover>>(registration.Arguments[2]).Value),
                 () => Assert.Equal(DismissBehavior.Dismiss, Assert.IsType<InputProfile>(registration.Arguments[1]).Escape),
                 () => Assert.Equal(PressAwayBehavior.PassThrough, Assert.IsType<InputProfile>(registration.Arguments[1]).PressAway));
+        }
+
+        [Fact]
+        public async Task Should_register_its_content_s_routes()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            IReadOnlyList<InputRoute> routes = [new InputRoute("list.next", new KeyBinding("ArrowDown"))];
+            var cut = ctx.Render(@<FormaPopover Anchor="default" InputRoutes="routes"><p>Content</p></FormaPopover>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Same(routes, Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes);
+        }
+
+        [Fact]
+        public async Task Should_raise_OnInputAction_with_the_action_and_input_the_router_resolved()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            InputAction? received = null;
+            var cut = ctx.Render(@<FormaPopover Anchor="default" OnInputAction="action => received = action"><p>Content</p></FormaPopover>);
+            var input = new InputKeyInfo { Type = "keydown", Key = "ArrowDown" };
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleInputActionAsync("list.next", input));
+
+            // Assert
+            Assert.NotNull(received);
+            Assert.Multiple(
+                () => Assert.Equal("list.next", received.Action),
+                () => Assert.Same(input, received.Input));
         }
 
         [Fact]

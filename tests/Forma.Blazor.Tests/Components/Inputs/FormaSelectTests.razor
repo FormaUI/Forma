@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using Forma.Framework.Browser.Interop.Behaviors
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
 @code {
     public sealed class Component
     {
@@ -219,6 +221,136 @@
             // Assert
             Assert.Empty(cut.FindAll(".forma-select-popover"));
         }
+
+        [Fact]
+        public void Should_route_the_trigger_s_arrows_on_the_trigger()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var model = new FakeModel();
+
+            // Act
+            ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["select.open:ArrowDown,ArrowUp"], GetRoutes(registration));
+        }
+
+        [Fact]
+        public void Should_route_the_list_s_navigation_keys_through_the_popover_once_open()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+
+            // Assert
+            var registration = router.Invocations.Last(invocation => invocation.Identifier == "register");
+            Assert.Multiple(
+                () => Assert.Same(cut.FindComponent<FormaPopover>().Instance, Assert.IsType<DotNetObjectReference<FormaPopover>>(registration.Arguments[2]).Value),
+                () => Assert.Equal(["select.next:ArrowDown", "select.previous:ArrowUp", "select.first:Home", "select.last:End"], GetRoutes(registration)));
+        }
+
+        [Fact]
+        public async Task Should_move_through_the_options_as_the_router_routes_the_list_s_keys()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            var opened = GetFocused(ctx.JSInterop).Count;
+
+            // Act
+            foreach (var (action, key) in new[] { ("select.first", "Home"), ("select.next", "ArrowDown"), ("select.next", "ArrowDown"), ("select.next", "ArrowDown"), ("select.last", "End"), ("select.previous", "ArrowUp") })
+            {
+                await cut.InvokeAsync(() => popover.HandleInputActionAsync(action, new InputKeyInfo { Type = "keydown", Key = key }));
+            }
+
+            // Assert: the first, second and third, wrapping to the first; then the last, and back to the second.
+            var focused = GetFocused(ctx.JSInterop).Skip(opened).ToList();
+            Assert.Equal(6, focused.Count);
+            Assert.Multiple(
+                () => Assert.Equal(3, focused.Take(3).Distinct().Count()),
+                () => Assert.Equal(focused[0], focused[3]),
+                () => Assert.Equal(focused[2], focused[4]),
+                () => Assert.Equal(focused[1], focused[5]));
+        }
+
+        [Fact]
+        public async Task Should_open_the_popover_when_the_router_routes_an_arrow_to_the_trigger()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaSelect<int?>>().Instance.HandleInputActionAsync("select.open", new InputKeyInfo { Type = "keydown", Key = "ArrowDown" }));
+
+            // Assert
+            Assert.Equal("true", cut.Find(".forma-select-trigger").GetAttribute("aria-expanded"));
+        }
+
+        [Fact]
+        public async Task Should_stay_closed_when_the_router_routes_an_arrow_to_a_disabled_trigger()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Disabled="true" Label="Status" />
+            </FakeFormHost>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaSelect<int?>>().Instance.HandleInputActionAsync("select.open", new InputKeyInfo { Type = "keydown", Key = "ArrowDown" }));
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-select-popover"));
+        }
+
+        [Fact]
+        public void Should_close_the_popover_on_tab()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+
+            // Act
+            cut.Find(".forma-select-popover").KeyDown("Tab");
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-select-popover"));
+        }
+
+
+        private static List<string> GetRoutes(JSRuntimeInvocation registration)
+            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
+                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
+
+        private static List<string> GetFocused(BunitJSInterop js)
+            => [.. js.Invocations
+                .Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus")
+                .Select(invocation => Assert.IsType<ElementReference>(invocation.Arguments[0]).Id)];
 
         [Fact]
         public void Should_open_under_the_fields_start_edge()

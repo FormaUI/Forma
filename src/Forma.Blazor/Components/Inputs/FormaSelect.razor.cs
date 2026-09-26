@@ -3,16 +3,39 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Blazor.Components.Feedback;
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Blazor.Components.Interaction;
 using Forma.Framework.Css;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
+using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 /// <summary>A themed single-select: a trigger button opening an anchored, keyboard-navigable option list.</summary>
 /// <remarks>Bind <typeparamref name="TValue"/> to a nullable type (<c>int?</c>, <c>string</c>, <c>MyEnum?</c>) to allow no selection.</remarks>
 public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 {
+    private const string OpenAction = "select.open";
+    private const string NextAction = "select.next";
+    private const string PreviousAction = "select.previous";
+    private const string FirstAction = "select.first";
+    private const string LastAction = "select.last";
+
+    private static readonly InputProfile TriggerProfile = new()
+    {
+        InputRoutes = [new InputRoute(OpenAction, new KeyBinding("ArrowDown"), new KeyBinding("ArrowUp"))],
+    };
+
+    private static readonly IReadOnlyList<InputRoute> ListRoutes =
+    [
+        new InputRoute(NextAction, new KeyBinding("ArrowDown")),
+        new InputRoute(PreviousAction, new KeyBinding("ArrowUp")),
+        new InputRoute(FirstAction, new KeyBinding("Home")),
+        new InputRoute(LastAction, new KeyBinding("End")),
+    ];
+
     /// <summary>The options offered in the list.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;
 
@@ -28,11 +51,14 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
+
     private int _focusedIndex = -1;
     private ElementReference _anchorElement;
     private ElementReference[] _optionElements = [];
     private FormaPopover Popover { get; set; } = default!;
-    private NavigationGuard _keyGuard = default!;
+    private DotNetObjectReference<FormaSelect<TValue>> _selfReference = default!;
+    private InputScope? _triggerScope;
 
     private string ElementId
         => Id ?? $"sel-{Context.RuntimeId:N}";
@@ -48,7 +74,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _keyGuard = new NavigationGuard(Context.JS);
+        => _selfReference = DotNetObjectReference.Create(this);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -60,6 +86,38 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         {
             _optionElements = new ElementReference[Options.Count];
         }
+    }
+
+    // The trigger's keys are routes on the trigger, which is in the document whether or not the list is; the list's ride on the popover.
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _triggerScope = await InputRouter.RegisterUnlessDisposedAsync(RootElement, TriggerProfile, _selfReference, () => IsDisposed);
+        }
+    }
+
+    /// <summary>Opens the list, or moves through it, as the router matched the key.</summary>
+    [JSInvokable]
+    public Task HandleInputActionAsync(string action, InputInfo input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        if (Disabled)
+        {
+            return Task.CompletedTask;
+        }
+
+        return action switch
+        {
+            OpenAction when !IsOpen => OpenAsync(),
+            NextAction => MoveFocusAsync(1),
+            PreviousAction => MoveFocusAsync(-1),
+            FirstAction => FocusIndexAsync(0),
+            LastAction => FocusIndexAsync(Options.Count - 1),
+            _ => Task.CompletedTask,
+        };
     }
 
     private SelectOption<TValue>? FindSelectedOption()
@@ -109,49 +167,14 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         await Popover.OpenAsync(RootElement);
     }
 
-    private async Task HandleTriggerKeyDownAsync(KeyboardEventArgs args)
-    {
-        if (IsOpen || Disabled)
-        {
-            return;
-        }
+    private Task HandleListActionAsync(InputAction action)
+        => HandleInputActionAsync(action.Action, action.Input);
 
-        switch (args.Key)
-        {
-            case "ArrowDown":
-            case "ArrowUp":
-                await OpenAsync();
-                break;
-        }
-    }
+    private Task HandlePopoverKeyDownAsync(KeyboardEventArgs args)
+        => args.Key == "Tab" ? Popover.CloseAsync() : Task.CompletedTask;
 
-    private async Task HandlePopoverKeyDownAsync(KeyboardEventArgs args)
-    {
-        switch (args.Key)
-        {
-            case "ArrowDown":
-                await MoveFocusAsync(1);
-                break;
-            case "ArrowUp":
-                await MoveFocusAsync(-1);
-                break;
-            case "Home":
-                await FocusIndexAsync(0);
-                break;
-            case "End":
-                await FocusIndexAsync(Options.Count - 1);
-                break;
-            case "Tab":
-                await Popover.CloseAsync();
-                break;
-        }
-    }
-
-    private async Task HandleOpenedAsync()
-    {
-        await _keyGuard.AttachAsync(Popover.RootElement);
-        await FocusIndexAsync(_focusedIndex);
-    }
+    private Task HandleOpenedAsync()
+        => FocusIndexAsync(_focusedIndex);
 
     private Task MoveFocusAsync(int delta)
     {
@@ -183,7 +206,19 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _keyGuard.DisposeAsync();
+        try
+        {
+            if (_triggerScope is { } triggerScope)
+            {
+                _triggerScope = null;
+                await triggerScope.DisposeAsync();
+            }
+        }
+        finally
+        {
+            _selfReference.Dispose();
+        }
+
         await base.DisposeAsyncCore();
     }
 

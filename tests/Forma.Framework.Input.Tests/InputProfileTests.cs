@@ -23,7 +23,7 @@ public sealed class InputProfileTests
             Escape = DismissBehavior.Cancel,
             PressAway = PressAwayBehavior.PassThrough,
             Boundary = ["keydown"],
-            Routes =
+            InputRoutes =
             [
                 new InputRoute("composer.bold", KeyBinding.Shortcut("b")) { Priority = 1 },
                 new InputRoute("track.scroll", WheelBinding.Any) { PreventDefault = false, Propagation = InputPropagation.Continue },
