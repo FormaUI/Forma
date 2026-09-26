@@ -36,7 +36,11 @@ returns focus to the editor from its own. Of the owners in step 3, the two short
 trigger, and its list's arrows, Home and End through `FormaPopover`, which carries its
 content's routes on the registration it already makes while open, so the router prevents the
 page from scrolling under the list and `NavigationGuard` is gone. `FormaSelect` still closes
-on Tab through the popover's key callback, since Tab is not routed.
+on Tab through the popover's key callback, since Tab is not routed. `FormaTabs`, which had
+no keys of its own before, routes the arrows, Home and End on its tab list alone, so an arrow
+inside a panel stays the panel's; the arrow along the reading direction is next. Activation is
+manual, since a panel can be as costly as an editor switch: the arrows move focus and the tab
+order with it, and Enter or Space selects.
 
 ## Input owners before the router
 
@@ -132,9 +136,9 @@ existing components, landing as several coherent commits.
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: `FormaComposer`'s
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Wheel`, `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
-   `Focus.js`, and the components that own navigation keys — `FormaSelect` and
-   `FormaDropDownMenu` (done), `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`,
-   `FormaSortableList`, `FormaTabs` (open). `NavigationGuard` is retired in favour of the
+   `Focus.js`, and the components that own navigation keys — `FormaSelect`,
+   `FormaDropDownMenu` and `FormaTabs` (done), `FormaEmojiPicker`, `FormaFileViewer`,
+   `FormaSplitter`, `FormaSortableList` (open). `NavigationGuard` is retired in favour of the
    router's `preventDefault` (done); the per-component text-entry exclusions are retired in
    favour of the native table (open).
 4. **Verification** across combinations, in a visible browser: select in a grid cell; popup

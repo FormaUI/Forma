@@ -549,7 +549,7 @@ A toolbar of readouts and commands along the bottom of a surface, announcing a r
 
 ### `FormaTabs`
 
-A tab list over tab panels, with the active tab bound or controlled by the host.
+A tab list over tab panels, walked by the arrow keys, Home and End, with the active tab bound or controlled by the host.
 
 | | |
 |---|---|

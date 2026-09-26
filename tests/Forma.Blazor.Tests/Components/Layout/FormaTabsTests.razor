@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
 @code {
     public sealed class Component
     {
@@ -394,5 +396,202 @@
             Assert.Throws<InvalidOperationException>(
                 () => cut.FindComponent<FormaTabs>().Render(parameters => parameters.Add(p => p.ActiveTabId, "first")));
         }
+    }
+
+    public sealed class Keyboard
+    {
+        [Fact]
+        public void Should_route_the_arrows_home_and_end_on_the_tab_list()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+
+            // Act
+            ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["tabs.next:ArrowRight", "tabs.previous:ArrowLeft", "tabs.first:Home", "tabs.last:End"], GetRoutes(registration));
+        }
+
+        [Fact]
+        public void Should_swap_the_arrows_under_right_to_left()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaTabsTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+
+            // Act
+            ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(["tabs.next:ArrowLeft", "tabs.previous:ArrowRight", "tabs.first:Home", "tabs.last:End"], GetRoutes(registration));
+        }
+
+        [Fact]
+        public void Should_give_only_the_active_tab_a_place_in_the_tab_order()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var buttons = cut.FindAll(".forma-tab-button");
+            Assert.Multiple(
+                () => Assert.Equal("0", buttons[0].GetAttribute("tabindex")),
+                () => Assert.Equal("-1", buttons[1].GetAttribute("tabindex")));
+        }
+
+        [Fact]
+        public void Should_keep_the_first_tab_in_the_tab_order_when_the_caller_names_no_tab()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs ActiveTabId="missing">
+                    <FormaTab Title="First" TabId="first">Content 1</FormaTab>
+                    <FormaTab Title="Second" TabId="second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var buttons = cut.FindAll(".forma-tab-button");
+            Assert.Multiple(
+                () => Assert.Equal("0", buttons[0].GetAttribute("tabindex")),
+                () => Assert.Equal("-1", buttons[1].GetAttribute("tabindex")));
+        }
+
+        [Fact]
+        public async Task Should_focus_the_next_tab_without_selecting_it_when_the_router_routes_next()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                    <FormaTab Title="Third">Content 3</FormaTab>
+                </FormaTabs>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaTabs>().Instance.HandleInputActionAsync("tabs.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+
+            // Assert
+            var buttons = cut.FindAll(".forma-tab-button");
+            Assert.Multiple(
+                () => Assert.Equal("true", buttons[0].GetAttribute("aria-selected")),
+                () => Assert.Equal("false", buttons[1].GetAttribute("aria-selected")),
+                () => Assert.Equal("-1", buttons[0].GetAttribute("tabindex")),
+                () => Assert.Equal("0", buttons[1].GetAttribute("tabindex")),
+                () => Assert.Single(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus"));
+        }
+
+        [Fact]
+        public async Task Should_select_the_focused_tab_when_it_is_activated()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaTabs>().Instance.HandleInputActionAsync("tabs.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+
+            // Act
+            cut.FindAll(".forma-tab-button")[1].Click();
+
+            // Assert
+            Assert.Equal("true", cut.FindAll(".forma-tab-button")[1].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public async Task Should_wrap_from_the_first_tab_to_the_last_on_previous()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                    <FormaTab Title="Third">Content 3</FormaTab>
+                </FormaTabs>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaTabs>().Instance.HandleInputActionAsync("tabs.previous", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
+
+            // Assert
+            Assert.Equal("0", cut.FindAll(".forma-tab-button")[2].GetAttribute("tabindex"));
+        }
+
+        [Fact]
+        public async Task Should_reach_either_end_on_last_and_first()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                    <FormaTab Title="Third">Content 3</FormaTab>
+                </FormaTabs>);
+            var tabs = cut.FindComponent<FormaTabs>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => tabs.HandleInputActionAsync("tabs.last", new InputKeyInfo { Type = "keydown", Key = "End" }));
+            var afterLast = cut.FindAll(".forma-tab-button")[2].GetAttribute("tabindex");
+            await cut.InvokeAsync(() => tabs.HandleInputActionAsync("tabs.first", new InputKeyInfo { Type = "keydown", Key = "Home" }));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("0", afterLast),
+                () => Assert.Equal("0", cut.FindAll(".forma-tab-button")[0].GetAttribute("tabindex")));
+        }
+
+        [Fact]
+        public async Task Should_leave_a_controlled_caller_alone_until_the_focused_tab_is_activated()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            string? reported = null;
+            var cut = ctx.Render(
+                @<FormaTabs ActiveTabId="first" ActiveTabIdChanged="id => reported = id">
+                    <FormaTab Title="First" TabId="first">Content 1</FormaTab>
+                    <FormaTab Title="Second" TabId="second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaTabs>().Instance.HandleInputActionAsync("tabs.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            var reportedByArrow = reported;
+            cut.FindAll(".forma-tab-button")[1].Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(reportedByArrow),
+                () => Assert.Equal("second", reported),
+                () => Assert.Equal("true", cut.FindAll(".forma-tab-button")[0].GetAttribute("aria-selected")));
+        }
+
+        private static List<string> GetRoutes(JSRuntimeInvocation registration)
+            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
+                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
     }
 }
