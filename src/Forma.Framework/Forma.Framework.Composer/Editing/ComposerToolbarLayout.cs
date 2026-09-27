@@ -135,8 +135,11 @@ public sealed class ComposerToolbarLayout
         };
 
     /// <summary>Folds groups sharing an identifier into the first of them, so one named cluster holds every contribution to it.</summary>
-    private static List<ToolbarItem> Coalesce(List<ToolbarItem> placed)
+    /// <param name="placed">The items in the order they were placed, groups included.</param>
+    public static List<ToolbarItem> Coalesce(IReadOnlyList<ToolbarItem> placed)
     {
+        ArgumentNullException.ThrowIfNull(placed);
+
         var merged = new List<ToolbarItem>(placed.Count);
         var groupIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
 

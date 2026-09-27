@@ -1,3 +1,4 @@
+@using Bunit.Rendering
 @using Forma.Blazor.Components.Composer.Plugins
 @using Forma.Framework.Composer.Interop
 @inherits FormaBunitContext
@@ -18,6 +19,111 @@
         private static readonly ComposerDefinition RichTextWithSelectionBar = ComposerDefinition.Create(composer => composer
             .AddRichTextEditor(editor => editor.AddFeaturePlugin<BasicFormattingPlugin>())
             .AddFeaturePlugin<SelectionBarPlugin>());
+
+        // Pushes two markers on command, one with a command of its own and one without, and takes them back on another.
+        private sealed class MarkerPushingPlugin : IComposerFeaturePlugin
+        {
+            private readonly List<IComposerGutterMarker> _markers = [];
+
+            public List<string> Commands { get; } = [];
+            public string Id => "markers";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+            [
+                new(ComposerRows.Plugins,
+                [
+                    new ToolbarCommand { Id = "flag", Title = "Flag", Icon = Glyph.Flag, Command = "demo.flag" },
+                    new ToolbarCommand { Id = "unflag", Title = "Unflag", Icon = Glyph.Flag, Command = "demo.unflag" },
+                ]),
+            ];
+            public IReadOnlyList<string> CommandPrefixes => ["demo.reveal"];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+            public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+            {
+                Commands.Add(command);
+
+                switch (command)
+                {
+                    case "demo.flag":
+                        _markers.Add(context.Regions.CreateGutterMarker(0, Glyph.Flag, "Too long", "demo.reveal"));
+                        _markers.Add(context.Regions.CreateGutterMarker(2, Glyph.Flag));
+                        break;
+
+                    case "demo.unflag":
+                        _markers.ForEach(marker => marker.Dispose());
+                        _markers.Clear();
+                        break;
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        private IRenderedComponent<ContainerFragment> RenderWithMarkers(FormaRichTextEditorTests ctx, MarkerPushingPlugin plugin, TestModel model)
+        {
+            ctx.JSInterop.SetupModule("./_content/forma/composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.AddFeaturePlugin(_ => plugin)));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => cut.Find("button[aria-label='Plugin Commands']").Click());
+            cut.WaitForAssertion(() => cut.Find("button[aria-label='Flag']"));
+
+            return cut;
+        }
+
+        [Fact]
+        public void Should_draw_a_pushed_marker_beside_the_block_it_names()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var plugin = new MarkerPushingPlugin();
+            var cut = RenderWithMarkers(ctx, plugin, new TestModel());
+
+            // Act
+            cut.Find("button[aria-label='Flag']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-rich-text-gutter")));
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-composer-rich-text-gutter-row[data-block='0'] button[aria-label='Too long']")),
+                () => Assert.NotNull(cut.Find(".forma-composer-rich-text-gutter-row[data-block='2'] [role='img'][aria-label='Marker']")),
+                () => Assert.Contains("has-gutter", cut.Find(".forma-composer-rich-text-editor").ClassName));
+        }
+
+        [Fact]
+        public void Should_run_a_markers_command_when_it_is_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var plugin = new MarkerPushingPlugin();
+            var cut = RenderWithMarkers(ctx, plugin, new TestModel());
+            cut.Find("button[aria-label='Flag']").Click();
+            cut.WaitForAssertion(() => cut.Find("button[aria-label='Too long']"));
+
+            // Act
+            cut.Find("button[aria-label='Too long']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains("demo.reveal", plugin.Commands));
+        }
+
+        [Fact]
+        public void Should_take_the_gutter_down_once_the_last_marker_is_disposed()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var plugin = new MarkerPushingPlugin();
+            var cut = RenderWithMarkers(ctx, plugin, new TestModel());
+            cut.Find("button[aria-label='Flag']").Click();
+            cut.WaitForAssertion(() => cut.Find(".forma-composer-rich-text-gutter"));
+
+            // Act
+            cut.Find("button[aria-label='Unflag']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-composer-rich-text-gutter")));
+            Assert.DoesNotContain("has-gutter", cut.Find(".forma-composer-rich-text-editor").ClassName);
+        }
 
         [Fact]
         public void Should_render_contenteditable_canvas()

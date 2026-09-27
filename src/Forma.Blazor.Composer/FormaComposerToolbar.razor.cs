@@ -103,9 +103,10 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
             var count = CountLeaves(row.Items);
             var last = bars.Count > 0 ? bars[^1] : null;
 
+            // Two rows may each carry a group of the same name, so the fold joins those as the layout joins them within a row.
             if (last is not null && CountLeaves(last.Items) + count <= CommandsPerBar)
             {
-                bars[^1] = last with { Items = [.. last.Items, .. row.Items] };
+                bars[^1] = last with { Items = ComposerToolbarLayout.Coalesce([.. last.Items, .. row.Items]) };
             }
             else
             {

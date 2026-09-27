@@ -165,6 +165,25 @@ export class Canvas {
         selection.addRange(range);
     }
 
+    /** The top-level block at a zero-based index, or null past the last one. */
+    blockAt(index) {
+        return this.#element.children[index] ?? null;
+    }
+
+    /** Collapses the caret to the start of an element's content, so what is typed next opens it. */
+    placeCaretAtStart(element) {
+        const selection = window.getSelection();
+        if (!selection) {
+            return;
+        }
+
+        const caret = document.createRange();
+        caret.selectNodeContents(element);
+        caret.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(caret);
+    }
+
     /** Collapses the caret to the end of an element's content, so what is typed next follows it. */
     placeCaretAtEnd(element) {
         const selection = window.getSelection();

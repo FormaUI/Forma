@@ -66,6 +66,17 @@ export class BlockFormatter {
         }
     }
 
+    /** Brings the block at an index into view with the caret at its start, so a marker's command lands the author on what it marks. */
+    reveal(index) {
+        const block = this.#canvas.blockAt(Number(index));
+        if (!block) {
+            return;
+        }
+
+        block.scrollIntoView({ block: 'nearest' });
+        this.#canvas.placeCaretAtStart(block);
+    }
+
     /** Aligns every touched block explicitly, the way typing over them would find them. */
     align(value) {
         for (const block of this.#canvas.selectedBlocks()) {

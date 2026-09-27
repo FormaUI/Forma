@@ -164,7 +164,9 @@
     "{Format} off": "{Format} desactivado",
     "Keyboard Shortcuts": "Atajos de Teclado",
     "Command": "Comando",
-    "Shortcut": "Atajo"
+    "Shortcut": "Atajo",
+    "Markers": "Marcadores",
+    "Marker": "Marcador"
   },
   "RichTextEditor": {
     "FormaRichTextEditor": {

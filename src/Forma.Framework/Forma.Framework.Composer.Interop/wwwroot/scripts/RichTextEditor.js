@@ -270,6 +270,10 @@ class RichTextEditor {
                 this.#withSelection(() => this.#blocks.setDirection(value));
                 break;
 
+            case 'revealBlock':
+                this.#blocks.reveal(value);
+                break;
+
             case 'insertHorizontalRule':
                 this.#withSelection(() => this.#blocks.insertRule());
                 break;

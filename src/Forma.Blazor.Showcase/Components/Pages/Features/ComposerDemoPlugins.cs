@@ -1,8 +1,10 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 using Forma.Blazor.Components.Composer.PlainTextEditor;
+using Forma.Blazor.Components.Composer.RichTextEditor;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
@@ -292,4 +294,111 @@ public sealed class CleanupPlugin : IComposerFeaturePlugin
             await interaction.ChangeDocumentAsync(context.Document with { Content = content }).ConfigureAwait(false);
         }
     }
+}
+
+/// <summary>Flags every block over a word limit with a gutter marker that brings the block into view when pressed.</summary>
+/// <param name="editor">The rich text editor whose canvas the markers stand beside.</param>
+public sealed partial class LongParagraphPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
+{
+    /// <summary>The command flagging the long blocks, or taking the flags back when they stand.</summary>
+    public const string ToggleCommand = "long-paragraph.toggle";
+
+    /// <summary>The words a block may run to before it is flagged.</summary>
+    public const int WordLimit = 40;
+
+    private const string RevealPrefix = "long-paragraph.reveal-";
+    private const string ToggleId = "long-paragraph";
+
+    private readonly List<IComposerGutterMarker> _markers = [];
+
+    /// <inheritdoc />
+    public string Id => "long-paragraph";
+
+    /// <inheritdoc />
+    public IReadOnlyList<ComposerToolbarItem> Items =>
+        [new(ComposerRows.Plugins, [new ToolbarToggle { Id = ToggleId, Title = "Flag Long Paragraphs", Icon = Glyph.Flag, Command = ToggleCommand }])];
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CommandPrefixes => [RevealPrefix];
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<string> ActiveStates => _markers.Count > 0 ? [ToggleId] : [];
+
+    /// <inheritdoc />
+    public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
+        => ValueTask.FromResult(true);
+
+    /// <inheritdoc />
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(command);
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(interaction);
+
+        if (command == ToggleCommand)
+        {
+            Toggle(context);
+        }
+        else if (command.StartsWith(RevealPrefix, StringComparison.Ordinal) && int.TryParse(command[RevealPrefix.Length..], NumberStyles.None, CultureInfo.InvariantCulture, out var block))
+        {
+            editor.RequestCommand("revealBlock", block);
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
+    private void Toggle(ComposerContext context)
+    {
+        if (_markers.Count > 0)
+        {
+            foreach (var marker in _markers)
+            {
+                marker.Dispose();
+            }
+
+            _markers.Clear();
+
+            return;
+        }
+
+        foreach (var (block, words) in CountWords(context.Document.Content))
+        {
+            if (words > WordLimit)
+            {
+                _markers.Add(context.Regions.CreateGutterMarker(block, Glyph.Flag, $"{words.ToString(CultureInfo.CurrentCulture)} words, over {WordLimit.ToString(CultureInfo.CurrentCulture)}", RevealPrefix + block.ToString(CultureInfo.InvariantCulture)));
+            }
+        }
+    }
+
+    // The formatter puts each block on a line of its own and indents what nests inside one, so a line that starts
+    // at the margin with an opening tag begins a top-level block and everything indented beneath it belongs to it.
+    private static IEnumerable<(int Block, int Words)> CountWords(string html)
+    {
+        var block = -1;
+        var words = 0;
+
+        foreach (var line in HtmlSourceFormatter.Format(html).Split('\n'))
+        {
+            if (line.StartsWith('<', StringComparison.Ordinal) && !line.StartsWith("</", StringComparison.Ordinal))
+            {
+                if (block >= 0)
+                {
+                    yield return (block, words);
+                }
+
+                block++;
+                words = 0;
+            }
+
+            words += Tags().Replace(line, " ").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+        }
+
+        if (block >= 0)
+        {
+            yield return (block, words);
+        }
+    }
+
+    [GeneratedRegex("<[^>]*>")]
+    private static partial Regex Tags();
 }

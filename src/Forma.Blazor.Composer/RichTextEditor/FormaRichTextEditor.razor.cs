@@ -58,6 +58,13 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     private bool IsSelectionBarShown
         => Composer?.IsSelectionBarShown ?? true;
 
+    /// <summary>Whether any plugin has pushed a marker, which is when the gutter takes its column.</summary>
+    private bool HasMarkers
+        => Composer?.Regions.GutterMarkers.Count > 0;
+
+    private string EditorClass
+        => HasMarkers ? "forma-composer-rich-text-editor has-gutter" : "forma-composer-rich-text-editor";
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {

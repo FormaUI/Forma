@@ -164,7 +164,9 @@
     "{Format} off": "{Format}: כבוי",
     "Keyboard Shortcuts": "קיצורי מקלדת",
     "Command": "פקודה",
-    "Shortcut": "קיצור"
+    "Shortcut": "קיצור",
+    "Markers": "סמנים",
+    "Marker": "סמן"
   },
   "RichTextEditor": {
     "FormaRichTextEditor": {

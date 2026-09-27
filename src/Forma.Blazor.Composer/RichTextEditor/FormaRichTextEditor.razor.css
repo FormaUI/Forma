@@ -30,6 +30,11 @@
     outline: none;
 }
 
+/* The gutter's column stands in the canvas's start padding while a marker exists, so the text moves aside for it. */
+.forma-composer-rich-text-editor.has-gutter .forma-composer-rich-text-canvas {
+    padding-inline-start: calc(var(--space-2) + var(--target-size-sm) + var(--space-2));
+}
+
 .forma-composer-rich-text-announcer {
     position: absolute;
     inline-size: 1px;

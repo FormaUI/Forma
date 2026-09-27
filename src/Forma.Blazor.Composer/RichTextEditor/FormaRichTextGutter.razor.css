@@ -1,0 +1,34 @@
+/* FormaRichTextGutter — Pushed markers in a column at the canvas's inline start, each row placed by script level with the block it names */
+
+.forma-composer-rich-text-gutter {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: var(--space-2);
+    inline-size: var(--target-size-sm);
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* Several markers on one block stack down the column rather than widening it. */
+.forma-composer-rich-text-gutter-row {
+    position: absolute;
+    inset-inline-start: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    inline-size: var(--target-size-sm);
+    pointer-events: auto;
+}
+
+.forma-composer-rich-text-gutter-row[hidden] {
+    display: none;
+}
+
+.forma-composer-rich-text-gutter-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--target-size-sm);
+    block-size: var(--target-size-sm);
+    color: var(--text-secondary-color);
+}

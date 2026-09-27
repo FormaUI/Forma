@@ -120,6 +120,29 @@ describe('RichTextEditor', () => {
         expect(editor.innerHTML).toBe('<h2>first</h2><blockquote><h2>second</h2></blockquote><h2>third</h2>');
     });
 
+    it('reveals a block by index, with the caret at its start', () => {
+        editor.innerHTML = '<p>first</p><p>second</p><p>third</p>';
+        const handle = attach(editor, { owner });
+        const revealed = [];
+        Element.prototype.scrollIntoView = function () { revealed.push(this); };
+
+        handle.exec('revealBlock', 2);
+        const caret = window.getSelection().getRangeAt(0);
+
+        expect(revealed).toEqual([editor.querySelectorAll('p')[2]]);
+        expect(caret.collapsed).toBe(true);
+        expect(caret.startContainer).toBe(editor.querySelectorAll('p')[2]);
+        expect(caret.startOffset).toBe(0);
+    });
+
+    it('leaves the caret alone when asked to reveal a block past the last', () => {
+        editor.innerHTML = '<p>only</p>';
+        const handle = attach(editor, { owner });
+        Element.prototype.scrollIntoView = () => { throw new Error('nothing to reveal'); };
+
+        expect(() => handle.exec('revealBlock', 4)).not.toThrow();
+    });
+
     it('aligns the block the caret sits in', () => {
         const handle = attach(editor, { owner });
         const text = editor.querySelector('p').firstChild;

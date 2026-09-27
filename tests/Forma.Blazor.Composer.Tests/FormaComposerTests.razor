@@ -1397,6 +1397,28 @@
             Assert.Empty(cut.FindAll("button[aria-label='Undo']"));
         }
 
+        // A plugin may place a group of one name on two rows; a composition small enough to fold those rows into
+        // one bar must join the groups rather than render two siblings under one key, which the renderer refuses.
+        [Fact]
+        public void Should_join_a_group_two_folded_rows_both_carry()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor
+                    .AddFeaturePlugin<BasicFormattingPlugin>()
+                    .AddFeaturePlugin<ParagraphFormatPlugin>()));
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Lead']")));
+            var group = Assert.Single(cut.FindAll("[role='toolbar'][aria-label='Text Formatting'] [role='group'][aria-label='Paragraph Style']"));
+            Assert.NotNull(group.QuerySelector("button[aria-label='Lead']"));
+        }
+
         [Fact]
         public void Should_offer_the_defaults_on_the_editors_own_toolbar()
         {

@@ -87,6 +87,14 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Gutter Markers"]</h2>
+    <p class="description">@L["Flag Long Paragraphs pushes a marker into the gutter beside every block over forty words, level with the block however the text wraps or scrolls; press a marker to land on its block, and press the command again to take the markers back."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_gutterDoc" Plugins="GutterPlugins" />
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Plugins"]</h2>
     <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins are registered under the Plain Text editor."]</p>
     <div class="demo-box">
@@ -145,6 +153,12 @@
     private ComposerDocument _sourceDoc = new(ComposerDocumentFormat.PlainText, "function total(cart) {\n    let total = 0;\n\n    for (const line of cart) {\n        total += line.price;\n    }\n\n    return total;\n}");
     private ComposerDocument _statusDoc = new(ComposerDocumentFormat.PlainText, "pear\napple\nbanana");
     private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
+    private ComposerDocument _gutterDoc = new(ComposerDocumentFormat.Html,
+        "<h2>Match report</h2>"
+        + "<p>The first half was a cautious affair, both sides content to hold their shape and wait for a mistake that never came, the crowd growing restless as the passes went sideways and the clock ran down without a single shot on target from either team, which is not what anyone had paid to see on a warm evening.</p>"
+        + "<p>Then the substitution changed everything.</p>"
+        + "<p>Within ten minutes of coming on, the winger had beaten his marker three times, forced two saves and won the corner from which the opening goal arrived, a header that the keeper got a hand to but could not keep out, and from there the visitors never recovered their composure or their shape for the rest of the night.</p>"
+        + "<p>Final score: two to nil.</p>");
     private ComposerDocument _viewDoc = new(ComposerDocumentFormat.Html, "<p>Press <strong>Preview</strong> to read this as rendered output, or <strong>Maximize</strong> to fill the viewport.</p>");
     private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every default plugin is registered here.</p>");
     private ComposerDocument _imagesOnlyDoc = new(ComposerDocumentFormat.Html, "<p>Insert an image by address, or browse the pictures already stored.</p>");
@@ -165,6 +179,12 @@
             .AddViewPlugin<RichTextSourceViewPlugin>())
         .AddFeaturePlugin<MaximizePlugin>()
         .AddFeaturePlugin<ShortcutsPlugin>());
+
+    private static readonly ComposerDefinition GutterPlugins = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor
+            .AddFeaturePlugin<BasicFormattingPlugin>()
+            .AddFeaturePlugin<ParagraphFormatPlugin>()
+            .AddFeaturePlugin<LongParagraphPlugin>()));
 
     private static readonly ComposerDefinition EveryPlugin = ComposerDefinition.Create(composer => composer
         .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())

@@ -1,0 +1,33 @@
+@namespace Forma.Blazor.Components.Composer.RichTextEditor
+@inherits FormaComponentBase
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Symbols
+
+@* A row starts hidden and is shown once the browser has placed it beside its block, so nothing flashes at the top first. *@
+<div @ref="_gutterElement" class="forma-composer-rich-text-gutter" role="group" aria-label="@L["Markers"]">
+    @foreach (var row in Rows)
+    {
+        <div @key="row.Block" class="forma-composer-rich-text-gutter-row" data-block="@row.Block" hidden>
+            @foreach (var marker in row.Markers)
+            {
+                @if (marker.Command is { } command)
+                {
+                    <FormaButton Variant="ButtonVariant.Ghost"
+                                 Size="ButtonSize.Mini"
+                                 IconOnly="true"
+                                 title="@NameOf(marker)"
+                                 aria-label="@NameOf(marker)"
+                                 OnClick="() => OnCommand.InvokeAsync(command)">
+                        <FormaIcon Icon="marker.Icon" />
+                    </FormaButton>
+                }
+                else
+                {
+                    <span class="forma-composer-rich-text-gutter-mark" role="img" title="@NameOf(marker)" aria-label="@NameOf(marker)">
+                        <FormaIcon Icon="marker.Icon" />
+                    </span>
+                }
+            }
+        </div>
+    }
+</div>
