@@ -19,6 +19,21 @@ public sealed class ComposerPluginTests
         }
     }
 
+    public sealed class Shortcuts
+    {
+        [Fact]
+        public void Should_contribute_its_command_and_a_shortcut_of_its_own()
+        {
+            // Arrange
+            IComposerFeaturePlugin plugin = new ShortcutsPlugin();
+
+            // Assert
+            Assert.Equal("shortcuts", plugin.Id);
+            Assert.NotEmpty(plugin.Items);
+            Assert.Equal("Ctrl+/", Assert.Single(plugin.KeyBindings).Display);
+        }
+    }
+
     public sealed class SelectionBar
     {
         [Fact]

@@ -17,4 +17,7 @@ public static class ComposerCommands
 
     /// <summary>Opens the dialog that uploads files and attaches them to the document.</summary>
     public const string Attach = "attachment.upload";
+
+    /// <summary>Opens the reference listing every shortcut the composer currently answers.</summary>
+    public const string Shortcuts = "view.shortcuts";
 }

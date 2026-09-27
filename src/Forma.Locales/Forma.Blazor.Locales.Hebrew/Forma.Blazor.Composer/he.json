@@ -161,7 +161,10 @@
     "Enter the embed type before inserting.": "הזן את סוג ההטמעה לפני ההוספה.",
     "Enter the identifier before inserting.": "הזן את המזהה לפני ההוספה.",
     "{Format} on": "{Format}: פעיל",
-    "{Format} off": "{Format}: כבוי"
+    "{Format} off": "{Format}: כבוי",
+    "Keyboard Shortcuts": "קיצורי מקלדת",
+    "Command": "פקודה",
+    "Shortcut": "קיצור"
   },
   "RichTextEditor": {
     "FormaRichTextEditor": {

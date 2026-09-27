@@ -20,16 +20,33 @@ public sealed record ComposerKeyBinding
 
     /// <summary>The combination written for a tooltip, such as Ctrl+Shift+Z.</summary>
     public string Display
-        => Write("Ctrl");
+        => string.Join('+', Write("Ctrl"));
+
+    /// <summary>The combination as the keys it is pressed on, in the order a tooltip writes them, such as Ctrl, Shift and Z.</summary>
+    public IReadOnlyList<string> DisplayKeys
+        => [.. Write("Ctrl")];
 
     /// <summary>The combination written for aria-keyshortcuts, whose modifier names the specification fixes.</summary>
     public string AriaKeyShortcuts
-        => Write("Control");
+        => string.Join('+', Write("Control"));
 
-    private string Write(string control)
-        => string.Concat(
-            Control ? control + "+" : null,
-            Alt ? "Alt+" : null,
-            Shift ? "Shift+" : null,
-            Key.Length == 1 ? Key.ToUpperInvariant() : Key);
+    private IEnumerable<string> Write(string control)
+    {
+        if (Control)
+        {
+            yield return control;
+        }
+
+        if (Alt)
+        {
+            yield return "Alt";
+        }
+
+        if (Shift)
+        {
+            yield return "Shift";
+        }
+
+        yield return Key.Length == 1 ? Key.ToUpperInvariant() : Key;
+    }
 }

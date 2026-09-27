@@ -56,7 +56,9 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(composer);
 
-        return composer.TryAddFeaturePlugin<MaximizePlugin>();
+        return composer
+            .TryAddFeaturePlugin<MaximizePlugin>()
+            .TryAddFeaturePlugin<ShortcutsPlugin>();
     }
 
     /// <summary>Registers the plain text editor's standard capabilities, for whichever of them the editor does not register itself.</summary>

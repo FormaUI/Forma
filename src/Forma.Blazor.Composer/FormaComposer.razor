@@ -78,6 +78,16 @@
                                        OnCancel="() => _isAttachOpen = false" />
     }
 
+    @if (_isShortcutsOpen)
+    {
+        <FormaComposerShortcutsDialog Opened="_isShortcutsOpen"
+                                      Editor="_activeEditor"
+                                      View="_activeView"
+                                      Plugins="_surfacePlugins"
+                                      KeyBindings="_keyBindingCatalog"
+                                      OnCancel="() => _isShortcutsOpen = false" />
+    }
+
     @if (_dialog is { } dialog)
     {
         <FormaComposerDialog Opened="true"

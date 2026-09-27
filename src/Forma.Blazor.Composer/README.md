@@ -139,6 +139,7 @@ for; left alone, the video placeholder still shows its link.
 | `MaximizePlugin` | A toggle filling the viewport with the composer. |
 | `SelectionBarPlugin` | A toggle showing or hiding the formatting bar that follows a selection; its handle drags the bar to where the author wants it. |
 | `FileUploadPlugin` | Attaching files uploaded from the author's device beside the document, in `ComposerDocument.Attachments`; `FileUploadPluginOptions.Picker` is the `FilePickerOptions` deciding which files are accepted. |
+| `ShortcutsPlugin` | A reference of every shortcut the surface answers, each named as its toolbar button is, opened from the toolbar or with Ctrl+/. |
 
 Attachments are listed beneath the canvas whichever editor is active, each removable from there.
 

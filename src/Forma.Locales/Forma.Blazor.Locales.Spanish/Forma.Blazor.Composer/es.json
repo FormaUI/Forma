@@ -161,7 +161,10 @@
     "Enter the embed type before inserting.": "Introduce el tipo de inserción antes de insertarlo.",
     "Enter the identifier before inserting.": "Introduce el identificador antes de insertarlo.",
     "{Format} on": "{Format} activado",
-    "{Format} off": "{Format} desactivado"
+    "{Format} off": "{Format} desactivado",
+    "Keyboard Shortcuts": "Atajos de Teclado",
+    "Command": "Comando",
+    "Shortcut": "Atajo"
   },
   "RichTextEditor": {
     "FormaRichTextEditor": {

@@ -54,6 +54,7 @@ public sealed partial class FormaComposer(
     private bool _isJsStarted;
     private readonly ComposerChrome _chrome = new();
     private bool _isAttachOpen;
+    private bool _isShortcutsOpen;
     private ComposerInsertionRequest? _dialog;
     private Dictionary<string, object>? _dialogParameters;
     private DynamicComponent? _dialogComponent;
@@ -167,6 +168,7 @@ public sealed partial class FormaComposer(
         _commandRegistry.RegisterEngineCommand(ComposerCommands.Maximize, HandleMaximizeAsync);
         _commandRegistry.RegisterEngineCommand(ComposerCommands.SelectionBar, HandleSelectionBarAsync);
         _commandRegistry.RegisterEngineCommand(ComposerCommands.Attach, HandleAttachAsync);
+        _commandRegistry.RegisterEngineCommand(ComposerCommands.Shortcuts, HandleShortcutsAsync);
         _regionRegistry.Changed += HandleRegionsChanged;
 
         await LoadPluginsAsync();
@@ -216,6 +218,13 @@ public sealed partial class FormaComposer(
     private Task HandleAttachAsync()
     {
         _isAttachOpen = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleShortcutsAsync()
+    {
+        _isShortcutsOpen = true;
         StateHasChanged();
         return Task.CompletedTask;
     }

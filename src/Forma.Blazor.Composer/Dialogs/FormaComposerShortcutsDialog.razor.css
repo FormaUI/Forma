@@ -1,0 +1,48 @@
+/* FormaComposerShortcutsDialog — a two-column reference of the shortcuts in play, each combination drawn as the keys it is pressed on */
+
+.forma-composer-shortcuts {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+}
+
+.forma-composer-shortcuts th,
+.forma-composer-shortcuts td {
+    padding-block: var(--space-2);
+    padding-inline: var(--space-2);
+    text-align: start;
+    vertical-align: top;
+}
+
+.forma-composer-shortcuts thead th {
+    color: var(--text-secondary-color);
+    font-weight: 600;
+}
+
+.forma-composer-shortcuts tbody th {
+    font-weight: 400;
+}
+
+/* A combination reads left to right whatever the page's direction, as the keys are printed on a keyboard. */
+.forma-composer-shortcuts-combination {
+    display: inline-flex;
+    gap: var(--space-1);
+    margin-inline-end: var(--space-3);
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+.forma-composer-shortcuts kbd {
+    display: inline-block;
+    padding-block: 0;
+    padding-inline: var(--space-2);
+    border: 1px solid var(--border-emphasis-color);
+    border-block-end-width: 2px;
+    border-radius: var(--radius-sm);
+    background-color: var(--input-bg-color);
+    font-family: inherit;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    line-height: var(--target-size-sm);
+    white-space: nowrap;
+}

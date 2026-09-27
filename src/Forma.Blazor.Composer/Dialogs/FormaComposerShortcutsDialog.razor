@@ -1,0 +1,41 @@
+@namespace Forma.Blazor.Components.Composer.Dialogs
+@using Forma.Blazor.Components.Feedback
+@inherits ComposerDialogBase
+
+@* A reference rather than a form, so it stands on the dialog itself, with one action, which closes it. *@
+<FormaDialog Opened="Opened"
+             Title="@L["Keyboard Shortcuts"]"
+             Size="DialogSize.Medium"
+             Options="CloseOnly"
+             ConfirmText="@L["Close"]"
+             OnClose="OnCancel">
+    <Body>
+        <table class="forma-composer-shortcuts">
+            <thead>
+                <tr>
+                    <th scope="col">@L["Command"]</th>
+                    <th scope="col">@L["Shortcut"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in _rows)
+                {
+                    <tr>
+                        <th scope="row">@row.Title</th>
+                        <td>
+                            @foreach (var combination in row.Combinations)
+                            {
+                                <span class="forma-composer-shortcuts-combination">
+                                    @foreach (var key in combination)
+                                    {
+                                        <kbd>@key</kbd>
+                                    }
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </Body>
+</FormaDialog>

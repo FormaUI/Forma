@@ -1411,7 +1411,57 @@
             // Assert
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Attach Files']")));
             Assert.NotNull(cut.Find("button[aria-label='Maximize']"));
+            Assert.NotNull(cut.Find("button[aria-label='Keyboard Shortcuts']"));
             Assert.NotNull(cut.Find("button[aria-label='Selection Bar']"));
+        }
+
+        // The reference names each shortcut as its button does, so what a reader hears is what they see.
+        [Fact]
+        public void Should_list_every_shortcut_in_play_under_its_command_name()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
+                .TryAddDefaultPlugins());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Keyboard Shortcuts']")));
+
+            // Act
+            cut.Find("button[aria-label='Keyboard Shortcuts']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-shortcuts")));
+            var rows = cut.FindAll(".forma-composer-shortcuts tbody tr").ToDictionary(
+                row => row.QuerySelector("th")!.TextContent,
+                row => row.QuerySelectorAll("kbd").Select(key => key.TextContent).ToList());
+            Assert.Multiple(
+                () => Assert.Equal(["Ctrl", "B"], rows["Bold"]),
+                () => Assert.Equal(["Ctrl", "Y", "Ctrl", "Shift", "Z"], rows["Redo"]),
+                () => Assert.Equal(["Ctrl", "Shift", "L"], rows["Bulleted List"]),
+                () => Assert.Equal(["Ctrl", "Alt", "4"], rows["Heading 4"]),
+                () => Assert.Equal(["Ctrl", "/"], rows["Keyboard Shortcuts"]));
+        }
+
+        [Fact]
+        public void Should_close_the_shortcut_reference_from_its_only_action()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var dialog = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/components/Dialog.js").SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var plugins = ComposerDefinition.Create(composer => composer.TryAddDefaultPlugins());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Keyboard Shortcuts']")));
+            cut.Find("button[aria-label='Keyboard Shortcuts']").Click();
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-shortcuts")));
+
+            // Act
+            cut.FindAll("button").Single(button => button.TextContent.Trim() == "Close").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains(dialog.Invocations, invocation => invocation.Identifier == "close"));
         }
 
         [Fact]
@@ -1453,6 +1503,7 @@
             // Assert
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Attach Files']")));
             Assert.NotNull(cut.Find("button[aria-label='Maximize']"));
+            Assert.NotNull(cut.Find("button[aria-label='Keyboard Shortcuts']"));
             Assert.Empty(cut.FindAll("button[aria-label='Selection Bar']"));
         }
 
@@ -1472,6 +1523,7 @@
 
             // Assert
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
+            Assert.NotNull(cut.Find("button[aria-label='Keyboard Shortcuts']"));
             Assert.Empty(cut.FindAll("button[aria-label='Attach Files']"));
             Assert.Empty(cut.FindAll("button[aria-label='Selection Bar']"));
         }
