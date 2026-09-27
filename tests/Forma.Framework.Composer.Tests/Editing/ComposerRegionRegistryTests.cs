@@ -153,7 +153,7 @@ public sealed class ComposerRegionRegistryTests
         // Assert
         var marker = Assert.Single(registry.GutterMarkers);
         Assert.Multiple(
-            () => Assert.Equal(3, marker.Line),
+            () => Assert.Equal(3, marker.Block),
             () => Assert.Equal(Glyph.RadioButton, marker.Icon));
     }
 
@@ -172,7 +172,7 @@ public sealed class ComposerRegionRegistryTests
     }
 
     [Fact]
-    public void Should_reject_a_negative_line()
+    public void Should_reject_a_negative_block()
     {
         // Arrange
         var registry = new ComposerRegionRegistry();

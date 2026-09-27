@@ -18,6 +18,6 @@ public interface IComposerRegionRegistry
     /// <summary>Pushes a status item, returning the handle that keeps it visible until disposed.</summary>
     IComposerStatusItem CreateStatusItem(string text, string? tooltip = null, string? command = null);
 
-    /// <summary>Pushes a gutter marker, returning the handle that keeps it visible until disposed.</summary>
-    IComposerGutterMarker CreateGutterMarker(int line, Icon icon, string? tooltip = null, string? command = null);
+    /// <summary>Pushes a gutter marker beside a block, returning the handle that keeps it visible until disposed.</summary>
+    IComposerGutterMarker CreateGutterMarker(int block, Icon icon, string? tooltip = null, string? command = null);
 }

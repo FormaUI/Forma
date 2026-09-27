@@ -332,8 +332,10 @@ An item names its row through `ComposerToolbarItem.RowId`: the shared built-in r
 | Region | Placement |
 |---|---|
 | Toolbar rows | above the canvas, stacked in a `FormaCommandArea` |
-| Gutter | inline-start of the canvas: line numbers plus contributed line markers |
+| Gutter | inline-start of the canvas: contributed markers, each beside the block it names, with line numbers on a line-oriented surface alone |
 | Status strip | block-end of the canvas: contributed readouts such as Ln/Col, word count, language |
+
+A **block** is one of the top-level pieces a document is made of, a paragraph, heading, list item, quotation, table or rule, each standing on its own row of the canvas. A marker is anchored to a block rather than a visual line because the browser makes lines at draw time from the width it has, so the same paragraph is five lines on a phone and two on a desktop, while the third block stays the third block until the document is edited. A line-oriented surface counts a line as a block.
 
 Toolbar contributions are static lists, because a toolbar item's identity does not change. Gutter markers and status readouts are not: they move with the caret and the document. Those are **pushed** — a plugin acquires a handle from the engine, mutates it, and disposes it — rather than pulled by the engine on every render.
 

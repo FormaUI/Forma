@@ -32,11 +32,11 @@ public sealed class ComposerRegionRegistry : IComposerRegionRegistry
     }
 
     /// <inheritdoc />
-    public IComposerGutterMarker CreateGutterMarker(int line, Icon icon, string? tooltip = null, string? command = null)
+    public IComposerGutterMarker CreateGutterMarker(int block, Icon icon, string? tooltip = null, string? command = null)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(line);
+        ArgumentOutOfRangeException.ThrowIfNegative(block);
 
-        var marker = new GutterMarker(this, line, icon, tooltip, command);
+        var marker = new GutterMarker(this, block, icon, tooltip, command);
         _gutterMarkers.Add(marker);
         RaiseChanged();
 
@@ -129,27 +129,27 @@ public sealed class ComposerRegionRegistry : IComposerRegionRegistry
         }
     }
 
-    private sealed class GutterMarker(ComposerRegionRegistry owner, int line, Icon icon, string? tooltip, string? command) : IComposerGutterMarker
+    private sealed class GutterMarker(ComposerRegionRegistry owner, int block, Icon icon, string? tooltip, string? command) : IComposerGutterMarker
     {
-        private int _line = line;
+        private int _block = block;
         private Icon _icon = icon;
         private string? _tooltip = tooltip;
         private string? _command = command;
         private bool _isDisposed;
 
-        public int Line
+        public int Block
         {
-            get => _line;
+            get => _block;
             set
             {
                 ArgumentOutOfRangeException.ThrowIfNegative(value);
 
-                if (_line == value)
+                if (_block == value)
                 {
                     return;
                 }
 
-                _line = value;
+                _block = value;
                 owner.RaiseChanged();
             }
         }
