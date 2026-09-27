@@ -65,10 +65,13 @@ field's by the native table, and the behavior's own text-entry check is gone wit
 the per-component text-entry exclusions, so `Controls.js` no longer names which keys a field
 takes. That check was wider than the table: a vertical arrow in a single-line field, which the
 field does not consume, now moves the selection where it used to stay with the field.
-The clicks stay the behavior's own, since a click is no routed class. Active drags and the
-selection bar are not on the router:
-`DragGesture` cancels a drag from its own Escape listener, and `SelectionFollower` returns focus
-to the editor from its own.
+The clicks stay the behavior's own, since a click is no routed class. `DragGesture` registers on
+its container and is active for as long as a drag lasts, standing above whatever contains it by
+parentage, so Escape and a platform close request cancel the drag wherever focus is, a popover
+the drag began in stays open, and a press elsewhere dismisses nothing while it lasts; the
+gesture's own Escape listener, which heard the key only with focus inside the container, is
+gone. The selection bar is not on the router: `SelectionFollower` returns focus to the editor
+from its own Escape listener.
 Of the owners in step 3, the two shortcut sets, `FormaSelect` and `FormaDropDownMenu` have
 moved: each routes its trigger's arrows on the trigger, and its list's arrows, Home and End
 through `FormaPopover`, which carries its content's routes on the registration it already makes
@@ -106,7 +109,7 @@ Escape and press-away behavior are decided in several unrelated ways today:
 - Native `<dialog>` cancellation.
 - A document listener owned by `FormaPopover` (retired; the popover is a scope on the router).
 - `FormaBreadcrumb`'s key handler and backdrop span (retired; its segment menus are `FormaDropDownMenu`s).
-- `DragGesture` canceling an active drag.
+- `DragGesture` canceling an active drag (retired; a drag is an active registration while it lasts).
 - `FormaComposer`'s selection bar returning focus to the editor.
 
 ### Navigation keys
@@ -154,7 +157,7 @@ draws it in the top layer, because it remains a DOM descendant of whatever opene
 | Select inside a data-grid cell | `FormaDataGrid`'s capture-phase listener moves row selection before the select receives ArrowDown. Only text-entry targets are excluded. |
 | Emoji picker over the composer | Resolved: `FormaComposer`'s shortcuts are routes, and a popup over it is an active scope that Ctrl+B pressed inside it stops at. |
 | Popup opened from a toolbar | Wheel input bubbling from the popup scrolls the toolbar track behind it. |
-| Drag started inside a popup | Escape reaches the popup's document listener before the drag's element listener. |
+| Drag started inside a popup | Resolved: the drag is active above the popup while it lasts, so Escape cancels the drag and the popup stays open. |
 | Nested drop targets | A folder node inside the sidebar's drop area lets both targets receive the drop unless the inner one stops propagation. |
 | Nested popups | Whichever popup registered its document listener first answers Escape. |
 | Tab handling | `Focus.js` respects `defaultPrevented` from a nested surface — a local solution, not a cross-component model. |
@@ -166,7 +169,7 @@ draws it in the top layer, because it remains a DOM descendant of whatever opene
 | Select in a grid cell receives ArrowDown | Both register scopes; `FormaDataGrid`'s capture handler acts only as owner |
 | Emoji-picker search receives Ctrl+B | Done: composer bindings are routes on `FormaComposer`'s and the editor's scopes and do not act inside a nested scope |
 | Popup content receives wheel over a toolbar | The wheel acts only as owner |
-| Drag inside a popup receives Escape | The drag activates above the popup |
+| Drag inside a popup receives Escape | Done: the drag activates above the popup |
 | Folder node receives a drop inside the sidebar | The sidebar does not act on a drop owned by the nested scope |
 | Inner popup receives Escape | Done: router ordering replaces per-popup listeners |
 | Popup in a dialog receives Escape | Done: routed before native cancellation |
@@ -185,7 +188,7 @@ existing components, landing as several coherent commits.
    bridge. Vitest for nested resolution through a top-layer popover, the native table, the
    modal barrier, containment, activation order, top-only dismissal, and release.
 2. **Dismissal.** `FormaPopover` (done), `FormaDialog` with both entry points (done), active
-   drags and the selection bar while focused (open), `FormaBreadcrumb` rebuilt on `FormaPopover` (done,
+   drags (done) and the selection bar while focused (open), `FormaBreadcrumb` rebuilt on `FormaPopover` (done,
    as a `FormaDropDownMenu` per segment), `FormaWindow` (done). The per-popup document listener, both backdrops,
    and the backdrop z-indexes go (done).
 3. **Owners onto routes.** `SelectionInteraction` (done), both shortcut sets (done: `FormaComposer`'s
@@ -211,8 +214,7 @@ existing components, landing as several coherent commits.
    in a cell of a row-selection grid keeps its arrows while open and hands them back closed; a
    menu inside a dialog closes on the first Escape and the dialog on the second; a dialog over
    a popover closes on Escape with the popover still open and focus back on its button; and a
-   list inside a popover takes a drag begun inside it and its keys, the popover staying open.
-   Escape during that drag still closes the popover, which waits on step 2's open item, an
-   active drag cancelling from the router. A host `<input>` in a grid is covered by the native
-   table and the selection behavior's tests; no Showcase grid combines row selection with an
-   input in a row.
+   list inside a popover takes a drag begun inside it and its keys, the popover staying open,
+   and Escape during that drag cancels the drag and leaves the popover open. A host `<input>`
+   in a grid is covered by the native table and the selection behavior's tests; no Showcase
+   grid combines row selection with an input in a row.

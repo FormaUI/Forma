@@ -64,7 +64,7 @@
 
 <div class="demo-section">
     <h2>@L["In a Popover"]</h2>
-    <p class="description">@L["A list inside a popover that keeps focus. A drag begun inside it belongs to the list, and its keys move the item without leaving the popover."]</p>
+    <p class="description">@L["A list inside a popover that keeps focus. A drag begun inside it belongs to the list, Escape while dragging cancels the drag and leaves the popover open, and its keys move the item without leaving the popover."]</p>
     <div class="demo-box">
         <span class="demo-anchor" @ref="_favoritesAnchor">
             <FormaButton @ref="_favoritesTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_favoritesPopover is { IsOpen: true } ? "true" : "false")" OnClick="() => _favoritesPopover.ToggleAsync(_favoritesTrigger.RootElement)">@L["Open"]</FormaButton>

@@ -66,7 +66,7 @@
     "Drag a row anywhere to reorder, or press Edit — it still clicks.": "Arrastra una fila desde cualquier punto para reordenar, o pulsa Editar: sigue siendo clicable.",
     "Edit was clicked on {Name}, so the row did not take the press.": "Se pulsó Editar en {Name}, así que la fila no tomó la pulsación.",
     "In a Popover": "En un Popover",
-    "A list inside a popover that keeps focus. A drag begun inside it belongs to the list, and its keys move the item without leaving the popover.": "Una lista dentro de un popover que mantiene el foco. Un arrastre iniciado dentro pertenece a la lista, y sus teclas mueven el elemento sin salir del popover.",
+    "A list inside a popover that keeps focus. A drag begun inside it belongs to the list, Escape while dragging cancels the drag and leaves the popover open, and its keys move the item without leaving the popover.": "Una lista dentro de un popover que mantiene el foco. Un arrastre iniciado dentro pertenece a la lista, Escape durante el arrastre cancela el arrastre y deja el popover abierto, y sus teclas mueven el elemento sin salir del popover.",
     "Open": "Abrir"
   }
 }

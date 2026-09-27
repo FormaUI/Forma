@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#browser/behaviors/DragGesture.js';
-import { configure, register, resolve } from '#input/InputRouter.js';
+import { configure, register, requestDismiss, resolve } from '#input/InputRouter.js';
 import { pointerEvent, stubPointerCapture } from '#support/platform.js';
 
 describe('DragGesture', () => {
@@ -18,17 +18,36 @@ describe('DragGesture', () => {
         reported = [];
     });
 
-    afterEach(() => vi.useRealTimers());
+    // The router keeps every registration until it is disposed, so each test's are released after it.
+    const handles = [];
 
-    const start = (options = {}) => attach(container, {
-        autoScroll: false,
-        findSubject: event => event.target.closest('.item'),
-        onStart: ({ clientY }) => reported.push({ stage: 'start', clientY }),
-        onMove: ({ clientY }) => reported.push({ stage: 'move', clientY }),
-        onDrop: ({ clientY }) => reported.push({ stage: 'drop', clientY }),
-        onCancel: ({ clientY }) => reported.push({ stage: 'cancel', clientY }),
-        ...options,
+    afterEach(() => {
+        handles.splice(0).forEach(handle => handle.dispose());
+        configure({ bindings: {} });
+        vi.useRealTimers();
     });
+
+    const start = (options = {}) => {
+        const handle = attach(container, {
+            autoScroll: false,
+            findSubject: event => event.target.closest('.item'),
+            onStart: ({ clientY }) => reported.push({ stage: 'start', clientY }),
+            onMove: ({ clientY }) => reported.push({ stage: 'move', clientY }),
+            onDrop: ({ clientY }) => reported.push({ stage: 'drop', clientY }),
+            onCancel: ({ clientY }) => reported.push({ stage: 'cancel', clientY }),
+            ...options,
+        });
+        handles.push(handle);
+
+        return handle;
+    };
+
+    const escape = (target = container) => {
+        const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+
+        return event;
+    };
 
     const point = (type, properties) => {
         const event = pointerEvent(type, properties);
@@ -217,7 +236,19 @@ describe('DragGesture', () => {
             press();
             move({ clientY: 340 });
 
-            container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+            const event = escape();
+
+            expect(stages()).toEqual(['start', 'move', 'cancel']);
+            expect(event.defaultPrevented).toBe(true);
+        });
+
+        // The drag holds the pointer, not the focus, so the key is answered from wherever it is pressed.
+        it('cancels on Escape pressed outside the container', () => {
+            start();
+            press();
+            move({ clientY: 340 });
+
+            escape(document.body);
 
             expect(stages()).toEqual(['start', 'move', 'cancel']);
         });
@@ -226,8 +257,7 @@ describe('DragGesture', () => {
             start();
             press();
 
-            const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
-            container.dispatchEvent(event);
+            const event = escape();
 
             expect(event.defaultPrevented).toBe(false);
         });
@@ -236,9 +266,19 @@ describe('DragGesture', () => {
             start();
             press();
             move({ clientY: 340 });
-            container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+            escape();
 
             lift({ clientY: 340 });
+
+            expect(stages()).toEqual(['start', 'move', 'cancel']);
+        });
+
+        it('cancels on a platform close request', () => {
+            start();
+            press();
+            move({ clientY: 340 });
+
+            requestDismiss(container);
 
             expect(stages()).toEqual(['start', 'move', 'cancel']);
         });
@@ -371,20 +411,89 @@ describe('DragGesture', () => {
         });
     });
 
-    describe('started by the router', () => {
-        // The router keeps every registration until it is disposed, so each test's are released after it.
-        const handles = [];
-        const startRouted = (options = {}) => {
-            const handle = start({ action: 'test.drag', ...options });
-            handles.push(handle);
+    // The popup around the container is active while it is open, as a popover is, and the drag stands above it.
+    describe('inside an active popup', () => {
+        /** @type {import('vitest').Mock} */
+        let dismissed;
 
-            return handle;
-        };
-
-        afterEach(() => {
-            handles.splice(0).forEach(handle => handle.dispose());
-            configure({ bindings: {} });
+        beforeEach(() => {
+            document.body.innerHTML = '<div id="popup"><div id="container"><p class="item" id="one">One</p></div></div><button id="outside">Outside</button>';
+            container = document.querySelector('#container');
+            captured = stubPointerCapture(container);
+            dismissed = vi.fn();
+            const popup = register(document.querySelector('#popup'), { onDismiss: dismissed });
+            popup.activate();
+            handles.push(popup);
         });
+
+        it('stands above the popup while a drag is under way, so Escape cancels the drag and leaves the popup', () => {
+            start();
+            press();
+            move({ clientY: 340 });
+
+            const event = escape();
+
+            expect(stages()).toEqual(['start', 'move', 'cancel']);
+            expect(dismissed).not.toHaveBeenCalled();
+            expect(event.defaultPrevented).toBe(true);
+        });
+
+        it('stands down once the drag is canceled, so the next Escape reaches the popup', () => {
+            start();
+            press();
+            move({ clientY: 340 });
+            escape();
+
+            escape();
+
+            expect(dismissed).toHaveBeenCalledWith('dismiss', 'escape');
+        });
+
+        it('stands down once the drag has dropped', () => {
+            start();
+            press();
+            move({ clientY: 340 });
+            lift({ clientY: 340 });
+
+            escape();
+
+            expect(dismissed).toHaveBeenCalledOnce();
+        });
+
+        it('stands up only once the press has become a drag', () => {
+            start();
+            press();
+
+            escape();
+
+            expect(dismissed).toHaveBeenCalledOnce();
+        });
+
+        it('lets a press elsewhere dismiss nothing while a drag is under way', () => {
+            start();
+            press({ pointerId: 1 });
+            move({ clientY: 340, pointerId: 1 });
+
+            press({ pointerId: 2, on: '#outside' });
+
+            expect(dismissed).not.toHaveBeenCalled();
+            expect(stages()).toEqual(['start', 'move']);
+        });
+
+        it('stands down when disposed mid-drag', () => {
+            const handle = start();
+            press();
+            move({ clientY: 340 });
+            handle.dispose();
+
+            escape();
+
+            expect(dismissed).toHaveBeenCalledOnce();
+        });
+    });
+
+    describe('started by the router', () => {
+        const startRouted = (options = {}) => start({ action: 'test.drag', ...options });
 
         it('declares the press as a route on the container under the action it is given', () => {
             startRouted();

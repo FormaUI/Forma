@@ -9,6 +9,10 @@
  * scrolling ancestor while the pointer is held at an edge, and reports each stage to its
  * caller with the subject, where the pointer is and where the press began. What is being
  * dragged, where it may land, and what landing there means are all the caller's to answer.
+ *
+ * A drag under way is an active registration on the input router, standing above whatever
+ * contains it, so Escape and a platform close request cancel the drag wherever focus is and
+ * leave a popup it began in open, and a press elsewhere dismisses nothing while it lasts.
  */
 
 import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
@@ -34,7 +38,7 @@ import { capture, release } from '../operations/Pointer.js';
  *   How far a press travels before it is a drag, a threshold of zero making the first movement one; which
  *   axis that travel is measured along; whether a drag held at a scrolling edge scrolls; how long a touch
  *   rests before it lifts; the one pointer type the gesture answers, every type when unset; and the action
- *   the press is declared as on the input router in place of the gesture's own listener, so a press a
+ *   the press is declared as on the gesture's registration in place of its own listener, so a press a
  *   nested scope routes never starts it and the host remaps it by that action.
  */
 export function attach(target, options) {
@@ -75,7 +79,7 @@ class DragGesture {
     #scrollStep = 0;
     #scrollScheduler = new FrameScheduler();
     #listeners = new AbortController();
-    #registration = null;
+    #registration;
 
     constructor(container, options) {
         this.#element = container;
@@ -92,23 +96,27 @@ class DragGesture {
 
         const { signal } = this.#listeners;
 
-        // The press is the router's to hand over where an action names it; the rest of the gesture rides the captured pointer.
-        if (options.action) {
-            this.#registration = register(container, {
-                routes: [{
-                    action: options.action,
-                    bindings: [{ type: 'pointerdown', button: 0, ...(this.#pointerType ? { pointerType: this.#pointerType } : {}), when: event => this.#findPressed(event) !== null }],
-                    handle: event => this.#press(event),
-                }],
-            });
-        } else {
+        // The registration is active for as long as a drag lasts, when Escape cancels it and a press elsewhere is
+        // no dismissal; the press that begins one is the router's to hand over where an action names it, and the
+        // rest of the gesture rides the captured pointer.
+        this.#registration = register(container, {
+            escape: 'cancel',
+            pressAway: 'ignore',
+            onDismiss: () => this.cancel(),
+            routes: options.action ? [{
+                action: options.action,
+                bindings: [{ type: 'pointerdown', button: 0, ...(this.#pointerType ? { pointerType: this.#pointerType } : {}), when: event => this.#findPressed(event) !== null }],
+                handle: event => this.#press(event),
+            }] : [],
+        });
+
+        if (!options.action) {
             container.addEventListener('pointerdown', event => this.#handlePointerDown(event), { signal });
         }
 
         container.addEventListener('pointermove', event => this.#handlePointerMove(event), { signal });
         container.addEventListener('pointerup', event => this.#handlePointerUp(event), { signal });
         container.addEventListener('pointercancel', () => this.cancel(), { signal });
-        container.addEventListener('keydown', event => this.#handleKeydown(event), { signal });
 
         // Pointer capture does not stop the compositor scrolling a touch that began on a
         // scrollable area; it cancels the pointer instead. Only refusing the touchmove
@@ -127,7 +135,7 @@ class DragGesture {
     dispose() {
         this.cancel();
         this.#listeners.abort();
-        this.#registration?.dispose();
+        this.#registration.dispose();
     }
 
     /** Abandons a gesture in flight, reporting it as canceled rather than dropped. */
@@ -162,6 +170,7 @@ class DragGesture {
         }
 
         this.#stopAutoScroll();
+        this.#registration.release();
 
         if (this.#pointerId !== null) {
             release(this.#element, this.#pointerId);
@@ -170,6 +179,13 @@ class DragGesture {
         this.#subject = null;
         this.#pointerId = null;
         this.#isDragging = false;
+    }
+
+    /** Marks the press a drag and stands it above whatever contains it, so Escape cancels the drag and nothing else. */
+    #begin() {
+        this.#isDragging = true;
+        this.#registration.activate();
+        this.#onStart?.(this.#context());
     }
 
     #handlePointerDown(event) {
@@ -226,8 +242,7 @@ class DragGesture {
         }
 
         capture(this.#element, this.#pointerId);
-        this.#isDragging = true;
-        this.#onStart?.(this.#context());
+        this.#begin();
     }
 
     #handlePointerMove(event) {
@@ -253,8 +268,7 @@ class DragGesture {
                 return;
             }
 
-            this.#isDragging = true;
-            this.#onStart?.(this.#context());
+            this.#begin();
         }
 
         event.preventDefault();
@@ -284,13 +298,6 @@ class DragGesture {
         return this.#axis === 'any'
             ? Math.hypot(event.clientX - this.#startX, event.clientY - this.#startY)
             : Math.abs(event.clientY - this.#startY);
-    }
-
-    #handleKeydown(event) {
-        if (event.key === 'Escape' && this.#isDragging) {
-            event.preventDefault();
-            this.cancel();
-        }
     }
 
     #updateAutoScroll() {
