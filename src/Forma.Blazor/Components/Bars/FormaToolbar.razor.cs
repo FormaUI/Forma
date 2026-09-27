@@ -269,8 +269,13 @@ public sealed partial class FormaToolbar : FormaElementBase
             ? new Row(group.Id, group, group.Items)
             : new Row(item.Id, null, [item]));
 
-    private ToolbarOption GetActiveOption(ToolbarMenu menu)
-        => menu.Options.FirstOrDefault(IsOptionActive) ?? menu.Options[0];
+    /// <summary>The option the menu shows as chosen, or null when none is, so a menu never passes its first option off as the value in force.</summary>
+    private ToolbarOption? GetActiveOption(ToolbarMenu menu)
+        => menu.Options.FirstOrDefault(IsOptionActive);
+
+    /// <summary>Whether the menu chooses among swatches, which its icon alone stands for while none is chosen; a swatch menu with no icon shows its name like any other.</summary>
+    private static bool OffersSwatches(ToolbarMenu menu)
+        => menu.Options.Any(option => option.Swatch is not null);
 
     /// <summary>Whether a toggle is on, because it says so itself or because the host reports its id active.</summary>
     private bool IsToggleActive(ToolbarAction action)

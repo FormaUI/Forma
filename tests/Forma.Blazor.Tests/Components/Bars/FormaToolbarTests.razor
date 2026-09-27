@@ -455,6 +455,53 @@
             Assert.Contains("background-color:#d32f2f", cut.Find(".forma-toolbar-menu-bar").GetAttribute("style"));
         }
 
+        // A first option shown as the value would claim a size or a family the text does not have.
+        [Fact]
+        public void Should_show_the_menu_s_own_title_until_an_option_is_active()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new ToolbarMenu
+            {
+                Id = "size",
+                Title = "Font Size",
+                Options =
+                [
+                    new() { Id = "8", Title = "8", Command = "size.8" },
+                    new() { Id = "12", Title = "12", Command = "size.12" },
+                ],
+            });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.Equal("Font Size", cut.Find(".forma-toolbar-menu-value").TextContent);
+        }
+
+        // The icon stands for the menu until a color is chosen; without one, the name does, as for any menu.
+        [Fact]
+        public void Should_show_the_icon_alone_until_a_color_is_active()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new ToolbarMenu
+            {
+                Id = "color",
+                Title = "Color",
+                Icon = Glyph.FontColor,
+                Options = [new() { Id = "red", Title = "Red", Command = "color.red", Swatch = "#d32f2f" }],
+            });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-toolbar-menu-bar")),
+                () => Assert.Empty(cut.FindAll(".forma-toolbar-menu-value")));
+        }
+
         [Fact]
         public void Should_reject_a_menu_with_no_options()
         {

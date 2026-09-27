@@ -29,13 +29,20 @@
                                 {
                                     <FormaIcon Icon="menuIcon" Size="IconSize.Small" />
                                 }
-                                @if (GetActiveOption(menu).Swatch is { } activeSwatch)
+                                @if (GetActiveOption(menu) is { } activeOption)
                                 {
-                                    <span class="forma-toolbar-menu-bar" style="@($"background-color:{activeSwatch}")" aria-hidden="true"></span>
+                                    @if (activeOption.Swatch is { } activeSwatch)
+                                    {
+                                        <span class="forma-toolbar-menu-bar" style="@($"background-color:{activeSwatch}")" aria-hidden="true"></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="forma-toolbar-menu-value">@activeOption.Title</span>
+                                    }
                                 }
-                                else
+                                else if (menu.Icon is null || !OffersSwatches(menu))
                                 {
-                                    <span class="forma-toolbar-menu-value">@GetActiveOption(menu).Title</span>
+                                    <span class="forma-toolbar-menu-value">@menu.Title</span>
                                 }
                                 <FormaIcon Icon="Glyph.ChevronDown" Size="IconSize.Small" Class="forma-toolbar-menu-caret" />
                             </Trigger>

@@ -42,7 +42,7 @@ public sealed class RichTextSourceViewPlugin : IComposerViewPlugin
     public string Title => "Source";
 
     /// <inheritdoc />
-    public Icon Icon => Glyph.Code;
+    public Icon Icon => Glyph.FileCode;
 
     /// <inheritdoc />
     public Type ViewComponent => typeof(FormaRichTextSource);

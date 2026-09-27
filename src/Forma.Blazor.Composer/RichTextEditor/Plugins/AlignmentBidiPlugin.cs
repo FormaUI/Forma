@@ -55,8 +55,8 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
                 Title = "Text Direction",
                 Items =
                 [
-                    new ToolbarToggle { Id = "dir-ltr", Title = "Left to Right", Icon = Glyph.TextDirectionLtr, Command = DirectionLtrCommand },
-                    new ToolbarToggle { Id = "dir-rtl", Title = "Right to Left", Icon = Glyph.TextDirectionRtl, Command = DirectionRtlCommand },
+                    new ToolbarToggle { Id = "dir-ltr", Title = "Left to Right", Icon = Glyph.ParagraphDirectionLtr, Command = DirectionLtrCommand },
+                    new ToolbarToggle { Id = "dir-rtl", Title = "Right to Left", Icon = Glyph.ParagraphDirectionRtl, Command = DirectionRtlCommand },
                 ],
             },
         ]),
