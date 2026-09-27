@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer;
 
+using System.Globalization;
+
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Localization;
@@ -38,6 +40,9 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
         => typeof(FormaComposer);
 
     private ComposerToolbarLayout _layout = default!;
+    private LayoutInputs? _layoutInputs;
+    private IReadOnlyList<ComposerToolbarRowLayout> _bars = [];
+    private IReadOnlyList<ToolbarItem> _pluginItems = [];
     private bool _arePluginsShown;
 
     private ComposerPluginLocalizer Localizer
@@ -52,35 +57,13 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
 
     /// <summary>The bars to render, small rows folded together so none is spent on a handful of commands.</summary>
     private IReadOnlyList<ComposerToolbarRowLayout> Bars
-    {
-        get
-        {
-            var bars = new List<ComposerToolbarRowLayout>();
+        => _bars;
 
-            foreach (var row in EditorRows.Where(row => row.Items.Count > 0))
-            {
-                var count = CountLeaves(row.Items);
-                var last = bars.Count > 0 ? bars[^1] : null;
-
-                if (last is not null && CountLeaves(last.Items) + count <= CommandsPerBar)
-                {
-                    bars[^1] = last with { Items = [.. last.Items, .. row.Items] };
-                }
-                else
-                {
-                    bars.Add(row);
-                }
-            }
-
-            return bars.Count > 0 ? bars : [_layout.Rows.First(row => row.IsBuiltIn)];
-        }
-    }
+    private IReadOnlyList<ToolbarItem> PluginItems
+        => _pluginItems;
 
     private IEnumerable<ComposerToolbarRowLayout> EditorRows
         => _layout.Rows.Where(row => row.Id is not (ComposerRows.Plugins or ComposerRows.Selection));
-
-    private IReadOnlyList<ToolbarItem> PluginItems
-        => _layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Plugins)?.Items ?? [];
 
     private void TogglePlugins()
         => _arePluginsShown = !_arePluginsShown;
@@ -89,13 +72,50 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     private static int CountLeaves(IEnumerable<ToolbarItem> items)
         => items.Sum(item => item is ToolbarGroup group ? group.Items.Count : 1);
 
+    // The layout is built from what the surface hands over and the reader's language, none of which changes
+    // between one render and the next as the selection moves, so it is built again only when one of them does.
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Editor);
 
+        var inputs = new LayoutInputs(Editor, View, Plugins, CultureInfo.CurrentUICulture.Name);
+
+        if (inputs == _layoutInputs)
+        {
+            return;
+        }
+
+        _layoutInputs = inputs;
         _layout = View is null
             ? ComposerToolbarLayout.Create(Editor, Plugins, Localizer.Localize)
             : ComposerToolbarLayout.CreateForView(View, Plugins, Localizer.Localize);
+        _bars = FoldBars();
+        _pluginItems = _layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Plugins)?.Items ?? [];
     }
+
+    private List<ComposerToolbarRowLayout> FoldBars()
+    {
+        var bars = new List<ComposerToolbarRowLayout>();
+
+        foreach (var row in EditorRows.Where(row => row.Items.Count > 0))
+        {
+            var count = CountLeaves(row.Items);
+            var last = bars.Count > 0 ? bars[^1] : null;
+
+            if (last is not null && CountLeaves(last.Items) + count <= CommandsPerBar)
+            {
+                bars[^1] = last with { Items = [.. last.Items, .. row.Items] };
+            }
+            else
+            {
+                bars.Add(row);
+            }
+        }
+
+        return bars.Count > 0 ? bars : [_layout.Rows.First(row => row.IsBuiltIn)];
+    }
+
+    /// <summary>What the layout is built from, compared by identity, since the composer hands the same instances over across renders.</summary>
+    private sealed record LayoutInputs(IComposerEditorPlugin Editor, IComposerViewPlugin? View, IReadOnlyList<IComposerPlugin> Plugins, string Culture);
 }

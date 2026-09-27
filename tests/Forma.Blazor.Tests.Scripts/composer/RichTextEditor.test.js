@@ -516,31 +516,57 @@ describe('RichTextEditor', () => {
         expect(editor.querySelector('a').getAttribute('href')).toBe('/media/report.pdf');
     });
 
-    it('reports a selection once until it changes', () => {
-        attach(editor, { owner });
-        const text = editor.querySelector('p').firstChild;
-        const selection = window.getSelection();
-        const place = (start, end) => {
+    describe('reporting the selection', () => {
+        const reports = () => owner.invokeMethodAsync.mock.calls.filter(([method]) => method === 'HandleSelectionChangedAsync');
+        const place = (node, start, end) => {
             const range = document.createRange();
-            range.setStart(text, start);
-            range.setEnd(text, end);
+            range.setStart(node, start);
+            range.setEnd(node, end);
+            const selection = window.getSelection();
             selection.removeAllRanges();
             selection.addRange(range);
+            document.dispatchEvent(new Event('selectionchange'));
         };
-        const reports = () => owner.invokeMethodAsync.mock.calls.filter(([method]) => method === 'HandleSelectionChangedAsync');
 
-        place(0, 5);
-        document.dispatchEvent(new Event('selectionchange'));
-        editor.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
-        editor.dispatchEvent(new Event('click', { bubbles: true }));
+        it('reports a selection once until it changes', () => {
+            attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
 
-        expect(reports()).toHaveLength(1);
+            place(text, 0, 5);
+            editor.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+            editor.dispatchEvent(new Event('click', { bubbles: true }));
 
-        place(0, 11);
-        document.dispatchEvent(new Event('selectionchange'));
+            expect(reports()).toHaveLength(1);
+            expect(reports()[0][1]).toMatchObject({ start: 0, end: 5, blockType: 'p' });
+        });
 
-        expect(reports()).toHaveLength(2);
-        expect(reports()[1][1]).toMatchObject({ start: 0, end: 11 });
+        // Typing moves the caret with every key, and nothing across the circuit reads where it is.
+        it('leaves a caret moving within one formatting unreported', () => {
+            attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            place(text, 2, 2);
+            place(text, 3, 3);
+            editor.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+            place(text, 7, 7);
+
+            expect(reports()).toHaveLength(1);
+        });
+
+        it('reports again when the selection becomes a range, or moves into other formatting', () => {
+            editor.innerHTML = '<p>Hello <strong>bold</strong> world</p>';
+            attach(editor, { owner });
+            const plain = editor.querySelector('p').firstChild;
+            const bold = editor.querySelector('strong').firstChild;
+
+            place(plain, 1, 1);
+            place(plain, 1, 4);
+            place(bold, 1, 1);
+
+            expect(reports()).toHaveLength(3);
+            expect(reports()[1][1]).toMatchObject({ isCollapsed: false, activeStyles: expect.not.arrayContaining(['bold']) });
+            expect(reports()[2][1]).toMatchObject({ isCollapsed: true, activeStyles: expect.arrayContaining(['bold']) });
+        });
     });
 
     it('stops reporting after disposal', () => {

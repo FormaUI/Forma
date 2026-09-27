@@ -44,7 +44,7 @@ class RichTextEditor {
     #isDisposed = false;
     #lastHtml = null;
 
-    /** The selection the owner was last told of, as its snapshot serializes. */
+    /** What the owner was last told of the selection: the block, the styles and whether it is a caret. */
     #lastSelectionKey = null;
 
     constructor(target, { owner, debounceDelay = 400 }) {
@@ -108,6 +108,16 @@ class RichTextEditor {
         }
 
         this.#tell(RichTextEditor.#Activations[found.kind], MediaMarkup.read(found.kind, found.element));
+    }
+
+    /**
+     * What makes one selection snapshot distinct from the last: the block, the styles and whether it is a caret,
+     * which are what the toolbar reflects. The offsets change with every keystroke and drive nothing across the
+     * circuit, so a caret moving within one formatting costs no round trip; the offsets a report carries are those
+     * of the change that raised it.
+     */
+    static #keyOf(snapshot) {
+        return snapshot ? JSON.stringify([snapshot.blockType, snapshot.activeStyles, snapshot.isCollapsed]) : null;
     }
 
     /** Reports to the owner, letting go of the rejection a disposed owner answers with. */
@@ -357,7 +367,7 @@ class RichTextEditor {
         const html = InlineFormatter.stripMarkers(this.#canvas.html);
         this.#lastHtml = html;
         const selection = this.#inspector.snapshot();
-        this.#lastSelectionKey = selection ? JSON.stringify(selection) : null;
+        this.#lastSelectionKey = RichTextEditor.#keyOf(selection);
 
         return { html, selection };
     }
@@ -418,7 +428,7 @@ class RichTextEditor {
         }
     }
 
-    /** Remembers the selection and tells the owner of it, once per distinct snapshot. */
+    /** Remembers the selection and tells the owner of it, once per distinct block, styles and caret-or-range. */
     #reportSelection() {
         if (this.#isDisposed) {
             return;
@@ -430,7 +440,7 @@ class RichTextEditor {
             return;
         }
 
-        const key = JSON.stringify(snapshot);
+        const key = RichTextEditor.#keyOf(snapshot);
         if (key === this.#lastSelectionKey) {
             return;
         }

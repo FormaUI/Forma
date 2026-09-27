@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer;
 
+using System.Globalization;
+
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Localization;
@@ -38,17 +40,31 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
 
     private ComposerSelectionBar SelectionBar { get; set; } = new([], ComposerKeyBindingCatalog.Empty);
 
+    private SelectionBarInputs? _selectionBarInputs;
+
     private ComposerPluginLocalizer Localizer
         => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
 
+    // The selection bar's items come from the same layout as the toolbar's, built again only when what it is built from changes.
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Editor);
 
+        var inputs = new SelectionBarInputs(Editor, Plugins, KeyBindings, CultureInfo.CurrentUICulture.Name);
+
+        if (inputs == _selectionBarInputs)
+        {
+            return;
+        }
+
+        _selectionBarInputs = inputs;
         var layout = ComposerToolbarLayout.Create(Editor, Plugins, Localizer.Localize);
         var items = layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Selection)?.Items ?? [];
 
         SelectionBar = new ComposerSelectionBar(items, KeyBindings);
     }
+
+    /// <summary>What the selection bar is built from, compared by identity, since the composer hands the same instances over across renders.</summary>
+    private sealed record SelectionBarInputs(IComposerEditorPlugin Editor, IReadOnlyList<IComposerPlugin> Plugins, ComposerKeyBindingCatalog KeyBindings, string Culture);
 }
