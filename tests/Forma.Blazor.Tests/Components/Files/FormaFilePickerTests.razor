@@ -8,6 +8,23 @@
     public sealed class Component
     {
         [Fact]
+        public void Should_take_a_drop_of_files_as_its_drop_action()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            var zone = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/FileDropZone.js");
+
+            // Act
+            ctx.Render(@<FormaFilePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+
+            // Assert
+            var options = Assert.Single(zone.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Multiple(
+                () => Assert.Equal("file-picker.drop", options.GetType().GetProperty("action")!.GetValue(options)),
+                () => Assert.Equal("forma-file-picker-dragging", options.GetType().GetProperty("activeClass")!.GetValue(options)));
+        }
+
+        [Fact]
         public void Should_render_the_default_prompt()
         {
             // Arrange

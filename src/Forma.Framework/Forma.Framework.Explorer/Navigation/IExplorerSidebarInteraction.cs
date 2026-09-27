@@ -22,9 +22,6 @@ public interface IExplorerSidebarInteraction
     /// <summary>Asks to delete the folder.</summary>
     Task DeleteFolderAsync(ICatalogFolderItem item);
 
-    /// <summary>Reports what was dropped onto the folder.</summary>
-    Task DropOnFolderAsync(ICatalogFolderItem? item);
-
     /// <summary>Records the folder as the one being dragged.</summary>
     Task BeginFolderDragAsync(ICatalogFolderItem item);
 

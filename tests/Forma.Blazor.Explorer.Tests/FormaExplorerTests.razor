@@ -9,6 +9,11 @@
 @using Forma.Framework.Browser.Interop.Behaviors
 
 @code {
+    /// <summary>Drops what is being dragged on the row, as the sidebar's drop zone tells it from the row's key.</summary>
+    private static Task DropOnAsync<TComponent>(Bunit.IRenderedComponent<TComponent> cut, AngleSharp.Dom.IElement row)
+        where TComponent : class, Microsoft.AspNetCore.Components.IComponent
+        => cut.InvokeAsync(() => cut.FindComponent<FormaExplorerSidebar>().Instance.HandleDropAsync(row.GetAttribute("data-drop-key")));
+
     public sealed class Component
     {
         [Fact]
@@ -513,7 +518,57 @@
         }
 
         [Fact]
-        public void Should_raise_on_drop_when_item_is_dropped_on_folder()
+        public void Should_make_the_folder_tree_one_drop_zone_whose_targets_are_the_rows_that_take_a_drop()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var zone = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/DropZone.js");
+            var folders = new List<ICatalogItem>
+            {
+                new CatalogFolderItem { Key = "races", Name = "Races", Capabilities = CatalogItemCapabilities.Open | CatalogItemCapabilities.Drop, Resource = new FolderResourceInfo("races") },
+                new CatalogFolderItem { Key = "sealed", Name = "Sealed", Capabilities = CatalogItemCapabilities.Open, Resource = new FolderResourceInfo("sealed") }
+            };
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" />);
+
+            // Assert
+            var options = Assert.Single(zone.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
+            var rows = cut.FindAll(".forma-explorer-folder-row");
+            Assert.Multiple(
+                () => Assert.Equal("explorer.drop", options.GetType().GetProperty("action")!.GetValue(options)),
+                () => Assert.Equal("[data-drop-target]", options.GetType().GetProperty("targets")!.GetValue(options)),
+                () => Assert.Equal("move", options.GetType().GetProperty("dropEffect")!.GetValue(options)),
+                () => Assert.Equal("true", rows[0].GetAttribute("data-drop-target")),
+                () => Assert.Null(rows[0].GetAttribute("data-drop-key")),
+                () => Assert.Equal("races", rows[1].GetAttribute("data-drop-key")),
+                () => Assert.Equal("true", rows[1].GetAttribute("data-drop-target")),
+                () => Assert.Null(rows[2].GetAttribute("data-drop-target")));
+        }
+
+        [Fact]
+        public async Task Should_end_the_drag_with_nothing_dropped_when_the_key_names_a_folder_that_has_gone()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var item = new ImageResourceInfo("https://example.com/photo.jpg");
+            var folder = new FolderResourceInfo("vacation") { Name = "Vacation" };
+            CatalogDropRequest? dropRequest = null;
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll([item]))"
+                                                Folders="@(CatalogItem.ForAll([folder]))"
+                                                OnDrop="@(req => { dropRequest = req; return Task.CompletedTask; })" />);
+            cut.Find(".forma-explorer-item").DragStart();
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaExplorerSidebar>().Instance.HandleDropAsync("gone"));
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
+
+            // Assert
+            Assert.Null(dropRequest);
+        }
+
+        [Fact]
+        public async Task Should_raise_on_drop_when_item_is_dropped_on_folder()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -527,7 +582,7 @@
 
             // Act - Start drag on item, then drop on folder in sidebar
             cut.Find(".forma-explorer-item").DragStart();
-            cut.FindAll(".forma-explorer-folder-row")[1].Drop();
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
 
             // Assert
             Assert.NotNull(dropRequest);
@@ -536,7 +591,7 @@
         }
 
         [Fact]
-        public void Should_re_read_the_window_after_a_resource_is_dropped_on_a_folder()
+        public async Task Should_re_read_the_window_after_a_resource_is_dropped_on_a_folder()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -552,14 +607,14 @@
 
             // Act
             cut.Find(".forma-explorer-item").DragStart();
-            cut.FindAll(".forma-explorer-folder-row")[1].Drop();
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
 
             // Assert
             cut.WaitForAssertion(() => Assert.True(provider.Queries.Count > asked));
         }
 
         [Fact]
-        public void Should_raise_on_folder_drop_when_folder_is_dropped_on_another_folder()
+        public async Task Should_raise_on_folder_drop_when_folder_is_dropped_on_another_folder()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -573,7 +628,7 @@
 
             // Act - Start drag on source folder, drop on target folder
             cut.FindAll(".forma-explorer-folder-row")[1].DragStart();
-            cut.FindAll(".forma-explorer-folder-row")[2].Drop();
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[2]);
 
             // Assert
             Assert.NotNull(folderDropRequest);
@@ -980,7 +1035,7 @@
         }
 
         [Fact]
-        public void Should_refuse_a_drop_on_a_folder_that_does_not_accept_one()
+        public async Task Should_refuse_a_drop_on_a_folder_that_does_not_accept_one()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -996,14 +1051,14 @@
 
             // Act
             cut.Find(".forma-explorer-item").DragStart();
-            cut.FindAll(".forma-explorer-folder-row")[1].Drop();
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
 
             // Assert
             Assert.Null(request);
         }
 
         [Fact]
-        public void Should_move_only_the_selected_items_that_can_move()
+        public async Task Should_move_only_the_selected_items_that_can_move()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1029,7 +1084,7 @@
 
             // Act
             cut.FindAll(".forma-explorer-item")[0].DragStart();
-            cut.FindAll(".forma-explorer-folder-row")[1].Drop();
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
 
             // Assert
             Assert.NotNull(request);
@@ -1908,7 +1963,7 @@
         }
 
         [Fact]
-        public void Should_refuse_a_folder_drop_that_would_nest_a_folder_inside_itself()
+        public async Task Should_refuse_a_folder_drop_that_would_nest_a_folder_inside_itself()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1921,14 +1976,14 @@
 
             // Act
             cut.FindAll(".forma-explorer-folder-row")[1].DragStart();
-            cut.FindAll(".forma-explorer-folder-row")[2].Drop();
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[2]);
 
             // Assert
             Assert.Null(request);
         }
 
         [Fact]
-        public void Should_forget_a_dragged_folder_after_it_is_dropped_on_the_root()
+        public async Task Should_forget_a_dragged_folder_after_it_is_dropped_on_the_root()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1945,11 +2000,11 @@
             // Act - drag a folder onto the root, which cannot receive it
             var rows = cut.FindAll(".forma-explorer-folder-row");
             rows[1].DragStart();
-            rows[0].Drop();
+            await DropOnAsync(cut, rows[0]);
 
             // Act - drag a media item onto a real folder
             cut.Find(".forma-explorer-item").DragStart();
-            cut.FindAll(".forma-explorer-folder-row")[2].Drop();
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[2]);
 
             // Assert
             Assert.Null(folderRequest);
@@ -1958,7 +2013,7 @@
         }
 
         [Fact]
-        public void Should_move_items_to_the_root_when_they_are_dropped_on_all_media()
+        public async Task Should_move_items_to_the_root_when_they_are_dropped_on_all_media()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1971,7 +2026,7 @@
 
             // Act
             cut.Find(".forma-explorer-item").DragStart();
-            cut.FindAll(".forma-explorer-folder-row")[0].Drop();
+            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[0]);
 
             // Assert
             Assert.NotNull(request);
@@ -1980,7 +2035,7 @@
         }
 
         [Fact]
-        public void Should_move_a_nested_folder_to_the_top_level_when_dropped_on_all_media()
+        public async Task Should_move_a_nested_folder_to_the_top_level_when_dropped_on_all_media()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1994,7 +2049,7 @@
             // Act
             var rows = cut.FindAll(".forma-explorer-folder-row");
             rows[2].DragStart();
-            rows[0].Drop();
+            await DropOnAsync(cut, rows[0]);
 
             // Assert
             Assert.NotNull(request);
@@ -2003,7 +2058,7 @@
         }
 
         [Fact]
-        public void Should_ignore_a_top_level_folder_dropped_on_all_media()
+        public async Task Should_ignore_a_top_level_folder_dropped_on_all_media()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2016,7 +2071,7 @@
             // Act
             var rows = cut.FindAll(".forma-explorer-folder-row");
             rows[1].DragStart();
-            rows[0].Drop();
+            await DropOnAsync(cut, rows[0]);
 
             // Assert
             Assert.Null(request);

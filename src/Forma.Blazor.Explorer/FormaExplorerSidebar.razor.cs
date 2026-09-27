@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Navigation;
 using Forma.Framework.Catalog.Selection;
@@ -8,11 +9,12 @@ using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Explorer.Selection;
+using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
-/// <summary>Folders tree navigation sidebar with drag-and-drop target support for the explorer.</summary>
+/// <summary>Folders tree navigation sidebar for the explorer, every folder row a drop target for the items and folders dragged onto it.</summary>
 public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorerSidebarView, IExplorerSidebarInteraction
 {
     /// <summary>The currently active folder, or null for every item.</summary>
@@ -45,6 +47,8 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
     /// <summary>How many items the whole explorer holds.</summary>
     [Parameter] public int TotalCount { get; set; }
 
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
+
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaExplorer);
@@ -53,7 +57,20 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
 
     private const double MaxTreeHeight = 30;
 
+    private const string DropAction = "explorer.drop";
+
+    // The tree is one drop zone; each row that takes a drop is marked and named by its folder's key, the root's row by none.
+    private static readonly DropZoneOptions TreeDropZoneOptions = new() { Targets = "[data-drop-target]", DropEffect = DropEffect.Move };
+
     private readonly HashSet<string> _collapsedFolderKeys = [];
+
+    private DropZone _dropZone = default!;
+
+    private DotNetObjectReference<FormaExplorerSidebar>? _selfReference;
+
+    private ElementReference _tree;
+
+    private bool _isDropZoneAttached;
 
     private string TitleId
         => $"forma-explorer-folders-{Context.RuntimeId:N}";
@@ -100,8 +117,51 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
     private double MeasuredTreeHeight
         => Math.Clamp((Folders.Count + 1) * 2, MinTreeHeight, MaxTreeHeight);
 
-    internal static void HandleDragOver(DragEventArgs args)
-        => args.DataTransfer.DropEffect = "move";
+    /// <inheritdoc />
+    protected override void OnInitialized()
+        => _dropZone = new DropZone(Context.JS);
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_isDropZoneAttached)
+        {
+            return;
+        }
+
+        _selfReference ??= DotNetObjectReference.Create(this);
+
+        // The drop is a route the script declares itself, so the host's policy reaches the router before it does.
+        await InputRouter.ConfigureAsync();
+        _isDropZoneAttached = await _dropZone.AttachAsync(_tree, DropAction, _selfReference, TreeDropZoneOptions);
+    }
+
+    /// <summary>Takes a drop on the row the key names, or on the root's row when it names none; a key naming no folder is a row that has since gone, and the drag ends with nothing dropped.</summary>
+    [JSInvokable]
+    public Task HandleDropAsync(string? key)
+    {
+        if (key is null)
+        {
+            return ItemInteraction.DropOnItemAsync(null);
+        }
+
+        if (FolderTree.Find(key) is { } folder)
+        {
+            return ItemInteraction.DropOnItemAsync(folder);
+        }
+
+        ItemInteraction.EndDrag();
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _dropZone.DisposeAsync();
+        _selfReference?.Dispose();
+        await base.DisposeAsyncCore();
+    }
 
     private IReadOnlyList<ICatalogFolderItem> GetChildren(string? parent)
         => FolderTree.GetListedChildren(parent);
@@ -150,9 +210,6 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
 
     Task IExplorerSidebarInteraction.CreateFolderAsync(ICatalogFolderItem? parent)
         => CreateFolderAsync(parent);
-
-    Task IExplorerSidebarInteraction.DropOnFolderAsync(ICatalogFolderItem? item)
-        => ItemInteraction.DropOnItemAsync(item);
 
     Task IExplorerSidebarInteraction.BeginFolderDragAsync(ICatalogFolderItem item)
     {

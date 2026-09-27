@@ -178,6 +178,18 @@ describe('InputRouter structural routing', () => {
         expect(event.defaultPrevented).toBe(true);
     });
 
+    it('listens on the scope itself for a drag passing over and prevents the default there', () => {
+        const over = vi.fn();
+        scope(grid(), { routes: [route('test.over', over, { type: 'dragover' })] });
+        const event = new Event('dragover', { bubbles: true, cancelable: true });
+        Object.defineProperty(event, 'dataTransfer', { value: { types: ['Files'] } });
+
+        cell().dispatchEvent(event);
+
+        expect(over).toHaveBeenCalledOnce();
+        expect(event.defaultPrevented).toBe(true);
+    });
+
     it('runs the owning handler once when nested scopes both listen for wheel', () => {
         const outer = vi.fn();
         const inner = vi.fn();

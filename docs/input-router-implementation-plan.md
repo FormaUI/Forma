@@ -50,7 +50,14 @@ place of its own press listener, matching the primary button and the pointer typ
 through the pointer vocabulary and only a press on something it can drag; `PanGesture` names
 the container's action, `file-viewer.pan` for the viewer's image frame, so a press inside a
 popover over the frame is the popover's. The reorder and the selection bar's handle still start
-from the gesture's own listener. Active drags and the selection bar are not on the router:
+from the gesture's own listener. `DropZone` declares the drag passing over and the drop as one
+route on the zone under the action the caller names, matching only the data kinds it accepts, so
+the file picker's zone takes a drag carrying files alone and a drop a nested scope routes never
+reaches the zone around it. The explorer's folder rows are the targets of one zone on the folder
+tree rather than a scope each, which departs from the design's matrix naming the folder's scope
+as the owner: a scope per row would cost a round trip per folder on every explorer render, so the
+tree registers once and the script finds the row under the drop and tells the sidebar its
+folder's key. Active drags and the selection bar are not on the router:
 `DragGesture` cancels a drag from its own Escape listener, and `SelectionFollower` returns focus
 to the editor from its own.
 Of the owners in step 3, the two shortcut sets, `FormaSelect` and `FormaDropDownMenu` have
@@ -174,7 +181,7 @@ existing components, landing as several coherent commits.
    and the backdrop z-indexes go (done).
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: `FormaComposer`'s
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
-   wheel tracks of `Wheel` (done), `PanGesture` (done), `DropZone` and `FormaExplorer`'s drop targets,
+   wheel tracks of `Wheel` (done), `PanGesture` (done), `DropZone` and `FormaExplorer`'s drop targets (done),
    `Focus.js` (done), and the components that own navigation keys — `FormaSelect`,
    `FormaDropDownMenu`, `FormaTabs`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`
    and `FormaSortableList` (all done). `NavigationGuard` is retired in favour of the

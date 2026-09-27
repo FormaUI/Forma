@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Files;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Files;
+using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Components.Forms;
 public sealed partial class FormaFilePicker : FormaElementBase
 {
     private const string DraggingClass = "forma-file-picker-dragging";
+    private const string DropAction = "file-picker.drop";
 
     /// <summary>The files the picker accepts.</summary>
     [Parameter] public FilePickerOptions Options { get; set; } = FilePickerOptions.Default;
@@ -23,6 +25,8 @@ public sealed partial class FormaFilePicker : FormaElementBase
 
     /// <summary>Replaces the default drop zone text, which also serves as the input's accessible name.</summary>
     [Parameter] public string? Prompt { get; set; }
+
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private bool _isAttached;
 
@@ -62,7 +66,9 @@ public sealed partial class FormaFilePicker : FormaElementBase
     {
         if (!_isAttached)
         {
-            _isAttached = await _fileDropZone.AttachAsync(_dropZoneElement, DraggingClass);
+            // The drop is a route the script declares itself, so the host's policy reaches the router before it does.
+            await InputRouter.ConfigureAsync();
+            _isAttached = await _fileDropZone.AttachAsync(_dropZoneElement, DropAction, DraggingClass);
         }
     }
 

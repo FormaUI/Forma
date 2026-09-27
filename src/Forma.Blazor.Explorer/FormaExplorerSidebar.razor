@@ -36,13 +36,11 @@
         </div>
     </div>
 
-    <ul class="forma-explorer-folder-tree" role="tree" style="@TreeSizeStyle">
+    <ul class="forma-explorer-folder-tree" role="tree" style="@TreeSizeStyle" @ref="_tree">
         <li role="treeitem" aria-selected="@(CurrentFolder is null ? "true" : "false")">
             <div class="forma-explorer-folder-row @(CurrentFolder is null ? "is-active" : "")"
                  style="--forma-explorer-folder-depth: 0"
-                 @ondragover="HandleDragOver"
-                 @ondragover:preventDefault="true"
-                 @ondrop="() => ItemInteraction.DropOnItemAsync(null)">
+                 data-drop-target="true">
                 <span class="forma-explorer-folder-twisty is-empty" aria-hidden="true"></span>
                 <button type="button"
                         class="forma-explorer-folder-target"

@@ -24,10 +24,9 @@
     <div class="forma-explorer-folder-row @(isCurrent ? "is-active" : "") @(selected ? "is-selected" : "") @Item.GetStateClasses()"
          style="--forma-explorer-folder-depth: @Depth"
          draggable="@draggable"
-         @ondragstart="() => Interaction.BeginFolderDragAsync(Item)"
-         @ondragover="args => FormaExplorerSidebar.HandleDragOver(args)"
-         @ondragover:preventDefault="acceptsDrop"
-         @ondrop="() => Interaction.DropOnFolderAsync(Item)">
+         data-drop-target="@(acceptsDrop ? "true" : null)"
+         data-drop-key="@Item.Key"
+         @ondragstart="() => Interaction.BeginFolderDragAsync(Item)">
         @if (hasActions)
         {
             <div class="forma-explorer-folder-actions">

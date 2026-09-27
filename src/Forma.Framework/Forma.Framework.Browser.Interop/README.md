@@ -23,7 +23,7 @@ have no wrapper because only other scripts attach them.
 | `AutofillTracker.js` | `AutofillTracker` | Marks a field the browser filled in without the user typing. |
 | `Breakpoint.js` | `Breakpoint` | Tells the owner, through `HandleBreakpointAsync`, which layout tier a stylesheet has put the target in. |
 | `DragGesture.js` | — | The press-move-release of a drag, with pointer capture and edge scrolling, reported to the script that composes it; the press is a route on the input router where the script names an action. |
-| `DropZone.js` | — | A drag-and-drop target, marked while a drag is over it. |
+| `DropZone.js` | `DropZone` | A drag-and-drop target whose drop is a route on the input router, marked while a drag is over it, telling the owner through `HandleDropAsync` which of its targets took the drop. |
 | `FileDropZone.js` | `FileDropZone` | Hands dropped files to the file input inside an element. |
 | `FilePreview.js` | `FilePreview` | Thumbnails rendered from the browser's own `File` objects into a container's images. |
 | `Focus.js` | `Focus` | Decides where Tab and the arrow keys go inside a surface: wrapping among its controls, visiting named regions first, or roving as one Tab stop. |

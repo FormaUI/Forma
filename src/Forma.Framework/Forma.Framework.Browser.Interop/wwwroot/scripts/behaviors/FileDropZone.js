@@ -9,9 +9,9 @@ import { attach as attachDropZone } from './DropZone.js';
 
 /**
  * @param {HTMLElement} target
- * @param {{ activeClass?: string }} options
+ * @param {{ action: string, activeClass?: string }} options The action the drop is routed as, and the class marking the target while a drag is over it.
  */
-export function attach(target, options = {}) {
+export function attach(target, options) {
     return new FileDropZone(target, options);
 }
 
@@ -19,9 +19,13 @@ class FileDropZone {
     #target;
     #zone;
 
-    constructor(target, { activeClass }) {
+    constructor(target, { action, activeClass }) {
         this.#target = target;
+
+        // Only a drag carrying files is the zone's; anything else keeps its default.
         this.#zone = attachDropZone(target, {
+            action,
+            accepts: ['Files'],
             activeClass,
             onDrop: transfer => this.#handleDrop(transfer),
         });
