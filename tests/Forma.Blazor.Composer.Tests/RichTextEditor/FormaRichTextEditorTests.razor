@@ -1,4 +1,5 @@
 @using Forma.Blazor.Components.Composer.Plugins
+@using Forma.Framework.Composer.Interop
 @inherits FormaBunitContext
 @code {
     public sealed class Component
@@ -83,6 +84,25 @@
                 Assert.NotNull(menu.QuerySelector(".forma-composer-selection-bar-handle"));
                 Assert.Equal(4, menu.QuerySelectorAll("[role='toolbar'] button").Length);
             });
+        }
+
+        // A screen reader hears the formatting a shortcut or a button changed, which the canvas itself never says.
+        [Fact]
+        public void Should_announce_a_formatting_a_command_turned_on()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var canvas = ctx.JSInterop.SetupModule("./_content/forma/composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
+            canvas.Setup<RichTextCommandResult>("exec", _ => true)
+                .SetResult(new RichTextCommandResult("<p><strong>Initial Text</strong></p>", new RichTextSelectionDto(0, 0, true, "p", ["bold"])));
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
+
+            // Act
+            cut.Find("button[aria-label='Bold']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Bold on", cut.Find(".forma-composer-rich-text-announcer").TextContent));
         }
 
         [Fact]

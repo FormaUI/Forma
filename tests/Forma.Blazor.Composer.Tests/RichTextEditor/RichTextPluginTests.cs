@@ -49,6 +49,24 @@ public sealed class RichTextPluginTests
             Assert.NotEmpty(plugin.Items);
             Assert.NotEmpty(plugin.KeyBindings);
         }
+
+        [Fact]
+        public void Should_bind_every_effect_but_code()
+        {
+            // Arrange
+            var plugin = new BasicFormattingPlugin(new RichTextEditorPlugin());
+
+            // Act
+            var bindings = plugin.KeyBindings.ToDictionary(binding => binding.Command, binding => binding.Display);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Ctrl+Shift+X", bindings[BasicFormattingPlugin.StrikeCommand]),
+                () => Assert.Equal("Ctrl+,", bindings[BasicFormattingPlugin.SubscriptCommand]),
+                () => Assert.Equal("Ctrl+.", bindings[BasicFormattingPlugin.SuperscriptCommand]),
+                () => Assert.Equal("Ctrl+\\", bindings[BasicFormattingPlugin.RemoveFormatCommand]),
+                () => Assert.DoesNotContain(BasicFormattingPlugin.CodeCommand, bindings.Keys));
+        }
     }
 
     public sealed class ParagraphFormat
@@ -96,6 +114,23 @@ public sealed class RichTextPluginTests
             // Assert
             Assert.Equal("insertUnorderedList", requestedCommand);
             Assert.Equal("list", plugin.Id);
+        }
+
+        [Fact]
+        public void Should_bind_bullets_and_indentation_but_not_a_numbered_list()
+        {
+            // Arrange
+            var plugin = new ListPlugin(new RichTextEditorPlugin());
+
+            // Act
+            var bindings = plugin.KeyBindings.ToDictionary(binding => binding.Command, binding => binding.Display);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Ctrl+Shift+L", bindings[ListPlugin.BulletListCommand]),
+                () => Assert.Equal("Ctrl+]", bindings[ListPlugin.IndentCommand]),
+                () => Assert.Equal("Ctrl+[", bindings[ListPlugin.OutdentCommand]),
+                () => Assert.DoesNotContain(ListPlugin.OrderedListCommand, bindings.Keys));
         }
     }
 

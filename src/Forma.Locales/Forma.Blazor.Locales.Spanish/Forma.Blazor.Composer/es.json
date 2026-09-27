@@ -159,7 +159,9 @@
     "Enter the address of the link before inserting.": "Introduce la dirección del enlace antes de insertarlo.",
     "An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture.": "Una dirección debe ser una dirección web, un enlace de correo o teléfono, una ruta dentro de este sitio o una imagen incrustada.",
     "Enter the embed type before inserting.": "Introduce el tipo de inserción antes de insertarlo.",
-    "Enter the identifier before inserting.": "Introduce el identificador antes de insertarlo."
+    "Enter the identifier before inserting.": "Introduce el identificador antes de insertarlo.",
+    "{Format} on": "{Format} activado",
+    "{Format} off": "{Format} desactivado"
   },
   "RichTextEditor": {
     "FormaRichTextEditor": {

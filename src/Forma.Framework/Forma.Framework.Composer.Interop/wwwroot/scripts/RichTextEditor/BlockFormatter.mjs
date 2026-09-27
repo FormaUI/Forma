@@ -34,6 +34,15 @@ export class BlockFormatter {
             }
             block.replaceWith(replacement);
             last = replacement;
+
+            // A boundary on the block itself, as an inline command leaves it, keeps its child offset in the
+            // replacement, whose children are the block's own in the same order.
+            if (kept?.start === block) {
+                kept.start = replacement;
+            }
+            if (kept?.end === block) {
+                kept.end = replacement;
+            }
         }
 
         const selection = window.getSelection();

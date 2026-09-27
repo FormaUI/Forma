@@ -99,6 +99,9 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
         new() { Key = "1", Command = Heading1Command, Control = true, Alt = true },
         new() { Key = "2", Command = Heading2Command, Control = true, Alt = true },
         new() { Key = "3", Command = Heading3Command, Control = true, Alt = true },
+        new() { Key = "4", Command = Heading4Command, Control = true, Alt = true },
+        new() { Key = "5", Command = Heading5Command, Control = true, Alt = true },
+        new() { Key = "6", Command = Heading6Command, Control = true, Alt = true },
     ];
 
     /// <inheritdoc />

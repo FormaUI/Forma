@@ -36,7 +36,9 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     private RichTextEditor _canvas = default!;
     private InputScope? _inputScope;
     private string? _committedContent;
-    private string _blockAnnouncement = string.Empty;
+    private string _announcement = string.Empty;
+    private string? _announcedBlockType;
+    private IReadOnlySet<string> _activeStyles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private bool _isAttached;
 
     private RichTextDialogState _dialog = RichTextDialogState.None;
@@ -142,7 +144,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             return;
         }
 
-        UpdateBlockAnnouncement(dto.BlockType);
+        AnnounceBlock(dto.BlockType);
 
         var selection = new ComposerSelection
         {
@@ -152,6 +154,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             ActiveStyles = new HashSet<string>(dto.ActiveStyles, StringComparer.OrdinalIgnoreCase),
         };
 
+        _activeStyles = selection.ActiveStyles;
         await Interaction.ReportSelectionAsync(selection);
     }
 
@@ -312,7 +315,9 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
 
             if (result.Selection is not null)
             {
+                var before = _activeStyles;
                 await HandleSelectionChangedAsync(result.Selection);
+                AnnounceFormatting(before, _activeStyles);
             }
         }
     }
@@ -325,14 +330,47 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         });
     }
 
-    private void UpdateBlockAnnouncement(string? blockType)
+    /// <summary>The formatting a command can turn on or off, by the style the canvas reports and the name it is announced by.</summary>
+    private static readonly (string Style, string Name)[] Formats =
+    [
+        ("bold", "Bold"),
+        ("italic", "Italic"),
+        ("underline", "Underline"),
+        ("strike", "Strikethrough"),
+        ("subscript", "Subscript"),
+        ("superscript", "Superscript"),
+        ("code", "Code"),
+    ];
+
+    // A command that changed a formatting says so; the caret merely moving through formatted text does not, since
+    // a screen reader reports the formatting under the caret on its own.
+    private void AnnounceFormatting(IReadOnlySet<string> before, IReadOnlySet<string> after)
     {
-        if (string.IsNullOrEmpty(blockType))
+        foreach (var (style, name) in Formats)
+        {
+            var wasOn = before.Contains(style);
+            var isOn = after.Contains(style);
+
+            if (wasOn != isOn)
+            {
+                _announcement = isOn ? L["{Format} on", L[name]] : L["{Format} off", L[name]];
+                StateHasChanged();
+
+                return;
+            }
+        }
+    }
+
+    // The block is named once, as the caret enters it, so a change of formatting inside it is not shouted down.
+    private void AnnounceBlock(string? blockType)
+    {
+        if (string.IsNullOrEmpty(blockType) || string.Equals(blockType, _announcedBlockType, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
-        _blockAnnouncement = blockType.ToUpperInvariant() switch
+        _announcedBlockType = blockType;
+        _announcement = blockType.ToUpperInvariant() switch
         {
             "H1" => L["Heading 1"],
             "H2" => L["Heading 2"],

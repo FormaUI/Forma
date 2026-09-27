@@ -7,7 +7,7 @@ using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes bulleted and numbered lists, indentation, and outdent operations.</summary>
-public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
+public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin, IComposerKeyBindingSource
 {
     /// <summary>The command inserting or toggling a bulleted list.</summary>
     public const string BulletListCommand = "list.bullet";
@@ -52,6 +52,17 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
                 ],
             },
         ]),
+    ];
+
+    // A bulleted list takes the word processors' shortcut and the indentation keys the brackets, as document editors
+    // bind them; a numbered list has no shortcut, since the ones editors use ride Shift over a digit, which reaches the
+    // browser as the digit's shifted symbol and differs by keyboard layout.
+    /// <inheritdoc />
+    public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
+    [
+        new() { Key = "l", Command = BulletListCommand, Control = true, Shift = true },
+        new() { Key = "]", Command = IndentCommand, Control = true },
+        new() { Key = "[", Command = OutdentCommand, Control = true },
     ];
 
     /// <inheritdoc />

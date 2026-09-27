@@ -85,6 +85,26 @@ describe('RichTextEditor', () => {
         expect(editor.innerHTML).toBe('<h1>Hello world</h1>');
     });
 
+    it('keeps a selection whose boundaries are the block itself over the text it converts', () => {
+        editor.innerHTML = '<p>first</p><p>second</p>';
+        const handle = attach(editor, { owner });
+        const second = editor.querySelectorAll('p')[1];
+        const range = document.createRange();
+        range.setStart(second, 0);
+        range.setEnd(second, 1);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('formatBlock', 'h4');
+        const restored = selection.getRangeAt(0);
+
+        expect(editor.innerHTML).toBe('<p>first</p><h4>second</h4>');
+        expect(restored.startContainer).toBe(editor.querySelector('h4'));
+        expect(restored.endContainer).toBe(editor.querySelector('h4'));
+        expect(restored.toString()).toBe('second');
+    });
+
     it('converts every block a selection spans, leaving nested ones to their innermost', () => {
         editor.innerHTML = '<p>first</p><blockquote><p>second</p></blockquote><p>third</p>';
         const handle = attach(editor, { owner });
