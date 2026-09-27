@@ -19,7 +19,7 @@ public sealed partial class FormaTabs : FormaElementBase
     private readonly List<FormaTab> _tabs = [];
     private readonly Dictionary<FormaTab, ElementReference> _tabButtons = [];
     private ElementReference _tabList;
-    private InputRegistration _registration = default!;
+    private InputRegistration _inputRegistration = default!;
     private FormaTab? _focusedTab;
     private FormaTab? ActiveTab { get; set; }
 
@@ -43,7 +43,7 @@ public sealed partial class FormaTabs : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _registration = new InputRegistration(InputRouter, HandleStripActionAsync);
+        => _inputRegistration = new InputRegistration(InputRouter, HandleStripActionAsync);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -72,7 +72,7 @@ public sealed partial class FormaTabs : FormaElementBase
     // The tab list is the scope, so an arrow inside a panel is the panel's rather than the strip's.
     /// <inheritdoc />
     protected override Task OnAfterRenderAsync(bool firstRender)
-        => _registration.SyncAsync(_tabList, CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile);
+        => _inputRegistration.SyncAsync(_tabList, CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile);
 
     // Moves focus to the tab the strip's action names, counted from the focused one and wrapping at either end, without selecting it.
     private async Task HandleStripActionAsync(string action, InputInfo input)
@@ -146,7 +146,7 @@ public sealed partial class FormaTabs : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _registration.DisposeAsync();
+        await _inputRegistration.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

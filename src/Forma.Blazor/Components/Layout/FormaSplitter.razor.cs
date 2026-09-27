@@ -54,7 +54,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private Pointer _pointer = default!;
-    private InputRegistration _registration = default!;
+    private InputRegistration _inputRegistration = default!;
     private double _dragOrigin;
     private double _dragStartValue;
     private bool _isResizing;
@@ -77,7 +77,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     protected override void OnInitialized()
     {
         _pointer = new Pointer(Context.JS);
-        _registration = new InputRegistration(InputRouter, HandleBarActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, HandleBarActionAsync);
     }
 
     /// <inheritdoc />
@@ -91,7 +91,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     // The orientation, and with it the keys, can change after the registration was made.
     /// <inheritdoc />
     protected override Task OnAfterRenderAsync(bool firstRender)
-        => _registration.SyncAsync(RootElement, Profile);
+        => _inputRegistration.SyncAsync(RootElement, Profile);
 
     // Moves the divider as the action says: a step either way, or to either bound.
     private async Task HandleBarActionAsync(string action, InputInfo input)
@@ -188,7 +188,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _registration.DisposeAsync();
+        await _inputRegistration.DisposeAsync();
         await _pointer.DisposeAsync();
         await base.DisposeAsyncCore();
     }

@@ -21,7 +21,7 @@ public sealed partial class FormaDialog : FormaElementBase
     };
 
     private Dialog _dialog = default!;
-    private InputRegistration _registration = default!;
+    private InputRegistration _inputRegistration = default!;
     private bool _isOpen;
     private bool _hasOpened;
 
@@ -73,7 +73,7 @@ public sealed partial class FormaDialog : FormaElementBase
     protected override void OnInitialized()
     {
         _dialog = new Dialog(Context.JS);
-        _registration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
+        _inputRegistration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
     }
 
     /// <inheritdoc />
@@ -115,7 +115,7 @@ public sealed partial class FormaDialog : FormaElementBase
         }
 
         // The dialog is a scope only while open, active the whole time so it stands as the modal barrier.
-        await _registration.SyncAsync(RootElement, ModalProfile, wanted: _isOpen, active: _isOpen);
+        await _inputRegistration.SyncAsync(RootElement, ModalProfile, wanted: _isOpen, active: _isOpen);
     }
 
     // Closes the dialog as the router dismissed it, or runs the default cancel action when told to cancel.
@@ -187,7 +187,7 @@ public sealed partial class FormaDialog : FormaElementBase
     private async Task SetClosedAsync()
     {
         _isOpen = false;
-        await _registration.SyncAsync(RootElement, ModalProfile, wanted: false);
+        await _inputRegistration.SyncAsync(RootElement, ModalProfile, wanted: false);
     }
 
     /// <inheritdoc />
@@ -200,7 +200,7 @@ public sealed partial class FormaDialog : FormaElementBase
     protected override async ValueTask DisposeAsyncCore()
     {
         _isOpen = false;
-        await _registration.DisposeAsync();
+        await _inputRegistration.DisposeAsync();
         await _dialog.DisposeAsync();
         await base.DisposeAsyncCore();
     }

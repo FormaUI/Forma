@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>An element registered with the input router as a scope, answering the routes its profile declares and held active while its surface is open.</summary>
 public sealed partial class FormaInputScope : FormaElementBase
 {
-    private InputRegistration _registration = default!;
+    private InputRegistration _inputRegistration = default!;
 
     /// <summary>The routes the scope answers and how it treats ambient input while foremost.</summary>
     [Parameter] public InputProfile Profile { get; set; } = InputProfile.Default;
@@ -36,7 +36,7 @@ public sealed partial class FormaInputScope : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _registration = new InputRegistration(
+        => _inputRegistration = new InputRegistration(
             InputRouter,
             (action, input) => OnAction.InvokeAsync(new InputAction(action, input)),
             (action, reason) => OnDismiss.InvokeAsync(new InputDismissal(action, reason)));
@@ -47,7 +47,7 @@ public sealed partial class FormaInputScope : FormaElementBase
 
     /// <inheritdoc />
     protected override Task OnAfterRenderAsync(bool firstRender)
-        => _registration.SyncAsync(RootElement, Profile, active: Active, parent: Parent, within: Within);
+        => _inputRegistration.SyncAsync(RootElement, Profile, active: Active, parent: Parent, within: Within);
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
@@ -58,7 +58,7 @@ public sealed partial class FormaInputScope : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _registration.DisposeAsync();
+        await _inputRegistration.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

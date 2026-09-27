@@ -21,8 +21,8 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 
     private ElementReference _scrim;
     private Window _window = default!;
-    private InputRegistration _registration = default!;
-    private InputProfile _profile = default!;
+    private InputRegistration _inputRegistration = default!;
+    private InputProfile _inputProfile = default!;
     private (bool Modal, WindowPressAway PressAway)? _scopeInputs;
     private WindowAttachment? _attachment;
     private bool _isAttached;
@@ -252,7 +252,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     protected override void OnInitialized()
     {
         _window = new Window(Context.JS);
-        _registration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
+        _inputRegistration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
     }
 
     /// <inheritdoc />
@@ -263,7 +263,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         if (ScopeInputs != _scopeInputs)
         {
             _scopeInputs = ScopeInputs;
-            _profile = Profile;
+            _inputProfile = Profile;
         }
 
         var declaration = Declare();
@@ -294,7 +294,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             await _window.DetachAsync();
 
             // The scope goes with the attachment it was made for and comes back with the next.
-            await _registration.SyncAsync(RootElement, _profile, wanted: false);
+            await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: false);
             _isAttached = await _window.AttachAsync(RootElement, IsPresented, Modal, ShowsScrim ? _scrim : null);
 
             // A window that opens is the one the reader is working in.
@@ -305,7 +305,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         }
 
         // The window is a scope while attached, held active while it is the workspace's current window and focus is inside it.
-        await _registration.SyncAsync(RootElement, _profile, wanted: _isAttached, active: _holdsInput);
+        await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: _isAttached, active: _holdsInput);
     }
 
     // Answers the router's dismissal: a press away sends the window back when its options say so, and anything else closes it when it is closable.
@@ -549,7 +549,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             await Manager.UnregisterAsync(this);
         }
 
-        await _registration.DisposeAsync();
+        await _inputRegistration.DisposeAsync();
         await _window.DisposeAsync();
         await base.DisposeAsyncCore();
     }
