@@ -5,6 +5,8 @@
 @using Forma.Blazor.Components.Composer.RichTextEditor.Views
 @using Forma.Framework.Composer.Dialogs
 @using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
+@using Microsoft.Extensions.DependencyInjection
 
 @code {
     private sealed class StubInsertionDialog : ComponentBase, IComposerInsertionDialog
@@ -1444,6 +1446,32 @@
                 () => Assert.Equal(["Ctrl", "/"], rows["Keyboard Shortcuts"]));
         }
 
+        // A shortcut the host answers before the composer would not do what the reference says, so it is not listed.
+        [Fact]
+        public void Should_leave_a_shortcut_the_host_preempts_out_of_the_reference()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            ctx.Services.AddSingleton(new InputRouterOptions { PreemptiveRoutes = [new InputRoute("app.palette", KeyBinding.Shortcut("k"))] });
+            ctx.Services.AddSingleton<IInputActionHandler, IgnoringInputActions>();
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
+                .TryAddDefaultPlugins());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Keyboard Shortcuts']")));
+
+            // Act
+            cut.Find("button[aria-label='Keyboard Shortcuts']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-shortcuts")));
+            var names = cut.FindAll(".forma-composer-shortcuts tbody th").Select(cell => cell.TextContent).ToList();
+            Assert.Multiple(
+                () => Assert.DoesNotContain("Insert Link", names),
+                () => Assert.Contains("Bold", names));
+        }
+
         [Fact]
         public void Should_close_the_shortcut_reference_from_its_only_action()
         {
@@ -1527,6 +1555,13 @@
             Assert.Empty(cut.FindAll("button[aria-label='Attach Files']"));
             Assert.Empty(cut.FindAll("button[aria-label='Selection Bar']"));
         }
+    }
+
+    /// <summary>A host that declares routes and performs none of them.</summary>
+    private sealed class IgnoringInputActions : IInputActionHandler
+    {
+        public Task HandleAsync(string action, InputInfo input)
+            => Task.CompletedTask;
     }
 
     public sealed class Composition

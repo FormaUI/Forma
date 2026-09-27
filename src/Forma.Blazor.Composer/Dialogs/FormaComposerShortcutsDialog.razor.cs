@@ -3,12 +3,13 @@ namespace Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
+using Forma.Framework.Input;
 using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Dialog listing every shortcut the surface currently answers, each under the name of the command it runs.</summary>
+/// <summary>Dialog listing every shortcut the surface currently answers, each under the name of the command it runs, leaving out what the host claims first.</summary>
 public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
 {
     private static readonly DialogOptions CloseOnly = new() { ShowCancelAction = false };
@@ -26,6 +27,8 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
     [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
 
     [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
+
+    [Inject] private InputRouterOptions InputRouterOptions { get; set; } = default!;
 
     private IReadOnlyList<ShortcutRow> _rows = [];
 
@@ -48,8 +51,9 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
         => _rows = BuildRows();
 
     // Each shortcut is named as the toolbar names its command, so what a reader hears is what they see on the button; a
-    // binding no item names is left out, since nothing on the surface would tell a reader what it does. Undo and redo are
-    // the command bar's own rather than any plugin's, so their names come from the composer directly.
+    // binding no item names is left out, since nothing on the surface would tell a reader what it does, and so is one a
+    // host's preemptive route takes before the composer ever sees it, since it would not do what the reference says.
+    // Undo and redo are the command bar's own rather than any plugin's, so their names come from the composer directly.
     private List<ShortcutRow> BuildRows()
     {
         var titles = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -71,9 +75,11 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
 
         foreach (var command in KeyBindings.Bindings.GroupBy(binding => binding.Command, StringComparer.Ordinal))
         {
-            if (titles.TryGetValue(command.Key, out var title))
+            var reachable = command.Where(binding => !binding.IsClaimedBy(InputRouterOptions)).ToList();
+
+            if (reachable.Count > 0 && titles.TryGetValue(command.Key, out var title))
             {
-                rows.Add(new ShortcutRow(title, [.. command.Select(binding => binding.DisplayKeys)]));
+                rows.Add(new ShortcutRow(title, [.. reachable.Select(binding => binding.DisplayKeys)]));
             }
         }
 

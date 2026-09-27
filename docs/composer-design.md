@@ -536,7 +536,7 @@ Where each is registered follows what it acts on. Maximizing and the shortcut re
 | `MaximizePlugin` | Full-viewport editing | Maximize |
 | `SelectionBarPlugin` | Showing or hiding the bar that follows the selection | — |
 | `FileUploadPlugin` | Uploading files from the author's device and attaching them beside the document (§3.7), gated by `FileUploadPluginOptions` | — |
-| `ShortcutsPlugin` | A reference of every shortcut the surface answers, each named as its toolbar button is, opened from the toolbar or with Ctrl+/ | a11yhelp |
+| `ShortcutsPlugin` | A reference of every shortcut the surface answers, each named as its toolbar button is and none the host's preemptive routes claim first, opened from the toolbar or with Ctrl+/ | a11yhelp |
 
 All four commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.SelectionBar`, `ComposerCommands.Attach`, `ComposerCommands.Shortcuts`) on `FormaComposer` itself, which owns the maximized and selection-bar state and the attachments and shortcuts dialogs because it, not any one editor, renders the chrome that changes.
 
