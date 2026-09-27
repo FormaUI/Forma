@@ -52,7 +52,13 @@
     "Scrim Click Disabled": "לחיצה על הווילון מבוטלת",
     "Open (no scrim close)": "פתח (ללא סגירה בלחיצה על הווילון)",
     "Must Use X or Button": "יש להשתמש ב-X או בכפתור",
-    "Clicking the scrim does not close this dialog. Use the X button or the button below.": "לחיצה על הווילון לא סוגרת את הדו-שיח הזה. השתמשו בכפתור X או בכפתור למטה."
+    "Clicking the scrim does not close this dialog. Use the X button or the button below.": "לחיצה על הווילון לא סוגרת את הדו-שיח הזה. השתמשו בכפתור X או בכפתור למטה.",
+    "A Menu Inside": "תפריט בפנים",
+    "A menu opened inside the dialog closes on the first Escape and leaves the dialog open; the next Escape closes the dialog.": "תפריט שנפתח בתוך הדו-שיח נסגר ב-Escape הראשון ומשאיר את הדו-שיח פתוח; ה-Escape הבא סוגר את הדו-שיח.",
+    "Open Dialog With a Menu": "פתח דו-שיח עם תפריט",
+    "Export": "ייצוא",
+    "Format": "תבנית",
+    "none yet": "עדיין לא"
   },
   "FormaPopoverPage": {
     "A panel hanging from the control that opened it. It is drawn in the browser's top layer, so nothing scrolls or clips it; Escape closes it and puts focus back on the trigger, and a click anywhere else closes it without moving focus.": "חלונית שתלויה מהפקד שפתח אותה. היא מצוירת בשכבה העליונה של הדפדפן, ולכן דבר לא גולל או חותך אותה; Escape סוגר אותה ומחזיר את המיקוד לפקד, ולחיצה בכל מקום אחר סוגרת אותה בלי להזיז את המיקוד.",
@@ -66,7 +72,12 @@
     "Two": "שתיים",
     "Three": "שלוש",
     "Chosen": "נבחר",
-    "none yet": "עדיין לא"
+    "none yet": "עדיין לא",
+    "A Dialog Over It": "דו-שיח מעליה",
+    "A dialog opened from inside the popover stands above it: Escape closes the dialog and leaves the popover open, with focus back on the button that opened it.": "דו-שיח שנפתח מתוך החלונית עומד מעליה: Escape סוגר את הדו-שיח ומשאיר את החלונית פתוחה, והמיקוד חוזר לכפתור שפתח אותו.",
+    "Ask to Confirm": "בקש אישור",
+    "Confirm": "אישור",
+    "The popover behind this dialog stays open.": "החלונית שמאחורי הדו-שיח הזה נשארת פתוחה."
   },
   "FormaSpinnerPage": {
     "An indeterminate ring announcing that something is loading. Its Label is the accessible name and is required, since no default text can say what the caller is waiting for.": "טבעת בלתי קצובה המכריזה שמשהו נטען. ה-Label שלה הוא השם הנגיש והוא חובה, מכיוון שאין טקסט ברירת מחדל שיכול לומר למה ממתינים.",

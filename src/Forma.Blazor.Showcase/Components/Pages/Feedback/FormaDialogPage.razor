@@ -102,6 +102,26 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["A Menu Inside"]</h2>
+    <p class="description">@L["A menu opened inside the dialog closes on the first Escape and leaves the dialog open; the next Escape closes the dialog."]</p>
+    <div class="demo-box">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showWithMenu = true">@L["Open Dialog With a Menu"]</FormaButton>
+        <FormaDialog Opened="_showWithMenu" OnClose="() => _showWithMenu = false" Title="@L["Export"]">
+            <Body>
+                <FormaDropDownMenu>
+                    <Trigger>@L["Format"]</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem OnClick="@(() => _exportFormat = "CSV")">CSV</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem OnClick="@(() => _exportFormat = "PDF")">PDF</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>
+                <p class="demo-note">@L["Format"]: <code>@(_exportFormat ?? L["none yet"])</code></p>
+            </Body>
+        </FormaDialog>
+    </div>
+</div>
+
 @code {
     private static readonly DialogOptions HideConfirmAction =
         new() { ShowConfirmAction = false };
@@ -118,6 +138,8 @@
     private bool _showNoScrim;
     private bool _showFooterOnly;
     private bool _showFooterWithActions;
+    private bool _showWithMenu;
+    private string? _exportFormat;
     private DialogSize? _activeSize;
 
     private static readonly DialogSize[] _sizes = [DialogSize.Small, DialogSize.Medium, DialogSize.Large, DialogSize.ExtraLarge, DialogSize.Full];

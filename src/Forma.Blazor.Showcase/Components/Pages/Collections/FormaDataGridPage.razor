@@ -53,6 +53,27 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["A Select in a Cell"]</h2>
+    <p class="description">@L["A select inside a cell of a row-selection grid. While it is open its arrows walk its own options; otherwise the grid's arrows move the selection."]</p>
+    <div class="demo-box">
+        <EditForm Model="_assignments" FormName="cell-select-demo">
+            <FormaDataGrid TGridItem="Assignment" Items="@_assignments.AsQueryable()" PageSize="5" EnableRowSelection="true"
+                           QueryParameterNamePrefix="cell-select"
+                           SelectedItems="_assignmentSelection" SelectedItemsChanged="HandleAssignmentSelectionChanged">
+                <Columns>
+                    <PropertyColumn Property="@(a => a.Id)" />
+                    <PropertyColumn Property="@(a => a.Name)" />
+                    <TemplateColumn Title="@L["Priority"]" Context="assignment">
+                        <FormaSelect TValue="int?" @bind-Value="assignment.Priority" Options="_priorityOptions" Label="@L["Priority"]" />
+                    </TemplateColumn>
+                </Columns>
+                <Status>@L["{Selected} row(s) selected.", _assignmentSelection.Count]</Status>
+            </FormaDataGrid>
+        </EditForm>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Selection Limits and Captions"]</h2>
     <p class="description">@L["At most {SelectionLimit} rows; the master toggle is a text caption instead of a checkbox.", SelectionLimit]</p>
     <div class="demo-box">

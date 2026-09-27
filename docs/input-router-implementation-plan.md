@@ -207,9 +207,12 @@ existing components, landing as several coherent commits.
    closes before its parent, and a text box inside a window keeps its caret keys while Escape
    from it closes the window; the explorer's sidebar takes a drop on a folder row and on its
    root; Tab from the composer's editor reaches its own toolbar, which answers its arrows and
-   counts as one stop; the grid's arrows, Shift and Home and End move its selection. No
-   Showcase page hosts a select in a grid cell, a popup in a dialog, a dialog over a popup or
-   a drag begun inside a popup, so those stand on the router's own tests alone, and the last
-   also waits on step 2's open item, an active drag cancelling from the router. A host
-   `<input>` in a grid is covered by the native table and the selection behavior's tests; no
-   Showcase grid combines row selection with an input in a row.
+   counts as one stop; the grid's arrows, Shift and Home and End move its selection; a select
+   in a cell of a row-selection grid keeps its arrows while open and hands them back closed; a
+   menu inside a dialog closes on the first Escape and the dialog on the second; a dialog over
+   a popover closes on Escape with the popover still open and focus back on its button; and a
+   list inside a popover takes a drag begun inside it and its keys, the popover staying open.
+   Escape during that drag still closes the popover, which waits on step 2's open item, an
+   active drag cancelling from the router. A host `<input>` in a grid is covered by the native
+   table and the selection behavior's tests; no Showcase grid combines row selection with an
+   input in a row.

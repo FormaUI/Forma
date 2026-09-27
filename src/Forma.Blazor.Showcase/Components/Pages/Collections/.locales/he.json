@@ -42,7 +42,13 @@
     "Inline Editing Inside a Form": "עריכה בשורה בתוך טופס",
     "FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number and date here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open.": "FormaPropertyColumn מציג את המאפיין שלו, ומחליף אותו בעורך הנבחר לפי טיפוס המאפיין כל עוד השורה נערכת — טקסט, מספר ותאריך כאן. הטבלה היא בעלת העריכה: היא מעתיקה את השורה, מאמתת את העותק מול הערות הנתונים שלו, ומדווחת עליו רק כשהוא תקין, ולכן ביטול משליך ושמירה מעדכנת. השורה הנערכת יוצאת מהבחירה כל עוד היא פתוחה.",
     "Save": "שמירה",
-    "Cancel": "ביטול"
+    "Cancel": "ביטול",
+    "A Select in a Cell": "בחירה בתוך תא",
+    "A select inside a cell of a row-selection grid. While it is open its arrows walk its own options; otherwise the grid's arrows move the selection.": "פקד בחירה בתוך תא של טבלה עם בחירת שורות. כשהוא פתוח, החצים שלו עוברים בין האפשרויות שלו; אחרת החצים של הטבלה מזיזים את הבחירה.",
+    "Priority": "עדיפות",
+    "Low": "נמוכה",
+    "Normal": "רגילה",
+    "High": "גבוהה"
   },
   "FormaSortableListPage": {
     "A list that reorders by dragging a handle or moving a focused item with the arrow keys.": "רשימה שניתנת לסידור מחדש על ידי גרירת ידית או הזזת פריט ממוקד עם מקשי החצים.",
@@ -57,6 +63,9 @@
     "The whole row starts a drag, not just the handle. Interactive elements inside a row keep their own press, and on touch the row is held briefly before it lifts so a swipe still scrolls.": "כל השורה מתחילה גרירה, לא רק הידית. פקדים בתוך שורה שומרים על הלחיצה שלהם, ובמגע יש להחזיק את השורה רגע לפני שהיא נרימת, כך שהחלקה עדיין גוללת.",
     "Edit": "ערוך",
     "Drag a row anywhere to reorder, or press Edit — it still clicks.": "גרור שורה מכל מקום כדי לסדר מחדש, או לחץ על ערוך — הוא עדיין נלחץ.",
-    "Edit was clicked on {Name}, so the row did not take the press.": "ערוך נלחץ על {Name}, כך שהשורה לא לקחה את הלחיצה."
+    "Edit was clicked on {Name}, so the row did not take the press.": "ערוך נלחץ על {Name}, כך שהשורה לא לקחה את הלחיצה.",
+    "In a Popover": "בתוך חלונית",
+    "A list inside a popover that keeps focus. A drag begun inside it belongs to the list, and its keys move the item without leaving the popover.": "רשימה בתוך חלונית ששומרת מיקוד. גרירה שמתחילה בתוכה שייכת לרשימה, והמקשים שלה מזיזים את הפריט בלי לצאת מהחלונית.",
+    "Open": "פתח"
   }
 }

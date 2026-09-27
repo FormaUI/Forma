@@ -40,6 +40,26 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["A Dialog Over It"]</h2>
+    <p class="description">@L["A dialog opened from inside the popover stands above it: Escape closes the dialog and leaves the popover open, with focus back on the button that opened it."]</p>
+    <div class="demo-box">
+        <span class="demo-anchor" @ref="_layeredAnchor">
+            <FormaButton @ref="_layeredTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_layered is { IsOpen: true } ? "true" : "false")" OnClick="() => ToggleAsync(_layered, _layeredTrigger)">@L["Open"]</FormaButton>
+        </span>
+        <FormaPopover @ref="_layered" Anchor="_layeredAnchor" KeepsFocus="true" OnOpenChanged="_ => { }" OnOpened="() => _confirmTrigger.RootElement.FocusAsync()">
+            <div class="demo-popover demo-popover-actions">
+                <FormaButton @ref="_confirmTrigger" Variant="ButtonVariant.Secondary" OnClick="() => _isConfirmOpen = true">@L["Ask to Confirm"]</FormaButton>
+            </div>
+        </FormaPopover>
+        <FormaDialog Opened="_isConfirmOpen" OnClose="() => _isConfirmOpen = false" Title="@L["Confirm"]">
+            <Body>
+                <p>@L["The popover behind this dialog stays open."]</p>
+            </Body>
+        </FormaDialog>
+    </div>
+</div>
+
 @code {
     private ElementReference _basicAnchor;
     private FormaButton _basicTrigger = default!;
@@ -49,6 +69,12 @@
     private FormaButton _trappedTrigger = default!;
     private FormaPopover _trapped = default!;
     private FormaButton _firstAction = default!;
+
+    private ElementReference _layeredAnchor;
+    private FormaButton _layeredTrigger = default!;
+    private FormaPopover _layered = default!;
+    private FormaButton _confirmTrigger = default!;
+    private bool _isConfirmOpen;
 
     private string? _chosen;
 

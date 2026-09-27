@@ -44,7 +44,13 @@
     "Inline Editing Inside a Form": "Edición en Línea Dentro de un Formulario",
     "FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number and date here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open.": "FormaPropertyColumn muestra su propiedad y la cambia por un editor elegido según el tipo de la propiedad mientras su fila se edita — texto, número y fecha aquí. La grilla es dueña de la edición: copia la fila, valida la copia contra sus anotaciones de datos y la reporta solo cuando es válida, así que Cancelar descarta y Guardar confirma. La fila en edición queda fuera de la selección mientras está abierta.",
     "Save": "Guardar",
-    "Cancel": "Cancelar"
+    "Cancel": "Cancelar",
+    "A Select in a Cell": "Un Select en una Celda",
+    "A select inside a cell of a row-selection grid. While it is open its arrows walk its own options; otherwise the grid's arrows move the selection.": "Un select dentro de una celda de una tabla con selección de filas. Mientras está abierto, sus flechas recorren sus propias opciones; si no, las flechas de la tabla mueven la selección.",
+    "Priority": "Prioridad",
+    "Low": "Baja",
+    "Normal": "Normal",
+    "High": "Alta"
   },
   "FormaSortableListPage": {
     "A list that reorders by dragging a handle or moving a focused item with the arrow keys.": "Una lista que se reordena arrastrando un asa o moviendo un elemento enfocado con las flechas.",
@@ -58,6 +64,9 @@
     "Dragging from the Whole Row": "Arrastrar desde Toda la Fila",
     "The whole row starts a drag, not just the handle. Interactive elements inside a row keep their own press, and on touch the row is held briefly before it lifts so a swipe still scrolls.": "Toda la fila inicia un arrastre, no sólo el asa. Los elementos interactivos dentro de una fila conservan su propia pulsación, y en pantallas táctiles la fila se mantiene pulsada un momento antes de levantarse, así que un deslizamiento sigue desplazando.",
     "Drag a row anywhere to reorder, or press Edit — it still clicks.": "Arrastra una fila desde cualquier punto para reordenar, o pulsa Editar: sigue siendo clicable.",
-    "Edit was clicked on {Name}, so the row did not take the press.": "Se pulsó Editar en {Name}, así que la fila no tomó la pulsación."
+    "Edit was clicked on {Name}, so the row did not take the press.": "Se pulsó Editar en {Name}, así que la fila no tomó la pulsación.",
+    "In a Popover": "En un Popover",
+    "A list inside a popover that keeps focus. A drag begun inside it belongs to the list, and its keys move the item without leaving the popover.": "Una lista dentro de un popover que mantiene el foco. Un arrastre iniciado dentro pertenece a la lista, y sus teclas mueven el elemento sin salir del popover.",
+    "Open": "Abrir"
   }
 }

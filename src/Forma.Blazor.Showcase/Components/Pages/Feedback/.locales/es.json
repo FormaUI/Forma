@@ -54,7 +54,13 @@
     "Scrim Click Disabled": "Clic en el velo deshabilitado",
     "Open (no scrim close)": "Abrir (sin cierre por velo)",
     "Must Use X or Button": "Debe usar X o el botón",
-    "Clicking the scrim does not close this dialog. Use the X button or the button below.": "Hacer clic en el velo no cierra este diálogo. Use el botón X o el botón de abajo."
+    "Clicking the scrim does not close this dialog. Use the X button or the button below.": "Hacer clic en el velo no cierra este diálogo. Use el botón X o el botón de abajo.",
+    "A Menu Inside": "Un Menú Dentro",
+    "A menu opened inside the dialog closes on the first Escape and leaves the dialog open; the next Escape closes the dialog.": "Un menú abierto dentro del diálogo se cierra con el primer Escape y deja el diálogo abierto; el siguiente Escape cierra el diálogo.",
+    "Open Dialog With a Menu": "Abrir Diálogo con un Menú",
+    "Export": "Exportar",
+    "Format": "Formato",
+    "none yet": "ninguno aún"
   },
   "FormaPopoverPage": {
     "A panel hanging from the control that opened it. It is drawn in the browser's top layer, so nothing scrolls or clips it; Escape closes it and puts focus back on the trigger, and a click anywhere else closes it without moving focus.": "Un panel que cuelga del control que lo abrió. Se dibuja en la capa superior del navegador, así que nada lo desplaza ni lo recorta; Escape lo cierra y devuelve el foco al disparador, y un clic en cualquier otro lugar lo cierra sin mover el foco.",
@@ -68,7 +74,12 @@
     "Two": "Dos",
     "Three": "Tres",
     "Chosen": "Elegido",
-    "none yet": "ninguno aún"
+    "none yet": "ninguno aún",
+    "A Dialog Over It": "Un Diálogo Encima",
+    "A dialog opened from inside the popover stands above it: Escape closes the dialog and leaves the popover open, with focus back on the button that opened it.": "Un diálogo abierto desde dentro del popover se sitúa encima: Escape cierra el diálogo y deja el popover abierto, con el foco de vuelta en el botón que lo abrió.",
+    "Ask to Confirm": "Pedir Confirmación",
+    "Confirm": "Confirmar",
+    "The popover behind this dialog stays open.": "El popover detrás de este diálogo permanece abierto."
   },
   "FormaSpinnerPage": {
     "An indeterminate ring announcing that something is loading. Its Label is the accessible name and is required, since no default text can say what the caller is waiting for.": "Un anillo indeterminado que anuncia que algo se está cargando. Su Label es el nombre accesible y es obligatorio, ya que ningún texto predeterminado puede decir qué está esperando quien lo usa.",

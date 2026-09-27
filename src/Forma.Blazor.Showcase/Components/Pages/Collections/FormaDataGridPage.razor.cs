@@ -3,6 +3,7 @@ namespace Forma.Blazor.Showcase.Components.Pages.Collections;
 using System.ComponentModel.DataAnnotations;
 
 using Forma.Blazor.Components.Collections;
+using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
@@ -46,6 +47,19 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private IReadOnlyList<Employee> _rowSelectedEmployees = [];
 
+    private readonly List<Assignment> _assignments =
+    [
+        new() { Id = 1, Name = "Alice Johnson", Priority = 2 },
+        new() { Id = 2, Name = "Bob Smith", Priority = 1 },
+        new() { Id = 3, Name = "Carol Davis" },
+        new() { Id = 4, Name = "Dan Wilson", Priority = 3 },
+        new() { Id = 5, Name = "Eve Martinez", Priority = 2 },
+    ];
+
+    private IReadOnlyList<Assignment> _assignmentSelection = [];
+
+    private IReadOnlyList<SelectOption<int?>> _priorityOptions = [];
+
     private IReadOnlyList<Employee> _limitsSelectedEmployees = [];
 
     private CheckedSelectionOptions _limitsOptions = default!;
@@ -62,7 +76,8 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _limitsOptions = new CheckedSelectionOptions
+    {
+        _limitsOptions = new CheckedSelectionOptions
         {
             Maximum = SelectionLimit,
             Caption = new CheckedSelectionCaption
@@ -72,11 +87,22 @@ public sealed partial class FormaDataGridPage : ComponentBase
             },
         };
 
+        _priorityOptions =
+        [
+            new(1, L["Low"]),
+            new(2, L["Normal"]),
+            new(3, L["High"]),
+        ];
+    }
+
     private void HandleSelectionChanged(IReadOnlyList<Employee> selected)
         => _selectedEmployees = selected;
 
     private void HandleRowSelectionChanged(IReadOnlyList<Employee> selected)
         => _rowSelectedEmployees = selected;
+
+    private void HandleAssignmentSelectionChanged(IReadOnlyList<Assignment> selected)
+        => _assignmentSelection = selected;
 
     private void HandleLimitsSelectionChanged(IReadOnlyList<Employee> selected)
         => _limitsSelectedEmployees = selected;
@@ -146,6 +172,15 @@ public sealed partial class FormaDataGridPage : ComponentBase
     private sealed record Employee(int Id, string Name, string Department, bool IsActive);
 
     private sealed record GridItem(int Id, string Title);
+
+    private sealed class Assignment
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public int? Priority { get; set; }
+    }
 
     private sealed class EditableEmployee
     {

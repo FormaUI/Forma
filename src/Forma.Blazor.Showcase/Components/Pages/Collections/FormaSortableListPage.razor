@@ -63,6 +63,24 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["In a Popover"]</h2>
+    <p class="description">@L["A list inside a popover that keeps focus. A drag begun inside it belongs to the list, and its keys move the item without leaving the popover."]</p>
+    <div class="demo-box">
+        <span class="demo-anchor" @ref="_favoritesAnchor">
+            <FormaButton @ref="_favoritesTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_favoritesPopover is { IsOpen: true } ? "true" : "false")" OnClick="() => _favoritesPopover.ToggleAsync(_favoritesTrigger.RootElement)">@L["Open"]</FormaButton>
+        </span>
+        <FormaPopover @ref="_favoritesPopover" Anchor="_favoritesAnchor" KeepsFocus="true" OnOpenChanged="_ => { }">
+            <div class="demo-popover">
+                <FormaSortableList Items="_favorites" ItemKey="@(photo => photo.Id)"
+                                    ItemsChanged="@((IReadOnlyList<PhotoItem> reordered) => _favorites = [.. reordered])">
+                    <ItemTemplate Context="photo">@photo.Name</ItemTemplate>
+                </FormaSortableList>
+            </div>
+        </FormaPopover>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Disabled"]</h2>
     <div class="demo-box">
         <FormaSortableList Items="_photos" ItemKey="@(photo => photo.Id)" Disabled="true">
@@ -96,6 +114,17 @@
     ];
 
     private List<StageItem> _stages = [.. Enumerable.Range(1, 12).Select(n => new StageItem(n, $"Stage {n}"))];
+
+    private List<PhotoItem> _favorites =
+    [
+        new(1, "sunrise.jpg"),
+        new(2, "summit.jpg"),
+        new(3, "descent.jpg"),
+    ];
+
+    private ElementReference _favoritesAnchor;
+    private FormaButton _favoritesTrigger = default!;
+    private FormaPopover _favoritesPopover = default!;
 
     private string? _lastClicked;
 
