@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**25 components not yet implemented, 1 in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
+**25 components not yet implemented.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -61,9 +61,8 @@ The components still to build, in the order dependency and reuse suggest.
 | 8 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
 | 9 | `FormaSortMenu`, `FormaViewButton` | The two controls that exist for the managers' tile grids — a layout with no column headers to sort by and two layouts to switch between. The explorer composes them in place of the sort control and view switch it drew for itself |
 | 10 | `FormaLaunchBar` | The bar a workspace is launched from, hosting `FormaRestArea` beside its launchers, so the windows and the way back to them stand in one place |
-| 11 | `FormaComposer` | The largest component, and last of the composing ones — an editor engine rather than a single control, with every capability and every editing surface arriving as a plugin. It replaces both halves of Coi's authoring stack: the CKEditor rich text field *and* the `template.aspx` page designer. Its chrome is `FormaSelect`, `FormaDropDownMenu` and `FormaColorPicker`, it delegates image insertion to `FormaExplorer`, uploads through `FormaFilePicker` and `FormaFileUploader`, and inserts `FormaVideoPlayer`. It runs to eight phases of its own — see [the composer implementation plan](composer-implementation-plan.md) |
-| 12 | `FormaGallery` | A media-only surface of its own over the items package the explorer shares, built from the library's components with nothing of the explorer's, so it comes after any chrome both need has been abstracted into `Forma.Blazor` and before the editor that its tiles would launch — see [the gallery design](gallery-design.md) |
-| 13 | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
+| 11 | `FormaGallery` | A media-only surface of its own over the items package the explorer shares, built from the library's components with nothing of the explorer's, so it comes after any chrome both need has been abstracted into `Forma.Blazor` and before the editor that its tiles would launch — see [the gallery design](gallery-design.md) |
+| 12 | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
 
 ## Components
 
@@ -94,15 +93,6 @@ Two lists side by side, the reader moving items between them to choose a set.
 |---|---|
 | **Old pattern** | `lists-src.js` — two-list transfer UI: "available categories" on left, "selected categories" on right. Click item → animated transfer between lists. Hidden input tracks selected IDs |
 | **Used in** | page editor (category.ascx module), product editor |
-
-### `FormaComposer`
-
-An authoring surface for rich text, Markdown, code and page composition, every capability and every editing surface arriving as a plugin. Its design is [composer-design.md](composer-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | **Two Coi surfaces, not one.** The rich text editor was CKEditor 4 (`Controls/CKeditor2/config.js`) in three presets — `Website`, `Basic`, `Mini` — with a fourth, collapsed arrangement under 600px; custom plugins `imagelibrary` (opens `pops/images.aspx`), `youtube`, `smiley`, `lineheight`, `qform`; `enterMode = ENTER_BR`, `format_tags = p;h1;h2;h3;h4`, RTL contents direction, and `allowedContent = true` — no content filtering whatsoever. The larger surface was the **page designer**, `admin/pops/template.aspx` over `Controls/Edit/`: a drag-and-drop page builder with a side palette, a live canvas, per-element delete/style/edit chrome, jquery-sortable reordering, column and element resizing, and a settings editor per element kind in `elm.js`. One entry point, `OpenTemplate(type, title)`, drove seven targets by numeric type — product page templates, the product tile, headings, rich content, popups and the custom dropdown menu |
-| **Used in** | page editor, product description, product and category templates, popups, custom menus — and in Épica, the News article body |
 
 ### `FormaContextMenu`
 

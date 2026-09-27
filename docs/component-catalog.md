@@ -13,7 +13,7 @@
 >
 > The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**60 components implemented, 1 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**61 components implemented.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -95,8 +95,8 @@ Forma.Blazor/Components/
     └── ✅ FormaWindow
 
 src/
-├── (0 / 1) Forma.Blazor.Composer/
-│   └── ◐ FormaComposer
+├── (1 / 1) Forma.Blazor.Composer/
+│   └── ✅ FormaComposer
 └── (1 / 1) Forma.Blazor.Explorer/
     └── ✅ FormaExplorer
 ```
@@ -184,6 +184,15 @@ The area is the surface that stacks command bars; each bar lays its commands on 
 |---|---|
 | **Old pattern** | The header region of `FormaExplorer` — the surface, the rule beneath it and the stacked bars — written into the explorer's own stylesheet |
 | **Used in** | The region above any page's content: an explorer header, a list page's action strip, an editor's publish bar. `FormaExplorer` composes the area for its own header, and lays its toolbar and its selection bar on command bars, the view controls and the selection count standing past the track |
+
+### `FormaComposer`
+
+An authoring surface for rich text, Markdown, code and page composition, every capability and every editing surface arriving as a plugin; the rich text editor is complete, and the Markdown and code editors and the satellite capabilities still follow [the composer implementation plan](composer-implementation-plan.md). Its design is [composer-design.md](composer-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | **Two Coi surfaces, not one.** The rich text editor was CKEditor 4 (`Controls/CKeditor2/config.js`) in three presets — `Website`, `Basic`, `Mini` — with a fourth, collapsed arrangement under 600px; custom plugins `imagelibrary` (opens `pops/images.aspx`), `youtube`, `smiley`, `lineheight`, `qform`; `enterMode = ENTER_BR`, `format_tags = p;h1;h2;h3;h4`, RTL contents direction, and `allowedContent = true` — no content filtering whatsoever. The larger surface was the **page designer**, `admin/pops/template.aspx` over `Controls/Edit/`: a drag-and-drop page builder with a side palette, a live canvas, per-element delete/style/edit chrome, jquery-sortable reordering, column and element resizing, and a settings editor per element kind in `elm.js`. One entry point, `OpenTemplate(type, title)`, drove seven targets by numeric type — product page templates, the product tile, headings, rich content, popups and the custom dropdown menu |
+| **Used in** | page editor, product description, product and category templates, popups, custom menus — and in Épica, the News article body |
 
 ### `FormaConfirmDialog`
 
