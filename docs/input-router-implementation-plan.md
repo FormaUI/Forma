@@ -200,4 +200,16 @@ existing components, landing as several coherent commits.
    on a toolbar; emoji picker over `FormaComposer`; drag started in a popup; nested popups;
    popup in a dialog and dialog over a popup; nested explorer drops; a host `<input>` in a
    grid; Tab through nested focus-managed surfaces; Escape through successive active
-   scopes; RTL navigation unchanged.
+   scopes; RTL navigation unchanged. Done for what the Showcase hosts, in both directions: a
+   popup on a toolbar keeps the wheel from the track behind it; the emoji picker over the
+   composer keeps Ctrl+B and the caret keys in its search and returns focus to its button on
+   Escape; three generations of windows close foremost first, one Escape each, a modal child
+   closes before its parent, and a text box inside a window keeps its caret keys while Escape
+   from it closes the window; the explorer's sidebar takes a drop on a folder row and on its
+   root; Tab from the composer's editor reaches its own toolbar, which answers its arrows and
+   counts as one stop; the grid's arrows, Shift and Home and End move its selection. No
+   Showcase page hosts a select in a grid cell, a popup in a dialog, a dialog over a popup or
+   a drag begun inside a popup, so those stand on the router's own tests alone, and the last
+   also waits on step 2's open item, an active drag cancelling from the router. A host
+   `<input>` in a grid is covered by the native table and the selection behavior's tests; no
+   Showcase grid combines row selection with an input in a row.
