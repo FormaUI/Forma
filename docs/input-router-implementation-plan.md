@@ -28,15 +28,23 @@ service and the scope handle, `InputRouter` and `InputScope`, are public rather 
 internal, since the library's components register their roots through them from another
 assembly. The router stamps each active element with its layer as `data-forma-layer`; no
 stylesheet reads it. A profile carries no `focus` field, in the script or in `InputProfile`:
-`Focus.js` is not on the router and answers Tab from its own listener, yielding to a nested
-surface through `defaultPrevented`. Active drags and the selection bar are not on the router
-either: `DragGesture` cancels a drag from its own Escape listener, and `SelectionFollower`
-returns focus to the editor from its own. Of the owners in step 3, the two shortcut sets,
-`FormaSelect` and `FormaDropDownMenu` have moved: each routes its trigger's arrows on the
-trigger, and its list's arrows, Home and End through `FormaPopover`, which carries its
-content's routes on the registration it already makes while open, so the router prevents the
-page from scrolling under the list and `NavigationGuard` is gone. `FormaSelect` still closes
-on Tab through the popover's key callback, since Tab is not routed. `FormaTabs`, which had
+`Focus.js` declares its keys as routes on the surface it is attached to, `focus.next`,
+`focus.previous`, `focus.first` and `focus.last`: Tab and Shift+Tab on a wrapping or arranged
+surface, matching only where the surface has a control to send focus to, so a Tab past the end
+of an arranged surface with nothing after it is left to the browser; the arrows along the axis,
+Home and End on a roving one, matching only while one of its roved controls holds focus, with
+the arrow along the reading direction resolved when it attaches. A key inside a nested surface
+that routes it is that surface's and never reaches the one around it, which is what
+`defaultPrevented` used to arrange; a Tab with a modifier other than Shift, or an arrow in a
+text field, is left alone by the router's vocabulary and native table rather than by checks of
+its own. Active drags and the selection bar are not on the router: `DragGesture` cancels a drag
+from its own Escape listener, and `SelectionFollower` returns focus to the editor from its own.
+Of the owners in step 3, the two shortcut sets, `FormaSelect` and `FormaDropDownMenu` have
+moved: each routes its trigger's arrows on the trigger, and its list's arrows, Home and End
+through `FormaPopover`, which carries its content's routes on the registration it already makes
+while open, so the router prevents the page from scrolling under the list and `NavigationGuard`
+is gone. `FormaSelect` still closes on Tab through the popover's key callback, since its popover
+does not keep focus and so routes no Tab. `FormaTabs`, which had
 no keys of its own before, routes the arrows, Home and End on its tab list alone, so an arrow
 inside a panel stays the panel's; the arrow along the reading direction is next. Activation is
 manual, since a panel can be as costly as an editor switch: the arrows move focus and the tab
@@ -153,7 +161,7 @@ existing components, landing as several coherent commits.
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: `FormaComposer`'s
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Wheel`, `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
-   `Focus.js`, and the components that own navigation keys — `FormaSelect`,
+   `Focus.js` (done), and the components that own navigation keys — `FormaSelect`,
    `FormaDropDownMenu`, `FormaTabs`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`
    and `FormaSortableList` (all done). `NavigationGuard` is retired in favour of the
    router's `preventDefault` (done); the per-component text-entry exclusions are retired in

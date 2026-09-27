@@ -205,6 +205,9 @@ public sealed partial class FormaToolbar : FormaElementBase
             return;
         }
 
+        // The roving keys are routes the script declares itself, so the host's policy reaches the router before they do.
+        await InputRouter.ConfigureAsync();
+
         if (await _focus.AttachAsync(root, roving: FocusOrientation.Horizontal))
         {
             _rovingRootId = root.Id;

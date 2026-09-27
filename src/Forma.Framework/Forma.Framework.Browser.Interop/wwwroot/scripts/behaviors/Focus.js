@@ -10,10 +10,23 @@
  * controls and wrap at either end, Home and End reach the ends, and the control focused
  * last keeps the stop while the rest are parked at tabindex -1, so Tab leaves the surface
  * on its own and a surface around it counts the stop alone.
+ *
+ * The keys are routes on the input router, declared on the surface, so a key inside a
+ * nested surface that routes it is that surface's and never reaches this one, and a key
+ * this surface has nowhere to send matches nothing and keeps its default.
  */
 
 import { Controls } from '../../../core/scripts/Controls.js';
 import { Direction } from '../../../core/scripts/Direction.js';
+import { register } from '../../../input/scripts/InputRouter.js';
+
+/** Where each key sends focus within the surface, by action; a tabbing surface binds Tab either way, a roving one the keys along its axis. */
+const Actions = {
+    next: 'focus.next',
+    previous: 'focus.previous',
+    first: 'focus.first',
+    last: 'focus.last',
+};
 
 /**
  * @param {HTMLElement} target The surface whose Tab order is decided.
@@ -73,7 +86,8 @@ export class Focus {
         this.#order = order;
         this.#roving = roving;
 
-        target.addEventListener('keydown', event => this.#handle(event), { signal });
+        const registration = register(target, { routes: roving ? this.#rovingRoutes() : this.#tabbingRoutes() });
+        signal.addEventListener('abort', () => registration.dispose(), { once: true });
 
         if (roving) {
             target.addEventListener('focusin', event => this.#park(event.target), { signal });
@@ -86,70 +100,70 @@ export class Focus {
         }
     }
 
-    #handle(event) {
-        // A surface inside this one that already answered a key keeps its answer.
-        if (event.defaultPrevented) {
-            return;
-        }
+    // A handler checks again what its binding's predicate checked, since a host's remap of the action
+    // replaces the binding and the predicate with it.
+    /** Tab and Shift+Tab as the surface's next and previous, matching only where the surface has a control to send focus to. */
+    #tabbingRoutes() {
+        const route = (action, shift) => ({
+            action,
+            bindings: [{ type: 'keydown', key: 'Tab', modifiers: { shift }, when: () => this.#destination(shift ? -1 : 1) !== null }],
+            handle: () => this.#destination(shift ? -1 : 1)?.focus(),
+        });
 
-        if (this.#roving) {
-            this.#rove(event);
-            return;
-        }
-
-        if (event.key !== 'Tab') {
-            return;
-        }
-
-        const controls = this.#sequence();
-        if (controls.length === 0) {
-            return;
-        }
-
-        const index = controls.indexOf(document.activeElement);
-        const step = event.shiftKey ? -1 : 1;
-        const destination = this.#wrap
-            ? controls[index < 0 ? (step > 0 ? 0 : controls.length - 1) : (index + step + controls.length) % controls.length]
-            : index < 0 ? null : this.#within(controls, index + step);
-
-        if (destination) {
-            event.preventDefault();
-            destination.focus();
-        }
+        return [route(Actions.next, false), route(Actions.previous, true)];
     }
 
-    /** Moves the stop for an axis key pressed on one of the roving controls; a key with a modifier, or one a text field owns, is left alone. */
-    #rove(event) {
-        const controls = this.#sequence();
-        const index = controls.indexOf(document.activeElement);
-
-        if (index < 0 || event.altKey || event.ctrlKey || event.metaKey || event.target.closest(Controls.TextEntry)) {
-            return;
-        }
-
-        const place = this.#place(event.key, index, controls.length);
-        if (place === null) {
-            return;
-        }
-
-        event.preventDefault();
-        controls[place].focus();
-    }
-
-    /** The place a key moves the stop to: one along the axis, wrapping at the ends, or either end; null for a key the surface does not own. */
-    #place(key, index, count) {
-        const beside = step => (index + step + count) % count;
+    /** The keys along the axis as next and previous, and Home and End as the ends, matching only while one of the roved controls holds focus. */
+    #rovingRoutes() {
         const along = this.#roving === 'horizontal';
         const mirrored = along && Direction.isRightToLeft(this.#target);
+        const forward = along ? (mirrored ? 'ArrowLeft' : 'ArrowRight') : 'ArrowDown';
+        const backward = along ? (mirrored ? 'ArrowRight' : 'ArrowLeft') : 'ArrowUp';
+        const route = (action, key, place) => ({
+            action,
+            bindings: [{ type: 'keydown', key, when: () => this.#stop() !== null }],
+            handle: () => this.#rove(place),
+        });
 
-        switch (key) {
-            case 'Home': return 0;
-            case 'End': return count - 1;
-            case 'ArrowRight': return along ? beside(mirrored ? -1 : 1) : null;
-            case 'ArrowLeft': return along ? beside(mirrored ? 1 : -1) : null;
-            case 'ArrowDown': return along ? null : beside(1);
-            case 'ArrowUp': return along ? null : beside(-1);
-            default: return null;
+        return [
+            route(Actions.next, forward, (index, count) => (index + 1) % count),
+            route(Actions.previous, backward, (index, count) => (index + count - 1) % count),
+            route(Actions.first, 'Home', () => 0),
+            route(Actions.last, 'End', (index, count) => count - 1),
+        ];
+    }
+
+    /** The control Tab sends focus to, a step either way from the focused one: wrapping at the ends, or leaving for the page's neighbor; null where there is none. */
+    #destination(step) {
+        const controls = this.#sequence();
+
+        if (controls.length === 0) {
+            return null;
+        }
+
+        const index = controls.indexOf(document.activeElement);
+
+        if (this.#wrap) {
+            return controls[index < 0 ? (step > 0 ? 0 : controls.length - 1) : (index + step + controls.length) % controls.length];
+        }
+
+        return index < 0 ? null : this.#within(controls, index + step);
+    }
+
+    /** The roved controls and the place of the one holding focus, or null while none of them does. */
+    #stop() {
+        const controls = this.#sequence();
+        const index = controls.indexOf(document.activeElement);
+
+        return index < 0 ? null : { controls, index };
+    }
+
+    /** Moves the stop to the place the key names among the roved controls, while one of them holds focus. */
+    #rove(place) {
+        const stop = this.#stop();
+
+        if (stop) {
+            stop.controls[place(stop.index, stop.controls.length)].focus();
         }
     }
 
