@@ -319,8 +319,8 @@
             var pinned = ctx.Render(@<FormaWindow Title="Folders" Options="new() { Closable = false }" OnClose="() => closed++" />);
 
             // Act
-            await closable.FindComponent<FormaWindow>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape);
-            await pinned.FindComponent<FormaWindow>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape);
+            await ctx.Router.DismissAsync(closable.FindComponent<FormaWindow>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
+            await ctx.Router.DismissAsync(pinned.FindComponent<FormaWindow>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
 
             // Assert
             Assert.Equal(1, closed);
@@ -621,7 +621,7 @@
             await manager.ActivateAsync(new WindowSelector { Title = "Back" });
 
             // Act
-            await cut.FindComponents<FormaWindow>()[0].Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway);
+            await ctx.Router.DismissAsync(cut.FindComponents<FormaWindow>()[0].Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Assert
             Assert.Multiple(
@@ -641,7 +641,7 @@
                     <FormaWindow Title="Front" />
                 </div>);
             await manager.ActivateAsync(new WindowSelector { Title = "Back" });
-            await cut.FindComponents<FormaWindow>()[0].Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway);
+            await ctx.Router.DismissAsync(cut.FindComponents<FormaWindow>()[0].Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Act
             cut.FindAll(".forma-window")[0].PointerDown();
@@ -666,7 +666,7 @@
                 </div>);
 
             // Act
-            await cut.FindComponents<FormaWindow>()[1].Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway);
+            await ctx.Router.DismissAsync(cut.FindComponents<FormaWindow>()[1].Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Assert
             Assert.Multiple(
@@ -679,13 +679,12 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
 
             // Act
             ctx.Render(@<FormaWindow Title="Plain" />);
             ctx.Render(@<FormaWindow Title="Sends back" Options="new() { PressAway = WindowPressAway.SendToBack }" />);
             ctx.Render(@<FormaWindow Title="Modal" Modal="true" Options="new() { PressAway = WindowPressAway.SendToBack }" />);
-            var profiles = router.Invocations.Where(invocation => invocation.Identifier == "register").Select(invocation => Assert.IsType<InputProfile>(invocation.Arguments[1])).ToList();
+            var profiles = ctx.Router.Registrations.Select(registration => Assert.IsType<InputProfile>(registration.Arguments[1])).ToList();
 
             // Assert
             Assert.Multiple(

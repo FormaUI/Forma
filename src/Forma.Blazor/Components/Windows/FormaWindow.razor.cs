@@ -10,7 +10,6 @@ using Forma.Framework.Toolbar;
 using Forma.Framework.Windows;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A chrome floated into the top layer, whose frame moves, resizes and maximizes the window. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
 public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
@@ -22,10 +21,12 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 
     private ElementReference _scrim;
     private Window _window = default!;
-    private DotNetObjectReference<FormaWindow> _selfReference = default!;
-    private InputScope? _inputScope;
+    private InputRegistration _registration = default!;
+    private InputProfile _profile = default!;
     private (bool Modal, WindowPressAway PressAway)? _scopeInputs;
     private WindowAttachment? _attachment;
+    private bool _isAttached;
+    private bool _holdsInput;
     private WindowOrigin _origin = default!;
     private WindowDeclaration? _declaration;
     private bool _isHidden;
@@ -145,7 +146,6 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     private bool ShowsScrim
         => Modal && Parent is null;
 
-    // The window is a scope while attached, active while it is the workspace's current window and focus is inside it.
     // Escape closes the focused window and nothing else; a modal one bars everything beneath it; a press away reaches
     // the window only when it is to send the window back.
     private InputProfile Profile
@@ -157,7 +157,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             PressAway = !Modal && Options.PressAway is WindowPressAway.SendToBack ? PressAwayBehavior.PassThrough : PressAwayBehavior.Ignore,
         };
 
-    // What the profile is built from, so a profile is sent again only when one of them changed.
+    // What the profile is built from, so a profile is built and sent again only when one of them changed.
     private (bool Modal, WindowPressAway PressAway) ScopeInputs
         => (Modal, Options.PressAway);
 
@@ -252,13 +252,19 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     protected override void OnInitialized()
     {
         _window = new Window(Context.JS);
-        _selfReference = DotNetObjectReference.Create(this);
+        _registration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
     }
 
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Title);
+
+        if (ScopeInputs != _scopeInputs)
+        {
+            _scopeInputs = ScopeInputs;
+            _profile = Profile;
+        }
 
         var declaration = Declare();
 
@@ -284,37 +290,26 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         if (_attachment != attachment)
         {
             _attachment = attachment;
+            _isAttached = false;
             await _window.DetachAsync();
-            await ReleaseScopeAsync();
 
-            var attached = await _window.AttachAsync(RootElement, IsPresented, Modal, ShowsScrim ? _scrim : null);
-
-            if (!attached)
-            {
-                return;
-            }
-
-            await RegisterScopeAsync();
+            // The scope goes with the attachment it was made for and comes back with the next.
+            await _registration.SyncAsync(RootElement, _profile, wanted: false);
+            _isAttached = await _window.AttachAsync(RootElement, IsPresented, Modal, ShowsScrim ? _scrim : null);
 
             // A window that opens is the one the reader is working in.
-            if (!Active && !Disabled && IsPresented)
+            if (_isAttached && !Active && !Disabled && IsPresented)
             {
                 await ActivateAsync();
             }
-
-            return;
         }
 
-        if (_inputScope is { } inputScope && ScopeInputs != _scopeInputs)
-        {
-            _scopeInputs = ScopeInputs;
-            await inputScope.UpdateAsync(Profile);
-        }
+        // The window is a scope while attached, held active while it is the workspace's current window and focus is inside it.
+        await _registration.SyncAsync(RootElement, _profile, wanted: _isAttached, active: _holdsInput);
     }
 
-    /// <summary>Answers the router's dismissal: a press away sends the window back when its options say so, and anything else closes it when it is closable.</summary>
-    [JSInvokable]
-    public async Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
+    // Answers the router's dismissal: a press away sends the window back when its options say so, and anything else closes it when it is closable.
+    private async Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
     {
         if (action is not DismissBehavior.Dismiss)
         {
@@ -347,18 +342,11 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
                 await RaiseAsync(ActiveChanged, active);
             }
 
+            _holdsInput = active;
+
             if (active)
             {
-                if (_inputScope is { } inputScope)
-                {
-                    await inputScope.ActivateAsync();
-                }
-
                 await _window.FocusAsync();
-            }
-            else if (_inputScope is { } inputScope)
-            {
-                await inputScope.ReleaseAsync();
             }
 
             StateHasChanged();
@@ -385,13 +373,13 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         }));
 
     ValueTask IManagedWindow.SetBlockedAsync(bool blocked)
-        => new(InvokeAsync(async () =>
+        => new(InvokeAsync(() =>
         {
             _isBlocked = blocked;
 
-            if (blocked && _inputScope is { } inputScope)
+            if (blocked)
             {
-                await inputScope.ReleaseAsync();
+                _holdsInput = false;
             }
 
             StateHasChanged();
@@ -482,14 +470,14 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         {
             await ActivateAsync();
         }
-        else if (_inputScope is { } inputScope)
+        else
         {
-            await inputScope.ActivateAsync();
+            _holdsInput = true;
         }
     }
 
-    private Task HandleFocusOutAsync()
-        => _inputScope is { } inputScope ? inputScope.ReleaseAsync().AsTask() : Task.CompletedTask;
+    private void HandleFocusOut()
+        => _holdsInput = false;
 
     private WindowDeclaration Declare()
         => new(Title, Icon, Parent?.RuntimeId, Origin, CascadedOrigin, Minimized, Disabled, Modal);
@@ -515,47 +503,16 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     // The render that takes the hidden attribute off reaches the browser before the script is told to show the window, so the box it measures is the window's own.
     private async Task PresentAsync()
     {
+        if (!IsPresented)
+        {
+            _holdsInput = false;
+        }
+
         StateHasChanged();
 
         if (_attachment is not null)
         {
             await _window.PresentAsync(IsPresented);
-        }
-
-        if (!IsPresented && _inputScope is { } inputScope)
-        {
-            await inputScope.ReleaseAsync();
-        }
-    }
-
-    private async Task RegisterScopeAsync()
-    {
-        var inputs = ScopeInputs;
-        var inputScope = await InputRouter.RegisterAsync(RootElement, Profile, _selfReference);
-
-        if (inputScope is null)
-        {
-            return;
-        }
-
-        // Another pass may have registered the window while the registration was being made.
-        if (_inputScope is not null)
-        {
-            await inputScope.DisposeAsync();
-            return;
-        }
-
-        _inputScope = inputScope;
-        _scopeInputs = inputs;
-    }
-
-    private async Task ReleaseScopeAsync()
-    {
-        if (_inputScope is { } inputScope)
-        {
-            _inputScope = null;
-            _scopeInputs = null;
-            await inputScope.DisposeAsync();
         }
     }
 
@@ -592,9 +549,8 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             await Manager.UnregisterAsync(this);
         }
 
-        await ReleaseScopeAsync();
+        await _registration.DisposeAsync();
         await _window.DisposeAsync();
-        _selfReference.Dispose();
         await base.DisposeAsyncCore();
     }
 }
