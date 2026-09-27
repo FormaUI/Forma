@@ -1,10 +1,16 @@
 /**
  * SelectionFollower — an element kept beside the text selection inside its owner, holding focus while it shows
+ *
+ * While the element has focus it is an active registration on the input router, so Escape returns
+ * focus to its owner through the router's ordering: a drag of its handle in flight stands above it
+ * and takes the key first, and a popup opened over it takes the key instead. It is never active
+ * merely because it shows.
  */
 
 import { attach as attachDragGesture } from './DragGesture.js';
 import { Focus } from './Focus.js';
 import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
+import { register } from '../../../input/scripts/InputRouter.js';
 
 /** Space kept between the element and the selection, and between the element and the viewport's edge. */
 const Gap = 8;
@@ -34,6 +40,7 @@ class SelectionFollower {
     #placement;
     #handleSelector;
     #gesture = null;
+    #registration;
     #resizeObserver = null;
     #controller = new AbortController();
     #isDisposed = false;
@@ -59,6 +66,24 @@ class SelectionFollower {
 
         new Focus(target, { wrap: true }, signal);
         target.addEventListener('keydown', event => this.#handleKeyDown(event), { signal });
+
+        // Active from focus-in to focus-out, and only with an owner to return focus to; a press elsewhere
+        // moves focus by itself or leaves it alone, so it dismisses nothing.
+        this.#registration = register(target, {
+            escape: 'dismiss',
+            pressAway: 'ignore',
+            onDismiss: () => this.#owner?.focus(),
+        });
+        target.addEventListener('focusin', () => {
+            if (this.#owner) {
+                this.#registration.activate();
+            }
+        }, { signal });
+        target.addEventListener('focusout', event => {
+            if (!(event.relatedTarget instanceof Node && target.contains(event.relatedTarget))) {
+                this.#registration.release();
+            }
+        }, { signal });
 
         if (this.#handleSelector) {
             this.#gesture = attachDragGesture(target, {
@@ -87,12 +112,6 @@ class SelectionFollower {
     }
 
     #handleKeyDown(event) {
-        if (event.key === 'Escape' && this.#owner) {
-            event.preventDefault();
-            this.#owner.focus();
-            return;
-        }
-
         if (!this.#handleSelector || !event.target.closest(this.#handleSelector)) {
             return;
         }
@@ -154,6 +173,7 @@ class SelectionFollower {
 
         this.#scheduler.cancel();
         this.#gesture?.dispose();
+        this.#registration.dispose();
         this.#resizeObserver?.disconnect();
         this.#controller.abort();
         this.#hide();

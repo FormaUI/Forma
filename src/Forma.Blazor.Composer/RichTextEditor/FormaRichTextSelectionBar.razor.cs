@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor;
 
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Composer.Editing;
+using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 
@@ -22,6 +23,8 @@ public sealed partial class FormaRichTextSelectionBar : FormaComponentBase
 
     [CascadingParameter] private ComposerSelectionBar? Bar { get; set; }
 
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
+
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaRichTextEditor);
@@ -39,6 +42,8 @@ public sealed partial class FormaRichTextSelectionBar : FormaComponentBase
     {
         if (!_isAttached && EditorElement.HasValue && EditorElement.Value.Id is not null && _menuElement.Id is not null)
         {
+            // The bar registers with the router from script, so the host's policy reaches the router before it does.
+            await InputRouter.ConfigureAsync();
             _isAttached = await _follower.AttachAsync(_menuElement, EditorElement.Value, ActiveClass, SelectionFollowerPlacement.Below, HandleSelector);
         }
     }

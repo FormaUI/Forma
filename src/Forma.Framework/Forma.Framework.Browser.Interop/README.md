@@ -32,7 +32,7 @@ have no wrapper because only other scripts attach them.
 | `PanGesture.js` | `PanGesture` | Drags a scroll container's contents with the mouse while a class marks it eligible. |
 | `ReorderInteraction.js` | `ReorderInteraction` | Drags or keys an item into a new position in its list, telling the owner through `HandleReorderAsync`. |
 | `Scroll.js` | `Scroll` | Tells the owner how far a surface can still scroll through `HandleOverflowAsync` and when a sentinel comes into view through `HandleReachedAsync`; exports `toCenter` and `step` beside the attachment. |
-| `SelectionFollower.js` | `SelectionFollower` | Keeps an element positioned beside the text selection inside its owner, holding focus while it shows. |
+| `SelectionFollower.js` | `SelectionFollower` | Keeps an element positioned beside the text selection inside its owner, holding focus while it shows and standing on the input router while focused so Escape returns focus to the owner. |
 | `SelectionInteraction.js` | `SelectionInteraction` | Click and keyboard selection across a list of keyed items, told to the owner through `HandleSelectAsync` and `HandleRangeSelectAsync`. |
 | `Wheel.js` | `Wheel` | Answers a wheel turned over a surface: a track moves by it, or the owner is told the direction through `HandleWheelAsync`. |
 

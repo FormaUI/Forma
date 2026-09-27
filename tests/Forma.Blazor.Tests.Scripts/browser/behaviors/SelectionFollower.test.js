@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { attach } from '#browser/behaviors/SelectionFollower.js';
+import { stack } from '#input/InputRouter.js';
 import { pointerEvent, stubAnimationFrames, stubPointerCapture, stubResizeObserver } from '#support/platform.js';
 
 // The bar's drag registers on the input router, which keeps every registration until it is disposed, so each test's is released after it.
@@ -346,8 +347,62 @@ describe('SelectionFollower holding focus', () => {
         attachFollower(document.querySelector('#bar'), document.querySelector('#editor'));
         document.querySelector('#first').focus();
 
-        key('Escape');
+        const event = key('Escape');
 
         expect(document.activeElement.id).toBe('editor');
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('stands on the router only while it has focus', () => {
+        const bar = document.querySelector('#bar');
+        attachFollower(bar, document.querySelector('#editor'));
+
+        document.querySelector('#first').focus();
+        const focused = stack().map(entry => entry.element);
+        document.querySelector('#after').focus();
+
+        expect(focused).toEqual([bar]);
+        expect(stack()).toEqual([]);
+    });
+
+    it('leaves Escape alone once focus has left it', () => {
+        attachFollower(document.querySelector('#bar'), document.querySelector('#editor'));
+        document.querySelector('#first').focus();
+        document.querySelector('#after').focus();
+
+        const event = key('Escape');
+
+        expect(document.activeElement.id).toBe('after');
+        expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('leaves Escape alone without an owner to return focus to', () => {
+        attachFollower(document.querySelector('#bar'), null);
+        document.querySelector('#first').focus();
+
+        const event = key('Escape');
+
+        expect(document.activeElement.id).toBe('first');
+        expect(event.defaultPrevented).toBe(false);
+        expect(stack()).toEqual([]);
+    });
+
+    // The drag activated after the bar stands above it, so one Escape cancels the drag and the next returns focus.
+    it('yields Escape to a drag of its handle in flight, and takes the next', () => {
+        const bar = document.querySelector('#bar');
+        bar.insertAdjacentHTML('afterbegin', '<button id="handle">Move</button>');
+        stubPointerCapture(bar);
+        attachFollower(bar, document.querySelector('#editor'), { handleSelector: '#handle' });
+        const handle = document.querySelector('#handle');
+        handle.focus();
+        handle.dispatchEvent(pointerEvent('pointerdown', { clientX: 50, clientY: 140 }));
+        bar.dispatchEvent(pointerEvent('pointermove', { clientX: 50, clientY: 180 }));
+
+        const first = key('Escape');
+        const afterFirst = document.activeElement.id;
+        const second = key('Escape');
+
+        expect([first.defaultPrevented, afterFirst]).toEqual([true, 'handle']);
+        expect([second.defaultPrevented, document.activeElement.id]).toEqual([true, 'editor']);
     });
 });

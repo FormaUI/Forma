@@ -70,8 +70,12 @@ its container and is active for as long as a drag lasts, standing above whatever
 parentage, so Escape and a platform close request cancel the drag wherever focus is, a popover
 the drag began in stays open, and a press elsewhere dismisses nothing while it lasts; the
 gesture's own Escape listener, which heard the key only with focus inside the container, is
-gone. The selection bar is not on the router: `SelectionFollower` returns focus to the editor
-from its own Escape listener.
+gone. `SelectionFollower` registers on the bar and is active from focus-in to focus-out, never
+merely because the bar shows, so Escape returns focus to the editor through the router: a drag
+of the bar's handle in flight, activated later on the same scope, takes the key first, and a
+popup opened over the bar takes it instead. While the bar has focus it is an active boundary, so
+a composer shortcut pressed on one of its buttons stays with the bar rather than reaching the
+composer's routes, as it would inside any active scope.
 Of the owners in step 3, the two shortcut sets, `FormaSelect` and `FormaDropDownMenu` have
 moved: each routes its trigger's arrows on the trigger, and its list's arrows, Home and End
 through `FormaPopover`, which carries its content's routes on the registration it already makes
@@ -110,7 +114,7 @@ Escape and press-away behavior are decided in several unrelated ways today:
 - A document listener owned by `FormaPopover` (retired; the popover is a scope on the router).
 - `FormaBreadcrumb`'s key handler and backdrop span (retired; its segment menus are `FormaDropDownMenu`s).
 - `DragGesture` canceling an active drag (retired; a drag is an active registration while it lasts).
-- `FormaComposer`'s selection bar returning focus to the editor.
+- `FormaComposer`'s selection bar returning focus to the editor (retired; the bar is an active registration while focused).
 
 ### Navigation keys
 
@@ -188,7 +192,7 @@ existing components, landing as several coherent commits.
    bridge. Vitest for nested resolution through a top-layer popover, the native table, the
    modal barrier, containment, activation order, top-only dismissal, and release.
 2. **Dismissal.** `FormaPopover` (done), `FormaDialog` with both entry points (done), active
-   drags (done) and the selection bar while focused (open), `FormaBreadcrumb` rebuilt on `FormaPopover` (done,
+   drags (done) and the selection bar while focused (done), `FormaBreadcrumb` rebuilt on `FormaPopover` (done,
    as a `FormaDropDownMenu` per segment), `FormaWindow` (done). The per-popup document listener, both backdrops,
    and the backdrop z-indexes go (done).
 3. **Owners onto routes.** `SelectionInteraction` (done), both shortcut sets (done: `FormaComposer`'s
