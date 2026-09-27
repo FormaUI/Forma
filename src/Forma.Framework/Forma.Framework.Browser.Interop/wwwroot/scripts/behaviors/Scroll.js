@@ -33,7 +33,10 @@ export function attach(target, options = {}) {
 
 /** @param {HTMLElement} container */
 export function toCenter(container) {
-    container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+    const middle = (container.scrollWidth - container.clientWidth) / 2;
+
+    // A right-to-left container counts scrollLeft downwards from zero, so a positive middle would be clamped to its start.
+    container.scrollLeft = Direction.isRightToLeft(container) ? -middle : middle;
     container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
 }
 

@@ -390,6 +390,16 @@ describe('Scroll moving a container', () => {
 
             expect([container.scrollLeft, container.scrollTop]).toEqual([0, 0]);
         });
+
+        // A right-to-left container counts scrollLeft downwards from zero, and a positive position would be clamped to its start.
+        it('counts the inline middle downwards in a right-to-left container', () => {
+            container.style.direction = 'rtl';
+            sizeScroller(container, { scrollWidth: 900, clientWidth: 300, scrollHeight: 500, clientHeight: 100 });
+
+            toCenter(container);
+
+            expect([container.scrollLeft, container.scrollTop]).toEqual([-300, 200]);
+        });
     });
 
     describe('step without stops', () => {
