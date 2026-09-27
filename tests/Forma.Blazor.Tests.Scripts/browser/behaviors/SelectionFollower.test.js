@@ -2,6 +2,17 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { attach } from '#browser/behaviors/SelectionFollower.js';
 import { pointerEvent, stubAnimationFrames, stubPointerCapture, stubResizeObserver } from '#support/platform.js';
 
+// The bar's drag registers on the input router, which keeps every registration until it is disposed, so each test's is released after it.
+const handles = [];
+const attachFollower = (target, owner, options) => {
+    const handle = attach(target, owner, options);
+    handles.push(handle);
+
+    return handle;
+};
+
+afterEach(() => handles.splice(0).forEach(handle => handle.dispose()));
+
 describe('SelectionFollower', () => {
     /** @type {HTMLElement} */
     let editor;
@@ -75,7 +86,7 @@ describe('SelectionFollower', () => {
     };
 
     it('shows the selection bar beneath a range selected inside the editor', () => {
-        attach(menu, editor, { activeClass: 'is-visible' });
+        attachFollower(menu, editor, { activeClass: 'is-visible' });
         select();
 
         expect(menu.classList.contains('is-visible')).toBe(true);
@@ -86,21 +97,21 @@ describe('SelectionFollower', () => {
     it('shows the bar at once for a selection that already exists when it attaches', () => {
         selectText(false, false);
 
-        attach(menu, editor, { activeClass: 'is-visible' });
+        attachFollower(menu, editor, { activeClass: 'is-visible' });
 
         expect(menu.classList.contains('is-visible')).toBe(true);
         expect(menu.style.top).toBe('128px');
     });
 
     it('places the bar above the selection when asked to', () => {
-        attach(menu, editor, { activeClass: 'is-visible', placement: 'above' });
+        attachFollower(menu, editor, { activeClass: 'is-visible', placement: 'above' });
         select();
 
         expect(menu.style.top).toBe('62px'); // 100 (top) - 30 (height) - 8 (gap)
     });
 
     it('hides the menu when selection is collapsed', () => {
-        attach(menu, editor, { activeClass: 'is-visible' });
+        attachFollower(menu, editor, { activeClass: 'is-visible' });
         select();
         expect(menu.classList.contains('is-visible')).toBe(true);
 
@@ -112,7 +123,7 @@ describe('SelectionFollower', () => {
     });
 
     it('hides the menu when selection is outside the editor', () => {
-        attach(menu, editor, { activeClass: 'is-visible' });
+        attachFollower(menu, editor, { activeClass: 'is-visible' });
         selectText(false, true);
 
         document.dispatchEvent(new Event('selectionchange'));
@@ -122,7 +133,7 @@ describe('SelectionFollower', () => {
     });
 
     it('moves above the selection when the viewport leaves no room beneath', () => {
-        attach(menu, editor, { activeClass: 'is-visible' });
+        attachFollower(menu, editor, { activeClass: 'is-visible' });
         const range = selectText(false, false);
         range.getBoundingClientRect = () => ({
             top: 730, bottom: 750, left: 200, right: 280, width: 80, height: 20, x: 200, y: 730,
@@ -135,7 +146,7 @@ describe('SelectionFollower', () => {
     });
 
     it('moves beneath the selection when asked above with no room there', () => {
-        attach(menu, editor, { activeClass: 'is-visible', placement: 'above' });
+        attachFollower(menu, editor, { activeClass: 'is-visible', placement: 'above' });
         const range = selectText(false, false);
         range.getBoundingClientRect = () => ({
             top: 10, bottom: 30, left: 200, right: 280, width: 80, height: 20, x: 200, y: 10,
@@ -148,7 +159,7 @@ describe('SelectionFollower', () => {
     });
 
     it('keeps the displacement the handle was dragged by across selections', () => {
-        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        attachFollower(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
         select();
 
         const handle = document.querySelector('#handle');
@@ -167,7 +178,7 @@ describe('SelectionFollower', () => {
     });
 
     it('settles a drag past the viewport edge at the edge, with no dead distance to drag back', () => {
-        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        attachFollower(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
         select();
 
         const handle = document.querySelector('#handle');
@@ -187,7 +198,7 @@ describe('SelectionFollower', () => {
     });
 
     it('holds the bar where the pointer has it while the selection changes mid-drag', () => {
-        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        attachFollower(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
         select();
 
         const handle = document.querySelector('#handle');
@@ -210,7 +221,7 @@ describe('SelectionFollower', () => {
     });
 
     it('keeps the offset a hidden bar was nudged by for its next showing', () => {
-        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        attachFollower(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
         select();
         const shown = menu.getBoundingClientRect;
         selectText(true, false);
@@ -229,7 +240,7 @@ describe('SelectionFollower', () => {
     });
 
     it('nudges the bar with the arrow keys on the handle', () => {
-        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        attachFollower(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
         select();
 
         const handle = document.querySelector('#handle');
@@ -242,7 +253,7 @@ describe('SelectionFollower', () => {
     });
 
     it('leaves the arrow keys alone away from the handle', () => {
-        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        attachFollower(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
         select();
 
         const bold = document.querySelector('#bold');
@@ -255,7 +266,7 @@ describe('SelectionFollower', () => {
     });
 
     it('follows the selection when its owner\'s box changes without any event', () => {
-        attach(menu, editor, { activeClass: 'is-visible' });
+        attachFollower(menu, editor, { activeClass: 'is-visible' });
         const range = select();
         expect(menu.style.top).toBe('128px');
 
@@ -269,14 +280,14 @@ describe('SelectionFollower', () => {
     });
 
     it('never shows when the promised owner did not arrive', () => {
-        attach(menu, null, { activeClass: 'is-visible', requiresOwner: true });
+        attachFollower(menu, null, { activeClass: 'is-visible', requiresOwner: true });
         select();
 
         expect(menu.classList.contains('is-visible')).toBe(false);
     });
 
     it('hides once its owner leaves the document', () => {
-        attach(menu, editor, { activeClass: 'is-visible' });
+        attachFollower(menu, editor, { activeClass: 'is-visible' });
         const range = select();
         expect(menu.classList.contains('is-visible')).toBe(true);
 
@@ -294,7 +305,7 @@ describe('SelectionFollower', () => {
     });
 
     it('hides and removes listeners once disposed', () => {
-        const handle = attach(menu, editor, { activeClass: 'is-visible' });
+        const handle = attachFollower(menu, editor, { activeClass: 'is-visible' });
         select();
         expect(menu.classList.contains('is-visible')).toBe(true);
 
@@ -322,7 +333,7 @@ describe('SelectionFollower holding focus', () => {
     }
 
     it('wraps Tab from the last control back to the first', () => {
-        attach(document.querySelector('#bar'), document.querySelector('#editor'));
+        attachFollower(document.querySelector('#bar'), document.querySelector('#editor'));
         document.querySelector('#last').focus();
 
         const event = key('Tab');
@@ -332,7 +343,7 @@ describe('SelectionFollower holding focus', () => {
     });
 
     it('hands focus back to the editor on Escape', () => {
-        attach(document.querySelector('#bar'), document.querySelector('#editor'));
+        attachFollower(document.querySelector('#bar'), document.querySelector('#editor'));
         document.querySelector('#first').focus();
 
         key('Escape');
