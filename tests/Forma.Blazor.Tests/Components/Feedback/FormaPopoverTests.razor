@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Interaction
+@using Forma.Framework.Input.Interop
 @using Forma.Framework.Input.Keyboard
 @code {
     public sealed class Component
@@ -87,7 +88,7 @@
             // Assert
             var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
             Assert.Multiple(
-                () => Assert.Same(cut.FindComponent<FormaPopover>().Instance, Assert.IsType<DotNetObjectReference<FormaPopover>>(registration.Arguments[2]).Value),
+                () => Assert.IsType<DotNetObjectReference<InputRegistration>>(registration.Arguments[2]),
                 () => Assert.Equal(DismissBehavior.Dismiss, Assert.IsType<InputProfile>(registration.Arguments[1]).Escape),
                 () => Assert.Equal(PressAwayBehavior.PassThrough, Assert.IsType<InputProfile>(registration.Arguments[1]).PressAway));
         }

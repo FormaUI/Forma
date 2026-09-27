@@ -257,7 +257,7 @@
             // Assert
             var registration = router.Registrations.Last();
             Assert.Multiple(
-                () => Assert.Same(cut.FindComponent<FormaPopover>().Instance, Assert.IsType<DotNetObjectReference<FormaPopover>>(registration.Arguments[2]).Value),
+                () => Assert.Equal(cut.FindComponent<FormaPopover>().Instance.RootElement.Id, Assert.IsType<ElementReference>(registration.Arguments[0]).Id),
                 () => Assert.Equal(["select.next:ArrowDown", "select.previous:ArrowUp", "select.first:Home", "select.last:End"], InputRouterProbe.GetRoutes(registration)));
         }
 

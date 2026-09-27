@@ -8,7 +8,6 @@ using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>An anchored popover shown in the browser's top layer, registered with the input router while open so Escape and a press away dismiss it and its content's routes are answered, and returning focus to its trigger after keyboard dismissal.</summary>
 public sealed partial class FormaPopover : FormaElementBase
@@ -49,29 +48,35 @@ public sealed partial class FormaPopover : FormaElementBase
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private AnchoredPopover _popup = default!;
-    private DotNetObjectReference<FormaPopover> _selfReference = default!;
-    private InputScope? _inputScope;
-    private InputProfile? _registeredProfile;
-    private int _opening;
-    private Task _sync = Task.CompletedTask;
+    private InputRegistration _registration = default!;
+    private InputProfile _profile = default!;
     private ElementReference _trigger;
 
     /// <summary>Whether the popover is open.</summary>
     public bool IsOpen { get; private set; }
 
-    private InputProfile Profile
-        => new()
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _popup = new AnchoredPopover(Context.JS);
+        _registration = new InputRegistration(InputRouter, HandleInputActionAsync, HandleDismissAsync);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        var profile = new InputProfile
         {
             Escape = DismissBehavior.Dismiss,
             PressAway = PressAway ? PressAwayBehavior.PassThrough : PressAwayBehavior.Ignore,
             InputRoutes = InputRoutes,
         };
 
-    /// <inheritdoc />
-    protected override void OnInitialized()
-    {
-        _popup = new AnchoredPopover(Context.JS);
-        _selfReference = DotNetObjectReference.Create(this);
+        // The registration pushes a profile again only when it is another instance, so one is kept until a parameter changes it.
+        if (_profile != profile)
+        {
+            _profile = profile;
+        }
     }
 
     /// <summary>Opens the popover, remembering the trigger as where focus returns when it closes.</summary>
@@ -83,7 +88,6 @@ public sealed partial class FormaPopover : FormaElementBase
         }
 
         _trigger = trigger;
-        _opening++;
         await SetOpenAsync(true);
     }
 
@@ -96,12 +100,10 @@ public sealed partial class FormaPopover : FormaElementBase
         => IsOpen ? CloseAsync() : OpenAsync(trigger);
 
     /// <summary>Performs an action the router resolved to the popover's content.</summary>
-    [JSInvokable]
     public Task HandleInputActionAsync(string action, InputInfo input)
         => OnInputAction.InvokeAsync(new InputAction(action, input));
 
     /// <summary>Closes the popover as the router dismissed it: a press away leaves focus where it is, and anything else returns it to the trigger.</summary>
-    [JSInvokable]
     public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
         => action is DismissBehavior.Ignore
             ? Task.CompletedTask
@@ -114,7 +116,8 @@ public sealed partial class FormaPopover : FormaElementBase
             return;
         }
 
-        await ReleaseAsync();
+        // The scope goes before the content does, so nothing is routed to a popover on its way out.
+        await _registration.SyncAsync(RootElement, _profile, wanted: false);
 
         // Focus is moved while the content is still in the document, so where it is can be seen.
         await _popup.CloseAsync(returnsFocus);
@@ -137,67 +140,12 @@ public sealed partial class FormaPopover : FormaElementBase
         }
     }
 
-    // Renders can overlap, so each sync waits for the one before it and none registers twice.
+    // The popover is an active scope only while open, with its trigger counted as inside it so a press there toggles rather than dismisses.
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
-
-        var previous = _sync;
-        _sync = SyncRegistrationAsync(previous);
-        await _sync;
-    }
-
-    private async Task SyncRegistrationAsync(Task previous)
-    {
-        await previous;
-
-        if (!IsOpen)
-        {
-            await ReleaseAsync();
-        }
-        else if (_inputScope is null)
-        {
-            await RegisterAsync();
-        }
-        else if (_registeredProfile != Profile && await _inputScope.UpdateAsync(Profile))
-        {
-            _registeredProfile = Profile;
-        }
-    }
-
-    // The popover is a scope only while open, with its trigger counted as inside it so a press there toggles rather than dismisses.
-    private async Task RegisterAsync()
-    {
-        var opening = _opening;
-        var profile = Profile;
-        var inputScope = await InputRouter.RegisterAsync(RootElement, profile, _selfReference, within: [_trigger]);
-
-        if (inputScope is null)
-        {
-            return;
-        }
-
-        // The popover may have closed, or closed and reopened from another trigger, while the registration was being made.
-        if (!IsOpen || opening != _opening)
-        {
-            await inputScope.DisposeAsync();
-            return;
-        }
-
-        _inputScope = inputScope;
-        _registeredProfile = profile;
-        await inputScope.ActivateAsync();
-    }
-
-    private async Task ReleaseAsync()
-    {
-        if (_inputScope is { } inputScope)
-        {
-            _inputScope = null;
-            _registeredProfile = null;
-            await inputScope.DisposeAsync();
-        }
+        await _registration.SyncAsync(RootElement, _profile, wanted: IsOpen, active: IsOpen, within: [_trigger]);
     }
 
     /// <inheritdoc />
@@ -209,16 +157,8 @@ public sealed partial class FormaPopover : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        try
-        {
-            await ReleaseAsync();
-            await _popup.DisposeAsync();
-        }
-        finally
-        {
-            _selfReference.Dispose();
-        }
-
+        await _registration.DisposeAsync();
+        await _popup.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

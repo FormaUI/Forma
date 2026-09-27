@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A registration a component holds on one of its elements for as long as it wants one: made, kept in step with the profile and the hold the component gives it after each render, and released with the component.</summary>
-/// <remarks>Each sync records what the component wants; one settle runs at a time and carries on until what is registered matches the latest sync, so a profile or an element that changed while a registration was in flight is applied once it lands, and a registration that lands unwanted is released at once. A registration the router refused is asked for again on the next sync. Disposal waits for a settle underway before the reference the router calls back through goes.</remarks>
+/// <remarks>Each sync records what the component wants; one settle runs at a time and carries on until what is registered matches the latest sync, so a profile or an element that changed while a registration was in flight is applied once it lands, and a registration that lands unwanted is released at once. The parent and the elements counted as inside are given only when a registration is made, so a change to either releases the registration and makes it again. A registration the router refused is asked for again on the next sync. Disposal waits for a settle underway before the reference the router calls back through goes.</remarks>
 public sealed class InputRegistration : IAsyncDisposable
 {
     private readonly InputRouter _router;
@@ -14,6 +14,7 @@ public sealed class InputRegistration : IAsyncDisposable
     private InputScope? _scope;
     private InputProfile? _registeredProfile;
     private string? _registeredElementId;
+    private Placement? _registeredPlacement;
     private Request? _request;
     private Task? _settle;
     private bool _isDisposed;
@@ -105,13 +106,13 @@ public sealed class InputRegistration : IAsyncDisposable
             {
                 await ReleaseAsync();
             }
-            else if (_scope is { } scope && _registeredElementId == request.Element.Id)
+            else if (_scope is { } scope && _registeredElementId == request.Element.Id && _registeredPlacement == Placement.Of(request))
             {
                 await KeepInStepAsync(scope, request);
             }
             else
             {
-                // Another element starts afresh.
+                // Another element, or another placement, starts afresh.
                 await ReleaseAsync();
                 await RegisterAsync(request);
             }
@@ -135,6 +136,7 @@ public sealed class InputRegistration : IAsyncDisposable
         _scope = scope;
         _registeredProfile = request.Profile;
         _registeredElementId = request.Element.Id;
+        _registeredPlacement = Placement.Of(request);
 
         if (request.Active)
         {
@@ -164,6 +166,7 @@ public sealed class InputRegistration : IAsyncDisposable
     {
         _registeredProfile = null;
         _registeredElementId = null;
+        _registeredPlacement = null;
 
         if (_scope is { } scope)
         {
@@ -174,4 +177,11 @@ public sealed class InputRegistration : IAsyncDisposable
 
     /// <summary>What the owner asked for last.</summary>
     private sealed record Request(ElementReference Element, InputProfile Profile, bool Wanted, bool Active, ElementReference? Parent, IReadOnlyList<ElementReference>? Within);
+
+    /// <summary>Where a registration stands, by the ids of the elements named, so two requests naming the same elements through different references compare equal.</summary>
+    private sealed record Placement(string? ParentId, string WithinIds)
+    {
+        public static Placement Of(Request request)
+            => new(request.Parent?.Id, string.Join('\n', (request.Within ?? []).Select(element => element.Id)));
+    }
 }

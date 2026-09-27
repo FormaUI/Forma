@@ -97,6 +97,27 @@ public sealed class InputRegistrationTests
         }
 
         [Fact]
+        public async Task Should_start_afresh_when_the_elements_counted_inside_change()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var script = new RecordingScript();
+            await using var router = CreateRouter(script, loggerFactory);
+            await using var registration = new InputRegistration(router);
+            await registration.SyncAsync(Element, Profile, within: [new ElementReference("first-trigger")]);
+
+            // Act — the same trigger again through another reference, then another trigger
+            await registration.SyncAsync(Element, Profile, within: [new ElementReference("first-trigger")]);
+            await registration.SyncAsync(Element, Profile, within: [new ElementReference("second-trigger")]);
+
+            // Assert
+            var registrations = script.Module.Calls.Where(call => call.Identifier == "register").ToList();
+            Assert.Multiple(
+                () => Assert.Equal(2, registrations.Count),
+                () => Assert.Single(script.Handle.Calls, call => call.Identifier == "dispose"));
+        }
+
+        [Fact]
         public async Task Should_ask_again_on_the_next_sync_after_the_router_refused()
         {
             // Arrange
