@@ -12,6 +12,8 @@
  * each input class needs and no more.
  */
 
+import { Scrolling } from '../../core/scripts/Scrolling.js';
+
 const isApplePlatform = /Mac|iPhone|iPad|iPod/.test(globalThis.navigator?.platform ?? '');
 
 /** What a consumed input does by default, per input class. */
@@ -983,7 +985,20 @@ function nativeClaims(element, event) {
         return HorizontalKeys.has(event.key) || VerticalKeys.has(event.key) || event.key === 'Enter' || event.key === ' ';
     }
 
-    return false;
+    // Anything that scrolls on its own takes the turn along the axis it scrolls, as the browser would scroll it.
+    return event.type === 'wheel' && scrollsAlong(element, event);
+}
+
+function scrollsAlong(element, event) {
+    const style = getComputedStyle(element);
+
+    if (axisMatches('vertical', event)) {
+        return Scrolling.isScroller(element, style);
+    }
+
+    const { overflowX } = style;
+
+    return (overflowX === 'auto' || overflowX === 'scroll' || overflowX === 'overlay') && element.scrollWidth > element.clientWidth;
 }
 
 function inputClaims(input, event) {

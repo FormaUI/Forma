@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Layout;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
+using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -28,7 +29,11 @@ public sealed partial class FormaFreezePane : FormaElementBase
     // One small spacing step, the distance an arrow key moves the frozen edge.
     private const double FrozenEdgeKeyStep = 8;
 
+    private const string ScrollAction = "freeze-pane.scroll";
+
     private static readonly ScrollBoundaryReport Unmeasured = new(false, false, 0, 0, 0);
+
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private Scroll _scroll = default!;
     private Wheel _wheel = default!;
@@ -136,7 +141,9 @@ public sealed partial class FormaFreezePane : FormaElementBase
 
             if (WantsWheel && !_wheel.IsAttached)
             {
-                await _wheel.AttachAsync(_viewport, ScrollWheel.MovesTarget);
+                // The turn is a route the script declares itself, so the host's policy reaches the router before it does.
+                await InputRouter.ConfigureAsync();
+                await _wheel.AttachAsync(_viewport, ScrollWheel.MovesTarget(ScrollAction));
             }
             else if (!WantsWheel && _wheel.IsAttached)
             {

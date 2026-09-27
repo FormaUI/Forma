@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { register, registerHost, resolve, requestDismiss, owns, ownerOf, describe as describeScope, stack, configure } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
+import { sizeScroller } from '#support/platform.js';
 
 const handles = [];
 
@@ -551,6 +552,35 @@ describe('InputRouter registrations', () => {
 });
 
 describe('InputRouter native controls', () => {
+    it('leaves the wheel to a panel that scrolls along the turn\'s axis', () => {
+        const scrolled = vi.fn();
+        const panel = document.createElement('div');
+        panel.style.overflowY = 'auto';
+        panel.innerHTML = '<p>long</p>';
+        sizeScroller(panel, { scrollHeight: 400, clientHeight: 100 });
+        grid().append(panel);
+        scope(grid(), { routes: [route('test.scroll', scrolled, { type: 'wheel' })] });
+
+        const event = wheel(panel.querySelector('p'));
+
+        expect(scrolled).not.toHaveBeenCalled();
+        expect(resolve(event)).toMatchObject({ owner: panel, precedence: 'native', action: null });
+    });
+
+    it('routes the wheel over a panel that scrolls only the other axis', () => {
+        const scrolled = vi.fn();
+        const panel = document.createElement('div');
+        panel.style.overflowX = 'auto';
+        panel.innerHTML = '<p>wide</p>';
+        sizeScroller(panel, { scrollWidth: 400, clientWidth: 100 });
+        grid().append(panel);
+        scope(grid(), { routes: [route('test.scroll', scrolled, { type: 'wheel' })] });
+
+        wheel(panel.querySelector('p'));
+
+        expect(scrolled).toHaveBeenCalledOnce();
+    });
+
     it.each(['video', 'audio'])('leaves the arrows, Home, End, Enter and Space to a %s with the browser\'s controls', tag => {
         const steps = vi.fn();
         const media = document.createElement(tag);

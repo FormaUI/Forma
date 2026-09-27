@@ -2,13 +2,16 @@
  * Wheel — what a surface does with a wheel turned over it
  *
  * A wheel that reports vertically is turned into movement along a track, or an owner is told
- * which way it turned. Inline offsets are read through Math.abs where a right-to-left container
- * counts scrollLeft downwards from zero.
+ * which way it turned. Either is a route on the input router, declared on the surface under the
+ * action the surface names, so a turn over a popover opened from the surface, or over a panel
+ * inside it that scrolls on its own, is theirs and never reaches the surface, and the host remaps
+ * the turn by that action. Inline offsets are read through Math.abs where a right-to-left
+ * container counts scrollLeft downwards from zero.
  */
 
 import { Direction } from '../../../core/scripts/Direction.js';
-import { Scrolling } from '../../../core/scripts/Scrolling.js';
 import { tell } from '../../../core/scripts/Owner.js';
+import { register } from '../../../input/scripts/InputRouter.js';
 
 /** Pixels a line is taken to be, for the wheels that report in lines rather than pixels. */
 const LineHeight = 16;
@@ -23,72 +26,37 @@ const GestureGap = 150;
  */
 const NotchDistance = 40;
 
+/** The router's name for each key a turn can be gated on. */
+const Modifiers = { ctrl: 'control', alt: 'alt', shift: 'shift' };
+
 /** @typedef {import('../../../core/scripts/Owner.js').Owner} Owner */
 
 /**
  * @param {HTMLElement} target The surface the wheel is turned over.
- * @param {{ track?: HTMLElement, owner?: Owner, modifier?: string }} options
- *   Answer a wheel over the target by moving the track, the target when none is named, or by
- *   telling the owner the direction through HandleWheelAsync, only with the modifier key held
- *   when one is named.
+ * @param {{ action: string, track?: HTMLElement, owner?: Owner, modifier?: 'ctrl' | 'alt' | 'shift' }} options
+ *   The action the turn is routed as; answer a wheel over the target by moving the track, the
+ *   target when none is named, or by telling the owner the direction through HandleWheelAsync,
+ *   only with the modifier key held when one is named.
  */
-export function attach(target, options = {}) {
+export function attach(target, options) {
     return new Wheel(target, options);
 }
 
 /** Answers a wheel turned over the target, which reports vertically alone: a track moves by it, or an owner is told its direction. */
 class Wheel {
-    #target;
-    #sink;
-    #modifier;
-    #controller = new AbortController();
+    #registration;
 
-    constructor(target, { track, owner, modifier }) {
-        this.#target = target;
-        this.#sink = owner ? new DirectionSink(owner) : new TrackSink(track ?? target);
-        this.#modifier = modifier ? `${modifier}Key` : null;
+    constructor(target, { action, track, owner, modifier }) {
+        const sink = owner ? new DirectionSink(owner) : new TrackSink(track ?? target);
+        const modifiers = modifier ? { [Modifiers[modifier]]: true } : {};
 
-        // A passive listener cannot call preventDefault, which keeps the turn from the page.
-        target.addEventListener('wheel', event => this.#handle(event), { signal: this.#controller.signal, passive: false });
+        this.#registration = register(target, {
+            routes: [{ action, bindings: [sink.describeBinding(modifiers)], handle: event => sink.move(event) }],
+        });
     }
 
     dispose() {
-        this.#controller.abort();
-    }
-
-    #handle(event) {
-        // Without its key held the turn is not answered.
-        if (this.#modifier && !event[this.#modifier]) {
-            return;
-        }
-
-        // A popover or scrolling panel over the target takes the turn.
-        if (this.#nearerScroller(event.target)) {
-            return;
-        }
-
-        this.#sink.move(event);
-    }
-
-    /**
-     * Whether the pointer is over something that only lives in the target's markup: a popover, a
-     * backdrop or anything else taken out of flow, or a panel that scrolls on its own.
-     */
-    #nearerScroller(from) {
-        for (let node = from instanceof Element ? from : from?.parentElement; node && node !== this.#target; node = node.parentElement) {
-            if (node.hasAttribute('popover')) {
-                return true;
-            }
-
-            const style = getComputedStyle(node);
-
-            // A fixed element takes the page's turn.
-            if (style.position === 'fixed' || Scrolling.isScroller(node, style)) {
-                return true;
-            }
-        }
-
-        return false;
+        this.#registration.dispose();
     }
 }
 
@@ -100,27 +68,18 @@ class TrackSink {
         this.#track = track;
     }
 
+    /** A vertical turn, while the track has somewhere to scroll; the turn is consumed at either end too, so the page stays put. */
+    describeBinding(modifiers) {
+        return { type: 'wheel', axis: 'vertical', modifiers, when: () => this.#slack() > 1 };
+    }
+
     move(event) {
-        // A sideways delta is left to the browser.
-        if (event.deltaX !== 0) {
-            return;
-        }
-
-        const slack = this.#track.scrollWidth - this.#track.clientWidth;
-
-        // A sub-pixel track width leaves a fractional remainder, so a pixel is the smallest real slack.
-        if (slack <= 1) {
-            return;
-        }
-
+        const slack = this.#slack();
         const isRightToLeft = Direction.isRightToLeft(this.#track);
         const distance = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaY * LineHeight : event.deltaY;
         const offset = this.#track.scrollLeft;
         const wanted = offset + (isRightToLeft ? -distance : distance);
         const next = isRightToLeft ? Math.min(0, Math.max(-slack, wanted)) : Math.max(0, Math.min(slack, wanted));
-
-        // The turn is consumed at either end too.
-        event.preventDefault();
 
         if (Math.abs(next - offset) < 1) {
             return;
@@ -128,6 +87,11 @@ class TrackSink {
 
         // Each notch lands at once.
         this.#track.scrollTo({ left: next, behavior: 'instant' });
+    }
+
+    /** How far the track can scroll; a sub-pixel track width leaves a fractional remainder, so a pixel is the smallest real slack. */
+    #slack() {
+        return this.#track.scrollWidth - this.#track.clientWidth;
     }
 }
 
@@ -141,15 +105,18 @@ class DirectionSink {
         this.#owner = owner;
     }
 
+    /** A turn on either axis that moved at all. */
+    describeBinding(modifiers) {
+        return { type: 'wheel', modifiers, when: event => DirectionSink.#deltaOf(event) !== 0 };
+    }
+
+    // The delta is checked again, since a host's remap of the action replaces the binding and its predicate with it.
     move(event) {
-        const delta = event.deltaX !== 0 ? event.deltaX : event.deltaY;
+        const delta = DirectionSink.#deltaOf(event);
 
         if (delta === 0) {
             return;
         }
-
-        // The turn is consumed.
-        event.preventDefault();
 
         const isNotch = event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL || Math.abs(delta) >= NotchDistance;
         const isSameGesture = event.timeStamp - this.#lastAt < GestureGap;
@@ -161,5 +128,9 @@ class DirectionSink {
 
         this.#isGestureReported = !isNotch;
         tell(this.#owner, 'HandleWheelAsync', Math.sign(delta));
+    }
+
+    static #deltaOf(event) {
+        return event.deltaX !== 0 ? event.deltaX : event.deltaY;
     }
 }

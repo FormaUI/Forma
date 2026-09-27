@@ -37,8 +37,16 @@ the arrow along the reading direction resolved when it attaches. A key inside a 
 that routes it is that surface's and never reaches the one around it, which is what
 `defaultPrevented` used to arrange; a Tab with a modifier other than Shift, or an arrow in a
 text field, is left alone by the router's vocabulary and native table rather than by checks of
-its own. Active drags and the selection bar are not on the router: `DragGesture` cancels a drag
-from its own Escape listener, and `SelectionFollower` returns focus to the editor from its own.
+its own. `Wheel` declares each turn it answers as a route on the surface, under the action the
+component names, `freeze-pane.scroll`, `pagination.page` and `file-viewer.zoom`, with the key it
+is gated on as the binding's modifier; a turn over a popover opened from the surface stops at the
+popover's active scope, and the native table gained any element that scrolls on its own, which
+takes the wheel along the axis it scrolls, so a panel inside the surface keeps its own scrolling
+and the behavior's checks for a popover, a fixed element or a scroller between the two are gone.
+A track answers only a turn that is mostly vertical, so a trackpad's slight diagonal now moves
+it where a strict zero sideways delta used to be required. Active drags and the selection bar
+are not on the router: `DragGesture` cancels a drag from its own Escape listener, and
+`SelectionFollower` returns focus to the editor from its own.
 Of the owners in step 3, the two shortcut sets, `FormaSelect` and `FormaDropDownMenu` have
 moved: each routes its trigger's arrows on the trigger, and its list's arrows, Home and End
 through `FormaPopover`, which carries its content's routes on the registration it already makes
@@ -160,7 +168,7 @@ existing components, landing as several coherent commits.
    and the backdrop z-indexes go (done).
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: `FormaComposer`'s
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
-   wheel tracks of `Wheel`, `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
+   wheel tracks of `Wheel` (done), `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
    `Focus.js` (done), and the components that own navigation keys — `FormaSelect`,
    `FormaDropDownMenu`, `FormaTabs`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`
    and `FormaSortableList` (all done). `NavigationGuard` is retired in favour of the

@@ -613,7 +613,10 @@
             var with = module.Invocations.Count;
 
             // Assert
-            Assert.Equal((0, 1), (without, with));
+            var options = module.Invocations.Single(invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Multiple(
+                () => Assert.Equal((0, 1), (without, with)),
+                () => Assert.Equal("pagination.page", options.GetType().GetProperty("action")!.GetValue(options)));
         }
 
         [Fact]

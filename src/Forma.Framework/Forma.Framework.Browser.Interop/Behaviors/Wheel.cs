@@ -34,7 +34,7 @@ public sealed class Wheel(IJSEnvironment js)
 
     private static object Describe<TOwner>(ScrollWheel wheel, DotNetObjectReference<TOwner>? owner)
         where TOwner : class
-        => new { track = wheel.Track, owner = wheel.TellsOwner ? owner : null, modifier = GetModifierName(wheel.Modifier) };
+        => new { action = wheel.Action, track = wheel.Track, owner = wheel.TellsOwner ? owner : null, modifier = GetModifierName(wheel.Modifier) };
 
     private static string? GetModifierName(WheelModifier modifier) => modifier switch
     {

@@ -211,6 +211,7 @@ input**, of what the control consumes natively:
 | `button`, button-like `input` types, `a[href]`, `summary`, `[role=button]`, `[role=link]` | Enter, Space |
 | `video[controls]`, `audio[controls]` | Arrows, Home, End, Enter, Space |
 | `[contenteditable]` | Typing, every arrow, Home, End, PageUp, PageDown, Enter, Backspace, Delete, the editing shortcuts, Ctrl+B/I/U, wheel when it scrolls |
+| Any element that scrolls on its own | Wheel along the axis it scrolls |
 
 A disabled control consumes nothing. Input a native control consumes is owned by that control. Input it does not consume —
 Escape, an unrelated shortcut, wheel on a control that does not scroll — resolves through

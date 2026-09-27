@@ -11,6 +11,21 @@
     public sealed class Component
     {
         [Fact]
+        public void Should_answer_the_wheel_as_its_own_scroll_action()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var wheel = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/Wheel.js");
+
+            // Act
+            ctx.Render(@<FormaFreezePane><button>One</button></FormaFreezePane>);
+
+            // Assert
+            var options = Assert.Single(wheel.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Equal("freeze-pane.scroll", options.GetType().GetProperty("action")!.GetValue(options));
+        }
+
+        [Fact]
         public void Should_render_the_content_in_an_inline_scrollbar_viewport_by_default()
         {
             // Arrange

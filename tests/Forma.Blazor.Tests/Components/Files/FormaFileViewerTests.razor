@@ -280,6 +280,23 @@
         }
 
         [Fact]
+        public void Should_answer_the_wheel_as_its_zoom_action_with_control_held()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var wheel = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/Wheel.js");
+
+            // Act
+            ctx.Render(@<FormaFileViewer Source="@Image" />);
+
+            // Assert
+            var options = Assert.Single(wheel.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Multiple(
+                () => Assert.Equal("file-viewer.zoom", options.GetType().GetProperty("action")!.GetValue(options)),
+                () => Assert.Equal("ctrl", options.GetType().GetProperty("modifier")!.GetValue(options)));
+        }
+
+        [Fact]
         public void Should_zoom_in_and_stop_at_the_top_step()
         {
             // Arrange

@@ -6,6 +6,7 @@ using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
+using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -21,7 +22,11 @@ public sealed partial class FormaPagination : FormaElementBase
     // Beside the steps a navigation button moves a whole window.
     private const int StepsStride = LookAhead;
 
+    private const string PageAction = "pagination.page";
+
     private static readonly TextBoxOptions NavigationEntryOptions = new() { InputMode = TextInputMode.Numeric, EnterKeyHint = TextEnterKeyHint.Go };
+
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private ImplicitSubmitGuard _submitGuard = default!;
     private Wheel _wheel = default!;
@@ -129,7 +134,10 @@ public sealed partial class FormaPagination : FormaElementBase
         if (Options.PageOnWheelGesture && !_wheel.IsAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
-            await _wheel.AttachAsync(RootElement, ScrollWheel.Tells(), _selfReference);
+
+            // The turn is a route the script declares itself, so the host's policy reaches the router before it does.
+            await InputRouter.ConfigureAsync();
+            await _wheel.AttachAsync(RootElement, ScrollWheel.Tells(PageAction), _selfReference);
         }
         else if (!Options.PageOnWheelGesture && _wheel.IsAttached)
         {
