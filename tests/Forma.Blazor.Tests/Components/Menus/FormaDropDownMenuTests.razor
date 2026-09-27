@@ -149,6 +149,7 @@
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaDropDownMenu>
                     <Trigger>Options</Trigger>
@@ -157,7 +158,7 @@
             cut.Find(".forma-dropdown-menu-trigger").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
@@ -189,6 +190,7 @@
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaDropDownMenu>
                     <Trigger>Options</Trigger>
@@ -197,7 +199,7 @@
             cut.Find(".forma-dropdown-menu-trigger").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
 
             // Assert
             Assert.Multiple(
@@ -270,6 +272,7 @@
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaDropDownMenu>
                     <Trigger>Options</Trigger>
@@ -286,7 +289,7 @@
             // Act
             foreach (var (action, key) in new[] { ("menu.first", "Home"), ("menu.next", "ArrowDown"), ("menu.next", "ArrowDown"), ("menu.next", "ArrowDown"), ("menu.last", "End"), ("menu.previous", "ArrowUp") })
             {
-                await cut.InvokeAsync(() => popover.HandleInputActionAsync(action, new InputKeyInfo { Type = "keydown", Key = key }));
+                await router.RouteAsync(popover.RootElement, action, key);
             }
 
             // Assert: Print, Notes, wrapping past the disabled Archive to Print, Notes; then Notes again as the last enabled item, and back to Print.

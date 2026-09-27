@@ -44,11 +44,12 @@
         {
             // Arrange
             using var ctx = new FormaPopoverTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
             await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Assert
             Assert.Multiple(
@@ -61,12 +62,13 @@
         {
             // Arrange
             using var ctx = new FormaPopoverTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
             var popover = cut.FindComponent<FormaPopover>().Instance;
             await cut.InvokeAsync(() => popover.OpenAsync(default));
 
             // Act
-            await cut.InvokeAsync(() => popover.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await router.DismissAsync(popover.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
 
             // Assert
             Assert.Multiple(
@@ -115,18 +117,19 @@
         {
             // Arrange
             using var ctx = new FormaPopoverTests();
+            var router = new InputRouterProbe(ctx);
             InputAction? received = null;
             var cut = ctx.Render(@<FormaPopover Anchor="default" OnInputAction="action => received = action"><p>Content</p></FormaPopover>);
-            var input = new InputKeyInfo { Type = "keydown", Key = "ArrowDown" };
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleInputActionAsync("list.next", input));
+            await router.RouteAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, "list.next", "ArrowDown");
 
             // Assert
             Assert.NotNull(received);
             Assert.Multiple(
                 () => Assert.Equal("list.next", received.Action),
-                () => Assert.Same(input, received.Input));
+                () => Assert.Equal("ArrowDown", Assert.IsType<InputKeyInfo>(received.Input).Key));
         }
 
         [Fact]

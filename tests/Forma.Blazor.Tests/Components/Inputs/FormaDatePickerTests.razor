@@ -82,6 +82,7 @@
         {
             // Arrange
             using var ctx = new FormaDatePickerTests();
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
@@ -89,7 +90,7 @@
             cut.Find(".forma-date-picker-trigger").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
 
             // Assert
             Assert.Multiple(
@@ -102,6 +103,7 @@
         {
             // Arrange
             using var ctx = new FormaDatePickerTests();
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
@@ -109,7 +111,7 @@
             cut.Find(".forma-date-picker-trigger").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-date-picker-popover"));

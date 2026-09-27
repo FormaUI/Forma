@@ -99,12 +99,12 @@ public sealed partial class FormaPopover : FormaElementBase
     public Task ToggleAsync(ElementReference trigger)
         => IsOpen ? CloseAsync() : OpenAsync(trigger);
 
-    /// <summary>Performs an action the router resolved to the popover's content.</summary>
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    // Performs an action the router resolved to the popover's content.
+    private Task HandleInputActionAsync(string action, InputInfo input)
         => OnInputAction.InvokeAsync(new InputAction(action, input));
 
-    /// <summary>Closes the popover as the router dismissed it: a press away leaves focus where it is, and anything else returns it to the trigger.</summary>
-    public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
+    // Closes the popover as the router dismissed it: a press away leaves focus where it is, and anything else returns it to the trigger.
+    private Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
         => action is DismissBehavior.Ignore
             ? Task.CompletedTask
             : CloseAsync(ReturnsFocus && reason is not DismissReason.PressAway);

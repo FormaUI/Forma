@@ -60,11 +60,12 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(RenderHost(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
             cut.Find("button").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
 
             // Assert
             Assert.Multiple(
@@ -77,11 +78,12 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(RenderHost(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
             cut.Find("button").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-emoji-picker"));

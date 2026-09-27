@@ -245,6 +245,7 @@
         {
             // Arrange
             using var ctx = new FormaMultiSelectTests();
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
@@ -252,7 +253,7 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-multi-select-popover"));
@@ -298,6 +299,7 @@
         {
             // Arrange
             using var ctx = new FormaMultiSelectTests();
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
@@ -305,7 +307,7 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
 
             // Assert
             Assert.Multiple(
