@@ -270,7 +270,7 @@
             cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await ctx.Router.DismissAsync(cut.FindComponent<FormaDialog>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
 
             // Assert
             Assert.Contains(ctx.Dialog.Invocations, invocation => invocation.Identifier == "close");
@@ -287,7 +287,7 @@
             cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Cancel, DismissReason.CloseRequest));
+            await ctx.Router.DismissAsync(cut.FindComponent<FormaDialog>().Instance.RootElement, DismissBehavior.Cancel, DismissReason.CloseRequest);
 
             // Assert
             Assert.Multiple(
@@ -305,7 +305,7 @@
             cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Ignore, DismissReason.Escape));
+            await ctx.Router.DismissAsync(cut.FindComponent<FormaDialog>().Instance.RootElement, DismissBehavior.Ignore, DismissReason.Escape);
 
             // Assert
             Assert.DoesNotContain(ctx.Dialog.Invocations, invocation => invocation.Identifier == "close");
@@ -351,8 +351,6 @@
 
         /// <summary>The profile of every scope the dialog registered with the router.</summary>
         private static List<InputProfile> GetRegistrations(FormaDialogTests ctx)
-            => [.. ctx.Router.Invocations
-                     .Where(invocation => invocation.Identifier == "register")
-                     .Select(invocation => (InputProfile)invocation.Arguments[1]!)];
+            => [.. ctx.Router.Registrations.Select(registration => (InputProfile)registration.Arguments[1]!)];
     }
 }

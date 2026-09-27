@@ -8,7 +8,6 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and scrim dismissal, registered with the input router as a modal scope while open so Escape and a platform close request are decided there.</summary>
 public sealed partial class FormaDialog : FormaElementBase
@@ -22,8 +21,7 @@ public sealed partial class FormaDialog : FormaElementBase
     };
 
     private Dialog _dialog = default!;
-    private DotNetObjectReference<FormaDialog> _selfReference = default!;
-    private InputScope? _inputScope;
+    private InputRegistration _registration = default!;
     private bool _isOpen;
     private bool _hasOpened;
 
@@ -75,7 +73,7 @@ public sealed partial class FormaDialog : FormaElementBase
     protected override void OnInitialized()
     {
         _dialog = new Dialog(Context.JS);
-        _selfReference = DotNetObjectReference.Create(this);
+        _registration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
     }
 
     /// <inheritdoc />
@@ -108,11 +106,6 @@ public sealed partial class FormaDialog : FormaElementBase
             if (_isOpen)
             {
                 _hasOpened = true;
-
-                if (_inputScope is null)
-                {
-                    await RegisterAsync();
-                }
             }
         }
         else if (!Opened && _isOpen)
@@ -120,12 +113,14 @@ public sealed partial class FormaDialog : FormaElementBase
             await SetClosedAsync();
             await _dialog.CloseAsync();
         }
+
+        // The dialog is a scope only while open, active the whole time so it stands as the modal barrier.
+        await _registration.SyncAsync(RootElement, ModalProfile, wanted: _isOpen, active: _isOpen);
     }
 
-    /// <summary>Closes the dialog as the router dismissed it, or runs the default cancel action when told to cancel.</summary>
-    [JSInvokable]
+    // Closes the dialog as the router dismissed it, or runs the default cancel action when told to cancel.
     [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The router hands every owner the action and the reason.")]
-    public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
+    private Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
         => action switch
         {
             DismissBehavior.Dismiss => RequestCloseAsync(),
@@ -188,36 +183,11 @@ public sealed partial class FormaDialog : FormaElementBase
         }
     }
 
-    // The dialog is a scope only while open, active the whole time so it stands as the modal barrier.
-    private async Task RegisterAsync()
-    {
-        var inputScope = await InputRouter.RegisterAsync(RootElement, ModalProfile, _selfReference);
-
-        if (inputScope is null)
-        {
-            return;
-        }
-
-        // The dialog may have closed or been disposed, or another pass may have registered it, while the registration was being made.
-        if (!_isOpen || IsDisposed || _inputScope is not null)
-        {
-            await inputScope.DisposeAsync();
-            return;
-        }
-
-        _inputScope = inputScope;
-        await inputScope.ActivateAsync();
-    }
-
+    // The scope goes before the dialog does, so nothing is routed to a dialog on its way out.
     private async Task SetClosedAsync()
     {
         _isOpen = false;
-
-        if (_inputScope is { } inputScope)
-        {
-            _inputScope = null;
-            await inputScope.DisposeAsync();
-        }
+        await _registration.SyncAsync(RootElement, ModalProfile, wanted: false);
     }
 
     /// <inheritdoc />
@@ -229,9 +199,9 @@ public sealed partial class FormaDialog : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await SetClosedAsync();
+        _isOpen = false;
+        await _registration.DisposeAsync();
         await _dialog.DisposeAsync();
-        _selfReference.Dispose();
         await base.DisposeAsyncCore();
     }
 }
