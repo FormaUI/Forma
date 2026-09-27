@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and scrim dismissal, registered with the input router as a modal scope while open so Escape and a platform close request are decided there.</summary>
 public sealed partial class FormaDialog : FormaElementBase
 {
+    /// <summary>The part whose first control takes focus as the dialog opens, so a form opens on its first field rather than on the header's close button.</summary>
+    private const string BodySelector = ".forma-dialog-body";
+
     private static readonly InputProfile ModalProfile = new()
     {
         Modal = true,
@@ -101,7 +104,7 @@ public sealed partial class FormaDialog : FormaElementBase
             // Content that renders again while the attach round-trip is still in flight brings a
             // second pass through here, and a call made before the module answered never ran. Only
             // a call that did run counts as open, so the pass that follows it opens the dialog.
-            _isOpen = await _dialog.OpenAsync(Options.CloseOnScrimClick);
+            _isOpen = await _dialog.OpenAsync(Options.CloseOnScrimClick, BodySelector);
 
             if (_isOpen)
             {
