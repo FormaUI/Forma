@@ -45,6 +45,58 @@
         }
 
         [Fact]
+        public async Task Should_focus_the_handle_of_whichever_item_is_first()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = CreateItems(3);
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>();
+
+            // Act — focused once, then again with item 3 moved to the front
+            await cut.InvokeAsync(() => list.Instance.FocusAsync().AsTask());
+            list.Render(parameters => parameters.Add(p => p.Items, new List<SortableItem> { items[2], items[0], items[1] }));
+            await cut.InvokeAsync(() => list.Instance.FocusAsync().AsTask());
+
+            // Assert
+            var focused = GetFocused(ctx.JSInterop);
+            Assert.Multiple(
+                () => Assert.Equal(2, focused.Count),
+                () => Assert.NotEqual(focused[0], focused[1]));
+        }
+
+        [Fact]
+        public async Task Should_focus_nothing_while_disabled_or_empty()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = CreateItems(2);
+            var disabled = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)" Disabled="true">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var empty = ctx.Render(
+                @<FormaSortableList Items="@(new List<SortableItem>())" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+
+            // Act
+            await disabled.InvokeAsync(() => disabled.FindComponent<FormaSortableList<SortableItem>>().Instance.FocusAsync().AsTask());
+            await empty.InvokeAsync(() => empty.FindComponent<FormaSortableList<SortableItem>>().Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.Empty(GetFocused(ctx.JSInterop));
+        }
+
+        private static List<string> GetFocused(BunitJSInterop js)
+            => [.. js.Invocations
+                .Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus")
+                .Select(invocation => Assert.IsType<ElementReference>(invocation.Arguments[0]).Id)];
+
+        [Fact]
         public void Should_label_each_handle_with_its_position()
         {
             // Arrange

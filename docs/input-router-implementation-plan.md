@@ -218,7 +218,8 @@ existing components, landing as several coherent commits.
    in a cell of a row-selection grid keeps its arrows while open and hands them back closed; a
    menu inside a dialog closes on the first Escape and the dialog on the second; a dialog over
    a popover closes on Escape with the popover still open and focus back on its button; and a
-   list inside a popover takes a drag begun inside it and its keys, the popover staying open,
-   and Escape during that drag cancels the drag and leaves the popover open. A host `<input>`
+   list inside a popover takes focus on its first handle as the popover opens, takes a drag
+   begun inside it and its keys, the popover staying open, and Escape during that drag cancels
+   the drag and leaves the popover open. A host `<input>`
    in a grid is covered by the native table and the selection behavior's tests; no Showcase
    grid combines row selection with an input in a row.

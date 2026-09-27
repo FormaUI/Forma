@@ -69,9 +69,9 @@
         <span class="demo-anchor" @ref="_favoritesAnchor">
             <FormaButton @ref="_favoritesTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_favoritesPopover is { IsOpen: true } ? "true" : "false")" OnClick="() => _favoritesPopover.ToggleAsync(_favoritesTrigger.RootElement)">@L["Open"]</FormaButton>
         </span>
-        <FormaPopover @ref="_favoritesPopover" Anchor="_favoritesAnchor" KeepsFocus="true" OnOpenChanged="_ => { }">
+        <FormaPopover @ref="_favoritesPopover" Anchor="_favoritesAnchor" KeepsFocus="true" OnOpenChanged="_ => { }" OnOpened="() => _favoritesList.FocusAsync()">
             <div class="demo-popover">
-                <FormaSortableList Items="_favorites" ItemKey="@(photo => photo.Id)"
+                <FormaSortableList @ref="_favoritesList" Items="_favorites" ItemKey="@(photo => photo.Id)"
                                     ItemsChanged="@((IReadOnlyList<PhotoItem> reordered) => _favorites = [.. reordered])">
                     <ItemTemplate Context="photo">@photo.Name</ItemTemplate>
                 </FormaSortableList>
@@ -125,6 +125,7 @@
     private ElementReference _favoritesAnchor;
     private FormaButton _favoritesTrigger = default!;
     private FormaPopover _favoritesPopover = default!;
+    private FormaSortableList<PhotoItem> _favoritesList = default!;
 
     private string? _lastClicked;
 

@@ -15,8 +15,10 @@
         {
             var item = Items[i];
             var index = i;
-            <li class="forma-sortable-list-item" @key="ItemKey(item)">
-                <FormaButton Variant="ButtonVariant.Ghost"
+            var key = ItemKey(item);
+            <li class="forma-sortable-list-item" @key="key">
+                <FormaButton @ref="_handles[key]"
+                             Variant="ButtonVariant.Ghost"
                              Size="ButtonSize.Mini"
                              IconOnly="true"
                              class="forma-sortable-list-handle"

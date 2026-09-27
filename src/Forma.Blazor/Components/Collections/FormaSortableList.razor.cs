@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Collections;
 
+using Forma.Blazor.Components.Buttons;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Input.Interop;
@@ -31,6 +32,8 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    // The handles by their item's key, so the first item's handle is found whatever position its element was rendered at.
+    private readonly Dictionary<object, FormaButton> _handles = [];
     private ReorderInteraction _reorderInteraction = default!;
     private DotNetObjectReference<FormaSortableList<TItem>>? _selfReference;
     private bool _isAttached;
@@ -48,6 +51,12 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
         ArgumentNullException.ThrowIfNull(Items);
         ArgumentNullException.ThrowIfNull(ItemTemplate);
         ArgumentNullException.ThrowIfNull(ItemKey);
+
+        // The handle of an item no longer listed is let go; the rest are captured again as they render.
+        foreach (var key in _handles.Keys.Except(Items.Select(ItemKey)).ToList())
+        {
+            _handles.Remove(key);
+        }
     }
 
     // A disabled list renders unfocusable, non-draggable handles, so there is nothing
@@ -72,6 +81,12 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
         await InputRouter.ConfigureAsync();
         _isAttached = await _reorderInteraction.AttachAsync(RootElement, _selfReference, DragFrom == SortableDragFrom.Item);
     }
+
+    /// <summary>Moves focus to the first item's handle, where a drag or the keys reorder from; nothing while the list is empty or disabled, since a disabled handle takes no focus.</summary>
+    public ValueTask FocusAsync()
+        => !Disabled && Items.Count > 0 && _handles.TryGetValue(ItemKey(Items[0]), out var handle)
+            ? handle.RootElement.FocusAsync()
+            : ValueTask.CompletedTask;
 
     private string HandleLabel(int index)
     {
