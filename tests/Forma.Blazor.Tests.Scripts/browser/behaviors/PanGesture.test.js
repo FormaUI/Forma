@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { attach } from '#browser/behaviors/PanGesture.js';
+import { register, resolve } from '#input/InputRouter.js';
 import { pointerEvent, sizeScroller, stubPointerCapture } from '#support/platform.js';
 
 describe('PanGesture', () => {
@@ -8,6 +9,15 @@ describe('PanGesture', () => {
     /** @type {Set<number>} */
     let captured;
 
+    // The router keeps every registration until it is disposed, so each test's are released after it.
+    const handles = [];
+    const attachPan = (target, options) => {
+        const handle = attach(target, { action: 'test.pan', ...options });
+        handles.push(handle);
+
+        return handle;
+    };
+
     beforeEach(() => {
         document.body.innerHTML = '<div id="frame" class="is-zoomed"><img id="picture" alt=""></div>';
         frame = document.querySelector('#frame');
@@ -15,11 +25,17 @@ describe('PanGesture', () => {
         sizeScroller(frame, { scrollLeft: 100, scrollTop: 50 });
     });
 
-    const point = (type, properties = {}) =>
-        document.querySelector('#picture').dispatchEvent(pointerEvent(type, { clientX: 200, clientY: 200, ...properties }));
+    afterEach(() => handles.splice(0).forEach(handle => handle.dispose()));
+
+    const point = (type, properties = {}) => {
+        const event = pointerEvent(type, { clientX: 200, clientY: 200, ...properties });
+        document.querySelector('#picture').dispatchEvent(event);
+
+        return event;
+    };
 
     it('scrolls the frame against the mouse as it drags', () => {
-        attach(frame);
+        attachPan(frame);
 
         point('pointerdown');
         point('pointermove', { clientX: 230, clientY: 180 });
@@ -29,7 +45,7 @@ describe('PanGesture', () => {
     });
 
     it('captures the pointer for the drag and gives it back on release', () => {
-        attach(frame);
+        attachPan(frame);
 
         point('pointerdown', { pointerId: 4 });
         expect(captured.has(4)).toBe(true);
@@ -41,7 +57,7 @@ describe('PanGesture', () => {
     });
 
     it('measures each drag from where its own press began', () => {
-        attach(frame);
+        attachPan(frame);
 
         point('pointerdown');
         point('pointermove', { clientX: 230 });
@@ -55,7 +71,7 @@ describe('PanGesture', () => {
     });
 
     it('leaves a touch to the browser', () => {
-        attach(frame);
+        attachPan(frame);
 
         point('pointerdown', { pointerType: 'touch' });
         point('pointermove', { pointerType: 'touch', clientX: 230 });
@@ -65,7 +81,7 @@ describe('PanGesture', () => {
     });
 
     it('pans only while the frame carries the class it was told to wait for', () => {
-        attach(frame, { whileClass: 'is-zoomed' });
+        attachPan(frame, { whileClass: 'is-zoomed' });
         frame.classList.remove('is-zoomed');
 
         point('pointerdown');
@@ -79,8 +95,32 @@ describe('PanGesture', () => {
         expect(frame.scrollLeft).toBe(70);
     });
 
+    it('declares the press as a route on the input router under the action it is given', () => {
+        attachPan(frame, { action: 'viewer.pan' });
+
+        const event = point('pointerdown');
+        point('pointerup');
+
+        // Resolved once the gesture it began has ended, since while one is under way the route matches no other press.
+        expect(resolve(event)).toMatchObject({ owner: frame, action: 'viewer.pan', precedence: 'structural' });
+    });
+
+    it('leaves a press inside a popover over the frame to the popover', () => {
+        frame.insertAdjacentHTML('beforeend', '<div id="popup" popover="manual"><button id="option">Option</button></div>');
+        attachPan(frame);
+        const popup = register(document.querySelector('#popup'), {});
+        handles.push(popup);
+        popup.activate();
+
+        document.querySelector('#option').dispatchEvent(pointerEvent('pointerdown', { pointerId: 5, clientX: 200, clientY: 200 }));
+        point('pointermove', { pointerId: 5, clientX: 230 });
+
+        expect(captured.has(5)).toBe(false);
+        expect(frame.scrollLeft).toBe(100);
+    });
+
     it('stops panning once disposed', () => {
-        const handle = attach(frame);
+        const handle = attachPan(frame);
 
         handle.dispose();
         point('pointerdown');

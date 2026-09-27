@@ -21,6 +21,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
     private const string NextAction = "file-viewer.next";
     private const string PreviousAction = "file-viewer.previous";
     private const string ZoomAction = "file-viewer.zoom";
+    private const string PanAction = "file-viewer.pan";
 
     private static readonly int[] ZoomSteps = [100, 150, 200, 300, 400];
 
@@ -174,16 +175,18 @@ public sealed partial class FormaFileViewer : FormaElementBase
 
         if (Resource is ImageResourceInfo)
         {
+            // The pan and the zoom are routes the scripts declare themselves, so the host's policy reaches the router before they do.
+            await InputRouter.ConfigureAsync();
+
             if (!_isDragAttached)
             {
-                _isDragAttached = await _pan.AttachAsync(_imageFrameElement, ZoomedClass);
+                _isDragAttached = await _pan.AttachAsync(_imageFrameElement, PanAction, ZoomedClass);
             }
 
-            // Ctrl with the wheel zooms the image; the turn is a route the script declares itself, so the host's policy reaches the router before it does.
+            // Ctrl with the wheel zooms the image.
             if (ZoomOnWheelGesture && !_isWheelAttached)
             {
                 _selfReference ??= DotNetObjectReference.Create(this);
-                await InputRouter.ConfigureAsync();
                 _isWheelAttached = await _wheel.AttachAsync(_imageFrameElement, ScrollWheel.Tells(ZoomAction, WheelModifier.Ctrl), _selfReference);
             }
             else if (!ZoomOnWheelGesture && _isWheelAttached)

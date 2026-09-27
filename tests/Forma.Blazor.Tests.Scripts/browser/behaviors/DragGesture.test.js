@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#browser/behaviors/DragGesture.js';
+import { configure, register, resolve } from '#input/InputRouter.js';
 import { pointerEvent, stubPointerCapture } from '#support/platform.js';
 
 describe('DragGesture', () => {
@@ -367,6 +368,86 @@ describe('DragGesture', () => {
             vi.advanceTimersByTime(400);
 
             expect(reported).toEqual([]);
+        });
+    });
+
+    describe('started by the router', () => {
+        // The router keeps every registration until it is disposed, so each test's are released after it.
+        const handles = [];
+        const startRouted = (options = {}) => {
+            const handle = start({ action: 'test.drag', ...options });
+            handles.push(handle);
+
+            return handle;
+        };
+
+        afterEach(() => {
+            handles.splice(0).forEach(handle => handle.dispose());
+            configure({ bindings: {} });
+        });
+
+        it('declares the press as a route on the container under the action it is given', () => {
+            startRouted();
+
+            const event = press({ pointerId: 7 });
+            const wasCaptured = captured.has(7);
+            lift({ pointerId: 7 });
+
+            // Resolved once the gesture it began has ended, since while one is under way the route matches no other press.
+            expect(wasCaptured).toBe(true);
+            expect(resolve(event)).toMatchObject({ owner: container, action: 'test.drag', precedence: 'structural' });
+        });
+
+        it('leaves a press on nothing it can drag unowned', () => {
+            startRouted();
+
+            const event = press({ on: '#loose' });
+
+            expect(resolve(event).action).toBeNull();
+            expect(captured.size).toBe(0);
+        });
+
+        it('matches only the primary button and the pointer type it answers', () => {
+            startRouted({ pointerType: 'mouse' });
+
+            press({ pointerId: 2, button: 2 });
+            press({ pointerId: 9, pointerType: 'touch' });
+
+            expect(captured.size).toBe(0);
+        });
+
+        it('leaves a press a nested scope routes to that scope', () => {
+            container.insertAdjacentHTML('beforeend', '<p class="item" id="inner"><button id="deep">Deep</button></p>');
+            startRouted();
+            const inner = register(document.querySelector('#inner'), { routes: [{ action: 'test.inner', bindings: [{ type: 'pointerdown' }], handle: () => {} }] });
+            handles.push(inner);
+
+            press({ pointerId: 3, on: '#deep' });
+            move({ pointerId: 3, clientY: 340, on: '#deep' });
+
+            expect(captured.has(3)).toBe(false);
+            expect(reported).toEqual([]);
+        });
+
+        it('starts nothing from a remapped press while a gesture is under way', () => {
+            configure({ bindings: { 'test.drag': [{ type: 'pointerdown' }] } });
+            startRouted();
+
+            press({ pointerId: 1 });
+            press({ pointerId: 2 });
+
+            expect(captured.has(1)).toBe(true);
+            expect(captured.has(2)).toBe(false);
+        });
+
+        it('releases the route once disposed', () => {
+            const handle = startRouted();
+            handle.dispose();
+
+            const event = press({ pointerId: 4 });
+
+            expect(resolve(event).action).toBeNull();
+            expect(captured.has(4)).toBe(false);
         });
     });
 });

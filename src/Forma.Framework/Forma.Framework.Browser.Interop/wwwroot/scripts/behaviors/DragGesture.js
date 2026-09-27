@@ -13,6 +13,7 @@
 
 import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
 import { Scrolling } from '../../../core/scripts/Scrolling.js';
+import { register } from '../../../input/scripts/InputRouter.js';
 import { capture, release } from '../operations/Pointer.js';
 
 /**
@@ -27,11 +28,14 @@ import { capture, release } from '../operations/Pointer.js';
  *   axis?: 'vertical' | 'any',
  *   autoScroll?: boolean,
  *   holdDelay?: number,
- *   pointerType?: 'mouse' | 'pen' | 'touch'
+ *   pointerType?: 'mouse' | 'pen' | 'touch',
+ *   action?: string
  * }} options
  *   How far a press travels before it is a drag, a threshold of zero making the first movement one; which
  *   axis that travel is measured along; whether a drag held at a scrolling edge scrolls; how long a touch
- *   rests before it lifts; and the one pointer type the gesture answers, every type when unset.
+ *   rests before it lifts; the one pointer type the gesture answers, every type when unset; and the action
+ *   the press is declared as on the input router in place of the gesture's own listener, so a press a
+ *   nested scope routes never starts it and the host remaps it by that action.
  */
 export function attach(target, options) {
     return new DragGesture(target, options);
@@ -71,6 +75,7 @@ class DragGesture {
     #scrollStep = 0;
     #scrollScheduler = new FrameScheduler();
     #listeners = new AbortController();
+    #registration = null;
 
     constructor(container, options) {
         this.#element = container;
@@ -87,7 +92,19 @@ class DragGesture {
 
         const { signal } = this.#listeners;
 
-        container.addEventListener('pointerdown', event => this.#handlePointerDown(event), { signal });
+        // The press is the router's to hand over where an action names it; the rest of the gesture rides the captured pointer.
+        if (options.action) {
+            this.#registration = register(container, {
+                routes: [{
+                    action: options.action,
+                    bindings: [{ type: 'pointerdown', button: 0, ...(this.#pointerType ? { pointerType: this.#pointerType } : {}), when: event => this.#findPressed(event) !== null }],
+                    handle: event => this.#press(event),
+                }],
+            });
+        } else {
+            container.addEventListener('pointerdown', event => this.#handlePointerDown(event), { signal });
+        }
+
         container.addEventListener('pointermove', event => this.#handlePointerMove(event), { signal });
         container.addEventListener('pointerup', event => this.#handlePointerUp(event), { signal });
         container.addEventListener('pointercancel', () => this.cancel(), { signal });
@@ -110,6 +127,7 @@ class DragGesture {
     dispose() {
         this.cancel();
         this.#listeners.abort();
+        this.#registration?.dispose();
     }
 
     /** Abandons a gesture in flight, reporting it as canceled rather than dropped. */
@@ -155,11 +173,24 @@ class DragGesture {
     }
 
     #handlePointerDown(event) {
-        if (event.button !== 0 || this.#subject || (this.#pointerType && event.pointerType !== this.#pointerType)) {
-            return;
+        if (event.button === 0) {
+            this.#press(event);
+        }
+    }
+
+    /** What a press would drag: nothing while a gesture is under way, from a pointer the gesture does not answer, or on nothing the caller can drag. */
+    #findPressed(event) {
+        if (this.#subject || (this.#pointerType && event.pointerType !== this.#pointerType)) {
+            return null;
         }
 
-        const subject = this.#findSubject(event);
+        return this.#findSubject(event);
+    }
+
+    // The press is checked again here, since a host's remap of the action replaces the binding and its predicate with it.
+    #press(event) {
+        const subject = this.#findPressed(event);
+
         if (!subject) {
             return;
         }

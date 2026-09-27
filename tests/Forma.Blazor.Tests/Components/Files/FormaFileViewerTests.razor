@@ -280,6 +280,23 @@
         }
 
         [Fact]
+        public void Should_pan_a_zoomed_image_as_its_pan_action()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var pan = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/PanGesture.js");
+
+            // Act
+            ctx.Render(@<FormaFileViewer Source="@Image" />);
+
+            // Assert
+            var options = Assert.Single(pan.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Multiple(
+                () => Assert.Equal("file-viewer.pan", options.GetType().GetProperty("action")!.GetValue(options)),
+                () => Assert.Equal("zoomed", options.GetType().GetProperty("whileClass")!.GetValue(options)));
+        }
+
+        [Fact]
         public void Should_answer_the_wheel_as_its_zoom_action_with_control_held()
         {
             // Arrange

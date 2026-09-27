@@ -2,17 +2,19 @@
  * PanGesture — dragging a scroll container's contents with the pointer
  *
  * Mouse users get click-drag panning; touch and pen already pan a scrollable frame
- * natively, so they are left alone. The press-move-release itself belongs to DragGesture;
- * what remains here is what the drag means, a scroll offset following the pointer.
+ * natively, so they are left alone. The press-move-release itself belongs to DragGesture,
+ * which declares the press as a route on the input router under the action the container
+ * names, so a press inside a popover over the container is the popover's; what remains here
+ * is what the drag means, a scroll offset following the pointer.
  */
 
 import { attach as attachDragGesture } from './DragGesture.js';
 
 /**
  * @param {HTMLElement} target
- * @param {{ whileClass?: string }} options The class the target must carry for a drag to start.
+ * @param {{ action: string, whileClass?: string }} options The action the press is routed as, and the class the target must carry for a drag to start.
  */
-export function attach(target, options = {}) {
+export function attach(target, options) {
     return new PanGesture(target, options);
 }
 
@@ -24,12 +26,13 @@ class PanGesture {
     /** Where the target was scrolled to when the pan began. */
     #origin = null;
 
-    constructor(target, { whileClass }) {
+    constructor(target, { action, whileClass }) {
         this.#target = target;
         this.#whileClass = whileClass;
 
         // The container is its own subject, dragged by the mouse alone from its first movement.
         this.#gesture = attachDragGesture(target, {
+            action,
             pointerType: 'mouse',
             threshold: 0,
             axis: 'any',
