@@ -126,7 +126,10 @@ A registration is validated when it is added and when it is updated: an unqualif
 action, a binding that requires the primary modifier and requires it absent, a scope
 named as its own parent, or a parent that would close a cycle through the scope are all
 rejected, and a scope created for a rejected registration is not left behind. A parent
-that is not yet registered is allowed and resolves once it is.
+that is not yet registered is allowed and resolves once it is. The nearest registered scope
+containing an element is found by scanning the registered scopes rather than through an
+index the router would have to keep in step with the DOM: a hundred registered scopes, ten
+of them active, resolve in a few hundredths of a millisecond.
 
 ### Actions and bindings
 
@@ -330,7 +333,9 @@ Escape already answered by the router never closes the dialog as a second action
 
 ## Popover integration
 
-`FormaPopover` registers its root and activates while open. Its options remain its own:
+`FormaPopover` registers its root and activates while open, and carries its content's routes
+on that registration, so a select's or a menu's list keys are declared through the popover
+rather than on a scope of the list's own. Its options remain its own:
 whether it keeps focus within itself (`KeepsFocus`), whether closing returns focus to its
 trigger (`ReturnsFocus`), whether a press away dismisses it (`PressAway`), and how open
 state is reported. A press away passes through: it dismisses the popover and then belongs to
@@ -342,9 +347,15 @@ so a press on it toggles rather than dismisses.
 ## Focus and Tab
 
 The router decides which scope owns Tab; it does not replace focus behavior. `Focus.js`
-continues to wrap or order focus within the owning surface, native dialogs continue to
-contain focus, and `FormaSelect` continues to close on Tab. Closing an inner interaction
-returns focus to its own trigger without disturbing the containing interaction.
+declares the keys it answers as routes on the surface it is attached to, `focus.next`,
+`focus.previous`, `focus.first` and `focus.last`: Tab and Shift+Tab on a wrapping or
+arranged surface, and the arrows along the axis, Home and End on a roving one, each matching
+only where the surface has a control to send focus to, so a Tab past the end of an arranged
+surface with nothing after it is left to the browser. A profile carries no focus setting of
+its own. Native dialogs continue to contain focus, and `FormaSelect` continues to close on
+Tab, through its popover's key callback, since a popover that does not keep focus routes no
+Tab. Closing an inner interaction returns focus to its own trigger without disturbing the
+containing interaction.
 
 ## Visual stacking
 
@@ -428,12 +439,18 @@ Tests assert resolutions directly. The Showcase carries an inspector that shows 
 | Emoji-picker search receives Ctrl+B | Structural | `FormaEmojiPicker`'s scope |
 | Popup content receives wheel over a toolbar | Structural | The popup's scope |
 | Drag inside a popup receives Escape | Active | The drag |
-| Folder node receives a drop inside the sidebar | Structural | The folder's scope |
+| Folder node receives a drop inside the sidebar | Structural | The folder tree's zone, which names the folder row under the drop |
 | Inner popup receives Escape | Active | The inner popup |
 | Popup in a dialog receives Escape | Active | The popup |
 | Dialog opened over a popup receives Escape | Active | The dialog |
 | Host `<input>` in a grid receives arrows | Structural, implicit | The input |
 | Tab list receives arrows | Structural | `FormaTabs` |
+
+The explorer's folder rows are the targets of one zone on the folder tree rather than a
+scope each: a scope per row would cost a round trip per folder on every explorer render, so
+the tree registers once, matching only the data kinds it accepts, and its script finds the
+row under the drop and tells the sidebar that folder's key. A drop a nested scope routes
+still never reaches the zone around it.
 
 ## Non-goals
 
