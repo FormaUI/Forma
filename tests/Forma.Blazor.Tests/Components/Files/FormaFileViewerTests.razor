@@ -412,15 +412,15 @@
         {
             // Arrange
             using var ctx = new FormaFileViewerTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
             var siblings = new List<string> { Image, Video };
 
             // Act
             ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["file-viewer.next:ArrowRight", "file-viewer.previous:ArrowLeft"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["file-viewer.next:ArrowRight", "file-viewer.previous:ArrowLeft"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -429,15 +429,15 @@
             // Arrange
             using var culture = new CultureFixture("he");
             using var ctx = new FormaFileViewerTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
             var siblings = new List<string> { Image, Video };
 
             // Act
             ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["file-viewer.next:ArrowLeft", "file-viewer.previous:ArrowRight"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["file-viewer.next:ArrowLeft", "file-viewer.previous:ArrowRight"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -445,13 +445,13 @@
         {
             // Arrange
             using var ctx = new FormaFileViewerTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(@<FormaFileViewer Source="@Image" />);
 
             // Assert
-            Assert.DoesNotContain(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Empty(router.Registrations);
         }
 
         [Fact]
@@ -459,7 +459,7 @@
         {
             // Arrange
             using var ctx = new FormaFileViewerTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
             var siblings = new List<string> { Image, Video };
             var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
             var viewer = cut.FindComponent<FormaFileViewer>();
@@ -469,7 +469,7 @@
             viewer.Render(parameters => parameters.Add(p => p.Siblings, siblings));
 
             // Assert
-            Assert.Equal(2, router.Invocations.Count(invocation => invocation.Identifier == "register"));
+            Assert.Equal(2, router.Registrations.Count);
         }
 
         [Fact]
@@ -477,12 +477,13 @@
         {
             // Arrange
             using var ctx = new FormaFileViewerTests();
+            var router = new InputRouterProbe(ctx);
             string? navigatedTo = null;
             var siblings = new List<string> { Image, Video };
             var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaFileViewer>().Instance.HandleInputActionAsync("file-viewer.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("file-viewer.next", "ArrowRight");
 
             // Assert
             Assert.Equal(Video, navigatedTo);
@@ -493,20 +494,17 @@
         {
             // Arrange
             using var ctx = new FormaFileViewerTests();
+            var router = new InputRouterProbe(ctx);
             string? navigatedTo = null;
             var siblings = new List<string> { Image, Video };
             var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaFileViewer>().Instance.HandleInputActionAsync("file-viewer.previous", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
+            await router.RouteAsync("file-viewer.previous", "ArrowLeft");
 
             // Assert
             Assert.Null(navigatedTo);
         }
-
-        private static List<string> GetRoutes(JSRuntimeInvocation registration)
-            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
-                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
 
         [Fact]
         public void Should_reject_a_blank_source()

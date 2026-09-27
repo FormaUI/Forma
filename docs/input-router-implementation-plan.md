@@ -54,7 +54,10 @@ list beside the drag it keeps, matching only a key raised on an enabled handle w
 go, so a key elsewhere in an item, or at the edge, is left to whatever owns it; a modified arrow
 no longer moves an item, since the router's keys take no modifier unless stated. The list has the
 host's policy pushed before the script registers, and the browser interop assembly now builds on
-the input one.
+the input one. The registration a component keeps on its own root is one thing, `InputRegistration`,
+which `FormaInputScope`, the select, the menu, the tabs, the viewer and the splitter hold and sync
+after each render in place of a copy each of the same reference, scope, in-flight and disposal plumbing; it owns the
+reference the router calls back through, so the components' handlers are private.
 
 ## Input owners before the router
 

@@ -2,7 +2,6 @@ namespace Forma.Blazor.Components.Files;
 
 using System.Globalization;
 
-using Forma.Blazor.Components.Interaction;
 using Forma.Blazor.Models;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
@@ -62,11 +61,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
 
     private DotNetObjectReference<FormaFileViewer>? _selfReference;
 
-    private InputScope? _navigationScope;
-
-    private Task? _navigationRegistration;
-
-    private bool _isNavigationRegistered;
+    private InputRegistration _navigation = default!;
 
     private ElementReference _imageFrameElement;
 
@@ -105,6 +100,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
         _pan = new PanGesture(Context.JS);
         _scroll = new Scroll(Context.JS);
         _wheel = new Wheel(Context.JS);
+        _navigation = new InputRegistration(InputRouter, HandleNavigationActionAsync);
     }
 
     /// <inheritdoc />
@@ -171,8 +167,9 @@ public sealed partial class FormaFileViewer : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // The registration and the image's behaviors are independent, so they are made side by side.
-        var navigation = SyncNavigationScopeAsync();
+        // The viewer owns the arrows only while they have somewhere to go, so a lone image keeps them for scrolling its frame;
+        // the registration and the image's behaviors are independent, so they are made side by side.
+        var navigation = _navigation.SyncAsync(RootElement, CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile, wanted: IsNavigable);
 
         if (Resource is ImageResourceInfo)
         {
@@ -212,19 +209,14 @@ public sealed partial class FormaFileViewer : FormaElementBase
             StateHasChanged();
         });
 
-    /// <summary>Steps to the sibling the router's action names.</summary>
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
-    {
-        ArgumentNullException.ThrowIfNull(input);
-
-        return action switch
+    // Steps to the sibling the action names.
+    private Task HandleNavigationActionAsync(string action, InputInfo input)
+        => action switch
         {
             NextAction => NavigateAsync(1),
             PreviousAction => NavigateAsync(-1),
             _ => Task.CompletedTask,
         };
-    }
 
     private void ZoomIn()
         => _hasZoomChanged |= _zoom.TryZoomIn();
@@ -263,57 +255,6 @@ public sealed partial class FormaFileViewer : FormaElementBase
             : OnNavigate.InvokeAsync(siblings[target]);
     }
 
-    // The viewer owns the arrows only while they have somewhere to go, so a lone image keeps them for scrolling its frame.
-    // A registration the router refused is not asked for again until the siblings change.
-    private Task SyncNavigationScopeAsync()
-    {
-        if (IsNavigable && !_isNavigationRegistered)
-        {
-            _isNavigationRegistered = true;
-            _selfReference ??= DotNetObjectReference.Create(this);
-            _navigationRegistration = RegisterNavigationAsync(CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile);
-
-            return _navigationRegistration;
-        }
-
-        if (!IsNavigable && _isNavigationRegistered)
-        {
-            _isNavigationRegistered = false;
-
-            return ReleaseNavigationScopeAsync();
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private async Task RegisterNavigationAsync(InputProfile profile)
-    {
-        var navigationScope = await InputRouter.RegisterUnlessDisposedAsync(RootElement, profile, _selfReference!, () => IsDisposed);
-
-        if (navigationScope is null)
-        {
-            return;
-        }
-
-        // The siblings may have gone, or the viewer with them, while the registration was being made.
-        if (!_isNavigationRegistered || IsDisposed)
-        {
-            await navigationScope.DisposeAsync();
-            return;
-        }
-
-        _navigationScope = navigationScope;
-    }
-
-    private async Task ReleaseNavigationScopeAsync()
-    {
-        if (_navigationScope is { } navigationScope)
-        {
-            _navigationScope = null;
-            await navigationScope.DisposeAsync();
-        }
-    }
-
     private static InputProfile CreateProfile(string next, string previous)
         => new()
         {
@@ -343,14 +284,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
             await _pan.DisposeAsync();
             await _scroll.DisposeAsync();
             await _wheel.DisposeAsync();
-
-            // A registration still in flight settles before the reference it carries goes.
-            if (_navigationRegistration is { } navigationRegistration)
-            {
-                await Task.WhenAny(navigationRegistration);
-            }
-
-            await ReleaseNavigationScopeAsync();
+            await _navigation.DisposeAsync();
         }
         finally
         {

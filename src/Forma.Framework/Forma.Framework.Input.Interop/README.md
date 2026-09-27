@@ -25,19 +25,19 @@ the matching `InputInfo` record, and a dismissal through `HandleDismissAsync(act
 | Type | What it is |
 | --- | --- |
 | `InputRouter` | The circuit's router, a scoped service over `InputRouter.js`. `RegisterAsync(element, profile, owner, parent, within)` registers an element as a scope, or adds to the scope it already is, and answers an `InputScope`, or `null` when the circuit cannot register it. The first registration pushes the host's `InputRouterOptions` through `configure` and, where the options declare routes, registers them through `registerHost` with the router itself as their owner, performing each through the host's `IInputActionHandler`; a push that failed is retried by the next registration. |
+| `InputRegistration` | The registration a component keeps on one of its own elements. `SyncAsync(element, profile, wanted, active, parent, within)` is called after every render and brings the registration in step: made while wanted, held active while asked, its profile pushed again when it changed, and released once no longer wanted or the element changed; each sync records what is wanted and one settle at a time carries on until the registration matches the latest, so what changed while a registration was in flight is applied once it lands and one that lands unwanted is released at once; one the router refused is asked for again on the next sync. It owns the reference the router calls back through, forwarding actions and dismissals to the functions it was given, and `DisposeAsync` waits for anything in flight before that reference goes. |
 | `InputScope` | A registration handle. `ActivateAsync` and `ReleaseAsync` move it into and out of the active ordering, `UpdateAsync(profile)` replaces what it contributes, `IsActive` says whether it is held, and `DisposeAsync` removes it from its scope. Each call reports whether it ran, and one the circuit or the script refused is written at `Debug` under the router's category, naming the call and the router's runtime id. |
 | `InputInspector` | The inspector behavior over `InputInspector.js`; `AttachAsync(element, owner)` starts reporting to the owner. |
 | `AddFormaInputRouter(options)` | Registers the policy through `AddFormaInputServices`, `InputRouter` as a scoped service, and a null logger where the host registered none. |
 
 ## Reaching it from a component
 
-`InputRouter` is injected, since one serves the circuit; a component registers its root with a
-profile and a `DotNetObjectReference` to itself, exposes `[JSInvokable]`
-`HandleInputActionAsync(string action, InputInfo input)` and
-`HandleDismissAsync(DismissBehavior action, DismissReason reason)` for what the router delivers,
-holds the `InputScope` active while its surface is open, and disposes it from `DisposeAsyncCore`.
-`InputInspector` is a behavior wrapper, so a component constructs it from `Context.JS`, attaches it
-after the first render, and disposes it with the component.
+`InputRouter` is injected, since one serves the circuit; a component keeps an `InputRegistration`
+on the element it owns, made with the functions that perform its actions and dismissals, syncs it
+after every render with the profile and the hold it wants, and disposes it from `DisposeAsyncCore`.
+A component that renders the element itself composes `FormaInputScope` instead, which does the same
+for its own root. `InputInspector` is a behavior wrapper, so a component constructs it from
+`Context.JS`, attaches it after the first render, and disposes it with the component.
 
 A component whose root routes one shortcut and stands as a scope for as long as it is rendered:
 
@@ -50,43 +50,22 @@ public sealed partial class FormaGallery : FormaElementBase
 {
     private static readonly InputProfile Profile = new()
     {
-        Routes = [new InputRoute("gallery.select-all", KeyBinding.Shortcut("a"))],
+        InputRoutes = [new InputRoute("gallery.select-all", KeyBinding.Shortcut("a"))],
     };
 
-    private DotNetObjectReference<FormaGallery> _selfReference = default!;
-    private InputScope? _inputScope;
+    private InputRegistration _registration = default!;
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
-        => SelectAllAsync();
-
     protected override void OnInitialized()
-        => _selfReference = DotNetObjectReference.Create(this);
+        => _registration = new InputRegistration(InputRouter, (action, input) => SelectAllAsync());
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _inputScope = await InputRouter.RegisterAsync(RootElement, Profile, _selfReference);
-        }
-    }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _registration.SyncAsync(RootElement, Profile);
 
     protected override async ValueTask DisposeAsyncCore()
     {
-        try
-        {
-            if (_inputScope is { } inputScope)
-            {
-                _inputScope = null;
-                await inputScope.DisposeAsync();
-            }
-        }
-        finally
-        {
-            _selfReference.Dispose();
-        }
+        await _registration.DisposeAsync();
 
         await base.DisposeAsyncCore();
     }

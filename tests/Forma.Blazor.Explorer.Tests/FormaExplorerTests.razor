@@ -1480,6 +1480,7 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var router = new InputRouterProbe(ctx);
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
             var pane = cut.FindComponents<FormaFreezePane>().Last();
@@ -1487,7 +1488,7 @@
 
             // Act
             var edge = pane.FindComponent<FormaSplitter>();
-            await cut.InvokeAsync(() => edge.Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync(edge.Instance.RootElement, "splitter.grow", "ArrowRight");
 
             // Assert
             Assert.Equal("--forma-explorer-frozen-extent: 248px;", cut.Find(".forma-explorer-details-wrapper").GetAttribute("style"));

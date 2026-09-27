@@ -229,7 +229,7 @@
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(
@@ -239,8 +239,8 @@
                 </FormaDropDownMenu>);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["menu.open-first:ArrowDown", "menu.open-last:ArrowUp"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["menu.open-first:ArrowDown", "menu.open-last:ArrowUp"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -248,7 +248,7 @@
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaDropDownMenu>
                     <Trigger>Options</Trigger>
@@ -259,10 +259,10 @@
             cut.Find(".forma-dropdown-menu-trigger").Click();
 
             // Assert
-            var registration = router.Invocations.Last(invocation => invocation.Identifier == "register");
+            var registration = router.Registrations.Last();
             Assert.Multiple(
                 () => Assert.Same(cut.FindComponent<FormaPopover>().Instance, Assert.IsType<DotNetObjectReference<FormaPopover>>(registration.Arguments[2]).Value),
-                () => Assert.Equal(["menu.next:ArrowDown", "menu.previous:ArrowUp", "menu.first:Home", "menu.last:End"], GetRoutes(registration)));
+                () => Assert.Equal(["menu.next:ArrowDown", "menu.previous:ArrowUp", "menu.first:Home", "menu.last:End"], InputRouterProbe.GetRoutes(registration)));
         }
 
         [Fact]
@@ -305,6 +305,7 @@
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaDropDownMenu>
                     <Trigger>Options</Trigger>
@@ -312,7 +313,7 @@
                 </FormaDropDownMenu>);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaDropDownMenu>().Instance.HandleInputActionAsync("menu.open-first", new InputKeyInfo { Type = "keydown", Key = "ArrowDown" }));
+            await router.RouteAsync("menu.open-first", "ArrowDown");
 
             // Assert
             Assert.Single(cut.FindAll(".forma-dropdown-menu"));
@@ -323,6 +324,7 @@
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaDropDownMenu>
                     <Trigger>Options</Trigger>
@@ -333,16 +335,12 @@
                 </FormaDropDownMenu>);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaDropDownMenu>().Instance.HandleInputActionAsync("menu.open-last", new InputKeyInfo { Type = "keydown", Key = "ArrowUp" }));
+            await router.RouteAsync("menu.open-last", "ArrowUp");
 
             // Assert
             Assert.Single(cut.FindAll(".forma-dropdown-menu"));
         }
 
-
-        private static List<string> GetRoutes(JSRuntimeInvocation registration)
-            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
-                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
 
         private static List<string> GetFocused(BunitJSInterop js)
             => [.. js.Invocations

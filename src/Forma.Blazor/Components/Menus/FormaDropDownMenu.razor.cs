@@ -10,7 +10,6 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A trigger button that opens an anchored menu of commands.</summary>
 public sealed partial class FormaDropDownMenu : FormaElementBase
@@ -63,8 +62,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     private ElementReference _anchorElement;
     private FormaButton TriggerButton { get; set; } = default!;
     private FormaPopover Popover { get; set; } = default!;
-    private DotNetObjectReference<FormaDropDownMenu> _selfReference = default!;
-    private InputScope? _triggerScope;
+    private InputRegistration _trigger = default!;
 
     /// <inheritdoc />
     public override ElementReference RootElement
@@ -87,17 +85,12 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _selfReference = DotNetObjectReference.Create(this);
+        => _trigger = new InputRegistration(InputRouter, HandleActionAsync);
 
     // The trigger's keys are routes on the trigger, which is in the document whether or not the menu is; the menu's ride on the popover.
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _triggerScope = await InputRouter.RegisterUnlessDisposedAsync(TriggerButton.RootElement, TriggerProfile, _selfReference, () => IsDisposed);
-        }
-    }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _trigger.SyncAsync(TriggerButton.RootElement, TriggerProfile);
 
     internal void RegisterItem(FormaDropDownMenuItem item)
         => _items.Add(item);
@@ -109,12 +102,9 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     internal Task RequestActivateAsync()
         => Popover.CloseAsync();
 
-    /// <summary>Opens the menu, or moves through it, as the router matched the key.</summary>
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    // Opens the menu, or moves through it, as the router matched the key.
+    private Task HandleActionAsync(string action, InputInfo input)
     {
-        ArgumentNullException.ThrowIfNull(input);
-
         return action switch
         {
             OpenFirstAction when !IsOpen => OpenAsync(atLastItem: false),
@@ -128,7 +118,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     }
 
     private Task HandleMenuActionAsync(InputAction action)
-        => HandleInputActionAsync(action.Action, action.Input);
+        => HandleActionAsync(action.Action, action.Input);
 
     private Task ToggleAsync()
     {
@@ -185,19 +175,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        try
-        {
-            if (_triggerScope is { } triggerScope)
-            {
-                _triggerScope = null;
-                await triggerScope.DisposeAsync();
-            }
-        }
-        finally
-        {
-            _selfReference.Dispose();
-        }
-
+        await _trigger.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

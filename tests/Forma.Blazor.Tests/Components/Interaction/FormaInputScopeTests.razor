@@ -53,18 +53,18 @@
         {
             // Arrange
             using var ctx = new FormaInputScopeTests();
+            var router = new InputRouterProbe(ctx);
             InputAction? received = null;
             var cut = ctx.Render(@<FormaInputScope OnAction="action => received = action"><p>Content</p></FormaInputScope>);
-            var input = new InputKeyInfo { Type = "keydown", Key = "ArrowDown" };
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleInputActionAsync("list.next", input));
+            await router.RouteAsync(cut.FindComponent<FormaInputScope>().Instance.RootElement, "list.next", "ArrowDown");
 
             // Assert
             Assert.NotNull(received);
             Assert.Multiple(
                 () => Assert.Equal("list.next", received.Action),
-                () => Assert.Same(input, received.Input));
+                () => Assert.Equal("ArrowDown", Assert.IsType<InputKeyInfo>(received.Input).Key));
         }
 
         [Fact]
@@ -72,11 +72,12 @@
         {
             // Arrange
             using var ctx = new FormaInputScopeTests();
+            var router = new InputRouterProbe(ctx);
             InputDismissal? received = null;
             var cut = ctx.Render(@<FormaInputScope OnDismiss="dismissal => received = dismissal"><p>Content</p></FormaInputScope>);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleDismissAsync(DismissBehavior.Cancel, DismissReason.CloseRequest));
+            await router.DismissAsync(cut.FindComponent<FormaInputScope>().Instance.RootElement, DismissBehavior.Cancel, DismissReason.CloseRequest);
 
             // Assert
             Assert.Equal(new InputDismissal(DismissBehavior.Cancel, DismissReason.CloseRequest), received);

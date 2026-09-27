@@ -393,14 +393,14 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(@<FormaEmojiPicker />);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["emoji-picker.next:ArrowRight", "emoji-picker.previous:ArrowLeft", "emoji-picker.first:Home", "emoji-picker.last:End"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["emoji-picker.next:ArrowRight", "emoji-picker.previous:ArrowLeft", "emoji-picker.first:Home", "emoji-picker.last:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -409,14 +409,14 @@
             // Arrange
             using var culture = new CultureFixture("he");
             using var ctx = new FormaEmojiPickerTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(@<FormaEmojiPicker />);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["emoji-picker.next:ArrowLeft", "emoji-picker.previous:ArrowRight", "emoji-picker.first:Home", "emoji-picker.last:End"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["emoji-picker.next:ArrowLeft", "emoji-picker.previous:ArrowRight", "emoji-picker.first:Home", "emoji-picker.last:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -424,13 +424,13 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(@<FormaEmojiPicker Options="@(new EmojiPickerOptions { ShowGroupTabs = false })" />);
 
             // Assert
-            Assert.DoesNotContain(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Empty(router.Registrations);
         }
 
         [Fact]
@@ -438,7 +438,7 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
@@ -449,7 +449,7 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(0, scopesWhileHidden),
-                () => Assert.Equal(2, router.Invocations.Count(invocation => invocation.Identifier == "register")));
+                () => Assert.Equal(2, router.Registrations.Count));
         }
 
         [Fact]
@@ -457,10 +457,11 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleInputActionAsync("emoji-picker.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("emoji-picker.next", "ArrowRight");
 
             // Assert
             var tabs = cut.FindAll("[role='tab']");
@@ -475,10 +476,11 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleInputActionAsync("emoji-picker.last", new InputKeyInfo { Type = "keydown", Key = "End" }));
+            await router.RouteAsync("emoji-picker.last", "End");
 
             // Assert
             Assert.Equal("true", cut.FindAll("[role='tab']")[^1].GetAttribute("aria-selected"));
@@ -489,18 +491,15 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleInputActionAsync("emoji-picker.previous", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
+            await router.RouteAsync("emoji-picker.previous", "ArrowLeft");
 
             // Assert
             Assert.Equal("true", cut.FindAll("[role='tab']")[^1].GetAttribute("aria-selected"));
         }
-
-        private static List<string> GetRoutes(JSRuntimeInvocation registration)
-            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
-                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
 
         [Fact]
         public void Should_start_with_an_empty_search_box()

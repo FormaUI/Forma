@@ -11,7 +11,6 @@ using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>A themed single-select: a trigger button opening an anchored, keyboard-navigable option list.</summary>
 /// <remarks>Bind <typeparamref name="TValue"/> to a nullable type (<c>int?</c>, <c>string</c>, <c>MyEnum?</c>) to allow no selection.</remarks>
@@ -57,8 +56,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private ElementReference _anchorElement;
     private ElementReference[] _optionElements = [];
     private FormaPopover Popover { get; set; } = default!;
-    private DotNetObjectReference<FormaSelect<TValue>> _selfReference = default!;
-    private InputScope? _triggerScope;
+    private InputRegistration _trigger = default!;
 
     private string ElementId
         => Id ?? $"sel-{Context.RuntimeId:N}";
@@ -74,7 +72,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _selfReference = DotNetObjectReference.Create(this);
+        => _trigger = new InputRegistration(InputRouter, HandleActionAsync);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -90,20 +88,12 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     // The trigger's keys are routes on the trigger, which is in the document whether or not the list is; the list's ride on the popover.
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _triggerScope = await InputRouter.RegisterUnlessDisposedAsync(RootElement, TriggerProfile, _selfReference, () => IsDisposed);
-        }
-    }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _trigger.SyncAsync(RootElement, TriggerProfile);
 
-    /// <summary>Opens the list, or moves through it, as the router matched the key.</summary>
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    // Opens the list, or moves through it, as the router matched the key.
+    private Task HandleActionAsync(string action, InputInfo input)
     {
-        ArgumentNullException.ThrowIfNull(input);
-
         if (Disabled)
         {
             return Task.CompletedTask;
@@ -168,7 +158,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     }
 
     private Task HandleListActionAsync(InputAction action)
-        => HandleInputActionAsync(action.Action, action.Input);
+        => HandleActionAsync(action.Action, action.Input);
 
     private Task HandlePopoverKeyDownAsync(KeyboardEventArgs args)
         => args.Key == "Tab" ? Popover.CloseAsync() : Task.CompletedTask;
@@ -206,19 +196,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        try
-        {
-            if (_triggerScope is { } triggerScope)
-            {
-                _triggerScope = null;
-                await triggerScope.DisposeAsync();
-            }
-        }
-        finally
-        {
-            _selfReference.Dispose();
-        }
-
+        await _trigger.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 

@@ -205,6 +205,7 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var router = new InputRouterProbe(ctx);
             var asked = new List<double>();
             var silent = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
             var answering = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows" FrozenExtentChanged="@(extent => asked.Add(extent))"><button>One</button></FormaFreezePane>);
@@ -220,7 +221,7 @@
                 () => Assert.Equal("500", answering.Find(".forma-freeze-pane-edge").GetAttribute("aria-valuemax")));
 
             // Act - the router's grow on the edge asks the content for a wider frozen region
-            await answering.InvokeAsync(() => answering.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("splitter.grow", "ArrowRight");
 
             // Assert
             Assert.Equal([128], asked);

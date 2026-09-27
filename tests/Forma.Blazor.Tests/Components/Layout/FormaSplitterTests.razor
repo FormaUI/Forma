@@ -79,14 +79,14 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["splitter.grow:ArrowRight", "splitter.shrink:ArrowLeft", "splitter.min:Home", "splitter.max:End"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["splitter.grow:ArrowRight", "splitter.shrink:ArrowLeft", "splitter.min:Home", "splitter.max:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -95,14 +95,14 @@
             // Arrange
             using var fixture = new CultureFixture("he");
             using var ctx = new FormaSplitterTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["splitter.grow:ArrowLeft", "splitter.shrink:ArrowRight", "splitter.min:Home", "splitter.max:End"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["splitter.grow:ArrowLeft", "splitter.shrink:ArrowRight", "splitter.min:Home", "splitter.max:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -111,14 +111,14 @@
             // Arrange
             using var fixture = new CultureFixture("he");
             using var ctx = new FormaSplitterTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" />);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["splitter.grow:ArrowDown", "splitter.shrink:ArrowUp", "splitter.min:Home", "splitter.max:End"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["splitter.grow:ArrowDown", "splitter.shrink:ArrowUp", "splitter.min:Home", "splitter.max:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -126,8 +126,8 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
-            var registration = router.SetupModule("register", _ => true);
+            var router = new InputRouterProbe(ctx);
+            var registration = router.Module.SetupModule("register", _ => true);
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
 
             // Act
@@ -143,11 +143,12 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
+            var router = new InputRouterProbe(ctx);
             double? reported = null;
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Step="4" ValueChanged="v => reported = v" />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("splitter.grow", "ArrowRight");
 
             // Assert
             Assert.Equal(22d, reported);
@@ -158,11 +159,12 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
+            var router = new InputRouterProbe(ctx);
             double? reported = null;
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.shrink", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
+            await router.RouteAsync("splitter.shrink", "ArrowLeft");
 
             // Assert
             Assert.Equal(17d, reported);
@@ -173,14 +175,14 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
+            var router = new InputRouterProbe(ctx);
             double? reported = null;
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            var splitter = cut.FindComponent<FormaSplitter>().Instance;
 
             // Act
-            await cut.InvokeAsync(() => splitter.HandleInputActionAsync("splitter.min", new InputKeyInfo { Type = "keydown", Key = "Home" }));
+            await router.RouteAsync("splitter.min", "Home");
             var atMin = reported;
-            await cut.InvokeAsync(() => splitter.HandleInputActionAsync("splitter.max", new InputKeyInfo { Type = "keydown", Key = "End" }));
+            await router.RouteAsync("splitter.max", "End");
 
             // Assert
             Assert.Multiple(
@@ -193,11 +195,12 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
+            var router = new InputRouterProbe(ctx);
             double? reported = null;
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="28" Min="10" Max="28" ValueChanged="v => reported = v" />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("splitter.grow", "ArrowRight");
 
             // Assert
             Assert.Null(reported);
@@ -208,11 +211,12 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
+            var router = new InputRouterProbe(ctx);
             double? reported = null;
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="10" Min="10" Max="28" ValueChanged="v => reported = v" />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.shrink", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
+            await router.RouteAsync("splitter.shrink", "ArrowLeft");
 
             // Assert
             Assert.Null(reported);
@@ -223,18 +227,15 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaSplitter>().Instance.HandleInputActionAsync("splitter.grow", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("splitter.grow", "ArrowRight");
 
             // Assert
             Assert.Equal("19", cut.Find(".forma-splitter").GetAttribute("aria-valuenow"));
         }
-
-        private static List<string> GetRoutes(JSRuntimeInvocation registration)
-            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
-                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
 
         [Fact]
         public void Should_report_resizing_across_a_drag()

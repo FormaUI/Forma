@@ -2,7 +2,6 @@ namespace Forma.Blazor.Components.Layout;
 
 using System.Globalization;
 
-using Forma.Blazor.Components.Interaction;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
@@ -11,7 +10,6 @@ using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>A draggable divider between two panes, reporting the size the pane before it should take.</summary>
 public sealed partial class FormaSplitter : FormaElementBase
@@ -56,10 +54,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private Pointer _pointer = default!;
-    private DotNetObjectReference<FormaSplitter> _selfReference = default!;
-    private InputScope? _inputScope;
-    private Task? _registration;
-    private InputProfile? _registeredProfile;
+    private InputRegistration _registration = default!;
     private double _dragOrigin;
     private double _dragStartValue;
     private bool _isResizing;
@@ -82,7 +77,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     protected override void OnInitialized()
     {
         _pointer = new Pointer(Context.JS);
-        _selfReference = DotNetObjectReference.Create(this);
+        _registration = new InputRegistration(InputRouter, HandleBarActionAsync);
     }
 
     /// <inheritdoc />
@@ -93,33 +88,14 @@ public sealed partial class FormaSplitter : FormaElementBase
         ArgumentOutOfRangeException.ThrowIfGreaterThan(Min, Max);
     }
 
+    // The orientation, and with it the keys, can change after the registration was made.
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _registration.SyncAsync(RootElement, Profile);
+
+    // Moves the divider as the action says: a step either way, or to either bound.
+    private async Task HandleBarActionAsync(string action, InputInfo input)
     {
-        if (firstRender)
-        {
-            _registration = RegisterAsync(Profile);
-            await _registration;
-        }
-
-        // The orientation, and with it the keys, can change after the registration was made.
-        if (_inputScope is { } inputScope && !ReferenceEquals(_registeredProfile, Profile))
-        {
-            var profile = Profile;
-
-            if (await inputScope.UpdateAsync(profile))
-            {
-                _registeredProfile = profile;
-            }
-        }
-    }
-
-    /// <summary>Moves the divider as the router's action says: a step either way, or to either bound.</summary>
-    [JSInvokable]
-    public async Task HandleInputActionAsync(string action, InputInfo input)
-    {
-        ArgumentNullException.ThrowIfNull(input);
-
         double? target = action switch
         {
             GrowAction => Value + Step,
@@ -190,12 +166,6 @@ public sealed partial class FormaSplitter : FormaElementBase
         return true;
     }
 
-    private async Task RegisterAsync(InputProfile profile)
-    {
-        _inputScope = await InputRouter.RegisterUnlessDisposedAsync(RootElement, profile, _selfReference, () => IsDisposed);
-        _registeredProfile = profile;
-    }
-
     private static InputProfile CreateProfile(string grow, string shrink)
         => new()
         {
@@ -218,27 +188,8 @@ public sealed partial class FormaSplitter : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        try
-        {
-            // A registration still in flight settles before the reference it carries goes.
-            if (_registration is { } registration)
-            {
-                await Task.WhenAny(registration);
-            }
-
-            if (_inputScope is { } inputScope)
-            {
-                _inputScope = null;
-                await inputScope.DisposeAsync();
-            }
-
-            await _pointer.DisposeAsync();
-        }
-        finally
-        {
-            _selfReference.Dispose();
-        }
-
+        await _registration.DisposeAsync();
+        await _pointer.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

@@ -227,7 +227,7 @@
         {
             // Arrange
             using var ctx = new FormaSelectTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
 
             // Act
@@ -236,8 +236,8 @@
             </FakeFormHost>);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["select.open:ArrowDown,ArrowUp"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["select.open:ArrowDown,ArrowUp"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -245,7 +245,7 @@
         {
             // Arrange
             using var ctx = new FormaSelectTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
@@ -255,10 +255,10 @@
             cut.Find(".forma-select-trigger").Click();
 
             // Assert
-            var registration = router.Invocations.Last(invocation => invocation.Identifier == "register");
+            var registration = router.Registrations.Last();
             Assert.Multiple(
                 () => Assert.Same(cut.FindComponent<FormaPopover>().Instance, Assert.IsType<DotNetObjectReference<FormaPopover>>(registration.Arguments[2]).Value),
-                () => Assert.Equal(["select.next:ArrowDown", "select.previous:ArrowUp", "select.first:Home", "select.last:End"], GetRoutes(registration)));
+                () => Assert.Equal(["select.next:ArrowDown", "select.previous:ArrowUp", "select.first:Home", "select.last:End"], InputRouterProbe.GetRoutes(registration)));
         }
 
         [Fact]
@@ -295,13 +295,14 @@
         {
             // Arrange
             using var ctx = new FormaSelectTests();
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
             </FakeFormHost>);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaSelect<int?>>().Instance.HandleInputActionAsync("select.open", new InputKeyInfo { Type = "keydown", Key = "ArrowDown" }));
+            await router.RouteAsync("select.open", "ArrowDown");
 
             // Assert
             Assert.Equal("true", cut.Find(".forma-select-trigger").GetAttribute("aria-expanded"));
@@ -312,13 +313,14 @@
         {
             // Arrange
             using var ctx = new FormaSelectTests();
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Disabled="true" Label="Status" />
             </FakeFormHost>);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaSelect<int?>>().Instance.HandleInputActionAsync("select.open", new InputKeyInfo { Type = "keydown", Key = "ArrowDown" }));
+            await router.RouteAsync("select.open", "ArrowDown");
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-select-popover"));
@@ -342,10 +344,6 @@
             Assert.Empty(cut.FindAll(".forma-select-popover"));
         }
 
-
-        private static List<string> GetRoutes(JSRuntimeInvocation registration)
-            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
-                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
 
         private static List<string> GetFocused(BunitJSInterop js)
             => [.. js.Invocations

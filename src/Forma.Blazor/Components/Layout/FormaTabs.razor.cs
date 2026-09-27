@@ -8,21 +8,18 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A tabbed panel showing one <see cref="FormaTab"/> at a time, its tabs walked by the arrow keys, Home and End and selected by Enter or Space.</summary>
 public sealed partial class FormaTabs : FormaElementBase
 {
-    private const string ActionOwner = "tabs";
-
-    private static readonly InputProfile LeftToRightProfile = TabStripNavigation.CreateProfile(ActionOwner, isRightToLeft: false);
-    private static readonly InputProfile RightToLeftProfile = TabStripNavigation.CreateProfile(ActionOwner, isRightToLeft: true);
+    private static readonly TabStripNavigation Navigation = new("tabs");
+    private static readonly InputProfile LeftToRightProfile = Navigation.CreateProfile(isRightToLeft: false);
+    private static readonly InputProfile RightToLeftProfile = Navigation.CreateProfile(isRightToLeft: true);
 
     private readonly List<FormaTab> _tabs = [];
     private readonly Dictionary<FormaTab, ElementReference> _tabButtons = [];
     private ElementReference _tabList;
-    private DotNetObjectReference<FormaTabs> _selfReference = default!;
-    private InputScope? _inputScope;
+    private InputRegistration _registration = default!;
     private FormaTab? _focusedTab;
     private FormaTab? ActiveTab { get; set; }
 
@@ -46,7 +43,7 @@ public sealed partial class FormaTabs : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _selfReference = DotNetObjectReference.Create(this);
+        => _registration = new InputRegistration(InputRouter, HandleStripActionAsync);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -74,22 +71,13 @@ public sealed partial class FormaTabs : FormaElementBase
 
     // The tab list is the scope, so an arrow inside a panel is the panel's rather than the strip's.
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile;
-            _inputScope = await InputRouter.RegisterUnlessDisposedAsync(_tabList, profile, _selfReference, () => IsDisposed);
-        }
-    }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _registration.SyncAsync(_tabList, CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile);
 
-    /// <summary>Moves focus to the tab the router's action names, counted from the focused one and wrapping at either end, without selecting it.</summary>
-    [JSInvokable]
-    public async Task HandleInputActionAsync(string action, InputInfo input)
+    // Moves focus to the tab the strip's action names, counted from the focused one and wrapping at either end, without selecting it.
+    private async Task HandleStripActionAsync(string action, InputInfo input)
     {
-        ArgumentNullException.ThrowIfNull(input);
-
-        if (FocusableTab is not { } focusable || TabStripNavigation.FindTarget(ActionOwner, action, _tabs.IndexOf(focusable), _tabs.Count) is not { } target)
+        if (FocusableTab is not { } focusable || Navigation.FindTarget(action, _tabs.IndexOf(focusable), _tabs.Count) is not { } target)
         {
             return;
         }
@@ -158,19 +146,7 @@ public sealed partial class FormaTabs : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        try
-        {
-            if (_inputScope is { } inputScope)
-            {
-                _inputScope = null;
-                await inputScope.DisposeAsync();
-            }
-        }
-        finally
-        {
-            _selfReference.Dispose();
-        }
-
+        await _registration.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

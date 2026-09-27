@@ -21,10 +21,9 @@ using Microsoft.JSInterop;
 public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmojiCatalog? registeredCatalog = null)
     : FormaElementBase
 {
-    private const string ActionOwner = "emoji-picker";
-
-    private static readonly InputProfile LeftToRightTabsProfile = TabStripNavigation.CreateProfile(ActionOwner, isRightToLeft: false);
-    private static readonly InputProfile RightToLeftTabsProfile = TabStripNavigation.CreateProfile(ActionOwner, isRightToLeft: true);
+    private static readonly TabStripNavigation Navigation = new("emoji-picker");
+    private static readonly InputProfile LeftToRightTabsProfile = Navigation.CreateProfile(isRightToLeft: false);
+    private static readonly InputProfile RightToLeftTabsProfile = Navigation.CreateProfile(isRightToLeft: true);
 
     private readonly IEmojiCatalog _catalog = registeredCatalog ?? NullEmojiCatalog.Instance;
     private readonly IEmojiProvider _provider = emojiProvider;
@@ -281,7 +280,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     // Shows the group the strip's action names, counted from the active one, and focuses its tab.
     private async Task HandleTabsActionAsync(InputAction action)
     {
-        if (TabStripNavigation.FindTarget(ActionOwner, action.Action, Math.Max(0, IndexOfTab(ActiveGroupId)), Tabs.Count) is not { } target)
+        if (Navigation.FindTarget(action.Action, Math.Max(0, IndexOfTab(ActiveGroupId)), Tabs.Count) is not { } target)
         {
             return;
         }

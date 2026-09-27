@@ -1,0 +1,177 @@
+namespace Forma.Framework.Input.Interop;
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+
+/// <summary>A registration a component holds on one of its elements for as long as it wants one: made, kept in step with the profile and the hold the component gives it after each render, and released with the component.</summary>
+/// <remarks>Each sync records what the component wants; one settle runs at a time and carries on until what is registered matches the latest sync, so a profile or an element that changed while a registration was in flight is applied once it lands, and a registration that lands unwanted is released at once. A registration the router refused is asked for again on the next sync. Disposal waits for a settle underway before the reference the router calls back through goes.</remarks>
+public sealed class InputRegistration : IAsyncDisposable
+{
+    private readonly InputRouter _router;
+    private readonly Func<string, InputInfo, Task>? _onAction;
+    private readonly Func<DismissBehavior, DismissReason, Task>? _onDismiss;
+    private readonly DotNetObjectReference<InputRegistration> _selfReference;
+    private InputScope? _scope;
+    private InputProfile? _registeredProfile;
+    private string? _registeredElementId;
+    private Request? _request;
+    private Task? _settle;
+    private bool _isDisposed;
+
+    /// <summary>Creates a registration made through <paramref name="router"/>, performing actions through <paramref name="onAction"/> and dismissals through <paramref name="onDismiss"/>.</summary>
+    public InputRegistration(InputRouter router, Func<string, InputInfo, Task>? onAction = null, Func<DismissBehavior, DismissReason, Task>? onDismiss = null)
+    {
+        ArgumentNullException.ThrowIfNull(router);
+
+        _router = router;
+        _onAction = onAction;
+        _onDismiss = onDismiss;
+        _selfReference = DotNetObjectReference.Create(this);
+    }
+
+    /// <summary>Whether the element is registered.</summary>
+    public bool IsRegistered
+        => _scope is not null;
+
+    /// <summary>Whether the registration is held active.</summary>
+    public bool IsActive
+        => _scope is { IsActive: true };
+
+    /// <summary>Brings the registration in step with what its owner wants: <paramref name="element"/> registered with <paramref name="profile"/> while <paramref name="wanted"/>, held active while <paramref name="active"/>, the profile pushed again when it changed, and everything released once no longer wanted; called after every render.</summary>
+    public async Task SyncAsync(ElementReference element, InputProfile profile, bool wanted = true, bool active = false, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+
+        _request = new Request(element, profile, wanted && !_isDisposed, active, parent, within);
+
+        // The settle underway reads the latest request before it finishes.
+        if (_settle is { IsCompleted: false })
+        {
+            return;
+        }
+
+        _settle = SettleAsync();
+        await _settle;
+    }
+
+    /// <summary>Performs an action the router resolved to the element.</summary>
+    [JSInvokable]
+    public Task HandleInputActionAsync(string action, InputInfo input)
+        => _onAction?.Invoke(action, input) ?? Task.CompletedTask;
+
+    /// <summary>Takes a dismissal the router delivered to the element while it was foremost.</summary>
+    [JSInvokable]
+    public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
+        => _onDismiss?.Invoke(action, reason) ?? Task.CompletedTask;
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+
+        if (_request is { } request)
+        {
+            _request = request with { Wanted = false };
+        }
+
+        try
+        {
+            // A settle still underway finishes before the reference it carries goes.
+            if (_settle is { } settle)
+            {
+                await Task.WhenAny(settle);
+            }
+
+            await ReleaseAsync();
+        }
+        finally
+        {
+            _selfReference.Dispose();
+        }
+    }
+
+    // Carries on until what is registered matches the latest request, which a sync arriving meanwhile replaces.
+    private async Task SettleAsync()
+    {
+        while (_request is { } request)
+        {
+            // An unrendered @ref arrives as a reference with no id, which nothing can be registered on.
+            if (!request.Wanted || request.Element.Id is not { Length: > 0 })
+            {
+                await ReleaseAsync();
+            }
+            else if (_scope is { } scope && _registeredElementId == request.Element.Id)
+            {
+                await KeepInStepAsync(scope, request);
+            }
+            else
+            {
+                // Another element starts afresh.
+                await ReleaseAsync();
+                await RegisterAsync(request);
+            }
+
+            if (ReferenceEquals(_request, request))
+            {
+                return;
+            }
+        }
+    }
+
+    private async Task RegisterAsync(Request request)
+    {
+        var scope = await _router.RegisterAsync(request.Element, request.Profile, _selfReference, request.Parent, request.Within);
+
+        if (scope is null)
+        {
+            return;
+        }
+
+        _scope = scope;
+        _registeredProfile = request.Profile;
+        _registeredElementId = request.Element.Id;
+
+        if (request.Active)
+        {
+            await scope.ActivateAsync();
+        }
+    }
+
+    // The profile and the hold can both change after the registration was made.
+    private async Task KeepInStepAsync(InputScope scope, Request request)
+    {
+        if (!ReferenceEquals(_registeredProfile, request.Profile) && await scope.UpdateAsync(request.Profile))
+        {
+            _registeredProfile = request.Profile;
+        }
+
+        if (request.Active && !scope.IsActive)
+        {
+            await scope.ActivateAsync();
+        }
+        else if (!request.Active && scope.IsActive)
+        {
+            await scope.ReleaseAsync();
+        }
+    }
+
+    private async Task ReleaseAsync()
+    {
+        _registeredProfile = null;
+        _registeredElementId = null;
+
+        if (_scope is { } scope)
+        {
+            _scope = null;
+            await scope.DisposeAsync();
+        }
+    }
+
+    /// <summary>What the owner asked for last.</summary>
+    private sealed record Request(ElementReference Element, InputProfile Profile, bool Wanted, bool Active, ElementReference? Parent, IReadOnlyList<ElementReference>? Within);
+}

@@ -5,15 +5,11 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>An element registered with the input router as a scope, answering the routes its profile declares and held active while its surface is open.</summary>
 public sealed partial class FormaInputScope : FormaElementBase
 {
-    private DotNetObjectReference<FormaInputScope> _selfReference = default!;
-    private InputScope? _inputScope;
-    private InputProfile? _registeredProfile;
-    private Task _sync = Task.CompletedTask;
+    private InputRegistration _registration = default!;
 
     /// <summary>The routes the scope answers and how it treats ambient input while foremost.</summary>
     [Parameter] public InputProfile Profile { get; set; } = InputProfile.Default;
@@ -38,32 +34,20 @@ public sealed partial class FormaInputScope : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    /// <summary>Performs an action the router resolved to this scope.</summary>
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
-        => OnAction.InvokeAsync(new InputAction(action, input));
-
-    /// <summary>Takes the dismissal the router delivered to this scope.</summary>
-    [JSInvokable]
-    public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
-        => OnDismiss.InvokeAsync(new InputDismissal(action, reason));
-
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _selfReference = DotNetObjectReference.Create(this);
+        => _registration = new InputRegistration(
+            InputRouter,
+            (action, input) => OnAction.InvokeAsync(new InputAction(action, input)),
+            (action, reason) => OnDismiss.InvokeAsync(new InputDismissal(action, reason)));
 
     /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentNullException.ThrowIfNull(Profile);
 
-    // Renders can overlap, so each sync waits for the one before it and none registers twice.
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        var previous = _sync;
-        _sync = SyncAsync(previous);
-        await _sync;
-    }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _registration.SyncAsync(RootElement, Profile, active: Active, parent: Parent, within: Within);
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
@@ -74,67 +58,7 @@ public sealed partial class FormaInputScope : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        try
-        {
-            if (_inputScope is { } inputScope)
-            {
-                _inputScope = null;
-                await inputScope.DisposeAsync();
-            }
-        }
-        finally
-        {
-            _selfReference.Dispose();
-        }
-
+        await _registration.DisposeAsync();
         await base.DisposeAsyncCore();
-    }
-
-    private async Task SyncAsync(Task previous)
-    {
-        await previous;
-
-        if (IsDisposed)
-        {
-            return;
-        }
-
-        if (_inputScope is null)
-        {
-            var inputScope = await InputRouter.RegisterAsync(RootElement, Profile, _selfReference, Parent, Within);
-
-            // The component may have gone while the registration was being made; a scope on a gone element is released at once.
-            if (IsDisposed)
-            {
-                if (inputScope is not null)
-                {
-                    await inputScope.DisposeAsync();
-                }
-
-                return;
-            }
-
-            _inputScope = inputScope;
-            _registeredProfile = Profile;
-        }
-
-        if (_inputScope is null)
-        {
-            return;
-        }
-
-        if (!ReferenceEquals(_registeredProfile, Profile) && await _inputScope.UpdateAsync(Profile))
-        {
-            _registeredProfile = Profile;
-        }
-
-        if (Active && !_inputScope.IsActive)
-        {
-            await _inputScope.ActivateAsync();
-        }
-        else if (!Active && _inputScope.IsActive)
-        {
-            await _inputScope.ReleaseAsync();
-        }
     }
 }

@@ -405,7 +405,7 @@
         {
             // Arrange
             using var ctx = new FormaTabsTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(
@@ -415,8 +415,8 @@
                 </FormaTabs>);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["tabs.next:ArrowRight", "tabs.previous:ArrowLeft", "tabs.first:Home", "tabs.last:End"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["tabs.next:ArrowRight", "tabs.previous:ArrowLeft", "tabs.first:Home", "tabs.last:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -425,7 +425,7 @@
             // Arrange
             using var culture = new CultureFixture("he");
             using var ctx = new FormaTabsTests();
-            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var router = new InputRouterProbe(ctx);
 
             // Act
             ctx.Render(
@@ -435,8 +435,8 @@
                 </FormaTabs>);
 
             // Assert
-            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
-            Assert.Equal(["tabs.next:ArrowLeft", "tabs.previous:ArrowRight", "tabs.first:Home", "tabs.last:End"], GetRoutes(registration));
+            var registration = Assert.Single(router.Registrations);
+            Assert.Equal(["tabs.next:ArrowLeft", "tabs.previous:ArrowRight", "tabs.first:Home", "tabs.last:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -484,6 +484,7 @@
         {
             // Arrange
             using var ctx = new FormaTabsTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaTabs>
                     <FormaTab Title="First">Content 1</FormaTab>
@@ -492,7 +493,7 @@
                 </FormaTabs>);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaTabs>().Instance.HandleInputActionAsync("tabs.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("tabs.next", "ArrowRight");
 
             // Assert
             var buttons = cut.FindAll(".forma-tab-button");
@@ -509,12 +510,13 @@
         {
             // Arrange
             using var ctx = new FormaTabsTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaTabs>
                     <FormaTab Title="First">Content 1</FormaTab>
                     <FormaTab Title="Second">Content 2</FormaTab>
                 </FormaTabs>);
-            await cut.InvokeAsync(() => cut.FindComponent<FormaTabs>().Instance.HandleInputActionAsync("tabs.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("tabs.next", "ArrowRight");
 
             // Act
             cut.FindAll(".forma-tab-button")[1].Click();
@@ -528,6 +530,7 @@
         {
             // Arrange
             using var ctx = new FormaTabsTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaTabs>
                     <FormaTab Title="First">Content 1</FormaTab>
@@ -536,7 +539,7 @@
                 </FormaTabs>);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaTabs>().Instance.HandleInputActionAsync("tabs.previous", new InputKeyInfo { Type = "keydown", Key = "ArrowLeft" }));
+            await router.RouteAsync("tabs.previous", "ArrowLeft");
 
             // Assert
             Assert.Equal("0", cut.FindAll(".forma-tab-button")[2].GetAttribute("tabindex"));
@@ -547,18 +550,18 @@
         {
             // Arrange
             using var ctx = new FormaTabsTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaTabs>
                     <FormaTab Title="First">Content 1</FormaTab>
                     <FormaTab Title="Second">Content 2</FormaTab>
                     <FormaTab Title="Third">Content 3</FormaTab>
                 </FormaTabs>);
-            var tabs = cut.FindComponent<FormaTabs>().Instance;
 
             // Act
-            await cut.InvokeAsync(() => tabs.HandleInputActionAsync("tabs.last", new InputKeyInfo { Type = "keydown", Key = "End" }));
+            await router.RouteAsync("tabs.last", "End");
             var afterLast = cut.FindAll(".forma-tab-button")[2].GetAttribute("tabindex");
-            await cut.InvokeAsync(() => tabs.HandleInputActionAsync("tabs.first", new InputKeyInfo { Type = "keydown", Key = "Home" }));
+            await router.RouteAsync("tabs.first", "Home");
 
             // Assert
             Assert.Multiple(
@@ -571,6 +574,7 @@
         {
             // Arrange
             using var ctx = new FormaTabsTests();
+            var router = new InputRouterProbe(ctx);
             string? reported = null;
             var cut = ctx.Render(
                 @<FormaTabs ActiveTabId="first" ActiveTabIdChanged="id => reported = id">
@@ -579,7 +583,7 @@
                 </FormaTabs>);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaTabs>().Instance.HandleInputActionAsync("tabs.next", new InputKeyInfo { Type = "keydown", Key = "ArrowRight" }));
+            await router.RouteAsync("tabs.next", "ArrowRight");
             var reportedByArrow = reported;
             cut.FindAll(".forma-tab-button")[1].Click();
 
@@ -589,9 +593,5 @@
                 () => Assert.Equal("second", reported),
                 () => Assert.Equal("true", cut.FindAll(".forma-tab-button")[0].GetAttribute("aria-selected")));
         }
-
-        private static List<string> GetRoutes(JSRuntimeInvocation registration)
-            => [.. Assert.IsType<InputProfile>(registration.Arguments[1]).InputRoutes
-                .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
     }
 }
