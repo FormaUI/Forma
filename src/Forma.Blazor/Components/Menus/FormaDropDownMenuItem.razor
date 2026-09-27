@@ -11,7 +11,7 @@
        href="@Href"
        role="@Role"
        aria-checked="@AriaChecked"
-       tabindex="-1"
+       tabindex="@(Disabled ? "-1" : null)"
        aria-disabled="@(Disabled ? "true" : null)"
        @onclick="HandleActivateAsync"
        @onclick:preventDefault="Disabled">
@@ -33,7 +33,6 @@ else
             type="button"
             role="@Role"
             aria-checked="@AriaChecked"
-            tabindex="-1"
             disabled="@Disabled"
             @onclick="HandleActivateAsync">
         @ChildContent

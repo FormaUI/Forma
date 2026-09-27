@@ -642,6 +642,45 @@
         }
 
         [Fact]
+        public void Should_keep_its_items_in_the_tab_order_so_the_popover_wraps_tab_among_them()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem Href="/invoice.pdf">Download invoice</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            Assert.All(cut.FindAll(".forma-dropdown-menu-item"), item => Assert.Null(item.GetAttribute("tabindex")));
+        }
+
+        [Fact]
+        public void Should_keep_a_disabled_link_item_out_of_the_tab_order()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem Href="/invoice.pdf" Disabled="true">Download invoice</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            Assert.Equal("-1", cut.Find(".forma-dropdown-menu-item").GetAttribute("tabindex"));
+        }
+
+        [Fact]
         public void Should_render_an_item_without_href_as_a_button()
         {
             // Arrange
