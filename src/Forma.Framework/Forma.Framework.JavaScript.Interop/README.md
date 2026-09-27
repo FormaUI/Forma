@@ -29,7 +29,7 @@ Each is one concept as a class or a single export, under `wwwroot/scripts/`.
 
 | Script | What it is |
 | --- | --- |
-| `Controls.js` | The selectors and keys native controls answer themselves: what Tab reaches, what owns its own press, what moves a caret, and the navigation keys a list owns. |
+| `Controls.js` | The selectors of what native controls answer themselves: what Tab reaches and what owns its own press; which keys a control consumes is the input router's native table. |
 | `Direction.js` | Whether an element lays out right to left. |
 | `FrameScheduler.js` | One piece of work held to the next animation frame, however often it is requested before then. |
 | `Owner.js` | `tell(owner, method, ...args)`: reports to a behavior's .NET owner, letting go of the rejection a disposed owner answers with. |

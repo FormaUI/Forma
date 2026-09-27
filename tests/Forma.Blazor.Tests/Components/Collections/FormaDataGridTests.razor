@@ -6,6 +6,27 @@
 @code {
     public sealed class Component
     {
+        [Fact]
+        public void Should_push_the_host_s_input_policy_before_attaching_row_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            ctx.Render(
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+
+            // Assert
+            var identifiers = ctx.JSInterop.Invocations.Select(invocation => invocation.Identifier).ToList();
+            Assert.Multiple(
+                () => Assert.Contains("configure", identifiers),
+                () => Assert.True(identifiers.IndexOf("configure") < identifiers.IndexOf("attach")));
+        }
+
         private static IQueryable<GridItem> CreateItems(int count) => Enumerable.Range(1, count)
             .Select(id => new GridItem(id, $"Item {id}"))
             .AsQueryable();

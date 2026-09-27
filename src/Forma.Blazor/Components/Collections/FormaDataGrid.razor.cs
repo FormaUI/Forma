@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Forma.Blazor.Components.Navigation;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
+using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -15,6 +16,8 @@ using Microsoft.JSInterop;
 public sealed partial class FormaDataGrid<TGridItem> : FormaElementBase
     where TGridItem : notnull
 {
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
+
     private readonly PaginationState _pagination = new();
 
     // Row identity for the selection script: a token survives while its row stays
@@ -340,6 +343,9 @@ public sealed partial class FormaDataGrid<TGridItem> : FormaElementBase
             // attach a second listener to the same scroller.
             _isRowSelectionAttached = true;
             _selfReference ??= DotNetObjectReference.Create(this);
+
+            // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
+            await InputRouter.ConfigureAsync();
             _isRowSelectionAttached = await _selectionInteraction.AttachAsync(_scrollerElement, _selfReference);
         }
 

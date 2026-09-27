@@ -5,11 +5,22 @@
  * (ctrl/meta for toggle, shift for range) can only be read here, from the DOM event that
  * the item's own click handling never surfaces to Blazor. Each item is identified by a
  * key attribute already rendered by the component, so no DOM index or sort order has to be
- * reconstructed on this side.
+ * reconstructed on this side. The keys are routes on the input router, declared on the list,
+ * so a key inside a nested scope, a select open in a cell, is that scope's, and a key in a
+ * field inside an item is the field's by the router's native table rather than by a check here.
  */
 
 import { Controls } from '../../../core/scripts/Controls.js';
 import { tell } from '../../../core/scripts/Owner.js';
+import { register } from '../../../input/scripts/InputRouter.js';
+
+/** Where each key sends the focused item: a step either way, or to either end. */
+const Moves = [
+    { action: 'selection.next', key: 'ArrowDown', target: (index, count) => index < 0 ? 0 : Math.min(count - 1, index + 1) },
+    { action: 'selection.previous', key: 'ArrowUp', target: (index, count) => index < 0 ? count - 1 : Math.max(0, index - 1) },
+    { action: 'selection.first', key: 'Home', target: () => 0 },
+    { action: 'selection.last', key: 'End', target: (index, count) => count - 1 },
+];
 
 /**
  * @param {HTMLElement} target
@@ -30,6 +41,7 @@ class SelectionInteraction {
     #markerSelector;
     #itemSelector;
     #controller = new AbortController();
+    #registration;
     #anchor = null;
 
     constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr' }) {
@@ -43,11 +55,24 @@ class SelectionInteraction {
 
         target.addEventListener('mousedown', event => this.#handleMouseDown(event), { signal, capture: true });
         target.addEventListener('click', event => this.#handleClick(event), { signal, capture: true });
-        target.addEventListener('keydown', event => this.#handleKeyDown(event), { signal, capture: true });
+
+        // Each key moves plain, with Shift extending the range, or with the primary modifier moving alone; one that
+        // would move nothing matches nothing, so a press at the end of the list keeps its default.
+        this.#registration = register(target, {
+            routes: Moves.map(move => ({
+                action: move.action,
+                bindings: [
+                    { type: 'keydown', key: move.key, when: event => this.#planMove(event, move) !== null },
+                    { type: 'keydown', key: move.key, modifiers: { primary: true }, when: event => this.#planMove(event, move) !== null },
+                ],
+                handle: event => this.#move(event, move),
+            })),
+        });
     }
 
     dispose() {
         this.#controller.abort();
+        this.#registration.dispose();
     }
 
     #markers() {
@@ -128,42 +153,33 @@ class SelectionInteraction {
         tell(this.#owner, 'HandleSelectAsync', this.#tokenOf(marker), toggle);
     }
 
-    #handleKeyDown(event) {
-        if (!Controls.NavigationKeys.has(event.key) || event.target.closest(Controls.TextEntry)) {
-            return;
-        }
-
+    /** The items and the place the key would move the focused one to, or null where there is nowhere to go. */
+    #planMove(event, { key, target }) {
         const all = this.#markers();
 
         if (all.length === 0) {
-            return;
+            return null;
         }
 
         // Focus is the source of truth for "which item", not the roving tabindex: tabbing
         // straight onto one sets the former and leaves the latter wherever it was.
         const focused = document.activeElement?.closest(this.#markerSelector);
         const currentIndex = focused ? all.indexOf(focused) : -1;
-        let nextIndex;
+        const nextIndex = target(currentIndex, all.length);
+        const isEnd = key === 'Home' || key === 'End';
 
-        if (event.key === 'Home') {
-            nextIndex = 0;
-        } else if (event.key === 'End') {
-            nextIndex = all.length - 1;
-        } else if (currentIndex === -1) {
-            nextIndex = event.key === 'ArrowDown' ? 0 : all.length - 1;
-        } else if (event.key === 'ArrowUp') {
-            nextIndex = Math.max(0, currentIndex - 1);
-        } else {
-            nextIndex = Math.min(all.length - 1, currentIndex + 1);
-        }
+        return nextIndex === currentIndex && !isEnd ? null : { all, next: all[nextIndex] };
+    }
 
-        if (nextIndex === currentIndex && event.key !== 'Home' && event.key !== 'End') {
+    // The move is planned again here, since a host's remap of the action replaces the binding and its predicate with it.
+    #move(event, move) {
+        const plan = this.#planMove(event, move);
+
+        if (!plan) {
             return;
         }
 
-        event.preventDefault();
-
-        const next = all[nextIndex];
+        const { all, next } = plan;
         this.#focusMarker(next, all);
 
         if (event.ctrlKey || event.metaKey) {

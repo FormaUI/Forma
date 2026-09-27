@@ -57,7 +57,16 @@ reaches the zone around it. The explorer's folder rows are the targets of one zo
 tree rather than a scope each, which departs from the design's matrix naming the folder's scope
 as the owner: a scope per row would cost a round trip per folder on every explorer render, so the
 tree registers once and the script finds the row under the drop and tells the sidebar its
-folder's key. Active drags and the selection bar are not on the router:
+folder's key. `SelectionInteraction` declares the grid's keys as routes on the list,
+`selection.next`, `selection.previous`, `selection.first` and `selection.last`, each bound plain
+and with the primary modifier, matching only where the focused item has somewhere to go, so a
+press at the end of the list keeps its default; the keys a field inside a row consumes are the
+field's by the native table, and the behavior's own text-entry check is gone with it, the last of
+the per-component text-entry exclusions, so `Controls.js` no longer names which keys a field
+takes. That check was wider than the table: a vertical arrow in a single-line field, which the
+field does not consume, now moves the selection where it used to stay with the field.
+The clicks stay the behavior's own, since a click is no routed class. Active drags and the
+selection bar are not on the router:
 `DragGesture` cancels a drag from its own Escape listener, and `SelectionFollower` returns focus
 to the editor from its own.
 Of the owners in step 3, the two shortcut sets, `FormaSelect` and `FormaDropDownMenu` have
@@ -162,7 +171,7 @@ draws it in the top layer, because it remains a DOM descendant of whatever opene
 | Inner popup receives Escape | Done: router ordering replaces per-popup listeners |
 | Popup in a dialog receives Escape | Done: routed before native cancellation |
 | Dialog opened over a popup receives Escape | Done: modal barrier |
-| Host `<input>` in a grid receives arrows | Native table, built; `FormaDataGrid`'s own text-entry exclusion stands until `SelectionInteraction` is on the router |
+| Host `<input>` in a grid receives arrows | Done: native table, and `SelectionInteraction`'s own text-entry exclusion is gone |
 | Tab list receives arrows | New routes; the missing interaction |
 
 ## Steps
@@ -179,14 +188,14 @@ existing components, landing as several coherent commits.
    drags and the selection bar while focused (open), `FormaBreadcrumb` rebuilt on `FormaPopover` (done,
    as a `FormaDropDownMenu` per segment), `FormaWindow` (done). The per-popup document listener, both backdrops,
    and the backdrop z-indexes go (done).
-3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: `FormaComposer`'s
+3. **Owners onto routes.** `SelectionInteraction` (done), both shortcut sets (done: `FormaComposer`'s
    and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Wheel` (done), `PanGesture` (done), `DropZone` and `FormaExplorer`'s drop targets (done),
    `Focus.js` (done), and the components that own navigation keys — `FormaSelect`,
    `FormaDropDownMenu`, `FormaTabs`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`
    and `FormaSortableList` (all done). `NavigationGuard` is retired in favour of the
    router's `preventDefault` (done); the per-component text-entry exclusions are retired in
-   favour of the native table (open).
+   favour of the native table (done).
 4. **Verification** across combinations, in a visible browser: select in a grid cell; popup
    on a toolbar; emoji picker over `FormaComposer`; drag started in a popup; nested popups;
    popup in a dialog and dialog over a popup; nested explorer drops; a host `<input>` in a

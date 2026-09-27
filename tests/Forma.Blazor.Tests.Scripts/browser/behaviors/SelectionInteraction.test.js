@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { attach } from '#browser/behaviors/SelectionInteraction.js';
+import { configure, register, resolve } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 
 describe('SelectionInteraction', () => {
@@ -11,6 +12,15 @@ describe('SelectionInteraction', () => {
     const row = (key, trailing) =>
         `<tr><td><span data-row-key="${key}" tabindex="-1">Row</span></td><td>${trailing}</td></tr>`;
 
+    // The router keeps every registration until it is disposed, so each test's are released after it.
+    const handles = [];
+    const attachSelection = (target, options) => {
+        const handle = attach(target, options);
+        handles.push(handle);
+
+        return handle;
+    };
+
     beforeEach(() => {
         document.body.innerHTML = `
             <table id="grid"><tbody>
@@ -21,6 +31,11 @@ describe('SelectionInteraction', () => {
             </tbody></table>`;
         grid = document.querySelector('#grid');
         owner = fakeOwner();
+    });
+
+    afterEach(() => {
+        handles.splice(0).forEach(handle => handle.dispose());
+        configure({ bindings: {} });
     });
 
     const cellOf = key => document.querySelector(`[data-row-key="${key}"]`);
@@ -40,7 +55,7 @@ describe('SelectionInteraction', () => {
 
     describe('with the pointer', () => {
         it('selects the clicked item', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
 
             click(cellOf(2));
 
@@ -48,7 +63,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('toggles rather than replaces when control is held', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
 
             click(cellOf(2), { ctrlKey: true });
 
@@ -56,7 +71,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('extends from the last plain click to the shift-clicked item', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
 
             click(cellOf(2));
             click(cellOf(4), { shiftKey: true });
@@ -65,7 +80,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('extends backwards in the order the items are rendered', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
 
             click(cellOf(3));
             click(cellOf(1), { shiftKey: true });
@@ -74,7 +89,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('selects rather than extends when nothing anchored the range', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
 
             click(cellOf(3), { shiftKey: true });
 
@@ -83,7 +98,7 @@ describe('SelectionInteraction', () => {
 
         // A shift-click would otherwise extend the page's own text selection across the rows.
         it('stops a shift-click selecting the text it crosses', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             click(cellOf(1));
 
             const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0, shiftKey: true });
@@ -98,7 +113,7 @@ describe('SelectionInteraction', () => {
             ${'a link'}     | ${'a[href]'}
             ${'a button'}   | ${'button'}
         `('leaves a click on $element to that element', ({ selector }) => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
 
             click(grid.querySelector(selector));
 
@@ -106,7 +121,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('ignores a click outside any item', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
 
             click(grid);
 
@@ -116,7 +131,7 @@ describe('SelectionInteraction', () => {
 
     describe('with the keyboard', () => {
         it('moves to the next item on ArrowDown', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             cellOf(1).focus();
 
             press(cellOf(1), 'ArrowDown');
@@ -125,7 +140,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('moves to the previous item on ArrowUp', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             cellOf(3).focus();
 
             press(cellOf(3), 'ArrowUp');
@@ -134,7 +149,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('jumps to the first item on Home', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             cellOf(3).focus();
 
             press(cellOf(3), 'Home');
@@ -143,7 +158,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('jumps to the last item on End', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             cellOf(1).focus();
 
             press(cellOf(1), 'End');
@@ -152,7 +167,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('starts from the first item when nothing is focused', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
 
             press(grid, 'ArrowDown');
 
@@ -160,7 +175,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('stays put at the end of the list', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             cellOf(4).focus();
 
             const event = press(cellOf(4), 'ArrowDown');
@@ -170,7 +185,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('moves focus to the item it selected', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             cellOf(1).focus();
 
             press(cellOf(1), 'ArrowDown');
@@ -179,7 +194,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('leaves the tab stop on the focused item alone', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             cellOf(1).focus();
 
             press(cellOf(1), 'ArrowDown');
@@ -188,7 +203,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('moves without selecting when control is held', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             cellOf(1).focus();
 
             press(cellOf(1), 'ArrowDown');
@@ -200,7 +215,7 @@ describe('SelectionInteraction', () => {
         });
 
         it('extends the range when shift is held', () => {
-            attach(grid, { owner });
+            attachSelection(grid, { owner });
             click(cellOf(1));
             cellOf(1).focus();
 
@@ -209,20 +224,78 @@ describe('SelectionInteraction', () => {
             selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', [1, 2], false);
         });
 
-        // Those keys move a caret inside a field rather than moving between items.
-        it('leaves the arrow keys to a text field inside an item', () => {
-            attach(grid, { owner });
+        // The caret keys are the field's by the router's native table; a vertical arrow, which a single-line field
+        // does not consume, is the list's.
+        it('leaves the caret keys to a text field inside an item', () => {
+            attachSelection(grid, { owner });
             const field = grid.querySelector('input[type="text"]');
 
-            const event = press(field, 'ArrowDown');
+            const home = press(field, 'Home');
+            const left = press(field, 'ArrowLeft');
+
+            selected().not.toHaveBeenCalled();
+            expect(home.defaultPrevented).toBe(false);
+            expect(left.defaultPrevented).toBe(false);
+        });
+
+        it('moves between items on a vertical arrow pressed in a text field inside an item', () => {
+            attachSelection(grid, { owner });
+            cellOf(4).focus();
+            const field = grid.querySelector('input[type="text"]');
+
+            press(field, 'ArrowUp');
+
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 3, false);
+        });
+
+        it('declares the keys as routes on the list', () => {
+            attachSelection(grid, { owner });
+            cellOf(1).focus();
+
+            const event = press(cellOf(1), 'ArrowDown');
+
+            expect(resolve(event)).toMatchObject({ owner: grid, action: 'selection.next', precedence: 'structural' });
+        });
+
+        it('leaves a key inside a nested scope that is open to that scope', () => {
+            attachSelection(grid, { owner });
+            cellOf(2).insertAdjacentHTML('afterend', '<div id="popup" popover="manual"><button id="option">Option</button></div>');
+            const popup = register(document.querySelector('#popup'), {});
+            handles.push(popup);
+            popup.activate();
+            document.querySelector('#option').focus();
+
+            const event = press(document.querySelector('#option'), 'ArrowDown');
 
             selected().not.toHaveBeenCalled();
             expect(event.defaultPrevented).toBe(false);
         });
+
+        it('takes the host\'s remap of a move', () => {
+            configure({ bindings: { 'selection.next': [{ type: 'keydown', key: 'j' }] } });
+            attachSelection(grid, { owner });
+            cellOf(1).focus();
+
+            press(cellOf(1), 'j');
+            const unbound = press(cellOf(2), 'ArrowDown');
+
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 2, false);
+            expect(unbound.defaultPrevented).toBe(false);
+        });
+
+        it('moves nothing from a remapped key at the end of the list', () => {
+            configure({ bindings: { 'selection.next': [{ type: 'keydown', key: 'j' }] } });
+            attachSelection(grid, { owner });
+            cellOf(4).focus();
+
+            expect(() => press(cellOf(4), 'j')).not.toThrow();
+
+            selected().not.toHaveBeenCalled();
+        });
     });
 
     it('stops responding once disposed', () => {
-        const handle = attach(grid, { owner });
+        const handle = attachSelection(grid, { owner });
 
         handle.dispose();
         click(cellOf(2));
