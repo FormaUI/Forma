@@ -55,6 +55,8 @@ function Add-Result {
 # A build script is named for its action in lowercase, since it is a command someone types; a task script
 # takes Verb-Noun with an approved verb, as PowerShell asks of anything it offers.
 $files = @(
+    # The root holds the commands typed most, the gate and the release, named like build actions.
+    Get-ChildItem -LiteralPath $repositoryRoot -Filter '*.ps1' -File | ForEach-Object { [pscustomobject]@{ File = $_; Kind = 'build' } }
     Get-ChildItem -LiteralPath $scripts -Filter '*.ps1' -File | ForEach-Object { [pscustomobject]@{ File = $_; Kind = 'task' } }
     Get-ChildItem -LiteralPath $scripts -Filter '*.psm1' -File | ForEach-Object { [pscustomobject]@{ File = $_; Kind = 'module' } }
     Get-ChildItem -LiteralPath (Join-Path $scripts 'build') -Filter '*.ps1' -File | ForEach-Object { [pscustomobject]@{ File = $_; Kind = 'build' } }
@@ -101,7 +103,13 @@ function Invoke-Script {
         [Parameter(Mandatory)] [AllowEmptyCollection()] [string[]] $Arguments
     )
 
-    $output = (& pwsh -NoProfile -File (Join-Path $scripts $Script) @Arguments 2>&1 | Out-String)
+    # A script is under scripts/, or at the root beside the gate.
+    $path = Join-Path $scripts $Script
+    if (-not (Test-Path -LiteralPath $path)) {
+        $path = Join-Path $repositoryRoot $Script
+    }
+
+    $output = (& pwsh -NoProfile -File $path @Arguments 2>&1 | Out-String)
     [pscustomobject]@{ Output = $output; Succeeded = $LASTEXITCODE -eq 0 }
 }
 
@@ -147,6 +155,13 @@ function New-BoundPort {
 $probe = New-BoundPort
 $free = $probe.LocalEndpoint.Port
 $probe.Stop()
+
+# A release is refused before it reaches a feed or the remote, so what can be run here is what it refuses.
+Test-Case -Name 'a release version that is not semantic is refused' -Script 'publish.ps1' `
+    -Arguments @('-Source', 'GitHub', '-Version', 'latest', '-WhatIf') -Fails -Expect @('semantic version')
+
+Test-Case -Name 'a release to a feed nobody named is refused' -Script 'publish.ps1' `
+    -Arguments @('-Source', 'Elsewhere', '-Version', '1.0.0', '-WhatIf') -Fails
 
 Test-Case -Name 'the Showcase describes the start it would make' -Script 'Start-Showcase.ps1' `
     -Arguments @('-Port', "$free", '-WhatIf') -Expect @('dotnet run', "$free")
