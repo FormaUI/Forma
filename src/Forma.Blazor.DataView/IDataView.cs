@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.DataView;
 using Forma.Framework.Events;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>What a view reads of the data view it presents: the items on screen and the state around them, announced through <see cref="INotifyStateChanged"/> as it changes.</summary>
 /// <typeparam name="TItem">The item the data view browses.</typeparam>
@@ -45,6 +46,12 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>How many units a view renders beyond each edge of the viewport while virtualizing.</summary>
     int OverscanCount { get; }
 
+    /// <summary>Where the viewport holds when items arrive at an edge while virtualizing.</summary>
+    VirtualizeAnchorMode AnchorMode { get; }
+
+    /// <summary>The index of the item the data view opens on while virtualizing, applied once.</summary>
+    int InitialItemIndex { get; }
+
     /// <summary>Whether every item has a box to check.</summary>
     bool EnableCheckedSelection { get; }
 
@@ -63,6 +70,12 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>Whether the master control can neither select nor clear anything.</summary>
     bool IsMasterControlDisabled { get; }
 
+    /// <summary>Whether a master control is drawn: the selection options ask for one and there is something for it to reach.</summary>
+    bool HasMasterControl { get; }
+
+    /// <summary>Whether a menu stands beside the master control offering the page, the set and clearing.</summary>
+    bool HasMasterMenu { get; }
+
     /// <summary>How many items are selected, on screen or not.</summary>
     int SelectedCount { get; }
 
@@ -74,6 +87,9 @@ public interface IDataView<TItem> : INotifyStateChanged
 
     /// <summary>Identifies an item across reloads.</summary>
     Func<TItem, object> ItemKey { get; }
+
+    /// <summary>Compares items by <see cref="ItemKey"/>, as the selection does.</summary>
+    IEqualityComparer<TItem> ItemComparer { get; }
 
     /// <summary>The class the caller gives an item, or null for none.</summary>
     Func<TItem, string?>? ItemClass { get; }

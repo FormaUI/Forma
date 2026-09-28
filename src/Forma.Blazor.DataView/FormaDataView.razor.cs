@@ -8,6 +8,7 @@ using Forma.Framework.Events;
 using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -25,7 +26,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     private readonly StateNotifier _stateNotifier = new();
     private readonly ItemTokenTable<TItem> _itemTokens = new();
-    private readonly HashSet<string> _views = [with(StringComparer.Ordinal)];
+    private readonly Dictionary<string, IDataViewViewport> _viewports = [with(StringComparer.Ordinal)];
     private readonly ParameterState<IReadOnlyList<TItem>?> _selectedItemsParameter = new();
     private readonly ParameterState<int> _pageParameter = new();
 
@@ -109,6 +110,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>How many units a view renders beyond each edge of the viewport while virtualizing.</summary>
     [Parameter] public int OverscanCount { get; set; } = 3;
 
+    /// <summary>Where the viewport holds when items arrive at an edge while virtualizing.</summary>
+    [Parameter] public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
+
+    /// <summary>The index of the item the data view opens on while virtualizing, applied once; zero opens at the start.</summary>
+    [Parameter] public int InitialItemIndex { get; set; }
+
     /// <summary>Gives every item a box to check, with a master control over them.</summary>
     [Parameter] public bool EnableCheckedSelection { get; set; }
 
@@ -179,6 +186,14 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             : PageSelectedCount == 0 && !CanSelectPage;
 
     /// <inheritdoc />
+    public bool HasMasterControl
+        => CheckedSelectionOptions.SelectAllMode != SelectAllMode.None && (!IsVirtualizing || HoldsSet);
+
+    /// <inheritdoc />
+    public bool HasMasterMenu
+        => HasMasterControl && CheckedSelectionOptions.SelectAllMode == SelectAllMode.FromMenu && !MasterReachesSet;
+
+    /// <inheritdoc />
     public int SelectedCount
         => _selectedSet.Count;
 
@@ -189,6 +204,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public bool CanOfferSet
         => HoldsSet && _totalItemCount is { } total && total > _items.Count;
+
+    /// <inheritdoc />
+    IEqualityComparer<TItem> IDataView<TItem>.ItemComparer
+        => _keyComparer;
 
     /// <inheritdoc />
     RenderFragment IDataView<TItem>.LoadingContent
@@ -213,9 +232,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private int PageSelectedCount
         => _items.Count(IsSelected);
 
-    // The master control's state follows what it reaches: the whole set in direct mode, the items on screen otherwise.
+    // The master control's state follows what it reaches: the whole set in direct mode, or where nothing pages and so no page exists to select; the items on screen otherwise.
     private bool MasterReachesSet
-        => CheckedSelectionOptions.SelectAllMode == SelectAllMode.Direct;
+        => CheckedSelectionOptions.SelectAllMode == SelectAllMode.Direct || IsVirtualizing;
+
+    // A virtualizing view fetches its own windows, so the engine holds no page of items.
+    private bool IsVirtualizing
+        => Virtualize && !EnablePagination;
 
     // Selecting the page adds what is not yet selected on it to what is selected, on this page or another.
     private bool CanSelectPage
@@ -259,6 +282,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         ArgumentNullException.ThrowIfNull(CheckedSelectionOptions);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ItemHeight);
         ArgumentOutOfRangeException.ThrowIfNegative(OverscanCount);
+        ArgumentOutOfRangeException.ThrowIfNegative(InitialItemIndex);
 
         if (EnablePagination)
         {
@@ -350,6 +374,26 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Asks the source again for the window being shown, which is how a host reports that the records changed.</summary>
     public Task RefreshDataAsync()
         => LoadAsync();
+
+    /// <summary>Brings the item at <paramref name="index"/> on screen: a paged data view moves to its page, a virtualizing view scrolls it to the start of its viewport.</summary>
+    /// <param name="index">The index of the item in the whole set.</param>
+    /// <param name="cancellationToken">Canceled when the scroll is no longer wanted.</param>
+    public async Task ScrollToItemAsync(int index, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+
+        if (EnablePagination)
+        {
+            await HandlePageChangedAsync(index / PageSize + 1);
+            return;
+        }
+
+        // Only the active view is registered, since only it renders.
+        foreach (var viewport in _viewports.Values)
+        {
+            await viewport.ScrollToItemAsync(index, cancellationToken);
+        }
+    }
 
     /// <summary>The items of one window, for a view that virtualizes; sorted as the data view is.</summary>
     /// <param name="startIndex">The index of the first item asked for.</param>
@@ -474,11 +518,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     }
 
     /// <inheritdoc />
-    public void RegisterView(string key)
+    public void RegisterView(string key, IDataViewViewport viewport)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentNullException.ThrowIfNull(viewport);
 
-        _views.Add(key);
+        _viewports[key] = viewport;
     }
 
     /// <inheritdoc />
@@ -486,7 +531,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        _views.Remove(key);
+        _viewports.Remove(key);
     }
 
     /// <inheritdoc />
@@ -538,7 +583,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => CheckedSelectionOptions.SelectAllMode switch
         {
             SelectAllMode.None => Task.CompletedTask,
-            SelectAllMode.Direct => _selectedSet.Count > 0 ? ClearSelectionAsync() : SelectAllAsync(),
+            _ when MasterReachesSet => _selectedSet.Count > 0 ? ClearSelectionAsync() : SelectAllAsync(),
             _ => PageSelectedCount > 0 ? ClearPageAsync() : SelectPageAsync(),
         };
 
@@ -723,6 +768,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _items = window.Items;
             _hasLoaded = true;
             await SetTotalItemCountAsync(window.TotalCount);
+
+            // A virtualizing view fetches its own windows, so it is asked to fetch them again.
+            if (IsVirtualizing)
+            {
+                foreach (var viewport in _viewports.Values)
+                {
+                    await viewport.RefreshAsync();
+                }
+            }
 
             // A page past the last, because the rows on it went away, gives way to the last page that exists.
             if (EnablePagination && _page > 1 && _items.Count == 0 && window.TotalCount is { } total)

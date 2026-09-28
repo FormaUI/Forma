@@ -354,7 +354,7 @@ height of that unit and `OverscanCount` the units drawn beyond each edge. An ite
 window has not loaded draws the view's placeholder. `AnchorMode` says where the viewport
 holds when items arrive at an edge, `ItemComparer` tells a prepend from an append so the
 items on screen stay put, `InitialItemIndex` opens the data view on an item, and
-`ScrollToItemAsync` scrolls to one later. The region announces its real item count, so
+`ScrollToItemAsync` scrolls to one later, and moves a paged data view to the item's page. The region announces its real item count, so
 assistive technology knows how many items exist rather than how many are drawn.
 
 ### The footer and the states
@@ -370,8 +370,10 @@ library's sentence, the loading one the library's busy indicator, and the region
 ## The views
 
 A view is declared inside the data view's content and registers with the engine on
-initialization; the engine cascades its item type, so a view names no type argument of
-its own. A data view with one view shows it; one with several shows the active view,
+initialization, handing over the viewport it keeps, which the engine scrolls to an item on
+request and asks to fetch its windows again when the source, the sort or the set changed;
+the engine cascades its item type, so a view names no type argument of its own. A data
+view with one view shows it; one with several shows the active view,
 `View` with `ViewChanged`, naming the view by the key each declares, `grid`, `list`,
 `cards`, `tree`, or the host's own. A view reads `IDataView<TItem>`: the items on screen with
 their keys, the selection with what each item may do, the sort, the groups, the busy and

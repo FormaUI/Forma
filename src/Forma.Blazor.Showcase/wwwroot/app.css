@@ -527,6 +527,19 @@ body {
     inline-size: 7rem;
 }
 
+/* A bar standing in for a cell's text while its row's window loads. */
+.demo-skeleton {
+    display: inline-block;
+    inline-size: 60%;
+    block-size: 0.75em;
+    border-radius: var(--radius-sm);
+    background: var(--border-color);
+}
+
+.demo-skeleton-narrow {
+    inline-size: 2.5em;
+}
+
 .demo-editable {
     min-inline-size: 12rem;
     min-block-size: var(--target-size-md);

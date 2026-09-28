@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.DataView;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>The table a grid draws: its header row, its rows, and the state row that stands in for them while loading or empty.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
@@ -19,12 +20,8 @@ public sealed partial class FormaDataGridTable<TItem> : FormaElementBase
     // The field the master box names to the input base; the selection is not a form field and nothing binds it.
     private bool MasterSelection { get; }
 
-    // No master control is drawn in the mode that leaves selecting to the page's own controls.
-    private bool HasMasterControl
-        => View.CheckedSelectionOptions.SelectAllMode != SelectAllMode.None;
-
-    private bool HasMasterMenu
-        => View.CheckedSelectionOptions.SelectAllMode == SelectAllMode.FromMenu;
+    /// <summary>The virtualization the table renders its rows through, while the data view virtualizes.</summary>
+    internal Virtualize<TItem>? Virtualizer { get; private set; }
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType

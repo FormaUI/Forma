@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>A view over a data view drawing its items as rows with aligned columns and headers, sorted by a header, edited a row at a time.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
-public sealed partial class FormaDataGrid<TItem> : FormaElementBase
+public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewViewport
     where TItem : notnull
 {
     private const string ViewKey = "grid";
@@ -70,6 +70,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase
 
     private FormaDataGridTable<TItem>? Table { get; set; }
 
+    private Dictionary<TItem, int> _rowIndices = [];
+
     /// <summary>The grid's own id, generated where the host gave none, from which its parts derive theirs.</summary>
     internal string ElementId
         => Id ?? $"grid-{Context.RuntimeId:N}";
@@ -95,9 +97,6 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase
         => _columns.Count + (HasSelectionColumn ? 1 : 0);
 
     /// <summary>Tells a virtualized row's item from a re-fetched copy of it, by the data view's key.</summary>
-    internal IEqualityComparer<TItem> ItemComparer
-        => field ??= new ItemKeyComparer<TItem>(View.ItemKey);
-
     /// <summary>The height a placeholder row holds while its item loads.</summary>
     internal string PlaceholderStyle
         => string.Create(CultureInfo.InvariantCulture, $"block-size: {View.ItemHeight}px");
@@ -134,7 +133,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase
             throw new InvalidOperationException($"{nameof(FormaDataGrid<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        Interaction.RegisterView(ViewKey);
+        Interaction.RegisterView(ViewKey, this);
         View.Subscribe(HandleViewChangedAsync);
     }
 
@@ -413,8 +412,33 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase
     {
         var window = await View.LoadWindowAsync(request.StartIndex, request.Count, request.CancellationToken);
 
+        // The rows drawn are the last window's, so their places in the set are recorded once per fetch, never per render.
+        var rowIndices = new Dictionary<TItem, int>(window.Items.Count, View.ItemComparer);
+        for (var offset = 0; offset < window.Items.Count; offset++)
+        {
+            rowIndices[window.Items[offset]] = request.StartIndex + offset;
+        }
+
+        _rowIndices = rowIndices;
+
         return new ItemsProviderResult<TItem>(window.Items, window.TotalCount ?? window.Items.Count);
     }
+
+    /// <summary>The one-based place of <paramref name="item"/> in the whole set, for a row a virtualizing grid draws; null where the grid does not virtualize.</summary>
+    internal int? GetRowIndex(TItem item)
+        => _rowIndices.TryGetValue(item, out var index) ? index + 1 : null;
+
+    /// <inheritdoc />
+    public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)
+        => Table?.Virtualizer is { } virtualizer
+            ? new ValueTask(virtualizer.ScrollToItemAsync(index, cancellationToken))
+            : ValueTask.CompletedTask;
+
+    /// <inheritdoc />
+    public ValueTask RefreshAsync()
+        => Table?.Virtualizer is { } virtualizer
+            ? new ValueTask(virtualizer.RefreshDataAsync())
+            : ValueTask.CompletedTask;
 
     private Task HandleViewChangedAsync()
         => InvokeAsync(StateHasChanged);

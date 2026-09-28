@@ -26,7 +26,7 @@
                         @if (View.EnableCheckedSelection)
                         {
                             <div class="forma-data-grid-master">
-                                @if (HasMasterControl && !Grid.HasMasterCaption)
+                                @if (View.HasMasterControl && !Grid.HasMasterCaption)
                                 {
                                     <FormaCheckBox aria-label="@L["Select All"]"
                                                    Value="@View.AllSelected"
@@ -38,7 +38,7 @@
                                 }
                                 else if (Grid.HasMasterCaption)
                                 {
-                                    @if (HasMasterControl && Grid.MasterCaptionInteractive)
+                                    @if (View.HasMasterControl && Grid.MasterCaptionInteractive)
                                     {
                                         <span class="forma-data-grid-master-caption-slot">
                                             <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-grid-master-caption" Disabled="@View.IsMasterControlDisabled" OnClick="HandleMasterClickAsync">@Grid.MasterCaptionText</FormaButton>
@@ -51,7 +51,7 @@
                                         <span class="forma-data-grid-master-caption forma-data-grid-master-caption-static">@Grid.MasterCaptionText</span>
                                     }
                                 }
-                                @if (HasMasterMenu)
+                                @if (View.HasMasterMenu)
                                 {
                                     <FormaDropDownMenu TriggerOptions="ButtonOptions.MiniGhostIcon" class="forma-data-grid-master-menu" aria-label="@L["Selection Options"]">
                                         <Trigger>
@@ -95,12 +95,28 @@
         }
         else if (View.Virtualize && !View.EnablePagination)
         {
-            <Virtualize TItem="TItem" ItemsProvider="Grid.ProvideVirtualizedItemsAsync" ItemComparer="Grid.ItemComparer" ItemSize="View.ItemHeight" OverscanCount="View.OverscanCount">
+            <Virtualize @ref="Virtualizer"
+                        TItem="TItem"
+                        ItemsProvider="Grid.ProvideVirtualizedItemsAsync"
+                        ItemComparer="View.ItemComparer"
+                        ItemSize="View.ItemHeight"
+                        OverscanCount="View.OverscanCount"
+                        AnchorMode="View.AnchorMode"
+                        InitialItemIndex="View.InitialItemIndex">
                 <ItemContent>
                     <FormaDataGridRow TItem="TItem" Item="context" />
                 </ItemContent>
                 <Placeholder>
-                    <tr class="forma-data-grid-row forma-data-grid-placeholder-row" style="@Grid.PlaceholderStyle"><td colspan="@Grid.ColumnCount"></td></tr>
+                    <tr class="forma-data-grid-row forma-data-grid-placeholder-row" style="@Grid.PlaceholderStyle" aria-rowindex="@(context.Index + 1)">
+                        @if (Grid.HasSelectionColumn)
+                        {
+                            <td class="@Grid.SelectionColumnClass"></td>
+                        }
+                        @foreach (var column in Grid.CollectedColumns)
+                        {
+                            <td class="@(FormaDataGrid<TItem>.GetCellClass(column))" @key="column">@column.PlaceholderTemplate?.Invoke(context)</td>
+                        }
+                    </tr>
                 </Placeholder>
             </Virtualize>
         }

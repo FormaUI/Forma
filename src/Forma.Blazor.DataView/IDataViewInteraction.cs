@@ -5,9 +5,10 @@ namespace Forma.Blazor.Components.DataView;
 public interface IDataViewInteraction<TItem>
     where TItem : notnull
 {
-    /// <summary>Registers a view under the key the view switch and the address name it by.</summary>
+    /// <summary>Registers a view under the key the view switch and the address name it by, with the viewport it keeps.</summary>
     /// <param name="key">The view's key.</param>
-    void RegisterView(string key);
+    /// <param name="viewport">The view's viewport.</param>
+    void RegisterView(string key, IDataViewViewport viewport);
 
     /// <summary>Removes a view registered under <paramref name="key"/>.</summary>
     /// <param name="key">The view's key.</param>

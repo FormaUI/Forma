@@ -2,6 +2,7 @@
 @using AngleSharp.Dom
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 
 @code {
     public sealed class Component
@@ -719,8 +720,186 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
 
-            // Assert
+            // Assert — each row says which row of the set it is, since only a portion of the rows is drawn
             Assert.Contains("Item 1", cut.Markup, StringComparison.Ordinal);
+            Assert.Equal("1", cut.Find("tbody tr").GetAttribute("aria-rowindex"));
+        }
+
+        [Fact]
+        public void Should_hand_the_anchoring_set_to_the_virtualization()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" EnablePagination="false" Virtualize="true" ItemHeight="40" OverscanCount="5" AnchorMode="VirtualizeAnchorMode.End" InitialItemIndex="12">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
+
+            // Assert
+            var virtualization = cut.FindComponent<Virtualize<GridItem>>().Instance;
+            Assert.Multiple(
+                () => Assert.Equal(40, virtualization.ItemSize),
+                () => Assert.Equal(5, virtualization.OverscanCount),
+                () => Assert.Equal(VirtualizeAnchorMode.End, virtualization.AnchorMode),
+                () => Assert.Equal(12, virtualization.InitialItemIndex),
+                () => Assert.Same(((IDataView<GridItem>)cut.FindComponent<FormaDataView<GridItem>>().Instance).ItemComparer, virtualization.ItemComparer));
+        }
+
+        [Fact]
+        public void Should_throw_when_the_initial_item_index_is_negative()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" EnablePagination="false" Virtualize="true" InitialItemIndex="-1">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
+
+            // Assert
+            Assert.Equal(nameof(FormaDataView<GridItem>.InitialItemIndex), ex.ParamName);
+        }
+
+        [Fact]
+        public void Should_draw_no_master_control_over_a_provider_while_virtualizing()
+        {
+            // Arrange — a virtualizing view holds no page and a provider holds no set, so there is nothing to reach
+            using var ctx = new FormaDataGridTests();
+            DataViewItemsProvider<GridItem> provider = request => ValueTask.FromResult(
+                new DataViewPage<GridItem>(CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(), 25));
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count > 0);
+
+            // Assert
+            Assert.Empty(cut.FindAll("thead input[type=checkbox]"));
+            Assert.Empty(cut.FindAll("thead .forma-data-grid-master-menu"));
+        }
+
+        [Fact]
+        public void Should_select_the_whole_set_from_the_master_checkbox_while_virtualizing()
+        {
+            // Arrange — nothing pages, so the master control reaches the set the data view holds
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Click();
+
+            // Assert
+            Assert.Equal(25, changedTo!.Count);
+            Assert.Empty(cut.FindAll("thead .forma-data-grid-master-menu"));
+        }
+
+        [Fact]
+        public void Should_fetch_the_windows_again_when_the_sort_changes_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var windowRequests = 0;
+            DataViewItemsProvider<GridItem> provider = request =>
+            {
+                if (request.Count != 0)
+                {
+                    windowRequests++;
+                }
+
+                return ValueTask.FromResult(new DataViewPage<GridItem>(CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(), 25));
+            };
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" Virtualize="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
+            var before = windowRequests;
+
+            // Act
+            cut.Find("thead button").Click();
+            cut.WaitForState(() => windowRequests > before);
+
+            // Assert
+            Assert.True(windowRequests > before);
+        }
+
+        [Fact]
+        public async Task Should_move_to_the_page_holding_an_item_on_request()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
+            var dataView = cut.FindComponent<FormaDataView<GridItem>>().Instance;
+
+            // Act — the sixteenth item sits on the second page
+            await cut.InvokeAsync(() => dataView.ScrollToItemAsync(15));
+            cut.WaitForState(() => cut.Markup.Contains("Item 16", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Equal("Item 11", cut.Find("tbody tr td:last-child").TextContent);
+        }
+
+        [Fact]
+        public async Task Should_scroll_the_view_to_an_item_on_request()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" EnablePagination="false" Virtualize="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
+            var dataView = cut.FindComponent<FormaDataView<GridItem>>().Instance;
+            var before = ctx.JSInterop.Invocations.Count;
+
+            // Act
+            await cut.InvokeAsync(() => dataView.ScrollToItemAsync(10));
+
+            // Assert — the framework's virtualization is asked to move the viewport
+            Assert.True(ctx.JSInterop.Invocations.Count > before);
         }
 
         [Fact]

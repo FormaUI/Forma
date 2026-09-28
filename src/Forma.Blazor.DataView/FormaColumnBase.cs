@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.DataView;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>A column of a grid: what its header says, how its cells align and sort, and what they draw for an item.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
@@ -36,6 +37,9 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
 
     /// <summary>An options surface the header opens from a button beside the title.</summary>
     [Parameter] public RenderFragment? ColumnOptions { get; set; }
+
+    /// <summary>What a cell of this column draws while its row's window has not loaded, in a virtualizing grid.</summary>
+    [Parameter] public RenderFragment<PlaceholderContext>? PlaceholderTemplate { get; set; }
 
     /// <summary>Whether the column can be sorted by, from <see cref="Sortable"/> or the column's own default.</summary>
     public bool IsSortable

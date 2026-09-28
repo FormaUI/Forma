@@ -8,13 +8,17 @@ using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 public sealed partial class FormaDataGridPage : ComponentBase
 {
     private const int SelectionLimit = 3;
     private const int ManyRowCount = 47;
     private const int ManyPageSize = 10;
-    private const int HugeRowCount = 5000;
+    private const int HugeRowCount = 100_000;
+    private const int InitialRowIndex = 49_999;
+    private const int FeedBatchSize = 5;
+    private static readonly TimeSpan _slowWindowDelay = TimeSpan.FromMilliseconds(600);
 
     [Inject] private IStringLocale<FormaDataGridPage> L { get; set; } = default!;
 
@@ -42,6 +46,20 @@ public sealed partial class FormaDataGridPage : ComponentBase
         new() { Id = 2, Name = "Bob Smith", Department = "Marketing", StartDate = new DateOnly(2021, 9, 13), Salary = 74500 },
         new() { Id = 3, Name = "Carol Davis", Department = "Sales", StartDate = new DateOnly(2020, 1, 27), Salary = 81250 },
     ];
+
+    private FormaDataView<GridItem>? _openingDataView;
+
+    private int _scrollTargetRow = 1;
+
+    private readonly List<GridItem> _feedList = [.. Enumerable.Range(1, 200).Select(id => new GridItem(id, $"Feed item {id}"))];
+
+    private IQueryable<GridItem> _feedItems = default!;
+
+    private FormaDataView<GridItem>? _feedDataView;
+
+    private VirtualizeAnchorMode _feedAnchorMode = VirtualizeAnchorMode.Start;
+
+    private int _nextFeedId = 201;
 
     private IReadOnlyList<Employee> _selectedEmployees = [];
 
@@ -83,6 +101,8 @@ public sealed partial class FormaDataGridPage : ComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
+        _feedItems = _feedList.AsQueryable();
+
         _limitsOptions = new CheckedSelectionOptions
         {
             Maximum = SelectionLimit,
@@ -109,6 +129,41 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private void HandleModeSelectionChanged(IReadOnlyList<GridItem> selected)
         => _modeSelectedItems = selected;
+
+    private Task ScrollToRowAsync()
+        => _openingDataView is { } dataView
+            ? dataView.ScrollToItemAsync(Math.Clamp(_scrollTargetRow, 1, HugeRowCount) - 1)
+            : Task.CompletedTask;
+
+    // Answers a window after a pause long enough to see the placeholders it leaves.
+    private static async ValueTask<DataViewPage<GridItem>> ProvideSlowItemsAsync(DataViewRequest<GridItem> request)
+    {
+        if (request.Count is not 0)
+        {
+            await Task.Delay(_slowWindowDelay, request.CancellationToken);
+        }
+
+        var window = _hugeItems.Skip(request.StartIndex).Take(request.Count ?? HugeRowCount).ToArray();
+
+        return new DataViewPage<GridItem>(window, HugeRowCount);
+    }
+
+    private async Task PrependFeedItemsAsync()
+    {
+        var arrivals = Enumerable.Range(0, FeedBatchSize)
+            .Select(offset => new GridItem(_nextFeedId + FeedBatchSize - 1 - offset, $"Feed item {_nextFeedId + FeedBatchSize - 1 - offset}"))
+            .ToList();
+        _nextFeedId += FeedBatchSize;
+        _feedList.InsertRange(0, arrivals);
+
+        if (_feedDataView is { } dataView)
+        {
+            await dataView.RefreshDataAsync();
+        }
+    }
+
+    private void ToggleFeedAnchor()
+        => _feedAnchorMode = _feedAnchorMode == VirtualizeAnchorMode.Start ? VirtualizeAnchorMode.None : VirtualizeAnchorMode.Start;
 
     private void SetSelectAllMode(SelectAllMode mode)
     {
