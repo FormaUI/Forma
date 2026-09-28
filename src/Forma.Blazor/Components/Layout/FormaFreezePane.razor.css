@@ -36,6 +36,12 @@
     scroll-padding-block-start: var(--forma-freeze-pane-frozen-extent);
 }
 
+/* A pane that scrolls its other axis too is the one scroll box for content that outgrows it both ways. */
+.forma-freeze-pane-cross-axis > .forma-freeze-pane-viewport {
+    overflow: auto;
+    touch-action: pan-x pan-y;
+}
+
 /* Once the frozen region has been measured, scrolling comes to rest on the stops the content marks, each drawn up
    to the region's end; content marking none scrolls freely. */
 .forma-freeze-pane-inline.is-measured > .forma-freeze-pane-viewport {

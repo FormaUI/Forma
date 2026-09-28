@@ -243,6 +243,19 @@
         }
 
         [Fact]
+        public void Should_mark_a_pane_that_scrolls_its_other_axis_too()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFreezePane Options="@(new FreezePaneOptions { ScrollsCrossAxis = true })"><button>One</button></FormaFreezePane>);
+
+            // Assert
+            Assert.Contains("forma-freeze-pane-cross-axis", cut.Find(".forma-freeze-pane").ClassList);
+        }
+
+        [Fact]
         public void Should_merge_the_host_class_and_pass_other_attributes_through()
         {
             // Arrange

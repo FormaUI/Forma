@@ -416,6 +416,12 @@ body {
     block-size: 20rem;
 }
 
+/* Holds a grid at a phone's width, so the columns it can drop leave and the rest scroll beneath its frozen ones. */
+.demo-box-narrow {
+    box-sizing: border-box;
+    inline-size: min(26rem, 100%);
+}
+
 /* Holds an explorer at a phone's size: its 20rem floor plus the box's padding across, under the header's 25.75rem
    tier, and a phone's viewport less its browser chrome down, so the explorer fills a bounded height as it would
    in an app. */

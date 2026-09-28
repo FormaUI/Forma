@@ -18,6 +18,8 @@
 /* The items scroll, the footer does not. min-block-size overrides the flex item's automatic content-based
    minimum, which would otherwise refuse to shrink and push the footer out of the box. */
 .forma-data-view-region {
+    display: flex;
+    flex-direction: column;
     flex: 1 1 auto;
     min-block-size: 0;
     overflow: auto;

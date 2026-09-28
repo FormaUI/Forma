@@ -12,6 +12,10 @@
     "Select Page ({Count})": "בחר עמוד ({Count})",
     "Select All ({Count})": "בחר הכל ({Count})",
     "Clear Selection": "נקה בחירה",
-    "Selection Options": "אפשרויות בחירה"
+    "Selection Options": "אפשרויות בחירה",
+    "Columns": "עמודות",
+    "Scroll Columns Back": "גלילת עמודות אחורה",
+    "Scroll Columns Forward": "גלילת עמודות קדימה",
+    "Resize Frozen Columns": "שינוי רוחב העמודות הקפואות"
   }
 }

@@ -5,7 +5,7 @@
 <tr class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@Grid.GetRowIndex(Item)" @onclick="HandleClickAsync">
     @if (Grid.HasSelectionColumn)
     {
-        <td class="@Grid.SelectionColumnClass" @onclick:stopPropagation>
+        <td class="@Grid.SelectionCellClass" @onclick:stopPropagation>
             @* Dropping the marker takes the editing row out of every selection gesture: the behavior only ever acts on rows that carry one. *@
             @if (!Grid.IsEditing(Item))
             {
@@ -19,10 +19,14 @@
             }
         </td>
     }
-    @foreach (var column in Grid.CollectedColumns)
+    @foreach (var column in Grid.ShownColumns)
     {
-        <td class="@(FormaDataGrid<TItem>.GetCellClass(column))" @key="column">
+        <td class="@Grid.GetCellClass(column)" style="@Grid.GetCellStyle(column)" @key="column">
             @((RenderFragment)(builder => column.CellContent(builder, Item)))
         </td>
+    }
+    @if (Grid.HasColumnsMenu)
+    {
+        <td class="forma-data-grid-menu-column"></td>
     }
 </tr>

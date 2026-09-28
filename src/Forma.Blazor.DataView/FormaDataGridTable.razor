@@ -16,76 +16,92 @@
        aria-busy="@(View.IsBusy ? "true" : null)"
        @attributes="AdditionalAttributes"
        @ref="RootElement">
-    @if (Grid.ShowHeader)
-    {
-        <thead>
-            <tr>
-                @if (Grid.HasSelectionColumn)
-                {
-                    <th scope="col" class="@Grid.SelectionColumnClass">
-                        @if (View.EnableCheckedSelection)
-                        {
-                            <div class="forma-data-grid-master">
-                                @if (View.HasMasterControl && !Grid.HasMasterCaption)
+    @* The header always renders, since the widths are measured from it; a headerless grid collapses it to no height. *@
+    <thead>
+        <tr>
+            @if (Grid.HasSelectionColumn)
+            {
+                <th scope="col" class="@Grid.SelectionCellClass" data-column="selection">
+                    @if (View.EnableCheckedSelection)
+                    {
+                        <div class="forma-data-grid-master">
+                            @if (View.HasMasterControl && !Grid.HasMasterCaption)
+                            {
+                                <FormaCheckBox aria-label="@L["Select All"]"
+                                               Value="@View.AllSelected"
+                                               ValueExpression="() => MasterSelection"
+                                               Indeterminate="@View.PartiallySelected"
+                                               Disabled="@View.IsMasterControlDisabled"
+                                               PreventDefault="true"
+                                               OnClick="HandleMasterClickAsync" />
+                            }
+                            else if (Grid.HasMasterCaption)
+                            {
+                                @if (View.HasMasterControl && Grid.MasterCaptionInteractive)
                                 {
-                                    <FormaCheckBox aria-label="@L["Select All"]"
-                                                   Value="@View.AllSelected"
-                                                   ValueExpression="() => MasterSelection"
-                                                   Indeterminate="@View.PartiallySelected"
-                                                   Disabled="@View.IsMasterControlDisabled"
-                                                   PreventDefault="true"
-                                                   OnClick="HandleMasterClickAsync" />
+                                    <span class="forma-data-grid-master-caption-slot">
+                                        <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-grid-master-caption" Disabled="@View.IsMasterControlDisabled" OnClick="HandleMasterClickAsync">@Grid.MasterCaptionText</FormaButton>
+                                        @* Holds the column at the width of the longer caption, so swapping between them does not resize every column beside it. *@
+                                        <span class="forma-data-grid-master-caption-ghost" aria-hidden="true">@Grid.MasterCaptionAlternateText</span>
+                                    </span>
                                 }
-                                else if (Grid.HasMasterCaption)
+                                else
                                 {
-                                    @if (View.HasMasterControl && Grid.MasterCaptionInteractive)
-                                    {
-                                        <span class="forma-data-grid-master-caption-slot">
-                                            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-grid-master-caption" Disabled="@View.IsMasterControlDisabled" OnClick="HandleMasterClickAsync">@Grid.MasterCaptionText</FormaButton>
-                                            @* Holds the column at the width of the longer caption, so swapping between them does not resize every column beside it. *@
-                                            <span class="forma-data-grid-master-caption-ghost" aria-hidden="true">@Grid.MasterCaptionAlternateText</span>
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="forma-data-grid-master-caption forma-data-grid-master-caption-static">@Grid.MasterCaptionText</span>
-                                    }
+                                    <span class="forma-data-grid-master-caption forma-data-grid-master-caption-static">@Grid.MasterCaptionText</span>
                                 }
-                                @if (View.HasMasterMenu)
-                                {
-                                    <FormaDropDownMenu TriggerOptions="ButtonOptions.MiniGhostIcon" class="forma-data-grid-master-menu" aria-label="@L["Selection Options"]">
-                                        <Trigger>
-                                            <FormaIcon Icon="Glyph.ChevronDown" Size="IconSize.Small" />
-                                        </Trigger>
-                                        <ChildContent>
-                                            <FormaDropDownMenuItem Disabled="@(View.AllSelected || View.IsMasterControlDisabled)" OnClick="Interaction.SelectPageAsync">
-                                                <span>@L["Select Page ({Count})", View.Items.Count]</span>
+                            }
+                            @if (View.HasMasterMenu)
+                            {
+                                <FormaDropDownMenu TriggerOptions="ButtonOptions.MiniGhostIcon" class="forma-data-grid-master-menu" aria-label="@L["Selection Options"]">
+                                    <Trigger>
+                                        <FormaIcon Icon="Glyph.ChevronDown" Size="IconSize.Small" />
+                                    </Trigger>
+                                    <ChildContent>
+                                        <FormaDropDownMenuItem Disabled="@(View.AllSelected || View.IsMasterControlDisabled)" OnClick="Interaction.SelectPageAsync">
+                                            <span>@L["Select Page ({Count})", View.Items.Count]</span>
+                                        </FormaDropDownMenuItem>
+                                        @if (View.CanOfferSet)
+                                        {
+                                            <FormaDropDownMenuItem Disabled="@(View.SelectedCount >= (View.TotalItemCount ?? 0))" OnClick="Interaction.SelectAllAsync">
+                                                <span>@L["Select All ({Count})", View.TotalItemCount ?? 0]</span>
                                             </FormaDropDownMenuItem>
-                                            @if (View.CanOfferSet)
-                                            {
-                                                <FormaDropDownMenuItem Disabled="@(View.SelectedCount >= (View.TotalItemCount ?? 0))" OnClick="Interaction.SelectAllAsync">
-                                                    <span>@L["Select All ({Count})", View.TotalItemCount ?? 0]</span>
-                                                </FormaDropDownMenuItem>
-                                            }
-                                            <FormaDropDownMenuItem Disabled="@(View.SelectedCount == 0)" OnClick="Interaction.ClearSelectionAsync">
-                                                <span>@L["Clear Selection"]</span>
-                                            </FormaDropDownMenuItem>
-                                        </ChildContent>
-                                    </FormaDropDownMenu>
-                                }
-                            </div>
-                        }
-                    </th>
-                }
-                @foreach (var column in Grid.CollectedColumns)
-                {
-                    <th scope="col" class="@Grid.GetHeaderClass(column)" aria-sort="@Grid.GetAriaSort(column)" @key="column">
-                        <FormaDataGridColumnHeader TItem="TItem" Column="column" />
-                    </th>
-                }
-            </tr>
-        </thead>
-    }
+                                        }
+                                        <FormaDropDownMenuItem Disabled="@(View.SelectedCount == 0)" OnClick="Interaction.ClearSelectionAsync">
+                                            <span>@L["Clear Selection"]</span>
+                                        </FormaDropDownMenuItem>
+                                    </ChildContent>
+                                </FormaDropDownMenu>
+                            }
+                        </div>
+                    }
+                </th>
+            }
+            @foreach (var column in Grid.ShownColumns)
+            {
+                <th scope="col" class="@Grid.GetHeaderClass(column)" style="@Grid.GetHeaderStyle(column)" aria-sort="@Grid.GetAriaSort(column)" data-column="@column.ColumnKey" @key="column">
+                    <FormaDataGridColumnHeader TItem="TItem" Column="column" />
+                </th>
+            }
+            @if (Grid.HasColumnsMenu)
+            {
+                <th scope="col" class="forma-data-grid-menu-column" data-column="menu">
+                    <FormaDropDownMenu TriggerOptions="ButtonOptions.MiniGhostIcon" Alignment="PopoverAlignment.End" class="forma-data-grid-columns-menu" aria-label="@L["Columns"]">
+                        <Trigger>
+                            <FormaIcon Icon="Glyph.Columns" Size="IconSize.Small" />
+                        </Trigger>
+                        <ChildContent>
+                            @foreach (var column in Grid.DroppableColumns)
+                            {
+                                <FormaDropDownMenuItem IsSelected="@Grid.IsShown(column)" KeepsOpen="true" OnClick="() => Grid.ToggleColumnAsync(column)" @key="column">
+                                    <span>@column.HeaderContent</span>
+                                </FormaDropDownMenuItem>
+                            }
+                        </ChildContent>
+                    </FormaDropDownMenu>
+                </th>
+            }
+        </tr>
+    </thead>
     @* Each group is a body of its own, its heading a row-group header the rows under it belong to. *@
     @if (View.HasLoaded && View.IsGrouped && View.Items.Count > 0)
     {
@@ -139,11 +155,15 @@
                     <tr class="forma-data-grid-row forma-data-grid-placeholder-row" style="@Grid.PlaceholderStyle" aria-rowindex="@(context.Index + 1)">
                         @if (Grid.HasSelectionColumn)
                         {
-                            <td class="@Grid.SelectionColumnClass"></td>
+                            <td class="@Grid.SelectionCellClass"></td>
                         }
-                        @foreach (var column in Grid.CollectedColumns)
+                        @foreach (var column in Grid.ShownColumns)
                         {
-                            <td class="@(FormaDataGrid<TItem>.GetCellClass(column))" @key="column">@column.PlaceholderTemplate?.Invoke(context)</td>
+                            <td class="@Grid.GetCellClass(column)" style="@Grid.GetCellStyle(column)" @key="column">@column.PlaceholderTemplate?.Invoke(context)</td>
+                        }
+                        @if (Grid.HasColumnsMenu)
+                        {
+                            <td class="forma-data-grid-menu-column"></td>
                         }
                     </tr>
                 </Placeholder>

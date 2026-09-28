@@ -1,6 +1,7 @@
 @namespace Forma.Blazor.Components.DataView
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
+@using Forma.Blazor.Components.Layout
 
 @* The columns render nothing; each registers with the grid as its parameters are set, in the order written, and the table part declared after them renders once they have. *@
 <CascadingValue TValue="FormaDataGrid<TItem>" Value="this" IsFixed="true">
@@ -17,6 +18,11 @@
             </CascadingValue>
         }
 
-        <FormaDataGridTable TItem="TItem" Grid="this" Id="@Id" Class="@RootClass" Style="@RootStyle" @attributes="AdditionalAttributes" @ref="Table" />
+        @* The shell takes the region's height, so the pane inside it is the one box the rows scroll in, both ways. *@
+        <div class="forma-data-grid-shell">
+            <FormaFreezePane Options="PaneOptions" class="forma-data-grid-pane" FrozenExtentChanged="HandleFrozenExtentChanged">
+                <FormaDataGridTable TItem="TItem" Grid="this" Id="@Id" Class="@RootClass" Style="@RootStyle" @attributes="AdditionalAttributes" @ref="Table" />
+            </FormaFreezePane>
+        </div>
     </CascadingValue>
 </CascadingValue>

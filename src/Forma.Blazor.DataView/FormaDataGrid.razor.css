@@ -1,0 +1,22 @@
+/* ============================================================
+   FormaDataGrid — CSS isolation
+   The shell around the grid's pane: it takes the height the
+   data view's region gives, and the pane inside it is the one
+   box the rows scroll in, sideways beneath the frozen columns
+   and down beneath the sticky header. Shares the grid's scope
+   with the table. Logical properties throughout for RTL/LTR
+   parity.
+   ============================================================ */
+
+.forma-data-grid-shell {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-block-size: 0;
+    min-inline-size: 0;
+}
+
+::deep .forma-data-grid-pane {
+    flex: 1 1 auto;
+    min-block-size: 0;
+}

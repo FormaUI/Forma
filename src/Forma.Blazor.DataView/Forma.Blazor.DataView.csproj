@@ -13,6 +13,8 @@
 
     <!-- The grid's parts draw the table its stylesheet styles, so they share the grid's scope rather than each carrying one of their own. -->
     <ItemGroup>
+        <None Update="FormaDataGrid.razor" CssScope="b-forma-data-grid" />
+        <None Update="FormaDataGrid.razor.css" CssScope="b-forma-data-grid" />
         <None Update="FormaDataGridTable.razor" CssScope="b-forma-data-grid" />
         <None Update="FormaDataGridTable.razor.css" CssScope="b-forma-data-grid" />
         <None Update="FormaDataGridRow.razor" CssScope="b-forma-data-grid" />

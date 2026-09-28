@@ -172,6 +172,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
             .Add("forma-freeze-pane")
             .Add(IsBlockAxis ? "forma-freeze-pane-block" : "forma-freeze-pane-inline")
             .Add(ShowsArrows ? "forma-freeze-pane-arrows" : "forma-freeze-pane-scrollbar")
+            .Add("forma-freeze-pane-cross-axis", Options.ScrollsCrossAxis)
             .Add("is-measured", _isMeasured)
             .Add("has-frozen", FrozenExtent > 0)
             .Add("is-scrolled", CanScrollBack);

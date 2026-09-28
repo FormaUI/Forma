@@ -2,6 +2,9 @@
 @using AngleSharp.Dom
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
+@using Forma.Framework.Browser.Interop.Behaviors
+@using Forma.Framework.Css
+@using Forma.Blazor.Components.Layout
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 @code {
@@ -1802,6 +1805,285 @@
         private sealed record GridItem(int Id, string Title);
 
         private sealed record Product(int Id, string Title, string Category);
+
+        // Reports every header cell that names a column as wanting one width, and the container as giving the width asked for.
+        private static ColumnFitReport CreateFitReport(IRenderedComponent<IComponent> cut, double availableWidth, double columnWidth = 100)
+            => new(availableWidth, [.. cut.FindAll("thead th[data-column]").Select(cell => new ColumnWidth(cell.GetAttribute("data-column")!, columnWidth))]);
+
+        private static Task FitAsync(IRenderedComponent<IComponent> cut, double availableWidth, double columnWidth = 100)
+        {
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+
+            return cut.InvokeAsync(() => grid.HandleColumnFitAsync(CreateFitReport(cut, availableWidth, columnWidth)));
+        }
+
+        private static IReadOnlyList<string> GetHeaderTitles(IRenderedComponent<IComponent> cut)
+            => [.. cut.FindAll("thead th .forma-data-grid-header-title").Select(title => title.TextContent)];
+
+        [Fact]
+        public async Task Should_drop_the_lowest_priority_columns_that_do_not_fit()
+        {
+            // Arrange — three columns and the menu column want a hundred each; the width holds three of the four
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Priority="2" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" Priority="1" />
+                            <FormaTemplateColumn Title="Note" Priority="0">-</FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+
+            // Act
+            await FitAsync(cut, availableWidth: 320);
+
+            // Assert — the note left; its header and its cells are gone, and the menu column stands in the rows too
+            Assert.Equal(["Id", "Title"], GetHeaderTitles(cut));
+            Assert.Equal(3, cut.Find("tbody tr").QuerySelectorAll("td").Length);
+            Assert.Single(cut.Find("tbody tr").QuerySelectorAll("td.forma-data-grid-menu-column"));
+        }
+
+        [Fact]
+        public async Task Should_never_drop_a_column_of_the_highest_priority()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Priority="2" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" Priority="1" />
+                            <FormaTemplateColumn Title="Note" Priority="0">-</FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+
+            // Act — narrower than any one column
+            await FitAsync(cut, availableWidth: 50);
+
+            // Assert
+            Assert.Equal(["Id"], GetHeaderTitles(cut));
+        }
+
+        [Fact]
+        public async Task Should_list_the_droppable_columns_in_the_menu_with_the_shown_ones_marked()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Priority="2" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" Priority="1" />
+                            <FormaTemplateColumn Title="Note" Priority="0">-</FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+            await FitAsync(cut, availableWidth: 320);
+
+            // Act
+            cut.Find(".forma-data-grid-columns-menu").Click();
+
+            // Assert — the highest priority is never listed; the title is shown and marked, the note dropped and unmarked
+            var items = cut.FindAll(".forma-dropdown-menu [role^=menuitem]");
+            Assert.Collection(items,
+                item => Assert.Multiple(
+                    () => Assert.Equal("Title", item.QuerySelector("span")!.TextContent),
+                    () => Assert.NotNull(item.QuerySelector(".forma-dropdown-menu-item-check"))),
+                item => Assert.Multiple(
+                    () => Assert.Equal("Note", item.QuerySelector("span")!.TextContent),
+                    () => Assert.Null(item.QuerySelector(".forma-dropdown-menu-item-check"))));
+        }
+
+        [Fact]
+        public async Task Should_show_a_dropped_column_chosen_from_the_menu_until_the_width_changes()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Priority="2" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" Priority="1" />
+                            <FormaTemplateColumn Title="Note" Priority="0">-</FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+            await FitAsync(cut, availableWidth: 320);
+            cut.Find(".forma-data-grid-columns-menu").Click();
+
+            // Act — choose the dropped note
+            cut.FindAll(".forma-dropdown-menu [role^=menuitem]")[1].Click();
+
+            // Assert — the choice wins over the width
+            Assert.Equal(["Id", "Title", "Note"], GetHeaderTitles(cut));
+
+            // Act — the grid is given a different width
+            await FitAsync(cut, availableWidth: 330);
+
+            // Assert — the choice is forgotten and the width decides again
+            Assert.Equal(["Id", "Title"], GetHeaderTitles(cut));
+        }
+
+        [Fact]
+        public async Task Should_drop_a_shown_column_chosen_from_the_menu()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Priority="1" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" Priority="0" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+            await FitAsync(cut, availableWidth: 1000);
+            cut.Find(".forma-data-grid-columns-menu").Click();
+
+            // Act
+            cut.Find(".forma-dropdown-menu [role^=menuitem]").Click();
+
+            // Assert
+            Assert.Equal(["Id"], GetHeaderTitles(cut));
+        }
+
+        [Fact]
+        public void Should_leave_an_invisible_column_out_of_the_grid_and_the_menu()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Priority="1" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" Priority="0" Visible="false" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+
+            // Assert — with the title out, every column left shares the highest priority, so there is no menu either
+            Assert.Equal(["Id"], GetHeaderTitles(cut));
+            Assert.Single(cut.Find("tbody tr").QuerySelectorAll("td"));
+            Assert.Empty(cut.FindAll(".forma-data-grid-columns-menu"));
+        }
+
+        [Fact]
+        public void Should_draw_no_columns_menu_when_every_column_shares_the_highest_priority()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-data-grid-columns-menu"));
+            Assert.Empty(cut.FindAll("th.forma-data-grid-menu-column"));
+        }
+
+        [Fact]
+        public async Task Should_freeze_the_selection_column_with_a_frozen_column_and_place_each_by_the_widths_before_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Frozen="true" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+
+            // Act — every measured cell is forty wide
+            await FitAsync(cut, availableWidth: 1000, columnWidth: 40);
+
+            // Assert — the selection column and the id are frozen, the id starting where the selection column ends; the title is a stop
+            var headers = cut.FindAll("thead th");
+            var cells = cut.Find("tbody tr").QuerySelectorAll("td");
+            Assert.Multiple(
+                () => Assert.Contains(FormaFreezePane.FrozenClass, headers[0].ClassName, StringComparison.Ordinal),
+                () => Assert.Contains(FormaFreezePane.FrozenClass, headers[1].ClassName, StringComparison.Ordinal),
+                () => Assert.Contains("--forma-freeze-pane-frozen-offset: 40px", headers[1].GetAttribute("style"), StringComparison.Ordinal),
+                () => Assert.Contains(FormaFreezePane.StopClass, headers[2].ClassName, StringComparison.Ordinal),
+                () => Assert.Contains(FormaFreezePane.FrozenClass, cells[0].ClassName, StringComparison.Ordinal),
+                () => Assert.Contains("--forma-freeze-pane-frozen-offset: 40px", cells[1].GetAttribute("style"), StringComparison.Ordinal),
+                () => Assert.Contains(FormaFreezePane.StopClass, cells[2].ClassName, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_size_a_column_by_its_declared_width()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Width="@CssLength.FromRem(6)" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+
+            // Assert
+            Assert.Equal("inline-size: 6rem;", cut.Find("thead th").GetAttribute("style"));
+        }
+
+        [Fact]
+        public void Should_keep_the_header_row_for_its_widths_when_the_header_is_off()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid TItem="GridItem" ShowHeader="false" Dense="true">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+
+            // Assert — the row is there to measure from; the stylesheet collapses it to no height
+            var table = cut.Find("table");
+            Assert.Multiple(
+                () => Assert.Contains("forma-data-grid-headerless", table.ClassName, StringComparison.Ordinal),
+                () => Assert.Contains("forma-data-grid-dense", table.ClassName, StringComparison.Ordinal),
+                () => Assert.Single(table.QuerySelectorAll("thead tr")));
+        }
     }
 
     public sealed class InlineEditing

@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -19,6 +21,18 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
 
     /// <summary>Where the column's content sits in its cells.</summary>
     [Parameter] public ColumnAlign Align { get; set; }
+
+    /// <summary>How much the column matters when the width runs out: a lower number leaves first, and the highest priority among the columns never leaves.</summary>
+    [Parameter] public int Priority { get; set; }
+
+    /// <summary>Whether the column stays at the start of the pane while the others scroll sideways beneath it; frozen columns are written first.</summary>
+    [Parameter] public bool Frozen { get; set; }
+
+    /// <summary>Whether the column is drawn at all; off, it is out of the grid and its columns menu alike.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>The width the column takes, where its content does not size it well.</summary>
+    [Parameter] public CssLength? Width { get; set; }
 
     /// <summary>Whether the grid sorts by this column when its header is pressed; absent, the column decides for itself from what it shows.</summary>
     [Parameter] public bool? Sortable { get; set; }
@@ -40,6 +54,9 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
 
     /// <summary>What a cell of this column draws while its row's window has not loaded, in a virtualizing grid.</summary>
     [Parameter] public RenderFragment<PlaceholderContext>? PlaceholderTemplate { get; set; }
+
+    /// <summary>The value the grid names the column by in its markup and its measurements, for its own lifetime.</summary>
+    internal string ColumnKey { get; } = $"column-{Guid.NewGuid():N}";
 
     /// <summary>Whether the column can be sorted by, from <see cref="Sortable"/> or the column's own default.</summary>
     public bool IsSortable

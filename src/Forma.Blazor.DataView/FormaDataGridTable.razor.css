@@ -16,6 +16,50 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* Laid out at its content's own width for the one synchronous read that measures what each column wants. */
+.forma-data-grid-measuring {
+    inline-size: max-content;
+}
+
+/* A headerless grid keeps its header row for the widths it holds and measures, at no height of its own. */
+.forma-data-grid-headerless thead tr {
+    visibility: collapse;
+}
+
+/* ---------- the frozen region and the menu column ---------- */
+
+/* A frozen header cell sticks both ways, over the header cells sliding beneath it. */
+.forma-data-grid thead th.forma-freeze-pane-frozen {
+    z-index: 2;
+}
+
+/* A frozen cell is opaque in its row's tone, so the cells sliding beneath it do not show through. */
+.forma-data-grid td.forma-freeze-pane-frozen {
+    background: var(--forma-data-grid-frozen-bg-color, var(--backdrop-flat-bg-color));
+}
+
+/* A row's tint is translucent, so a frozen cell lays it over the opaque backdrop rather than over the cells beneath. */
+.forma-data-grid .forma-data-grid-row-selected td.forma-freeze-pane-frozen {
+    background:
+        linear-gradient(var(--forma-data-grid-row-selected-bg-color, var(--primary-subtle-color)), var(--forma-data-grid-row-selected-bg-color, var(--primary-subtle-color)))
+        var(--forma-data-grid-frozen-bg-color, var(--backdrop-flat-bg-color));
+}
+
+@media (hover: hover) {
+    .forma-data-grid .forma-data-grid-row:hover td.forma-freeze-pane-frozen {
+        background:
+            linear-gradient(var(--forma-data-grid-row-hover-bg-color, var(--hover-bg-color)), var(--forma-data-grid-row-hover-bg-color, var(--hover-bg-color)))
+            var(--forma-data-grid-frozen-bg-color, var(--backdrop-flat-bg-color));
+    }
+}
+
+/* The menu column holds one mini button at the header's inline end and nothing in the rows. */
+.forma-data-grid-menu-column {
+    inline-size: calc(var(--target-size-sm) + 2 * var(--space-1));
+    padding-inline: var(--space-1);
+    text-align: end;
+}
+
 /* ---------- header ---------- */
 
 
@@ -71,12 +115,15 @@
 /* ---------- cells ---------- */
 
 
+/* A row is one line on its target step, so a cell never wraps; a table wider than its pane scrolls beneath the
+   frozen columns instead, which is also what lets a column the reader brought back overflow rather than squeeze the rest. */
 .forma-data-grid-cell {
     padding-block: var(--space-2);
     padding-inline: var(--space-3);
     border-block-end: 1px solid var(--border-color);
     text-align: start;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .forma-data-grid-align-center {

@@ -14,6 +14,9 @@ public sealed record FreezePaneOptions
     /// <summary>Scrolls inline content with a wheel turned anywhere over the pane, keeping the turn from the page while the pointer stays there.</summary>
     public bool PageOnWheelGesture { get; init; } = true;
 
+    /// <summary>Lets the viewport scroll along the other axis too, for content that outgrows the pane both ways; off, panning along that axis stays with the page.</summary>
+    public bool ScrollsCrossAxis { get; init; }
+
     /// <summary>Accessible name for the arrow scrolling toward the start, replacing the pane's own.</summary>
     public string? ScrollBackLabel { get; init; }
 

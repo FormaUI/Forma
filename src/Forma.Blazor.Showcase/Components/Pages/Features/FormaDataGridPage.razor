@@ -164,6 +164,63 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Fitting a Width"]</h2>
+    <p class="description">@L["The grid is given a narrow box. Columns leave by priority, the lowest first, until the rest fit; the columns menu at the header's end lists the ones that can leave, marks the ones shown, and brings a dropped column back until the width changes."]</p>
+    <div class="demo-box demo-box-narrow">
+        <FormaDataView Items="_shipments" PageSize="5" AddressOptions='@(new DataViewAddressOptions("fit"))'>
+            <FormaDataGrid>
+                <Columns>
+                    <FormaPropertyColumn Property="@(s => s.Id)" Priority="4" />
+                    <FormaPropertyColumn Property="@(s => s.Customer)" Priority="4" />
+                    <FormaPropertyColumn Property="@(s => s.Product)" Priority="3" />
+                    <FormaPropertyColumn Property="@(s => s.City)" Priority="1" />
+                    <FormaPropertyColumn Property="@(s => s.Country)" Priority="0" />
+                    <FormaPropertyColumn Property="@(s => s.Amount)" Format="C0" Priority="2" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Frozen Columns"]</h2>
+    <p class="description">@L["Every column shares the highest priority, so none leaves and the table scrolls sideways instead; the id and the customer are frozen and stay put while the rest slide beneath them, moved by the pane's arrows, and the edge of the frozen region can be dragged."]</p>
+    <div class="demo-box demo-box-narrow">
+        <FormaDataView Items="_shipments" PageSize="5" EnableCheckedSelection="true" AddressOptions='@(new DataViewAddressOptions("frozen"))'>
+            <FormaDataGrid>
+                <Columns>
+                    <FormaPropertyColumn Property="@(s => s.Id)" Frozen="true" />
+                    <FormaPropertyColumn Property="@(s => s.Customer)" Frozen="true" />
+                    <FormaPropertyColumn Property="@(s => s.Product)" />
+                    <FormaPropertyColumn Property="@(s => s.City)" />
+                    <FormaPropertyColumn Property="@(s => s.Country)" />
+                    <FormaPropertyColumn Property="@(s => s.Amount)" Format="C0" />
+                    <FormaPropertyColumn Property="@(s => s.Shipped)" Format="d" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Picker"]</h2>
+    <p class="description">@L["The grid as a picker: its header off, its rows dense, and a row chosen by pointer or keyboard, the way a modal lists what a reader picks from."]</p>
+    <div class="demo-box demo-box-narrow demo-box-bounded">
+        <FormaDataView TItem="Employee" Items="_employees" EnablePagination="false" EnableItemSelection="true" AddressOptions='@(new DataViewAddressOptions("picker"))' SelectedItems="_pickedEmployees" SelectedItemsChanged="HandlePickedChanged">
+            <ChildContent>
+                <FormaDataGrid TItem="Employee" ShowHeader="false" Dense="true">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(e => e.Name)" />
+                        <FormaPropertyColumn Property="@(e => e.Department)" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["Picked: {Name}", _pickedEmployees.FirstOrDefault()?.Name ?? L["none"].Value]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Row Actions"]</h2>
     <p class="description">@L["An action column is an ordinary TemplateColumn — the grid adds no button components of its own. In a real app these navigate to an editor page or raise a confirm dialog."]</p>
     <div class="demo-box">

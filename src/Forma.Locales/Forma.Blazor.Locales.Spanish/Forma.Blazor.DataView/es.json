@@ -12,6 +12,10 @@
     "Select Page ({Count})": "Seleccionar Página ({Count})",
     "Select All ({Count})": "Seleccionar Todo ({Count})",
     "Clear Selection": "Borrar Selección",
-    "Selection Options": "Opciones de Selección"
+    "Selection Options": "Opciones de Selección",
+    "Columns": "Columnas",
+    "Scroll Columns Back": "Desplazar Columnas Atrás",
+    "Scroll Columns Forward": "Desplazar Columnas Adelante",
+    "Resize Frozen Columns": "Redimensionar las Columnas Fijadas"
   }
 }

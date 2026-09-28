@@ -63,6 +63,19 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private static readonly DataViewGrouping<Employee> _departmentGrouping = DataViewGrouping<Employee>.By(employee => employee.Department);
 
+    private static readonly IQueryable<Shipment> _shipments = new[]
+    {
+        new Shipment(1001, "Acme Corporation", "Anvils", "Springfield", "United States", 4200, new DateOnly(2026, 3, 2)),
+        new Shipment(1002, "Globex", "Reactors", "Cypress Creek", "United States", 128000, new DateOnly(2026, 3, 9)),
+        new Shipment(1003, "Initech", "Printers", "Austin", "United States", 1350, new DateOnly(2026, 3, 11)),
+        new Shipment(1004, "Umbrella", "Samples", "Raccoon City", "Japan", 9800, new DateOnly(2026, 3, 15)),
+        new Shipment(1005, "Wonka Industries", "Confectionery", "Nottingham", "United Kingdom", 760, new DateOnly(2026, 3, 20)),
+        new Shipment(1006, "Stark Industries", "Arc reactors", "Malibu", "United States", 250000, new DateOnly(2026, 3, 22)),
+        new Shipment(1007, "Tyrell", "Replicants", "Los Angeles", "United States", 51000, new DateOnly(2026, 3, 28)),
+    }.AsQueryable();
+
+    private IReadOnlyList<Employee> _pickedEmployees = [];
+
     private IReadOnlyList<Employee> _selectedEmployees = [];
 
     private IReadOnlyList<Employee> _rowSelectedEmployees = [];
@@ -128,6 +141,9 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private void HandleRowSelectionChanged(IReadOnlyList<Employee> selected)
         => _rowSelectedEmployees = selected;
+
+    private void HandlePickedChanged(IReadOnlyList<Employee> picked)
+        => _pickedEmployees = picked;
 
     private void HandleModeSelectionChanged(IReadOnlyList<GridItem> selected)
         => _modeSelectedItems = selected;
@@ -254,6 +270,8 @@ public sealed partial class FormaDataGridPage : ComponentBase
     private sealed record Employee(int Id, string Name, string Department, bool IsActive);
 
     private sealed record GridItem(int Id, string Title);
+
+    private sealed record Shipment(int Id, string Customer, string Product, string City, string Country, decimal Amount, DateOnly Shipped);
 
     private sealed class Assignment
     {
