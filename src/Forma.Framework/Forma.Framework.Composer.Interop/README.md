@@ -52,4 +52,4 @@ and disposes it from its `DisposeAsyncCore`.
 
 ## License
 
-MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md). The assembly ships inside the Composer package.
+Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE). The assembly ships inside the Composer package.

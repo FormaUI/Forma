@@ -95,4 +95,4 @@ A packed value outside `0x000000`–`0xFFFFFF` or an opacity outside 0–1 throw
 
 ## License
 
-MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md).
+Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

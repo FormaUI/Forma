@@ -249,4 +249,5 @@ Where to read before working:
 
 ## License
 
-Forma is MIT licensed — see [`LICENSE.md`](LICENSE.md).
+Forma is licensed under the [Apache License 2.0](LICENSE). This supersedes any license an
+earlier release was published under: every release is available under the Apache License 2.0.

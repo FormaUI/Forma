@@ -20,17 +20,14 @@
         <PackageId>FormaUI.NET-$(MSBuildProjectName.Substring(6))</PackageId>
     </PropertyGroup>
 
-    <!-- Every project ships the root MIT license if it gets packed, unless it named its own source file first. -->
-    <PropertyGroup Condition="'$(PackageLicenseSourceFile)' == ''">
-        <PackageLicenseSourceFile>$(MSBuildThisFileDirectory)LICENSE.md</PackageLicenseSourceFile>
-    </PropertyGroup>
-
+    <!-- Every project is licensed under Apache 2.0 and ships the root license and notice if it gets packed. -->
     <PropertyGroup>
-        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="$(PackageLicenseSourceFile)" Pack="true" PackagePath="\" Visible="false" />
+        <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" Visible="false" />
+        <None Include="$(MSBuildThisFileDirectory)NOTICE" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 
     <!-- A project with a README beside it ships that as its package readme, unless it named a different one first. -->

@@ -153,4 +153,4 @@ public sealed class PhotoItemsProvider(IPhotoCatalog catalog, Func<string?> curr
 
 ## License
 
-MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md).
+Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

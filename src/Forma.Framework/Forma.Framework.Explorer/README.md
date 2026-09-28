@@ -60,5 +60,5 @@ The state behind those contracts that is the explorer's own:
 
 ## License
 
-MIT, under the repository's [`LICENSE.md`](../../../LICENSE.md). The assembly ships inside
+Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE). The assembly ships inside
 `Forma.Blazor.Explorer`.
