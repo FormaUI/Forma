@@ -13,6 +13,16 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>The items on screen, in the order shown.</summary>
     IReadOnlyList<TItem> Items { get; }
 
+    /// <summary>The items on screen under the headings they fold under, in the order shown; empty when nothing groups them.</summary>
+    IReadOnlyList<DataViewGroup<TItem>> Groups { get; }
+
+    /// <summary>Whether the items on screen stand under group headings.</summary>
+    bool IsGrouped { get; }
+
+    /// <summary>Whether <paramref name="group"/> is folded, its items hidden under its heading.</summary>
+    /// <param name="group">The group.</param>
+    bool IsFolded(DataViewGroup<TItem> group);
+
     /// <summary>Whether the source has answered at least once.</summary>
     bool HasLoaded { get; }
 

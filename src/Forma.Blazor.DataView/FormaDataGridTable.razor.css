@@ -36,6 +36,38 @@
     white-space: nowrap;
 }
 
+/* ---------- groups ---------- */
+
+/* A heading row spans every column; its button is the library's, laid out to fill the cell and read from its start. */
+.forma-data-grid-group-cell {
+    padding: 0;
+    border-block-end: 1px solid var(--border-color);
+    background: var(--forma-data-grid-group-bg-color, var(--input-bg-color));
+    text-align: start;
+}
+
+/* Named with the button's own class, so this rule outranks the button's centering whatever order the bundles load in. */
+::deep .forma-button.forma-data-grid-group-heading {
+    inline-size: 100%;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    padding-inline: var(--space-3);
+    border-radius: 0;
+    color: var(--text-primary-color);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-align: start;
+}
+
+::deep .forma-data-grid-group-chevron {
+    color: var(--quiet-text-color);
+}
+
+::deep .forma-data-grid-group-count {
+    color: var(--text-secondary-color);
+    font-weight: 400;
+}
+
 /* ---------- cells ---------- */
 
 

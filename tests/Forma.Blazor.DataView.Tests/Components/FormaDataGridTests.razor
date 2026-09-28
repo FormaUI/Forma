@@ -34,6 +34,236 @@
             .Select(id => new GridItem(id, $"Item {id}"))
             .AsQueryable();
 
+        // Six products in two categories, listed with the categories interleaved so only a grouping brings each together.
+        private static IQueryable<Product> CreateProducts() => new[]
+        {
+            new Product(1, "Hammer", "Tools"),
+            new Product(2, "Atlas", "Books"),
+            new Product(3, "Wrench", "Tools"),
+            new Product(4, "Primer", "Books"),
+            new Product(5, "Saw", "Tools"),
+            new Product(6, "Reader", "Books"),
+        }.AsQueryable();
+
+        [Fact]
+        public void Should_draw_a_heading_with_the_name_and_count_over_each_group()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
+
+            // Assert — the groups come smallest key first, each heading a row-group header over its rows
+            var groups = cut.FindAll("tbody.forma-data-grid-group");
+            Assert.Multiple(
+                () => Assert.Equal("Books", groups[0].QuerySelector(".forma-data-grid-group-name")!.TextContent),
+                () => Assert.Equal("3", groups[0].QuerySelector(".forma-data-grid-group-count")!.TextContent),
+                () => Assert.Equal("rowgroup", groups[0].QuerySelector("th")!.GetAttribute("scope")),
+                () => Assert.Equal("true", groups[0].QuerySelector("button")!.GetAttribute("aria-expanded")),
+                () => Assert.Equal(3, groups[0].QuerySelectorAll("tr.forma-data-grid-row").Length),
+                () => Assert.Equal("Tools", groups[1].QuerySelector(".forma-data-grid-group-name")!.TextContent));
+        }
+
+        [Fact]
+        public void Should_sort_within_each_group()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
+
+            // Act
+            cut.Find("thead button").Click();
+            cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
+
+            // Assert — the groups hold their order; the rows sort inside them
+            var titles = cut.FindAll("tbody.forma-data-grid-group tr.forma-data-grid-row td:last-child").Select(cell => cell.TextContent).ToList();
+            Assert.Equal(["Atlas", "Primer", "Reader", "Hammer", "Saw", "Wrench"], titles);
+        }
+
+        [Fact]
+        public void Should_fold_a_group_from_its_heading_and_open_it_again()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
+
+            // Act
+            cut.Find("tbody.forma-data-grid-group button").Click();
+
+            // Assert
+            var folded = cut.FindAll("tbody.forma-data-grid-group")[0];
+            Assert.Equal("false", folded.QuerySelector("button")!.GetAttribute("aria-expanded"));
+            Assert.Empty(folded.QuerySelectorAll("tr.forma-data-grid-row"));
+            Assert.Equal(3, cut.FindAll("tbody.forma-data-grid-group")[1].QuerySelectorAll("tr.forma-data-grid-row").Length);
+
+            // Act — pressed again, the group opens
+            cut.Find("tbody.forma-data-grid-group button").Click();
+
+            // Assert
+            Assert.Equal(3, cut.FindAll("tbody.forma-data-grid-group")[0].QuerySelectorAll("tr.forma-data-grid-row").Length);
+        }
+
+        [Fact]
+        public void Should_keep_a_fold_across_a_reload()
+        {
+            // Arrange — the fold is the engine's, so a sort that reloads the items leaves it standing
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
+            cut.Find("tbody.forma-data-grid-group button").Click();
+
+            // Act
+            cut.Find("thead button").Click();
+            cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
+
+            // Assert
+            Assert.Equal("false", cut.Find("tbody.forma-data-grid-group button").GetAttribute("aria-expanded"));
+        }
+
+        [Fact]
+        public void Should_open_every_group_again_under_a_new_grouping()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
+            cut.Find("tbody.forma-data-grid-group button").Click();
+
+            // Act
+            var dataView = cut.FindComponent<FormaDataView<Product>>();
+            dataView.Render(parameters => parameters.Add(p => p.GroupBy, DataViewGrouping<Product>.By(product => product.Category, category => category.ToUpperInvariant())));
+            cut.WaitForState(() => cut.Find(".forma-data-grid-group-name").TextContent == "BOOKS");
+
+            // Assert
+            Assert.Equal("true", cut.Find("tbody.forma-data-grid-group button").GetAttribute("aria-expanded"));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_rows_on_screen_until_a_grouping_s_items_arrive()
+        {
+            // Arrange — the first window answers at once; the one the grouping asks for is held
+            using var ctx = new FormaDataGridTests();
+            var held = new TaskCompletionSource<DataViewPage<Product>>();
+            var requests = 0;
+            DataViewItemsProvider<Product> provider = request => ++requests == 1
+                ? ValueTask.FromResult(new DataViewPage<Product>(CreateProducts().ToArray(), 6))
+                : new ValueTask<DataViewPage<Product>>(held.Task);
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 6);
+
+            // Act
+            var dataView = cut.FindComponent<FormaDataView<Product>>();
+            dataView.Render(parameters => parameters.Add(p => p.GroupBy, DataViewGrouping<Product>.By(product => product.Category)));
+
+            // Assert — the rows stand ungrouped until the grouped window lands
+            Assert.Equal(6, cut.FindAll("tr.forma-data-grid-row").Count);
+            Assert.Empty(cut.FindAll("tbody.forma-data-grid-group"));
+
+            // Act
+            await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>(CreateProducts().OrderBy(product => product.Category).ToArray(), 6)));
+
+            // Assert
+            Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent));
+        }
+
+        [Fact]
+        public void Should_ask_a_provider_for_the_grouping_s_key_before_the_sort_s()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<DataViewSortedProperty>? properties = null;
+            DataViewItemsProvider<Product> provider = request =>
+            {
+                properties = request.GetSortedProperties();
+                return ValueTask.FromResult(new DataViewPage<Product>(request.ApplySorting(CreateProducts()).ToArray(), 6));
+            };
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" GroupBy="@(DataViewGrouping<Product>.ByDescending(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
+
+            // Act
+            cut.Find("thead button").Click();
+            cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
+
+            // Assert — the provider sorted by the group first, so the groups came largest key first with the rows sorted inside them
+            Assert.Collection(properties!,
+                property => Assert.Equal(("Category", DataViewSortDirection.Descending), (property.PropertyName, property.Direction)),
+                property => Assert.Equal(("Title", DataViewSortDirection.Ascending), (property.PropertyName, property.Direction)));
+            Assert.Equal("Tools", cut.Find(".forma-data-grid-group-name").TextContent);
+        }
+
+        [Fact]
+        public void Should_throw_when_grouping_a_virtualizing_data_view()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" Virtualize="true" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
+
+            // Assert
+            Assert.Contains(nameof(FormaDataView<Product>.GroupBy), ex.Message, StringComparison.Ordinal);
+        }
+
         [Fact]
         public void Should_not_render_checkboxes_by_default()
         {
@@ -1570,6 +1800,8 @@
                 .Select(marker => int.Parse(marker.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture))];
 
         private sealed record GridItem(int Id, string Title);
+
+        private sealed record Product(int Id, string Title, string Category);
     }
 
     public sealed class InlineEditing

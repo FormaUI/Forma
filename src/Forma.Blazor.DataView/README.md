@@ -56,7 +56,9 @@ the renderer; a host that registers nothing gets the in-memory one all the same.
 `Items` is any `IQueryable<TItem>`; the engine sorts, counts and takes the page in the store the
 queryable stands on. `ItemsProvider` stands in for it where the store answers one window at a time,
 taking a `DataViewRequest` and returning a `DataViewPage`. A prefix in `AddressOptions` keeps the
-sort and the page in the address, apart from any other data view on the page.
+sort and the page in the address, apart from any other data view on the page. `GroupBy` folds the
+items under headings, a `DataViewGrouping` naming the key and the name a heading shows; a heading
+folds its group away and opens it again, and a folded group stays folded until the grouping changes.
 
 A checkbox column comes with `EnableCheckedSelection`, and selection through the rows themselves,
 by pointer and keyboard, with `EnableItemSelection`; both report through `SelectedItems` and

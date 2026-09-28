@@ -61,6 +61,8 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private int _nextFeedId = 201;
 
+    private static readonly DataViewGrouping<Employee> _departmentGrouping = DataViewGrouping<Employee>.By(employee => employee.Department);
+
     private IReadOnlyList<Employee> _selectedEmployees = [];
 
     private IReadOnlyList<Employee> _rowSelectedEmployees = [];

@@ -66,6 +66,8 @@
     "Status": "סטטוס",
     "Active": "פעיל",
     "Inactive": "לא פעיל",
+    "Grouped Rows": "שורות מקובצות",
+    "The rows fold under a heading per department, each a button that folds its group away and opens it again; a sort orders the rows inside their groups.": "השורות מתקפלות תחת כותרת לכל מחלקה, שכל אחת מהן היא כפתור שמקפל את הקבוצה שלה ופותח אותה שוב; מיון מסדר את השורות בתוך הקבוצות שלהן.",
     "Many Rows": "שורות רבות",
     "{ManyRowCount} rows paginated at {ManyPageSize} per page.": "{ManyRowCount} שורות מחולקות ל-{ManyPageSize} בכל עמוד.",
     "Virtualized": "וירטואליזציה",

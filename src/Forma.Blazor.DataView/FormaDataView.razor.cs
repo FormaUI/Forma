@@ -29,11 +29,14 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private readonly Dictionary<string, IDataViewViewport> _viewports = [with(StringComparer.Ordinal)];
     private readonly ParameterState<IReadOnlyList<TItem>?> _selectedItemsParameter = new();
     private readonly ParameterState<int> _pageParameter = new();
+    private readonly ParameterState<DataViewGrouping<TItem>?> _groupByParameter = new();
+    private readonly HashSet<object?> _foldedGroupKeys = [];
 
     private ItemKeyComparer<TItem> _keyComparer = default!;
     private Func<TItem, object>? _keyedBy;
     private HashSet<TItem> _selectedSet = [];
     private IReadOnlyList<TItem> _items = [];
+    private List<DataViewGroup<TItem>> _groups = [];
     private int? _totalItemCount;
     private bool _hasLoaded;
     private bool _isBusy;
@@ -42,6 +45,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private int _loadedPage;
     private int _loadedPageSize;
     private bool _loadedPagination;
+    private DataViewGrouping<TItem>? _loadedGrouping;
     private CancellationTokenSource? _loadCancellation;
     private string? _sortName;
     private DataViewSort<TItem>? _sort;
@@ -116,6 +120,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>The index of the item the data view opens on while virtualizing, applied once; zero opens at the start.</summary>
     [Parameter] public int InitialItemIndex { get; set; }
 
+    /// <summary>The grouping the items fold under, each group a heading over its members; null shows the items ungrouped.</summary>
+    [Parameter] public DataViewGrouping<TItem>? GroupBy { get; set; }
+
     /// <summary>Gives every item a box to check, with a master control over them.</summary>
     [Parameter] public bool EnableCheckedSelection { get; set; }
 
@@ -140,6 +147,23 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     IReadOnlyList<TItem> IDataView<TItem>.Items
         => _items;
+
+    /// <inheritdoc />
+    public IReadOnlyList<DataViewGroup<TItem>> Groups
+        => _groups;
+
+    // The groups are the ones read from the items on screen, which a new grouping replaces only once its items arrive.
+    /// <inheritdoc />
+    public bool IsGrouped
+        => _groups.Count > 0;
+
+    /// <inheritdoc />
+    public bool IsFolded(DataViewGroup<TItem> group)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+
+        return _foldedGroupKeys.Contains(group.Key);
+    }
 
     /// <inheritdoc />
     public bool HasLoaded
@@ -284,6 +308,19 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         ArgumentOutOfRangeException.ThrowIfNegative(OverscanCount);
         ArgumentOutOfRangeException.ThrowIfNegative(InitialItemIndex);
 
+        // A virtualizing view draws its windows flat, with no place for a heading between them.
+        if (GroupBy is not null && Virtualize && !EnablePagination)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(GroupBy)} is not supported with {nameof(Virtualize)}; group a paged data view instead.");
+        }
+
+        // Every group opens again under a new grouping, whose keys mean something else.
+        if (_groupByParameter.Update(GroupBy))
+        {
+            _foldedGroupKeys.Clear();
+        }
+
         if (EnablePagination)
         {
             ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(PageSize, 0);
@@ -339,7 +376,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         if (!ReferenceEquals(source, _loadedSource)
             || _loadedPage != _page
             || _loadedPageSize != PageSize
-            || _loadedPagination != EnablePagination)
+            || _loadedPagination != EnablePagination
+            || !ReferenceEquals(_loadedGrouping, GroupBy))
         {
             await LoadAsync();
         }
@@ -374,6 +412,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Asks the source again for the window being shown, which is how a host reports that the records changed.</summary>
     public Task RefreshDataAsync()
         => LoadAsync();
+
+    /// <summary>Folds the group keyed <paramref name="key"/> away under its heading, its items hidden until it opens again.</summary>
+    /// <param name="key">The group's key.</param>
+    public Task FoldGroupAsync(object? key)
+        => _foldedGroupKeys.Add(key) ? NotifyStateAsync() : Task.CompletedTask;
+
+    /// <summary>Opens the group keyed <paramref name="key"/> again, its items shown under its heading.</summary>
+    /// <param name="key">The group's key.</param>
+    public Task UnfoldGroupAsync(object? key)
+        => _foldedGroupKeys.Remove(key) ? NotifyStateAsync() : Task.CompletedTask;
 
     /// <summary>Brings the item at <paramref name="index"/> on screen: a paged data view moves to its page, a virtualizing view scrolls it to the start of its viewport.</summary>
     /// <param name="index">The index of the item in the whole set.</param>
@@ -551,6 +599,14 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => _itemTokens.GetToken(ItemKey(item), item);
 
     /// <inheritdoc />
+    public Task ToggleGroupAsync(DataViewGroup<TItem> group)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+
+        return IsFolded(group) ? UnfoldGroupAsync(group.Key) : FoldGroupAsync(group.Key);
+    }
+
+    /// <inheritdoc />
     public async Task ToggleSelectionAsync(TItem item, bool selected)
     {
         if (selected == IsSelected(item))
@@ -702,6 +758,37 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private HashSet<TItem> CreateSelection(IEnumerable<TItem> items)
         => new(items, _keyComparer);
 
+    // The items arrive with each group's members standing together, so a group is a run of one key.
+    private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)
+    {
+        if (GroupBy is not { } grouping || items.Count == 0)
+        {
+            return [];
+        }
+
+        List<DataViewGroup<TItem>> groups = [];
+        List<TItem> members = [];
+        var key = grouping.GetKey(items[0]);
+
+        foreach (var item in items)
+        {
+            var itemKey = grouping.GetKey(item);
+
+            if (!Equals(itemKey, key))
+            {
+                groups.Add(new DataViewGroup<TItem>(key, grouping.GetName(key), members));
+                members = [];
+                key = itemKey;
+            }
+
+            members.Add(item);
+        }
+
+        groups.Add(new DataViewGroup<TItem>(key, grouping.GetName(key), members));
+
+        return groups;
+    }
+
     private async Task ReplaceSelectionAsync(HashSet<TItem> updated)
     {
         _selectedSet = updated;
@@ -752,6 +839,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         _loadedPage = _page;
         _loadedPageSize = PageSize;
         _loadedPagination = EnablePagination;
+        _loadedGrouping = GroupBy;
 
         try
         {
@@ -766,6 +854,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             }
 
             _items = window.Items;
+            _groups = CreateGroups(window.Items);
             _hasLoaded = true;
             await SetTotalItemCountAsync(window.TotalCount);
 
@@ -803,7 +892,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     private async ValueTask<DataViewPage<TItem>> LoadWindowCoreAsync(int startIndex, int? count, CancellationToken cancellationToken)
     {
-        var request = new DataViewRequest<TItem>(startIndex, count, _sort, _sortDirection, cancellationToken);
+        var request = new DataViewRequest<TItem>(startIndex, count, GroupBy, _sort, _sortDirection, cancellationToken);
 
         if (ItemsProvider is { } provider)
         {

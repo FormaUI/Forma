@@ -86,6 +86,35 @@
             </tr>
         </thead>
     }
+    @* Each group is a body of its own, its heading a row-group header the rows under it belong to. *@
+    @if (View.HasLoaded && View.IsGrouped && View.Items.Count > 0)
+    {
+        @foreach (var group in View.Groups)
+        {
+            var isFolded = View.IsFolded(group);
+
+            <tbody class="forma-data-grid-group" @key="group.Key">
+                <tr class="forma-data-grid-group-row">
+                    <th scope="rowgroup" colspan="@Grid.ColumnCount" class="forma-data-grid-group-cell">
+                        <FormaButton Variant="ButtonVariant.Ghost" class="forma-data-grid-group-heading" aria-expanded="@(isFolded ? "false" : "true")" OnClick="() => Interaction.ToggleGroupAsync(group)">
+                            <FormaIcon Icon="@(isFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-grid-group-chevron" />
+                            <span class="forma-data-grid-group-name">@group.Name</span>
+                            <span class="forma-data-grid-group-count">@group.Items.Count</span>
+                        </FormaButton>
+                    </th>
+                </tr>
+                @if (!isFolded)
+                {
+                    @foreach (var item in group.Items)
+                    {
+                        <FormaDataGridRow TItem="TItem" Item="item" @key="View.ItemKey(item)" />
+                    }
+                }
+            </tbody>
+        }
+    }
+    else
+    {
     <tbody>
         @if (!View.HasLoaded)
         {
@@ -134,4 +163,5 @@
             }
         }
     </tbody>
+    }
 </table>

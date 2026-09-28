@@ -26,6 +26,10 @@ public interface IDataViewInteraction<TItem>
     /// <summary>Returns the items to the source's own order.</summary>
     Task ClearSortAsync();
 
+    /// <summary>Folds <paramref name="group"/> away under its heading, or opens it again.</summary>
+    /// <param name="group">The group whose heading was pressed.</param>
+    Task ToggleGroupAsync(DataViewGroup<TItem> group);
+
     /// <summary>Selects or clears <paramref name="item"/> through its own control, which the selection bounds may refuse.</summary>
     /// <param name="item">The item whose control changed.</param>
     /// <param name="selected">Whether the item is to be selected.</param>

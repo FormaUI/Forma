@@ -54,6 +54,23 @@ public sealed class DataViewSort<TItem>
         return ordered;
     }
 
+    /// <summary>Orders <paramref name="ordered"/> further by every key, deciding between items the order before it ranks alike, as written or with every key reversed.</summary>
+    /// <param name="ordered">The items already ordered.</param>
+    /// <param name="direction">Whether the keys apply as written or reversed.</param>
+    public IOrderedQueryable<TItem> ThenApply(IOrderedQueryable<TItem> ordered, DataViewSortDirection direction)
+    {
+        ArgumentNullException.ThrowIfNull(ordered);
+
+        var reversed = direction == DataViewSortDirection.Descending;
+
+        foreach (var key in _keys)
+        {
+            ordered = key.ThenOrder(ordered, reversed);
+        }
+
+        return ordered;
+    }
+
     /// <summary>The keys as the members they read, in order, each with the direction it applies in as written or reversed.</summary>
     /// <param name="direction">Whether the keys apply as written or reversed.</param>
     public IReadOnlyList<DataViewSortedProperty> GetSortedProperties(DataViewSortDirection direction)

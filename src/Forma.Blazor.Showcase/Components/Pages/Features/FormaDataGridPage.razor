@@ -260,6 +260,25 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Grouped Rows"]</h2>
+    <p class="description">@L["The rows fold under a heading per department, each a button that folds its group away and opens it again; a sort orders the rows inside their groups."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="Employee" Items="_employees" EnablePagination="false" GroupBy="_departmentGrouping" AddressOptions='@(new DataViewAddressOptions("grouped"))'>
+            <FormaDataGrid>
+                <Columns>
+                    <FormaPropertyColumn Property="@(e => e.Id)" Sortable="true" />
+                    <FormaPropertyColumn Property="@(e => e.Name)" Sortable="true" />
+                    <FormaTemplateColumn Title="@L["Status"]">
+                        <FormaStatusBadge Text="@(context.IsActive ? L["Active"] : L["Inactive"])"
+                                          Status="@(context.IsActive ? "active" : "inactive")" />
+                    </FormaTemplateColumn>
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Many Rows"]</h2>
     <div class="demo-box">
         <FormaDataView Items="_manyItems" PageSize="ManyPageSize" AddressOptions='@(new DataViewAddressOptions("many"))'>

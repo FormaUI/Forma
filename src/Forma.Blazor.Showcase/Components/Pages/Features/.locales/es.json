@@ -67,6 +67,8 @@
     "Status": "Estado",
     "Active": "Activo",
     "Inactive": "Inactivo",
+    "Grouped Rows": "Filas Agrupadas",
+    "The rows fold under a heading per department, each a button that folds its group away and opens it again; a sort orders the rows inside their groups.": "Las filas se pliegan bajo un encabezado por departamento, cada uno un botón que pliega su grupo y lo abre de nuevo; un orden ordena las filas dentro de sus grupos.",
     "Many Rows": "Muchas Filas",
     "{ManyRowCount} rows paginated at {ManyPageSize} per page.": "{ManyRowCount} filas paginadas de a {ManyPageSize} por página.",
     "Virtualized": "Virtualizada",
