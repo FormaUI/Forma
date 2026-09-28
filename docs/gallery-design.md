@@ -9,7 +9,7 @@ Inspiration is the iOS Photos app's Library/Albums split, renamed to fit this re
 
 ## Settled: architecture
 
-`FormaGallery` stands on its own. It is its own top-level component, shipping as its own package beside the explorer, `Forma.Blazor.Gallery`, with an engine of its own bundled inside it, and it never references `Forma.Blazor.Explorer` or the explorer's engine.
+`FormaGallery` stands on its own. It is its own top-level component, shipping as its own package beside the explorer, `Forma.Blazor.Gallery`, and it never references `Forma.Blazor.Explorer` or the explorer's engine. It browses through the library's data view, `FormaDataView` in the cards view at its compact density with the items grouped by date, so its source, selection, paging, address and states are the engine's; what the gallery keeps for itself is what is about media rather than browsing: favorites, categories, collections, and the lightbox, slideshow and playback it opens an item into.
 
 What it shares with the explorer is the model both browse, `Forma.Framework.Catalog`: a host supplies `ICatalogItem`s in full or an `ICatalogProvider` answering one window at a time, and the gallery lists the items that are images or videos. One provider therefore serves both surfaces, and a host that already feeds the explorer feeds the gallery with nothing new. Folders are `ICatalogFolderItem`s with the parentage the folder tree already indexes, and the gallery's collections are those folders. The requests it hands back, the ceilings it keeps, the view over a held collection, the window over a provider, the folder tree, the history and the selection are the package's too, so the gallery writes none of that bookkeeping a second time.
 

@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**25 components not yet implemented.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
+**29 components not yet implemented.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -41,6 +41,11 @@ Forma.Blazor/Components/
     └── FormaLaunchBar
 
 src/
+├── (4) Forma.Blazor.DataView/
+│   ├── FormaDataCards
+│   ├── FormaDataList
+│   ├── FormaDataTree
+│   └── FormaDataView
 └── (1) Forma.Blazor.Gallery/
     └── FormaGallery
 ```
@@ -61,8 +66,9 @@ The components still to build, in the order dependency and reuse suggest.
 | 8 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
 | 9 | `FormaSortMenu`, `FormaViewButton` | The two controls that exist for the managers' tile grids — a layout with no column headers to sort by and two layouts to switch between. The explorer composes them in place of the sort control and view switch it drew for itself |
 | 10 | `FormaLaunchBar` | The bar a workspace is launched from, hosting `FormaRestArea` beside its launchers, so the windows and the way back to them stand in one place |
-| 11 | `FormaGallery` | A media-only surface of its own over the items package the explorer shares, built from the library's components with nothing of the explorer's, so it comes after any chrome both need has been abstracted into `Forma.Blazor` and before the editor that its tiles would launch — see [the gallery design](gallery-design.md) |
-| 12 | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
+| 11 | `FormaDataView`, `FormaDataList`, `FormaDataCards`, `FormaDataTree` | The engine every browsing surface shares, its source, selection, sort, page, address, hierarchy, grouping and states, with the list, the cards and the tree views beside the grid it rebuilds; the explorer adopts it and the gallery is built on it, so it comes before the gallery — see [the data view design](data-view-design.md) |
+| 12 | `FormaGallery` | A media-only surface of its own over the items package the explorer shares, browsing through the data view in its cards view and keeping for itself what is about media, so it comes after the data view and before the editor that its tiles would launch — see [the gallery design](gallery-design.md) |
+| 13 | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
 
 ## Components
 
@@ -111,6 +117,42 @@ A number input with the currency symbol beside it.
 |---|---|
 | **Old pattern** | `.form-addon` wrapping input with currency symbol overlay |
 | **Used in** | product (price, sale price, cost), store-settings (min order, shipping), coupons (discount amount) |
+
+### `FormaDataCards`
+
+A view over the data view drawing each item as a card, its image, its name and what the caller places beneath, packed across the width, and the image and name alone at its compact density. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The image library's tile grid in Coi, and the explorer's thumbnails view, each drawing tiles of its own |
+| **Used in** | The explorer's cards view, the gallery's browsing, and any page that shows records as tiles |
+
+### `FormaDataList`
+
+A view over the data view drawing items down the height, a depiction, a name and the caller's secondary text per row, flowing on into further columns. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The explorer's list view, which flows names on its own |
+| **Used in** | The explorer's list view, and any page that shows records as a compact list |
+
+### `FormaDataTree`
+
+A view over the data view drawing the hierarchy as nodes under their parents, each opened, closed and selected from the keyboard, with a template per node and a busy state while its children load. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The page tree in Coi's page editor, and the explorer's folder-tree sidebar, which draws a tree of its own |
+| **Used in** | The explorer's sidebar, and any page that navigates a hierarchy |
+
+### `FormaDataView`
+
+The engine that browses a set of items, a queryable or a provider, with its selection, sort, page, address, grouping, virtualization and states, handing what is on screen to the view that presents it. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The same browsing built three times: `asp:GridView` over a repository data source on every list page, the explorer's content area, and the gallery's planned engine |
+| **Used in** | Every list page under `FormaDataGrid`, the explorer's content area, and the gallery |
 
 ### `FormaDeleteButton`
 

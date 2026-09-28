@@ -205,7 +205,7 @@ A yes-or-no dialog opened through `IConfirmDialogService`, answering the caller 
 
 ### `FormaDataGrid<TItem>`
 
-A sortable, pageable table over QuickGrid with checked and row selection, inline editing and a footer of its own. Its design is [data-grid-design.md](data-grid-design.md).
+A sortable, pageable table over QuickGrid with checked and row selection, inline editing and a footer of its own. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|
