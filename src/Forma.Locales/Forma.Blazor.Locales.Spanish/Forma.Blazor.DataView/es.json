@@ -1,0 +1,12 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaDataView": {
+    "No items.": "No hay elementos.",
+    "Loading": "Cargando"
+  },
+  "FormaDataGrid": {
+    "Select All": "Seleccionar Todo",
+    "Select Row": "Seleccionar Fila",
+    "Column Options": "Opciones de Columna"
+  }
+}

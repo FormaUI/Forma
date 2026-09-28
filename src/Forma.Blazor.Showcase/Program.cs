@@ -1,4 +1,5 @@
 using Forma.Blazor;
+using Forma.Blazor.Components.DataView;
 using Forma.Blazor.Showcase;
 using Forma.Blazor.Showcase.Components.Pages.Menus;
 using Forma.Blazor.Showcase.Features.Media;
@@ -33,6 +34,7 @@ builder.Services.AddFormaUI(new InputRouterOptions
     PreemptiveRoutes = [new InputRoute("app.palette", KeyBinding.Shortcut("k"))],
     Routes = [new InputRoute("app.help", new KeyBinding("F1"))],
 });
+builder.Services.AddFormaDataView();
 builder.Services.AddScoped<ShowcaseInputActions>();
 builder.Services.AddScoped<IInputActionHandler>(services => services.GetRequiredService<ShowcaseInputActions>());
 builder.Services.AddFormaShareNetworks();

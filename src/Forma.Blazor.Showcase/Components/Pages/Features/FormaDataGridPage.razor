@@ -1,0 +1,270 @@
+@page "/data-grid"
+@attribute [ShowcasePage("FormaDataGrid")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Inputs
+
+<h1>FormaDataGrid</h1>
+<p class="description">@L["A table that pages, sorts and selects over any queryable set of items. The grid keeps its state in the address, so a page number or a sort order survives a refresh and can be shared as a link."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic Grid"]</h2>
+    <div class="demo-box">
+        <FormaDataView Items="_employees" PageSize="5" AddressOptions='@(new DataViewAddressOptions("basic"))'>
+            <FormaDataGrid>
+                <Columns>
+                    <FormaPropertyColumn Property="@(e => e.Id)" Sortable="true" />
+                    <FormaPropertyColumn Property="@(e => e.Name)" Sortable="true" />
+                    <FormaPropertyColumn Property="@(e => e.Department)" Sortable="true" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Mass-Select Checkboxes"]</h2>
+    <div class="demo-box">
+        <FormaDataView TItem="Employee" Items="_employees" PageSize="5" EnableCheckedSelection="true" AddressOptions='@(new DataViewAddressOptions("selectable"))' SelectedItems="_selectedEmployees" SelectedItemsChanged="HandleSelectionChanged">
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(e => e.Id)" />
+                        <FormaPropertyColumn Property="@(e => e.Name)" />
+                        <FormaPropertyColumn Property="@(e => e.Department)" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{Selected} row(s) selected.", _selectedEmployees.Count]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Row Selection"]</h2>
+    <p class="description">@L["Click a row to select only it; Ctrl/Cmd-click to toggle one row; Shift-click or Shift with arrow keys to select a range."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="Employee" Items="_employees" PageSize="5" EnableItemSelection="true" AddressOptions='@(new DataViewAddressOptions("row-selectable"))' SelectedItems="_rowSelectedEmployees" SelectedItemsChanged="HandleRowSelectionChanged">
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(e => e.Id)" />
+                        <FormaPropertyColumn Property="@(e => e.Name)" />
+                        <FormaPropertyColumn Property="@(e => e.Department)" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{Selected} row(s) selected.", _rowSelectedEmployees.Count]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Select in a Cell"]</h2>
+    <p class="description">@L["A select inside a cell of a row-selection grid. While it is open its arrows walk its own options; otherwise the grid's arrows move the selection."]</p>
+    <div class="demo-box">
+        <EditForm Model="_assignments" FormName="cell-select-demo">
+            <FormaDataView TItem="Assignment" Items="@_assignments.AsQueryable()" PageSize="5" EnableItemSelection="true" AddressOptions='@(new DataViewAddressOptions("cell-select"))' SelectedItems="_assignmentSelection" SelectedItemsChanged="HandleAssignmentSelectionChanged">
+                <ChildContent>
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(a => a.Id)" />
+                            <FormaPropertyColumn Property="@(a => a.Name)" />
+                            <FormaTemplateColumn Title="@L["Priority"]" Context="assignment">
+                                <FormaSelect TValue="int?" @bind-Value="assignment.Priority" Options="_priorityOptions" Label="@L["Priority"]" />
+                            </FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </ChildContent>
+                <Status>@L["{Selected} row(s) selected.", _assignmentSelection.Count]</Status>
+            </FormaDataView>
+        </EditForm>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Selection Limits and Captions"]</h2>
+    <p class="description">@L["At most {SelectionLimit} rows; the master toggle is a text caption instead of a checkbox.", SelectionLimit]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="Employee" Items="_employees" PageSize="5" EnableCheckedSelection="true" AddressOptions='@(new DataViewAddressOptions("limited"))' CheckedSelectionOptions="_limitsOptions" SelectedItems="_limitsSelectedEmployees" SelectedItemsChanged="HandleLimitsSelectionChanged">
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(e => e.Id)" />
+                        <FormaPropertyColumn Property="@(e => e.Name)" />
+                        <FormaPropertyColumn Property="@(e => e.Department)" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{Selected} row(s) selected.", _limitsSelectedEmployees.Count]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Row Click-Through"]</h2>
+    <div class="demo-box">
+        <FormaDataView TItem="Employee" Items="_employees" PageSize="5" OnItemClick="HandleRowClick" AddressOptions='@(new DataViewAddressOptions("clickable"))'>
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(e => e.Id)" />
+                        <FormaPropertyColumn Property="@(e => e.Name)" />
+                        <FormaPropertyColumn Property="@(e => e.Department)" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["Last clicked: {Name}", _lastClickedEmployee?.Name ?? L["none"].Value]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+
+<div class="demo-section">
+    <h2>@L["Custom Cell Rendering and Row Styling"]</h2>
+    <p class="description">@L["A TemplateColumn renders a FormaStatusBadge per row; RowClass dims inactive rows."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="Employee" Items="_employees" PageSize="5" ItemClass="GetRowClass" AddressOptions='@(new DataViewAddressOptions("styled"))'>
+            <FormaDataGrid>
+                <Columns>
+                    <FormaPropertyColumn Property="@(e => e.Id)" />
+                    <FormaPropertyColumn Property="@(e => e.Name)" />
+                    <FormaTemplateColumn Title="@L["Status"]">
+                        <FormaStatusBadge Text="@(context.IsActive ? L["Active"] : L["Inactive"])"
+                                          Status="@(context.IsActive ? "active" : "inactive")" />
+                    </FormaTemplateColumn>
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Row Actions"]</h2>
+    <p class="description">@L["An action column is an ordinary TemplateColumn — the grid adds no button components of its own. In a real app these navigate to an editor page or raise a confirm dialog."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="Employee" Items="_employees" PageSize="5" AddressOptions='@(new DataViewAddressOptions("actions"))'>
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(e => e.Id)" />
+                        <FormaPropertyColumn Property="@(e => e.Name)" />
+                        <FormaTemplateColumn Title="@L["Actions"]">
+                            <div class="demo-row-actions">
+                                <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
+                                             OnClick="() => RecordAction(RowAction.View, context)">@L["View"]</FormaButton>
+                                <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
+                                             OnClick="() => RecordAction(RowAction.Edit, context)">@L["Edit"]</FormaButton>
+                                <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
+                                             OnClick="() => RecordAction(RowAction.Delete, context)">@L["Delete"]</FormaButton>
+                            </div>
+                        </FormaTemplateColumn>
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["Last action: {action}", _lastAction ?? L["none yet"].Value]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">    <h2>@L["Dialog Details"]</h2>
+    <p class="description">@L["A single FormaDialog instance is shared by every row; the action column tells it which row to show."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="Employee" Items="_employees" PageSize="5" AddressOptions='@(new DataViewAddressOptions("dialog"))'>
+            <FormaDataGrid>
+                <Columns>
+                    <FormaPropertyColumn Property="@(e => e.Id)" />
+                    <FormaPropertyColumn Property="@(e => e.Name)" />
+                    <FormaPropertyColumn Property="@(e => e.Department)" />
+                    <FormaTemplateColumn Title="@L["Actions"]">
+                        <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
+                                     OnClick="() => OpenDetails(context)">@L["View"]</FormaButton>
+                    </FormaTemplateColumn>
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+
+        <FormaDialog Opened="_isDetailsOpen" OnClose="CloseDetails" Title="@_detailsEmployee?.Name">
+            <Body>
+                @if (_detailsEmployee is { } employee)
+                {
+                    <dl class="detail-list">
+                        <dt>@L["ID"]</dt>
+                        <dd>@employee.Id</dd>
+                        <dt>@L["Name"]</dt>
+                        <dd>@employee.Name</dd>
+                        <dt>@L["Department"]</dt>
+                        <dd>@employee.Department</dd>
+                    </dl>
+                }
+            </Body>
+        </FormaDialog>
+    </div>
+</div>
+
+<div class="demo-section">    <h2>@L["Inline Editing Inside a Form"]</h2>
+    <p class="description">@L["FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number and date here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="EditableEmployee" Items="@_editableEmployees.AsQueryable()" EnablePagination="false" AddressOptions='@(new DataViewAddressOptions("editing"))'>
+            <FormaDataGrid TItem="EditableEmployee" @ref="_editGrid" EnableInlineEditing="true" CloneForEdit="CloneEmployee" OnRowSave="SaveEmployee">
+                <Columns>
+                    <FormaPropertyColumn Property="@(e => e.Id)" Editable="false" />
+                    <FormaPropertyColumn Property="@(e => e.Name)" Title="@L["Name"]" />
+                    <FormaPropertyColumn Property="@(e => e.Department)" Title="@L["Department"]" />
+                    <FormaPropertyColumn Property="@(e => e.StartDate)" Title="@L["Start date"]" Format="d" />
+                    <FormaPropertyColumn Property="@(e => e.Salary)" Title="@L["Salary"]" Format="N0" />
+                    <FormaTemplateColumn Title="@L["Actions"]">
+                        <div class="demo-row-actions">
+                            @if (_editGrid?.IsEditing(context) == true)
+                            {
+                                <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
+                                             OnClick="() => _editGrid!.SaveEditAsync()">@L["Save"]</FormaButton>
+                                <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
+                                             OnClick="() => _editGrid!.CancelEditAsync()">@L["Cancel"]</FormaButton>
+                            }
+                            else
+                            {
+                                <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini" Disabled="@(_editGrid?.EditingItem is not null)"
+                                             OnClick="() => _editGrid!.BeginEdit(context)">@L["Edit"]</FormaButton>
+                            }
+                        </div>
+                    </FormaTemplateColumn>
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Many Rows"]</h2>
+    <div class="demo-box">
+        <FormaDataView Items="_manyItems" PageSize="ManyPageSize" AddressOptions='@(new DataViewAddressOptions("many"))'>
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(item => item.Id)" Sortable="true" />
+                        <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{ManyRowCount} rows paginated at {ManyPageSize} per page.", ManyRowCount, ManyPageSize]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Virtualized"]</h2>
+    <p class="description">@L["Pagination is off and the surrounding box has a fixed height, so the rows scroll inside the grid while the header and footer stay put. Only the rows near the viewport are rendered."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView Items="_hugeItems" EnablePagination="false" Virtualize="true" AddressOptions='@(new DataViewAddressOptions("virtualized"))'>
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(item => item.Id)" />
+                        <FormaPropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{HugeRowCount:N0} rows, scrolled rather than paged.", HugeRowCount]</Status>
+        </FormaDataView>
+    </div>
+</div>

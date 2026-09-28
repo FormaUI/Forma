@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <ItemGroup>
+        <PackageReference Include="AngleSharp" />
+        <PackageReference Include="bunit" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
+    </ItemGroup>
+
+</Project>

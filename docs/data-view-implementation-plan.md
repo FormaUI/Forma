@@ -4,7 +4,11 @@ The plan for building the data view that [the data view design](data-view-design
 
 ## Status
 
-Nothing of the design has landed. The grid in the tree is the one the previous data grid design described, a wrapper over the framework's grid inside the product's collections category, and the phases below replace it with the engine and its views in a project of their own, under the grid's familiar name for the grid.
+Phase 1 has landed: the `Forma.Blazor.DataView` project and its test project, the engine with its contract pair, the query executor, the provider records, the address, the footer, the scroll region, and the grid as its first view with the derivable column base, the property and template columns, the header with its sort buttons and options surfaces, and the rows it renders itself. The framework's grid is gone from the product, the showcase and every test project. The selection, the row tokens, the height reservation and inline editing moved over with it as they were, so every scenario the grid's showcase page shows renders as before, under the engine's name for the selection and the address.
+
+Three things landed differently from the plan's sketch. The table is a part of the grid, `FormaDataGridTable`, declared after the columns so that it renders once they have registered, rather than a deferral helper of its own; the same part pattern gives the grid its row and its column header, and the three parts share one stylesheet scope through the project file, since the grid's rules reach markup its parts render. Basic virtualization landed with the grid rather than waiting for phase 3, because the showcase's virtualized scenario needed it to keep rendering as it did; the anchoring set, the placeholder template and the announced count remain phase 3's. And the views are the data view's content, so a data view that also sets `Status` wraps its view in `ChildContent`, as Razor requires once a second fragment is named.
+
+Two things phase 2 changes on purpose. The master control still selects the whole set, as the wrapper did, and checked and item selection still require `Items`; the select-all modes and selection over a provider are phase 2's. The files sit flat in the project under one namespace, as the explorer's do, rather than in the per-view folders first sketched, and the showcase pages sit in the `Features` category beside the explorer's and the composer's.
 
 ## What the rewrite starts from
 
@@ -14,7 +18,7 @@ The grid's tests cover selection, bounds, paging, the footer, the scroll region,
 
 ## File layout
 
-The layout the phases land in; every entry is planned until the phase that lands it does.
+The layout as built; an entry marked planned is one the design still calls for and no phase has landed yet.
 
 ```text
 src/Forma.Blazor.DataView/                     # namespace Forma.Blazor.Components.DataView
@@ -35,35 +39,35 @@ src/Forma.Blazor.DataView/                     # namespace Forma.Blazor.Componen
 ├── SelectionBoundary.cs
 ├── SelectionBounds.cs
 ├── SelectionRejected.cs
-├── Grid/
-│   ├── FormaDataGrid.razor                    # the grid view
-│   ├── FormaDataGrid.razor.cs
-│   ├── FormaDataGrid.razor.css
-│   ├── FormaColumnBase.cs                     # the derivable column base
-│   ├── FormaPropertyColumn.cs
-│   ├── FormaTemplateColumn.cs
-│   └── RowEditSession.cs
-├── List/
-│   ├── FormaDataList.razor
-│   ├── FormaDataList.razor.cs
-│   └── FormaDataList.razor.css
-├── Cards/
-│   ├── FormaDataCards.razor
-│   ├── FormaDataCards.razor.cs
-│   └── FormaDataCards.razor.css
-├── Tree/
-│   ├── FormaDataTree.razor
-│   ├── FormaDataTree.razor.cs
-│   └── FormaDataTree.razor.css
-├── .locales/                                  # the data view's strings per culture
+├── FormaDataGrid.razor                        # the grid view
+├── FormaDataGrid.razor.cs
+├── FormaDataGridTable.razor                   # the table the grid draws, a part; the three parts share one stylesheet scope
+├── FormaDataGridTable.razor.css
+├── FormaDataGridRow.razor                     # one row, a part
+├── FormaDataGridRow.razor.css
+├── FormaDataGridColumnHeader.razor            # a header cell's content, a part
+├── FormaDataGridColumnHeader.razor.css
+├── FormaColumnBase.cs                         # the derivable column base
+├── FormaPropertyColumn.cs
+├── FormaTemplateColumn.cs
+├── ColumnAlign.cs
+├── RowEditSession.cs
+├── ItemKeyComparer.cs
+├── ItemTokenTable.cs
+├── FormaDataList.razor                        # planned (phase 5)
+├── FormaDataCards.razor                       # planned (phase 5)
+├── FormaDataTree.razor                        # planned (phase 5)
+├── .locale.json                               # the root namespace, for a host laying the assembly's files out by it
 └── README.md
+src/Forma.Locales/Forma.Blazor.Locales.{Language}/Forma.Blazor.DataView/
+└── {culture}.json                             # the engine's and the views' strings
 tests/Forma.Blazor.DataView.Tests/             # mirrors the source tree
-src/Forma.Blazor.Showcase/Components/Pages/DataView/
-├── FormaDataViewPage.razor                    # the engine with a view switch over all three
+src/Forma.Blazor.Showcase/Components/Pages/Features/
 ├── FormaDataGridPage.razor                    # moved from the collections pages
-├── FormaDataListPage.razor
-├── FormaDataCardsPage.razor
-└── FormaDataTreePage.razor
+├── FormaDataViewPage.razor                    # planned (phase 5): the engine with a view switch over every view
+├── FormaDataListPage.razor                    # planned (phase 5)
+├── FormaDataCardsPage.razor                   # planned (phase 5)
+└── FormaDataTreePage.razor                    # planned (phase 5)
 ```
 
 The project is laid out as the explorer and the composer are: a Razor class library referencing the product, the interop assemblies its behaviors need, and the Framework assemblies it compiles against, packed as `FormaUI.NET-Blazor.DataView` with the product's package as its dependency. The sortable list stays in the product's collections category; only the grid and what belongs to it move. The explorer's project and, later, the gallery's take a dependency on the data view's package as consumers of it; the data view references neither.
@@ -72,7 +76,7 @@ The project is laid out as the explorer and the composer are: a Razor class libr
 
 Each phase ends buildable, tested and reviewable, with a showcase page showing every state the phase adds.
 
-1. **The project, the engine and the grid.** The `Forma.Blazor.DataView` project and its test project; the engine with its contract pair and view registration, the source with its query executor, the request and page records, the provider delegate, cancellation, the busy and empty states, refresh and the page giving way; the sort and page with the bindable page and the reported total; the address with the active view; the footer; the scroll region with the height reservation; and the grid as the first view, with the derivable column base, the property and template columns, the header with its sort buttons and options surfaces, the rows the grid renders itself, sorting by header with compound keys and the default sort column, and the grid's tests moved over. The framework's grid leaves the product, the showcase and the test projects with this phase, the catalog's structure lists the project, and the grid's stylesheet reaches nothing through `::deep` that is not a library component. Gate: every scenario the grid's showcase page shows today renders as it did, and every existing test passes against the owned markup.
+1. **The project, the engine and the grid.** ✅ The `Forma.Blazor.DataView` project and its test project; the engine with its contract pair and view registration, the source with its query executor, the request and page records, the provider delegate, cancellation, the busy and empty states, refresh and the page giving way; the sort and page with the bindable page and the reported total; the address with the active view; the footer; the scroll region with the height reservation; and the grid as the first view, with the derivable column base, the property and template columns, the header with its sort buttons and options surfaces, the rows the grid renders itself, sorting by header with compound keys and the default sort column, and the grid's tests moved over. The framework's grid leaves the product, the showcase and the test projects with this phase, the catalog's structure lists the project, and the grid's stylesheet reaches nothing through `::deep` that is not a library component. Gate: every scenario the grid's showcase page shows today renders as it did, and every existing test passes against the owned markup.
 2. **Selection.** Checked and pointer selection as the engine's, drawn by the grid, with the four select-all modes and the menu as the default, the selection methods, selection over a provider, and the selection remembered by key across paging and sorting. Gate: the selection scenarios in each mode, a provider with checked selection, and a selection kept across a page change.
 3. **Virtualization and grouping.** The framework's list virtualization over a set and over a provider in the view's units, with the placeholder, the anchoring set, the initial item, scrolling to an item and the item count announced; and grouping with its headings, folding and the fold kept across views. Gate: a hundred thousand rows scroll in a bounded box, open on a given row and hold their viewport when rows are prepended; a grouped grid folds and unfolds from the keyboard.
 4. **Fitting a width and inline editing.** Column priority, the width measurement, the columns menu, frozen columns through the freeze pane, the dense rows and the headerless grid; and the edit session and the property column's editors moved over, swapped for the library's inputs. Gate: a narrow scenario drops its lowest columns and lists them, a frozen scenario holds its name column while scrolling, the picker scenario shows the headerless dense grid, and the editing scenario runs inside a form.

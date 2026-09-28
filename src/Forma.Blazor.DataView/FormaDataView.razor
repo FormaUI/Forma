@@ -1,0 +1,36 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaElementBase
+@attribute [CascadingTypeParameter(nameof(TItem))]
+@typeparam TItem where TItem : notnull
+
+<div id="@Id"
+     data-rid="@Context.RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
+    @* Fixed: the engine announces its changes through the view contract, so the cascade never has to change value under a view. *@
+    <CascadingValue TValue="IDataView<TItem>" Value="this" IsFixed="true">
+        <CascadingValue TValue="IDataViewInteraction<TItem>" Value="this" IsFixed="true">
+            <div class="forma-data-view-region" @ref="_regionElement">
+                @ChildContent
+            </div>
+        </CascadingValue>
+    </CascadingValue>
+
+    @if (HasFooter)
+    {
+        <div class="forma-data-view-footer">
+            @if (ShowsPaginator)
+            {
+                <FormaPagination TotalItems="@(TotalItemCount ?? 0)"
+                                 PageSize="PageSize"
+                                 CurrentPage="@_page"
+                                 Options="PaginationOptions"
+                                 OnPageChanged="HandlePageChangedAsync" />
+            }
+
+            <div class="forma-data-view-status" role="status">@Status</div>
+        </div>
+    }
+</div>

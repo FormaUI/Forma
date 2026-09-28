@@ -14,11 +14,13 @@
 
             // Act
             ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
 
             // Assert
             var identifiers = ctx.JSInterop.Invocations.Select(invocation => invocation.Identifier).ToList();
@@ -39,11 +41,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
 
             // Assert
@@ -58,11 +62,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Assert
@@ -78,12 +84,13 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act
@@ -102,12 +109,13 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
@@ -125,13 +133,13 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                SelectedItems="CreateItems(3).ToArray()"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" SelectedItems="CreateItems(3).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
@@ -149,11 +157,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
 
             // Assert
@@ -168,11 +178,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(25)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(25)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
 
             // Assert
@@ -184,18 +196,18 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            GridItemsProvider<GridItem> provider = request => ValueTask.FromResult(
-                GridItemsProviderResult.From(
-                    CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(),
-                    totalItemCount: 25));
+            DataViewItemsProvider<GridItem> provider = request => ValueTask.FromResult(
+                new DataViewPage<GridItem>(CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(), 25));
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid ItemsProvider="provider" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView ItemsProvider="provider" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Item 10", StringComparison.Ordinal));
 
             // Assert
@@ -211,11 +223,13 @@
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataGrid TGridItem="GridItem" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>));
+                @<FormaDataView TItem="GridItem" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
 
             // Assert
             Assert.Contains("exactly one", ex.Message, StringComparison.Ordinal);
@@ -226,16 +240,18 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            GridItemsProvider<GridItem> provider = _ => ValueTask.FromResult(
-                GridItemsProviderResult.From(Array.Empty<GridItem>(), 0));
+            DataViewItemsProvider<GridItem> provider = _ => ValueTask.FromResult(
+                new DataViewPage<GridItem>(Array.Empty<GridItem>(), 0));
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" ItemsProvider="provider" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>));
+                @<FormaDataView Items="CreateItems(3)" ItemsProvider="provider" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
 
             // Assert
             Assert.Contains("exactly one", ex.Message, StringComparison.Ordinal);
@@ -246,19 +262,21 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            GridItemsProvider<GridItem> provider = _ => ValueTask.FromResult(
-                GridItemsProviderResult.From(Array.Empty<GridItem>(), 0));
+            DataViewItemsProvider<GridItem> provider = _ => ValueTask.FromResult(
+                new DataViewPage<GridItem>(Array.Empty<GridItem>(), 0));
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataGrid ItemsProvider="provider" PageSize="10" EnableCheckedSelection="true">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>));
+                @<FormaDataView ItemsProvider="provider" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
 
             // Assert
-            Assert.Contains(nameof(FormaDataGrid<GridItem>.EnableCheckedSelection), ex.Message, StringComparison.Ordinal);
+            Assert.Contains(nameof(FormaDataView<GridItem>.EnableCheckedSelection), ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -267,21 +285,23 @@
             // Arrange
             using var ctx = new FormaDataGridTests();
             var calls = 0;
-            GridItemsProvider<GridItem> provider = _ =>
+            DataViewItemsProvider<GridItem> provider = _ =>
             {
                 calls++;
-                return ValueTask.FromResult(GridItemsProviderResult.From(CreateItems(3).ToArray(), 3));
+                return ValueTask.FromResult(new DataViewPage<GridItem>(CreateItems(3).ToArray(), 3));
             };
 
             var cut = ctx.Render(
-                @<FormaDataGrid ItemsProvider="provider" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView ItemsProvider="provider" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => calls > 0);
             var before = calls;
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
 
             // Act
             await cut.InvokeAsync(grid.RefreshDataAsync);
@@ -298,16 +318,20 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <ChildContent>
+                        <FormaDataGrid>
+                            <Columns>
+                                <FormaPropertyColumn Property="@(item => item.Title)" />
+                            </Columns>
+                        </FormaDataGrid>
+                    </ChildContent>
                     <Status>3 rows</Status>
-                </FormaDataGrid>);
-            cut.WaitForState(() => cut.FindAll(".forma-data-grid-status").Count == 1);
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-status").Count == 1);
 
             // Assert
-            Assert.Equal("3 rows", cut.Find(".forma-data-grid-status").TextContent);
+            Assert.Equal("3 rows", cut.Find(".forma-data-view-status").TextContent);
         }
 
         [Fact]
@@ -318,15 +342,17 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-data-grid-footer"));
+            Assert.Empty(cut.FindAll(".forma-data-view-footer"));
         }
 
         [Fact]
@@ -337,13 +363,17 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <ChildContent>
+                        <FormaDataGrid>
+                            <Columns>
+                                <FormaPropertyColumn Property="@(item => item.Title)" />
+                            </Columns>
+                        </FormaDataGrid>
+                    </ChildContent>
                     <Status>3 rows</Status>
-                </FormaDataGrid>);
-            cut.WaitForState(() => cut.FindAll(".forma-data-grid-status").Count == 1);
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-status").Count == 1);
 
             // Assert
             Assert.Empty(cut.FindAll("nav.forma-pagination"));
@@ -357,11 +387,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(25)" PageSize="10" EnablePagination="false">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnablePagination="false">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Item 25", StringComparison.Ordinal));
 
             // Assert
@@ -376,11 +408,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(25)" PageSize="10" EnablePagination="false" Virtualize="true">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnablePagination="false" Virtualize="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
 
             // Assert
@@ -395,11 +429,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" EnablePagination="false">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" EnablePagination="false">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
 
             // Assert
@@ -414,15 +450,17 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
 
             // Assert
-            Assert.Single(cut.FindAll(".forma-data-grid-scroller table"));
+            Assert.Single(cut.FindAll(".forma-data-view-region table"));
         }
 
         [Fact]
@@ -433,16 +471,20 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(25)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
+                @<FormaDataView Items="CreateItems(25)" PageSize="10">
+                    <ChildContent>
+                        <FormaDataGrid>
+                            <Columns>
+                                <FormaPropertyColumn Property="@(item => item.Title)" />
+                            </Columns>
+                        </FormaDataGrid>
+                    </ChildContent>
                     <Status>25 rows</Status>
-                </FormaDataGrid>);
-            cut.WaitForState(() => cut.FindAll(".forma-data-grid-footer").Count == 1);
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-footer").Count == 1);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-data-grid-scroller .forma-data-grid-footer"));
+            Assert.Empty(cut.FindAll(".forma-data-view-region .forma-data-view-footer"));
         }
 
         [Fact]
@@ -453,11 +495,13 @@
 
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>));
+                @<FormaDataView Items="CreateItems(3)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
         }
 
         [Fact]
@@ -466,18 +510,20 @@
             // Arrange — page forward so a stale index would survive the round trip
             using var ctx = new FormaDataGridTests();
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(25)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(25)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Count == 1);
             cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
             cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
             cut.WaitForState(() => cut.Markup.Contains("Item 25", StringComparison.Ordinal));
 
             // Act
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
+            var grid = cut.FindComponent<FormaDataView<GridItem>>();
             grid.Render(parameters => parameters.Add(p => p.EnablePagination, false));
             grid.Render(parameters => parameters.Add(p => p.EnablePagination, true));
             cut.WaitForState(() => cut.FindAll("tbody tr").Count == 10);
@@ -488,6 +534,33 @@
         }
 
         [Fact]
+        public async Task Should_keep_its_page_when_the_host_re_renders()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
+            var pager = cut.FindComponent<FormaPagination>();
+            await cut.InvokeAsync(() => pager.Instance.OnPageChanged.InvokeAsync(2));
+            cut.WaitForState(() => cut.Markup.Contains("Item 11", StringComparison.Ordinal));
+
+            // Act
+            var dataView = cut.FindComponent<FormaDataView<GridItem>>();
+            dataView.Render();
+
+            // Assert
+            Assert.Contains("Item 11", cut.Markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("Item 1<", cut.Markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void Should_render_page_buttons_by_default()
         {
             // Arrange
@@ -495,11 +568,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(25)" PageSize="10">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(25)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
 
             // Assert
@@ -515,11 +590,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(25)" PageSize="10" PaginationOptions="options">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" PaginationOptions="options">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
 
             // Assert
@@ -527,22 +604,49 @@
         }
 
         [Fact]
-        public void Should_prefix_the_sort_query_parameter_when_a_prefix_is_given()
+        public void Should_write_the_sort_to_the_address_under_the_prefix()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" AddressOptions='@(new DataViewAddressOptions("products"))'>
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead button").Count == 1);
 
             // Act
-            var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" QueryParameterNamePrefix="products">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" Sortable="true" />
-                    </Columns>
-                </FormaDataGrid>);
-            cut.WaitForState(() => cut.FindAll("thead a").Count == 1);
+            cut.Find("thead button").Click();
 
             // Assert
-            Assert.Contains("products_sort", cut.Find("thead a").GetAttribute("href"), StringComparison.Ordinal);
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            Assert.Contains("products-sort=Title", navigation.Uri, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_sort_by_a_header_and_mark_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" InitialSortDirection="DataViewSortDirection.Descending" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead button").Count == 1);
+
+            // Act
+            cut.Find("thead button").Click();
+            cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "descending");
+
+            // Assert
+            Assert.Equal("Item 3", cut.FindAll("tbody tr")[0].TextContent.Trim());
         }
 
         [Fact]
@@ -553,11 +657,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Assert
@@ -573,15 +679,15 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
-                                SelectedItems="CreateItems(3).ToArray()"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true" SelectedItems="CreateItems(3).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
             var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[1].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
 
             // Act
@@ -600,15 +706,15 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
-                                SelectedItems="CreateItems(1).ToArray()"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true" SelectedItems="CreateItems(1).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
             var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[2].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
 
             // Act
@@ -628,14 +734,15 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(5)" PageSize="10" EnableRowSelection="true"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(5)" PageSize="10" EnableItemSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 5);
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
             var markers = cut.FindAll("tbody .forma-data-grid-row-marker");
             var tokens = new[] { 1, 2, 3 }
                 .Select(i => int.Parse(markers[i].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture))
@@ -660,16 +767,15 @@
             var rejections = new List<SelectionRejected>();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="CreateItems(1).ToArray()"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)"
-                                OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="CreateItems(1).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)" OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
             var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[1].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
 
             // Act
@@ -690,12 +796,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="CreateItems(1).ToArray()">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="CreateItems(1).ToArray()">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
             var rows = cut.FindAll("tbody tr");
 
@@ -713,13 +820,13 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act — unchecking the only selected row would drop below the minimum
@@ -737,13 +844,13 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
@@ -761,12 +868,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = CheckedSelectionCaption.Hidden })">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = CheckedSelectionCaption.Hidden })">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Assert
@@ -783,11 +891,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Assert
@@ -804,12 +914,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                SelectedItems="CreateItems(3).ToArray()" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" SelectedItems="CreateItems(3).ToArray()" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Assert
@@ -825,12 +936,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
             var ghost = cut.Find(".forma-data-grid-master-caption-ghost");
 
@@ -847,11 +959,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 2 })">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 2 })">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Assert
@@ -866,13 +980,13 @@
             var rejections = new List<SelectionRejected>();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()"
-                                OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()" OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act
@@ -892,12 +1006,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 2 })" SelectedItems="CreateItems(1).ToArray()">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 2 })" SelectedItems="CreateItems(1).ToArray()">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
 
             // Assert — a plain row click replaces the selection, so the floor never binds here
@@ -911,13 +1026,15 @@
             using var ctx = new FormaDataGridTests();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
+            var grid = cut.FindComponent<FormaDataView<GridItem>>();
             var before = GetRowTokens(grid);
 
             // Act
@@ -936,14 +1053,15 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
+            var grid = cut.FindComponent<FormaDataView<GridItem>>();
             var token = GetRowTokens(grid)[1];
 
             grid.Render();
@@ -965,14 +1083,15 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateItems(4)" PageSize="2" EnableRowSelection="true"
-                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
-                    <Columns>
-                        <PropertyColumn Property="@(item => item.Title)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateItems(4)" PageSize="2" EnableItemSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 2);
-            var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
+            var grid = cut.FindComponent<FormaDataView<GridItem>>();
             var staleToken = GetRowTokens(grid)[0];
 
             // Act — paging retires the first page's rows, the next pass drops them
@@ -1013,11 +1132,13 @@
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataGrid Items="CreateEmployees().AsQueryable()" PageSize="10" EnableInlineEditing="true">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>));
+                @<FormaDataView Items="CreateEmployees().AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
 
             Assert.Contains(nameof(FormaDataGrid<Employee>.CloneForEdit), exception.Message, StringComparison.Ordinal);
         }
@@ -1030,12 +1151,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateEmployees().AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateEmployees().AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
 
             // Assert
@@ -1050,12 +1172,13 @@
             var employees = CreateEmployees();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
 
@@ -1076,13 +1199,14 @@
             var employees = CreateEmployees();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                        <FormaPropertyColumn Property="@(employee => employee.Salary)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                            <FormaPropertyColumn Property="@(employee => employee.Salary)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
 
@@ -1103,13 +1227,14 @@
             var employees = CreateEmployees();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Id)" Editable="false" />
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Id)" Editable="false" />
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
 
@@ -1129,13 +1254,13 @@
             Employee? saved = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone"
-                                OnRowSave="@((Employee edited) => saved = edited)">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone" OnRowSave="@((Employee edited) => saved = edited)">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
@@ -1159,13 +1284,13 @@
             var saved = false;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone"
-                                OnRowSave="@((Employee _) => saved = true)">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone" OnRowSave="@((Employee _) => saved = true)">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
@@ -1188,12 +1313,13 @@
             var employees = CreateEmployees();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
@@ -1216,13 +1342,13 @@
             var employees = CreateEmployees();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableRowSelection="true"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10" EnableItemSelection="true">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 2);
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
 
@@ -1241,12 +1367,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateEmployees().AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateEmployees().AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
 
             // Assert
@@ -1261,11 +1388,13 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="CreateEmployees().AsQueryable()" PageSize="10">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Salary)" Format="N2" />
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="CreateEmployees().AsQueryable()" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Salary)" Format="N2" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("200", StringComparison.Ordinal));
 
             // Assert
@@ -1280,12 +1409,13 @@
 
             // Act & Assert — a struct draft is copied on every read, so edits would vanish
             var exception = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataGrid Items="new[] { new Point(1) }.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="@(point => point)">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(point => point.X)" />
-                    </Columns>
-                </FormaDataGrid>));
+                @<FormaDataView Items="new[] { new Point(1) }.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Point" EnableInlineEditing="true" CloneForEdit="@(point => point)">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(point => point.X)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
 
             Assert.Contains("value type", exception.Message, StringComparison.Ordinal);
         }
@@ -1298,14 +1428,15 @@
             var employees = CreateEmployees();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)" Editable="false">
-                            <EditTemplate><span class="custom-editor">@context.Name</span></EditTemplate>
-                        </FormaPropertyColumn>
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" Editable="false">
+                                <EditTemplate><span class="custom-editor">@context.Name</span></EditTemplate>
+                            </FormaPropertyColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
 
@@ -1324,14 +1455,15 @@
             var employees = CreateEmployees();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
-                                EnableInlineEditing="true" CloneForEdit="Clone">
-                    <Columns>
-                        <FormaPropertyColumn Property="@(employee => employee.Name)">
-                            <EditTemplate><span class="custom-editor">@context.Name</span></EditTemplate>
-                        </FormaPropertyColumn>
-                    </Columns>
-                </FormaDataGrid>);
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)">
+                                <EditTemplate><span class="custom-editor">@context.Name</span></EditTemplate>
+                            </FormaPropertyColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
 

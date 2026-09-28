@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**29 components not yet implemented.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
+**28 components not yet implemented.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -41,11 +41,10 @@ Forma.Blazor/Components/
     └── FormaLaunchBar
 
 src/
-├── (4) Forma.Blazor.DataView/
+├── (3) Forma.Blazor.DataView/
 │   ├── FormaDataCards
 │   ├── FormaDataList
-│   ├── FormaDataTree
-│   └── FormaDataView
+│   └── FormaDataTree
 └── (1) Forma.Blazor.Gallery/
     └── FormaGallery
 ```

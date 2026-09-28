@@ -1,6 +1,6 @@
-namespace Forma.Blazor.Components.Collections;
+namespace Forma.Blazor.Components.DataView;
 
-/// <summary>The minimum and maximum row-count rules for a <see cref="FormaDataGrid{TGridItem}"/> selection.</summary>
+/// <summary>The minimum and maximum item-count rules for a <see cref="FormaDataView{TItem}"/> selection.</summary>
 internal readonly record struct SelectionBounds(int? Minimum, int? Maximum)
 {
     /// <summary>Throws if either bound is negative or the minimum exceeds the maximum.</summary>
@@ -22,15 +22,15 @@ internal readonly record struct SelectionBounds(int? Minimum, int? Maximum)
         }
     }
 
-    /// <summary>Whether one more row can be selected on top of <paramref name="currentCount"/>.</summary>
+    /// <summary>Whether one more item can be selected on top of <paramref name="currentCount"/>.</summary>
     public bool CanAdd(int currentCount)
         => Maximum is null || currentCount < Maximum.Value;
 
-    /// <summary>Whether one row can be removed from <paramref name="currentCount"/> without dropping below the floor.</summary>
+    /// <summary>Whether one item can be removed from <paramref name="currentCount"/> without dropping below the floor.</summary>
     public bool CanRemove(int currentCount)
         => Minimum is null || currentCount > Minimum.Value;
 
-    /// <summary>Whether <paramref name="totalCount"/> rows all fit within the maximum.</summary>
+    /// <summary>Whether <paramref name="totalCount"/> items all fit within the maximum.</summary>
     public bool CanSelectAll(int totalCount)
         => Maximum is null || totalCount <= Maximum.Value;
 }

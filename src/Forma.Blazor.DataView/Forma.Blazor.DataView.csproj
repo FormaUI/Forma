@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <!-- The component borrows the product's namespace, so its translations embed and resolve as the product's own do. -->
+        <RootNamespace>Forma.Blazor.Components.DataView</RootNamespace>
+        <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectsInPackage</TargetsForTfmSpecificBuildOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <!-- The grid's parts draw the table its stylesheet styles, so they share the grid's scope rather than each carrying one of their own. -->
+    <ItemGroup>
+        <None Update="FormaDataGridTable.razor" CssScope="b-forma-data-grid" />
+        <None Update="FormaDataGridTable.razor.css" CssScope="b-forma-data-grid" />
+        <None Update="FormaDataGridRow.razor" CssScope="b-forma-data-grid" />
+        <None Update="FormaDataGridRow.razor.css" CssScope="b-forma-data-grid" />
+        <None Update="FormaDataGridColumnHeader.razor" CssScope="b-forma-data-grid" />
+        <None Update="FormaDataGridColumnHeader.razor.css" CssScope="b-forma-data-grid" />
+    </ItemGroup>
+
+    <!-- The product, whose package this one depends on. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
+    </ItemGroup>
+
+    <!-- The Framework assemblies the component compiles against, every one of which the product's package already ships or declares. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <Import Project="$(BundledPackageTargets)" />
+
+</Project>

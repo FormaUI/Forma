@@ -1,8 +1,8 @@
-namespace Forma.Blazor.Showcase.Components.Pages.Collections;
+namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
 using System.ComponentModel.DataAnnotations;
 
-using Forma.Blazor.Components.Collections;
+using Forma.Blazor.Components.DataView;
 using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Localization;
 

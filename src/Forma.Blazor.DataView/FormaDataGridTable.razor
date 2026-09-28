@@ -1,0 +1,93 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaElementBase
+@typeparam TItem where TItem : notnull
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+@{
+    Grid.FinishCollectingColumns();
+    Interaction.BeginItemPass();
+}
+<table id="@Id"
+       data-rid="@Context.RuntimeId"
+       class="@RootClass"
+       style="@RootStyle"
+       aria-rowcount="@View.TotalItemCount"
+       aria-busy="@(View.IsBusy ? "true" : null)"
+       @attributes="AdditionalAttributes"
+       @ref="RootElement">
+    @if (Grid.ShowHeader)
+    {
+        <thead>
+            <tr>
+                @if (Grid.HasSelectionColumn)
+                {
+                    <th scope="col" class="@Grid.SelectionColumnClass">
+                        @if (View.EnableCheckedSelection && !Grid.HasMasterCaption)
+                        {
+                            <FormaCheckBox aria-label="@L["Select All"]"
+                                           Value="@View.AllSelected"
+                                           ValueExpression="() => MasterSelection"
+                                           Indeterminate="@View.PartiallySelected"
+                                           Disabled="@View.IsMasterControlDisabled"
+                                           PreventDefault="true"
+                                           OnClick="HandleMasterClickAsync" />
+                        }
+                        else if (View.EnableCheckedSelection && !Grid.MasterCaptionHidden)
+                        {
+                            @if (Grid.MasterCaptionInteractive)
+                            {
+                                <span class="forma-data-grid-master-caption-slot">
+                                    <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-grid-master-caption" Disabled="@View.IsMasterControlDisabled" OnClick="HandleMasterClickAsync">@Grid.MasterCaptionText</FormaButton>
+                                    @* Holds the column at the width of the longer caption, so swapping between them does not resize every column beside it. *@
+                                    <span class="forma-data-grid-master-caption-ghost" aria-hidden="true">@Grid.MasterCaptionAlternateText</span>
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="forma-data-grid-master-caption forma-data-grid-master-caption-static">@Grid.MasterCaptionText</span>
+                            }
+                        }
+                    </th>
+                }
+                @foreach (var column in Grid.CollectedColumns)
+                {
+                    <th scope="col" class="@Grid.GetHeaderClass(column)" aria-sort="@Grid.GetAriaSort(column)" @key="column">
+                        <FormaDataGridColumnHeader TItem="TItem" Column="column" />
+                    </th>
+                }
+            </tr>
+        </thead>
+    }
+    <tbody>
+        @if (!View.HasLoaded)
+        {
+            <tr class="forma-data-grid-state-row">
+                <td colspan="@Grid.ColumnCount" class="forma-data-grid-state-cell">@View.LoadingContent</td>
+            </tr>
+        }
+        else if (View.Virtualize && !View.EnablePagination)
+        {
+            <Virtualize TItem="TItem" ItemsProvider="Grid.ProvideVirtualizedItemsAsync" ItemComparer="Grid.ItemComparer" ItemSize="View.ItemHeight" OverscanCount="View.OverscanCount">
+                <ItemContent>
+                    <FormaDataGridRow TItem="TItem" Item="context" />
+                </ItemContent>
+                <Placeholder>
+                    <tr class="forma-data-grid-row forma-data-grid-placeholder-row" style="@Grid.PlaceholderStyle"><td colspan="@Grid.ColumnCount"></td></tr>
+                </Placeholder>
+            </Virtualize>
+        }
+        else if (View.Items.Count == 0)
+        {
+            <tr class="forma-data-grid-state-row">
+                <td colspan="@Grid.ColumnCount" class="forma-data-grid-state-cell">@View.EmptyContent</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in View.Items)
+            {
+                <FormaDataGridRow TItem="TItem" Item="item" @key="View.ItemKey(item)" />
+            }
+        }
+    </tbody>
+</table>

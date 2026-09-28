@@ -1,0 +1,27 @@
+/* ============================================================
+   FormaDataGridRow — CSS isolation
+   One row: its height on the target step, its hover, and the
+   states it stands in, selected, disabled and focused through
+   its marker. Shares the grid's scope with the table that holds
+   it. Logical properties throughout for RTL/LTR parity.
+   ============================================================ */
+
+/* A row stands on the medium target step, so a control in a cell sits level with the buttons beside the grid;
+   a dense row on the small step, for rows of plain text. */
+.forma-data-grid-row {
+    block-size: var(--target-size-md);
+}
+
+.forma-data-grid-dense .forma-data-grid-row {
+    block-size: var(--target-size-sm);
+}
+
+.forma-data-grid-dense .forma-data-grid-cell {
+    padding-block: var(--space-1);
+}
+
+@media (hover: hover) {
+    .forma-data-grid-row:hover {
+        background: var(--forma-data-grid-row-hover-bg-color, var(--hover-bg-color));
+    }
+}

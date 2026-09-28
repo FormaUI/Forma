@@ -1,0 +1,12 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaDataView": {
+    "No items.": "אין פריטים.",
+    "Loading": "טוען"
+  },
+  "FormaDataGrid": {
+    "Select All": "בחר הכל",
+    "Select Row": "בחר שורה",
+    "Column Options": "אפשרויות עמודה"
+  }
+}

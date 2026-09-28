@@ -1,0 +1,31 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaComponentBase
+@typeparam TItem where TItem : notnull
+
+<div class="forma-data-grid-header-content">
+    @if (Column.IsSortable && Column.SortBy is not null)
+    {
+        <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-grid-sort-button" OnClick="HandleSortClickAsync">
+            <span class="forma-data-grid-header-title">@Column.HeaderContent</span>
+            @if (Grid.IsSortedBy(Column))
+            {
+                <FormaIcon Icon="@(View.SortDirection == DataViewSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown)" Size="IconSize.Small" class="forma-data-grid-sort-glyph" />
+            }
+        </FormaButton>
+    }
+    else
+    {
+        <span class="forma-data-grid-header-title">@Column.HeaderContent</span>
+    }
+    @if (Column.ColumnOptions is not null)
+    {
+        <FormaButton @ref="OptionsButton" Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" class="forma-data-grid-options-button"
+                     aria-label="@L["Column Options"]" aria-expanded="@(IsOptionsOpen ? "true" : "false")" aria-controls="@OptionsId"
+                     OnClick="ToggleOptionsAsync">
+            <FormaIcon Icon="Glyph.More" Size="IconSize.Small" />
+        </FormaButton>
+        <FormaPopover @ref="OptionsPopover" Anchor="@OptionsButton.RootElement" Alignment="PopoverAlignment.End">
+            <div id="@OptionsId" class="forma-data-grid-options">@Column.ColumnOptions</div>
+        </FormaPopover>
+    }
+</div>

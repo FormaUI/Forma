@@ -1,9 +1,5 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "FormaDataGrid": {
-    "Select All": "בחר הכל",
-    "Select Row": "בחר שורה"
-  },
   "FormaSortableList": {
     "Reorder item {Position} of {Total}. Drag, or use arrow keys to move.": "סדר מחדש פריט {Position} מתוך {Total}. גרור, או השתמש בחצים כדי להזיז.",
     "Moved to position {Position} of {Total}.": "הועבר למיקום {Position} מתוך {Total}."

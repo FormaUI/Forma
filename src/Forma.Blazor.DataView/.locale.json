@@ -1,0 +1,4 @@
+{
+  // The root namespace is not the assembly's name, so it is declared here for a host to lay this assembly's files out by it.
+  "rootNamespace": "Forma.Blazor.Components.DataView"
+}

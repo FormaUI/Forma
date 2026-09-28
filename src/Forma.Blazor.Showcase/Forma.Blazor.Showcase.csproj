@@ -7,12 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
         <ProjectReference Include="..\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />

@@ -61,12 +61,14 @@
     <h2>@L["With a Grid"]</h2>
     <p class="description">@L["Inside a FormaDataGrid, which pages its own rows and holds a full page's height, so a short last page leaves the pager where it was."]</p>
     <div class="demo-box">
-        <FormaDataGrid Items="_gridItems" PageSize="10" QueryParameterNamePrefix="pager">
-            <Columns>
-                <PropertyColumn Property="@(item => item.Id)" Title="@L["Id"]" />
-                <PropertyColumn Property="@(item => item.Title)" Title="@L["Title"]" />
-            </Columns>
-        </FormaDataGrid>
+        <FormaDataView Items="_gridItems" PageSize="10" AddressOptions='@(new DataViewAddressOptions("pager"))'>
+            <FormaDataGrid>
+                <Columns>
+                    <FormaPropertyColumn Property="@(item => item.Id)" Title="@L["Id"]" />
+                    <FormaPropertyColumn Property="@(item => item.Title)" Title="@L["Title"]" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
     </div>
 </div>
 

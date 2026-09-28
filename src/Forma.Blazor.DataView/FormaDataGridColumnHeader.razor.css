@@ -1,0 +1,32 @@
+/* ============================================================
+   FormaDataGridColumnHeader — CSS isolation
+   A header cell's content: the title, the sort button that is the
+   title itself, and the options button beside it. Shares the
+   grid's scope with the table that holds it.
+   ============================================================ */
+
+.forma-data-grid-header-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-block-size: var(--target-size-sm);
+}
+
+.forma-data-grid-align-center .forma-data-grid-header-content {
+    justify-content: center;
+}
+
+.forma-data-grid-align-end .forma-data-grid-header-content {
+    justify-content: flex-end;
+}
+
+/* The sort button is the title itself: no inline padding, so it starts on the gutter the values beneath it start on. */
+::deep .forma-data-grid-sort-button {
+    padding-inline: 0;
+    font: inherit;
+    color: inherit;
+}
+
+.forma-data-grid-header-cell-sorted .forma-data-grid-header-title {
+    color: var(--text-primary-color);
+}

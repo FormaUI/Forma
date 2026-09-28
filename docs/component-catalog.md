@@ -13,7 +13,7 @@
 >
 > The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**61 components implemented.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**60 components implemented, 2 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -31,8 +31,7 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaCloseButton
 │   ├── ✅ FormaEyeButton
 │   └── ✅ FormaToggleButton
-├── (2 / 2) Collections/
-│   ├── ✅ FormaDataGrid
+├── (1 / 1) Collections/
 │   └── ✅ FormaSortableList
 ├── (1 / 1) Debugging/InputInspector/
 │   └── ✅ FormaInputInspector
@@ -97,6 +96,9 @@ Forma.Blazor/Components/
 src/
 ├── (1 / 1) Forma.Blazor.Composer/
 │   └── ✅ FormaComposer
+├── (0 / 2) Forma.Blazor.DataView/
+│   ├── ◐ FormaDataGrid
+│   └── ◐ FormaDataView
 └── (1 / 1) Forma.Blazor.Explorer/
     └── ✅ FormaExplorer
 ```
@@ -205,12 +207,21 @@ A yes-or-no dialog opened through `IConfirmDialogService`, answering the caller 
 
 ### `FormaDataGrid<TItem>`
 
-A sortable, pageable table over QuickGrid with checked and row selection, inline editing and a footer of its own. Its design is [data-view-design.md](data-view-design.md).
+A view over the data view drawing its items as rows with aligned columns and headers, sorted by a header and edited a row at a time. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | `asp:GridView` with server-side paging, sortable columns, row click-through, checkbox column for mass select, action icon columns (view/edit/delete), status badges, responsive hide classes |
 | **Used in** | pages, products, orders, leads, comments, users, coupons (all 7 main list pages) |
+
+### `FormaDataView<TItem>`
+
+The engine that browses a set of items, a queryable or a provider, with its selection, sort, page, address, virtualization and states, handing what is on screen to the view that presents it. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The same browsing built three times: `asp:GridView` over a repository data source on every list page, the explorer's content area, and the gallery's planned engine |
+| **Used in** | Every list page under `FormaDataGrid`, the explorer's content area, and the gallery |
 
 ### `FormaDatePicker`
 

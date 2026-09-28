@@ -1,0 +1,40 @@
+/* ============================================================
+   FormaDataView — CSS isolation
+   The engine's frame: a region the items scroll in and a footer
+   that stays put beneath it. What the items look like is the
+   view's. Logical properties throughout for RTL/LTR parity.
+   ============================================================ */
+
+/* Caps at whatever height an ancestor bounds the data view to. A percentage max-height resolves to
+   none against an auto-height ancestor, so an unbounded page keeps the plain shrink-to-content layout. */
+.forma-data-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-block-size: 100%;
+    min-block-size: 0;
+}
+
+/* The items scroll, the footer does not. min-block-size overrides the flex item's automatic content-based
+   minimum, which would otherwise refuse to shrink and push the footer out of the box. */
+.forma-data-view-region {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+/* Page navigation at the inline start, status at the inline end, stacking when narrow. */
+.forma-data-view-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* An auto margin keeps the status at the inline end when there is no page navigation. */
+.forma-data-view-status {
+    margin-inline-start: auto;
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-sm);
+}

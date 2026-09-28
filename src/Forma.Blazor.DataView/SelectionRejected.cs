@@ -1,6 +1,6 @@
-namespace Forma.Blazor.Components.Collections;
+namespace Forma.Blazor.Components.DataView;
 
-/// <summary>Details of a selection attempt blocked by a <see cref="FormaDataGrid{TGridItem}"/> selection bound.</summary>
+/// <summary>Details of a selection attempt blocked by a <see cref="FormaDataView{TItem}"/> selection bound.</summary>
 public sealed record SelectionRejected
 {
     /// <summary>Which bound blocked the attempt.</summary>

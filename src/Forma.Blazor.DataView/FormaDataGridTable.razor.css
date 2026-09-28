@@ -1,0 +1,162 @@
+/* ============================================================
+   FormaDataGridTable — CSS isolation
+   The grid's table: a sticky header in the header tone, cells on
+   one gutter, the selection column on that same gutter, and the
+   state rows that stand in for the items. The row and the header
+   cell's content are parts sharing this scope, so a rule here may
+   reach them by class. Logical properties throughout for RTL/LTR
+   parity.
+   ============================================================ */
+
+/* A table sizes to its content by default, so a grid of short columns sat in one corner of its box with the
+   rest blank; filling the box puts the columns under the width the host gave the grid. */
+.forma-data-grid {
+    border-spacing: 0;
+    inline-size: 100%;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- header ---------- */
+
+
+/* Column titles stay put while the rows move under them, so they paint over the rows; the rule that separates
+   head from body would belong to the first body row, which scrolls away, so the header carries its own. */
+.forma-data-grid thead th {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    padding-block: var(--space-1);
+    padding-inline: var(--space-3);
+    background: var(--forma-data-grid-header-bg-color, var(--input-bg-color));
+    box-shadow: 0 1px 0 var(--border-color);
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-align: start;
+    white-space: nowrap;
+}
+
+/* ---------- cells ---------- */
+
+
+.forma-data-grid-cell {
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    border-block-end: 1px solid var(--border-color);
+    text-align: start;
+    vertical-align: middle;
+}
+
+.forma-data-grid-align-center {
+    text-align: center;
+}
+
+.forma-data-grid-align-end {
+    text-align: end;
+}
+
+/* ---------- states ---------- */
+
+
+/* A tinted background reads as selected without depending on the checkbox column, so it still shows on a row
+   selected through item selection alone. */
+.forma-data-grid-row-selected {
+    background: var(--forma-data-grid-row-selected-bg-color, var(--primary-subtle-color));
+}
+
+/* A disabled row stays legible. */
+.forma-data-grid-row-disabled {
+    color: var(--disabled-text-color);
+}
+
+/* The empty and loading rows span the table and speak in the supporting tone. */
+.forma-data-grid-state-cell {
+    padding-block: var(--space-4);
+    padding-inline: var(--space-3);
+    color: var(--text-secondary-color);
+    text-align: center;
+}
+
+.forma-data-grid-placeholder-row td {
+    border-block-end: 1px solid var(--border-color);
+}
+
+/* ---------- selection column ---------- */
+
+
+/* The selection column keeps the same gutter and leading edge as every other column, so its box starts on the
+   line the values beside it start on. */
+.forma-data-grid-select-column {
+    /* The box's target plus the column's gutter on either side. */
+    inline-size: calc(var(--target-size-sm) + 2 * var(--space-3));
+    padding-inline: var(--space-3);
+    text-align: start;
+}
+
+/* Item selection without checkboxes carries the same focusable input for its native keyboard and ARIA
+   semantics, but takes up no visible space in the layout. */
+.forma-data-grid-select-column-marker {
+    inline-size: 0;
+    padding-inline: 0;
+}
+
+/* The marker is collapsed to nothing; focusing it scrolls to its own row. The box is FormaCheckBox's, so its class is reached with ::deep. */
+::deep .forma-data-grid-row-marker {
+    inline-size: 0;
+    block-size: 0;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* The marker carries the focus but cannot show it, so the row draws the ring: focus moves independently of
+   selection, so the tint is not enough. */
+.forma-data-grid-row:has(::deep .forma-data-grid-row-marker:focus-visible) {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
+}
+
+/* Both captions share one grid cell, so the column takes the width of the wider and keeps it while the box swaps between them. */
+.forma-data-grid-master-caption-slot {
+    display: grid;
+}
+
+.forma-data-grid-master-caption-slot > ::deep * {
+    grid-area: 1 / 1;
+}
+
+.forma-data-grid-master-caption-ghost {
+    visibility: hidden;
+    white-space: nowrap;
+}
+
+/* The caption is a ghost button with no inline padding, so it starts on the gutter the boxes below it sit on. */
+::deep .forma-data-grid-master-caption {
+    --forma-button-ghost-color: var(--primary-color);
+    padding-inline: 0;
+    font-weight: inherit;
+}
+
+.forma-data-grid-master-caption-static {
+    color: var(--text-secondary-color);
+}
+
+/* ---------- editing ---------- */
+
+
+/* An editor fills its cell so the row keeps its column widths while switching to edit. */
+::deep .forma-data-grid-editor {
+    box-sizing: border-box;
+    inline-size: 100%;
+}
+
+::deep .forma-data-grid-editor.invalid {
+    border-color: var(--danger-color);
+}
+
+/* ---------- column options ---------- */
+
+
+.forma-data-grid-options {
+    padding: var(--space-2);
+}
