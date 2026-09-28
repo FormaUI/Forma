@@ -63,6 +63,15 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>Whether the master control can neither select nor clear anything.</summary>
     bool IsMasterControlDisabled { get; }
 
+    /// <summary>How many items are selected, on screen or not.</summary>
+    int SelectedCount { get; }
+
+    /// <summary>Whether the data view holds the whole set, so it can select all of it and say how many that is.</summary>
+    bool HoldsSet { get; }
+
+    /// <summary>Whether selecting the whole set is worth offering: the set is held and holds more than is on screen.</summary>
+    bool CanOfferSet { get; }
+
     /// <summary>Identifies an item across reloads.</summary>
     Func<TItem, object> ItemKey { get; }
 

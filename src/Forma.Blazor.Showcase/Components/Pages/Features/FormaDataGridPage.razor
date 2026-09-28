@@ -40,6 +40,30 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Select-All Modes"]</h2>
+    <p class="description">@L["What the master checkbox reaches. From a menu, it selects the page and a menu beside it offers the page, the whole set or clearing; from the pager, the footer offers the whole set once the page is selected; direct selects the whole set at one press; none draws no master checkbox at all. The selection is kept across pages either way."]</p>
+    <div class="demo-box demo-row">
+        @foreach (var mode in Enum.GetValues<SelectAllMode>())
+        {
+            <FormaToggleButton Label="@GetModeLabel(mode)" ShowLabel="true" Pressed="@(_selectAllMode == mode)" OnClick="() => SetSelectAllMode(mode)" />
+        }
+    </div>
+    <div class="demo-box">
+        <FormaDataView TItem="GridItem" Items="_manyItems" PageSize="ManyPageSize" EnableCheckedSelection="true" CheckedSelectionOptions="_selectAllModeOptions" AddressOptions='@(new DataViewAddressOptions("modes"))' SelectedItems="_modeSelectedItems" SelectedItemsChanged="HandleModeSelectionChanged">
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(item => item.Id)" Sortable="true" />
+                        <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{Selected} of {Total} selected.", _modeSelectedItems.Count, ManyRowCount]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Row Selection"]</h2>
     <p class="description">@L["Click a row to select only it; Ctrl/Cmd-click to toggle one row; Shift-click or Shift with arrow keys to select a range."]</p>
     <div class="demo-box">

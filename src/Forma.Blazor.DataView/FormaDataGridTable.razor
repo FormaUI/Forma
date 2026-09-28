@@ -1,6 +1,7 @@
 @namespace Forma.Blazor.Components.DataView
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
+@using Forma.Blazor.Components.Menus
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 @{
@@ -22,30 +23,57 @@
                 @if (Grid.HasSelectionColumn)
                 {
                     <th scope="col" class="@Grid.SelectionColumnClass">
-                        @if (View.EnableCheckedSelection && !Grid.HasMasterCaption)
+                        @if (View.EnableCheckedSelection)
                         {
-                            <FormaCheckBox aria-label="@L["Select All"]"
-                                           Value="@View.AllSelected"
-                                           ValueExpression="() => MasterSelection"
-                                           Indeterminate="@View.PartiallySelected"
-                                           Disabled="@View.IsMasterControlDisabled"
-                                           PreventDefault="true"
-                                           OnClick="HandleMasterClickAsync" />
-                        }
-                        else if (View.EnableCheckedSelection && !Grid.MasterCaptionHidden)
-                        {
-                            @if (Grid.MasterCaptionInteractive)
-                            {
-                                <span class="forma-data-grid-master-caption-slot">
-                                    <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-grid-master-caption" Disabled="@View.IsMasterControlDisabled" OnClick="HandleMasterClickAsync">@Grid.MasterCaptionText</FormaButton>
-                                    @* Holds the column at the width of the longer caption, so swapping between them does not resize every column beside it. *@
-                                    <span class="forma-data-grid-master-caption-ghost" aria-hidden="true">@Grid.MasterCaptionAlternateText</span>
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="forma-data-grid-master-caption forma-data-grid-master-caption-static">@Grid.MasterCaptionText</span>
-                            }
+                            <div class="forma-data-grid-master">
+                                @if (HasMasterControl && !Grid.HasMasterCaption)
+                                {
+                                    <FormaCheckBox aria-label="@L["Select All"]"
+                                                   Value="@View.AllSelected"
+                                                   ValueExpression="() => MasterSelection"
+                                                   Indeterminate="@View.PartiallySelected"
+                                                   Disabled="@View.IsMasterControlDisabled"
+                                                   PreventDefault="true"
+                                                   OnClick="HandleMasterClickAsync" />
+                                }
+                                else if (Grid.HasMasterCaption)
+                                {
+                                    @if (HasMasterControl && Grid.MasterCaptionInteractive)
+                                    {
+                                        <span class="forma-data-grid-master-caption-slot">
+                                            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-grid-master-caption" Disabled="@View.IsMasterControlDisabled" OnClick="HandleMasterClickAsync">@Grid.MasterCaptionText</FormaButton>
+                                            @* Holds the column at the width of the longer caption, so swapping between them does not resize every column beside it. *@
+                                            <span class="forma-data-grid-master-caption-ghost" aria-hidden="true">@Grid.MasterCaptionAlternateText</span>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="forma-data-grid-master-caption forma-data-grid-master-caption-static">@Grid.MasterCaptionText</span>
+                                    }
+                                }
+                                @if (HasMasterMenu)
+                                {
+                                    <FormaDropDownMenu TriggerOptions="ButtonOptions.MiniGhostIcon" class="forma-data-grid-master-menu" aria-label="@L["Selection Options"]">
+                                        <Trigger>
+                                            <FormaIcon Icon="Glyph.ChevronDown" Size="IconSize.Small" />
+                                        </Trigger>
+                                        <ChildContent>
+                                            <FormaDropDownMenuItem Disabled="@(View.AllSelected || View.IsMasterControlDisabled)" OnClick="Interaction.SelectPageAsync">
+                                                <span>@L["Select Page ({Count})", View.Items.Count]</span>
+                                            </FormaDropDownMenuItem>
+                                            @if (View.CanOfferSet)
+                                            {
+                                                <FormaDropDownMenuItem Disabled="@(View.SelectedCount >= (View.TotalItemCount ?? 0))" OnClick="Interaction.SelectAllAsync">
+                                                    <span>@L["Select All ({Count})", View.TotalItemCount ?? 0]</span>
+                                                </FormaDropDownMenuItem>
+                                            }
+                                            <FormaDropDownMenuItem Disabled="@(View.SelectedCount == 0)" OnClick="Interaction.ClearSelectionAsync">
+                                                <span>@L["Clear Selection"]</span>
+                                            </FormaDropDownMenuItem>
+                                        </ChildContent>
+                                    </FormaDropDownMenu>
+                                }
+                            </div>
                         }
                     </th>
                 }

@@ -102,7 +102,7 @@
         }
 
         [Fact]
-        public void Should_select_every_item_when_the_select_all_checkbox_is_checked()
+        public void Should_select_the_page_when_the_master_checkbox_is_checked()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -121,8 +121,332 @@
             // Act
             cut.Find("thead input[type=checkbox]").Click();
 
-            // Assert — every item, not just the visible page
+            // Assert — the visible page, not the whole set
+            Assert.Equal(10, changedTo!.Count);
+        }
+
+        [Fact]
+        public void Should_clear_only_the_page_when_the_master_checkbox_is_unchecked()
+        {
+            // Arrange — the first page is selected along with one item of the second
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true" SelectedItems="CreateItems(11).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Click();
+
+            // Assert
+            var remaining = Assert.Single(changedTo!);
+            Assert.Equal(11, remaining.Id);
+        }
+
+        [Fact]
+        public void Should_offer_the_page_the_set_and_clearing_from_the_master_menu()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead .forma-data-grid-master-menu").Click();
+
+            // Assert
+            var items = cut.FindAll(".forma-dropdown-menu [role=menuitem]");
+            Assert.Collection(items,
+                item => Assert.Equal("Select Page (10)", item.TextContent.Trim()),
+                item => Assert.Equal("Select All (25)", item.TextContent.Trim()),
+                item => Assert.Equal("Clear Selection", item.TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_select_the_whole_set_from_the_master_menu()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+            cut.Find("thead .forma-data-grid-master-menu").Click();
+
+            // Act
+            cut.FindAll(".forma-dropdown-menu [role=menuitem]")[1].Click();
+
+            // Assert
             Assert.Equal(25, changedTo!.Count);
+        }
+
+        [Fact]
+        public void Should_clear_the_whole_selection_from_the_master_menu()
+        {
+            // Arrange — the selection spans both pages
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true" SelectedItems="CreateItems(11).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+            cut.Find("thead .forma-data-grid-master-menu").Click();
+
+            // Act
+            cut.FindAll(".forma-dropdown-menu [role=menuitem]")[2].Click();
+
+            // Assert
+            Assert.Empty(changedTo!);
+        }
+
+        [Fact]
+        public void Should_not_offer_the_set_from_the_master_menu_when_the_page_holds_everything()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead .forma-data-grid-master-menu").Click();
+
+            // Assert
+            var items = cut.FindAll(".forma-dropdown-menu [role=menuitem]");
+            Assert.Equal(2, items.Count);
+            Assert.DoesNotContain(items, item => item.TextContent.Contains("Select All", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_select_the_whole_set_at_one_press_in_direct_mode()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { SelectAllMode = SelectAllMode.Direct })" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Click();
+
+            // Assert
+            Assert.Equal(25, changedTo!.Count);
+            Assert.Empty(cut.FindAll("thead .forma-data-grid-master-menu"));
+        }
+
+        [Fact]
+        public void Should_clear_a_selection_on_another_page_from_the_master_checkbox_in_direct_mode()
+        {
+            // Arrange — the selection sits on the second page alone
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { SelectAllMode = SelectAllMode.Direct })" SelectedItems="@(new[] { new GridItem(11, "Item 11") })" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Click();
+
+            // Assert
+            Assert.Empty(changedTo!);
+        }
+
+        [Fact]
+        public void Should_offer_the_set_in_the_footer_once_the_page_is_selected_in_pager_mode()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { SelectAllMode = SelectAllMode.FromPager })" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+            Assert.Empty(cut.FindAll(".forma-data-view-select-set"));
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Click();
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-select-set").Count == 1);
+            cut.Find(".forma-data-view-select-set").Click();
+
+            // Assert
+            Assert.Equal(25, changedTo!.Count);
+            Assert.Empty(cut.FindAll(".forma-data-view-select-set"));
+        }
+
+        [Fact]
+        public void Should_draw_no_master_control_in_none_mode()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { SelectAllMode = SelectAllMode.None })">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Assert
+            Assert.Empty(cut.FindAll("thead input[type=checkbox]"));
+            Assert.Empty(cut.FindAll("thead .forma-data-grid-master-menu"));
+        }
+
+        [Fact]
+        public void Should_select_the_page_from_the_master_checkbox_over_an_items_provider()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            DataViewItemsProvider<GridItem> provider = request => ValueTask.FromResult(
+                new DataViewPage<GridItem>(CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(), 25));
+
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" PageSize="10" EnableCheckedSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Click();
+
+            // Assert
+            Assert.Equal(10, changedTo!.Count);
+        }
+
+        [Fact]
+        public void Should_not_offer_the_set_from_the_master_menu_over_an_items_provider()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            DataViewItemsProvider<GridItem> provider = request => ValueTask.FromResult(
+                new DataViewPage<GridItem>(CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(), 25));
+
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead .forma-data-grid-master-menu").Click();
+
+            // Assert
+            var items = cut.FindAll(".forma-dropdown-menu [role=menuitem]");
+            Assert.Equal(2, items.Count);
+            Assert.DoesNotContain(items, item => item.TextContent.Contains("Select All", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_keep_an_item_selected_by_key_when_the_provider_returns_a_fresh_copy()
+        {
+            // Arrange — every fetch materializes items equal to the selected one in nothing but the key
+            using var ctx = new FormaDataGridTests();
+            DataViewItemsProvider<GridItem> provider = request => ValueTask.FromResult(
+                new DataViewPage<GridItem>(CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).Select(item => new GridItem(item.Id, $"Fresh {item.Title}")).ToArray(), 25));
+
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" ItemKey="@(item => item.Id)" PageSize="10" EnableCheckedSelection="true" SelectedItems="@(new[] { new GridItem(11, "Item 11") })">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
+
+            // Act
+            cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            cut.WaitForState(() => cut.Markup.Contains("Fresh Item 11", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Equal("true", cut.FindAll("tbody tr")[0].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public void Should_keep_the_selection_across_a_page_change()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+            cut.Find("thead input[type=checkbox]").Click();
+            cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            cut.WaitForState(() => cut.Markup.Contains("Item 11", StringComparison.Ordinal));
+
+            // Act — the second page's master adds to what the first page selected
+            cut.Find("thead input[type=checkbox]").Click();
+
+            // Assert
+            Assert.Equal(20, changedTo!.Count);
         }
 
         [Fact]
@@ -255,28 +579,6 @@
 
             // Assert
             Assert.Contains("exactly one", ex.Message, StringComparison.Ordinal);
-        }
-
-        [Fact]
-        public void Should_throw_when_checked_selection_is_combined_with_an_items_provider()
-        {
-            // Arrange
-            using var ctx = new FormaDataGridTests();
-            DataViewItemsProvider<GridItem> provider = _ => ValueTask.FromResult(
-                new DataViewPage<GridItem>(Array.Empty<GridItem>(), 0));
-
-            // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataView ItemsProvider="provider" PageSize="10" EnableCheckedSelection="true">
-                    <FormaDataGrid>
-                        <Columns>
-                            <FormaPropertyColumn Property="@(item => item.Title)" />
-                        </Columns>
-                    </FormaDataGrid>
-                </FormaDataView>));
-
-            // Assert
-            Assert.Contains(nameof(FormaDataView<GridItem>.EnableCheckedSelection), ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -858,28 +1160,6 @@
 
             // Assert
             Assert.Empty(changedTo!);
-        }
-
-        [Fact]
-        public void Should_hide_the_master_toggle_when_the_caption_is_hidden()
-        {
-            // Arrange
-            using var ctx = new FormaDataGridTests();
-
-            // Act
-            var cut = ctx.Render(
-                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = CheckedSelectionCaption.Hidden })">
-                    <FormaDataGrid>
-                        <Columns>
-                            <FormaPropertyColumn Property="@(item => item.Title)" />
-                        </Columns>
-                    </FormaDataGrid>
-                </FormaDataView>);
-            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
-
-            // Assert
-            Assert.Empty(cut.FindAll("thead input[type=checkbox]"));
-            Assert.Empty(cut.FindAll("thead .forma-data-grid-master-caption"));
         }
 
         [Fact]

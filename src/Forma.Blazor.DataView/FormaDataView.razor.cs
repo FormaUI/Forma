@@ -29,6 +29,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private readonly ParameterState<IReadOnlyList<TItem>?> _selectedItemsParameter = new();
     private readonly ParameterState<int> _pageParameter = new();
 
+    private ItemKeyComparer<TItem> _keyComparer = default!;
+    private Func<TItem, object>? _keyedBy;
     private HashSet<TItem> _selectedSet = [];
     private IReadOnlyList<TItem> _items = [];
     private int? _totalItemCount;
@@ -162,15 +164,31 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <inheritdoc />
     public bool AllSelected
-        => _totalItemCount is > 0 && _selectedSet.Count >= _totalItemCount;
+        => MasterReachesSet
+            ? _totalItemCount is > 0 && _selectedSet.Count >= _totalItemCount
+            : _items.Count > 0 && PageSelectedCount == _items.Count;
 
     /// <inheritdoc />
     public bool PartiallySelected
-        => _selectedSet.Count > 0 && !AllSelected;
+        => (MasterReachesSet ? _selectedSet.Count : PageSelectedCount) > 0 && !AllSelected;
 
     /// <inheritdoc />
     public bool IsMasterControlDisabled
-        => _selectedSet.Count == 0 && !CanSelectAll;
+        => MasterReachesSet
+            ? _selectedSet.Count == 0 && !CanSelectAll
+            : PageSelectedCount == 0 && !CanSelectPage;
+
+    /// <inheritdoc />
+    public int SelectedCount
+        => _selectedSet.Count;
+
+    /// <inheritdoc />
+    public bool HoldsSet
+        => Items is not null;
+
+    /// <inheritdoc />
+    public bool CanOfferSet
+        => HoldsSet && _totalItemCount is { } total && total > _items.Count;
 
     /// <inheritdoc />
     RenderFragment IDataView<TItem>.LoadingContent
@@ -190,14 +208,34 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     // Selecting every item is offered only where it would not overshoot the maximum; there is no partial select-as-many-as-fit.
     private bool CanSelectAll
-        => _selectionBounds.CanSelectAll(_totalItemCount ?? 0);
+        => _selectionBounds.CanSelectAll(_totalItemCount ?? _items.Count);
+
+    private int PageSelectedCount
+        => _items.Count(IsSelected);
+
+    // The master control's state follows what it reaches: the whole set in direct mode, the items on screen otherwise.
+    private bool MasterReachesSet
+        => CheckedSelectionOptions.SelectAllMode == SelectAllMode.Direct;
+
+    // Selecting the page adds what is not yet selected on it to what is selected, on this page or another.
+    private bool CanSelectPage
+        => _selectionBounds.CanSelectAll(_selectedSet.Count + _items.Count - PageSelectedCount);
 
     private bool ShowsPaginator
         => EnablePagination && _totalItemCount is { } total && total > PageSize;
 
+    // The offer to select the whole set, once the page is selected and the set holds more than it.
+    private bool OffersSet
+        => EnableCheckedSelection
+            && CheckedSelectionOptions.SelectAllMode == SelectAllMode.FromPager
+            && CanOfferSet
+            && AllSelected
+            && _totalItemCount is { } total
+            && _selectedSet.Count < total;
+
     // Skipped entirely when there is nothing to put in it, so the region's gap leaves no dead space beneath it.
     private bool HasFooter
-        => Status is not null || ShowsPaginator;
+        => Status is not null || ShowsPaginator || OffersSet;
 
     private int StartIndex
         => EnablePagination ? (_page - 1) * PageSize : 0;
@@ -233,27 +271,21 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
                 $"{nameof(FormaDataView<TItem>)} requires exactly one of {nameof(Items)} or {nameof(ItemsProvider)}.");
         }
 
-        // Select-all names the whole set, which a provider can only produce by fetching every window it has.
-        if (EnableCheckedSelection && ItemsProvider is not null)
-        {
-            throw new InvalidOperationException(
-                $"{nameof(EnableCheckedSelection)} requires {nameof(Items)}; it is not supported with {nameof(ItemsProvider)}.");
-        }
-
-        // Item selection is keyed against the same materialized set; a provider offers no random access to look a key back up outside the window it last fetched.
-        if (EnableItemSelection && ItemsProvider is not null)
-        {
-            throw new InvalidOperationException(
-                $"{nameof(EnableItemSelection)} requires {nameof(Items)}; it is not supported with {nameof(ItemsProvider)}.");
-        }
-
         _selectionBounds = new SelectionBounds(CheckedSelectionOptions.Minimum, CheckedSelectionOptions.Maximum);
         _selectionBounds.Validate();
 
-        // The set is rebuilt only when the host hands over a different list, since every change this data view reports arrives as a new one.
-        if (_selectedItemsParameter.Update(SelectedItems))
+        // The selection is kept by key, so an item re-fetched as an equal copy is still the item that was selected.
+        var keyChanged = !ReferenceEquals(_keyedBy, ItemKey);
+        if (keyChanged)
         {
-            _selectedSet = [.. SelectedItems];
+            _keyedBy = ItemKey;
+            _keyComparer = new ItemKeyComparer<TItem>(ItemKey);
+        }
+
+        // The set is rebuilt only when the host hands over a different list, since every change this data view reports arrives as a new one.
+        if (_selectedItemsParameter.Update(SelectedItems) || keyChanged)
+        {
+            _selectedSet = new HashSet<TItem>(SelectedItems, _keyComparer);
         }
 
         // The address speaks first, once; after that a page the host sets is the page shown.
@@ -354,7 +386,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await LoadAsync();
     }
 
-    /// <summary>Selects every item of the set, which the selection bounds may refuse.</summary>
+    /// <summary>Selects every item of the set where the data view holds it, else every item on screen; the selection bounds may refuse.</summary>
     public async Task SelectAllAsync()
     {
         if (Items is null)
@@ -369,26 +401,41 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
-        await ReplaceSelectionAsync([.. Items]);
+        var whole = await LoadWindowCoreAsync(0, null, CancellationToken.None);
+        await ReplaceSelectionAsync(CreateSelection(whole.Items));
     }
 
     /// <summary>Selects every item on screen, which the selection bounds may refuse.</summary>
     public async Task SelectPageAsync()
     {
-        HashSet<TItem> updated = [.. _selectedSet, .. _items];
-
-        if (!_selectionBounds.CanSelectAll(updated.Count))
+        if (!CanSelectPage)
         {
             await RejectSelectionAsync(SelectionBoundary.Maximum);
             return;
         }
 
+        var updated = CreateSelection(_selectedSet);
+        updated.UnionWith(_items);
         await ReplaceSelectionAsync(updated);
     }
 
     /// <summary>Clears the selection, which is always allowed.</summary>
     public Task ClearSelectionAsync()
-        => _selectedSet.Count == 0 ? Task.CompletedTask : ReplaceSelectionAsync([]);
+        => _selectedSet.Count == 0 ? Task.CompletedTask : ReplaceSelectionAsync(CreateSelection([]));
+
+    /// <summary>Clears the items on screen from the selection; a reset rather than a removal, so the floor does not bind.</summary>
+    public Task ClearPageAsync()
+    {
+        if (PageSelectedCount == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        var updated = CreateSelection(_selectedSet);
+        updated.ExceptWith(_items);
+
+        return ReplaceSelectionAsync(updated);
+    }
 
     /// <summary>Adds <paramref name="items"/> to the selection, which the selection bounds may refuse.</summary>
     /// <param name="items">The items to select.</param>
@@ -396,7 +443,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        HashSet<TItem> updated = [.. _selectedSet, .. items];
+        var updated = CreateSelection(_selectedSet);
+        updated.UnionWith(items);
 
         if (!_selectionBounds.CanSelectAll(updated.Count))
         {
@@ -413,7 +461,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        HashSet<TItem> updated = [.. _selectedSet];
+        var updated = CreateSelection(_selectedSet);
         updated.ExceptWith(items);
 
         if (updated.Count > 0 && _selectionBounds.Minimum is { } minimum && updated.Count < minimum)
@@ -471,7 +519,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
-        HashSet<TItem> updated = [.. _selectedSet];
+        var updated = CreateSelection(_selectedSet);
 
         if (selected)
         {
@@ -487,7 +535,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <inheritdoc />
     public Task ToggleMasterAsync()
-        => _selectedSet.Count > 0 ? ClearSelectionAsync() : SelectAllAsync();
+        => CheckedSelectionOptions.SelectAllMode switch
+        {
+            SelectAllMode.None => Task.CompletedTask,
+            SelectAllMode.Direct => _selectedSet.Count > 0 ? ClearSelectionAsync() : SelectAllAsync(),
+            _ => PageSelectedCount > 0 ? ClearPageAsync() : SelectPageAsync(),
+        };
 
     /// <inheritdoc />
     public Task ActivateAsync(TItem item)
@@ -524,7 +577,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
-        await ReplaceSelectionAsync([item]);
+        await ReplaceSelectionAsync(CreateSelection([item]));
     }
 
     /// <summary>Replaces or extends the selection with a contiguous range of items, invoked from the selection behavior.</summary>
@@ -535,7 +588,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         ArgumentNullException.ThrowIfNull(itemTokens);
 
-        HashSet<TItem> updated = additive ? [.. _selectedSet] : [];
+        var updated = CreateSelection(additive ? _selectedSet : []);
 
         foreach (var token in itemTokens)
         {
@@ -600,6 +653,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => IsSelected(item)
             ? _selectionBounds.CanRemove(_selectedSet.Count)
             : CanSelect(item);
+
+    private HashSet<TItem> CreateSelection(IEnumerable<TItem> items)
+        => new(items, _keyComparer);
 
     private async Task ReplaceSelectionAsync(HashSet<TItem> updated)
     {

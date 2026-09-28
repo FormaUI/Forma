@@ -47,6 +47,12 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private IReadOnlyList<Employee> _rowSelectedEmployees = [];
 
+    private SelectAllMode _selectAllMode = SelectAllMode.FromMenu;
+
+    private CheckedSelectionOptions _selectAllModeOptions = new();
+
+    private IReadOnlyList<GridItem> _modeSelectedItems = [];
+
     private readonly List<Assignment> _assignments =
     [
         new() { Id = 1, Name = "Alice Johnson", Priority = 2 },
@@ -100,6 +106,25 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private void HandleRowSelectionChanged(IReadOnlyList<Employee> selected)
         => _rowSelectedEmployees = selected;
+
+    private void HandleModeSelectionChanged(IReadOnlyList<GridItem> selected)
+        => _modeSelectedItems = selected;
+
+    private void SetSelectAllMode(SelectAllMode mode)
+    {
+        _selectAllMode = mode;
+        _selectAllModeOptions = new CheckedSelectionOptions { SelectAllMode = mode };
+    }
+
+    private string GetModeLabel(SelectAllMode mode)
+        => mode switch
+        {
+            SelectAllMode.None => L["None"],
+            SelectAllMode.Direct => L["Direct"],
+            SelectAllMode.FromMenu => L["From menu"],
+            SelectAllMode.FromPager => L["From pager"],
+            _ => mode.ToString(),
+        };
 
     private void HandleAssignmentSelectionChanged(IReadOnlyList<Assignment> selected)
         => _assignmentSelection = selected;

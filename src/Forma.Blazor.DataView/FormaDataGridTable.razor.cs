@@ -19,6 +19,13 @@ public sealed partial class FormaDataGridTable<TItem> : FormaElementBase
     // The field the master box names to the input base; the selection is not a form field and nothing binds it.
     private bool MasterSelection { get; }
 
+    // No master control is drawn in the mode that leaves selecting to the page's own controls.
+    private bool HasMasterControl
+        => View.CheckedSelectionOptions.SelectAllMode != SelectAllMode.None;
+
+    private bool HasMasterMenu
+        => View.CheckedSelectionOptions.SelectAllMode == SelectAllMode.FromMenu;
+
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaDataGrid<TItem>);

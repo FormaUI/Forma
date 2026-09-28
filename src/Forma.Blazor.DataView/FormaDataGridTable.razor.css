@@ -93,6 +93,17 @@
     text-align: start;
 }
 
+/* The master control and the menu beside it stand on one line; the column widens to hold the second target. */
+.forma-data-grid-master {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.forma-data-grid-select-column-menu {
+    inline-size: calc(2 * var(--target-size-sm) + var(--space-1) + 2 * var(--space-3));
+}
+
 /* Item selection without checkboxes carries the same focusable input for its native keyboard and ARIA
    semantics, but takes up no visible space in the layout. */
 .forma-data-grid-select-column-marker {

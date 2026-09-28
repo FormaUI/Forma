@@ -31,6 +31,11 @@
             }
 
             <div class="forma-data-view-status" role="status">@Status</div>
+
+            @if (OffersSet)
+            {
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-view-select-set" OnClick="SelectAllAsync">@L["Select all {Count}", TotalItemCount ?? 0]</FormaButton>
+            }
         </div>
     }
 </div>

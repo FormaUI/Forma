@@ -2,11 +2,16 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "FormaDataView": {
     "No items.": "No hay elementos.",
-    "Loading": "Cargando"
+    "Loading": "Cargando",
+    "Select all {Count}": "Seleccionar los {Count}"
   },
   "FormaDataGrid": {
     "Select All": "Seleccionar Todo",
     "Select Row": "Seleccionar Fila",
-    "Column Options": "Opciones de Columna"
+    "Column Options": "Opciones de Columna",
+    "Select Page ({Count})": "Seleccionar Página ({Count})",
+    "Select All ({Count})": "Seleccionar Todo ({Count})",
+    "Clear Selection": "Borrar Selección",
+    "Selection Options": "Opciones de Selección"
   }
 }

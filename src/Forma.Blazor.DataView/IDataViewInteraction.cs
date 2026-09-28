@@ -30,8 +30,17 @@ public interface IDataViewInteraction<TItem>
     /// <param name="selected">Whether the item is to be selected.</param>
     Task ToggleSelectionAsync(TItem item, bool selected);
 
-    /// <summary>Selects or clears what the master control reaches.</summary>
+    /// <summary>Selects or clears what the master control reaches in the selection options' mode.</summary>
     Task ToggleMasterAsync();
+
+    /// <summary>Selects every item on screen, which the selection bounds may refuse.</summary>
+    Task SelectPageAsync();
+
+    /// <summary>Selects every item of the set where the data view holds it, else every item on screen; the selection bounds may refuse.</summary>
+    Task SelectAllAsync();
+
+    /// <summary>Clears the selection, which is always allowed.</summary>
+    Task ClearSelectionAsync();
 
     /// <summary>Reports that the reader activated <paramref name="item"/> outside any selection gesture.</summary>
     /// <param name="item">The item activated.</param>

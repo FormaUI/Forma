@@ -82,9 +82,13 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase
     internal bool HasSelectionColumn
         => View.EnableCheckedSelection || View.EnableItemSelection;
 
-    /// <summary>The class of the selection column's cells: the box's column, or the collapsed one carrying the markers alone.</summary>
+    /// <summary>The class of the selection column's cells: the box's column, widened for the menu beside the master control, or the collapsed one carrying the markers alone.</summary>
     internal string SelectionColumnClass
-        => View.EnableCheckedSelection ? "forma-data-grid-select-column" : "forma-data-grid-select-column forma-data-grid-select-column-marker";
+        => View.EnableCheckedSelection
+            ? View.CheckedSelectionOptions.SelectAllMode == SelectAllMode.FromMenu
+                ? "forma-data-grid-select-column forma-data-grid-select-column-menu"
+                : "forma-data-grid-select-column"
+            : "forma-data-grid-select-column forma-data-grid-select-column-marker";
 
     /// <summary>How many cells a row has, the selection column included.</summary>
     internal int ColumnCount
@@ -98,12 +102,9 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase
     internal string PlaceholderStyle
         => string.Create(CultureInfo.InvariantCulture, $"block-size: {View.ItemHeight}px");
 
-    /// <summary>The header shows the master checkbox unless a caption stands in for it.</summary>
+    /// <summary>The header shows the master checkbox unless a caption with a text stands in for it.</summary>
     internal bool HasMasterCaption
-        => View.CheckedSelectionOptions.Caption is not null;
-
-    internal bool MasterCaptionHidden
-        => View.CheckedSelectionOptions.Caption is { SelectAllText: null, DeselectAllText: null };
+        => View.CheckedSelectionOptions.Caption is { } caption && (caption.SelectAllText is not null || caption.DeselectAllText is not null);
 
     internal bool MasterCaptionInteractive
         => View.CheckedSelectionOptions.Caption is { SelectAllText: not null, DeselectAllText: not null };

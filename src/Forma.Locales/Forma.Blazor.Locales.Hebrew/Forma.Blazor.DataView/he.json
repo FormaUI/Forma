@@ -2,11 +2,16 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "FormaDataView": {
     "No items.": "אין פריטים.",
-    "Loading": "טוען"
+    "Loading": "טוען",
+    "Select all {Count}": "בחר את כל ה-{Count}"
   },
   "FormaDataGrid": {
     "Select All": "בחר הכל",
     "Select Row": "בחר שורה",
-    "Column Options": "אפשרויות עמודה"
+    "Column Options": "אפשרויות עמודה",
+    "Select Page ({Count})": "בחר עמוד ({Count})",
+    "Select All ({Count})": "בחר הכל ({Count})",
+    "Clear Selection": "נקה בחירה",
+    "Selection Options": "אפשרויות בחירה"
   }
 }

@@ -537,7 +537,7 @@ The grid's own are `Columns`, `ShowHeader`, `Dense`, `EnableInlineEditing`, `Clo
 
 The engine's methods are the verbs a page needs: `RefreshDataAsync`, `SortByAsync`,
 `ScrollToItemAsync`, `SelectAllAsync`, `SelectPageAsync`, `ClearSelectionAsync`,
-`SelectAsync` and `DeselectAsync` for given items, `FoldGroupAsync` and
+`ClearPageAsync`, `SelectAsync` and `DeselectAsync` for given items, `FoldGroupAsync` and
 `UnfoldGroupAsync`, `OpenNodeAsync` and `CloseNodeAsync`, with `TotalItemCount` read
 beside them. The grid adds
 `SortByColumnAsync`, `ShowColumnOptionsAsync`, `HideColumnOptionsAsync`, `BeginEdit`,

@@ -9,8 +9,11 @@ public sealed record CheckedSelectionOptions
     /// <summary>The most items that may be selected at once.</summary>
     public int? Maximum { get; init; }
 
-    /// <summary>Caption shown in place of the header checkbox. A <see langword="null"/> value keeps the plain checkbox.</summary>
+    /// <summary>Caption shown in place of the header checkbox. A <see langword="null"/> value, or one with no text, keeps the plain checkbox.</summary>
     public CheckedSelectionCaption? Caption { get; init; }
+
+    /// <summary>What the master control reaches when pressed.</summary>
+    public SelectAllMode SelectAllMode { get; init; } = SelectAllMode.FromMenu;
 
     /// <summary>Options with no bounds and the plain header checkbox.</summary>
     public static CheckedSelectionOptions Default { get; } = new();
