@@ -3,7 +3,6 @@
   "FormaRestArea": {
     "Windows": "Ventanas",
     "Minimized": "Minimizada",
-    "{Origin} {Number}": "{Origin} {Number}",
     "Workspace": "Espacio de Trabajo"
   },
   "FormaWindow": {

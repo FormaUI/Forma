@@ -101,7 +101,7 @@ dotnet build Forma.slnx
 dotnet test Forma.slnx
 dotnet format Forma.slnx --verify-no-changes
 dotnet tool restore
-dotnet locali --path Forma.slnx
+dotnet locali --path Forma.slnx --severity warning
 npm test --prefix tests/Forma.Blazor.Tests.Scripts
 dotnet run --project src/Forma.Blazor.Showcase
 ```

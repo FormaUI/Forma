@@ -103,7 +103,6 @@
     "Grow the Arena": "Agrandar la Arena",
     "Shrink the Arena": "Encoger la Arena",
     "no windows": "ninguna ventana",
-    "{Operation}: {Outcome} ({Windows})": "{Operation}: {Outcome} ({Windows})",
     "{Operation}: rejected, {Message}": "{Operation}: rechazado, {Message}",
     "Find every Preview: {Count} found": "Buscar cada Vista Previa: {Count} encontradas",
     "The first Explorer's descendants: {Windows}": "Descendientes del primer Explorador: {Windows}",

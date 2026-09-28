@@ -12,8 +12,20 @@
     "tests/Forma.Tests.Support/**": ["embedded", "satellite"]
   },
   "ignoreDiagnostics": {
-    // The page shows a hit and a miss side by side, so its miss is a sentence no file translates.
-    "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0207"],
+    // The page shows a hit and a miss side by side, so its miss is a sentence no file translates; it demonstrates a plural that omits 'other' on purpose; and its tables read each key from the row that lists it.
+    "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0204", "LOC0207", "LOC0208"],
+    // The galleries read a group's or a section's title from the catalog that lists it.
+    "src/Forma.Blazor.Showcase/Components/Pages/Symbols/EmojiCatalogGallery.razor": ["LOC0208"],
+    "src/Forma.Blazor.Showcase/Components/Pages/Symbols/FormaIconPage.razor": ["LOC0208"],
+    // The localizer forwards a plugin's title to the plugin's own locale and then the composer's; the title is the plugin's key, not one written here.
+    "src/Forma.Blazor.Composer/ComposerPluginLocalizer.cs": ["LOC0208"],
+    // A history command's title arrives from the line that builds it, where it is written as text.
+    "src/Forma.Blazor.Composer/FormaComposerCommandBar.razor.cs": ["LOC0208"],
+    // A format's name comes from the table that lists the formats, where each is written as text.
+    "src/Forma.Blazor.Composer/RichTextEditor/FormaRichTextEditor.razor.cs": ["LOC0208"],
+    // The tests look a key up by variable to prove what the locale does with an empty one and with the key under test.
+    "tests/Forma.Framework.Localization.Json.Tests/JsonStringLocaleTests.cs": ["LOC0208"],
+    "tests/Forma.Framework.Localization.Tests/NullStringLocaleFactoryTests.cs": ["LOC0208"],
     // The test proves the metadata entry is never served, which takes looking it up by its reserved name.
     "tests/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0212"],
     // A page's sections word one key differently on purpose, where the same English fits two sentences.

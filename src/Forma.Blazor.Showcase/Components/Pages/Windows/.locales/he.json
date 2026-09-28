@@ -103,7 +103,6 @@
     "Grow the Arena": "הגדלת הזירה",
     "Shrink the Arena": "כיווץ הזירה",
     "no windows": "אין חלונות",
-    "{Operation}: {Outcome} ({Windows})": "{Operation}: {Outcome} ({Windows})",
     "{Operation}: rejected, {Message}": "{Operation}: נדחה, {Message}",
     "Find every Preview: {Count} found": "מציאת כל תצוגה מקדימה: נמצאו {Count}",
     "The first Explorer's descendants: {Windows}": "צאצאי הסייר הראשון: {Windows}",

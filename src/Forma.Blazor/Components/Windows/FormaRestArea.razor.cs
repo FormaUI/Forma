@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Windows;
 
+using System.Globalization;
+
 using Forma.Framework.Css;
 using Forma.Framework.Windows;
 
@@ -45,7 +47,7 @@ public sealed partial class FormaRestArea : FormaElementBase
     {
         var number = Manager.GetInstanceNumber(window);
 
-        return number == 1 ? GetOriginName(window) : L["{Origin} {Number}", GetOriginName(window), number];
+        return number == 1 ? GetOriginName(window) : string.Create(CultureInfo.CurrentCulture, $"{GetOriginName(window)} {number}");
     }
 
     // The workspace's own origin is the library's, so its name is the library's to localize.

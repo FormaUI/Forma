@@ -326,7 +326,7 @@
             var result = await operate();
             var titles = result.Windows.Count == 0 ? L["no windows"] : string.Join(", ", result.Windows.Select(window => window.Title));
 
-            Log(L["{Operation}: {Outcome} ({Windows})", operation, GetOutcomeText(result.Outcome), titles]);
+            Log($"{operation}: {GetOutcomeText(result.Outcome)} ({titles})");
         }
         catch (ArgumentException rejection)
         {

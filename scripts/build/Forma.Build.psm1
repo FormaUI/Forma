@@ -456,7 +456,8 @@ Lints the locale files and the lookups that key them.
 .DESCRIPTION
 The linter is pinned in the tool manifest and restored before it runs, so a machine without it fetches
 the pinned version rather than skipping the step, and one that cannot fetch it fails on the pin. It runs
-from the repository root, where the manifest and the linting configuration both sit.
+from the repository root, where the manifest and the linting configuration both sit, at warning severity,
+so a lookup worth changing fails the gate as one the runtime gets wrong does.
 
 .PARAMETER Context
 The build context.
@@ -480,7 +481,7 @@ function Test-SolutionLocale {
             dotnet tool restore --verbosity quiet
 
             if ($LASTEXITCODE -eq 0) {
-                dotnet locali --path $solution
+                dotnet locali --path $solution --severity warning
             }
         }
         finally {
