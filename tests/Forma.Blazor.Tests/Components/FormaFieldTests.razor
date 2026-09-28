@@ -117,22 +117,96 @@
         }
 
         [Fact]
-        public void Should_render_validation_content_after_the_label()
+        public async Task Should_render_each_validation_message_after_the_label()
         {
             // Arrange
             using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(
+                @<FakeFormHost EditContext="editContext">
+                    <FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)">
+                        <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                    </FormaField>
+                </FakeFormHost>);
 
             // Act
-            var cut = ctx.Render(
-                @<FormaField Label="Name" TargetId="fld-1">
-                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
-                    <Validation><span class="stub-validation">Required</span></Validation>
-                </FormaField>);
+            var messages = new ValidationMessageStore(editContext);
+            messages.Add(FieldIdentifier.Create(() => model.Text), "Required");
+            messages.Add(FieldIdentifier.Create(() => model.Text), "Too short");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
 
             // Assert
             var children = cut.Find(".forma-field").Children;
-            Assert.Equal("LABEL", children[1].TagName);
-            Assert.Contains("stub-validation", children[2].ClassList);
+            Assert.Multiple(
+                () => Assert.Equal("LABEL", children[1].TagName),
+                () => Assert.Contains("forma-field-message", children[2].ClassList),
+                () => Assert.Equal(["Required", "Too short"], cut.FindAll(".forma-field-message").Select(message => message.TextContent)));
+        }
+
+        [Fact]
+        public async Task Should_render_no_message_for_another_field()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(
+                @<FakeFormHost EditContext="editContext">
+                    <FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)">
+                        <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                    </FormaField>
+                </FakeFormHost>);
+
+            // Act
+            var messages = new ValidationMessageStore(editContext);
+            messages.Add(FieldIdentifier.Create(() => model.Date), "A date is required.");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-field-message"));
+        }
+
+        [Fact]
+        public void Should_render_no_message_outside_a_form()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-field-message"));
+        }
+
+        [Fact]
+        public async Task Should_clear_the_messages_when_the_form_revalidates()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(
+                @<FakeFormHost EditContext="editContext">
+                    <FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)">
+                        <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                    </FormaField>
+                </FakeFormHost>);
+            var messages = new ValidationMessageStore(editContext);
+            messages.Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Act
+            messages.Clear();
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-field-message"));
         }
 
         [Fact]

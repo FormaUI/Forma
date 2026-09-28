@@ -1,7 +1,7 @@
 @namespace Forma.Blazor.Components.Inputs
 @inherits FormaInputBase<string?>
 
-<FormaField Label="@Label" TargetId="@ElementId" Required="@Required" Multiline="true">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" Required="@Required" Multiline="true">
     <ChildContent>
         <textarea id="@ElementId"
                   data-rid="@Context.RuntimeId"
@@ -25,7 +25,4 @@
             </div>
         }
     </ChildContent>
-    <Validation>
-        <ValidationMessage For="@ValueExpression" />
-    </Validation>
 </FormaField>

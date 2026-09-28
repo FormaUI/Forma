@@ -28,13 +28,10 @@
 
 @if (HasLabel)
 {
-    <FormaField Label="@Label" TargetId="@ElementId" Required="@Required" style="@FieldStyle">
+    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" Required="@Required" style="@FieldStyle">
         <ChildContent>
             @box
         </ChildContent>
-        <Validation>
-            <ValidationMessage For="@ValueExpression" />
-        </Validation>
     </FormaField>
 }
 else

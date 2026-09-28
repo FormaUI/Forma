@@ -2,7 +2,7 @@
 @inherits FormaInputBase<DateOnly?>
 @using Forma.Framework.Browser.Interop.Behaviors
 
-<FormaField Label="@Label" TargetId="@ElementId" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-date-picker">
             <div class="forma-date-picker-trigger-wrapper" @ref="_anchorElement">
@@ -42,7 +42,4 @@
             </FormaPopover>
         </div>
     </ChildContent>
-    <Validation>
-        <ValidationMessage For="@ValueExpression" />
-    </Validation>
 </FormaField>

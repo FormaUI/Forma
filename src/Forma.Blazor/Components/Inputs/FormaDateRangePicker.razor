@@ -3,7 +3,7 @@
 @using Forma.Framework.Browser.Interop.Behaviors
 @using Forma.Blazor.Models
 
-<FormaField Label="@Label" TargetId="@ElementId" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-date-range-picker">
             <div class="forma-date-range-picker-trigger-wrapper" @ref="_anchorElement">
@@ -86,7 +86,4 @@
             </FormaPopover>
         </div>
     </ChildContent>
-    <Validation>
-        <ValidationMessage For="@ValueExpression" />
-    </Validation>
 </FormaField>

@@ -137,7 +137,7 @@
 }
 
 /* Breaks the message below the row. */
-.forma-field-label-inline ::deep .validation-message {
+.forma-field-label-inline .forma-field-message {
     flex-basis: 100%;
 }
 
@@ -147,7 +147,7 @@
 }
 
 /* ---------- validation message ---------- */
-::deep .validation-message {
+.forma-field-message {
     display: block;
     margin-block-start: var(--space-1);
     font-size: var(--font-size-sm);

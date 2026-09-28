@@ -14,5 +14,8 @@
             @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
         </label>
     }
-    @Validation
+    @foreach (var message in ValidationMessages)
+    {
+        <div class="forma-field-message">@message</div>
+    }
 </div>

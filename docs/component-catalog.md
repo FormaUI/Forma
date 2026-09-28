@@ -287,7 +287,7 @@ A ghost icon-only button showing an eye, struck through while what it guards is 
 
 ### `FormaField`
 
-The chrome every labeled input shares: the floating label, the box, the focus ring and the validation slot, styling the input its consumer renders.
+The chrome every labeled input shares: the floating label, the box, the focus ring and the validation messages, styling the input its consumer renders.
 
 | | |
 |---|---|

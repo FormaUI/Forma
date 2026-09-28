@@ -110,7 +110,7 @@ Every component derives from one of three bases, and never from `ComponentBase` 
 - Do validate parameters in `OnParametersSet` with throw helpers such as `ArgumentException.ThrowIfNullOrWhiteSpace`, `ArgumentOutOfRangeException.ThrowIfLessThan`, and `ArgumentNullException.ThrowIfNull`.
 - Do throw `InvalidOperationException` from `OnInitialized` for structural misuse such as a child outside its required parent.
 - Do derive form inputs from `FormaInputBase<TValue>`, write `class="@RootClass"` on the control so the field's validation class rides with the component's own, and implement `TryParseValueFromString`.
-- Do emit `<ValidationMessage For="@ValueExpression" />` from an input that composes the field component; a bare control the library also places outside a form, as a grid places a checkbox, leaves the message to the host, since a `ValidationMessage` needs an `EditContext` to exist.
+- Do hand the field component the input's `FieldIdentifier` through `Field`, so the field renders the form's messages for it beneath the element; a bare control the library also places outside a form, as a grid places a checkbox, leaves the message to the host, since a message needs an `EditContext` to exist.
 - Do name a field through `ValueExpression` where the library uses an input as a control rather than a form field — a grid's row marker, a multi-select's option — because `InputBase` requires one.
 - Do use a plain `Value` / `ValueChanged` pair for non-form components.
 - Don't postpone validation until an event handler when lifecycle validation can fail earlier and more clearly.

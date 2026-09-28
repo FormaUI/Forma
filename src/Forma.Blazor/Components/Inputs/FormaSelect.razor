@@ -3,7 +3,7 @@
 @using Forma.Framework.Browser.Interop.Behaviors
 @inherits FormaInputBase<TValue>
 
-<FormaField Label="@Label" TargetId="@ElementId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" Required="@Required" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-select-trigger-wrapper" @ref="_anchorElement">
             <button id="@ElementId"
@@ -60,7 +60,4 @@
             </div>
         </FormaPopover>
     </ChildContent>
-    <Validation>
-        <ValidationMessage For="@ValueExpression" />
-    </Validation>
 </FormaField>

@@ -2,7 +2,7 @@
 @typeparam TValue where TValue : struct, System.Numerics.INumber<TValue>
 @inherits FormaInputBase<TValue>
 
-<FormaField Label="@Label" TargetId="@ElementId" LabelMode="FieldLabelMode.Above">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" LabelMode="FieldLabelMode.Above">
     <ChildContent>
         @* Sits on the label's row, so the reading stays beside the name it belongs to. *@
         <span class="forma-slider-value" aria-hidden="true"><bdi dir="ltr">@DisplayValue</bdi></span>
@@ -21,7 +21,4 @@
                aria-valuetext="@AriaValueText"
                @oninput="@(args => CurrentValueAsString = args.Value?.ToString())" />
     </ChildContent>
-    <Validation>
-        <ValidationMessage For="@ValueExpression" />
-    </Validation>
 </FormaField>

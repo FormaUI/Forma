@@ -3,8 +3,9 @@ namespace Forma.Blazor.Components;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>Field chrome — the label, required marker and validation slot around a form element.</summary>
+/// <summary>Field chrome — the label, required marker and validation messages around a form element.</summary>
 public sealed partial class FormaField : FormaElementBase
 {
     /// <summary>The label text, absent which no label renders.</summary>
@@ -25,8 +26,12 @@ public sealed partial class FormaField : FormaElementBase
     /// <summary>The element the chrome wraps; the forma-field-input class opts it into the field's box.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    /// <summary>Validation output for the element, normally a ValidationMessage.</summary>
-    [Parameter] public RenderFragment? Validation { get; set; }
+    /// <summary>The model field whose validation messages render beneath the element; absent, none render.</summary>
+    [Parameter] public FieldIdentifier? Field { get; set; }
+
+    [CascadingParameter] private EditContext? EditContext { get; set; }
+
+    private EditContext? _observedEditContext;
 
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
@@ -40,6 +45,9 @@ public sealed partial class FormaField : FormaElementBase
             _ => null,
         };
 
+    private IEnumerable<string> ValidationMessages
+        => Field is { } identifier && EditContext is { } editContext ? editContext.GetValidationMessages(identifier) : [];
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -49,6 +57,23 @@ public sealed partial class FormaField : FormaElementBase
         }
 
         ArgumentNullException.ThrowIfNull(ChildContent);
+
+        // The messages change when the form validates, which the form reports through its context rather than through a parameter.
+        if (!ReferenceEquals(EditContext, _observedEditContext))
+        {
+            StopObservingValidation();
+            _observedEditContext = EditContext;
+            _observedEditContext?.OnValidationStateChanged += HandleValidationStateChanged;
+        }
+    }
+
+    private void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs args)
+        => StateHasChanged();
+
+    private void StopObservingValidation()
+    {
+        _observedEditContext?.OnValidationStateChanged -= HandleValidationStateChanged;
+        _observedEditContext = null;
     }
 
     /// <inheritdoc />
@@ -57,4 +82,12 @@ public sealed partial class FormaField : FormaElementBase
             .Add("forma-field")
             .Add("forma-field-multiline", Multiline)
             .Add(LabelModeClass);
+
+    /// <inheritdoc />
+    protected override ValueTask DisposeAsyncCore()
+    {
+        StopObservingValidation();
+
+        return base.DisposeAsyncCore();
+    }
 }

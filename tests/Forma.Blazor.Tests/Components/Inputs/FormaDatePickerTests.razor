@@ -278,7 +278,7 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Contains("invalid", cut.Find(".forma-date-picker-trigger").ClassList),
-                () => Assert.Equal("A date is required.", cut.Find(".validation-message").TextContent));
+                () => Assert.Equal("A date is required.", cut.Find(".forma-field-message").TextContent));
         }
 
         [Fact]
