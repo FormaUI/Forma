@@ -65,6 +65,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool _isAddressRead;
     private ElementReference _regionElement;
     private SelectionInteraction _selectionInteraction = default!;
+    private ImplicitSubmitGuard _submitGuard = default!;
     private HeightReservation _heightReservation = default!;
     private DotNetObjectReference<FormaDataView<TItem>>? _selfReference;
     private bool _isItemSelectionAttached;
@@ -416,6 +417,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     protected override void OnInitialized()
     {
         _selectionInteraction = new SelectionInteraction(Context.JS);
+        _submitGuard = new ImplicitSubmitGuard(Context.JS);
         _heightReservation = new HeightReservation(Context.JS);
     }
 
@@ -534,6 +536,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
             _isItemSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector);
+        }
+
+        // Enter on a marker activates its item, so the form a host wraps the data view in must not take it as a submission.
+        if ((EnableCheckedSelection || EnableItemSelection) && !_submitGuard.IsAttached)
+        {
+            await _submitGuard.AttachAsync(_regionElement, MarkerSelector);
         }
 
         // Virtualization sizes its own scroll range, and an unpaged data view has no short page to hold a height for.
@@ -1005,6 +1013,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         await _selectionInteraction.DisposeAsync();
+        await _submitGuard.DisposeAsync();
         await _heightReservation.DisposeAsync();
         _selfReference?.Dispose();
         await base.DisposeAsyncCore();
@@ -1131,6 +1140,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     // The selection interaction reads a click and a key against the item the marker sits in, which every view marks the same way.
     private const string ItemSelector = "[" + ItemAttribute + "]";
+
+    /// <summary>The selector of a marker, the control a view gives an item that carries its token and its focus.</summary>
+    private const string MarkerSelector = "[data-row-key]";
 
     // The items arrive with each group's members standing together, so a group is a run of one key.
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)

@@ -29,6 +29,20 @@ describe('ImplicitSubmitGuard', () => {
         expect(press(key).defaultPrevented).toBe(false);
     });
 
+    it('guards the controls a selector names within a surface and leaves the rest alone', () => {
+        document.body.innerHTML = '<form><div id="surface"><input id="marker" data-row-key="1" /><button id="action">Go</button></div></form>';
+        attach(document.querySelector('#surface'), { within: '[data-row-key]' });
+        const press = (element, key) => {
+            const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+            element.dispatchEvent(event);
+
+            return event;
+        };
+
+        expect(press(document.querySelector('#marker'), 'Enter').defaultPrevented).toBe(true);
+        expect(press(document.querySelector('#action'), 'Enter').defaultPrevented).toBe(false);
+    });
+
     it('stops guarding once disposed', () => {
         const handle = attach(input);
 
