@@ -2090,12 +2090,12 @@
     {
         private static List<Employee> CreateEmployees() =>
         [
-            new() { Id = 1, Name = "Alice", Salary = 100 },
-            new() { Id = 2, Name = "Bob", Salary = 200 },
+            new() { Id = 1, Name = "Alice", Salary = 100, Hired = new DateOnly(2020, 1, 6), IsRemote = true },
+            new() { Id = 2, Name = "Bob", Salary = 200, Hired = new DateOnly(2021, 5, 3) },
         ];
 
         private static Employee Clone(Employee employee)
-            => new() { Id = employee.Id, Name = employee.Name, Salary = employee.Salary };
+            => new() { Id = employee.Id, Name = employee.Name, Salary = employee.Salary, Hired = employee.Hired, Reviewed = employee.Reviewed, IsRemote = employee.IsRemote };
 
         [Fact]
         public void Should_throw_when_inline_editing_is_enabled_without_a_clone()
@@ -2187,9 +2187,81 @@
             cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
             var editors = cut.FindAll("tbody input");
 
-            // Assert — InputText leaves type implicit, InputNumber sets it explicitly
-            Assert.Null(editors[0].GetAttribute("type"));
-            Assert.Equal("number", editors[1].GetAttribute("type"));
+            // Assert — the text is the library's text box named by its column; the number wears the text box's look
+            Assert.Multiple(
+                () => Assert.Contains("forma-text-box", editors[0].ClassName, StringComparison.Ordinal),
+                () => Assert.Contains("forma-data-grid-editor", editors[0].ClassName, StringComparison.Ordinal),
+                () => Assert.Equal("Name", editors[0].GetAttribute("aria-label")),
+                () => Assert.Equal("number", editors[1].GetAttribute("type")),
+                () => Assert.Contains("forma-text-box", editors[1].ClassName, StringComparison.Ordinal),
+                () => Assert.Equal("Salary", editors[1].GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public async Task Should_edit_a_date_and_a_flag_with_the_library_s_picker_and_box()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = CreateEmployees();
+
+            var cut = ctx.Render(
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Hired)" />
+                            <FormaPropertyColumn Property="@(employee => employee.Reviewed)" />
+                            <FormaPropertyColumn Property="@(employee => employee.IsRemote)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.Markup.Contains("2021", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+
+            // Act
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Assert — a date and a nullable date each open the date picker, and a flag draws the checkbox
+            var row = cut.FindAll("tbody tr")[0];
+            Assert.Multiple(
+                () => Assert.Equal(2, row.QuerySelectorAll(".forma-date-picker").Length),
+                () => Assert.Contains("forma-data-grid-editor", row.QuerySelector("button.forma-date-picker-trigger")!.ClassName, StringComparison.Ordinal),
+                () => Assert.Equal("Hired", row.QuerySelector("label.forma-field-label")!.TextContent.Trim()),
+                () => Assert.Single(row.QuerySelectorAll("input[type=checkbox].forma-checkbox.forma-data-grid-editor")),
+                () => Assert.True(row.QuerySelector("input[type=checkbox]")!.HasAttribute("checked")));
+        }
+
+        [Fact]
+        public async Task Should_write_a_picked_date_and_a_toggled_flag_to_the_draft()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = CreateEmployees();
+            Employee? saved = null;
+
+            var cut = ctx.Render(
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone" OnRowSave="@((Employee employee) => saved = employee)">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Hired)" />
+                            <FormaPropertyColumn Property="@(employee => employee.IsRemote)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.Markup.Contains("2021", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Act — pick through the picker's binding and toggle the box, then save
+            var picker = cut.FindComponent<FormaDatePicker>();
+            await cut.InvokeAsync(() => picker.Instance.ValueChanged.InvokeAsync(new DateOnly(2022, 2, 2)));
+            cut.Find("tbody input[type=checkbox]").Change(false);
+            await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new DateOnly(2022, 2, 2), saved!.Hired),
+                () => Assert.False(saved!.IsRemote),
+                () => Assert.Equal(new DateOnly(2020, 1, 6), employees[0].Hired));
         }
 
         [Fact]
@@ -2239,7 +2311,7 @@
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
             // Act
-            cut.Find("tbody input").Change("Alicia");
+            cut.Find("tbody input").Input("Alicia");
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert
@@ -2269,7 +2341,7 @@
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
             // Act
-            cut.Find("tbody input").Change(string.Empty);
+            cut.Find("tbody input").Input(string.Empty);
             var accepted = await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert
@@ -2296,7 +2368,7 @@
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
-            cut.Find("tbody input").Change("Discarded");
+            cut.Find("tbody input").Input("Discarded");
 
             // Act
             await cut.InvokeAsync(() => grid.Instance.CancelEditAsync());
@@ -2456,6 +2528,12 @@
             public string Name { get; set; } = string.Empty;
 
             public decimal Salary { get; set; }
+
+            public DateOnly Hired { get; set; }
+
+            public DateOnly? Reviewed { get; set; }
+
+            public bool IsRemote { get; set; }
         }
 
         private readonly record struct Point(int X);

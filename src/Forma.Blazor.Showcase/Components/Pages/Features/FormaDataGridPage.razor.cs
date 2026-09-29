@@ -243,6 +243,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
             Department = employee.Department,
             StartDate = employee.StartDate,
             Salary = employee.Salary,
+            Remote = employee.Remote,
         };
 
     private void SaveEmployee(EditableEmployee edited)
@@ -258,6 +259,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
         target.Department = edited.Department;
         target.StartDate = edited.StartDate;
         target.Salary = edited.Salary;
+        target.Remote = edited.Remote;
     }
 
     private enum RowAction
@@ -296,5 +298,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
         [Range(0, 1_000_000)]
         public decimal Salary { get; set; }
+
+        public bool Remote { get; set; }
     }
 }

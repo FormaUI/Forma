@@ -284,7 +284,7 @@
 </div>
 
 <div class="demo-section">    <h2>@L["Inline Editing Inside a Form"]</h2>
-    <p class="description">@L["FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number and date here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open."]</p>
+    <p class="description">@L["FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number, date and a checkbox here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open."]</p>
     <div class="demo-box">
         <FormaDataView TItem="EditableEmployee" Items="@_editableEmployees.AsQueryable()" EnablePagination="false" AddressOptions='@(new DataViewAddressOptions("editing"))'>
             <FormaDataGrid TItem="EditableEmployee" @ref="_editGrid" EnableInlineEditing="true" CloneForEdit="CloneEmployee" OnRowSave="SaveEmployee">
@@ -294,6 +294,7 @@
                     <FormaPropertyColumn Property="@(e => e.Department)" Title="@L["Department"]" />
                     <FormaPropertyColumn Property="@(e => e.StartDate)" Title="@L["Start date"]" Format="d" />
                     <FormaPropertyColumn Property="@(e => e.Salary)" Title="@L["Salary"]" Format="N0" />
+                    <FormaPropertyColumn Property="@(e => e.Remote)" Title="@L["Remote"]" />
                     <FormaTemplateColumn Title="@L["Actions"]">
                         <div class="demo-row-actions">
                             @if (_editGrid?.IsEditing(context) == true)

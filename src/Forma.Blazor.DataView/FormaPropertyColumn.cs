@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 
+using Forma.Blazor.Components.Inputs;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -16,7 +18,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     where TItem : notnull
 {
-    private static readonly Type? _editorType = ResolveEditorType();
+    private static readonly EditorKind _editorKind = ResolveEditorKind();
 
     private Expression<Func<TItem, TValue>>? _boundProperty;
     private string? _boundFormat;
@@ -26,6 +28,8 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     private Action<TItem, TValue>? _setter;
     private TItem? _cachedDraft;
     private Expression<Func<TValue>>? _cachedValueExpression;
+    private TItem? _dateFieldDraft;
+    private Expression<Func<DateOnly?>>? _dateFieldExpression;
 
     /// <summary>The member this column reads, and writes back to while editing.</summary>
     [Parameter, EditorRequired] public Expression<Func<TItem, TValue>> Property { get; set; } = default!;
@@ -114,9 +118,9 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
                 return;
             }
 
-            if (_setter is { } setter && _editorType is { } editorType)
+            if (_setter is { } setter && _editorKind != EditorKind.None)
             {
-                RenderEditor(builder, draft, setter, editorType);
+                RenderEditor(builder, draft, setter);
                 return;
             }
         }
@@ -125,34 +129,46 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         builder.AddContent(1, _displayTextSelector(draft));
     }
 
-    private static Type? ResolveEditorType()
+    // The library's input where it has one for the value's type, and the framework's in the library's look where it has none yet.
+    private static EditorKind ResolveEditorKind()
     {
-        if (typeof(TValue) == typeof(string))
+        var type = typeof(TValue);
+
+        if (type == typeof(string))
         {
-            return typeof(InputText);
+            return EditorKind.TextBox;
         }
 
-        if (typeof(TValue) == typeof(bool))
+        if (type == typeof(bool))
         {
-            return typeof(InputCheckbox);
+            return EditorKind.CheckBox;
         }
 
-        var underlying = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
-
-        if (underlying == typeof(DateTime) || underlying == typeof(DateTimeOffset)
-            || underlying == typeof(DateOnly) || underlying == typeof(TimeOnly))
+        if (type == typeof(DateOnly?))
         {
-            return typeof(InputDate<>).MakeGenericType(typeof(TValue));
+            return EditorKind.NullableDatePicker;
+        }
+
+        if (type == typeof(DateOnly))
+        {
+            return EditorKind.DatePicker;
+        }
+
+        var underlying = Nullable.GetUnderlyingType(type) ?? type;
+
+        if (underlying == typeof(DateTime) || underlying == typeof(DateTimeOffset) || underlying == typeof(TimeOnly))
+        {
+            return EditorKind.DateInput;
         }
 
         if (underlying == typeof(int) || underlying == typeof(long) || underlying == typeof(short)
             || underlying == typeof(float) || underlying == typeof(double) || underlying == typeof(decimal))
         {
-            return typeof(InputNumber<>).MakeGenericType(typeof(TValue));
+            return EditorKind.NumberInput;
         }
 
         // Everything else, an enum or a complex type, needs an edit template.
-        return null;
+        return EditorKind.None;
     }
 
     private static Action<TItem, TValue>? BuildSetter(Expression<Func<TItem, TValue>> property)
@@ -201,14 +217,92 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             ?? member.Member.Name;
     }
 
-    private void RenderEditor(RenderTreeBuilder builder, TItem draft, Action<TItem, TValue> setter, Type editorType)
+    private void RenderEditor(RenderTreeBuilder builder, TItem draft, Action<TItem, TValue> setter)
     {
-        builder.OpenComponent(3, editorType);
-        builder.AddComponentParameter(4, "Value", _getter(draft));
-        builder.AddComponentParameter(5, "ValueChanged", EventCallback.Factory.Create<TValue>(this, value => setter(draft, value)));
-        builder.AddComponentParameter(6, "ValueExpression", GetValueExpression(draft));
-        builder.AddComponentParameter(7, "class", "forma-data-grid-editor");
+        var value = _getter(draft);
+        var valueChanged = EventCallback.Factory.Create<TValue>(this, changed => setter(draft, changed));
+
+        switch (_editorKind)
+        {
+            case EditorKind.TextBox:
+                RenderInput(builder, typeof(FormaTextBox), value, valueChanged, GetValueExpression(draft));
+                break;
+            case EditorKind.CheckBox:
+                RenderInput(builder, typeof(FormaCheckBox), value, valueChanged, GetValueExpression(draft));
+                break;
+            case EditorKind.NullableDatePicker:
+                RenderDatePicker(builder, value, valueChanged, GetValueExpression(draft));
+                break;
+            case EditorKind.DatePicker:
+                // The picker takes a nullable date, so a date member is bound through a conversion each way and identified through a stand-in.
+                RenderDatePicker(
+                    builder,
+                    (DateOnly?)(object)value!,
+                    EventCallback.Factory.Create<DateOnly?>(this, changed => setter(draft, (TValue)(object)(changed ?? default))),
+                    GetDateFieldExpression(draft));
+                break;
+            case EditorKind.NumberInput:
+                RenderFrameworkInput(builder, typeof(InputNumber<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+                break;
+            case EditorKind.DateInput:
+                RenderFrameworkInput(builder, typeof(InputDate<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+                break;
+            default:
+                throw new InvalidOperationException($"'{_editorKind}' is not a known {nameof(EditorKind)}.");
+        }
+    }
+
+    // A library input takes the editor's class as its own and names itself by the column, since a cell carries no label.
+    private void RenderInput(RenderTreeBuilder builder, Type inputType, object? value, object valueChanged, object valueExpression)
+    {
+        builder.OpenComponent(3, inputType);
+        builder.AddComponentParameter(4, "Value", value);
+        builder.AddComponentParameter(5, "ValueChanged", valueChanged);
+        builder.AddComponentParameter(6, "ValueExpression", valueExpression);
+        builder.AddComponentParameter(7, "Class", EditorClass);
+        builder.AddComponentParameter(8, "aria-label", Title);
         builder.CloseComponent();
+    }
+
+    // The picker is a field and asks for its label, the column's title, which the cell hides while it stays the picker's name.
+    private void RenderDatePicker(RenderTreeBuilder builder, object? value, object valueChanged, object valueExpression)
+    {
+        builder.OpenComponent<FormaDatePicker>(15);
+        builder.AddComponentParameter(16, nameof(FormaDatePicker.Value), value);
+        builder.AddComponentParameter(17, nameof(FormaDatePicker.ValueChanged), valueChanged);
+        builder.AddComponentParameter(18, nameof(FormaDatePicker.ValueExpression), valueExpression);
+        builder.AddComponentParameter(19, nameof(FormaDatePicker.Label), Title);
+        builder.AddComponentParameter(20, nameof(FormaDatePicker.Class), EditorClass);
+        builder.CloseComponent();
+    }
+
+    // A framework input wears the text box's look until the library has an input of its own for the value.
+    private void RenderFrameworkInput(RenderTreeBuilder builder, Type inputType, object? value, object valueChanged, object valueExpression)
+    {
+        builder.OpenComponent(9, inputType);
+        builder.AddComponentParameter(10, "Value", value);
+        builder.AddComponentParameter(11, "ValueChanged", valueChanged);
+        builder.AddComponentParameter(12, "ValueExpression", valueExpression);
+        builder.AddComponentParameter(13, "class", $"forma-text-box {EditorClass}");
+        builder.AddComponentParameter(14, "aria-label", Title);
+        builder.CloseComponent();
+    }
+
+    private const string EditorClass = "forma-data-grid-editor";
+
+    // The picker identifies its field through a nullable date member, which a date member is not; the stand-in lends it one, per draft.
+    private Expression<Func<DateOnly?>> GetDateFieldExpression(TItem draft)
+    {
+        if (_dateFieldExpression is not null && ReferenceEquals(_dateFieldDraft, draft))
+        {
+            return _dateFieldExpression;
+        }
+
+        var standIn = new DateFieldStandIn();
+        _dateFieldDraft = draft;
+        _dateFieldExpression = () => standIn.Value;
+
+        return _dateFieldExpression;
     }
 
     // Validation targets the draft, so the member expression is rewritten from the row to the copy being edited; cached per draft, since the expression identifies the field.
@@ -230,5 +324,23 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     {
         protected override Expression VisitParameter(ParameterExpression node)
             => node == parameter ? replacement : base.VisitParameter(node);
+    }
+
+    /// <summary>The input a cell draws while its row is edited, decided by the member's type.</summary>
+    private enum EditorKind
+    {
+        None,
+        TextBox,
+        CheckBox,
+        DatePicker,
+        NullableDatePicker,
+        NumberInput,
+        DateInput,
+    }
+
+    // The member the date picker identifies its field by, in the picker's own type, standing in for a date member.
+    private sealed class DateFieldStandIn
+    {
+        public DateOnly? Value { get; set; }
     }
 }
