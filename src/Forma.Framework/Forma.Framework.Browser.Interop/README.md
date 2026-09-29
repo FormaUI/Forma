@@ -28,12 +28,11 @@ have no wrapper because only other scripts attach them.
 | `FilePreview.js` | `FilePreview` | Thumbnails rendered from the browser's own `File` objects into a container's images. |
 | `Focus.js` | `Focus` | Decides where Tab and the arrow keys go inside a surface: wrapping among its controls, visiting named regions first, or roving as one Tab stop. |
 | `HeightReservation.js` | `HeightReservation` | Holds a container at the tallest height its content has needed. |
-| `ImplicitSubmitGuard.js` | `ImplicitSubmitGuard` | Stops Enter from submitting the form around a control, or around the controls a selector names within a surface. |
 | `PanGesture.js` | `PanGesture` | Drags a scroll container's contents with the mouse while a class marks it eligible. |
 | `ReorderInteraction.js` | `ReorderInteraction` | Drags or keys an item into a new position in its list, telling the owner through `HandleReorderAsync`. |
 | `Scroll.js` | `Scroll` | Tells the owner how far a surface can still scroll through `HandleOverflowAsync` and when a sentinel comes into view through `HandleReachedAsync`; exports `toCenter` and `step` beside the attachment. |
 | `SelectionFollower.js` | `SelectionFollower` | Keeps an element positioned beside the text selection inside its owner, holding focus while it shows and standing on the input router while focused so Escape returns focus to the owner. |
-| `SelectionInteraction.js` | `SelectionInteraction` | Click and keyboard selection across a list of keyed items, told to the owner through `HandleSelectAsync` and `HandleRangeSelectAsync`. |
+| `SelectionInteraction.js` | `SelectionInteraction` | Click and keyboard selection across a list of keyed items, told to the owner through `HandleSelectAsync` and `HandleRangeSelectAsync`, and Enter on an item's marker activating it through `HandleActivateAsync`, each key a route on the input router. |
 | `Wheel.js` | `Wheel` | Answers a wheel turned over a surface: a track moves by it, or the owner is told the direction through `HandleWheelAsync`. |
 
 The options a behavior's `AttachAsync` takes and the reports its owner receives sit beside the

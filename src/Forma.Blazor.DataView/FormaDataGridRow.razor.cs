@@ -1,7 +1,6 @@
 namespace Forma.Blazor.Components.DataView;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>One row of a grid: the item's selection control where selection is on, then a cell per column.</summary>
 /// <typeparam name="TItem">The item the row shows.</typeparam>
@@ -49,10 +48,7 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     private Task HandleClickAsync()
         => Interaction.ActivateAsync(Item);
 
-    // A press on a row with a marker is the selection's, so a double press or Enter on the marker activates the row instead; a row being edited takes neither.
+    // A press on a row with a marker is the selection's, so a double press activates the row instead, as Enter on its marker does; a row being edited takes neither.
     private Task HandleDoubleClickAsync()
         => HasSelection && !Grid.IsEditing(Item) ? Interaction.ActivateAsync(Item) : Task.CompletedTask;
-
-    private Task HandleMarkerKeyDownAsync(KeyboardEventArgs args)
-        => args.Key == "Enter" && !Grid.IsEditing(Item) ? Interaction.ActivateAsync(Item) : Task.CompletedTask;
 }

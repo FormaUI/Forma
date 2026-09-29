@@ -6,7 +6,9 @@ using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
+using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
+using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -23,16 +25,22 @@ public sealed partial class FormaPagination : FormaElementBase
     private const int StepsStride = LookAhead;
 
     private const string PageAction = "pagination.page";
+    private const string GoAction = "pagination.go";
 
     private static readonly TextBoxOptions NavigationEntryOptions = new() { InputMode = TextInputMode.Numeric, EnterKeyHint = TextEnterKeyHint.Go };
 
+    // Enter in the box goes to the typed page, a route on the box itself so it wins over the box's own claim on the key and the form around the pager never takes it as a submission.
+    private static readonly InputProfile NavigationInputProfile = new()
+    {
+        InputRoutes = [new InputRoute(GoAction, new KeyBinding("Enter"))],
+    };
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    private ImplicitSubmitGuard _submitGuard = default!;
+    private InputRegistration _navigationInputRegistration = default!;
     private Wheel _wheel = default!;
     private TextEntry _textEntry = default!;
     private DotNetObjectReference<FormaPagination>? _selfReference;
-    private bool _isSubmitGuardAttached;
     private string? _navigationEntry;
     private int _shownPage;
 
@@ -71,9 +79,6 @@ public sealed partial class FormaPagination : FormaElementBase
     private string NavLabel => AdditionalAttributes?.GetValueOrDefault("aria-label")?.ToString() ?? L["Pagination"].Value;
 
     // Handlers splatted onto the box's input.
-    private EventCallback<KeyboardEventArgs> NavigationInputKeyDown
-        => EventCallback.Factory.Create<KeyboardEventArgs>(this, OnNavigationInputKeyDownAsync);
-
     private EventCallback<FocusEventArgs> NavigationInputFocus
         => EventCallback.Factory.Create<FocusEventArgs>(this, SelectNavigationEntryAsync);
 
@@ -92,7 +97,7 @@ public sealed partial class FormaPagination : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _submitGuard = new ImplicitSubmitGuard(Context.JS);
+        _navigationInputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
         _wheel = new Wheel(Context.JS);
         _textEntry = new TextEntry(Context.JS);
     }
@@ -117,16 +122,12 @@ public sealed partial class FormaPagination : FormaElementBase
     {
         if (PageCount <= 1)
         {
-            _isSubmitGuardAttached = false;
-            await _submitGuard.DetachAsync();
+            await _navigationInputRegistration.SyncAsync(default, NavigationInputProfile, wanted: false);
             await _wheel.DetachAsync();
             return;
         }
 
-        if (!_isSubmitGuardAttached)
-        {
-            _isSubmitGuardAttached = await _submitGuard.AttachAsync(NavigationInput.RootElement);
-        }
+        await _navigationInputRegistration.SyncAsync(NavigationInput.RootElement, NavigationInputProfile);
 
         if (Options.PageOnWheelGesture && !_wheel.IsAttached)
         {
@@ -210,13 +211,8 @@ public sealed partial class FormaPagination : FormaElementBase
             ? Math.Max(ActivePage - stride, 1)
             : Math.Min(ActivePage + stride, PageCount));
 
-    private async Task OnNavigationInputKeyDownAsync(KeyboardEventArgs args)
-    {
-        if (args.Key is "Enter")
-        {
-            await GoAsync();
-        }
-    }
+    private Task HandleActionAsync(string action, InputInfo input)
+        => action == GoAction ? GoAsync() : Task.CompletedTask;
 
     // A typed page outside the range settles on the nearest one; an unparseable entry gives way to the page shown.
     private async Task GoAsync()
@@ -269,7 +265,7 @@ public sealed partial class FormaPagination : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _submitGuard.DisposeAsync();
+        await _navigationInputRegistration.DisposeAsync();
         await _wheel.DisposeAsync();
         await _textEntry.DisposeAsync();
         _selfReference?.Dispose();

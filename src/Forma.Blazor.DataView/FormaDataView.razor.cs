@@ -65,10 +65,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool _isAddressRead;
     private ElementReference _regionElement;
     private SelectionInteraction _selectionInteraction = default!;
-    private ImplicitSubmitGuard _submitGuard = default!;
     private HeightReservation _heightReservation = default!;
     private DotNetObjectReference<FormaDataView<TItem>>? _selfReference;
-    private bool _isItemSelectionAttached;
+    private bool _isSelectionAttached;
+    private bool _isAttachedToSelect;
     private SelectionBounds _selectionBounds;
 
     /// <summary>The items to show, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
@@ -417,7 +417,6 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     protected override void OnInitialized()
     {
         _selectionInteraction = new SelectionInteraction(Context.JS);
-        _submitGuard = new ImplicitSubmitGuard(Context.JS);
         _heightReservation = new HeightReservation(Context.JS);
     }
 
@@ -527,21 +526,26 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             await NotifyStateAsync();
         }
 
-        if (EnableItemSelection && !_isItemSelectionAttached)
+        // Under checked selection the boxes select, so the behavior takes Enter alone, activating the item whose box holds the focus;
+        // a change of selection since it attached, or no selection at all, lets it go so it attaches again as the selection now is.
+        var wantsSelection = EnableCheckedSelection || EnableItemSelection;
+
+        if (_selectionInteraction.IsAttached && (!wantsSelection || _isAttachedToSelect != EnableItemSelection))
+        {
+            await _selectionInteraction.DetachAsync();
+            _isSelectionAttached = false;
+        }
+
+        if (wantsSelection && !_isSelectionAttached)
         {
             // Claimed before the await so a render arriving mid-call cannot re-enter and attach a second listener to the same region.
-            _isItemSelectionAttached = true;
+            _isSelectionAttached = true;
+            _isAttachedToSelect = EnableItemSelection;
             _selfReference ??= DotNetObjectReference.Create(this);
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isItemSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector);
-        }
-
-        // Enter on a marker activates its item, so the form a host wraps the data view in must not take it as a submission.
-        if ((EnableCheckedSelection || EnableItemSelection) && !_submitGuard.IsAttached)
-        {
-            await _submitGuard.AttachAsync(_regionElement, MarkerSelector);
+            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, selects: _isAttachedToSelect);
         }
 
         // Virtualization sizes its own scroll range, and an unpaged data view has no short page to hold a height for.
@@ -965,6 +969,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await ReplaceSelectionAsync(CreateSelection([item]));
     }
 
+    /// <summary>Activates the item whose marker held the focus when Enter was pressed, invoked from the selection behavior.</summary>
+    /// <param name="itemToken">The token of the item.</param>
+    [JSInvokable]
+    public Task HandleActivateAsync(int itemToken)
+        => _itemTokens.TryGetItem(itemToken, out var item) ? ActivateAsync(item) : Task.CompletedTask;
+
     /// <summary>Replaces or extends the selection with a contiguous range of items, invoked from the selection behavior.</summary>
     /// <param name="itemTokens">The tokens of the items in the range.</param>
     /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>
@@ -1013,7 +1023,6 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         await _selectionInteraction.DisposeAsync();
-        await _submitGuard.DisposeAsync();
         await _heightReservation.DisposeAsync();
         _selfReference?.Dispose();
         await base.DisposeAsyncCore();
@@ -1140,9 +1149,6 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     // The selection interaction reads a click and a key against the item the marker sits in, which every view marks the same way.
     private const string ItemSelector = "[" + ItemAttribute + "]";
-
-    /// <summary>The selector of a marker, the control a view gives an item that carries its token and its focus.</summary>
-    private const string MarkerSelector = "[data-row-key]";
 
     // The items arrive with each group's members standing together, so a group is a run of one key.
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)

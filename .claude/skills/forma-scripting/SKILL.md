@@ -10,6 +10,7 @@ JS-free is the default, not a prohibition.
 - Do prefer HTML, CSS, or Blazor when they provide the behavior cleanly.
 - Do use interop when the platform exposes the needed behavior only to script or when declarative techniques leave a real usability problem.
 - Do keep behavior in C# and use JS only for what the DOM cannot otherwise provide.
+- Do make every key, press, wheel turn and drop a component acts on a route or an active registration on the input router, so which of two nested components owns an input is decided in one place; a native control's own activation, a button's click, stays the control's.
 - Do use only native modern browser APIs.
 - Do write every script in strict mode: a script is an ES module, which is strict by construction, and anything that ever stops being one opens with `'use strict'`.
 - Do name JS parameters by role (`input`, `dialog`, `label`), not type (`inputEl`, `dialogElement`, `el`).

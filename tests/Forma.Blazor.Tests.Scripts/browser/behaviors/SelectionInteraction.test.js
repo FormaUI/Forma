@@ -406,6 +406,42 @@ describe('SelectionInteraction', () => {
         });
     });
 
+    describe('activating', () => {
+        it('activates the item whose marker holds the focus on Enter', () => {
+            attachSelection(grid, { owner });
+            cellOf(2).focus();
+
+            const event = press(cellOf(2), 'Enter');
+
+            selected().toHaveBeenLastCalledWith('HandleActivateAsync', 2);
+            expect(event.defaultPrevented).toBe(true);
+        });
+
+        it('leaves Enter in a control inside an item to the control', () => {
+            attachSelection(grid, { owner });
+            const field = grid.querySelector('input[type="text"]');
+            field.focus();
+
+            const event = press(field, 'Enter');
+
+            selected().not.toHaveBeenCalled();
+            expect(event.defaultPrevented).toBe(false);
+        });
+
+        it('declares activation alone where the list does not select', () => {
+            attachSelection(grid, { owner, selects: false });
+            cellOf(1).focus();
+
+            click(cellOf(2));
+            const moved = press(cellOf(1), 'ArrowDown');
+            press(cellOf(1), 'Enter');
+
+            expect(moved.defaultPrevented).toBe(false);
+            selected().toHaveBeenCalledTimes(1);
+            selected().toHaveBeenLastCalledWith('HandleActivateAsync', 1);
+        });
+    });
+
     it('stops responding once disposed', () => {
         const handle = attachSelection(grid, { owner });
 

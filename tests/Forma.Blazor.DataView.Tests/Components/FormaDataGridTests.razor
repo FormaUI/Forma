@@ -33,6 +33,59 @@
                 () => Assert.True(identifiers.IndexOf("configure") < identifiers.IndexOf("attach")));
         }
 
+        [Fact]
+        public async Task Should_activate_an_item_from_enter_on_its_box_under_checked_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            GridItem? clicked = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" OnItemClick="@((GridItem item) => clicked = item)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            var box = cut.FindAll("tbody input[data-row-key]")[1];
+            var token = int.Parse(box.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
+
+            // Act — the selection behavior attaches under checked selection too, and reports Enter on the box
+            await cut.InvokeAsync(() => cut.FindComponent<FormaDataView<GridItem>>().Instance.HandleActivateAsync(token));
+
+            // Assert
+            Assert.Equal(2, clicked!.Id);
+            Assert.Contains(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "attach");
+        }
+
+        [Fact]
+        public void Should_attach_selection_again_when_the_selection_changes_from_checked_to_items()
+        {
+            // Arrange — the behavior hands back a handle, so the grid holds it as attached
+            using var ctx = new FormaDataGridTests();
+            var selection = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/SelectionInteraction.js");
+            selection.SetupModule("attach", _ => true);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+
+            // Act
+            cut.FindComponent<FormaDataView<GridItem>>().Render(parameters => parameters
+                .Add(view => view.EnableCheckedSelection, false)
+                .Add(view => view.EnableItemSelection, true));
+
+            // Assert — attached for activation alone, then again to select
+            var selects = selection.Invocations.Where(invocation => invocation.Identifier == "attach")
+                .Select(invocation => invocation.Arguments[1]!.GetType().GetProperty("selects")!.GetValue(invocation.Arguments[1]))
+                .ToList();
+            Assert.Equal([false, true], selects);
+        }
+
         private static IQueryable<GridItem> CreateItems(int count) => Enumerable.Range(1, count)
             .Select(id => new GridItem(id, $"Item {id}"))
             .AsQueryable();

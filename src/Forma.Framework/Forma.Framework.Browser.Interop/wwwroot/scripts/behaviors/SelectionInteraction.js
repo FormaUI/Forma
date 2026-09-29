@@ -13,6 +13,10 @@
  * column, right and left to the neighbor in the same row, so one behavior serves rows down a
  * table, names flowing on into further columns, and cards packed across the width. Items laid
  * out nowhere yet, or all in one place, stand in one column in their document order.
+ *
+ * Enter on an item's marker activates the item, a route like the moves, so the form a host wraps
+ * the list in never takes it as a submission. A list whose items are selected by their boxes
+ * alone declares the activation and nothing else.
  */
 
 import { Controls } from '../../../core/scripts/Controls.js';
@@ -34,7 +38,8 @@ const Moves = [
  * @param {{
  *   owner: import('../../../core/scripts/Owner.js').Owner,
  *   keyAttribute?: string,
- *   itemSelector?: string
+ *   itemSelector?: string,
+ *   selects?: boolean
  * }} options
  */
 export function attach(target, options) {
@@ -132,7 +137,7 @@ class SelectionInteraction {
     #registration;
     #anchor = null;
 
-    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr' }) {
+    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', selects = true }) {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
@@ -141,21 +146,31 @@ class SelectionInteraction {
 
         const { signal } = this.#controller;
 
-        target.addEventListener('mousedown', event => this.#handleMouseDown(event), { signal, capture: true });
-        target.addEventListener('click', event => this.#handleClick(event), { signal, capture: true });
+        if (selects) {
+            target.addEventListener('mousedown', event => this.#handleMouseDown(event), { signal, capture: true });
+            target.addEventListener('click', event => this.#handleClick(event), { signal, capture: true });
+        }
 
         // Each key moves plain, with Shift extending the range, or with the primary modifier moving alone; one that
         // would move nothing matches nothing, so a press at the end of the list keeps its default.
-        this.#registration = register(target, {
-            routes: Moves.map(move => ({
+        const moves = selects
+            ? Moves.map(move => ({
                 action: move.action,
                 bindings: [
                     { type: 'keydown', key: move.key, when: event => this.#planMove(event, move) !== null },
                     { type: 'keydown', key: move.key, modifiers: { primary: true }, when: event => this.#planMove(event, move) !== null },
                 ],
                 handle: event => this.#move(event, move),
-            })),
-        });
+            }))
+            : [];
+
+        const activation = {
+            action: 'selection.activate',
+            bindings: [{ type: 'keydown', key: 'Enter', when: event => this.#focusedMarker(event) !== null }],
+            handle: event => tell(this.#owner, 'HandleActivateAsync', this.#tokenOf(this.#focusedMarker(event))),
+        };
+
+        this.#registration = register(target, { routes: [...moves, activation] });
     }
 
     dispose() {
@@ -169,6 +184,13 @@ class SelectionInteraction {
 
     #tokenOf(marker) {
         return Number(marker.getAttribute(this.#keyAttribute));
+    }
+
+    /** The marker the key was pressed on, when it is one of this list's; a key in a control inside an item is the control's. */
+    #focusedMarker(event) {
+        const { target } = event;
+
+        return target instanceof Element && target.matches(this.#markerSelector) && this.#target.contains(target) ? target : null;
     }
 
     #markerIn(node) {

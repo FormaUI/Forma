@@ -432,8 +432,10 @@
             // Assert
             Assert.Equal(["Reports", "Notes.txt"], cut.FindAll("tbody tr.forma-data-grid-row td:last-child").Select(cell => cell.TextContent).ToList());
 
-            // Act — Enter on Reports' marker moves into it, and a double press on a file is a click
-            await cut.Find("tbody tr.forma-data-grid-row td").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+            // Act — Enter on Reports' marker, as the selection behavior reports it, moves into it, and a double press on a file is a click
+            var marker = cut.Find("tbody tr.forma-data-grid-row input[data-row-key]");
+            var token = int.Parse(marker.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaDataView<Entry>>().Instance.HandleActivateAsync(token));
             cut.WaitForState(() => cut.Markup.Contains("Q1.pdf", StringComparison.Ordinal));
             await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
 

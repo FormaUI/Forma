@@ -512,22 +512,23 @@
         }
 
         [Fact]
-        public void Should_go_to_a_typed_page_when_enter_is_pressed()
+        public async Task Should_go_to_a_typed_page_when_enter_is_pressed()
         {
             // Arrange
             using var ctx = new FormaPaginationTests();
+            var router = new InputRouterProbe(ctx);
             var received = new List<int>();
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
                     OnPageChanged="@((int p) => received.Add(p))" />);
 
             // Act
-            var input = cut.Find(InputBox);
-            input.Input("3");
-            input.KeyDown(Key.Enter);
+            cut.Find(InputBox).Input("3");
+            await router.RouteAsync("pagination.go", "Enter");
 
             // Assert
             Assert.Equal([3], received);
+            Assert.Contains(router.Registrations, registration => InputRouterProbe.GetRoutes(registration).SequenceEqual(["pagination.go:Enter"]));
         }
 
         [Fact]
@@ -660,10 +661,11 @@
         }
 
         [Fact]
-        public void Should_read_the_box_when_typing_preceded_the_connection()
+        public async Task Should_read_the_box_when_typing_preceded_the_connection()
         {
             // Arrange — the box is emptied so the entry is read from the element.
             using var ctx = new FormaPaginationTests();
+            var router = new InputRouterProbe(ctx);
             var received = new List<int>();
             ctx.JSInterop
                 .SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js")
@@ -674,9 +676,8 @@
                     OnPageChanged="@((int p) => received.Add(p))" />);
 
             // Act
-            var input = cut.Find(InputBox);
-            input.Input("");
-            input.KeyDown(Key.Enter);
+            cut.Find(InputBox).Input("");
+            await router.RouteAsync("pagination.go", "Enter");
 
             // Assert
             Assert.Equal([3], received);

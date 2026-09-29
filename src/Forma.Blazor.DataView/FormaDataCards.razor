@@ -19,7 +19,7 @@
                 }
                 @if (HasSelection)
                 {
-                    <span class="forma-data-card-lead" @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown="args => HandleMarkerKeyDownAsync(args, item)">
+                    <span class="forma-data-card-lead" @onclick:stopPropagation @ondblclick:stopPropagation>
                         <FormaCheckBox class="@(View.EnableCheckedSelection ? "forma-data-card-box" : "forma-data-card-marker")"
                                        data-row-key="@View.GetItemToken(item)"
                                        aria-label="@L["Select Item"]"
