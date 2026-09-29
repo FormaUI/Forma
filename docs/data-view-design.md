@@ -145,7 +145,7 @@ members are the data view's, the column's are the grid's.
 | `Items` and `ItemsProvider`, one or the other | The same two ways in, one supplied |
 | `IAsyncQueryExecutor`, so a queryable backed by a store is counted and read asynchronously | `IDataViewQueryExecutor`, a service the host registers for its store, with an in-memory default the library carries |
 | `GridItemsProviderRequest`: start, count, sort column, direction, cancellation, `ApplySorting` and `GetSortByProperties` | `DataViewRequest` with the same members, so a provider applies the sort to its own queryable or reads the sorted properties for a query it writes itself |
-| `GridItemsProviderResult`: items and total | `DataViewPage`: items and an optional total |
+| `GridItemsProviderResult`: items and total | `DataViewPage`: items and an optional total, a window shorter than asked for ending a set it cannot count |
 | `PaginationState` and `Paginator`, with a summary template | `PageSize`, a bindable `Page`, the reported total, and `FormaPagination` with its options |
 | `Virtualize`, `ItemSize`, `OverscanCount` | `Virtualize`, `ItemHeight`, `OverscanCount` |
 | `AnchorMode`, `InitialItemIndex`, `ItemComparer`, `ScrollToItemAsync` | The same anchoring set: where the viewport holds when items arrive during virtualization, the item to open on, the comparer that tells a prepend from an append, and scrolling to an item on request |
@@ -628,6 +628,18 @@ Sorting, selecting, paging, folding, revealing a column, switching views and ope
 columns menu are all reachable from the keyboard: Tab reaches the header buttons, the item
 markers and the items' own controls, the arrows move focus among the items while pointer
 selection is on, in the directions the view gives them, and the paginator's own keys page.
+Home and End reach the ends of the collection in a view of one column, and a row's ends in
+the cards, where Ctrl+Home and Ctrl+End reach the collection's. Every move keeps the
+selection's rules: plain selects the item reached, the primary modifier moves the focus
+alone, and Shift extends the range from the anchor, with the primary modifier too where the
+move reaches the collection's ends. The ends are the first and the last item the reader can
+reach, across the open groups, within the page where the data view pages, and among the
+visible nodes in the tree. A virtualizing view reaches them however far they lie: the move
+names the end it wants, the view scrolls the item into range, and the focus lands on it once
+it is drawn, so the outcome is the one a view drawing every item gives; a move the reader
+leaves, or one whose order or view changes before it lands, lets the focus go. Over a source
+that cannot count, End reaches the last item the source has answered, and the view reads one
+window further as it scrolls there.
 
 Every offset, alignment and border is logical, so the same stylesheet serves both
 directions; a numeric cell reads as a number in either, cards pack from the inline start,

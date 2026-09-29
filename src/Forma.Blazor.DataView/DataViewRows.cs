@@ -7,9 +7,17 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 /// <remarks>
 /// The rows are laid out as segments, one for an ungrouped set and one per group otherwise, each a heading row where it has a group
 /// followed by its item rows unless the group is folded. A window of rows is answered by fetching the item ranges those rows cover,
-/// one fetch per run of consecutive items, so a folded group between two open ones is never read.
+/// one fetch per run of consecutive items, so a folded group between two open ones is never read. Over a source that cannot
+/// count, the rows run one window past the last item answered until a window comes back shorter than asked for, which ends the
+/// set, so a scroll to their end asks for the next window and no request reaches further than one. The rows found by a fetch are
+/// published after it, never on the answer that found them, since the framework's virtualization holds the viewport where it was
+/// when the rows grow under a window that reaches their end; a scroll the view asks for holds them back until it has landed.
 /// </remarks>
-internal sealed class DataViewRows<TItem>(IDataView<TItem> view)
+/// <param name="view">The data view the rows are laid out over.</param>
+/// <param name="virtualizer">The virtualization the view draws the rows through, once it is drawn.</param>
+/// <param name="invoke">Runs work on the view's renderer.</param>
+/// <param name="redraw">Draws the view again.</param>
+internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize<DataViewRow<TItem>>?> virtualizer, Func<Func<Task>, Task> invoke, Action redraw)
     where TItem : notnull
 {
     // Room enough for any set a source cannot count, which is read until it comes back short.
@@ -23,6 +31,11 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view)
     private int _shapeColumns;
     private bool _isLaidOut;
     private int _columns = 1;
+    private int _knownItems;
+    private bool _isExhausted;
+    private int _publishedRows;
+    private int _continuationRows;
+    private bool _isHeld;
 
     /// <summary>How many items stand across a row.</summary>
     public int Columns
@@ -37,6 +50,16 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view)
     /// <summary>Tells a row from a re-fetched copy of it: the same group's heading, or a row opening on the same item.</summary>
     public IEqualityComparer<DataViewRow<TItem>> Comparer
         => _comparer;
+
+    /// <summary>Forgets what the rows were laid out from and what a source that cannot count has answered, for a data view whose source, sort or set changed.</summary>
+    public void Reset()
+    {
+        _isLaidOut = false;
+        _knownItems = 0;
+        _isExhausted = false;
+        _publishedRows = 0;
+        _continuationRows = 0;
+    }
 
     /// <summary>Lays the rows out again from the data view's count, groups and folds and the columns across; true when the rows changed, so the view fetches its windows again.</summary>
     public bool Update()
@@ -137,10 +160,129 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view)
             return new ItemsProviderResult<DataViewRow<TItem>>(answered, RowCount);
         }
 
-        // Uncounted, the set ends at the first row the source left empty.
+        // Uncounted, a window shorter than asked for ends the set; until one does, the rows run one window past the last answered,
+        // so a scroll to their end asks for the next.
         var filled = answered.TakeWhile(row => row.Items.Count > 0).ToList();
 
-        return new ItemsProviderResult<DataViewRow<TItem>>(filled, request.StartIndex + filled.Count);
+        if (filled.Count > 0)
+        {
+            _knownItems = Math.Max(_knownItems, filled[^1].FirstItemIndex + filled[^1].Items.Count);
+        }
+
+        _isExhausted |= filled.Count < rows.Count || (filled.Count > 0 && filled[^1].Items.Count < _columns);
+        _continuationRows = Math.Max(_continuationRows, request.Count);
+
+        // The first answer is published with it; a later one that found more rows is published once it has been drawn.
+        if (_publishedRows == 0)
+        {
+            Publish();
+        }
+        else if (!_isHeld && PublishableRows != _publishedRows)
+        {
+            _ = invoke(RepublishAsync);
+        }
+
+        return new ItemsProviderResult<DataViewRow<TItem>>(filled, _publishedRows);
+    }
+
+    /// <summary>Scrolls the virtualization to the row holding the item at <paramref name="itemIndex"/>, publishing the rows found so far first and holding back the ones the scroll finds until it has landed.</summary>
+    /// <param name="itemIndex">The index of the item in the whole set.</param>
+    /// <param name="cancellationToken">Canceled when the scroll is no longer wanted.</param>
+    public async ValueTask ScrollToAsync(int itemIndex, CancellationToken cancellationToken)
+    {
+        if (virtualizer() is not { } rows)
+        {
+            return;
+        }
+
+        _isHeld = true;
+
+        try
+        {
+            if (Publish())
+            {
+                await rows.RefreshDataAsync();
+                redraw();
+            }
+
+            await rows.ScrollToItemAsync(GetRowIndex(itemIndex), cancellationToken);
+        }
+        finally
+        {
+            _isHeld = false;
+        }
+
+        await RepublishAsync();
+    }
+
+    // Uncounted, the rows only ever grow: every item answered so far, and one window more while the source may hold further ones.
+    private int PublishableRows
+        => ((_knownItems + _columns - 1) / _columns) + (_isExhausted ? 0 : _continuationRows);
+
+    private bool IsUncounted
+        => _view.TotalItemCount is null && !_view.IsGrouped;
+
+    private bool Publish()
+    {
+        if (!IsUncounted || PublishableRows == _publishedRows)
+        {
+            return false;
+        }
+
+        _publishedRows = PublishableRows;
+
+        return true;
+    }
+
+    // Deferred past the answer that found the rows, which the virtualization is still taking in.
+    private async Task RepublishAsync()
+    {
+        await Task.Yield();
+
+        if (!_isHeld && Publish() && virtualizer() is { } rows)
+        {
+            await rows.RefreshDataAsync();
+            redraw();
+        }
+    }
+
+    /// <summary>The position in the set of the first or the last item the rows reach, across the open groups, or null where they reach none; uncounted, the last the source has answered.</summary>
+    /// <param name="last">Whether the last is asked for rather than the first.</param>
+    public int? GetEdgePosition(bool last)
+    {
+        if (_view.TotalItemCount is null && !_view.IsGrouped)
+        {
+            return _knownItems == 0 ? null : last ? _knownItems - 1 : 0;
+        }
+
+        var open = _segments.Where(segment => !segment.IsFolded && segment.ItemCount > 0).ToList();
+
+        return open.Count == 0 ? null
+            : last ? open[^1].FirstItem + open[^1].ItemCount - 1
+            : open[0].FirstItem;
+    }
+
+    /// <summary>The items the rows reach from <paramref name="from"/> to <paramref name="to"/> in the set, both included, a folded group's items left out.</summary>
+    /// <param name="from">The position of the first item.</param>
+    /// <param name="to">The position of the last item.</param>
+    /// <param name="cancellationToken">Canceled when the items are no longer wanted.</param>
+    public async ValueTask<IReadOnlyList<TItem>> ReadAsync(int from, int to, CancellationToken cancellationToken)
+    {
+        List<TItem> items = [];
+
+        foreach (var segment in _segments.Where(segment => !segment.IsFolded))
+        {
+            var start = Math.Max(from, segment.FirstItem);
+            var stop = Math.Min(to + 1, segment.FirstItem + segment.ItemCount);
+
+            if (stop > start && !cancellationToken.IsCancellationRequested)
+            {
+                var window = await _view.LoadWindowAsync(start, stop - start, cancellationToken);
+                items.AddRange(window.Items);
+            }
+        }
+
+        return items;
     }
 
     // The items the rows hold, read in one window per run of consecutive items and kept by their index in the set.

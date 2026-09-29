@@ -421,6 +421,203 @@ describe('SelectionInteraction', () => {
             selected().not.toHaveBeenCalled();
             expect(event.defaultPrevented).toBe(false);
         });
+
+        it('reaches the ends of the whole list on Ctrl+Home and Ctrl+End, moving the focus alone', () => {
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            cellOf(5).focus();
+
+            press(cellOf(5), 'Home', { ctrlKey: true });
+            expect(document.activeElement).toBe(cellOf(1));
+
+            press(cellOf(1), 'End', { ctrlKey: true });
+            expect(document.activeElement).toBe(cellOf(6));
+            selected().not.toHaveBeenCalled();
+        });
+
+        it('extends the range to the end of the whole list on Ctrl+Shift+End', () => {
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            click(cellOf(2));
+
+            press(cellOf(2), 'End', { ctrlKey: true, shiftKey: true });
+
+            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', [2, 3, 4, 5, 6], false);
+        });
+
+        it('moves the focus alone with Ctrl and Shift on an arrow, which reaches no end', () => {
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            click(cellOf(1));
+
+            press(cellOf(1), 'ArrowRight', { ctrlKey: true, shiftKey: true });
+
+            expect(document.activeElement).toBe(cellOf(2));
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 1, false);
+        });
+    });
+
+    describe('over an owner that seeks', () => {
+        // Four items drawn out of a longer order, each carrying its position in it.
+        const item = (key, position) => `<div class="item" data-item-position="${position}"><span data-row-key="${key}" tabindex="-1">Item</span></div>`;
+        const options = () => ({ owner, itemSelector: '.item', positionAttribute: 'data-item-position', seeks: true });
+        const settle = () => new Promise(resolve => setTimeout(resolve));
+
+        beforeEach(() => {
+            document.body.innerHTML = `<div id="list">${[[1, 10], [2, 11], [3, 12], [4, 13]].map(([key, position]) => item(key, position)).join('')}</div>`;
+            grid = document.querySelector('#list');
+        });
+
+        it('asks the owner for the last item on End, to select it', () => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            press(cellOf(2), 'End');
+
+            selected().toHaveBeenLastCalledWith('HandleSeekAsync', 1, true, 'select', null);
+        });
+
+        it('asks for the first item on Ctrl+Home, to move the focus alone', () => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            press(cellOf(2), 'Home', { ctrlKey: true });
+
+            selected().toHaveBeenLastCalledWith('HandleSeekAsync', 1, false, 'focus', null);
+        });
+
+        it('asks for the last item on Shift+End, to extend from the anchor by its position', () => {
+            attachSelection(grid, options());
+            click(cellOf(2));
+
+            press(cellOf(2), 'End', { shiftKey: true });
+
+            selected().toHaveBeenLastCalledWith('HandleSeekAsync', 1, true, 'extend', 11);
+        });
+
+        it('joins a second End pressed while the first is still asked for', () => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            press(cellOf(2), 'End');
+            press(cellOf(2), 'End');
+
+            expect(owner.invokeMethodAsync.mock.calls.filter(([method]) => method === 'HandleSeekAsync')).toHaveLength(1);
+        });
+
+        it('asks again when the same end is pressed to select otherwise', () => {
+            attachSelection(grid, options());
+            click(cellOf(2));
+
+            press(cellOf(2), 'End');
+            press(cellOf(2), 'End', { shiftKey: true });
+
+            expect(owner.invokeMethodAsync.mock.calls.filter(([method]) => method === 'HandleSeekAsync')).toEqual([
+                ['HandleSeekAsync', 1, true, 'select', null],
+                ['HandleSeekAsync', 2, true, 'extend', 11],
+            ]);
+        });
+
+        it('asks again once the owner let a request go', () => {
+            const handle = attachSelection(grid, options());
+            cellOf(2).focus();
+
+            press(cellOf(2), 'End');
+            handle.cancelSeek();
+            press(cellOf(2), 'End');
+
+            expect(owner.invokeMethodAsync.mock.calls.filter(([method]) => method === 'HandleSeekAsync')).toHaveLength(2);
+        });
+
+        it('lands the focus on the item once the owner names it and it is drawn', async () => {
+            const handle = attachSelection(grid, options());
+            cellOf(2).focus();
+            press(cellOf(2), 'End');
+
+            handle.focusItem(1, 99);
+            grid.insertAdjacentHTML('beforeend', item(9, 99));
+            await settle();
+
+            expect(document.activeElement).toBe(cellOf(9));
+        });
+
+        it('extends from the item it landed on, which a plain End anchors', async () => {
+            const handle = attachSelection(grid, options());
+            cellOf(2).focus();
+            press(cellOf(2), 'End');
+            grid.insertAdjacentHTML('beforeend', item(9, 99));
+            handle.focusItem(1, 99);
+
+            press(cellOf(9), 'ArrowUp', { shiftKey: true });
+
+            selected().toHaveBeenLastCalledWith('HandleRangeSelectByPositionAsync', 99, 13, false);
+            await settle();
+        });
+
+        it('lets go of an item asked for once the reader moves on', async () => {
+            const handle = attachSelection(grid, options());
+            cellOf(2).focus();
+            press(cellOf(2), 'End');
+
+            press(cellOf(2), 'ArrowDown');
+            handle.focusItem(1, 99);
+            grid.insertAdjacentHTML('beforeend', item(9, 99));
+            await settle();
+
+            expect(document.activeElement).toBe(cellOf(3));
+        });
+
+        it('lets go of an item still waiting to be drawn when the owner cancels it', async () => {
+            const handle = attachSelection(grid, options());
+            cellOf(2).focus();
+            press(cellOf(2), 'End');
+            handle.focusItem(1, 99);
+
+            handle.cancelSeek();
+            grid.insertAdjacentHTML('beforeend', item(9, 99));
+            await settle();
+
+            expect(document.activeElement).toBe(cellOf(2));
+        });
+
+        // A render drawing the focused item afresh: its element leaves, a new one takes its place, and the focus falls to nothing.
+        const redraw = key => {
+            const old = cellOf(key).closest('.item');
+            const position = old.getAttribute('data-item-position');
+            old.insertAdjacentHTML('afterend', item(key, position));
+            old.querySelector('[data-row-key]').dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+            old.remove();
+            document.body.focus();
+        };
+        const nextFrame = () => new Promise(resolve => requestAnimationFrame(() => resolve()));
+
+        it('takes the focus back onto an item a render drew afresh', async () => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            redraw(2);
+            await nextFrame();
+
+            expect(document.activeElement).toBe(cellOf(2));
+        });
+
+        it('leaves the focus where a press sent it', async () => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0 }));
+            redraw(2);
+            await nextFrame();
+
+            expect(document.activeElement).not.toBe(cellOf(2));
+        });
+
+        it('extends a shift-click by position, so an anchor scrolled out of the page still counts', () => {
+            attachSelection(grid, options());
+            click(cellOf(1));
+            cellOf(1).closest('.item').remove();
+
+            click(cellOf(4), { shiftKey: true });
+
+            selected().toHaveBeenLastCalledWith('HandleRangeSelectByPositionAsync', 10, 13, false);
+        });
     });
 
     describe('activating', () => {

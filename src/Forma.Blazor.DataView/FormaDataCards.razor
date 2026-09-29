@@ -13,8 +13,9 @@
         return @<div class="@GetCardClass(item)"
                      role="listitem"
                      aria-selected="@GetAriaSelected(item)"
-                     aria-setsize="@(entry.Position is null ? null : View.TotalItemCount)"
-                     aria-posinset="@entry.Position"
+                     aria-setsize="@(entry.Position is null || View.IsGrouped ? null : View.TotalItemCount)"
+                     aria-posinset="@(entry.Position is null || View.IsGrouped ? null : entry.Position + 1)"
+                     data-item-position="@entry.Position"
                      data-item="@View.GetItemToken(item)"
                      @key="View.ItemKey(item)">
             <div class="forma-data-card-thumbnail">
@@ -97,7 +98,7 @@
                                 <div class="forma-data-cards-pack forma-data-cards-row" role="none" @key="row.FirstItemIndex">
                                     @foreach (var (offset, item) in row.Items.Index())
                                     {
-                                        @card((item, View.IsGrouped ? null : row.FirstItemIndex + offset + 1))
+                                        @card((item, row.FirstItemIndex + offset))
                                     }
                                 </div>
                             }

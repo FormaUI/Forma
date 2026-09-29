@@ -14,7 +14,7 @@ using Microsoft.JSInterop;
 
 /// <summary>A view over a data view drawing its items as rows with aligned columns and headers, sorted by a header, edited a row at a time.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
-public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewViewport
+public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewViewport, IDataViewPositions<TItem>
     where TItem : notnull
 {
     private const string ViewKey = "grid";
@@ -354,7 +354,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
 
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Grid"], Glyph.DetailsView, this));
-        _rows = new DataViewRows<TItem>(View);
+        _rows = new DataViewRows<TItem>(View, () => Table?.Virtualizer, InvokeAsync, StateHasChanged);
         _columnFit = new ColumnFit(Context.JS);
         View.Subscribe(HandleViewChangedAsync);
     }
@@ -703,19 +703,30 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
     /// <inheritdoc />
     public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)
-        => Table?.Virtualizer is { } virtualizer
-            ? new ValueTask(virtualizer.ScrollToItemAsync(_rows.GetRowIndex(index), cancellationToken))
-            : ValueTask.CompletedTask;
+        => _rows.ScrollToAsync(index, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask RefreshAsync()
     {
+        _rows.Reset();
         _rows.Update();
 
         return Table?.Virtualizer is { } virtualizer
             ? new ValueTask(virtualizer.RefreshDataAsync())
             : ValueTask.CompletedTask;
     }
+
+    /// <inheritdoc />
+    int? IDataViewPositions<TItem>.GetEdgePosition(bool last)
+        => _rows.GetEdgePosition(last);
+
+    /// <inheritdoc />
+    ValueTask<IReadOnlyList<TItem>> IDataViewPositions<TItem>.ReadAsync(int from, int to, CancellationToken cancellationToken)
+        => _rows.ReadAsync(from, to, cancellationToken);
+
+    /// <inheritdoc />
+    ValueTask IDataViewPositions<TItem>.ScrollToPositionAsync(int position, CancellationToken cancellationToken)
+        => ScrollToItemAsync(position, cancellationToken);
 
     // A fold, a new count or a new grouping lays the virtualized rows out again, and the rows on screen are fetched again after the render.
     private Task HandleViewChangedAsync()

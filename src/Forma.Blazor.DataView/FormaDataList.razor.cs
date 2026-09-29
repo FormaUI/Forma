@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>A view over a data view drawing the items down the height, each a thumbnail where the caller templates one, its name and the caller's secondary text, flowing on into further columns, or one row each where the data view virtualizes.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
-public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewViewport
+public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewViewport, IDataViewPositions<TItem>
     where TItem : notnull
 {
     private const string ViewKey = "list";
@@ -51,17 +51,28 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
 
     /// <inheritdoc />
     public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)
-        => _virtualizer is { } virtualizer
-            ? new ValueTask(virtualizer.ScrollToItemAsync(_rows.GetRowIndex(index), cancellationToken))
-            : ValueTask.CompletedTask;
+        => _rows.ScrollToAsync(index, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask RefreshAsync()
     {
+        _rows.Reset();
         _rows.Update();
 
         return _virtualizer is { } virtualizer ? new ValueTask(virtualizer.RefreshDataAsync()) : ValueTask.CompletedTask;
     }
+
+    /// <inheritdoc />
+    int? IDataViewPositions<TItem>.GetEdgePosition(bool last)
+        => _rows.GetEdgePosition(last);
+
+    /// <inheritdoc />
+    ValueTask<IReadOnlyList<TItem>> IDataViewPositions<TItem>.ReadAsync(int from, int to, CancellationToken cancellationToken)
+        => _rows.ReadAsync(from, to, cancellationToken);
+
+    /// <inheritdoc />
+    ValueTask IDataViewPositions<TItem>.ScrollToPositionAsync(int position, CancellationToken cancellationToken)
+        => ScrollToItemAsync(position, cancellationToken);
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -71,7 +82,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
             throw new InvalidOperationException($"{nameof(FormaDataList<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        _rows = new DataViewRows<TItem>(View);
+        _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["List"], Glyph.List, this));
         View.Subscribe(HandleViewChangedAsync);
     }

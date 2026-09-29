@@ -55,7 +55,7 @@
 
             @* The row is the tree item, since it is what carries the focus; the list item around it holds the row and the children's group. *@
             <li class="forma-data-tree-item" role="none" @key="View.ItemKey(node)">
-                @RenderNode(new VisibleNode(node, depth, null, null), children.Count > 0 ? childrenId : null)
+                @RenderNode(new VisibleNode(node, depth, null, null, null), children.Count > 0 ? childrenId : null)
                 @if (children.Count > 0)
                 {
                     <ul class="forma-data-tree-level" role="group" id="@childrenId">
@@ -89,6 +89,7 @@
              aria-owns="@ownsId"
              tabindex="@GetNodeTabIndex(key)"
              data-item="@(HasSelection ? View.GetItemToken(node) : null)"
+             data-item-position="@row.Row"
              @onfocusin="() => _focusedNode = node"
              @onfocusout="() => _focusedNode = default"
              @ref="_nodeElements[key]">

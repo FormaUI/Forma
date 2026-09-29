@@ -12,7 +12,7 @@ using Microsoft.JSInterop;
 
 /// <summary>A view over a data view drawing each item as a card, its thumbnail, its name and what the caller places beneath, packed across the width; at its compact density, the thumbnail and the name alone.</summary>
 /// <typeparam name="TItem">The item a card shows.</typeparam>
-public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewViewport
+public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewViewport, IDataViewPositions<TItem>
     where TItem : notnull
 {
     private const string ViewKey = "cards";
@@ -65,13 +65,12 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
     /// <inheritdoc />
     public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)
-        => _virtualizer is { } virtualizer
-            ? new ValueTask(virtualizer.ScrollToItemAsync(_rows.GetRowIndex(index), cancellationToken))
-            : ValueTask.CompletedTask;
+        => _rows.ScrollToAsync(index, cancellationToken);
 
     /// <inheritdoc />
     public ValueTask RefreshAsync()
     {
+        _rows.Reset();
         _rows.Update();
 
         return _virtualizer is { } virtualizer ? new ValueTask(virtualizer.RefreshDataAsync()) : ValueTask.CompletedTask;
@@ -96,6 +95,18 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     }
 
     /// <inheritdoc />
+    int? IDataViewPositions<TItem>.GetEdgePosition(bool last)
+        => _rows.GetEdgePosition(last);
+
+    /// <inheritdoc />
+    ValueTask<IReadOnlyList<TItem>> IDataViewPositions<TItem>.ReadAsync(int from, int to, CancellationToken cancellationToken)
+        => _rows.ReadAsync(from, to, cancellationToken);
+
+    /// <inheritdoc />
+    ValueTask IDataViewPositions<TItem>.ScrollToPositionAsync(int position, CancellationToken cancellationToken)
+        => ScrollToItemAsync(position, cancellationToken);
+
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (View is null || Interaction is null)
@@ -103,7 +114,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
             throw new InvalidOperationException($"{nameof(FormaDataCards<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        _rows = new DataViewRows<TItem>(View);
+        _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
         _gridColumns = new GridColumns(Context.JS);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Cards"], Glyph.GridView, this));
         View.Subscribe(HandleViewChangedAsync);

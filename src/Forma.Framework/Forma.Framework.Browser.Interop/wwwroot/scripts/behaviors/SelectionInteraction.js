@@ -14,6 +14,15 @@
  * table, names flowing on into further columns, and cards packed across the width. Items laid
  * out nowhere yet, or all in one place, stand in one column in their document order.
  *
+ * Home and End reach a row's ends where the item has neighbors across, and the list's ends where it
+ * stands alone or the primary modifier is held. Where the owner holds more items than the page draws,
+ * a move to the list's ends is asked of the owner, which scrolls the item into range and names its
+ * position once it is drawn; the focus lands on it then, unless the reader moved on meanwhile. Each
+ * move keeps its rules on the way: plain selects the item reached, the primary modifier moves the
+ * focus alone, and Shift extends the range from the anchor, by position where the owner seeks, so an
+ * anchor scrolled out of the page still counts. A render that draws the focused item's element afresh
+ * drops the focus to nothing; with no press to explain it, the focus goes back to the item's marker.
+ *
  * Enter on an item's marker activates the item, a route like the moves, so the form a host wraps
  * the list in never takes it as a submission. The presses are routes too: where the list selects,
  * a press selects, a shift-press stops the browser extending its own text selection across the
@@ -32,9 +41,12 @@ const Moves = [
     { action: 'selection.previous', key: 'ArrowUp', target: (layout, index) => layout.above(index) },
     { action: 'selection.right', key: 'ArrowRight', target: (layout, index) => layout.beside(index, 1) },
     { action: 'selection.left', key: 'ArrowLeft', target: (layout, index) => layout.beside(index, -1) },
-    { action: 'selection.first', key: 'Home', target: (layout, index) => layout.end(index, -1) },
-    { action: 'selection.last', key: 'End', target: (layout, index) => layout.end(index, 1) },
+    { action: 'selection.first', key: 'Home', edge: -1, target: (layout, index, whole) => layout.end(index, -1, whole) },
+    { action: 'selection.last', key: 'End', edge: 1, target: (layout, index, whole) => layout.end(index, 1, whole) },
 ];
+
+/** How long a move asked of the owner waits for its item to be drawn before it gives up the focus it would have taken. */
+const SeekPatience = 3000;
 
 /**
  * @param {HTMLElement} target
@@ -44,7 +56,9 @@ const Moves = [
  *   itemSelector?: string,
  *   itemKeyAttribute?: string | null,
  *   controlSelector?: string | null,
- *   selects?: boolean
+ *   selects?: boolean,
+ *   positionAttribute?: string | null,
+ *   seeks?: boolean
  * }} options
  */
 export function attach(target, options) {
@@ -88,9 +102,14 @@ class Layout {
         return this.#nearest(index, box => this.#sameRow(index, box) && Math.sign(box.left - left) === direction, box => direction * box.left);
     }
 
-    // A row's own end where the item has neighbors in its row, else the list's.
-    end(index, direction) {
-        const rowmates = index < 0 || this.#stacked ? [] : this.#boxes.map((box, candidate) => candidate).filter(candidate => candidate !== index && this.#sameRow(index, this.#boxes[candidate]));
+    /** Whether the item has no neighbors across, so its row's ends are the list's. */
+    standsAlone(index) {
+        return this.#rowmates(index).length === 0;
+    }
+
+    // A row's own end where the item has neighbors in its row, else the list's; the list's whenever the whole list is asked for.
+    end(index, direction, whole = false) {
+        const rowmates = whole ? [] : this.#rowmates(index);
 
         if (rowmates.length === 0) {
             return direction < 0 ? 0 : this.count - 1;
@@ -100,6 +119,10 @@ class Layout {
         const toStart = direction < 0 ? !this.#rightToLeft : this.#rightToLeft;
 
         return row.reduce((best, candidate) => (toStart ? this.#boxes[candidate].left < this.#boxes[best].left : this.#boxes[candidate].left > this.#boxes[best].left) ? candidate : best, index);
+    }
+
+    #rowmates(index) {
+        return index < 0 || this.#stacked ? [] : this.#boxes.map((_, candidate) => candidate).filter(candidate => candidate !== index && this.#sameRow(index, this.#boxes[candidate]));
     }
 
     #sameColumn(index, box) {
@@ -140,10 +163,19 @@ class SelectionInteraction {
     #itemSelector;
     #itemKeyAttribute;
     #controlSelector;
+    #positionAttribute;
+    #seeks;
     #registration;
     #anchor = null;
+    #anchorPosition = null;
+    #seeking = null;
+    #lastRequest = 0;
+    #waiting = null;
+    #listening = new AbortController();
+    #held = null;
+    #pressed = false;
 
-    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true }) {
+    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, positionAttribute = null, seeks = false }) {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
@@ -151,6 +183,8 @@ class SelectionInteraction {
         this.#itemSelector = itemSelector;
         this.#itemKeyAttribute = itemKeyAttribute;
         this.#controlSelector = controlSelector;
+        this.#positionAttribute = positionAttribute;
+        this.#seeks = seeks && positionAttribute !== null;
 
         // Each key moves plain, with Shift extending the range, or with the primary modifier moving alone; one that
         // would move nothing matches nothing, so a press at the end of the list keeps its default.
@@ -194,10 +228,52 @@ class SelectionInteraction {
         };
 
         this.#registration = register(target, { routes: [...moves, ...selection, activation] });
+
+        // A render may draw the focused item's element afresh, which drops the focus to nothing; with no press to explain the
+        // loss, the focus goes back to the item's marker once the render has drawn it again.
+        const signal = this.#listening.signal;
+        target.addEventListener('focusin', event => this.#hold(this.#focusedMarker(event)), { signal });
+        target.ownerDocument.addEventListener('pointerdown', () => { this.#pressed = true; }, { capture: true, signal });
+        target.addEventListener('focusout', event => {
+            const held = this.#held;
+
+            if (event.relatedTarget === null && held && !this.#pressed) {
+                requestAnimationFrame(() => this.#restore(held));
+            }
+        }, { signal });
     }
 
     dispose() {
+        this.#cancelSeek();
+        this.#listening.abort();
         this.#registration.dispose();
+    }
+
+    /**
+     * Lands the focus on the item a move asked of the owner reached, once the item at the position is drawn;
+     * a request the reader has since moved on from, or one a newer request replaced, is let go.
+     * @param {number} request The request the owner answers.
+     * @param {number} position The position of the item reached.
+     */
+    focusItem(request, position) {
+        if (this.#seeking?.request !== request) {
+            return;
+        }
+
+        const { mode } = this.#seeking;
+        this.#seeking = null;
+        this.#whenDrawn(() => this.#markerAt(position), marker => {
+            this.#focusMarker(marker, this.#markers());
+
+            if (mode === 'select') {
+                this.#setAnchor(marker);
+            }
+        });
+    }
+
+    /** Lets go of a move asked of the owner, which the owner can no longer answer. */
+    cancelSeek() {
+        this.#cancelSeek();
     }
 
     #markers() {
@@ -283,8 +359,33 @@ class SelectionInteraction {
         marker.focus();
     }
 
+    // The position an item carries in the owner's order, where the owner seeks.
+    #positionOf(marker) {
+        const value = this.#seeks ? this.#itemOf(marker).getAttribute(this.#positionAttribute) : null;
+
+        return value == null || value === '' ? null : Number(value);
+    }
+
+    #setAnchor(marker) {
+        this.#anchor = marker;
+        this.#anchorPosition = this.#positionOf(marker);
+    }
+
+    // A range runs by position where the owner seeks, so an anchor scrolled out of the page still counts; by the markers drawn otherwise.
+    #extendTo(marker, additive) {
+        const position = this.#positionOf(marker);
+
+        if (this.#anchorPosition !== null && position !== null) {
+            tell(this.#owner, 'HandleRangeSelectByPositionAsync', this.#anchorPosition, position, additive);
+            return;
+        }
+
+        tell(this.#owner, 'HandleRangeSelectAsync', this.#rangeTokens(this.#anchor, marker), additive);
+    }
+
     #select(event) {
         const marker = this.#pressedMarker(event);
+        this.#cancelSeek();
 
         // The click lands focus on the item's marker, so the keys carry on from the item the pointer chose.
         this.#focusMarker(marker, this.#markers());
@@ -292,16 +393,105 @@ class SelectionInteraction {
         const toggle = event.ctrlKey || event.metaKey;
 
         if (event.shiftKey && this.#anchor) {
-            tell(this.#owner, 'HandleRangeSelectAsync', this.#rangeTokens(this.#anchor, marker), toggle);
+            this.#extendTo(marker, toggle);
             return;
         }
 
-        this.#anchor = marker;
+        this.#setAnchor(marker);
         tell(this.#owner, 'HandleSelectAsync', this.#tokenOf(marker), toggle);
     }
 
-    /** The items and the place the key would move the focused one to, or null where there is nowhere to go. */
-    #planMove(event, { key, target }) {
+    // Asks the owner for the list's first or last item, a request for the same end the same way still pending joining it rather
+    // than asking again; one that selects otherwise replaces it.
+    #seek(edge, mode) {
+        const effective = mode === 'extend' && this.#anchorPosition === null ? 'select' : mode;
+
+        if (this.#seeking?.edge === edge && this.#seeking.mode === effective) {
+            return;
+        }
+
+        this.#cancelSeek();
+        const request = ++this.#lastRequest;
+        this.#seeking = { request, edge, mode: effective };
+        tell(this.#owner, 'HandleSeekAsync', request, edge > 0, effective, effective === 'extend' ? this.#anchorPosition : null);
+    }
+
+    #hold(marker) {
+        this.#held = marker ? { token: this.#tokenOf(marker), position: this.#positionOf(marker) } : null;
+        this.#pressed = false;
+    }
+
+    // Whether the focus has fallen to nothing rather than gone to something else.
+    #isFocusLost() {
+        const active = this.#target.ownerDocument.activeElement;
+
+        return !active || active === this.#target.ownerDocument.body;
+    }
+
+    // Only a focus that fell to nothing is taken back, onto the held item's marker once the render has drawn it again, by token or by position.
+    #restore(held) {
+        if (this.#held !== held || this.#pressed || !this.#isFocusLost() || this.#waiting) {
+            return;
+        }
+
+        const find = () => this.#target.querySelector(`[${this.#keyAttribute}="${held.token}"]`)
+            ?? (held.position === null ? null : this.#markerAt(held.position));
+
+        this.#whenDrawn(find, marker => {
+            if (this.#held === held && !this.#pressed && this.#isFocusLost()) {
+                this.#focusMarker(marker, this.#markers());
+            }
+        });
+    }
+
+    #markerAt(position) {
+        return this.#target.querySelector(`[${this.#positionAttribute}="${position}"]`)?.querySelector(this.#markerSelector) ?? null;
+    }
+
+    #cancelSeek() {
+        this.#seeking = null;
+        this.#waiting?.();
+        this.#waiting = null;
+    }
+
+    // Hands over the marker the finder names once it is drawn, giving up after a while or when the reader moves on; a newer wait
+    // replaces this one, and this one's own end stops it alone.
+    #whenDrawn(find, land) {
+        this.#waiting?.();
+        this.#waiting = null;
+        const marker = find();
+
+        if (marker) {
+            land(marker);
+            return;
+        }
+
+        const observer = new MutationObserver(() => {
+            const drawn = find();
+
+            if (drawn) {
+                stop();
+                land(drawn);
+            }
+        });
+        const timer = setTimeout(() => stop(), SeekPatience);
+        const stop = () => {
+            observer.disconnect();
+            clearTimeout(timer);
+
+            if (this.#waiting === stop) {
+                this.#waiting = null;
+            }
+        };
+
+        observer.observe(this.#target, this.#positionAttribute
+            ? { childList: true, subtree: true, attributes: true, attributeFilter: [this.#positionAttribute] }
+            : { childList: true, subtree: true });
+        this.#waiting = stop;
+    }
+
+    /** The items and the place the key would move the focused one to, the list's end to ask the owner for, or null where there is nowhere to go. */
+    #planMove(event, { key, edge, target }) {
         // A key pressed on the list itself or within one of its items is the list's; one pressed in another
         // control inside the list, a header's button or a sidebar's row, is that control's own.
         if (event.target !== this.#target && !event.target.closest(this.#itemSelector)) {
@@ -320,10 +510,18 @@ class SelectionInteraction {
         const currentIndex = focused ? all.indexOf(focused) : -1;
         // The reading direction is the list's own, which the page's may differ from.
         const rightToLeft = getComputedStyle(this.#target).direction === 'rtl';
-        const nextIndex = target(new Layout(all.map(marker => this.#itemOf(marker)), rightToLeft), currentIndex);
+        const layout = new Layout(all.map(marker => this.#itemOf(marker)), rightToLeft);
+        // Home and End reach the whole list where the item stands alone in its row or the primary modifier asks for it.
+        const whole = edge !== undefined && (event.ctrlKey || event.metaKey || layout.standsAlone(currentIndex));
+
+        if (whole && this.#seeks) {
+            return { edge, whole };
+        }
+
+        const nextIndex = target(layout, currentIndex, whole);
         const isEnd = key === 'Home' || key === 'End';
 
-        return nextIndex === currentIndex && !isEnd ? null : { all, next: all[nextIndex] };
+        return nextIndex === currentIndex && !isEnd ? null : { all, next: all[nextIndex], whole };
     }
 
     // The move is planned again here, since a host's remap of the action replaces the binding and its predicate with it.
@@ -334,19 +532,30 @@ class SelectionInteraction {
             return;
         }
 
+        // Plain selects the item reached and the primary modifier moves the focus alone; Shift extends the range, with the
+        // primary modifier too where the move reached the whole list's end.
+        const primary = event.ctrlKey || event.metaKey;
+        const mode = event.shiftKey && (!primary || plan.whole) ? 'extend' : primary ? 'focus' : 'select';
+
+        if (plan.edge !== undefined && plan.all === undefined) {
+            this.#seek(plan.edge, mode);
+            return;
+        }
+
+        this.#cancelSeek();
         const { all, next } = plan;
         this.#focusMarker(next, all);
 
-        if (event.ctrlKey || event.metaKey) {
+        if (mode === 'focus') {
             return;
         }
 
-        if (event.shiftKey && this.#anchor) {
-            tell(this.#owner, 'HandleRangeSelectAsync', this.#rangeTokens(this.#anchor, next), false);
+        if (mode === 'extend' && this.#anchor) {
+            this.#extendTo(next, false);
             return;
         }
 
-        this.#anchor = next;
+        this.#setAnchor(next);
         tell(this.#owner, 'HandleSelectAsync', this.#tokenOf(next), false);
     }
 }

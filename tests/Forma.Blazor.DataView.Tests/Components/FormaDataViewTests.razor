@@ -91,4 +91,231 @@
 
         private sealed record Product(int Id, string Name);
     }
+
+    public sealed class Seeking
+    {
+        private static IQueryable<Product> CreateProducts() => new[]
+        {
+            new Product(1, "Hammer", "Tools"),
+            new Product(2, "Atlas", "Books"),
+            new Product(3, "Wrench", "Tools"),
+            new Product(4, "Primer", "Books"),
+        }.AsQueryable();
+
+        private static (int Request, int Position)? LastFocus(BunitContext ctx)
+            => ctx.JSInterop.Invocations.LastOrDefault(invocation => invocation.Identifier == "focusItem") is { Arguments: [int request, int position] } ? (request, position) : null;
+
+        private static int CancelCount(BunitContext ctx)
+            => ctx.JSInterop.Invocations.Count(invocation => invocation.Identifier == "cancelSeek");
+
+        [Fact]
+        public async Task Should_select_the_last_item_and_land_the_focus_on_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            IReadOnlyList<Product> selected = [];
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> items) => selected = items)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(7, last: true, "select", null));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Primer", Assert.Single(selected).Name),
+                () => Assert.Equal((7, 3), LastFocus(ctx)));
+        }
+
+        [Fact]
+        public async Task Should_move_the_focus_alone_without_touching_the_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var changes = 0;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> _) => changes++)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: false, "focus", null));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, changes),
+                () => Assert.Equal((1, 0), LastFocus(ctx)));
+        }
+
+        [Fact]
+        public async Task Should_extend_the_range_from_the_anchor_to_the_last_item()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            IReadOnlyList<Product> selected = [];
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> items) => selected = items)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "extend", 1));
+
+            // Assert
+            Assert.Equal(["Atlas", "Primer", "Wrench"], selected.Select(product => product.Name).Order());
+        }
+
+        [Fact]
+        public async Task Should_reach_the_first_item_of_the_first_open_group_and_leave_a_folded_group_out_of_a_range()
+        {
+            // Arrange — Books is folded, so the reachable items are Tools' alone
+            using var ctx = new FormaDataViewTests();
+            IReadOnlyList<Product> selected = [];
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))" SelectedItemsChanged="@((IReadOnlyList<Product> items) => selected = items)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem] .forma-data-list-item-name").Count == 4);
+            cut.Find(".forma-data-group-heading").Click();
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 2);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: false, "select", null));
+            var first = selected;
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectByPositionAsync(0, 3, additive: false));
+
+            // Assert — the positions run through the set, Books' two first
+            Assert.Multiple(
+                () => Assert.Equal("Hammer", Assert.Single(first).Name),
+                () => Assert.Equal((1, 2), LastFocus(ctx)),
+                () => Assert.Equal(["Hammer", "Wrench"], selected.Select(product => product.Name).Order()));
+        }
+
+        [Fact]
+        public async Task Should_let_go_of_a_move_the_order_changed_under()
+        {
+            // Arrange — the read the move needs is held until the order has changed
+            using var ctx = new FormaDataViewTests();
+            var held = new TaskCompletionSource<DataViewPage<Product>>();
+            var holding = false;
+            var changes = 0;
+            DataViewItemsProvider<Product> provider = request => holding && request.Count == 1
+                ? new ValueTask<DataViewPage<Product>>(held.Task)
+                : ValueTask.FromResult(new DataViewPage<Product>([.. request.ApplySorting(CreateProducts()).Skip(request.StartIndex).Take(request.Count ?? 4)], 4));
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> _) => changes++)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            var cancels = CancelCount(ctx);
+
+            // Act
+            holding = true;
+            var move = engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "select", null));
+            await engine.InvokeAsync(() => engine.Instance.RefreshDataAsync());
+            held.SetResult(new DataViewPage<Product>([CreateProducts().Last()], 4));
+            await move;
+
+            // Assert — nothing selected and no focus taken, and the behavior told to let the move go
+            Assert.Multiple(
+                () => Assert.Equal(0, changes),
+                () => Assert.Null(LastFocus(ctx)),
+                () => Assert.Equal(cancels + 1, CancelCount(ctx)));
+        }
+
+        [Fact]
+        public async Task Should_let_go_of_a_move_whose_read_failed()
+        {
+            // Arrange — the read the move needs throws, so the behavior must still hear that the move is over
+            using var ctx = new FormaDataViewTests();
+            var failing = false;
+            DataViewItemsProvider<Product> provider = request => failing && request.Count == 1
+                ? throw new InvalidOperationException("The store is gone.")
+                : ValueTask.FromResult(new DataViewPage<Product>([.. CreateProducts().Skip(request.StartIndex).Take(request.Count ?? 4)], 4));
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            var cancels = CancelCount(ctx);
+
+            // Act
+            failing = true;
+            await Assert.ThrowsAsync<InvalidOperationException>(() => engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "select", null)));
+
+            // Assert
+            Assert.Equal(cancels + 1, CancelCount(ctx));
+        }
+
+        [Fact]
+        public async Task Should_leave_the_selection_alone_for_an_extend_with_no_anchor()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var changes = 0;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> _) => changes++)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "extend", null));
+
+            // Assert — the focus still lands on the last item
+            Assert.Multiple(
+                () => Assert.Equal(0, changes),
+                () => Assert.Equal((1, 3), LastFocus(ctx)));
+        }
+
+        [Fact]
+        public async Task Should_reach_the_last_item_a_source_that_cannot_count_answered()
+        {
+            // Arrange — the window comes back shorter than asked for, which ends the set
+            using var ctx = new FormaDataViewTests();
+            DataViewItemsProvider<Product> provider = request => ValueTask.FromResult(new DataViewPage<Product>([.. CreateProducts().Skip(request.StartIndex).Take(request.Count ?? 4)], null));
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "focus", null));
+
+            // Assert
+            Assert.Equal((1, 3), LastFocus(ctx));
+        }
+
+        [Fact]
+        public void Should_mark_each_drawn_item_with_its_position_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 4);
+
+            // Assert — the positions run through the set in its order, headings between groups taking none
+            Assert.Equal(["0", "1", "2", "3"], cut.FindAll(".forma-data-list-item").Select(item => item.GetAttribute("data-item-position")));
+        }
+
+        private sealed record Product(int Id, string Name, string Category);
+    }
 }

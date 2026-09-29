@@ -13,8 +13,9 @@
         return @<div class="@GetItemClass(item)"
                      role="listitem"
                      aria-selected="@GetAriaSelected(item)"
-                     aria-setsize="@(row.Position is null ? null : View.TotalItemCount)"
-                     aria-posinset="@row.Position"
+                     aria-setsize="@(row.Position is null || View.IsGrouped ? null : View.TotalItemCount)"
+                     aria-posinset="@(row.Position is null || View.IsGrouped ? null : row.Position + 1)"
+                     data-item-position="@row.Position"
                      data-item="@View.GetItemToken(item)"
                      @key="View.ItemKey(item)">
             @if (HasSelection)
@@ -88,7 +89,7 @@
                             {
                                 @foreach (var item in row.Items)
                                 {
-                                    @entry((item, View.IsGrouped ? null : row.FirstItemIndex + 1))
+                                    @entry((item, row.FirstItemIndex))
                                 }
                             }
                         </ItemContent>

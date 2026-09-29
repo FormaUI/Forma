@@ -16,7 +16,7 @@ using Microsoft.JSInterop;
 
 /// <summary>A view over a data view drawing the hierarchy as nodes under their parents, each opened, closed and selected from the keyboard, with a busy state while its children load.</summary>
 /// <typeparam name="TItem">The item a node shows.</typeparam>
-public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewViewport
+public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewViewport, IDataViewPositions<TItem>
     where TItem : notnull
 {
     private const string ViewKey = "tree";
@@ -91,6 +91,24 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     /// <inheritdoc />
     public ValueTask RefreshAsync()
         => ValueTask.CompletedTask;
+
+    /// <inheritdoc />
+    int? IDataViewPositions<TItem>.GetEdgePosition(bool last)
+        => GetVisibleNodes() is { Count: > 0 } visible ? last ? visible.Count - 1 : 0 : null;
+
+    /// <inheritdoc />
+    ValueTask<IReadOnlyList<TItem>> IDataViewPositions<TItem>.ReadAsync(int from, int to, CancellationToken cancellationToken)
+    {
+        var visible = GetVisibleNodes();
+        var start = Math.Clamp(from, 0, visible.Count);
+        var stop = Math.Clamp(to + 1, start, visible.Count);
+
+        return ValueTask.FromResult<IReadOnlyList<TItem>>(visible[start..stop]);
+    }
+
+    /// <inheritdoc />
+    ValueTask IDataViewPositions<TItem>.ScrollToPositionAsync(int position, CancellationToken cancellationToken)
+        => _virtualizer is { } virtualizer ? new ValueTask(virtualizer.ScrollToItemAsync(position, cancellationToken)) : ValueTask.CompletedTask;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -309,7 +327,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             for (var index = 0; index < nodes.Count; index++)
             {
                 var node = nodes[index];
-                visible.Add(new VisibleNode(node, depth, index + 1, nodes.Count));
+                visible.Add(new VisibleNode(node, depth, index + 1, nodes.Count, visible.Count));
 
                 if (View.CanOpen(node) && View.IsOpen(node))
                 {
@@ -364,8 +382,8 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    /// <summary>A node the tree shows: the node, its level, and its place among its siblings where the tree virtualizes.</summary>
-    private readonly record struct VisibleNode(TItem Node, int Depth, int? Position, int? SetSize);
+    /// <summary>A node the tree shows: the node, its level, its place among its siblings, and its place among the visible nodes, where the tree virtualizes.</summary>
+    private readonly record struct VisibleNode(TItem Node, int Depth, int? Position, int? SetSize, int? Row);
 
     private string? GetNodeClass(TItem node)
     {

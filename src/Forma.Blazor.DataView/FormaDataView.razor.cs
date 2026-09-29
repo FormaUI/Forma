@@ -75,6 +75,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private DotNetObjectReference<FormaDataView<TItem>>? _selfReference;
     private bool _isSelectionAttached;
     private bool _isAttachedToSelect;
+    private bool _isAttachedToSeek;
+    private int _orderVersion;
     private SelectionBounds _selectionBounds;
 
     /// <summary>The items to show, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both. A new queryable is a new set the data view asks again, so a page keeps one across its renders until its set changes.</summary>
@@ -528,7 +530,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         // The behavior answers every press on an item: under item selection a press selects and a double press activates, and
         // otherwise a press activates, as Enter on an item's marker does either way; a change of selection since it attached lets
         // it go, so it attaches again as the selection now is.
-        if (_selectionInteraction.IsAttached && _isAttachedToSelect != EnableItemSelection)
+        if (_selectionInteraction.IsAttached && (_isAttachedToSelect != EnableItemSelection || _isAttachedToSeek != (ActivePositions is not null)))
         {
             await _selectionInteraction.DetachAsync();
             _isSelectionAttached = false;
@@ -539,11 +541,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             // Claimed before the await so a render arriving mid-call cannot re-enter and attach a second listener to the same region.
             _isSelectionAttached = true;
             _isAttachedToSelect = EnableItemSelection;
+            _isAttachedToSeek = ActivePositions is not null;
             _selfReference ??= DotNetObjectReference.Create(this);
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect);
+            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, PositionAttribute, _isAttachedToSeek);
         }
 
         // Virtualization sizes its own scroll range, and an unpaged data view has no short page to hold a height for.
@@ -745,6 +748,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
+        // A move still waiting for its item was the last view's, and the next view draws other items at its position.
+        await _selectionInteraction.CancelSeekAsync();
         _activeViewKey = key;
         WriteAddress();
         await ViewChanged.InvokeAsync(key);
@@ -760,6 +765,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // The viewport of the view showing, which the engine scrolls and asks to fetch again.
     private IDataViewViewport? ActiveViewport
         => _registrations.FirstOrDefault(registration => registration.Key == ActiveViewKey)?.Viewport;
+
+    // A virtualizing view reaches items beyond the ones it draws, by their positions in its order.
+    private IDataViewPositions<TItem>? ActivePositions
+        => IsVirtualizing ? ActiveViewport as IDataViewPositions<TItem> : null;
 
     /// <inheritdoc />
     public void BeginItemPass()
@@ -979,21 +988,112 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <param name="itemTokens">The tokens of the items in the range.</param>
     /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>
     [JSInvokable]
-    public async Task HandleRangeSelectAsync(int[] itemTokens, bool additive)
+    public Task HandleRangeSelectAsync(int[] itemTokens, bool additive)
     {
         ArgumentNullException.ThrowIfNull(itemTokens);
 
-        var updated = CreateSelection(additive ? _selectedSet : []);
+        List<TItem> range = [];
 
         foreach (var token in itemTokens)
         {
             if (_itemTokens.TryGetItem(token, out var item))
             {
-                updated.Add(item);
+                range.Add(item);
             }
         }
 
-        // A range select is a whole-set replacement, so it is judged as a master select-all is.
+        return SelectRangeAsync(range, additive);
+    }
+
+    /// <summary>Replaces or extends the selection with the items the active view reaches between two positions in its order, invoked from the selection behavior where the view virtualizes.</summary>
+    /// <param name="fromPosition">The position of the range's anchor.</param>
+    /// <param name="toPosition">The position of the item the gesture landed on.</param>
+    /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>
+    [JSInvokable]
+    public async Task HandleRangeSelectByPositionAsync(int fromPosition, int toPosition, bool additive)
+    {
+        if (ActivePositions is not { } positions)
+        {
+            return;
+        }
+
+        var order = _orderVersion;
+        var range = await positions.ReadAsync(Math.Min(fromPosition, toPosition), Math.Max(fromPosition, toPosition), CancellationToken.None);
+
+        // The positions were read against the order as it stood; a new one leaves them naming other items.
+        if (order == _orderVersion)
+        {
+            await SelectRangeAsync(range, additive);
+        }
+    }
+
+    /// <summary>Moves to the first or the last item the active view reaches, invoked from the selection behavior where the view virtualizes: the move selects by its rules, the view scrolls the item into range, and the behavior lands the focus on it once it is drawn.</summary>
+    /// <param name="request">The request the behavior names the move by.</param>
+    /// <param name="last">Whether the move reaches the last item rather than the first.</param>
+    /// <param name="mode">How the move selects: <c>select</c> the item alone, <c>extend</c> the range from the anchor, or <c>focus</c> the item alone.</param>
+    /// <param name="anchorPosition">The position of the range's anchor, for a move that extends.</param>
+    [JSInvokable]
+    public async Task HandleSeekAsync(int request, bool last, string mode, int? anchorPosition)
+    {
+        var order = _orderVersion;
+        var view = ActiveViewKey;
+
+        // A move the order or the view changed under is let go, so it never takes the focus back afterward.
+        bool IsCurrent()
+        {
+            return order == _orderVersion && view == ActiveViewKey;
+        }
+
+        // Every way out answers the behavior, landing the focus or letting the move go, so a move that failed never holds its end.
+        var isLanded = false;
+
+        try
+        {
+            if (ActivePositions is not { } positions || positions.GetEdgePosition(last) is not { } position)
+            {
+                return;
+            }
+
+            if (mode == SeekSelect && await positions.ReadAsync(position, position, CancellationToken.None) is [var item] && IsCurrent())
+            {
+                await SelectAloneAsync(item);
+            }
+            else if (mode == SeekExtend && anchorPosition is { } anchor)
+            {
+                var range = await positions.ReadAsync(Math.Min(anchor, position), Math.Max(anchor, position), CancellationToken.None);
+
+                if (IsCurrent())
+                {
+                    await SelectRangeAsync(range, additive: false);
+                }
+            }
+
+            if (IsCurrent())
+            {
+                await positions.ScrollToPositionAsync(position, CancellationToken.None);
+            }
+
+            if (IsCurrent())
+            {
+                isLanded = true;
+                await _selectionInteraction.FocusItemAsync(request, position);
+            }
+        }
+        finally
+        {
+            if (!isLanded)
+            {
+                await _selectionInteraction.CancelSeekAsync();
+            }
+        }
+    }
+
+    // A range select is a whole-set replacement, so it is judged as a master select-all is.
+    private async Task SelectRangeAsync(IEnumerable<TItem> range, bool additive)
+    {
+        var updated = CreateSelection(additive ? _selectedSet : []);
+        updated.UnionWith(range);
+
         if (!_selectionBounds.CanSelectAll(updated.Count))
         {
             await RejectSelectionAsync(SelectionBoundary.Maximum);
@@ -1168,6 +1268,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>The attribute a part of an item carries when it holds the item's own controls, its box's cell or a card's actions, whose press activates nothing.</summary>
     internal const string ControlAttribute = "data-item-control";
 
+    // The attribute an item a virtualizing view draws carries its position in the view's order in.
+    private const string PositionAttribute = "data-item-position";
+
+    private const string SeekSelect = "select";
+
+    private const string SeekExtend = "extend";
+
     private const string ControlSelector = "[" + ControlAttribute + "]";
 
     // The items arrive with each group's members standing together, so a group is a run of one key.
@@ -1245,6 +1352,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     private async Task LoadAsync()
     {
+        // Every load may order the items anew, so a position read against the last order names nothing now.
+        _orderVersion++;
         if (_loadCancellation is { } superseded)
         {
             await superseded.CancelAsync();
