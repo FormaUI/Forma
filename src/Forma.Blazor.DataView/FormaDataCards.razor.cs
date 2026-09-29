@@ -4,6 +4,7 @@ using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A view over a data view drawing each item as a card, its thumbnail, its name and what the caller places beneath, packed across the width; at its compact density, the thumbnail and the name alone.</summary>
 /// <typeparam name="TItem">The item a card shows.</typeparam>
@@ -87,6 +88,13 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
     private string? GetAriaSelected(TItem item)
         => HasSelection ? View.IsSelected(item) ? "true" : "false" : null;
+
+    // A press on an item with a marker is the selection's, so a double press or Enter on the marker activates the item instead.
+    private Task HandleDoubleClickAsync(TItem item)
+        => HasSelection ? Interaction.ActivateAsync(item) : Task.CompletedTask;
+
+    private Task HandleMarkerKeyDownAsync(KeyboardEventArgs args, TItem item)
+        => args.Key == "Enter" ? Interaction.ActivateAsync(item) : Task.CompletedTask;
 
     private Task HandleViewChangedAsync()
         => InvokeAsync(StateHasChanged);

@@ -27,6 +27,13 @@
     "Cards": "כרטיסים",
     "Select Item": "בחר פריט"
   },
+  "FormaDataTree": {
+    "Tree": "עץ",
+    "Select Item": "בחר פריט",
+    "Loading": "טוען",
+    "Open {Name}": "פתח את {Name}",
+    "Close {Name}": "סגור את {Name}"
+  },
   "FormaDataViewSwitch": {
     "View": "תצוגה"
   }

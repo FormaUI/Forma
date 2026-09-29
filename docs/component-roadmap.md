@@ -41,8 +41,6 @@ Forma.Blazor/Components/
     └── FormaLaunchBar
 
 src/
-├── (1) Forma.Blazor.DataView/
-│   └── FormaDataTree
 └── (1) Forma.Blazor.Gallery/
     └── FormaGallery
 ```

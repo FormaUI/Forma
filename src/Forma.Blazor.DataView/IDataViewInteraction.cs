@@ -33,6 +33,29 @@ public interface IDataViewInteraction<TItem>
     /// <param name="group">The group whose heading was pressed.</param>
     Task ToggleGroupAsync(DataViewGroup<TItem> group);
 
+    /// <summary>Asks the source for the roots, unless it has already answered.</summary>
+    Task LoadRootsAsync();
+
+    /// <summary>Asks the source for the children of <paramref name="parent"/>, unless it has already answered.</summary>
+    /// <param name="parent">The node.</param>
+    Task LoadChildrenAsync(TItem parent);
+
+    /// <summary>Opens <paramref name="node"/>, asking the source for its children the first time.</summary>
+    /// <param name="node">The node.</param>
+    Task OpenNodeAsync(TItem node);
+
+    /// <summary>Closes <paramref name="node"/>, hiding its children under it.</summary>
+    /// <param name="node">The node.</param>
+    Task CloseNodeAsync(TItem node);
+
+    /// <summary>Makes <paramref name="item"/> the node whose children the views without a tree show, or shows the roots for null.</summary>
+    /// <param name="item">The node, or null for the roots.</param>
+    Task MakeCurrentAsync(TItem? item);
+
+    /// <summary>Selects <paramref name="item"/> alone, as a plain press on it does; the selection bounds may refuse.</summary>
+    /// <param name="item">The item.</param>
+    Task SelectItemAsync(TItem item);
+
     /// <summary>Selects or clears <paramref name="item"/> through its own control, which the selection bounds may refuse.</summary>
     /// <param name="item">The item whose control changed.</param>
     /// <param name="selected">Whether the item is to be selected.</param>

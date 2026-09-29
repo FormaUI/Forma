@@ -9,7 +9,7 @@
      aria-label="@L["View"]"
      @attributes="AdditionalAttributes"
      @ref="RootElement">
-    @foreach (var view in Views.Views)
+    @foreach (var view in Views.Views.Where(view => !view.IsCompanion))
     {
         <FormaToggleButton Icon="@view.Glyph"
                            Label="@view.Name"

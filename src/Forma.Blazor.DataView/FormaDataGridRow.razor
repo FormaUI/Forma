@@ -2,10 +2,10 @@
 @inherits FormaComponentBase
 @typeparam TItem where TItem : notnull
 
-<tr class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@Grid.GetRowIndex(Item)" data-item @onclick="HandleClickAsync">
+<tr class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@Grid.GetRowIndex(Item)" data-item @onclick="HandleClickAsync" @ondblclick="HandleDoubleClickAsync">
     @if (Grid.HasSelectionColumn)
     {
-        <td class="@Grid.SelectionCellClass" @onclick:stopPropagation>
+        <td class="@Grid.SelectionCellClass" @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown="HandleMarkerKeyDownAsync">
             @* Dropping the marker takes the editing row out of every selection gesture: the behavior only ever acts on rows that carry one. *@
             @if (!Grid.IsEditing(Item))
             {

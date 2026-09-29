@@ -10,7 +10,8 @@
               aria-selected="@GetAriaSelected(item)"
               data-item
               @key="View.ItemKey(item)"
-              @onclick="() => Interaction.ActivateAsync(item)">
+              @onclick="() => Interaction.ActivateAsync(item)"
+              @ondblclick="() => HandleDoubleClickAsync(item)">
             <div class="forma-data-card-thumbnail">
                 @if (ThumbnailTemplate is { } thumbnail)
                 {
@@ -18,7 +19,7 @@
                 }
                 @if (HasSelection)
                 {
-                    <span class="forma-data-card-lead" @onclick:stopPropagation>
+                    <span class="forma-data-card-lead" @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown="args => HandleMarkerKeyDownAsync(args, item)">
                         <FormaCheckBox class="@(View.EnableCheckedSelection ? "forma-data-card-box" : "forma-data-card-marker")"
                                        data-row-key="@View.GetItemToken(item)"
                                        aria-label="@L["Select Item"]"

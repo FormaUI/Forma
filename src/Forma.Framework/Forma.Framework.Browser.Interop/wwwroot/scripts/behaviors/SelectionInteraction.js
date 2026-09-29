@@ -250,6 +250,12 @@ class SelectionInteraction {
 
     /** The items and the place the key would move the focused one to, or null where there is nowhere to go. */
     #planMove(event, { key, target }) {
+        // A key pressed on the list itself or within one of its items is the list's; one pressed in another
+        // control inside the list, a header's button or a sidebar's row, is that control's own.
+        if (event.target !== this.#target && !event.target.closest(this.#itemSelector)) {
+            return null;
+        }
+
         const all = this.#markers();
 
         if (all.length === 0) {

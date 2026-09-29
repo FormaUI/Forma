@@ -27,6 +27,13 @@
     "Cards": "Tarjetas",
     "Select Item": "Seleccionar Elemento"
   },
+  "FormaDataTree": {
+    "Tree": "Árbol",
+    "Select Item": "Seleccionar Elemento",
+    "Loading": "Cargando",
+    "Open {Name}": "Abrir {Name}",
+    "Close {Name}": "Cerrar {Name}"
+  },
   "FormaDataViewSwitch": {
     "View": "Vista"
   }

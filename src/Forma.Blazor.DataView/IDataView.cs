@@ -29,6 +29,46 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <param name="group">The group.</param>
     bool IsFolded(DataViewGroup<TItem> group);
 
+    /// <summary>Whether the source has parentage, so items stand under nodes and the tree has something to show.</summary>
+    bool HasHierarchy { get; }
+
+    /// <summary>The node whose children the views without a tree show, or null for the roots.</summary>
+    TItem? CurrentItem { get; }
+
+    /// <summary>The roots the source has answered with; empty until they have loaded.</summary>
+    IReadOnlyList<TItem> Roots { get; }
+
+    /// <summary>Whether the roots have been asked for and answered.</summary>
+    bool AreRootsLoaded { get; }
+
+    /// <summary>Whether the roots are being asked for.</summary>
+    bool IsLoadingRoots { get; }
+
+    /// <summary>The children of <paramref name="parent"/> the source has answered with; empty until they have loaded.</summary>
+    /// <param name="parent">The node.</param>
+    IReadOnlyList<TItem> GetChildren(TItem parent);
+
+    /// <summary>Whether the children of <paramref name="parent"/> have been asked for and answered.</summary>
+    /// <param name="parent">The node.</param>
+    bool AreChildrenLoaded(TItem parent);
+
+    /// <summary>Whether the children of <paramref name="parent"/> are being asked for.</summary>
+    /// <param name="parent">The node.</param>
+    bool IsLoadingChildren(TItem parent);
+
+    /// <summary>The parent of <paramref name="node"/> as the source answered it, null for a root; false for a node the source has not answered under any parent.</summary>
+    /// <param name="node">The node.</param>
+    /// <param name="parent">The node's parent, or null for a root.</param>
+    bool TryGetParent(TItem node, out TItem? parent);
+
+    /// <summary>Whether <paramref name="node"/> can open: the source says it has children, or has not yet said it has none.</summary>
+    /// <param name="node">The node.</param>
+    bool CanOpen(TItem node);
+
+    /// <summary>Whether <paramref name="node"/> is open, its children shown under it.</summary>
+    /// <param name="node">The node.</param>
+    bool IsOpen(TItem node);
+
     /// <summary>Whether the source has answered at least once.</summary>
     bool HasLoaded { get; }
 

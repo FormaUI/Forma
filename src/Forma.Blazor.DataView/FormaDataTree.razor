@@ -1,0 +1,101 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaElementBase
+@typeparam TItem where TItem : notnull
+
+@if (IsActive)
+{
+    <div id="@Id"
+         data-rid="@Context.RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement">
+        @if (!View.AreRootsLoaded)
+        {
+            <div class="forma-data-tree-state">@View.LoadingContent</div>
+        }
+        else if (GetRoots().Count == 0)
+        {
+            <div class="forma-data-tree-state">@View.EmptyContent</div>
+        }
+        else
+        {
+            SettleTabStop();
+            <ul class="forma-data-tree-level" role="tree">
+                @RenderLevel(GetRoots(), 1)
+            </ul>
+        }
+    </div>
+}
+
+@code {
+    // Each node is a row with its disclosure, its marker, its thumbnail, its name and the caller's content, and its children in a group beneath it while open.
+    private RenderFragment RenderLevel(IReadOnlyList<TItem> nodes, int depth) => __builder =>
+    {
+        foreach (var node in nodes)
+        {
+            var key = View.ItemKey(node);
+            var canOpen = View.CanOpen(node);
+            var isOpen = canOpen && View.IsOpen(node);
+            var isLoading = View.IsLoadingChildren(node);
+            var name = View.ItemName(node);
+            var children = isOpen ? GetChildren(node) : [];
+
+            <li class="forma-data-tree-item"
+                role="treeitem"
+                aria-level="@depth"
+                aria-expanded="@(canOpen ? isOpen ? "true" : "false" : null)"
+                aria-selected="@GetAriaSelected(node)"
+                @key="key">
+                <div class="@GetNodeClass(node)" style="@GetNodeStyle(depth)" tabindex="@GetNodeTabIndex(key)" data-item="@(HasSelection ? "" : null)" @onclick="() => HandleNodeClickAsync(node)" @onfocusin="() => _focusedNode = node" @onkeydown="args => HandleNodeKeyDownAsync(args, node)" @ref="_nodeElements[key]">
+                    @if (isLoading)
+                    {
+                        <span class="forma-data-tree-disclosure forma-data-tree-loading"><FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Small" /></span>
+                    }
+                    else if (canOpen)
+                    {
+                        <span class="forma-data-tree-disclosure" @onclick:stopPropagation>
+                            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" class="forma-data-tree-disclosure-button"
+                                         aria-label="@(isOpen ? L["Close {Name}", name] : L["Open {Name}", name])" tabindex="-1"
+                                         OnClick="() => ToggleNodeAsync(node)">
+                                <FormaIcon Icon="@(isOpen ? Glyph.ChevronDown : Glyph.ChevronRight)" Size="IconSize.Small" />
+                            </FormaButton>
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="forma-data-tree-disclosure" aria-hidden="true"></span>
+                    }
+                    @if (HasSelection)
+                    {
+                        <span class="forma-data-tree-node-lead" @onclick:stopPropagation>
+                            <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
+                                           data-row-key="@View.GetItemToken(node)"
+                                           aria-label="@L["Select Item"]"
+                                           aria-disabled="@(!View.CanInteractWith(node) ? "true" : null)"
+                                           Value="@View.IsSelected(node)"
+                                           ValueChanged="isSelected => Interaction.ToggleSelectionAsync(node, isSelected)"
+                                           ValueExpression="() => NodeSelection"
+                                           @ref="_nodeMarkers[key]" />
+                        </span>
+                    }
+                    @if (ThumbnailTemplate is { } thumbnail)
+                    {
+                        <span class="forma-data-tree-node-thumbnail">@thumbnail(node)</span>
+                    }
+                    <span class="forma-data-tree-node-name">@name</span>
+                    @if (ItemTemplate is { } detail)
+                    {
+                        <span class="forma-data-tree-node-detail">@detail(node)</span>
+                    }
+                </div>
+                @if (children.Count > 0)
+                {
+                    <ul class="forma-data-tree-level" role="group">
+                        @RenderLevel(children, depth + 1)
+                    </ul>
+                }
+            </li>
+        }
+    };
+}

@@ -13,6 +13,7 @@
     gap: var(--space-3);
     max-block-size: 100%;
     min-block-size: 0;
+    container-type: inline-size;
 }
 
 /* The items scroll, the footer does not. min-block-size overrides the flex item's automatic content-based
@@ -24,6 +25,19 @@
     min-block-size: 0;
     overflow: auto;
     overscroll-behavior: contain;
+}
+
+/* A companion view, a tree standing as a sidebar, takes its place at the inline start with the active view beside it. */
+.forma-data-view-region-companions {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+/* Below the width a sidebar and a view need together, a 16rem sidebar beside a view of at least 20rem, the companions stack, the sidebar above the view. */
+@container (max-width: 36rem) {
+    .forma-data-view-region-companions {
+        flex-direction: column;
+    }
 }
 
 /* Page navigation at the inline start, status at the inline end, stacking when narrow. */

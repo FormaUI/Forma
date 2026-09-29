@@ -144,7 +144,15 @@
     "This tab shows the cards as a view of the data view: each product a card with its thumbnail, its name, its price and an action bar the page templates, packed across the width and grouped by category.": "Esta pestaña muestra las tarjetas como vista de la vista de datos: cada producto una tarjeta con su miniatura, su nombre, su precio y una barra de acciones que la página define, empaquetadas a lo ancho y agrupadas por categoría.",
     "The Cards View": "La Vista de Tarjetas",
     "Thumbnails": "Miniaturas",
-    "The cards at their compact density, the thumbnail and the name alone, which is what a consumer shows as thumbnails.": "Las tarjetas en su densidad compacta, solo la miniatura y el nombre, que es lo que un consumidor muestra como miniaturas."
+    "The cards at their compact density, the thumbnail and the name alone, which is what a consumer shows as thumbnails.": "Las tarjetas en su densidad compacta, solo la miniatura y el nombre, que es lo que un consumidor muestra como miniaturas.",
+    "This tab shows the tree as a view of the data view over a folder hierarchy: the folders as nodes under their parents, opened and closed from their disclosures and the keyboard, and standing beside the grid as a sidebar whose chosen folder the grid shows the contents of.": "Esta pestaña muestra el árbol como vista de la vista de datos sobre una jerarquía de carpetas: las carpetas como nodos bajo sus padres, abiertos y cerrados desde sus flechas y el teclado, y de pie junto a la tabla como barra lateral cuya carpeta elegida la tabla muestra por dentro.",
+    "A Folder Tree Beside a Grid": "Un Árbol de Carpetas Junto a una Tabla",
+    "Choose a folder in the tree, or activate one in the grid, and the grid shows what it holds; the tree marks the current folder and the status names it. Arrow keys move among the nodes, the inline arrows open and close them, and typing a letter jumps to the next folder starting with it.": "Elija una carpeta en el árbol, o active una en la tabla, y la tabla muestra lo que contiene; el árbol marca la carpeta actual y el estado la nombra. Las flechas mueven entre los nodos, las flechas horizontales los abren y cierran, y escribir una letra salta a la siguiente carpeta que empieza con ella.",
+    "Back to the Roots": "Volver a la Raíz",
+    "Folders": "Carpetas",
+    "Kind": "Tipo",
+    "Showing: {Folder}": "Mostrando: {Folder}",
+    "the roots": "la raíz"
   },
   "FormaExplorerPage": {
     "A browser for the media a site already holds: a thumbnail grid or a details table over folders, with selection, upload, paging and a preview of any item. It handles files the way a desktop does, so an editor already knows how to use it.": "Un explorador de los medios que un sitio ya guarda: una cuadrícula de miniaturas o una tabla de detalles sobre carpetas, con selección, subida, paginación y vista previa de cualquier elemento. Maneja los archivos como lo hace un escritorio, así que un editor ya sabe usarlo.",

@@ -1,0 +1,446 @@
+@inherits FormaBunitContext
+@using System.Globalization
+@using AngleSharp.Dom
+@using Microsoft.AspNetCore.Components.Web
+
+@code {
+    // Two folders at the root, one holding a folder and a file, the other a file; folders open, files are leaves.
+    private static IQueryable<Entry> CreateEntries() => new[]
+    {
+        new Entry(1, null, "Documents", true),
+        new Entry(2, null, "Pictures", true),
+        new Entry(3, 1, "Reports", true),
+        new Entry(4, 1, "Notes.txt", false),
+        new Entry(5, 2, "Beach.jpg", false),
+        new Entry(6, 3, "Q1.pdf", false),
+    }.AsQueryable();
+
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_draw_the_roots_as_a_tree_with_each_node_s_level_and_open_state()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Assert
+            var nodes = cut.FindAll("[role=treeitem]");
+            Assert.Multiple(
+                () => Assert.Equal("tree", cut.Find("ul.forma-data-tree-level").GetAttribute("role")),
+                () => Assert.Equal(["Documents", "Pictures"], nodes.Select(node => node.QuerySelector(".forma-data-tree-node-name")!.TextContent).ToList()),
+                () => Assert.Equal("1", nodes[0].GetAttribute("aria-level")),
+                () => Assert.Equal("false", nodes[0].GetAttribute("aria-expanded")),
+                () => Assert.NotNull(nodes[0].QuerySelector("button.forma-data-tree-disclosure-button")));
+        }
+
+        [Fact]
+        public void Should_open_a_node_from_its_disclosure_and_show_its_children_a_level_deeper()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Act
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            // Assert — the folder's children stand in a group under it, one level deeper, and a file has no disclosure
+            var documents = cut.FindAll("[role=treeitem]")[0];
+            var children = documents.QuerySelectorAll("[role=group] > [role=treeitem]");
+            Assert.Multiple(
+                () => Assert.Equal("true", documents.GetAttribute("aria-expanded")),
+                () => Assert.Equal(["Reports", "Notes.txt"], children.Select(node => node.QuerySelector(".forma-data-tree-node-name")!.TextContent).ToList()),
+                () => Assert.Equal("2", children[0].GetAttribute("aria-level")),
+                () => Assert.Null(children[1].GetAttribute("aria-expanded")),
+                () => Assert.Null(children[1].QuerySelector("button.forma-data-tree-disclosure-button")));
+
+            // Act — pressed again, the node closes
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+
+            // Assert
+            Assert.Equal(2, cut.FindAll("[role=treeitem]").Count);
+        }
+
+        [Fact]
+        public void Should_presume_a_node_opens_until_its_children_come_back_empty()
+        {
+            // Arrange — no HasChildren, so every node offers to open
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            // Act — the file opens, comes back with nothing, and becomes a leaf
+            cut.FindAll("button.forma-data-tree-disclosure-button")[2].Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]")[2].GetAttribute("aria-expanded") is null);
+
+            // Assert
+            Assert.Null(cut.FindAll("[role=treeitem]")[2].QuerySelector("button.forma-data-tree-disclosure-button"));
+        }
+
+        [Fact]
+        public void Should_show_only_the_nodes_the_filter_admits()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" NodeFilter="@(entry => entry.IsFolder)" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Act
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+
+            // Assert — the folder under Documents shows; its file does not
+            Assert.Equal(["Documents", "Reports", "Pictures"], cut.FindAll(".forma-data-tree-node-name").Select(name => name.TextContent).ToList());
+        }
+
+        [Fact]
+        public async Task Should_open_and_close_a_node_from_the_inline_arrows()
+        {
+            // Arrange — with a selection, the tree claims the inline arrows alone and leaves the vertical keys to it
+            using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find(".forma-data-tree-node").FocusIn();
+
+            // Act
+            await router.RouteAsync("tree.open", "ArrowRight");
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            // Assert
+            Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded"));
+            Assert.Equal(["tree.open:ArrowRight", "tree.close:ArrowLeft"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
+
+            // Act
+            await router.RouteAsync("tree.close", "ArrowLeft");
+
+            // Assert
+            Assert.Equal(2, cut.FindAll("[role=treeitem]").Count);
+        }
+
+        [Fact]
+        public void Should_bind_the_inline_arrows_by_the_reading_direction()
+        {
+            // Arrange — the reading direction is the culture's, which the tree reads as it registers
+            var previous = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he");
+
+            try
+            {
+                using var ctx = new FormaDataTreeTests();
+                var router = new InputRouterProbe(ctx);
+
+                // Act
+                var cut = ctx.Render(
+                    @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true">
+                        <FormaDataTree TItem="Entry" />
+                    </FormaDataView>);
+                cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+                // Assert
+                Assert.Equal(["tree.open:ArrowLeft", "tree.close:ArrowRight"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = previous;
+            }
+        }
+
+        [Fact]
+        public async Task Should_jump_to_the_next_node_starting_with_a_typed_letter()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            IReadOnlyList<Entry>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true" SelectedItemsChanged="@((IReadOnlyList<Entry> selected) => changedTo = selected)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Act — from Documents, "p" reaches Pictures
+            await cut.Find(".forma-data-tree-node").KeyDownAsync(new KeyboardEventArgs { Key = "p" });
+
+            // Assert
+            Assert.Equal("Pictures", Assert.Single(changedTo!).Name);
+        }
+
+        [Fact]
+        public void Should_stand_beside_the_active_view_and_out_of_the_switch_when_it_selects_the_current_node()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataViewSwitch />
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2 && cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+
+            // Assert — both draw at once, the region lays them out across, and the switch offers the grid alone
+            Assert.Multiple(
+                () => Assert.Contains("forma-data-view-region-companions", cut.Find(".forma-data-view-region").ClassName, StringComparison.Ordinal),
+                () => Assert.Contains("forma-data-tree-companion", cut.Find(".forma-data-tree").ClassName, StringComparison.Ordinal),
+                () => Assert.Equal(["Grid"], cut.FindAll(".forma-data-view-switch button").Select(button => button.TextContent.Trim()).ToList()));
+        }
+
+        [Fact]
+        public void Should_show_a_chosen_node_s_children_in_the_grid_beside_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+
+            // Act
+            cut.Find(".forma-data-tree-node").Click();
+            cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
+
+            // Assert — the grid shows what Documents holds, and the node is marked current, the selected node of a single-select tree and its tab stop
+            Assert.Multiple(
+                () => Assert.Equal("Documents", current!.Name),
+                () => Assert.Equal(["Reports", "Notes.txt"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList()),
+                () => Assert.Contains("forma-data-tree-node-current", cut.Find(".forma-data-tree-node").ClassName, StringComparison.Ordinal),
+                () => Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-selected")),
+                () => Assert.Equal("0", cut.Find(".forma-data-tree-node").GetAttribute("tabindex")),
+                () => Assert.Equal("-1", cut.FindAll(".forma-data-tree-node")[1].GetAttribute("tabindex")),
+                () => Assert.Empty(cut.FindAll(".forma-data-tree-node input")));
+        }
+
+        [Fact]
+        public async Task Should_walk_a_sidebar_s_nodes_with_the_vertical_arrows_making_each_current()
+        {
+            // Arrange — its rows carry the focus, so the tree claims the vertical keys and Enter as well
+            using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find(".forma-data-tree-node").FocusIn();
+
+            // Act — down from Documents reaches Pictures
+            await router.RouteAsync("tree.next", "ArrowDown");
+
+            // Assert
+            Assert.Equal("Pictures", current!.Name);
+            Assert.Equal("0", cut.FindAll(".forma-data-tree-node")[1].GetAttribute("tabindex"));
+            Assert.Equal(["tree.open:ArrowRight", "tree.close:ArrowLeft", "tree.next:ArrowDown", "tree.previous:ArrowUp", "tree.first:Home", "tree.last:End", "tree.choose:Enter"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
+
+            // Act — Home returns to the first, and up holds there
+            cut.FindAll(".forma-data-tree-node")[1].FocusIn();
+            await router.RouteAsync("tree.first", "Home");
+            cut.Find(".forma-data-tree-node").FocusIn();
+            await router.RouteAsync("tree.previous", "ArrowUp");
+
+            // Assert
+            Assert.Equal("Documents", current!.Name);
+        }
+
+        [Fact]
+        public async Task Should_reveal_the_node_a_view_beside_it_moved_into()
+        {
+            // Arrange — the sidebar shows the roots closed while the grid moves two levels down
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2 && cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+
+            // Act — into Documents, then into Reports
+            await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
+            cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
+            await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
+            cut.WaitForState(() => cut.FindAll(".forma-data-tree-node-current").Count == 1);
+
+            // Assert — Documents opened to show Reports as the current node
+            Assert.Multiple(
+                () => Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded")),
+                () => Assert.Equal("Reports", cut.Find(".forma-data-tree-node-current .forma-data-tree-node-name").TextContent));
+        }
+
+        [Fact]
+        public void Should_ask_a_provider_for_a_node_s_children()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var asked = new List<Entry?>();
+            DataViewItemsProvider<Entry> provider = request =>
+            {
+                asked.Add(request.Parent);
+                var parentId = request.Parent?.Id;
+                return ValueTask.FromResult(new DataViewPage<Entry>(request.ApplySorting(CreateEntries().Where(entry => entry.ParentId == parentId)).ToArray(), null));
+            };
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" ItemName="@(entry => entry.Name)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Act
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            // Assert — the roots were asked for with no parent, then Documents' children with it
+            Assert.Contains(asked, parent => parent is null);
+            Assert.Contains(asked, parent => parent?.Name == "Documents");
+        }
+    }
+
+    public sealed class Hierarchy
+    {
+        [Fact]
+        public void Should_show_the_roots_in_the_grid_when_no_node_is_current()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+
+            // Assert
+            Assert.Equal(["Documents", "Pictures"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList());
+        }
+
+        [Fact]
+        public void Should_move_into_a_folder_activated_in_the_grid_and_leave_a_file_to_the_click()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            Entry? clicked = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" OnItemClick="@((Entry entry) => clicked = entry)">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+
+            // Act — into Documents
+            cut.Find("tbody tr.forma-data-grid-row").Click();
+            cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Null(clicked);
+            Assert.Equal(["Reports", "Notes.txt"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList());
+
+            // Act — a file is a plain click
+            cut.FindAll("tbody tr.forma-data-grid-row")[1].Click();
+
+            // Assert
+            Assert.Equal("Notes.txt", clicked!.Name);
+        }
+
+        [Fact]
+        public async Task Should_move_into_a_folder_double_clicked_or_entered_in_a_selecting_grid_and_leave_a_click_to_the_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            Entry? clicked = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true" OnItemClick="@((Entry entry) => clicked = entry)">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+
+            // Act — a double press on Documents moves into it
+            await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
+            cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Equal(["Reports", "Notes.txt"], cut.FindAll("tbody tr.forma-data-grid-row td:last-child").Select(cell => cell.TextContent).ToList());
+
+            // Act — Enter on Reports' marker moves into it, and a double press on a file is a click
+            await cut.Find("tbody tr.forma-data-grid-row td").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+            cut.WaitForState(() => cut.Markup.Contains("Q1.pdf", StringComparison.Ordinal));
+            await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
+
+            // Assert
+            Assert.Equal("Q1.pdf", clicked!.Name);
+        }
+
+        [Fact]
+        public void Should_show_the_children_of_the_node_the_host_names()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var reports = CreateEntries().Single(entry => entry.Id == 3);
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItem="reports">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 1);
+
+            // Assert
+            Assert.Equal("Q1.pdf", cut.Find("tbody tr.forma-data-grid-row td").TextContent);
+        }
+    }
+
+    private sealed record Entry(int Id, int? ParentId, string Name, bool IsFolder);
+}

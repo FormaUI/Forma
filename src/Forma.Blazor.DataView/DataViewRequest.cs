@@ -4,6 +4,7 @@ namespace Forma.Blazor.Components.DataView;
 /// <typeparam name="TItem">The item the provider answers with.</typeparam>
 /// <param name="StartIndex">The index of the first item asked for, counted from the start of the sorted set.</param>
 /// <param name="Count">How many items are asked for, or null for every item from <paramref name="StartIndex"/> on.</param>
+/// <param name="Parent">The node whose children are asked for, or null for the roots or for a source with no hierarchy.</param>
 /// <param name="Grouping">The grouping whose key orders the items before <paramref name="Sort"/> does, so each group's items stand together, or null for no grouping.</param>
 /// <param name="Sort">The sort to apply before the window is cut, or null for the source's own order.</param>
 /// <param name="SortDirection">Whether <paramref name="Sort"/> applies as written or reversed.</param>
@@ -11,6 +12,7 @@ namespace Forma.Blazor.Components.DataView;
 public readonly record struct DataViewRequest<TItem>(
     int StartIndex,
     int? Count,
+    TItem? Parent,
     DataViewGrouping<TItem>? Grouping,
     DataViewSort<TItem>? Sort,
     DataViewSortDirection SortDirection,

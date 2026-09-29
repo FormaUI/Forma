@@ -10,10 +10,11 @@
               aria-selected="@GetAriaSelected(item)"
               data-item
               @key="View.ItemKey(item)"
-              @onclick="() => Interaction.ActivateAsync(item)">
+              @onclick="() => Interaction.ActivateAsync(item)"
+              @ondblclick="() => HandleDoubleClickAsync(item)">
             @if (HasSelection)
             {
-                <span class="forma-data-list-item-lead" @onclick:stopPropagation>
+                <span class="forma-data-list-item-lead" @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown="args => HandleMarkerKeyDownAsync(args, item)">
                     <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-list-item-marker")"
                                    data-row-key="@View.GetItemToken(item)"
                                    aria-label="@L["Select Item"]"

@@ -4,6 +4,7 @@ using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A view over a data view drawing the items down the height, each a thumbnail where the caller templates one, its name and the caller's secondary text, flowing on into further columns.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
@@ -81,6 +82,13 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
 
     private string? GetAriaSelected(TItem item)
         => HasSelection ? View.IsSelected(item) ? "true" : "false" : null;
+
+    // A press on an item with a marker is the selection's, so a double press or Enter on the marker activates the item instead.
+    private Task HandleDoubleClickAsync(TItem item)
+        => HasSelection ? Interaction.ActivateAsync(item) : Task.CompletedTask;
+
+    private Task HandleMarkerKeyDownAsync(KeyboardEventArgs args, TItem item)
+        => args.Key == "Enter" ? Interaction.ActivateAsync(item) : Task.CompletedTask;
 
     private Task HandleViewChangedAsync()
         => InvokeAsync(StateHasChanged);

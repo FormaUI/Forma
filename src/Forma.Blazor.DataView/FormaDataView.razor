@@ -13,7 +13,7 @@
     <CascadingValue TValue="IDataView<TItem>" Value="this" IsFixed="true">
         <CascadingValue TValue="IDataViewInteraction<TItem>" Value="this" IsFixed="true">
             <CascadingValue TValue="IDataViewSwitcher" Value="this" IsFixed="true">
-                <div class="forma-data-view-region" @ref="_regionElement">
+                <div class="@RegionClass" @ref="_regionElement">
                     @ChildContent
                 </div>
             </CascadingValue>

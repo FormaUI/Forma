@@ -267,6 +267,17 @@ describe('SelectionInteraction', () => {
             expect(resolve(event)).toMatchObject({ owner: grid, action: 'selection.next', precedence: 'structural' });
         });
 
+        it('leaves a key pressed in a control of the list outside its items alone', () => {
+            attachSelection(grid, { owner });
+            grid.insertAdjacentHTML('afterbegin', '<thead><tr><th><button id="sort">Name</button></th></tr></thead>');
+            document.querySelector('#sort').focus();
+
+            const event = press(document.querySelector('#sort'), 'ArrowDown');
+
+            selected().not.toHaveBeenCalled();
+            expect(event.defaultPrevented).toBe(false);
+        });
+
         it('leaves a key inside a nested scope that is open to that scope', () => {
             attachSelection(grid, { owner });
             cellOf(2).insertAdjacentHTML('afterend', '<div id="popup" popover="manual"><button id="option">Option</button></div>');

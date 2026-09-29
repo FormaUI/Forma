@@ -144,7 +144,15 @@
     "This tab shows the cards as a view of the data view: each product a card with its thumbnail, its name, its price and an action bar the page templates, packed across the width and grouped by category.": "לשונית זו מציגה את הכרטיסים כתצוגה של תצוגת הנתונים: כל מוצר כרטיס עם התמונה הממוזערת, השם, המחיר ושורת פעולות שהעמוד מעצב, ארוזים לרוחב ומקובצים לפי קטגוריה.",
     "The Cards View": "תצוגת הכרטיסים",
     "Thumbnails": "תמונות ממוזערות",
-    "The cards at their compact density, the thumbnail and the name alone, which is what a consumer shows as thumbnails.": "הכרטיסים בצפיפות הקומפקטית שלהם, התמונה הממוזערת והשם בלבד, וזה מה שצרכן מציג כתמונות ממוזערות."
+    "The cards at their compact density, the thumbnail and the name alone, which is what a consumer shows as thumbnails.": "הכרטיסים בצפיפות הקומפקטית שלהם, התמונה הממוזערת והשם בלבד, וזה מה שצרכן מציג כתמונות ממוזערות.",
+    "This tab shows the tree as a view of the data view over a folder hierarchy: the folders as nodes under their parents, opened and closed from their disclosures and the keyboard, and standing beside the grid as a sidebar whose chosen folder the grid shows the contents of.": "לשונית זו מציגה את העץ כתצוגה של תצוגת הנתונים על היררכיית תיקיות: התיקיות כצמתים תחת ההורים שלהן, נפתחות ונסגרות מהחיצים שלהן ומהמקלדת, ועומדות לצד הטבלה כסרגל צד שהטבלה מציגה את תוכן התיקייה שנבחרה בו.",
+    "A Folder Tree Beside a Grid": "עץ תיקיות לצד טבלה",
+    "Choose a folder in the tree, or activate one in the grid, and the grid shows what it holds; the tree marks the current folder and the status names it. Arrow keys move among the nodes, the inline arrows open and close them, and typing a letter jumps to the next folder starting with it.": "בחרו תיקייה בעץ, או הפעילו אחת בטבלה, והטבלה תציג את תוכנה; העץ מסמן את התיקייה הנוכחית והמצב נוקב בשמה. מקשי החצים נעים בין הצמתים, החצים האופקיים פותחים וסוגרים אותם, והקלדת אות קופצת לתיקייה הבאה שמתחילה בה.",
+    "Back to the Roots": "חזרה לשורש",
+    "Folders": "תיקיות",
+    "Kind": "סוג",
+    "Showing: {Folder}": "מוצג: {Folder}",
+    "the roots": "השורש"
   },
   "FormaExplorerPage": {
     "A browser for the media a site already holds: a thumbnail grid or a details table over folders, with selection, upload, paging and a preview of any item. It handles files the way a desktop does, so an editor already knows how to use it.": "דפדפן למדיה שהאתר כבר מחזיק: רשת תמונות ממוזערות או טבלת פרטים על פני תיקיות, עם בחירה, העלאה, דפדוף ותצוגה מקדימה של כל פריט. הוא מטפל בקבצים כפי שעושה שולחן עבודה, ולכן עורך כבר יודע להשתמש בו.",

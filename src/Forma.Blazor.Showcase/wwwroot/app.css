@@ -543,6 +543,13 @@ body {
     color: var(--quiet-text-color);
 }
 
+/* An entry's glyph beside its name in a cell. */
+.demo-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
 .demo-thumbnail-small {
     inline-size: var(--target-size-sm);
     block-size: var(--target-size-sm);

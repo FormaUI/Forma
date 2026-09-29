@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
+using System.Linq.Expressions;
+
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Navigation;
 using Forma.Framework.Browser.Interop.Behaviors;
@@ -28,6 +30,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private readonly ItemTokenTable<TItem> _itemTokens = new();
     private readonly List<DataViewRegistration> _registrations = [];
     private readonly ParameterState<string?> _viewParameter = new();
+    private readonly ParameterState<TItem?> _currentItemParameter = new();
+    private readonly Dictionary<object, NodeState> _nodes = [];
+    private readonly Dictionary<object, TItem?> _parents = [];
+    private TItem? _currentItem;
+    private object? _loadedParentKey;
+    private object? _loadedSortToken;
     private string? _activeViewKey;
     private readonly ParameterState<IReadOnlyList<TItem>?> _selectedItemsParameter = new();
     private readonly ParameterState<int> _pageParameter = new();
@@ -79,6 +87,18 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>The name an item goes by, which a view without columns shows for it; the item's own text when omitted.</summary>
     [Parameter] public Func<TItem, string>? ItemName { get; set; }
+
+    /// <summary>The key of the item's parent, as <see cref="ItemKey"/> reads it on the parent, null for a root, which gives a set its hierarchy; a provider answers with a node's children from the request instead.</summary>
+    [Parameter] public Expression<Func<TItem, object?>>? ParentKey { get; set; }
+
+    /// <summary>Whether an item has children, so it opens in the tree and, activated in another view, becomes the current node; absent, a node opens until its children come back empty.</summary>
+    [Parameter] public Func<TItem, bool>? HasChildren { get; set; }
+
+    /// <summary>The node whose children the views without a tree show, bindable; null shows the roots.</summary>
+    [Parameter] public TItem? CurrentItem { get; set; }
+
+    /// <summary>Raised with the node the reader moved into, or null for the roots.</summary>
+    [Parameter] public EventCallback<TItem?> CurrentItemChanged { get; set; }
 
     /// <summary>The views that present the items; one of them shows.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
@@ -165,9 +185,86 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <inheritdoc />
     public string? ActiveViewKey
-        => _activeViewKey is { } key && _registrations.Any(registration => registration.Key == key)
+        => _activeViewKey is { } key && _registrations.Any(registration => registration.Key == key && !registration.IsCompanion)
             ? key
-            : _registrations.FirstOrDefault()?.Key;
+            : _registrations.FirstOrDefault(registration => !registration.IsCompanion)?.Key;
+
+    /// <inheritdoc />
+    public bool HasHierarchy
+        => ParentKey is not null || (ItemsProvider is not null && HasChildren is not null);
+
+    /// <inheritdoc />
+    TItem? IDataView<TItem>.CurrentItem
+        => _currentItem;
+
+    /// <inheritdoc />
+    public IReadOnlyList<TItem> Roots
+        => GetLoadedChildren(RootsKey);
+
+    /// <inheritdoc />
+    public bool AreRootsLoaded
+        => _nodes.TryGetValue(RootsKey, out var node) && node.Children is not null;
+
+    /// <inheritdoc />
+    public bool IsLoadingRoots
+        => _nodes.TryGetValue(RootsKey, out var node) && node.IsLoading;
+
+    /// <inheritdoc />
+    public IReadOnlyList<TItem> GetChildren(TItem parent)
+    {
+        ArgumentNullException.ThrowIfNull(parent);
+
+        return GetLoadedChildren(ItemKey(parent));
+    }
+
+    /// <inheritdoc />
+    public bool AreChildrenLoaded(TItem parent)
+    {
+        ArgumentNullException.ThrowIfNull(parent);
+
+        return _nodes.TryGetValue(ItemKey(parent), out var node) && node.Children is not null;
+    }
+
+    /// <inheritdoc />
+    public bool IsLoadingChildren(TItem parent)
+    {
+        ArgumentNullException.ThrowIfNull(parent);
+
+        return _nodes.TryGetValue(ItemKey(parent), out var node) && node.IsLoading;
+    }
+
+    /// <inheritdoc />
+    public bool TryGetParent(TItem node, out TItem? parent)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+
+        return _parents.TryGetValue(ItemKey(node), out parent);
+    }
+
+    private List<TItem> GetLoadedChildren(object key)
+        => _nodes.TryGetValue(key, out var node) ? node.Children ?? [] : [];
+
+    /// <inheritdoc />
+    public bool CanOpen(TItem node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+
+        if (HasChildren is { } hasChildren)
+        {
+            return hasChildren(node);
+        }
+
+        // Unasked, a node is presumed to open; answered with no children, it is a leaf.
+        return !_nodes.TryGetValue(GetNodeKey(node), out var state) || state.Children is not { Count: 0 };
+    }
+
+    /// <inheritdoc />
+    public bool IsOpen(TItem node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+
+        return _nodes.TryGetValue(GetNodeKey(node), out var state) && state.IsOpen;
+    }
 
     /// <inheritdoc />
     Func<TItem, string> IDataView<TItem>.ItemName
@@ -385,6 +482,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _activeViewKey = View;
         }
 
+        if (_currentItemParameter.Update(CurrentItem))
+        {
+            _currentItem = CurrentItem;
+        }
+
         if (!_isAddressRead)
         {
             _isAddressRead = true;
@@ -407,7 +509,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             || _loadedPage != _page
             || _loadedPageSize != PageSize
             || _loadedPagination != EnablePagination
-            || !ReferenceEquals(_loadedGrouping, GroupBy))
+            || !ReferenceEquals(_loadedGrouping, GroupBy)
+            || !Equals(_loadedParentKey, GetNodeKey(_currentItem)))
         {
             await LoadAsync();
         }
@@ -638,6 +741,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await NotifyStateAsync();
     }
 
+    // A companion view stands beside the active view, so the region lays them out across rather than down.
+    private string RegionClass
+        => _registrations.Any(registration => registration.IsCompanion)
+            ? "forma-data-view-region forma-data-view-region-companions"
+            : "forma-data-view-region";
+
     // The viewport of the view showing, which the engine scrolls and asks to fetch again.
     private IDataViewViewport? ActiveViewport
         => _registrations.FirstOrDefault(registration => registration.Key == ActiveViewKey)?.Viewport;
@@ -664,6 +773,105 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         ArgumentNullException.ThrowIfNull(group);
 
         return IsFolded(group) ? UnfoldGroupAsync(group.Key) : FoldGroupAsync(group.Key);
+    }
+
+    /// <inheritdoc />
+    public Task LoadRootsAsync()
+        => LoadChildrenCoreAsync(default);
+
+    /// <inheritdoc />
+    public Task LoadChildrenAsync(TItem parent)
+    {
+        ArgumentNullException.ThrowIfNull(parent);
+
+        return LoadChildrenCoreAsync(parent);
+    }
+
+    // The source is asked once for a node's children, or the roots for none, and the answer kept until the source or the sort changes.
+    private async Task LoadChildrenCoreAsync(TItem? parent)
+    {
+        var key = GetNodeKey(parent);
+
+        if (!_nodes.TryGetValue(key, out var node))
+        {
+            node = new NodeState();
+            _nodes[key] = node;
+        }
+
+        if (node.Children is not null || node.IsLoading)
+        {
+            return;
+        }
+
+        node.IsLoading = true;
+        await NotifyStateAsync();
+
+        try
+        {
+            var answer = await AskForChildrenAsync(parent, CancellationToken.None);
+            node.Children = [.. answer.Items];
+            RecordParent(answer.Items, parent);
+        }
+        finally
+        {
+            node.IsLoading = false;
+        }
+
+        await NotifyStateAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task OpenNodeAsync(TItem node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+
+        if (!CanOpen(node))
+        {
+            return;
+        }
+
+        GetNodeState(node).IsOpen = true;
+        await LoadChildrenCoreAsync(node);
+        await NotifyStateAsync();
+    }
+
+    /// <inheritdoc />
+    public Task CloseNodeAsync(TItem node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+
+        if (!_nodes.TryGetValue(GetNodeKey(node), out var state) || !state.IsOpen)
+        {
+            return Task.CompletedTask;
+        }
+
+        state.IsOpen = false;
+
+        return NotifyStateAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task MakeCurrentAsync(TItem? item)
+    {
+        if (Equals(GetNodeKey(item), GetNodeKey(_currentItem)))
+        {
+            return;
+        }
+
+        _currentItem = item;
+        await CurrentItemChanged.InvokeAsync(item);
+
+        // A node's children are a set of their own, which starts on its first page.
+        await MoveToPageAsync(1);
+        await LoadAsync();
+    }
+
+    /// <inheritdoc />
+    public Task SelectItemAsync(TItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return SelectAloneAsync(item);
     }
 
     /// <inheritdoc />
@@ -705,7 +913,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <inheritdoc />
     public Task ActivateAsync(TItem item)
-        => OnItemClick.InvokeAsync(item);
+        => HasHierarchy && HasChildren is { } hasChildren && hasChildren(item)
+            ? MakeCurrentAsync(item)
+            : OnItemClick.InvokeAsync(item);
 
     /// <inheritdoc />
     public void Subscribe(Func<Task> callback)
@@ -732,6 +942,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
+        await SelectAloneAsync(item);
+    }
+
+    // A plain press selects the item alone, which the bounds may refuse.
+    private async Task SelectAloneAsync(TItem item)
+    {
         if (!CanSelect(item))
         {
             await RejectSelectionAsync(SelectionBoundary.Maximum);
@@ -821,6 +1037,95 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private static string GetItemText(TItem item)
         => item.ToString() ?? string.Empty;
 
+    // The roots stand under no node, so they are kept under a key of their own.
+    private static readonly object RootsKey = new();
+
+    private object GetNodeKey(TItem? node)
+        => node is null ? RootsKey : ItemKey(node);
+
+    private NodeState GetNodeState(TItem node)
+    {
+        var key = GetNodeKey(node);
+
+        if (!_nodes.TryGetValue(key, out var state))
+        {
+            state = new NodeState();
+            _nodes[key] = state;
+        }
+
+        return state;
+    }
+
+    private void RecordParent(IReadOnlyList<TItem> children, TItem? parent)
+    {
+        foreach (var child in children)
+        {
+            _parents[ItemKey(child)] = parent;
+        }
+    }
+
+    // A node's children come sorted as the data view is, whole and ungrouped, since the tree shows a level at a time.
+    private async ValueTask<DataViewPage<TItem>> AskForChildrenAsync(TItem? parent, CancellationToken cancellationToken)
+    {
+        var request = new DataViewRequest<TItem>(0, null, parent, null, _sort, _sortDirection, cancellationToken);
+
+        if (ItemsProvider is { } provider)
+        {
+            return await provider(request);
+        }
+
+        var query = request.ApplySorting(FilterChildren(Items!, parent));
+        var items = await GetExecutor(query).ToArrayAsync(query, cancellationToken);
+
+        return new DataViewPage<TItem>(items, items.Length);
+    }
+
+    // The items naming parent as theirs, compared in the store on the member the parent key reads, so a store-backed set filters where it stands.
+    private IQueryable<TItem> FilterChildren(IQueryable<TItem> source, TItem? parent)
+    {
+        if (ParentKey is not { } parentKey)
+        {
+            return source;
+        }
+
+        var body = parentKey.Body;
+
+        while (body is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } conversion)
+        {
+            body = conversion.Operand;
+        }
+
+        var key = parent is null ? null : ItemKey(parent);
+
+        // A member that cannot be null names no root, so the roots are the items whose parent is nowhere in the set.
+        if (key is null && body.Type.IsValueType && Nullable.GetUnderlyingType(body.Type) is null)
+        {
+            return source.Where(Expression.Lambda<Func<TItem, bool>>(Expression.Constant(false), parentKey.Parameters[0]));
+        }
+
+        // The key is typed as the parent's own; a nullable member takes it converted, so an int key compares with an int? parent.
+        Expression constant = Expression.Constant(key, key is null ? body.Type : key.GetType());
+
+        if (constant.Type != body.Type)
+        {
+            constant = Expression.Convert(constant, body.Type);
+        }
+
+        var comparison = Expression.Equal(body, constant);
+
+        return source.Where(Expression.Lambda<Func<TItem, bool>>(comparison, parentKey.Parameters[0]));
+    }
+
+    /// <summary>What the data view keeps of a node the tree has opened or asked about: its children once answered, and whether it is open or still loading.</summary>
+    private sealed class NodeState
+    {
+        public List<TItem>? Children { get; set; }
+
+        public bool IsOpen { get; set; }
+
+        public bool IsLoading { get; set; }
+    }
+
     /// <summary>The attribute an element carries to be the item a marker belongs to, whatever the view draws it as.</summary>
     internal const string ItemAttribute = "data-item";
 
@@ -903,12 +1208,25 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         var cancellation = _loadCancellation = new CancellationTokenSource();
+        var source = (object?)Items ?? ItemsProvider;
         _isBusy = true;
-        _loadedSource = (object?)Items ?? ItemsProvider;
         _loadedPage = _page;
         _loadedPageSize = PageSize;
         _loadedPagination = EnablePagination;
         _loadedGrouping = GroupBy;
+        _loadedParentKey = GetNodeKey(_currentItem);
+
+        // The children a tree keeps were sorted and read from the source as it was; a new source or sort asks again.
+        object sortToken = (_sortName, _sortDirection);
+
+        if (!ReferenceEquals(_loadedSource, source) || !Equals(_loadedSortToken, sortToken))
+        {
+            _nodes.Clear();
+            _parents.Clear();
+            _loadedSortToken = sortToken;
+        }
+
+        _loadedSource = source;
 
         try
         {
@@ -956,16 +1274,17 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await NotifyStateAsync();
     }
 
-    private async ValueTask<DataViewPage<TItem>> LoadWindowCoreAsync(int startIndex, int? count, CancellationToken cancellationToken)
+    private async ValueTask<DataViewPage<TItem>> FetchWindowAsync(int startIndex, int? count, CancellationToken cancellationToken)
     {
-        var request = new DataViewRequest<TItem>(startIndex, count, GroupBy, _sort, _sortDirection, cancellationToken);
+        // The views without a tree show the current node's children, which over a set means the items naming it as parent.
+        var request = new DataViewRequest<TItem>(startIndex, count, _currentItem, GroupBy, _sort, _sortDirection, cancellationToken);
 
         if (ItemsProvider is { } provider)
         {
             return await provider(request);
         }
 
-        var query = request.ApplySorting(Items!);
+        var query = request.ApplySorting(FilterChildren(Items!, _currentItem));
         var executor = GetExecutor(query);
         var total = await executor.CountAsync(query, cancellationToken);
         var window = query.Skip(startIndex);
@@ -978,6 +1297,19 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         var items = await executor.ToArrayAsync(window, cancellationToken);
 
         return new DataViewPage<TItem>(items, total);
+    }
+
+    // Every window is a set of the current node's children, so each item in it is remembered under that node.
+    private async ValueTask<DataViewPage<TItem>> LoadWindowCoreAsync(int startIndex, int? count, CancellationToken cancellationToken)
+    {
+        var window = await FetchWindowAsync(startIndex, count, cancellationToken);
+
+        if (HasHierarchy && !cancellationToken.IsCancellationRequested)
+        {
+            RecordParent(window.Items, _currentItem);
+        }
+
+        return window;
     }
 
     // The host's executor answers for the queryables it supports; every other one is enumerated where it stands.
