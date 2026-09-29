@@ -238,10 +238,11 @@
         }
 
         [Fact]
-        public void Should_show_a_chosen_node_s_children_in_the_grid_beside_it()
+        public async Task Should_show_a_chosen_node_s_children_in_the_grid_beside_it()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
             Entry? current = null;
             var cut = ctx.Render(
                 @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
@@ -254,8 +255,9 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
 
-            // Act
-            cut.Find(".forma-data-tree-node").Click();
+            // Act — a press on the row, which the press has focused
+            cut.Find(".forma-data-tree-node").FocusIn();
+            await router.ClickAsync("tree.choose");
             cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
 
             // Assert — the grid shows what Documents holds, and the node is marked current, the selected node of a single-select tree and its tab stop
@@ -267,6 +269,28 @@
                 () => Assert.Equal("0", cut.Find(".forma-data-tree-node").GetAttribute("tabindex")),
                 () => Assert.Equal("-1", cut.FindAll(".forma-data-tree-node")[1].GetAttribute("tabindex")),
                 () => Assert.Empty(cut.FindAll(".forma-data-tree-node input")));
+        }
+
+        [Fact]
+        public async Task Should_choose_nothing_on_a_press_outside_every_node()
+        {
+            // Arrange — a node was focused, and the focus has since left it for the empty space the press landed on
+            using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find(".forma-data-tree-node").FocusIn();
+            cut.Find(".forma-data-tree-node").FocusOut();
+
+            // Act
+            await router.ClickAsync("tree.choose");
+
+            // Assert
+            Assert.Null(current);
         }
 
         [Fact]
@@ -289,7 +313,7 @@
             // Assert
             Assert.Equal("Pictures", current!.Name);
             Assert.Equal("0", cut.FindAll(".forma-data-tree-node")[1].GetAttribute("tabindex"));
-            Assert.Equal(["tree.open:ArrowRight", "tree.close:ArrowLeft", "tree.find:typing", "tree.next:ArrowDown", "tree.previous:ArrowUp", "tree.first:Home", "tree.last:End", "tree.choose:Enter"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
+            Assert.Equal(["tree.open:ArrowRight", "tree.close:ArrowLeft", "tree.find:typing", "tree.next:ArrowDown", "tree.previous:ArrowUp", "tree.first:Home", "tree.last:End", "tree.choose:Enter,click"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
 
             // Act — Home returns to the first, and up holds there
             cut.FindAll(".forma-data-tree-node")[1].FocusIn();
@@ -318,9 +342,9 @@
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2 && cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
 
             // Act — into Documents, then into Reports
-            await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
+            await PressRowAsync(cut, 0);
             cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
-            await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
+            await PressRowAsync(cut, 0);
             cut.WaitForState(() => cut.FindAll(".forma-data-tree-node-current").Count == 1);
 
             // Assert — Documents opened to show Reports as the current node
@@ -381,7 +405,7 @@
         }
 
         [Fact]
-        public void Should_move_into_a_folder_activated_in_the_grid_and_leave_a_file_to_the_click()
+        public async Task Should_move_into_a_folder_activated_in_the_grid_and_leave_a_file_to_the_click()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
@@ -397,7 +421,7 @@
             cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
 
             // Act — into Documents
-            cut.Find("tbody tr.forma-data-grid-row").Click();
+            await PressRowAsync(cut, 0);
             cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
 
             // Assert
@@ -405,7 +429,7 @@
             Assert.Equal(["Reports", "Notes.txt"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList());
 
             // Act — a file is a plain click
-            cut.FindAll("tbody tr.forma-data-grid-row")[1].Click();
+            await PressRowAsync(cut, 1);
 
             // Assert
             Assert.Equal("Notes.txt", clicked!.Name);
@@ -428,7 +452,7 @@
             cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
 
             // Act — a double press on Documents moves into it
-            await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
+            await PressRowAsync(cut, 0);
             cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
 
             // Assert
@@ -439,7 +463,7 @@
             var token = int.Parse(marker.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
             await cut.InvokeAsync(() => cut.FindComponent<FormaDataView<Entry>>().Instance.HandleActivateAsync(token));
             cut.WaitForState(() => cut.Markup.Contains("Q1.pdf", StringComparison.Ordinal));
-            await cut.Find("tbody tr.forma-data-grid-row").DoubleClickAsync();
+            await PressRowAsync(cut, 0);
 
             // Assert
             Assert.Equal("Q1.pdf", clicked!.Name);
@@ -469,4 +493,12 @@
     }
 
     private sealed record Entry(int Id, int? ParentId, string Name, bool IsFolder);
+
+    // A press on a row reaches the data view through the selection behavior, which tells it the token the row carries.
+    private static Task PressRowAsync(IRenderedComponent<IComponent> cut, int index)
+    {
+        var token = int.Parse(cut.FindAll("tbody tr.forma-data-grid-row")[index].GetAttribute("data-item")!, CultureInfo.InvariantCulture);
+
+        return cut.InvokeAsync(() => cut.FindComponent<FormaDataView<Entry>>().Instance.HandleActivateAsync(token));
+    }
 }

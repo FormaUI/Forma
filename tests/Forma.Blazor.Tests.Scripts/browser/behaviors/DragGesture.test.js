@@ -89,6 +89,23 @@ describe('DragGesture', () => {
             expect(reported).toEqual([]);
         });
 
+        it('swallows the click a drag ends in, and leaves the click of a press that never travelled', () => {
+            start();
+            const clicked = vi.fn();
+            container.addEventListener('click', clicked);
+            const click = () => document.querySelector('#one').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+
+            press();
+            move({ clientY: 306 });
+            lift({ clientY: 306 });
+            click();
+            press();
+            lift();
+            click();
+
+            expect(clicked).toHaveBeenCalledOnce();
+        });
+
         it('starts once the press has travelled far enough', () => {
             start();
 

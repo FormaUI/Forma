@@ -8,10 +8,8 @@
         @<div class="@GetCardClass(item)"
               role="listitem"
               aria-selected="@GetAriaSelected(item)"
-              data-item
-              @key="View.ItemKey(item)"
-              @onclick="() => Interaction.ActivateAsync(item)"
-              @ondblclick="() => HandleDoubleClickAsync(item)">
+              data-item="@View.GetItemToken(item)"
+              @key="View.ItemKey(item)">
             <div class="forma-data-card-thumbnail">
                 @if (ThumbnailTemplate is { } thumbnail)
                 {
@@ -19,7 +17,7 @@
                 }
                 @if (HasSelection)
                 {
-                    <span class="forma-data-card-lead" @onclick:stopPropagation @ondblclick:stopPropagation>
+                    <span class="forma-data-card-lead" data-item-control>
                         <FormaCheckBox class="@(View.EnableCheckedSelection ? "forma-data-card-box" : "forma-data-card-marker")"
                                        data-row-key="@View.GetItemToken(item)"
                                        aria-label="@L["Select Item"]"
@@ -43,7 +41,7 @@
             </div>
             @if (!Dense && ActionsTemplate is { } actions)
             {
-                <div class="forma-data-card-actions" @onclick:stopPropagation>@actions(item)</div>
+                <div class="forma-data-card-actions" data-item-control>@actions(item)</div>
             }
         </div>;
 

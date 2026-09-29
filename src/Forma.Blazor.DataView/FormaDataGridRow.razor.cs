@@ -42,13 +42,4 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
         }
     }
 
-    private bool HasSelection
-        => View.EnableCheckedSelection || View.EnableItemSelection;
-
-    private Task HandleClickAsync()
-        => Interaction.ActivateAsync(Item);
-
-    // A press on a row with a marker is the selection's, so a double press activates the row instead, as Enter on its marker does; a row being edited takes neither.
-    private Task HandleDoubleClickAsync()
-        => HasSelection && !Grid.IsEditing(Item) ? Interaction.ActivateAsync(Item) : Task.CompletedTask;
 }

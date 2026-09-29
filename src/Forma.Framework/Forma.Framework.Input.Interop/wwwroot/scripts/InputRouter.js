@@ -5,13 +5,14 @@
  * semantic action, the bindings that raise it by default, and the handler; the host remaps
  * bindings by action. Several behaviors register on one element and share its scope, and
  * each registration is disposed on its own. The router resolves every input to one owner.
- * Targeted input — a key, a wheel turn, a press, a drop — belongs to the innermost scope on
+ * Targeted input — a key, a wheel turn, a press, a click, a drop — belongs to the innermost scope on
  * the event's composed path that routes it, and never crosses a boundary outward. Ambient
  * input — Escape, a press outside, a platform close request — belongs to the foremost
  * active registration alone. The router owns the decisions; it installs whichever listener
  * each input class needs and no more.
  */
 
+import { Controls } from '../../core/scripts/Controls.js';
 import { Scrolling } from '../../core/scripts/Scrolling.js';
 
 const isApplePlatform = /Mac|iPhone|iPad|iPod/.test(globalThis.navigator?.platform ?? '');
@@ -24,6 +25,8 @@ const ClassDefaults = {
     pointerdown: { preventDefault: false, propagation: 'continue' },
     pointerup: { preventDefault: false, propagation: 'continue' },
     pointermove: { preventDefault: false, propagation: 'continue' },
+    click: { preventDefault: false, propagation: 'continue' },
+    dblclick: { preventDefault: false, propagation: 'continue' },
     drop: { preventDefault: true, propagation: 'continue' },
     dragover: { preventDefault: true, propagation: 'continue' },
 };
@@ -36,6 +39,8 @@ const Families = {
     pointerdown: 'pointer',
     pointerup: 'pointer',
     pointermove: 'pointer',
+    click: 'click',
+    dblclick: 'click',
     drop: 'drop',
     dragover: 'drop',
     dragenter: 'drop',
@@ -48,7 +53,7 @@ const BindingFields = ['key', 'axis', 'button', 'buttons', 'pointerType', 'data'
 /** The modifier keys a binding's `modifiers` can state. */
 const ModifierFields = ['control', 'meta', 'alt', 'shift'];
 
-/** How long a click can follow the press away that dismissed a scope and still be its click. */
+/** How long a click can follow the release of a press whose click was claimed and still be its click. */
 const ClickSuppressionWindow = 1000;
 
 /** An action identifier: a component or application name, a dot, and the action, so host overrides key one thing. */
@@ -101,6 +106,7 @@ let registrations = 0;
 let activations = 0;
 let documentListeners = null;
 let suppressedClick = null;
+let pendingPress = null;
 const dispatched = new WeakSet();
 
 /**
@@ -163,6 +169,10 @@ export function registerHost(profile = {}, owner = null) {
 export function resolve(event) {
     if (event.type === 'keydown' && isComposing(event)) {
         return unowned(event, 'composition');
+    }
+
+    if (Families[event.type] === 'click' && isAbandoned(event)) {
+        return unowned(event, 'pressed scope gone');
     }
 
     if (event.type === 'keydown' && event.key === 'Escape' && activeEntries.length > 0) {
@@ -414,6 +424,13 @@ class Registration {
             this.profile.onDismiss(action, reason);
         } else {
             observe(this.owner?.invokeMethodAsync('HandleDismissAsync', action, reason));
+        }
+    }
+
+    /** Claims the gesture a press began, so the click it ends in is swallowed rather than routed; a drag under way claims its press. */
+    claimClick(pointerId, pressed) {
+        if (!this.#disposed && pressed instanceof Element) {
+            suppressedClick = { pointerId, target: pressed, time: performance.now() };
         }
     }
 
@@ -671,6 +688,7 @@ function ensureDocumentListeners() {
     document.addEventListener('keydown', event => dispatch(event), { signal, capture: true });
     document.addEventListener('keyup', event => dispatch(event), { signal, capture: true });
     document.addEventListener('pointerdown', event => dispatch(event), { signal, capture: true });
+    document.addEventListener('pointerup', event => stampRelease(event), { signal, capture: true });
     document.addEventListener('pointercancel', event => forgetSuppressedClick(event.pointerId), { signal, capture: true });
     document.addEventListener('click', event => swallowSuppressedClick(event), { signal, capture: true });
     document.addEventListener('cancel', event => offerCloseRequest(event), { signal, capture: true });
@@ -695,10 +713,16 @@ function dispatch(event) {
 
     if (event.type === 'pointerdown') {
         suppressedClick = null;
+        pendingPress = { pointerId: event.pointerId, claimant: clickClaimant(event) };
     }
 
     const resolution = resolve(event);
     apply(event, resolution);
+
+    // A click ends the press it followed; one raised from the keyboard followed none.
+    if (event.type === 'click' && event.detail > 0) {
+        pendingPress = null;
+    }
 
     // A press passed through dismisses the foremost registration and then belongs to whatever was pressed.
     if (resolution.reason === 'press-away' && resolution.registration.pressAway === 'pass-through') {
@@ -731,20 +755,29 @@ function apply(event, resolution) {
     resolution.registration.dismiss(resolution.action, resolution.reason);
 }
 
-// The click that follows the press is the one from the same pointer, on what was pressed, within the window;
-// any other click ends the suppression without being swallowed.
+// The click that follows the press is the one from the same pointer, on what was pressed or on what captured it, within
+// the window after release; any other click from a pointer ends the suppression without being swallowed, and a click raised
+// from the keyboard follows no press, so it is never swallowed and leaves the suppression as it was.
 function swallowSuppressedClick(event) {
-    if (!suppressedClick) {
+    if (!suppressedClick || event.detail === 0) {
         return;
     }
 
     const { pointerId, target, time } = suppressedClick;
     suppressedClick = null;
     const samePointer = event.pointerId === undefined || event.pointerId === pointerId;
+    const related = event.target instanceof Node && (target.contains(event.target) || event.target.contains(target));
 
-    if (samePointer && target.contains(event.target) && performance.now() - time <= ClickSuppressionWindow) {
+    if (samePointer && related && performance.now() - time <= ClickSuppressionWindow) {
         event.stopPropagation();
         event.preventDefault();
+    }
+}
+
+// The window a suppressed click has runs from the release, since a drag lasts as long as the pointer is held.
+function stampRelease(event) {
+    if (suppressedClick?.pointerId === event.pointerId) {
+        suppressedClick.time = performance.now();
     }
 }
 
@@ -752,6 +785,35 @@ function forgetSuppressedClick(pointerId) {
     if (suppressedClick?.pointerId === pointerId) {
         suppressedClick = null;
     }
+
+    if (pendingPress?.pointerId === pointerId) {
+        pendingPress = null;
+    }
+}
+
+/** The innermost scope on the press's path with a click route, and whether it was active, so its click is never another scope's. */
+function clickClaimant(event) {
+    for (const node of event.composedPath()) {
+        const scope = node instanceof Element ? scopes.get(node) : null;
+
+        if (scope?.routes.some(route => route.bindings.some(binding => Families[binding.type] === 'click'))) {
+            return { scope, wasActive: scope.isActive };
+        }
+    }
+
+    return null;
+}
+
+// A click from the pointer whose press stood in a scope that has since gone, or turned inactive, belongs to nothing,
+// rather than falling to the scope beneath.
+function isAbandoned(event) {
+    const claimant = pendingPress?.claimant;
+
+    if (!claimant || event.detail === 0 || (event.pointerId !== undefined && event.pointerId !== pendingPress.pointerId)) {
+        return false;
+    }
+
+    return scopes.get(claimant.scope.element) !== claimant.scope || (claimant.wasActive && !claimant.scope.isActive);
 }
 
 function resolvePreemptive(event) {
@@ -919,6 +981,8 @@ function matchesFamily(binding, event) {
                 && (binding.buttons == null || (event.buttons & binding.buttons) === binding.buttons)
                 && (binding.pointerType == null || binding.pointerType === event.pointerType)
                 && modifiersMatch(binding, event, false);
+        case 'click':
+            return (binding.button == null || binding.button === event.button) && modifiersMatch(binding, event, false);
         case 'drop':
             return binding.data == null || binding.data.some(kind => event.dataTransfer?.types?.includes(kind));
         default:
@@ -964,6 +1028,11 @@ function isComposing(event) {
 function nativeClaims(element, event) {
     if (element.matches(':disabled')) {
         return false;
+    }
+
+    // A click on a native control is the control's own activation.
+    if (Families[event.type] === 'click') {
+        return element.matches(Controls.Interactive);
     }
 
     if (element.matches('[contenteditable]:not([contenteditable="false"])')) {
@@ -1088,7 +1157,9 @@ function describeInput(event) {
         case 'wheel':
             return { family, type: event.type, deltaX: event.deltaX, deltaY: event.deltaY, deltaMode: event.deltaMode, modifiers: describeModifiers(event) };
         case 'pointer':
-            return { family, type: event.type, pointerId: event.pointerId, pointerType: event.pointerType || 'unknown', button: event.button, buttons: event.buttons, clientX: event.clientX, clientY: event.clientY, modifiers: describeModifiers(event) };
+        case 'click':
+            // A click is a pointer's, described as one so a .NET owner reads it as a pointer input.
+            return { family: 'pointer', type: event.type, pointerId: event.pointerId, pointerType: event.pointerType || 'unknown', button: event.button, buttons: event.buttons, clientX: event.clientX, clientY: event.clientY, modifiers: describeModifiers(event) };
         case 'drop':
             return { family, type: event.type, data: [...(event.dataTransfer?.types ?? [])], clientX: event.clientX, clientY: event.clientY };
         default:

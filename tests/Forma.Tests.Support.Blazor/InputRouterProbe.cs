@@ -3,8 +3,10 @@ namespace Forma.Tests.Blazor;
 using Bunit;
 
 using Forma.Framework.Input;
+using Forma.Framework.Input.Click;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
+using Forma.Framework.Input.Pointer;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -45,18 +47,26 @@ public sealed class InputRouterProbe
     public Task RouteAsync(ElementReference element, string action, string key)
         => RouteAsync(Registrations.Last(registration => ((ElementReference)registration.Arguments[0]!).Id == element.Id), action, key);
 
+    /// <summary>Clicks as <paramref name="action"/> on the last registration that declares the action, on the renderer.</summary>
+    public Task ClickAsync(string action)
+        => DispatchAsync(Registrations.Last(registration => GetProfile(registration).InputRoutes.Any(route => route.Action == action)), action, new InputPointerInfo { Type = "click" });
+
     /// <summary>Delivers a dismissal to the registration made on <paramref name="element"/>, on the renderer.</summary>
     public Task DismissAsync(ElementReference element, DismissBehavior action, DismissReason reason)
         => _context.Renderer.Dispatcher.InvokeAsync(() => GetOwner(Registrations.Last(registration => ((ElementReference)registration.Arguments[0]!).Id == element.Id)).HandleDismissAsync(action, reason));
 
     private Task RouteAsync(JSRuntimeInvocation registration, string action, string key)
-        => _context.Renderer.Dispatcher.InvokeAsync(() => GetOwner(registration).HandleInputActionAsync(action, new InputKeyInfo { Type = "keydown", Key = key }));
+        => DispatchAsync(registration, action, new InputKeyInfo { Type = "keydown", Key = key });
+
+    private Task DispatchAsync(JSRuntimeInvocation registration, string action, InputInfo input)
+        => _context.Renderer.Dispatcher.InvokeAsync(() => GetOwner(registration).HandleInputActionAsync(action, input));
 
     private static string Describe(InputBinding binding)
         => binding switch
         {
             KeyBinding key => key.Key,
             TypingBinding => "typing",
+            ClickBinding click => click.Type,
             _ => binding.Type,
         };
 

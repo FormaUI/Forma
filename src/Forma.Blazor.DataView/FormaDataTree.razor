@@ -54,9 +54,9 @@
                      aria-labelledby="@nameId"
                      aria-owns="@(children.Count > 0 ? childrenId : null)"
                      tabindex="@GetNodeTabIndex(key)"
-                     data-item="@(HasSelection ? "" : null)"
-                     @onclick="() => HandleNodeClickAsync(node)"
+                     data-item="@(HasSelection ? View.GetItemToken(node) : null)"
                      @onfocusin="() => _focusedNode = node"
+                     @onfocusout="() => _focusedNode = default"
                      @ref="_nodeElements[key]">
                     @if (isLoading)
                     {
@@ -64,7 +64,7 @@
                     }
                     else if (canOpen)
                     {
-                        <span class="forma-data-tree-disclosure" @onclick:stopPropagation>
+                        <span class="forma-data-tree-disclosure" data-item-control>
                             <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" class="forma-data-tree-disclosure-button"
                                          aria-label="@(isOpen ? L["Close {Name}", name] : L["Open {Name}", name])" tabindex="-1"
                                          OnClick="() => ToggleNodeAsync(node)">
@@ -78,7 +78,7 @@
                     }
                     @if (HasSelection)
                     {
-                        <span class="forma-data-tree-node-lead" @onclick:stopPropagation>
+                        <span class="forma-data-tree-node-lead" data-item-control>
                             <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
                                            data-row-key="@View.GetItemToken(node)"
                                            aria-label="@L["Select Item"]"

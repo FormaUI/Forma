@@ -33,8 +33,16 @@ function press(target, init = {}) {
     return event;
 }
 
+// A click from a pointer counts one; a click raised from the keyboard counts none.
 function click(target, init = {}) {
-    const event = new MouseEvent('click', { bubbles: true, cancelable: true, ...init });
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1, ...init });
+    target.dispatchEvent(event);
+
+    return event;
+}
+
+function release(target, init = {}) {
+    const event = new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', ...init });
     target.dispatchEvent(event);
 
     return event;
@@ -376,6 +384,133 @@ describe('InputRouter binding matching', () => {
         expect(activated).toHaveBeenCalledTimes(2);
         expect(pressed.defaultPrevented).toBe(false);
         expect(keyed.defaultPrevented).toBe(true);
+    });
+});
+
+describe('InputRouter clicks', () => {
+    const clickBinding = (init = {}) => ({ type: 'click', button: 0, ...init });
+
+    it('routes a click to the innermost scope that routes it, by button and only the modifiers it states', () => {
+        const chosen = vi.fn();
+        scope(grid(), { routes: [route('test.choose', chosen, clickBinding())] });
+
+        click(cell());
+        click(cell(), { shiftKey: true });
+        click(cell(), { button: 2 });
+
+        expect(chosen).toHaveBeenCalledTimes(2);
+    });
+
+    it('routes a double click by its own binding', () => {
+        const opened = vi.fn();
+        scope(grid(), { routes: [route('test.open', opened, { type: 'dblclick', button: 0 })] });
+
+        click(cell());
+        cell().dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, detail: 2 }));
+
+        expect(opened).toHaveBeenCalledOnce();
+    });
+
+    it('leaves a click on a native control to the control', () => {
+        const chosen = vi.fn();
+        scope(grid(), { routes: [route('test.choose', chosen, clickBinding())] });
+
+        click(option());
+
+        expect(chosen).not.toHaveBeenCalled();
+        expect(resolve(new MouseEvent('click', { bubbles: true })).action).toBeNull();
+    });
+
+    it('routes a click raised from the keyboard, with no press before it', () => {
+        const chosen = vi.fn();
+        scope(grid(), { routes: [route('test.choose', chosen, clickBinding())] });
+
+        click(cell(), { detail: 0 });
+
+        expect(chosen).toHaveBeenCalledOnce();
+    });
+
+    it('swallows the click a claimed gesture ends in, on what captured it as on what was pressed, and routes the next', () => {
+        const chosen = vi.fn();
+        const gesture = scope(grid(), { routes: [route('test.choose', chosen, clickBinding())] });
+
+        press(cell());
+        gesture.claimClick(1, cell());
+        release(cell());
+        const swallowed = click(grid());
+        press(cell());
+        click(cell());
+
+        expect(swallowed.defaultPrevented).toBe(true);
+        expect(chosen).toHaveBeenCalledOnce();
+    });
+
+    it('never swallows a click raised from the keyboard, and keeps the claim for the pointer\'s own click', () => {
+        const chosen = vi.fn();
+        const gesture = scope(grid(), { routes: [route('test.choose', chosen, clickBinding())] });
+
+        press(cell());
+        gesture.claimClick(1, cell());
+        click(cell(), { detail: 0 });
+        const swallowed = click(cell());
+
+        expect(chosen).toHaveBeenCalledOnce();
+        expect(swallowed.defaultPrevented).toBe(true);
+    });
+
+    it('counts the window from the release rather than the press', () => {
+        const chosen = vi.fn();
+        const gesture = scope(grid(), { routes: [route('test.choose', chosen, clickBinding())] });
+        const now = vi.spyOn(performance, 'now');
+
+        now.mockReturnValue(1000);
+        press(cell());
+        gesture.claimClick(1, cell());
+        now.mockReturnValue(5000);
+        release(cell());
+        now.mockReturnValue(5200);
+        click(cell());
+
+        expect(chosen).not.toHaveBeenCalled();
+        now.mockRestore();
+    });
+
+    it('drops a click whose press stood in a scope that has since gone, rather than letting it fall to the scope beneath', () => {
+        const outer = vi.fn();
+        const inner = vi.fn();
+        scope(grid(), { routes: [route('test.outer', outer, clickBinding())] });
+        const row = register(document.querySelector('#row'), { routes: [route('test.inner', inner, clickBinding())] });
+
+        press(cell());
+        row.dispose();
+        click(cell());
+
+        expect(inner).not.toHaveBeenCalled();
+        expect(outer).not.toHaveBeenCalled();
+    });
+
+    it('drops a click whose press stood in an active scope that has since turned inactive', () => {
+        const outer = vi.fn();
+        const inner = vi.fn();
+        scope(grid(), { routes: [route('test.outer', outer, clickBinding())] });
+        const row = scope(document.querySelector('#row'), { routes: [route('test.inner', inner, clickBinding())] });
+        row.activate();
+
+        press(cell());
+        row.release();
+        click(cell());
+
+        expect(inner).not.toHaveBeenCalled();
+        expect(outer).not.toHaveBeenCalled();
+    });
+
+    it('describes a click to a .NET owner as a pointer input', () => {
+        const owner = { invokeMethodAsync: vi.fn().mockResolvedValue(undefined) };
+        scope(grid(), { routes: [{ action: 'test.choose', bindings: [clickBinding()] }] }, owner);
+
+        click(cell());
+
+        expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleInputActionAsync', 'test.choose', expect.objectContaining({ family: 'pointer', type: 'click' }));
     });
 });
 
@@ -929,7 +1064,7 @@ describe('InputRouter active routing', () => {
         elsewhere().addEventListener('click', clicked);
 
         press(elsewhere(), { pointerId: 3 });
-        elsewhere().dispatchEvent(new PointerEvent('click', { bubbles: true, cancelable: true, pointerId: 4 }));
+        elsewhere().dispatchEvent(new PointerEvent('click', { bubbles: true, cancelable: true, pointerId: 4, detail: 1 }));
 
         expect(clicked).toHaveBeenCalledOnce();
     });

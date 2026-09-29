@@ -112,6 +112,12 @@
     flex-shrink: 0;
 }
 
+/* The button fills its slot, so a press anywhere in it is the button's rather than the row's. */
+::deep .forma-data-tree-disclosure-button {
+    inline-size: 100%;
+    block-size: 100%;
+}
+
 ::deep .forma-data-tree-loading .forma-spinner {
     inline-size: var(--icon-size-sm);
     block-size: var(--icon-size-sm);

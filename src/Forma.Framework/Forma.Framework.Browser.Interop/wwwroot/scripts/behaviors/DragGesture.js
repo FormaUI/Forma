@@ -68,6 +68,7 @@ class DragGesture {
     #pointerType;
 
     #subject = null;
+    #pressed = null;
     #pointerId = null;
     #startX = 0;
     #startY = 0;
@@ -177,14 +178,16 @@ class DragGesture {
         }
 
         this.#subject = null;
+        this.#pressed = null;
         this.#pointerId = null;
         this.#isDragging = false;
     }
 
-    /** Marks the press a drag and stands it above whatever contains it, so Escape cancels the drag and nothing else. */
+    /** Marks the press a drag and stands it above whatever contains it, so Escape cancels the drag and nothing else; the click the drag ends in is claimed, so nothing under it takes it. */
     #begin() {
         this.#isDragging = true;
         this.#registration.activate();
+        this.#registration.claimClick(this.#pointerId, this.#pressed);
         this.#onStart?.(this.#context());
     }
 
@@ -212,6 +215,7 @@ class DragGesture {
         }
 
         this.#subject = subject;
+        this.#pressed = event.target;
         this.#pointerId = event.pointerId;
         this.#startX = event.clientX;
         this.#startY = event.clientY;

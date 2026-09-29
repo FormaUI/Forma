@@ -41,9 +41,16 @@ describe('SelectionInteraction', () => {
     const cellOf = key => document.querySelector(`[data-row-key="${key}"]`);
     const selected = () => expect(owner.invokeMethodAsync);
 
+    // A press from the pointer reaches the router as a press and then a click that follows it.
     const click = (element, modifiers = {}) => {
-        element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0, ...modifiers }));
-        element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ...modifiers }));
+        element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, pointerId: 1, ...modifiers }));
+        element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1, ...modifiers }));
+    };
+
+    const doubleClick = element => {
+        click(element);
+        click(element);
+        element.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, detail: 2 }));
     };
 
     const press = (element, key, modifiers = {}) => {
@@ -111,7 +118,7 @@ describe('SelectionInteraction', () => {
             attachSelection(grid, { owner });
             click(cellOf(1));
 
-            const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0, shiftKey: true });
+            const event = new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, pointerId: 1, shiftKey: true });
             cellOf(3).dispatchEvent(event);
 
             expect(event.defaultPrevented).toBe(true);
@@ -128,6 +135,16 @@ describe('SelectionInteraction', () => {
             click(grid.querySelector(selector));
 
             selected().not.toHaveBeenCalled();
+        });
+
+        it('leaves the default of the click that selects alone', () => {
+            attachSelection(grid, { owner });
+
+            const event = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 });
+            cellOf(2).dispatchEvent(event);
+
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 2, false);
+            expect(event.defaultPrevented).toBe(false);
         });
 
         it('ignores a click outside any item', () => {
@@ -407,6 +424,42 @@ describe('SelectionInteraction', () => {
     });
 
     describe('activating', () => {
+        it('activates a pressed item where the list does not select', () => {
+            attachSelection(grid, { owner, selects: false });
+
+            click(cellOf(2));
+
+            selected().toHaveBeenLastCalledWith('HandleActivateAsync', 2);
+        });
+
+        it('activates on a double press where the list selects, the presses before it selecting', () => {
+            attachSelection(grid, { owner });
+
+            doubleClick(cellOf(3));
+
+            selected().toHaveBeenNthCalledWith(1, 'HandleSelectAsync', 3, false);
+            selected().toHaveBeenLastCalledWith('HandleActivateAsync', 3);
+        });
+
+        it('reads the token an item carries itself, for an item with no marker', () => {
+            document.body.innerHTML = '<ul id="items"><li data-item="7"><span id="seven">Seven</span></li></ul>';
+            attachSelection(document.querySelector('#items'), { owner, itemSelector: '[data-item]', itemKeyAttribute: 'data-item', selects: false });
+
+            click(document.querySelector('#seven'));
+
+            selected().toHaveBeenLastCalledWith('HandleActivateAsync', 7);
+        });
+
+        it('leaves a press on the item\'s own controls, and on a native control inside it, activating nothing', () => {
+            document.body.innerHTML = '<ul id="items"><li data-item="7"><span data-item-control><span id="gutter">Box</span></span><button id="action">Act</button><span id="name">Seven</span></li></ul>';
+            attachSelection(document.querySelector('#items'), { owner, itemSelector: '[data-item]', itemKeyAttribute: 'data-item', controlSelector: '[data-item-control]', selects: false });
+
+            click(document.querySelector('#gutter'));
+            click(document.querySelector('#action'));
+
+            selected().not.toHaveBeenCalled();
+        });
+
         it('activates the item whose marker holds the focus on Enter', () => {
             attachSelection(grid, { owner });
             cellOf(2).focus();
@@ -428,7 +481,7 @@ describe('SelectionInteraction', () => {
             expect(event.defaultPrevented).toBe(false);
         });
 
-        it('declares activation alone where the list does not select', () => {
+        it('activates rather than selects where the list does not select, leaving the arrows alone', () => {
             attachSelection(grid, { owner, selects: false });
             cellOf(1).focus();
 
@@ -437,8 +490,7 @@ describe('SelectionInteraction', () => {
             press(cellOf(1), 'Enter');
 
             expect(moved.defaultPrevented).toBe(false);
-            selected().toHaveBeenCalledTimes(1);
-            selected().toHaveBeenLastCalledWith('HandleActivateAsync', 1);
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 2], ['HandleActivateAsync', 1]]);
         });
     });
 

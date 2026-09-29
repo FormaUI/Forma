@@ -86,10 +86,6 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     private string? GetAriaSelected(TItem item)
         => HasSelection ? View.IsSelected(item) ? "true" : "false" : null;
 
-    // A press on an item with a marker is the selection's, so a double press activates the item instead, as Enter on its marker does.
-    private Task HandleDoubleClickAsync(TItem item)
-        => HasSelection ? Interaction.ActivateAsync(item) : Task.CompletedTask;
-
     private string GetGroupNameId(int index)
         => $"{ElementId}-group-{index}";
 

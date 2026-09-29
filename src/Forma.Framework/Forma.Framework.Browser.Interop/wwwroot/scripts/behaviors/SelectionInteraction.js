@@ -15,8 +15,11 @@
  * out nowhere yet, or all in one place, stand in one column in their document order.
  *
  * Enter on an item's marker activates the item, a route like the moves, so the form a host wraps
- * the list in never takes it as a submission. A list whose items are selected by their boxes
- * alone declares the activation and nothing else.
+ * the list in never takes it as a submission. The presses are routes too: where the list selects,
+ * a press selects, a shift-press stops the browser extending its own text selection across the
+ * items, and a double press activates; where it does not, a press activates. A press on a native
+ * control inside an item is the control's, and one on a part of the item a caller names as its
+ * own controls, a box's cell or a card's actions, activates nothing.
  */
 
 import { Controls } from '../../../core/scripts/Controls.js';
@@ -39,6 +42,8 @@ const Moves = [
  *   owner: import('../../../core/scripts/Owner.js').Owner,
  *   keyAttribute?: string,
  *   itemSelector?: string,
+ *   itemKeyAttribute?: string | null,
+ *   controlSelector?: string | null,
  *   selects?: boolean
  * }} options
  */
@@ -133,23 +138,19 @@ class SelectionInteraction {
     #keyAttribute;
     #markerSelector;
     #itemSelector;
-    #controller = new AbortController();
+    #itemKeyAttribute;
+    #controlSelector;
     #registration;
     #anchor = null;
 
-    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', selects = true }) {
+    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true }) {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
         this.#markerSelector = `[${keyAttribute}]`;
         this.#itemSelector = itemSelector;
-
-        const { signal } = this.#controller;
-
-        if (selects) {
-            target.addEventListener('mousedown', event => this.#handleMouseDown(event), { signal, capture: true });
-            target.addEventListener('click', event => this.#handleClick(event), { signal, capture: true });
-        }
+        this.#itemKeyAttribute = itemKeyAttribute;
+        this.#controlSelector = controlSelector;
 
         // Each key moves plain, with Shift extending the range, or with the primary modifier moving alone; one that
         // would move nothing matches nothing, so a press at the end of the list keeps its default.
@@ -164,17 +165,38 @@ class SelectionInteraction {
             }))
             : [];
 
+        // The shift-press is taken at press time and loses its default there, before the browser extends its own text
+        // selection across the items; the click that selects keeps its default.
+        const selection = selects
+            ? [{
+                action: 'selection.select',
+                bindings: [
+                    { type: 'click', button: 0, when: event => this.#pressedMarker(event) !== null },
+                    { type: 'pointerdown', button: 0, modifiers: { shift: true }, when: event => this.#pressedMarker(event) !== null },
+                ],
+                handle: event => {
+                    if (event.type === 'click') {
+                        this.#select(event);
+                    } else {
+                        event.preventDefault();
+                    }
+                },
+            }]
+            : [];
+
         const activation = {
             action: 'selection.activate',
-            bindings: [{ type: 'keydown', key: 'Enter', when: event => this.#focusedMarker(event) !== null }],
-            handle: event => tell(this.#owner, 'HandleActivateAsync', this.#tokenOf(this.#focusedMarker(event))),
+            bindings: [
+                { type: 'keydown', key: 'Enter', when: event => this.#focusedMarker(event) !== null },
+                { type: selects ? 'dblclick' : 'click', button: 0, when: event => this.#pressedItem(event) !== null },
+            ],
+            handle: event => this.#activate(event),
         };
 
-        this.#registration = register(target, { routes: [...moves, activation] });
+        this.#registration = register(target, { routes: [...moves, ...selection, activation] });
     }
 
     dispose() {
-        this.#controller.abort();
         this.#registration.dispose();
     }
 
@@ -191,6 +213,44 @@ class SelectionInteraction {
         const { target } = event;
 
         return target instanceof Element && target.matches(this.#markerSelector) && this.#target.contains(target) ? target : null;
+    }
+
+    /** The marker of the item a selecting press lands on; a press on a native control or with Alt held selects nothing. */
+    #pressedMarker(event) {
+        const { target } = event;
+
+        if (event.altKey || !(target instanceof Element) || target.closest(Controls.Interactive)) {
+            return null;
+        }
+
+        return this.#markerIn(target);
+    }
+
+    /** The item an activating press lands on, when it carries a token; a press on a native control or on the item's own controls activates nothing. */
+    #pressedItem(event) {
+        const { target } = event;
+
+        if (!(target instanceof Element) || target.closest(Controls.Interactive) || (this.#controlSelector && target.closest(this.#controlSelector))) {
+            return null;
+        }
+
+        const item = target.closest(this.#itemSelector);
+
+        return item && this.#target.contains(item) && this.#tokenOfItem(item) !== null ? item : null;
+    }
+
+    // An item names its own token where the list gives one, since an item without a marker has no other.
+    #tokenOfItem(item) {
+        const value = this.#itemKeyAttribute
+            ? item.getAttribute(this.#itemKeyAttribute)
+            : item.querySelector(this.#markerSelector)?.getAttribute(this.#keyAttribute);
+
+        return value == null || value === '' ? null : Number(value);
+    }
+
+    #activate(event) {
+        const token = event.type === 'keydown' ? this.#tokenOf(this.#focusedMarker(event)) : this.#tokenOfItem(this.#pressedItem(event));
+        tell(this.#owner, 'HandleActivateAsync', token);
     }
 
     #markerIn(node) {
@@ -223,38 +283,8 @@ class SelectionInteraction {
         marker.focus();
     }
 
-    // Shift-click extends a native text selection on mousedown, before the click handler
-    // below runs; its guards are mirrored so only a selecting click loses its default.
-    #handleMouseDown(event) {
-        if (event.button !== 0 || !event.shiftKey || event.altKey) {
-            return;
-        }
-
-        if (event.target.closest(Controls.Interactive) || !this.#markerIn(event.target)) {
-            return;
-        }
-
-        event.preventDefault();
-    }
-
-    #handleClick(event) {
-        if (event.altKey) {
-            return;
-        }
-
-        // A checkbox, an action icon or a link inside a cell is the click's real target;
-        // consuming it here would leave that element dead.
-        if (event.target.closest(Controls.Interactive)) {
-            return;
-        }
-
-        const marker = this.#markerIn(event.target);
-
-        if (!marker) {
-            return;
-        }
-
-        event.stopPropagation();
+    #select(event) {
+        const marker = this.#pressedMarker(event);
 
         // The click lands focus on the item's marker, so the keys carry on from the item the pointer chose.
         this.#focusMarker(marker, this.#markers());

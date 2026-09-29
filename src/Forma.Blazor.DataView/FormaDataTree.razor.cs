@@ -6,6 +6,7 @@ using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
+using Forma.Framework.Input.Click;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
 
@@ -115,7 +116,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    // The inline arrows and type-ahead are the tree's in either mode, the arrows bound by the reading direction; the vertical keys, Home, End and Enter are its own only where its rows carry the focus, and the selection's where a marker does.
+    // The inline arrows and type-ahead are the tree's in either mode, the arrows bound by the reading direction; the vertical keys, Home, End, Enter and a press on a row are its own only where its rows carry the focus, and the selection's where a marker does.
     private InputProfile CreateInputProfile()
     {
         var rightToLeft = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
@@ -132,7 +133,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             routes.Add(new InputRoute(PreviousAction, new KeyBinding("ArrowUp")));
             routes.Add(new InputRoute(FirstAction, new KeyBinding("Home")));
             routes.Add(new InputRoute(LastAction, new KeyBinding("End")));
-            routes.Add(new InputRoute(ChooseAction, new KeyBinding("Enter")));
+            routes.Add(new InputRoute(ChooseAction, new KeyBinding("Enter"), new ClickBinding { Button = 0 }));
         }
 
         return new InputProfile { InputRoutes = routes };
@@ -164,7 +165,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private Task ToggleNodeAsync(TItem node)
         => View.IsOpen(node) ? Interaction.CloseNodeAsync(node) : Interaction.OpenNodeAsync(node);
 
-    // A press on the node's row makes it current where the tree drives the other views, and activates it otherwise; a row with a marker leaves the press to the selection.
+    // Choosing a node, by a press on its row or Enter, makes it current where the tree drives the other views, and activates it otherwise; a row with a marker leaves both to the selection.
     private Task HandleNodeClickAsync(TItem node)
         => SelectsCurrent ? Interaction.MakeCurrentAsync(node) : Interaction.ActivateAsync(node);
 

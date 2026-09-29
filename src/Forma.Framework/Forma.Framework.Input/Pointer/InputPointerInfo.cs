@@ -1,6 +1,6 @@
 namespace Forma.Framework.Input.Pointer;
 
-/// <summary>A pointer press, release, or move that raised an action.</summary>
+/// <summary>A pointer press, release, move, or click that raised an action.</summary>
 public sealed record InputPointerInfo : InputInfo
 {
     /// <summary>The pointer's identity for the length of its contact.</summary>

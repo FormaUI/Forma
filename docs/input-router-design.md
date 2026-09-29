@@ -86,7 +86,7 @@ arbitrates ownership.
 | Part | Responsibility |
 | --- | --- |
 | `InputRouter.js` | Registers scopes and routes, resolves ownership synchronously from composed event paths, keeps the active ordering, installs whichever listeners each input class needs, applies `preventDefault` and propagation per resolution, and answers queries. |
-| The .NET bridge | `InputRoute`, `InputProfile`, and `InputRouterOptions` records, with a binding record and an input record per family — keyboard, pointer, wheel, drop; a scoped service that transfers host policy, bindings, and host routes to the script once per circuit, the first time a scope is registered. No component is mounted. |
+| The .NET bridge | `InputRoute`, `InputProfile`, and `InputRouterOptions` records, with a binding record and an input record per family — keyboard, pointer, click, wheel, drop, a click's input described as a pointer's; a scoped service that transfers host policy, bindings, and host routes to the script once per circuit, the first time a scope is registered. No component is mounted. |
 | A participating component | Declares its scope and routes and implements the semantic actions. |
 
 ## Input scopes
@@ -168,6 +168,7 @@ A binding is matched by the rules of its family:
 | --- | --- |
 | Keyboard (`keydown`, `keyup`) | The key, compared without regard to case; Control, Meta, and Alt absent unless stated; Shift either way unless stated. A typing binding names no key and matches any printable character other than a space, one composed through AltGr included, for type-ahead; a binding naming the key is more specific and wins |
 | Pointer (`pointerdown`, `pointerup`, `pointermove`) | The button that changed, the buttons held (for a move during a gesture), the device (`mouse`, `pen`, `touch`), and only the modifiers it states |
+| Click (`click`, `dblclick`) | The button, and only the modifiers it states; dispatched on the click itself, so one raised from the keyboard, with no press before it, resolves like any other |
 | Wheel | The axis the turn mostly moves along, and only the modifiers it states |
 | Drop (`drop`, `dragover`) | Any of the data kinds it names, as the drag's data transfer lists them |
 
@@ -191,8 +192,8 @@ the routing it is given, never from `event.currentTarget`; a gesture that captur
 pointer captures it on `owner`.
 
 A consumed input prevents its default and stops at the scope by class default — a key or a
-wheel turn does both, a key release stops without preventing, a press does neither, a drop
-prevents its default and continues — unless the route says otherwise. Where a route mixes
+wheel turn does both, a key release stops without preventing, a press and a click do neither,
+a drop prevents its default and continues — unless the route says otherwise. Where a route mixes
 classes, each binding takes the default of its own class.
 
 ### Implicit native scopes
@@ -216,6 +217,10 @@ input**, of what the control consumes natively:
 | `[contenteditable]` | Typing, every arrow, Home, End, PageUp, PageDown, Enter, Backspace, Delete, the editing shortcuts, Ctrl+B/I/U, wheel when it scrolls |
 | Any element that scrolls on its own | Wheel along the axis it scrolls |
 
+A click on any of the controls that own their own press — a link, a button, a form control, a
+label, an element with the role of a button or a link, an editable region — is that control's
+activation, so a route on a scope around it never takes the click.
+
 A disabled control consumes nothing. Input a native control consumes is owned by that control. Input it does not consume —
 Escape, an unrelated shortcut, wheel on a control that does not scroll — resolves through
 the enclosing scopes as usual. A component that needs a shortcut to work inside its own
@@ -225,7 +230,19 @@ globally.
 ## Structural routing
 
 Applies to navigation keys, Tab, shortcuts while focus is within a scope, wheel, pointer
-gestures, drag and drop targets, and Enter and implicit submission.
+gestures, clicks, drag and drop targets, and Enter and implicit submission.
+
+### A press and its click
+
+A click follows the press it ends, and belongs with it. A press resolves its scope and may
+begin a gesture without committing anything a click would; the click then dispatches its own
+route. A registration that claims the gesture a press began — a drag under way, a press away
+that dismissed something — marks the click that follows it swallowed: the next click from the
+same pointer, on what was pressed or on the element that captured the pointer, within a
+moment of the release. Any other click from a pointer ends the claim unswallowed, and a click
+raised from the keyboard follows no press, so it is never swallowed. A click whose press stood
+in a scope that has since gone, or turned inactive, belongs to nothing rather than falling to
+the scope beneath it.
 
 `resolve` walks `event.composedPath()` from the target outward. `composedPath()` rather than
 `target.closest(...)`, so retargeting and shadow boundaries do not break resolution, and so

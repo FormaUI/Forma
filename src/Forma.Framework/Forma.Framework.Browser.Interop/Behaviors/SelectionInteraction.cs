@@ -13,13 +13,15 @@ public sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="container">The element the items stand in.</param>
     /// <param name="owner">The owner told what was selected or activated.</param>
     /// <param name="itemSelector">The selector naming the item a marker sits in.</param>
-    /// <param name="selects">Whether a press and the arrows select; a list whose items are selected by their boxes alone takes activation only.</param>
-    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, bool selects = true)
+    /// <param name="itemKeyAttribute">The attribute an item carries its token in, so an item without a marker can be activated; its marker's token when omitted.</param>
+    /// <param name="controlSelector">The selector naming the parts of an item that hold its own controls, whose press activates nothing.</param>
+    /// <param name="selects">Whether a press and the arrows select; otherwise a press activates, as it does in a list whose items are selected by their boxes alone.</param>
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true)
         where TOwner : class
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentException.ThrowIfNullOrWhiteSpace(itemSelector);
 
-        return AttachCoreAsync(container, new { owner, itemSelector, selects });
+        return AttachCoreAsync(container, new { owner, itemSelector, itemKeyAttribute, controlSelector, selects });
     }
 }

@@ -526,17 +526,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             await NotifyStateAsync();
         }
 
-        // Under checked selection the boxes select, so the behavior takes Enter alone, activating the item whose box holds the focus;
-        // a change of selection since it attached, or no selection at all, lets it go so it attaches again as the selection now is.
-        var wantsSelection = EnableCheckedSelection || EnableItemSelection;
-
-        if (_selectionInteraction.IsAttached && (!wantsSelection || _isAttachedToSelect != EnableItemSelection))
+        // The behavior answers every press on an item: under item selection a press selects and a double press activates, and
+        // otherwise a press activates, as Enter on an item's marker does either way; a change of selection since it attached lets
+        // it go, so it attaches again as the selection now is.
+        if (_selectionInteraction.IsAttached && _isAttachedToSelect != EnableItemSelection)
         {
             await _selectionInteraction.DetachAsync();
             _isSelectionAttached = false;
         }
 
-        if (wantsSelection && !_isSelectionAttached)
+        if (!_isSelectionAttached)
         {
             // Claimed before the await so a render arriving mid-call cannot re-enter and attach a second listener to the same region.
             _isSelectionAttached = true;
@@ -545,7 +544,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, selects: _isAttachedToSelect);
+            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect);
         }
 
         // Virtualization sizes its own scroll range, and an unpaged data view has no short page to hold a height for.
@@ -1144,11 +1143,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         public bool IsLoading { get; set; }
     }
 
-    /// <summary>The attribute an element carries to be the item a marker belongs to, whatever the view draws it as.</summary>
+    /// <summary>The attribute an element carries to be an item, whatever the view draws it as, its value the item's token.</summary>
     internal const string ItemAttribute = "data-item";
 
     // The selection interaction reads a click and a key against the item the marker sits in, which every view marks the same way.
     private const string ItemSelector = "[" + ItemAttribute + "]";
+
+    /// <summary>The attribute a part of an item carries when it holds the item's own controls, its box's cell or a card's actions, whose press activates nothing.</summary>
+    internal const string ControlAttribute = "data-item-control";
+
+    private const string ControlSelector = "[" + ControlAttribute + "]";
 
     // The items arrive with each group's members standing together, so a group is a run of one key.
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)
