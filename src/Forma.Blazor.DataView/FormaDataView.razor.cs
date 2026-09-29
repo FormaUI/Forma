@@ -22,6 +22,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 {
     private const string DescendingOrder = "desc";
 
+    private static readonly TimeSpan LoadingAnnouncementDelay = TimeSpan.FromSeconds(1);
+
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -50,6 +52,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private int? _totalItemCount;
     private bool _hasLoaded;
     private bool _isBusy;
+    private string? _announcement;
+    private bool _isLoadingAnnounced;
+    private bool _hasSettled;
+    private int? _settledCount;
     private int _page = 1;
     private object? _loadedSource;
     private int _loadedPage;
@@ -1249,6 +1255,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         var cancellation = _loadCancellation = new CancellationTokenSource();
         var source = (object?)Items ?? ItemsProvider;
         _isBusy = true;
+        _ = AnnounceLoadingAsync(cancellation);
         _loadedPage = _page;
         _loadedPageSize = PageSize;
         _loadedPagination = EnablePagination;
@@ -1316,12 +1323,50 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             }
         }
 
+        AnnounceSettled();
         await NotifyStateAsync();
 
         if (isSourceNew)
         {
             await RefreshStaleNodesAsync();
         }
+    }
+
+    // A load still answering after a moment is announced as loading; a quicker one says nothing until it settles.
+    private async Task AnnounceLoadingAsync(CancellationTokenSource cancellation)
+    {
+        try
+        {
+            await Task.Delay(LoadingAnnouncementDelay, cancellation.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (!_isBusy || !ReferenceEquals(_loadCancellation, cancellation))
+        {
+            return;
+        }
+
+        _isLoadingAnnounced = true;
+        _announcement = L["Loading"].Value;
+        StateHasChanged();
+    }
+
+    // A settled load announces the count when it changed, or after loading was announced; the first quiet load says nothing.
+    private void AnnounceSettled()
+    {
+        if (_isLoadingAnnounced || (_hasSettled && _settledCount != _totalItemCount))
+        {
+            _announcement = _totalItemCount is { } count
+                ? L["[$ plural; one: # item; other: # items; $]", count].Value
+                : L["Loaded"].Value;
+        }
+
+        _isLoadingAnnounced = false;
+        _hasSettled = true;
+        _settledCount = _totalItemCount;
     }
 
     private async ValueTask<DataViewPage<TItem>> FetchWindowAsync(int startIndex, int? count, CancellationToken cancellationToken)

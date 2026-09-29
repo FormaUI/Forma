@@ -14,13 +14,16 @@
         <CascadingValue TValue="IDataViewInteraction<TItem>" Value="this" IsFixed="true">
             <CascadingValue TValue="IDataViewSwitcher" Value="this" IsFixed="true">
                 <CascadingValue TValue="IDataViewSorter<TItem>" Value="this" IsFixed="true">
-                    <div class="@RegionClass" @ref="_regionElement">
+                    <div class="@RegionClass" aria-busy="@(_isBusy ? "true" : null)" @ref="_regionElement">
                         @ChildContent
                     </div>
                 </CascadingValue>
             </CascadingValue>
         </CascadingValue>
     </CascadingValue>
+
+    @* Present from the first render, so a screen reader is already listening when the first announcement arrives. *@
+    <div class="forma-data-view-announcement" role="status">@_announcement</div>
 
     @if (HasFooter)
     {

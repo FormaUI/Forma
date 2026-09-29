@@ -172,6 +172,17 @@
     text-align: start;
 }
 
+/* A row's rule runs its whole width, across the selection cell and the menu cell as across the values. */
+td.forma-data-grid-select-column,
+td.forma-data-grid-menu-column {
+    border-block-end: 1px solid var(--border-color);
+}
+
+/* The box keeps to the column's leading edge, its target reaching toward the values. */
+.forma-data-grid-select-column .forma-data-view-box-target {
+    justify-content: start;
+}
+
 /* The master control and the menu beside it stand on one line; the column widens to hold the second target. */
 .forma-data-grid-master {
     display: flex;

@@ -285,6 +285,7 @@
 @media (pointer: coarse) {
     .forma-button,
     .forma-button-mini {
+        min-inline-size: var(--target-size-touch);
         min-block-size: var(--target-size-touch);
     }
 

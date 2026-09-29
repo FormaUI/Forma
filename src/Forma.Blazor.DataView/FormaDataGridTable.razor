@@ -27,13 +27,15 @@
                         <div class="forma-data-grid-master">
                             @if (View.HasMasterControl && !Grid.HasMasterCaption)
                             {
-                                <FormaCheckBox aria-label="@L["Select All"]"
-                                               Value="@View.AllSelected"
-                                               ValueExpression="() => MasterSelection"
-                                               Indeterminate="@View.PartiallySelected"
-                                               Disabled="@View.IsMasterControlDisabled"
-                                               PreventDefault="true"
-                                               OnClick="HandleMasterClickAsync" />
+                                <label class="forma-data-view-box-target">
+                                    <FormaCheckBox aria-label="@L["Select All"]"
+                                                   Value="@View.AllSelected"
+                                                   ValueExpression="() => MasterSelection"
+                                                   Indeterminate="@View.PartiallySelected"
+                                                   Disabled="@View.IsMasterControlDisabled"
+                                                   PreventDefault="true"
+                                                   OnClick="HandleMasterClickAsync" />
+                                </label>
                             }
                             else if (Grid.HasMasterCaption)
                             {

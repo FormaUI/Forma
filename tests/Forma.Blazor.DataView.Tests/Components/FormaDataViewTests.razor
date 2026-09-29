@@ -1,0 +1,94 @@
+@inherits FormaBunitContext
+
+@code {
+    public sealed class Announcement
+    {
+        private static IQueryable<Product> CreateProducts(int count, int firstId = 1) => Enumerable.Range(firstId, count)
+            .Select(id => new Product(id, $"Product {id}"))
+            .AsQueryable();
+
+        [Fact]
+        public void Should_say_nothing_when_the_first_load_answers_at_once()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts(3)" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("status", cut.Find(".forma-data-view-announcement").GetAttribute("role")),
+                () => Assert.Empty(cut.Find(".forma-data-view-announcement").TextContent),
+                () => Assert.Null(cut.Find(".forma-data-view-region").GetAttribute("aria-busy")));
+        }
+
+        [Fact]
+        public void Should_announce_the_count_when_a_new_source_changes_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts(3)" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Act
+            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.Items, CreateProducts(2)));
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 2);
+
+            // Assert
+            Assert.Equal("2 items", cut.Find(".forma-data-view-announcement").TextContent);
+        }
+
+        [Fact]
+        public void Should_say_nothing_when_a_new_source_keeps_the_count()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts(3)" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Act — three other products, so the new source is seen to have answered
+            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.Items, CreateProducts(3, firstId: 4)));
+            cut.WaitForState(() => cut.Markup.Contains("Product 4", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Empty(cut.Find(".forma-data-view-announcement").TextContent);
+        }
+
+        [Fact]
+        public async Task Should_announce_a_slow_source_loading_and_then_its_count()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var held = new TaskCompletionSource<DataViewPage<Product>>();
+            DataViewItemsProvider<Product> provider = _ => new ValueTask<DataViewPage<Product>>(held.Task);
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+
+            // Act — the source is still answering after the moment the data view waits
+            cut.WaitForState(() => cut.Find(".forma-data-view-announcement").TextContent == "Loading", TimeSpan.FromSeconds(5));
+            var busyWhileLoading = cut.Find(".forma-data-view-region").GetAttribute("aria-busy");
+            await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>([.. CreateProducts(1)], 1)));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("true", busyWhileLoading),
+                () => Assert.Equal("1 item", cut.Find(".forma-data-view-announcement").TextContent),
+                () => Assert.Null(cut.Find(".forma-data-view-region").GetAttribute("aria-busy")));
+        }
+
+        private sealed record Product(int Id, string Name);
+    }
+}

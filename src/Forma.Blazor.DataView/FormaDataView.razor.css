@@ -54,3 +54,39 @@
     color: var(--text-secondary-color);
     font-size: var(--font-size-sm);
 }
+
+/* Spoken, never seen: the announcement stays in the accessibility tree while taking no room beside the region. */
+.forma-data-view-announcement {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* A view's box stands at the center of a target the size of the pointer's floor, so a press near the box still
+   reaches it. The boxes are the views', so their class is reached with ::deep. */
+::deep .forma-data-view-box-target {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--target-size-sm);
+    min-block-size: var(--target-size-sm);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+::deep .forma-data-view-box-target:has(:disabled) {
+    cursor: not-allowed;
+}
+
+@media (pointer: coarse) {
+    ::deep .forma-data-view-box-target {
+        min-inline-size: var(--target-size-touch);
+        min-block-size: var(--target-size-touch);
+    }
+}

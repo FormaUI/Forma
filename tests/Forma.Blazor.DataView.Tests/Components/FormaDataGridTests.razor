@@ -413,6 +413,27 @@
         }
 
         [Fact]
+        public void Should_stand_every_box_in_a_target_under_checked_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" EnablePagination="false" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Assert — a press on the target reaches the box it holds
+            Assert.All(cut.FindAll("input[type=checkbox]"), box => Assert.Equal("forma-data-view-box-target", box.ParentElement!.ClassName));
+        }
+
+        [Fact]
         public void Should_clear_only_the_page_when_the_master_checkbox_is_unchecked()
         {
             // Arrange — the first page is selected along with one item of the second

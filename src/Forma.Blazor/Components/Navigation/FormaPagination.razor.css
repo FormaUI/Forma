@@ -188,4 +188,10 @@
     ::deep .forma-pagination-navigation-input-box {
         min-block-size: var(--target-size-touch);
     }
+
+    .forma-pagination-navigation-steps > li > ::deep .forma-pagination-navigation-step,
+    .forma-pagination-navigation-gap,
+    .forma-pagination-navigation-empty {
+        min-block-size: var(--target-size-touch);
+    }
 }

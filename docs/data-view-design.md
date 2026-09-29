@@ -381,6 +381,13 @@ fill the region the items would, the empty one showing the caller's `EmptyConten
 library's sentence, the loading one the library's busy indicator, and the region is
 `aria-busy` while a provider answers.
 
+The engine speaks for itself through a live region of its own beside the footer, present
+from the first render. A source still answering after a moment is announced as loading,
+and the load that settles after it announces the count, or that the items loaded when the
+source gives no count; a load that changes the count announces the new one. The first load
+announces nothing when it answers at once, since the reader arriving at the page hears the
+items themselves.
+
 ## The views
 
 A view is declared inside the data view's content and registers with the engine on
@@ -395,7 +402,8 @@ empty states, and the options the engine holds. It acts through
 `IDataViewInteraction<TItem>`: select, toggle, range, clear, sort, fold a group, activate
 an item, and report a measurement virtualization needs. A view draws the item's selected,
 disabled and focused states with a channel beside color each, and gives every target the
-floor.
+floor. A selection box stands at the center of a target the size of the floor, so a press
+near the box still reaches it; the grid keeps its box on the column's leading edge.
 
 ### The grid
 

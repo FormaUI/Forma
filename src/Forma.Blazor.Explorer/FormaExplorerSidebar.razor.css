@@ -30,12 +30,6 @@
     border-block-end: 1px solid var(--border-color);
 }
 
-/* Sits between the tree and its footer so the tree's height can be dragged, like an Explorer section sash.
-   The divider is FormaSplitter's, so it is reached through ::deep and retuned through its own knobs. */
-::deep .forma-explorer-sidebar-sash {
-    --forma-splitter-thickness: 0.6rem;
-}
-
 /* Row rules reach FormaExplorerFolderNode's rows through ::deep. */
 
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-branch {

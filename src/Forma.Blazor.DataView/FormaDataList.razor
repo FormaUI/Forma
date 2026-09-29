@@ -13,14 +13,16 @@
             @if (HasSelection)
             {
                 <span class="forma-data-list-item-lead" data-item-control>
-                    <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-list-item-marker")"
-                                   data-row-key="@View.GetItemToken(item)"
-                                   aria-label="@L["Select Item"]"
-                                   aria-disabled="@(!View.CanInteractWith(item) ? "true" : null)"
-                                   Value="@View.IsSelected(item)"
-                                   PreventDefault="true"
-                                   OnClick="() => Interaction.ToggleSelectionAsync(item, !View.IsSelected(item))"
-                                   ValueExpression="() => ItemSelection" />
+                    <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
+                        <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-list-item-marker")"
+                                       data-row-key="@View.GetItemToken(item)"
+                                       aria-label="@L["Select Item"]"
+                                       aria-disabled="@(!View.CanInteractWith(item) ? "true" : null)"
+                                       Value="@View.IsSelected(item)"
+                                       PreventDefault="true"
+                                       OnClick="() => Interaction.ToggleSelectionAsync(item, !View.IsSelected(item))"
+                                       ValueExpression="() => ItemSelection" />
+                    </label>
                     @if (!View.EnableCheckedSelection && View.IsSelected(item))
                     {
                         <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" Class="forma-data-list-item-check" aria-hidden="true" />

@@ -3,6 +3,8 @@
   "FormaDataView": {
     "No items.": "אין פריטים.",
     "Loading": "טוען",
+    "Loaded": "הטעינה הושלמה",
+    "[$ plural; one: # item; other: # items; $]": "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]",
     "Select all {Count}": "בחר את כל ה-{Count}"
   },
   "FormaDataGrid": {

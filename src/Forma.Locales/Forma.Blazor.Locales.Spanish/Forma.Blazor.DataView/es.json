@@ -3,6 +3,8 @@
   "FormaDataView": {
     "No items.": "No hay elementos.",
     "Loading": "Cargando",
+    "Loaded": "Cargado",
+    "[$ plural; one: # item; other: # items; $]": "[$ plural; one: # elemento; other: # elementos; $]",
     "Select all {Count}": "Seleccionar los {Count}"
   },
   "FormaDataGrid": {

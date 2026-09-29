@@ -79,15 +79,17 @@
                     @if (HasSelection)
                     {
                         <span class="forma-data-tree-node-lead" data-item-control>
-                            <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
-                                           data-row-key="@View.GetItemToken(node)"
-                                           aria-label="@L["Select Item"]"
-                                           aria-disabled="@(!View.CanInteractWith(node) ? "true" : null)"
-                                           Value="@View.IsSelected(node)"
-                                           PreventDefault="true"
-                                           OnClick="() => Interaction.ToggleSelectionAsync(node, !View.IsSelected(node))"
-                                           ValueExpression="() => NodeSelection"
-                                           @ref="_nodeMarkers[key]" />
+                            <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
+                                <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
+                                               data-row-key="@View.GetItemToken(node)"
+                                               aria-label="@L["Select Item"]"
+                                               aria-disabled="@(!View.CanInteractWith(node) ? "true" : null)"
+                                               Value="@View.IsSelected(node)"
+                                               PreventDefault="true"
+                                               OnClick="() => Interaction.ToggleSelectionAsync(node, !View.IsSelected(node))"
+                                               ValueExpression="() => NodeSelection"
+                                               @ref="_nodeMarkers[key]" />
+                            </label>
                         </span>
                     }
                     @if (ThumbnailTemplate is { } thumbnail)
