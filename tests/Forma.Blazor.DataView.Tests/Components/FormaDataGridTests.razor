@@ -381,7 +381,7 @@
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act
-            cut.FindAll("tbody input[type=checkbox]")[0].Change(true);
+            cut.FindAll("tbody input[type=checkbox]")[0].Click();
 
             // Assert
             var selected = Assert.Single(changedTo!);
@@ -1708,7 +1708,7 @@
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act — unchecking the only selected row would drop below the minimum
-            cut.FindAll("tbody input[type=checkbox]")[0].Change(false);
+            cut.FindAll("tbody input[type=checkbox]")[0].Click();
 
             // Assert
             Assert.Null(changedTo);
@@ -1846,7 +1846,7 @@
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act
-            cut.FindAll("tbody input[type=checkbox]")[0].Change(false);
+            cut.FindAll("tbody input[type=checkbox]")[0].Click();
 
             // Assert
             var rejection = Assert.Single(rejections);

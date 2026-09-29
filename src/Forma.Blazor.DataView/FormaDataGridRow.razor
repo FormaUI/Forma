@@ -15,7 +15,8 @@
                                aria-label="@L["Select Row"]"
                                aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
                                Value="@View.IsSelected(Item)"
-                               ValueChanged="isSelected => Interaction.ToggleSelectionAsync(Item, isSelected)"
+                               PreventDefault="true"
+                               OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
                                ValueExpression="() => RowSelection" />
             }
         </td>

@@ -240,6 +240,12 @@ queryable and counts and reads it asynchronously; the library registers an in-me
 that handles every queryable, and a host registers its store's ahead of it so a query
 backed by a database runs there without blocking a circuit.
 
+A new `Items` queryable, or a new provider, is a new source, which the engine asks again,
+keeping what the reader did: the selection, the page, the current node, and the nodes
+opened in a tree, whose children go on showing until the new source answers for them. A
+page therefore keeps one queryable across its renders until its set changes; one built in
+markup is asked again on every render of the page.
+
 `ItemsProvider` is a delegate the engine calls with a **request**, the start index, the
 count, the sort and a cancellation token, which can apply its sort to a queryable the
 provider holds or hand over the sorted properties for a query the provider writes itself,

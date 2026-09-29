@@ -18,7 +18,8 @@
                                    aria-label="@L["Select Item"]"
                                    aria-disabled="@(!View.CanInteractWith(item) ? "true" : null)"
                                    Value="@View.IsSelected(item)"
-                                   ValueChanged="isSelected => Interaction.ToggleSelectionAsync(item, isSelected)"
+                                   PreventDefault="true"
+                                   OnClick="() => Interaction.ToggleSelectionAsync(item, !View.IsSelected(item))"
                                    ValueExpression="() => ItemSelection" />
                     @if (!View.EnableCheckedSelection && View.IsSelected(item))
                     {

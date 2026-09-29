@@ -1,0 +1,164 @@
+@page "/data-view/states"
+@rendermode InteractiveServer
+@inject IStringLocale<FormaDataViewPage> L
+
+<h1>FormaDataView</h1>
+<p class="description">@L["This tab shows the states the data view draws around its items: nothing to show, a source still answering, a page that gives way when its items go, a selection its bounds refuse, and a tree node asking for its children."]</p>
+
+<div class="demo-section">
+    <h2>@L["Nothing to Show"]</h2>
+    <p class="description">@L["A data view with no items shows the library's sentence, or what the caller gives it in its place; a tree over no nodes does the same."]</p>
+    <div class="demo-box demo-row">
+        <FormaDataView TItem="ShowcaseProduct" Items="NoProducts" EnablePagination="false">
+            <FormaDataGrid TItem="ShowcaseProduct">
+                <Columns>
+                    <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+        <FormaDataView TItem="ShowcaseProduct" Items="NoProducts" EnablePagination="false" ItemName="@(product => product.Name)">
+            <ChildContent>
+                <FormaDataList TItem="ShowcaseProduct" />
+            </ChildContent>
+            <EmptyContent>@L["No products match the search."]</EmptyContent>
+        </FormaDataView>
+        <FormaDataView TItem="ShowcaseEntry" Items="NoEntries" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.Parent)" HasChildren="@(entry => entry.IsFolder)">
+            <FormaDataTree TItem="ShowcaseEntry" aria-label="@L["Folders"]" />
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Slow Source"]</h2>
+    <p class="description">@L["A provider that takes a moment to answer. Before its first answer the data view shows it is loading; once it has items, moving to another page or refreshing keeps them in place under the busy state until the next answer arrives."]</p>
+    <div class="demo-box demo-row demo-controls">
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="RefreshSlowSourceAsync">@L["Refresh"]</FormaButton>
+    </div>
+    <div class="demo-box">
+        <FormaDataView @ref="_slowDataView" TItem="ShowcaseProduct" ItemsProvider="ProvideSlowlyAsync" PageSize="3" AddressOptions='@(new DataViewAddressOptions("slow-source"))'>
+            <FormaDataGrid TItem="ShowcaseProduct">
+                <Columns>
+                    <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" Sortable="true" />
+                    <FormaPropertyColumn Property="@(product => product.Price)" Title="@L["Price"]" Format="C0" Sortable="true" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["The Page Giving Way"]</h2>
+    <p class="description">@L["Go to the last page, then take its only item away: a page that no longer exists gives way to the last page that does."]</p>
+    <div class="demo-box demo-row demo-controls">
+        <FormaButton Variant="ButtonVariant.Secondary" Disabled="@(_shelf.Count == 0)" OnClick="TakeLastAsync">@L["Take the Last Item Away"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Tertiary" OnClick="RestockAsync">@L["Put Everything Back"]</FormaButton>
+    </div>
+    <div class="demo-box">
+        <FormaDataView @ref="_shelfDataView" TItem="ShowcaseProduct" Items="ShelfItems" PageSize="4" AddressOptions='@(new DataViewAddressOptions("shelf"))'>
+            <FormaDataGrid TItem="ShowcaseProduct">
+                <Columns>
+                    <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" />
+                    <FormaPropertyColumn Property="@(product => product.Category)" Title="@L["Category"]" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Bounded Selection"]</h2>
+    <p class="description">@L["At least one product and at most three: the boxes past the maximum are muted, the last box left checked cannot be cleared, and each refused attempt is reported to the page."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableCheckedSelection="true" CheckedSelectionOptions="BoundedSelection" SelectedItems="_bounded" SelectedItemsChanged="HandleBoundedChanged" OnSelectionRejected="HandleRejected" AddressOptions='@(new DataViewAddressOptions("bounded"))'>
+            <ChildContent>
+                <FormaDataList TItem="ShowcaseProduct" />
+            </ChildContent>
+            <Status>@(_refusal ?? L["{Selected} of at most {Maximum} selected.", _bounded.Count, BoundedSelection.Maximum ?? 0].Value)</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Tree Asking for Its Children"]</h2>
+    <p class="description">@L["The folders come from a provider that takes a moment to answer, so a node shows it is busy in place of its disclosure while its children load, and keeps them once they have."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView TItem="ShowcaseEntry" ItemsProvider="ProvideFolderSlowlyAsync" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" HasChildren="@(entry => entry.IsFolder)">
+            <FormaDataTree TItem="ShowcaseEntry" aria-label="@L["Folders"]">
+                <ThumbnailTemplate Context="entry"><FormaIcon Icon="@entry.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
+            </FormaDataTree>
+        </FormaDataView>
+    </div>
+</div>
+
+@code {
+    private static readonly TimeSpan SlowAnswer = TimeSpan.FromSeconds(1.5);
+
+    private static readonly IQueryable<ShowcaseProduct> NoProducts = Enumerable.Empty<ShowcaseProduct>().AsQueryable();
+
+    private static readonly IQueryable<ShowcaseEntry> NoEntries = Enumerable.Empty<ShowcaseEntry>().AsQueryable();
+
+    private static readonly CheckedSelectionOptions BoundedSelection = new() { Minimum = 1, Maximum = 3, SelectAllMode = SelectAllMode.None };
+
+    private readonly List<ShowcaseProduct> _shelf = [.. DataViewShowcaseProducts.All];
+
+    private IQueryable<ShowcaseProduct>? _shelfItems;
+
+    private FormaDataView<ShowcaseProduct>? _slowDataView;
+    private FormaDataView<ShowcaseProduct>? _shelfDataView;
+    private IReadOnlyList<ShowcaseProduct> _bounded = [DataViewShowcaseProducts.All.First()];
+    private string? _refusal;
+
+    // One queryable over the shelf for the page's life: a new one each render would read as a new source and reload the view.
+    private IQueryable<ShowcaseProduct> ShelfItems
+        => _shelfItems ??= _shelf.AsQueryable();
+
+    private static async ValueTask<DataViewPage<ShowcaseProduct>> ProvideSlowlyAsync(DataViewRequest<ShowcaseProduct> request)
+    {
+        await Task.Delay(SlowAnswer, request.CancellationToken);
+
+        var sorted = request.ApplySorting(DataViewShowcaseProducts.All);
+        var window = sorted.Skip(request.StartIndex);
+
+        return new DataViewPage<ShowcaseProduct>([.. request.Count is { } count ? window.Take(count) : window], DataViewShowcaseProducts.All.Count());
+    }
+
+    // A node's children, or the roots for none, each answer arriving after a moment.
+    private static async ValueTask<DataViewPage<ShowcaseEntry>> ProvideFolderSlowlyAsync(DataViewRequest<ShowcaseEntry> request)
+    {
+        await Task.Delay(SlowAnswer, request.CancellationToken);
+
+        var parentId = request.Parent?.Id;
+        var children = request.ApplySorting(DataViewShowcaseFolders.All.Where(entry => entry.ParentId == parentId)).ToArray();
+
+        return new DataViewPage<ShowcaseEntry>(children, children.Length);
+    }
+
+    private Task RefreshSlowSourceAsync()
+        => _slowDataView?.RefreshDataAsync() ?? Task.CompletedTask;
+
+    private Task TakeLastAsync()
+    {
+        _shelf.RemoveAt(_shelf.Count - 1);
+
+        return _shelfDataView?.RefreshDataAsync() ?? Task.CompletedTask;
+    }
+
+    private Task RestockAsync()
+    {
+        _shelf.Clear();
+        _shelf.AddRange(DataViewShowcaseProducts.All);
+
+        return _shelfDataView?.RefreshDataAsync() ?? Task.CompletedTask;
+    }
+
+    private void HandleBoundedChanged(IReadOnlyList<ShowcaseProduct> selected)
+    {
+        _bounded = selected;
+        _refusal = null;
+    }
+
+    private void HandleRejected(SelectionRejected rejection)
+        => _refusal = rejection.Boundary == SelectionBoundary.Maximum
+            ? L["Refused: at most {Limit} may be selected.", rejection.Limit].Value
+            : L["Refused: at least {Limit} must stay selected.", rejection.Limit].Value;
+}

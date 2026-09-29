@@ -102,7 +102,7 @@
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
 
             // Act
-            cut.FindAll("input.forma-data-card-box")[0].Change(true);
+            cut.FindAll("input.forma-data-card-box")[0].Click();
 
             // Assert
             Assert.Equal(1, Assert.Single(changedTo!).Id);

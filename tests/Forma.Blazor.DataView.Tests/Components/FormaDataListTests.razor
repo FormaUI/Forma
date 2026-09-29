@@ -92,7 +92,7 @@
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
 
             // Act
-            cut.FindAll("input[type=checkbox]")[2].Change(true);
+            cut.FindAll("input[type=checkbox]")[2].Click();
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-data-list-item-marker"));

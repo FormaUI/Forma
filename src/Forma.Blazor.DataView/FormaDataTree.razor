@@ -84,7 +84,8 @@
                                            aria-label="@L["Select Item"]"
                                            aria-disabled="@(!View.CanInteractWith(node) ? "true" : null)"
                                            Value="@View.IsSelected(node)"
-                                           ValueChanged="isSelected => Interaction.ToggleSelectionAsync(node, isSelected)"
+                                           PreventDefault="true"
+                                           OnClick="() => Interaction.ToggleSelectionAsync(node, !View.IsSelected(node))"
                                            ValueExpression="() => NodeSelection"
                                            @ref="_nodeMarkers[key]" />
                         </span>

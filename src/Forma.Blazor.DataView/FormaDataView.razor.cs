@@ -71,10 +71,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool _isAttachedToSelect;
     private SelectionBounds _selectionBounds;
 
-    /// <summary>The items to show, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
+    /// <summary>The items to show, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both. A new queryable is a new set the data view asks again, so a page keeps one across its renders until its set changes.</summary>
     [Parameter] public IQueryable<TItem>? Items { get; set; }
 
-    /// <summary>Answers one window of items at a time, for a store the data view does not hold. Supply this or <see cref="Items"/>, not both.</summary>
+    /// <summary>Answers one window of items at a time, for a store the data view does not hold. Supply this or <see cref="Items"/>, not both. A new provider is a new source the data view asks again, so a page keeps one across its renders.</summary>
     [Parameter] public DataViewItemsProvider<TItem>? ItemsProvider { get; set; }
 
     /// <summary>Identifies an item across reloads, so a selection or an edit survives its item being replaced by an equal copy.</summary>
@@ -809,11 +809,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _nodes[key] = node;
         }
 
-        if (node.Children is not null || node.IsLoading)
+        if ((node.Children is not null && !node.IsStale) || node.IsLoading)
         {
             return;
         }
 
+        node.Item = parent;
         node.IsLoading = true;
         await NotifyStateAsync();
 
@@ -821,6 +822,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         {
             var answer = await AskForChildrenAsync(parent, CancellationToken.None);
             node.Children = [.. answer.Items];
+            node.IsStale = false;
             RecordParent(answer.Items, parent);
         }
         finally
@@ -1133,14 +1135,29 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         return source.Where(Expression.Lambda<Func<TItem, bool>>(comparison, parentKey.Parameters[0]));
     }
 
-    /// <summary>What the data view keeps of a node the tree has opened or asked about: its children once answered, and whether it is open or still loading.</summary>
+    /// <summary>What the data view keeps of a node the tree has opened or asked about: the node, its children once answered and whether they came from a source since replaced, and whether it is open or still loading.</summary>
     private sealed class NodeState
     {
+        public TItem? Item { get; set; }
+
         public List<TItem>? Children { get; set; }
+
+        public bool IsStale { get; set; }
 
         public bool IsOpen { get; set; }
 
         public bool IsLoading { get; set; }
+    }
+
+    // The roots and every open node, the nodes a tree shows, are asked for their children again from the source as it now is; a closed node asks when it opens.
+    private async Task RefreshStaleNodesAsync()
+    {
+        var shown = _nodes.Where(pair => pair.Value.IsStale && (ReferenceEquals(pair.Key, RootsKey) || pair.Value.IsOpen)).ToList();
+
+        foreach (var (key, node) in shown)
+        {
+            await LoadChildrenCoreAsync(ReferenceEquals(key, RootsKey) ? default : node.Item);
+        }
     }
 
     /// <summary>The attribute an element carries to be an item, whatever the view draws it as, its value the item's token.</summary>
@@ -1238,13 +1255,19 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         _loadedGrouping = GroupBy;
         _loadedParentKey = GetNodeKey(_currentItem);
 
-        // The children a tree keeps were sorted and read from the source as it was; a new source or sort asks again.
+        // The children a tree keeps were sorted and read from the source as it was, so a new source or sort asks again; the nodes the
+        // reader opened stay open, and their children go on showing until the answer comes. A fresh state per node leaves an answer
+        // still on its way from the old source nowhere to land.
         object sortToken = (_sortName, _sortDirection);
+        var isSourceNew = !ReferenceEquals(_loadedSource, source) || !Equals(_loadedSortToken, sortToken);
 
-        if (!ReferenceEquals(_loadedSource, source) || !Equals(_loadedSortToken, sortToken))
+        if (isSourceNew)
         {
-            _nodes.Clear();
-            _parents.Clear();
+            foreach (var (key, node) in _nodes.ToList())
+            {
+                _nodes[key] = new NodeState { Item = node.Item, Children = node.Children, IsStale = node.Children is not null, IsOpen = node.IsOpen };
+            }
+
             _loadedSortToken = sortToken;
         }
 
@@ -1294,6 +1317,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         await NotifyStateAsync();
+
+        if (isSourceNew)
+        {
+            await RefreshStaleNodesAsync();
+        }
     }
 
     private async ValueTask<DataViewPage<TItem>> FetchWindowAsync(int startIndex, int? count, CancellationToken cancellationToken)

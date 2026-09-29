@@ -95,6 +95,32 @@
         }
 
         [Fact]
+        public void Should_keep_an_opened_node_open_when_the_data_view_is_given_a_new_source()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            // Act — the same entries as a new queryable, then with a file added under the open folder
+            cut.FindComponent<FormaDataView<Entry>>().Render(parameters => parameters.Add(view => view.Items, CreateEntries()));
+            var names = cut.FindAll(".forma-data-tree-node-name").Select(name => name.TextContent).ToList();
+            cut.FindComponent<FormaDataView<Entry>>().Render(parameters => parameters.Add(view => view.Items, CreateEntries().Append(new Entry(7, 1, "Budget.xlsx", false)).AsQueryable()));
+            cut.WaitForState(() => cut.Markup.Contains("Budget.xlsx", StringComparison.Ordinal));
+
+            // Assert — the folder stayed open, and shows what the new source holds under it
+            Assert.Multiple(
+                () => Assert.Equal(["Documents", "Reports", "Notes.txt", "Pictures"], names),
+                () => Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded")),
+                () => Assert.Equal(["Documents", "Reports", "Notes.txt", "Budget.xlsx", "Pictures"], cut.FindAll(".forma-data-tree-node-name").Select(name => name.TextContent).ToList()));
+        }
+
+        [Fact]
         public void Should_presume_a_node_opens_until_its_children_come_back_empty()
         {
             // Arrange — no HasChildren, so every node offers to open
