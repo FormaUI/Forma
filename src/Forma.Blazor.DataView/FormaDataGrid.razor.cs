@@ -463,7 +463,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             throw new InvalidOperationException($"The column '{column.Title}' is not sortable.");
         }
 
-        return Interaction.SortByAsync(column.SortName, sort, direction);
+        return Interaction.SortByAsync(column.SortName!, sort, direction);
     }
 
     /// <summary>Opens <paramref name="column"/>'s options surface.</summary>
@@ -532,11 +532,11 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
         if (!IsSortedBy(column))
         {
-            return Interaction.SortByAsync(column.SortName, sort, column.InitialSortDirection);
+            return Interaction.SortByAsync(column.SortName!, sort, column.InitialSortDirection);
         }
 
         return View.SortDirection == column.InitialSortDirection
-            ? Interaction.SortByAsync(column.SortName, sort, column.InitialSortDirection.Reverse())
+            ? Interaction.SortByAsync(column.SortName!, sort, column.InitialSortDirection.Reverse())
             : Interaction.ClearSortAsync();
     }
 
@@ -617,8 +617,16 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     }
 
     // The table part calls this as it starts rendering, which is after every column declared before it has registered.
+    // Two sortable columns naming one sort would leave the address unable to tell them apart, so the grid refuses them.
     internal void FinishCollectingColumns()
-        => _isCollectingColumns = false;
+    {
+        _isCollectingColumns = false;
+
+        if (_columns.Where(column => column.IsSortable).GroupBy(column => column.SortName, StringComparer.Ordinal).FirstOrDefault(named => named.Count() > 1) is { } repeated)
+        {
+            throw new InvalidOperationException($"Two sortable columns of one {nameof(FormaDataGrid<>)} name the sort '{repeated.Key}'; give one a {nameof(FormaColumnBase<>.SortName)} of its own.");
+        }
+    }
 
     private void StartCollectingColumns()
     {
@@ -635,14 +643,14 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
             if (requested is { SortBy: { } requestedSort })
             {
-                await Interaction.SortByAsync(requested.SortName, requestedSort, View.RequestedSortDirection);
+                await Interaction.SortByAsync(requested.SortName!, requestedSort, View.RequestedSortDirection);
                 return;
             }
         }
 
         if (View.SortName is null && View.RequestedSortName is null && _columns.FirstOrDefault(column => column.IsDefaultSortColumn && column.SortBy is not null) is { SortBy: { } defaultSort } defaultColumn)
         {
-            await Interaction.SortByAsync(defaultColumn.SortName, defaultSort, defaultColumn.InitialSortDirection);
+            await Interaction.SortByAsync(defaultColumn.SortName!, defaultSort, defaultColumn.InitialSortDirection);
         }
     }
 

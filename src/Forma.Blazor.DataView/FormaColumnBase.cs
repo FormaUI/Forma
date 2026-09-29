@@ -16,6 +16,9 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <summary>The title shown in the header cell and read as the column's name.</summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>The name the column's sort goes by in the address and to a sort menu, the same in every culture; a property column takes its property's path when none is given, and any other sortable column is given one.</summary>
+    [Parameter] public string? SortName { get; set; }
+
     /// <summary>The class the column's header and cells carry.</summary>
     [Parameter] public string? Class { get; set; }
 
@@ -62,10 +65,6 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     public bool IsSortable
         => Sortable ?? IsSortableByDefault();
 
-    /// <summary>The name the column's sort is known and written to the address by.</summary>
-    public string SortName
-        => Title ?? string.Empty;
-
     /// <summary>The content of the header cell: the template where the caller gave one, else the title.</summary>
     protected internal virtual RenderFragment HeaderContent
         => builder =>
@@ -100,5 +99,13 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => Grid.AddColumn(this);
+    {
+        // The address carries a sort by its name, so a column that sorts has one, and a label that changes with the culture is never it.
+        if (IsSortable && string.IsNullOrWhiteSpace(SortName))
+        {
+            throw new InvalidOperationException($"{GetType().Name} '{Title}' sorts, so it needs a {nameof(SortName)}: the name its sort goes by in the address, the same in every culture.");
+        }
+
+        Grid.AddColumn(this);
+    }
 }

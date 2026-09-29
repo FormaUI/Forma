@@ -1394,6 +1394,117 @@
         }
 
         [Fact]
+        public void Should_write_a_property_column_s_path_to_the_address_rather_than_its_title()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" AddressOptions='@(new DataViewAddressOptions("products"))'>
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Title="כותרת" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("thead button").Count == 1);
+
+            // Act
+            cut.Find("thead button").Click();
+
+            // Assert
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            Assert.Contains("products-sort=Title", navigation.Uri, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_open_a_link_sorted_in_another_culture_with_the_same_sort_and_direction()
+        {
+            // Arrange — a link written where the column read Title, opened where it reads in Hebrew
+            using var ctx = new FormaDataGridTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            navigation.NavigateTo(navigation.GetUriWithQueryParameters(new Dictionary<string, object?> { ["products-sort"] = "Title", ["products-order"] = "desc" }));
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" AddressOptions='@(new DataViewAddressOptions("products"))'>
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Title="כותרת" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Item 3", "Item 2", "Item 1"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList()),
+                () => Assert.Equal("descending", cut.Find("thead th").GetAttribute("aria-sort")));
+        }
+
+        [Fact]
+        public void Should_refuse_a_sortable_template_column_with_no_sort_name()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var exception = Record.Exception(() => ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaTemplateColumn TItem="GridItem" Title="Heading" SortBy="@(DataViewSort<GridItem>.ByAscending(item => item.Title))" Context="item">@item.Title</FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
+
+            // Assert
+            Assert.IsType<InvalidOperationException>(exception);
+        }
+
+        [Fact]
+        public void Should_leave_a_computed_property_column_unsorted_until_its_sort_is_named()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act — a property that is no path of members has no name for its sort, so the column draws no sort button
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title + "!")" Title="Loud" />
+                            <FormaPropertyColumn Property="@(item => item.Id * 2)" Title="Double" SortName="Double" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
+
+            // Assert — the one given a name sorts
+            Assert.Equal(["Double"], cut.FindAll("thead button").Select(button => button.TextContent.Trim()).Where(text => text.Length > 0).ToList());
+        }
+
+        [Fact]
+        public void Should_refuse_two_sortable_columns_of_one_sort_name()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var exception = Record.Exception(() => ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                            <FormaTemplateColumn TItem="GridItem" Title="Again" SortName="Title" SortBy="@(DataViewSort<GridItem>.ByAscending(item => item.Id))" Context="item">@item.Id</FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>));
+
+            // Assert
+            Assert.IsType<InvalidOperationException>(exception);
+        }
+
+        [Fact]
         public void Should_sort_by_a_header_and_mark_it()
         {
             // Arrange

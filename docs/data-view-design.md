@@ -157,7 +157,7 @@ members are the data view's, the column's are the grid's.
 | `RefreshDataAsync`, `SortByColumnAsync`, `ShowColumnOptionsAsync`, `HideColumnOptionsAsync` | `RefreshDataAsync` and `SortByAsync` on the engine; `SortByColumnAsync`, `ShowColumnOptionsAsync` and `HideColumnOptionsAsync` on the grid |
 | `ColumnBase`, public and derivable, with `CellContent`, `HeaderContent` and `IsSortableByDefault` | `FormaColumnBase`, public and derivable, with the same overrides |
 | `Title`, `Class`, `Align` | `Title`, `Class`, `Align`, logical |
-| `Sortable`, `SortBy`, `InitialSortDirection`, `IsDefaultSortColumn` | The same four |
+| `Sortable`, `SortBy`, `InitialSortDirection`, `IsDefaultSortColumn` | The same four, and a `SortName` apart from the title that the address carries |
 | `GridSort` with `ByAscending`, `ByDescending`, `ThenAscending`, `ThenDescending` | `DataViewSort` with the same compound keys, which every view sorts by |
 | `HeaderTemplate` | `HeaderTemplate` |
 | `ColumnOptions`, an options surface a header button opens | `ColumnOptions`, opened from the header as the library's popover |
@@ -302,6 +302,14 @@ ascending or descending, applied to a set or handed to a provider. A view offers
 presentation allows: the grid through its column headers, the list and the cards through
 the sort menu the page composes over `SortByAsync`. A data view opens sorted by its default
 sort, which the grid takes from its default sort column.
+
+A sort goes by a **sort name**, apart from any label a reader sees, so a link means the same
+sort in every culture: the address carries it, and a sort menu's option names a column's
+sort by it. A property column's sort name is its property's path unless the caller gives
+one, a property computed rather than read sorting only once its caller names the sort, and
+any other column that sorts is given one. One grid never offers two sortable
+columns of one sort name, nor one menu two options of one; a column and a menu option of
+one sort name are the same sort.
 
 With paging on, the engine shows `PageSize` items and the footer's paginator, which stays
 hidden while everything fits on one page; the page is bindable through `Page` and

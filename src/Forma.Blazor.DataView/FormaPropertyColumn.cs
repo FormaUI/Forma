@@ -61,14 +61,16 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             _getter = Property.Compile();
             _setter = BuildSetter(Property);
 
-            // Only replace a sort this column derived itself, so a caller-supplied one survives.
+            Title ??= ResolveTitle(Property);
+            SortName ??= ResolveSortName(Property);
+
+            // Only replace a sort this column derived itself, so a caller-supplied one survives; a property with no path to name
+            // its sort derives none, so the column sorts once its caller names the sort.
             if (SortBy is null || ReferenceEquals(SortBy, _derivedSort))
             {
-                _derivedSort = DataViewSort<TItem>.ByAscending(Property);
+                _derivedSort = SortName is null ? null : DataViewSort<TItem>.ByAscending(Property);
                 SortBy = _derivedSort;
             }
-
-            Title ??= ResolveTitle(Property);
         }
 
         // Rebuilt on a property change too: the display closes over the getter, so keeping it would read through the previous property.
@@ -203,6 +205,28 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         }
 
         return item => ((IFormattable?)getter(item))?.ToString(format, CultureInfo.CurrentCulture);
+    }
+
+    // The property's path, "Customer.Name", which names the sort the same whatever the title reads in the culture; a property that is not a path of members names none.
+    private static string? ResolveSortName(Expression<Func<TItem, TValue>> property)
+    {
+        var names = new List<string>();
+        var body = property.Body;
+
+        while (body is MemberExpression member)
+        {
+            names.Add(member.Member.Name);
+            body = member.Expression;
+        }
+
+        if (body is not ParameterExpression || names.Count == 0)
+        {
+            return null;
+        }
+
+        names.Reverse();
+
+        return string.Join('.', names);
     }
 
     private static string? ResolveTitle(Expression<Func<TItem, TValue>> property)

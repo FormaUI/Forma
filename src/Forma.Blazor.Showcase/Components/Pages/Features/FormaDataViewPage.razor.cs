@@ -13,16 +13,16 @@ public sealed partial class FormaDataViewPage : ComponentBase
 
     private IReadOnlyList<ShowcaseProduct> _selectedProducts = [];
 
-    // Named as the grid's columns are titled, so a sort chosen from the menu marks the column's header too.
+    // Named by the grid's columns' sort names, their properties' paths, so a sort chosen from the menu marks the column's header too and a link means the same sort in every culture.
     private IReadOnlyList<DataViewSortOption<ShowcaseProduct>> _sorts = [];
 
     /// <inheritdoc />
     protected override void OnInitialized()
         => _sorts =
         [
-            new(L["Name"], L["Name"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Name)),
-            new(L["Category"], L["Category"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Category).ThenAscending(product => product.Name)),
-            new(L["Price"], L["Price"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
+            new("Name", L["Name"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Name)),
+            new("Category", L["Category"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Category).ThenAscending(product => product.Name)),
+            new("Price", L["Price"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
         ];
 
     /// <inheritdoc />
