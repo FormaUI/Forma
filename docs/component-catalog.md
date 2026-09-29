@@ -218,7 +218,7 @@ A view over the data view drawing its items as rows with aligned columns and hea
 
 ### `FormaDataView<TItem>`
 
-The engine that browses a set of items, a queryable or a provider, with its selection, sort, page, address, virtualization and states, handing what is on screen to the view that presents it. Its design is [data-view-design.md](data-view-design.md).
+The collection component: an engine that manages a set of items, a queryable or a provider, with its selection, sort, page, address, grouping, virtualization and states, handing what is on screen to the built-in or custom view that presents it. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|

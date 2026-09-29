@@ -144,7 +144,7 @@ A view over the data view drawing the hierarchy as nodes under their parents, ea
 
 ### `FormaDataView`
 
-The engine that browses a set of items, a queryable or a provider, with its selection, sort, page, address, grouping, virtualization and states, handing what is on screen to the view that presents it. Its design is [data-view-design.md](data-view-design.md).
+The collection component: an engine that manages a set of items, a queryable or a provider, with its selection, sort, page, address, grouping, virtualization and states, handing what is on screen to the built-in or custom view that presents it. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|

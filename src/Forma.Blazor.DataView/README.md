@@ -1,13 +1,18 @@
 # Forma.Blazor.DataView
 
-`FormaDataView`, the browsing engine of the **Forma** component library, and the views that
-present what it browses: `FormaDataGrid`, rows with aligned columns and headers, sorted by a header
-and edited a row at a time. The engine takes a set of items or a provider answering one window at
-a time, sorts, counts and pages them, keeps a keyed selection within the bounds a page sets, writes
-its sort and page to the address so a link reproduces what a reader saw, and draws the empty, busy
-and loading states and the footer; a view draws the items. Built on `Forma.Blazor` and speaking its
-namespaces, so a host that already renders the library adds this package and the same `AddFormaUI()`
-registers what it needs.
+`FormaDataView` is the collection component of the **Forma** component library. Its engine manages
+items and shared state, while interchangeable built-in or custom views determine how those items
+are presented and interacted with. It can present a simple list or support richer arrangements
+such as grids, cards and trees.
+
+The engine accepts a set of items or a provider that supplies one window at a time, and supports
+sorting, counting, paging, keyed selection and synchronizing sort and page state with the address.
+It also renders the empty, busy and loading states and the footer. Each view supplies its own
+presentation and interactions: `FormaDataGrid`, for example, displays rows with aligned columns
+and headers, supports sorting by a header and edits one row at a time.
+
+Built on `Forma.Blazor` and using its namespaces, the package integrates with the library through
+the same `AddFormaUI()` registration.
 
 **.NET 11 · Interactive Server components.**
 

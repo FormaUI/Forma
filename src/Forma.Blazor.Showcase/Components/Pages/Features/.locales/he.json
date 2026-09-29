@@ -121,7 +121,7 @@
     "High": "גבוהה"
   },
   "FormaDataViewPage": {
-    "The engine every browsing surface shares: it holds the set, its selection, sort, page, address and states, and hands what is on screen to the view that presents it. The grid, the list and the cards are three views of one data view, and a view switch chooses among them.": "המנוע שכל משטח דפדוף חולק: הוא מחזיק את הקבוצה, את הבחירה, המיון, העמוד, הכתובת והמצבים שלה, ומוסר את מה שעל המסך לתצוגה שמציגה אותו. הטבלה, הרשימה והכרטיסים הם שלוש תצוגות של תצוגת נתונים אחת, ומחליף תצוגה בוחר ביניהן.",
+    "The library's collection component: an engine that manages a set of items and their selection, sort, page, address and states, and interchangeable views, built in or the host's own, that present them. The grid, the list and the cards are three views of one data view, and a view switch chooses among them.": "רכיב האוסף של הספרייה: מנוע שמנהל קבוצת פריטים ואת הבחירה, המיון, העמוד, הכתובת והמצבים שלהם, ותצוגות מתחלפות, מובנות או של המארח, שמציגות אותם. הטבלה, הרשימה והכרטיסים הם שלוש תצוגות של תצוגת נתונים אחת, ומחליף תצוגה בוחר ביניהן.",
     "One Set, Three Views": "קבוצה אחת, שלוש תצוגות",
     "The same products as a grid, a list and cards. The switch is composed beside the data view; the view it chooses is written to the address, so a link reproduces it. Rows, list items and cards select by pointer and keyboard alike, the arrows moving across the cards in all four directions.": "אותם מוצרים כטבלה, כרשימה וככרטיסים. המחליף מורכב לצד תצוגת הנתונים; התצוגה שהוא בוחר נכתבת לכתובת, כך שקישור משחזר אותה. שורות, פריטי רשימה וכרטיסים נבחרים במצביע ובמקלדת כאחד, והחצים נעים בין הכרטיסים בכל ארבעת הכיוונים.",
     "Name": "שם",

@@ -13,8 +13,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
-/// <summary>The engine that browses a set of items, sorted, paged, selected and kept in the address, handing what is on screen to the view that presents it.</summary>
-/// <typeparam name="TItem">The item the data view browses.</typeparam>
+/// <summary>The collection component: an engine that manages a set of items and the state around them, sorted, paged, selected and kept in the address, handing what is on screen to the view that presents it.</summary>
+/// <typeparam name="TItem">The item the data view manages.</typeparam>
 public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<TItem>, IDataViewInteraction<TItem>, IDataViewSwitcher
     where TItem : notnull
 {
@@ -62,7 +62,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool _isItemSelectionAttached;
     private SelectionBounds _selectionBounds;
 
-    /// <summary>The items to browse, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
+    /// <summary>The items to show, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
     [Parameter] public IQueryable<TItem>? Items { get; set; }
 
     /// <summary>Answers one window of items at a time, for a store the data view does not hold. Supply this or <see cref="Items"/>, not both.</summary>

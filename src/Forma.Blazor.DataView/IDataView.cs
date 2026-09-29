@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>What a view reads of the data view it presents: the items on screen and the state around them, announced through <see cref="INotifyStateChanged"/> as it changes.</summary>
-/// <typeparam name="TItem">The item the data view browses.</typeparam>
+/// <typeparam name="TItem">The item the data view manages.</typeparam>
 public interface IDataView<TItem> : INotifyStateChanged
     where TItem : notnull
 {

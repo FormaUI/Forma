@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
 /// <summary>What a view asks of the data view it presents, on the reader's behalf.</summary>
-/// <typeparam name="TItem">The item the data view browses.</typeparam>
+/// <typeparam name="TItem">The item the data view manages.</typeparam>
 public interface IDataViewInteraction<TItem>
     where TItem : notnull
 {
