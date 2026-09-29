@@ -7,7 +7,6 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>An anchored popover shown in the browser's top layer, registered with the input router while open so Escape and a press away dismiss it and its content's routes are answered, and returning focus to its trigger after keyboard dismissal.</summary>
 public sealed partial class FormaPopover : FormaElementBase
@@ -41,9 +40,6 @@ public sealed partial class FormaPopover : FormaElementBase
 
     /// <summary>Raised with each action the router resolves to the popover.</summary>
     [Parameter] public EventCallback<InputAction> OnInputAction { get; set; }
-
-    /// <summary>Raised for every key pressed inside the popover other than Escape, which the router answers by dismissing it.</summary>
-    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
@@ -129,15 +125,6 @@ public sealed partial class FormaPopover : FormaElementBase
         IsOpen = isOpen;
         StateHasChanged();
         await OnOpenChanged.InvokeAsync(isOpen);
-    }
-
-    // Escape belongs to the router, which dismisses the popover wherever focus is.
-    private async Task HandleKeyDownAsync(KeyboardEventArgs args)
-    {
-        if (args.Key != "Escape")
-        {
-            await OnKeyDown.InvokeAsync(args);
-        }
     }
 
     // The popover is an active scope only while open, with its trigger counted as inside it so a press there toggles rather than dismisses.

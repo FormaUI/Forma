@@ -153,7 +153,7 @@
 
             // Assert
             Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded"));
-            Assert.Equal(["tree.open:ArrowRight", "tree.close:ArrowLeft"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
+            Assert.Equal(["tree.open:ArrowRight", "tree.close:ArrowLeft", "tree.find:typing"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
 
             // Act
             await router.RouteAsync("tree.close", "ArrowLeft");
@@ -182,7 +182,7 @@
                 cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
                 // Assert
-                Assert.Equal(["tree.open:ArrowLeft", "tree.close:ArrowRight"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
+                Assert.Equal(["tree.open:ArrowLeft", "tree.close:ArrowRight", "tree.find:typing"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
             }
             finally
             {
@@ -195,6 +195,7 @@
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
             IReadOnlyList<Entry>? changedTo = null;
             var cut = ctx.Render(
                 @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true" SelectedItemsChanged="@((IReadOnlyList<Entry> selected) => changedTo = selected)">
@@ -203,7 +204,8 @@
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
             // Act — from Documents, "p" reaches Pictures
-            await cut.Find(".forma-data-tree-node").KeyDownAsync(new KeyboardEventArgs { Key = "p" });
+            cut.Find(".forma-data-tree-node").FocusIn();
+            await router.RouteAsync("tree.find", "p");
 
             // Assert
             Assert.Equal("Pictures", Assert.Single(changedTo!).Name);
@@ -287,7 +289,7 @@
             // Assert
             Assert.Equal("Pictures", current!.Name);
             Assert.Equal("0", cut.FindAll(".forma-data-tree-node")[1].GetAttribute("tabindex"));
-            Assert.Equal(["tree.open:ArrowRight", "tree.close:ArrowLeft", "tree.next:ArrowDown", "tree.previous:ArrowUp", "tree.first:Home", "tree.last:End", "tree.choose:Enter"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
+            Assert.Equal(["tree.open:ArrowRight", "tree.close:ArrowLeft", "tree.find:typing", "tree.next:ArrowDown", "tree.previous:ArrowUp", "tree.first:Home", "tree.last:End", "tree.choose:Enter"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
 
             // Act — Home returns to the first, and up holds there
             cut.FindAll(".forma-data-tree-node")[1].FocusIn();

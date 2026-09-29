@@ -36,8 +36,8 @@ surface. One component owns them so no consumer can leave one out.
   dismisses. A press away passes through: it dismisses the popover and then belongs to
   whatever was pressed, so one press on another control closes the popover and acts on the
   control, and a press on another popover's trigger swaps the popovers. `PressAway` turns
-  press-away dismissal off. Every other key is forwarded through `OnKeyDown` for the
-  consumer's own arrow, Home and End navigation.
+  press-away dismissal off. The content's own keys, a list's arrows, Home, End and Tab,
+  are routes it declares through `InputRoutes` and answers through `OnInputAction`.
 - **One `CloseAsync`, and focus goes back only when it was inside.** With `ReturnsFocus`,
   closing returns focus to the trigger when focus is inside the popover at the time,
   Escape, a chosen option, a picked day, and leaves focus alone otherwise, so Tab moving on

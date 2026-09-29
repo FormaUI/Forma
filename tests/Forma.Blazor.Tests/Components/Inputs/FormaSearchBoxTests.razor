@@ -142,6 +142,7 @@
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var router = new InputRouterProbe(ctx);
             var debouncer = new RecordingDebounceable();
             ctx.Services.AddSingleton<IDebounceable>(debouncer);
             var searched = new List<string>();
@@ -150,7 +151,7 @@
 
             // Act
             await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "cover" });
-            await input.KeyDownAsync(Key.Enter);
+            await router.RouteAsync("search-box.search", "Enter");
 
             // Assert
             Assert.Multiple(
@@ -229,10 +230,11 @@
         }
 
         [Fact]
-        public void Should_raise_on_search_immediately_on_enter_bypassing_debounce()
+        public async Task Should_raise_on_search_immediately_on_enter_bypassing_debounce()
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var router = new InputRouterProbe(ctx);
             var searched = new List<string>();
             var delay = TimeSpan.FromSeconds(30);
 
@@ -240,7 +242,7 @@
             var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = delay })" OnSearch="v => searched.Add(v)" />);
             var input = cut.Find("input");
             input.Input("cover");
-            input.KeyDown(Key.Enter);
+            await router.RouteAsync("search-box.search", "Enter");
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal(["cover"], searched));

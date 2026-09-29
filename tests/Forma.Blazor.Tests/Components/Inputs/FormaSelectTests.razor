@@ -260,7 +260,7 @@
             var registration = router.Registrations.Last();
             Assert.Multiple(
                 () => Assert.Equal(cut.FindComponent<FormaPopover>().Instance.RootElement.Id, Assert.IsType<ElementReference>(registration.Arguments[0]).Id),
-                () => Assert.Equal(["select.next:ArrowDown", "select.previous:ArrowUp", "select.first:Home", "select.last:End"], InputRouterProbe.GetRoutes(registration)));
+                () => Assert.Equal(["select.next:ArrowDown", "select.previous:ArrowUp", "select.first:Home", "select.last:End", "select.close:Tab"], InputRouterProbe.GetRoutes(registration)));
         }
 
         [Fact]
@@ -330,10 +330,11 @@
         }
 
         [Fact]
-        public void Should_close_the_popover_on_tab()
+        public async Task Should_close_the_popover_on_tab()
         {
             // Arrange
             using var ctx = new FormaSelectTests();
+            var router = new InputRouterProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
@@ -341,7 +342,7 @@
             cut.Find(".forma-select-trigger").Click();
 
             // Act
-            cut.Find(".forma-select-popover").KeyDown("Tab");
+            await router.RouteAsync("select.close", "Tab");
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-select-popover"));

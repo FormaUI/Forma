@@ -10,7 +10,6 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A view over a data view drawing the hierarchy as nodes under their parents, each opened, closed and selected from the keyboard, with a busy state while its children load.</summary>
 /// <typeparam name="TItem">The item a node shows.</typeparam>
@@ -25,6 +24,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private const string OpenAction = "tree.open";
     private const string CloseAction = "tree.close";
     private const string ChooseAction = "tree.choose";
+    private const string FindAction = "tree.find";
 
     /// <summary>What a node shows beside its name, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -115,7 +115,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    // The inline arrows are the tree's in either mode, bound by the reading direction; the vertical keys, Home, End and Enter are its own only where its rows carry the focus, and the selection's where a marker does.
+    // The inline arrows and type-ahead are the tree's in either mode, the arrows bound by the reading direction; the vertical keys, Home, End and Enter are its own only where its rows carry the focus, and the selection's where a marker does.
     private InputProfile CreateInputProfile()
     {
         var rightToLeft = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
@@ -123,6 +123,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         [
             new InputRoute(OpenAction, new KeyBinding(rightToLeft ? "ArrowLeft" : "ArrowRight")),
             new InputRoute(CloseAction, new KeyBinding(rightToLeft ? "ArrowRight" : "ArrowLeft")),
+            new InputRoute(FindAction, new TypingBinding()),
         ];
 
         if (KeepsFocus)
@@ -167,7 +168,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private Task HandleNodeClickAsync(TItem node)
         => SelectsCurrent ? Interaction.MakeCurrentAsync(node) : Interaction.ActivateAsync(node);
 
-    // The keys act on the node holding the focus, whether on its row or on its marker: the inline arrows open and close, or step into a node and back out; the vertical keys walk the visible nodes; Enter chooses.
+    // The keys act on the node holding the focus, whether on its row or on its marker: the inline arrows open and close, or step into a node and back out; the vertical keys walk the visible nodes; Enter chooses; a letter jumps to the next node starting with it.
     private async Task HandleActionAsync(string action, InputInfo input)
     {
         if (_focusedNode is not { } node)
@@ -204,16 +205,13 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             case ChooseAction:
                 await HandleNodeClickAsync(node);
                 break;
+            case FindAction when input is InputKeyInfo { Key: var letter }:
+                await JumpToAsync(node, letter);
+                break;
             default:
                 break;
         }
     }
-
-    // Type-ahead is the one key the router does not route: a letter jumps to the next node starting with it.
-    private Task HandleNodeKeyDownAsync(KeyboardEventArgs args, TItem node)
-        => args.Key.Length == 1 && !args.CtrlKey && !args.MetaKey && !args.AltKey && !char.IsWhiteSpace(args.Key[0])
-            ? JumpToAsync(node, args.Key)
-            : Task.CompletedTask;
 
     // Type-ahead: the next visible node after the focused one whose name starts with the letter, wrapping round to the first.
     private async Task JumpToAsync(TItem from, string letter)

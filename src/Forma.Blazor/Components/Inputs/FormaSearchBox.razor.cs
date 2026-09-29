@@ -1,6 +1,9 @@
 namespace Forma.Blazor.Components.Inputs;
 
 using Forma.Framework.Css;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
+using Forma.Framework.Input.Keyboard;
 using Forma.Framework.Timing;
 
 using Microsoft.AspNetCore.Components;
@@ -9,6 +12,16 @@ using Microsoft.AspNetCore.Components.Web;
 /// <summary>A search field with a leading glyph, a clear button once populated, and an optional debounce before it reports a search.</summary>
 public sealed partial class FormaSearchBox : FormaElementBase
 {
+    private const string SearchAction = "search-box.search";
+
+    // Enter runs the search at once, a route on the field itself so it wins over the field's own claim on the key and the form around it never takes it as a submission.
+    private static readonly InputProfile SearchProfile = new()
+    {
+        InputRoutes = [new InputRoute(SearchAction, new KeyBinding("Enter"))],
+    };
+
+    private InputRegistration _inputRegistration = default!;
+
     /// <summary>The current text.</summary>
     [Parameter] public string Value { get; set; } = string.Empty;
 
@@ -23,8 +36,14 @@ public sealed partial class FormaSearchBox : FormaElementBase
 
     [Inject] private IDebounceable Debouncer { get; set; } = default!;
 
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
+
     private string EffectivePlaceholder
         => Options.Placeholder ?? L["Search..."].Value;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+        => _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -32,6 +51,10 @@ public sealed partial class FormaSearchBox : FormaElementBase
         ArgumentNullException.ThrowIfNull(Options);
         ArgumentOutOfRangeException.ThrowIfLessThan(Options.DebounceDelay, TimeSpan.Zero, nameof(Options));
     }
+
+    /// <inheritdoc />
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _inputRegistration.SyncAsync(RootElement, SearchProfile);
 
     private async Task HandleInputAsync(ChangeEventArgs args)
     {
@@ -41,9 +64,9 @@ public sealed partial class FormaSearchBox : FormaElementBase
         await Debouncer.DebounceAsync(_ => OnSearch.InvokeAsync(Value), Options.DebounceDelay);
     }
 
-    private async Task HandleKeyDownAsync(KeyboardEventArgs args)
+    private async Task HandleActionAsync(string action, InputInfo input)
     {
-        if (args.Key != "Enter")
+        if (action != SearchAction)
         {
             return;
         }
@@ -66,10 +89,10 @@ public sealed partial class FormaSearchBox : FormaElementBase
         => builder.Add("forma-search-box");
 
     /// <inheritdoc />
-    protected override ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsyncCore()
     {
         Debouncer.Cancel();
-
-        return base.DisposeAsyncCore();
+        await _inputRegistration.DisposeAsync();
+        await base.DisposeAsyncCore();
     }
 }

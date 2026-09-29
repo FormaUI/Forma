@@ -905,6 +905,12 @@ function matches(binding, event) {
 function matchesFamily(binding, event) {
     switch (Families[event.type]) {
         case 'keyboard':
+            // A typing binding matches any printable character other than a space, whatever modifiers composing it took,
+            // so a space keeps its own default where nothing else routes it.
+            if (binding.typing === true) {
+                return isTyping(event) && event.key.trim() !== '';
+            }
+
             return (binding.key == null || binding.key.toLowerCase() === event.key.toLowerCase()) && modifiersMatch(binding, event, true);
         case 'wheel':
             return axisMatches(binding.axis, event) && modifiersMatch(binding, event, false);

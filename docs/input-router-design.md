@@ -166,7 +166,7 @@ A binding is matched by the rules of its family:
 
 | Family | Matches by |
 | --- | --- |
-| Keyboard (`keydown`, `keyup`) | The key, compared without regard to case; Control, Meta, and Alt absent unless stated; Shift either way unless stated |
+| Keyboard (`keydown`, `keyup`) | The key, compared without regard to case; Control, Meta, and Alt absent unless stated; Shift either way unless stated. A typing binding names no key and matches any printable character other than a space, one composed through AltGr included, for type-ahead; a binding naming the key is more specific and wins |
 | Pointer (`pointerdown`, `pointerup`, `pointermove`) | The button that changed, the buttons held (for a move during a gesture), the device (`mouse`, `pen`, `touch`), and only the modifiers it states |
 | Wheel | The axis the turn mostly moves along, and only the modifiers it states |
 | Drop (`drop`, `dragover`) | Any of the data kinds it names, as the drag's data transfer lists them |

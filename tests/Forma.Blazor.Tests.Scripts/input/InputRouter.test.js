@@ -243,6 +243,31 @@ describe('InputRouter binding matching', () => {
         expect(next).toHaveBeenCalledOnce();
     });
 
+    it('matches any printable character but a space with a typing binding, and never a named key or a shortcut', () => {
+        const find = vi.fn();
+        scope(list(), { routes: [route('test.find', find, { type: 'keydown', typing: true })] });
+
+        key(option(), 'p');
+        key(option(), 'P', { shiftKey: true });
+        key(option(), 'ArrowDown');
+        key(option(), 'p', { ctrlKey: true });
+        const space = key(option(), ' ');
+
+        expect(find).toHaveBeenCalledTimes(2);
+        expect(space.defaultPrevented).toBe(false);
+    });
+
+    it('prefers a named key over a typing binding for the same character', () => {
+        const find = vi.fn();
+        const pick = vi.fn();
+        scope(list(), { routes: [route('test.find', find, { type: 'keydown', typing: true }), route('test.pick', pick, keyBinding('p'))] });
+
+        key(option(), 'p');
+
+        expect(pick).toHaveBeenCalledOnce();
+        expect(find).not.toHaveBeenCalled();
+    });
+
     it('prefers the more specific binding whatever its order', () => {
         const extend = vi.fn();
         const move = vi.fn();

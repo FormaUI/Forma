@@ -388,6 +388,10 @@
             Assert.All(tabs.Skip(1), tab => Assert.Equal("-1", tab.GetAttribute("tabindex")));
         }
 
+        // The search box registers a route of its own, so the tab strip's registrations are told apart by their actions.
+        private static List<JSRuntimeInvocation> GetStripRegistrations(InputRouterProbe router)
+            => [.. router.Registrations.Where(registration => InputRouterProbe.GetRoutes(registration).Any(route => route.StartsWith("emoji-picker.", StringComparison.Ordinal)))];
+
         [Fact]
         public void Should_route_the_arrows_home_and_end_on_the_tab_strip()
         {
@@ -399,7 +403,7 @@
             ctx.Render(@<FormaEmojiPicker />);
 
             // Assert
-            var registration = Assert.Single(router.Registrations);
+            var registration = Assert.Single(GetStripRegistrations(router));
             Assert.Equal(["emoji-picker.next:ArrowRight", "emoji-picker.previous:ArrowLeft", "emoji-picker.first:Home", "emoji-picker.last:End"], InputRouterProbe.GetRoutes(registration));
         }
 
@@ -415,7 +419,7 @@
             ctx.Render(@<FormaEmojiPicker />);
 
             // Assert
-            var registration = Assert.Single(router.Registrations);
+            var registration = Assert.Single(GetStripRegistrations(router));
             Assert.Equal(["emoji-picker.next:ArrowLeft", "emoji-picker.previous:ArrowRight", "emoji-picker.first:Home", "emoji-picker.last:End"], InputRouterProbe.GetRoutes(registration));
         }
 
@@ -430,7 +434,7 @@
             ctx.Render(@<FormaEmojiPicker Options="@(new EmojiPickerOptions { ShowGroupTabs = false })" />);
 
             // Assert
-            Assert.Empty(router.Registrations);
+            Assert.Empty(GetStripRegistrations(router));
         }
 
         [Fact]
@@ -449,7 +453,7 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(0, scopesWhileHidden),
-                () => Assert.Equal(2, router.Registrations.Count));
+                () => Assert.Equal(2, GetStripRegistrations(router).Count));
         }
 
         [Fact]

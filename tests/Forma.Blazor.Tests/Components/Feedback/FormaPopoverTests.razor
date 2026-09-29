@@ -183,40 +183,6 @@
         }
 
         [Fact]
-        public async Task Should_leave_escape_to_the_router_rather_than_forwarding_it()
-        {
-            // Arrange
-            using var ctx = new FormaPopoverTests();
-            var keys = new List<string>();
-            var cut = ctx.Render(@<FormaPopover Anchor="default" OnKeyDown="args => keys.Add(args.Key)"><p>Content</p></FormaPopover>);
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
-
-            // Act
-            cut.Find(".forma-popover").KeyDown("Escape");
-
-            // Assert
-            Assert.Empty(keys);
-        }
-
-        [Fact]
-        public async Task Should_forward_every_other_key()
-        {
-            // Arrange
-            using var ctx = new FormaPopoverTests();
-            var keys = new List<string>();
-            var cut = ctx.Render(@<FormaPopover Anchor="default" OnKeyDown="args => keys.Add(args.Key)"><p>Content</p></FormaPopover>);
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
-
-            // Act
-            cut.Find(".forma-popover").KeyDown("ArrowDown");
-
-            // Assert
-            Assert.Multiple(
-                () => Assert.Equal(["ArrowDown"], keys),
-                () => Assert.True(cut.FindComponent<FormaPopover>().Instance.IsOpen));
-        }
-
-        [Fact]
         public async Task Should_report_each_change_of_open_state()
         {
             // Arrange

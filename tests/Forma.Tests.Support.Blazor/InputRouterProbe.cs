@@ -32,10 +32,10 @@ public sealed class InputRouterProbe
     public IReadOnlyList<JSRuntimeInvocation> Registrations
         => [.. _module.Invocations.Where(invocation => invocation.Identifier == "register")];
 
-    /// <summary>The routes a registration declares, each as <c>action:key,key</c>.</summary>
+    /// <summary>The routes a registration declares, each as <c>action:key,key</c>, a typing binding written as <c>typing</c>.</summary>
     public static IReadOnlyList<string> GetRoutes(JSRuntimeInvocation registration)
         => [.. GetProfile(registration).InputRoutes
-            .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Cast<KeyBinding>().Select(binding => binding.Key))}")];
+            .Select(route => $"{route.Action}:{string.Join(',', route.Bindings.Select(Describe))}")];
 
     /// <summary>Presses <paramref name="key"/> as <paramref name="action"/> on the last registration that declares the action, on the renderer.</summary>
     public Task RouteAsync(string action, string key)
@@ -51,6 +51,14 @@ public sealed class InputRouterProbe
 
     private Task RouteAsync(JSRuntimeInvocation registration, string action, string key)
         => _context.Renderer.Dispatcher.InvokeAsync(() => GetOwner(registration).HandleInputActionAsync(action, new InputKeyInfo { Type = "keydown", Key = key }));
+
+    private static string Describe(InputBinding binding)
+        => binding switch
+        {
+            KeyBinding key => key.Key,
+            TypingBinding => "typing",
+            _ => binding.Type,
+        };
 
     private static InputRegistration GetOwner(JSRuntimeInvocation registration)
         => ((DotNetObjectReference<InputRegistration>)registration.Arguments[2]!).Value;

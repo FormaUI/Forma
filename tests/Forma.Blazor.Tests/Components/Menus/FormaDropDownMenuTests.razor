@@ -212,18 +212,20 @@
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaDropDownMenu>
                     <Trigger>Options</Trigger>
                     <ChildContent><FormaDropDownMenuItem>Print</FormaDropDownMenuItem></ChildContent>
                 </FormaDropDownMenu>);
-            cut.Find(".forma-dropdown-menu-trigger").Click();
 
             // Act
-            cut.Find(".forma-dropdown-menu").KeyDown("Tab");
+            cut.Find(".forma-dropdown-menu-trigger").Click();
 
-            // Assert
-            Assert.NotEmpty(cut.FindAll(".forma-dropdown-menu"));
+            // Assert — the menu declares no route on Tab, so the key moves the focus and the menu stays open
+            Assert.Multiple(
+                () => Assert.NotEmpty(cut.FindAll(".forma-dropdown-menu")),
+                () => Assert.DoesNotContain(router.Registrations.SelectMany(InputRouterProbe.GetRoutes), route => route.EndsWith(":Tab", StringComparison.Ordinal)));
         }
 
         [Fact]

@@ -21,6 +21,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private const string PreviousAction = "select.previous";
     private const string FirstAction = "select.first";
     private const string LastAction = "select.last";
+    private const string CloseAction = "select.close";
 
     private static readonly InputProfile TriggerProfile = new()
     {
@@ -33,6 +34,9 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         new InputRoute(PreviousAction, new KeyBinding("ArrowUp")),
         new InputRoute(FirstAction, new KeyBinding("Home")),
         new InputRoute(LastAction, new KeyBinding("End")),
+
+        // Tab closes the list and still moves the focus on, so its default is kept.
+        new InputRoute(CloseAction, new KeyBinding("Tab")) { PreventDefault = false, Propagation = InputPropagation.Continue },
     ];
 
     /// <summary>The options offered in the list.</summary>
@@ -103,6 +107,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
             PreviousAction => MoveFocusAsync(-1),
             FirstAction => FocusIndexAsync(0),
             LastAction => FocusIndexAsync(Options.Count - 1),
+            CloseAction => Popover.CloseAsync(),
             _ => Task.CompletedTask,
         };
     }
@@ -156,9 +161,6 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     private Task HandleListActionAsync(InputAction action)
         => HandleActionAsync(action.Action, action.Input);
-
-    private Task HandlePopoverKeyDownAsync(KeyboardEventArgs args)
-        => args.Key == "Tab" ? Popover.CloseAsync() : Task.CompletedTask;
 
     private Task HandleOpenedAsync()
         => FocusIndexAsync(_focusedIndex);
