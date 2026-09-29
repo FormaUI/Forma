@@ -156,9 +156,9 @@ exactly as the framework tests the runtime.
 
 `RuntimeId` is a version 7 GUID, so instances sort by creation and a log filtered to one
 component reads in the order its instances were made. A root that needs an id when the
-consumer gives none derives one from `Context.RuntimeId` through a computed property,
-`ElementId => Id ?? $"sel-{Context.RuntimeId:N}"`, never a field initializer, which would
-run before the base's; every part hangs off that stem by its role,
+consumer gives none reads `ElementId` from its base, the consumer's `Id` or one minted
+from `Context.RuntimeId`, computed on each read rather than held in a field initializer,
+which would run before the base's; every part hangs off that stem by its role,
 `PopoverId => $"{ElementId}-popover"`, so a consumer who names the root names its parts
 and an unnamed instance's parts all share one stem; and the root element writes the
 identity itself as `data-rid="@Context.RuntimeId"`, so a reader of the DOM, a log line
@@ -208,7 +208,7 @@ A component that roots in another Forma component forwards the four to the one i
 and overrides `RootElement` to answer with that component's root, so a reader gets the
 same element whichever of the two it holds. The identifiers rule holds: `Id` is the
 root's id verbatim, and a component whose root needs an id when the host gives none
-keeps its own `ElementId` fallback.
+reads the base's `ElementId`.
 
 `CssClassBuilder` lives in `Forma.Framework.Css` beside `CssColor` and is the one place a
 class rule can live: a class is added outright or under a condition, and `ToString()`

@@ -23,6 +23,10 @@ public abstract class FormaElementBase : FormaComponentBase
     /// <summary>The root element, once rendered.</summary>
     public virtual ElementReference RootElement { get; protected set; }
 
+    /// <summary>The id the component's elements derive theirs from: the root's own when the host gave one, and one minted from the runtime id otherwise.</summary>
+    public string ElementId
+        => Id ?? $"forma-{Context.RuntimeId:N}";
+
     /// <summary>The class written on the root element: the component's own, then the host's; null when there is none.</summary>
     protected string? RootClass
     {

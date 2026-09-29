@@ -8,7 +8,7 @@
          data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
-         @attributes="CollectionName.WithoutName(AdditionalAttributes)"
+         @attributes="_collectionName.RootAttributes"
          @ref="RootElement">
         @if (!View.AreRootsLoaded)
         {
@@ -21,7 +21,7 @@
         else
         {
             SettleTabStop();
-            <ul class="forma-data-tree-level" role="tree" aria-label="@CollectionName.LabelOf(AdditionalAttributes)" aria-labelledby="@CollectionName.LabelledByOf(AdditionalAttributes)">
+            <ul class="forma-data-tree-level" role="tree" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 @RenderLevel(GetRoots(), 1)
             </ul>
         }

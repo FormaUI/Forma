@@ -16,9 +16,6 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
     /// <summary>When true, shows an alpha (opacity) slider and accepts 8-digit hex values.</summary>
     [Parameter] public bool ShowAlpha { get; set; }
 
-    private string ElementId
-        => Id ?? $"color-{Context.RuntimeId:N}";
-
     private string RgbHex => CurrentValueAsString?.Length >= 7
         ? CurrentValueAsString[..7]
         : "#000000";

@@ -68,9 +68,6 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     public override ElementReference RootElement
         => TriggerButton is null ? default : TriggerButton.RootElement;
 
-    private string ElementId
-        => Id ?? $"ddm-{Context.RuntimeId:N}";
-
     private string PopoverId
         => $"{ElementId}-popover";
 

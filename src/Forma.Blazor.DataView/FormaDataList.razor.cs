@@ -26,6 +26,8 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
+    private CollectionName _collectionName = CollectionName.None;
+
     // The field an item's box names to the input base; the selection is not a form field and nothing binds it.
     private bool ItemSelection { get; }
 
@@ -58,6 +60,8 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        _collectionName = CollectionName.From(AdditionalAttributes);
+
         // The list flows every item it is given; a window fetched as it scrolls has no flow to join.
         if (IsActive && View.Virtualize && !View.EnablePagination)
         {
@@ -89,9 +93,6 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
 
     private Task HandleMarkerKeyDownAsync(KeyboardEventArgs args, TItem item)
         => args.Key == "Enter" ? Interaction.ActivateAsync(item) : Task.CompletedTask;
-
-    private string ElementId
-        => Id ?? $"data-list-{Context.RuntimeId:N}";
 
     private string GetGroupNameId(int index)
         => $"{ElementId}-group-{index}";

@@ -57,9 +57,6 @@ public sealed partial class FormaChrome : FormaElementBase
     public override ElementReference RootElement
         => Frame is null ? default : Frame.RootElement;
 
-    private string ElementId
-        => Id ?? $"forma-chrome-{Context.RuntimeId:N}";
-
     private string TitleId
         => $"{ElementId}-title";
 

@@ -21,9 +21,6 @@ public sealed partial class FormaToggleSwitch : FormaInputBase<bool>
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    private string ElementId
-        => Id ?? $"toggle-{Context.RuntimeId:N}";
-
     private void HandleChange(ChangeEventArgs args) => CurrentValue = args.Value is true;
 
     /// <inheritdoc />

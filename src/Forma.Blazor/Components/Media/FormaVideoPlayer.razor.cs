@@ -64,9 +64,6 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
 
     private PlayerFrame? Frame { get; set; }
 
-    private string ElementId
-        => Id ?? $"video-{Context.RuntimeId:N}";
-
     private string LabelId
         => $"{ElementId}-label";
 

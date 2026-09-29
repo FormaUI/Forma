@@ -16,6 +16,10 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>The root element's id, verbatim.</summary>
     [Parameter] public string? Id { get; set; }
 
+    /// <summary>The id the input's elements derive theirs from: the root's own when the host gave one, and one minted from the runtime id otherwise.</summary>
+    public string ElementId
+        => Id ?? $"forma-{Context.RuntimeId:N}";
+
     /// <summary>The classes the host adds to the root element.</summary>
     [Parameter] public string? Class { get; set; }
 

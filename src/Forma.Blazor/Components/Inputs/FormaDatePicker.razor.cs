@@ -30,9 +30,6 @@ public sealed partial class FormaDatePicker : FormaInputBase<DateOnly?>
     private ElementReference _anchorElement;
     private FormaPopover Popover { get; set; } = default!;
 
-    private string ElementId
-        => Id ?? $"dp-{Context.RuntimeId:N}";
-
     private bool IsOpen
         => Popover is { IsOpen: true };
 

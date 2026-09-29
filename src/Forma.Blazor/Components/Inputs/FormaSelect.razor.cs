@@ -58,9 +58,6 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private FormaPopover Popover { get; set; } = default!;
     private InputRegistration _trigger = default!;
 
-    private string ElementId
-        => Id ?? $"sel-{Context.RuntimeId:N}";
-
     private string PopoverId
         => $"{ElementId}-popover";
 

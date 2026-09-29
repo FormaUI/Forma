@@ -39,9 +39,6 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     private readonly DateRangeDraft _draft = new();
     private CalendarMonthWindow _calendar = default!;
 
-    private string ElementId
-        => Id ?? $"drp-{Context.RuntimeId:N}";
-
     private bool IsOpen
         => Popover is { IsOpen: true };
 

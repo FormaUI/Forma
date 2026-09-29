@@ -45,6 +45,8 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
+    private CollectionName _collectionName = CollectionName.None;
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private readonly Dictionary<object, ElementReference> _nodeElements = [];
@@ -98,6 +100,8 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        _collectionName = CollectionName.From(AdditionalAttributes);
+
         // Whether the tree stands beside the other views is decided as it registers; it does not change under a mounted tree.
         if (SelectsCurrent != _isCompanion)
         {
@@ -324,9 +328,6 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         return builder.ToStringOrNull();
     }
-
-    private string ElementId
-        => Id ?? $"data-tree-{Context.RuntimeId:N}";
 
     // A node is named by its name alone, its disclosure's label left out of it.
     private string GetNodeNameId(TItem node)

@@ -85,10 +85,6 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
     private Dictionary<TItem, int> _rowIndices = [];
 
-    /// <summary>The grid's own id, generated where the host gave none, from which its parts derive theirs.</summary>
-    internal string ElementId
-        => Id ?? $"grid-{Context.RuntimeId:N}";
-
     /// <summary>Whether the grid is the view showing, which it is alone or when the data view's active view names it.</summary>
     internal bool IsActive
         => View.ActiveViewKey == ViewKey;

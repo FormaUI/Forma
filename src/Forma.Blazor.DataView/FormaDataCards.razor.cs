@@ -32,6 +32,8 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
+    private CollectionName _collectionName = CollectionName.None;
+
     // The field a card's box names to the input base; the selection is not a form field and nothing binds it.
     private bool ItemSelection { get; }
 
@@ -64,6 +66,8 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        _collectionName = CollectionName.From(AdditionalAttributes);
+
         // The cards pack every item they are given; a window fetched as it scrolls has no pack to join.
         if (IsActive && View.Virtualize && !View.EnablePagination)
         {
@@ -95,9 +99,6 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
     private Task HandleMarkerKeyDownAsync(KeyboardEventArgs args, TItem item)
         => args.Key == "Enter" ? Interaction.ActivateAsync(item) : Task.CompletedTask;
-
-    private string ElementId
-        => Id ?? $"data-cards-{Context.RuntimeId:N}";
 
     private string GetGroupNameId(int index)
         => $"{ElementId}-group-{index}";

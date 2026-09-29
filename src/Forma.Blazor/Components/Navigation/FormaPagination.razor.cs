@@ -51,9 +51,6 @@ public sealed partial class FormaPagination : FormaElementBase
     /// <summary>How the reader moves between pages.</summary>
     [Parameter] public PaginationOptions Options { get; set; } = PaginationOptions.Default;
 
-    private string ElementId
-        => Id ?? $"forma-pagination-{Context.RuntimeId:N}";
-
     private string NavigationInputId
         => $"{ElementId}-input";
 

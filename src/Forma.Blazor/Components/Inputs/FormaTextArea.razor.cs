@@ -25,9 +25,6 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
     /// <summary>Shows a running character count in the field's end corner, against MaxLength when one is set.</summary>
     [Parameter] public bool ShowCharacterCount { get; set; }
 
-    private string ElementId
-        => Id ?? $"fld-{Context.RuntimeId:N}";
-
     private string CountId
         => $"{ElementId}-count";
 

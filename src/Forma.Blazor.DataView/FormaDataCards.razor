@@ -51,7 +51,7 @@
          data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
-         @attributes="CollectionName.WithoutName(AdditionalAttributes)"
+         @attributes="_collectionName.RootAttributes"
          @ref="RootElement">
         @if (!View.HasLoaded)
         {
@@ -63,7 +63,7 @@
         }
         else if (View.IsGrouped)
         {
-            <div class="forma-data-cards-groups" role="group" aria-label="@CollectionName.LabelOf(AdditionalAttributes)" aria-labelledby="@CollectionName.LabelledByOf(AdditionalAttributes)">
+            <div class="forma-data-cards-groups" role="group" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 @foreach (var (index, group) in View.Groups.Index())
                 {
                     var isFolded = View.IsFolded(group);
@@ -86,7 +86,7 @@
         }
         else
         {
-            <div class="forma-data-cards-pack" role="list" aria-label="@CollectionName.LabelOf(AdditionalAttributes)" aria-labelledby="@CollectionName.LabelledByOf(AdditionalAttributes)">
+            <div class="forma-data-cards-pack" role="list" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 @foreach (var item in View.Items)
                 {
                     @card(item)

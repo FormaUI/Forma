@@ -92,8 +92,6 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private IReadOnlyList<string>? _requiredSheets;
     private IReadOnlyList<EmojiInfo>? _renderedEmojis;
 
-    private string ElementId => Id ?? $"emoji-picker-{Context.RuntimeId:N}";
-
     private string PanelElementId => $"{ElementId}-panel";
 
     private bool IsSearching => !string.IsNullOrWhiteSpace(_searchQuery);

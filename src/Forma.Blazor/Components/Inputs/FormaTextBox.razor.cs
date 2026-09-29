@@ -37,9 +37,6 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
 
-    private string ElementId
-        => Id ?? $"text-box-{Context.RuntimeId:N}";
-
     // The floating label sits over the box, so it takes the placeholder's place rather than sharing it.
     private string? EffectivePlaceholder
         => HasLabel ? " " : Placeholder;

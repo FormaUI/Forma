@@ -88,9 +88,6 @@ public sealed partial class FormaComposer(
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
     [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
 
-    private string ElementId
-        => Id ?? $"composer-{Context.RuntimeId:N}";
-
     // A read-only composer offers no editing commands, so the toolbar would carry nothing actionable.
     private bool ShowToolbar
         => Options.ShowToolbar && !ReadOnly;
