@@ -1,0 +1,31 @@
+@page "/data-view/grid"
+@rendermode InteractiveServer
+@inject IStringLocale<FormaDataViewPage> L
+
+<h1>FormaDataView</h1>
+<p class="description">@L["This tab shows the grid as a view of the data view: the products as rows with sortable headers and a box per row, the master control and the selection the engine's, as they are in every other view."]</p>
+
+<div class="demo-section">
+    <h2>@L["The Grid View"]</h2>
+    <div class="demo-box">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" EnableCheckedSelection="true" AddressOptions='@(new DataViewAddressOptions("grid"))' SelectedItems="_checkedProducts" SelectedItemsChanged="HandleCheckedChanged">
+            <ChildContent>
+                <FormaDataGrid TItem="ShowcaseProduct">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" Sortable="true" />
+                        <FormaPropertyColumn Property="@(product => product.Category)" Title="@L["Category"]" Sortable="true" />
+                        <FormaPropertyColumn Property="@(product => product.Price)" Title="@L["Price"]" Format="C0" Sortable="true" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{Selected} checked.", _checkedProducts.Count]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+@code {
+    private IReadOnlyList<ShowcaseProduct> _checkedProducts = [];
+
+    private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selected)
+        => _checkedProducts = selected;
+}

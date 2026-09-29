@@ -16,6 +16,18 @@
     "Columns": "עמודות",
     "Scroll Columns Back": "גלילת עמודות אחורה",
     "Scroll Columns Forward": "גלילת עמודות קדימה",
-    "Resize Frozen Columns": "שינוי רוחב העמודות הקפואות"
+    "Resize Frozen Columns": "שינוי רוחב העמודות הקפואות",
+    "Grid": "טבלה"
+  },
+  "FormaDataList": {
+    "List": "רשימה",
+    "Select Item": "בחר פריט"
+  },
+  "FormaDataCards": {
+    "Cards": "כרטיסים",
+    "Select Item": "בחר פריט"
+  },
+  "FormaDataViewSwitch": {
+    "View": "תצוגה"
   }
 }

@@ -2,7 +2,7 @@
 @inherits FormaComponentBase
 @typeparam TItem where TItem : notnull
 
-<tr class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@Grid.GetRowIndex(Item)" @onclick="HandleClickAsync">
+<tr class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@Grid.GetRowIndex(Item)" data-item @onclick="HandleClickAsync">
     @if (Grid.HasSelectionColumn)
     {
         <td class="@Grid.SelectionCellClass" @onclick:stopPropagation>

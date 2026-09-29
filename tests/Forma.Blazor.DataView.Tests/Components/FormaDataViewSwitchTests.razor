@@ -1,0 +1,143 @@
+@inherits FormaBunitContext
+@using AngleSharp.Dom
+@using Microsoft.AspNetCore.Components
+
+@code {
+    public sealed class Component
+    {
+        private static IQueryable<Product> CreateProducts() => new[]
+        {
+            new Product(1, "Hammer", "Tools"),
+            new Product(2, "Atlas", "Books"),
+        }.AsQueryable();
+
+        // The three views over one set, with the switch composed inside the data view where the cascade reaches it.
+        private RenderFragment CreateThreeViews(string? view = null, DataViewAddressOptions? address = null, EventCallback<string?> viewChanged = default) =>
+            @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" View="@view" ViewChanged="viewChanged" AddressOptions="address">
+                <FormaDataViewSwitch />
+                <FormaDataGrid TItem="Product">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(product => product.Name)" />
+                    </Columns>
+                </FormaDataGrid>
+                <FormaDataList TItem="Product" />
+                <FormaDataCards TItem="Product" />
+            </FormaDataView>;
+
+        [Fact]
+        public void Should_offer_a_button_per_view_and_press_the_first_when_none_is_named()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewSwitchTests();
+
+            // Act
+            var cut = ctx.Render(CreateThreeViews());
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
+
+            // Assert — the grid shows and is pressed; the list and the cards stand ready, unpressed and undrawn
+            var buttons = cut.FindAll(".forma-data-view-switch button");
+            Assert.Multiple(
+                () => Assert.Equal(["Grid", "List", "Cards"], buttons.Select(button => button.TextContent.Trim()).ToList()),
+                () => Assert.Equal("true", buttons[0].GetAttribute("aria-pressed")),
+                () => Assert.Equal("false", buttons[1].GetAttribute("aria-pressed")),
+                () => Assert.Single(cut.FindAll("table.forma-data-grid")),
+                () => Assert.Empty(cut.FindAll(".forma-data-list")),
+                () => Assert.Empty(cut.FindAll(".forma-data-cards")));
+        }
+
+        [Fact]
+        public void Should_show_the_view_pressed_on_the_switch_and_report_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewSwitchTests();
+            string? reported = null;
+            var cut = ctx.Render(CreateThreeViews(viewChanged: EventCallback.Factory.Create<string?>(ctx, (string? key) => reported = key)));
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
+
+            // Act
+            cut.FindAll(".forma-data-view-switch button")[2].Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("cards", reported),
+                () => Assert.Single(cut.FindAll(".forma-data-cards")),
+                () => Assert.Empty(cut.FindAll("table.forma-data-grid")),
+                () => Assert.Equal("true", cut.FindAll(".forma-data-view-switch button")[2].GetAttribute("aria-pressed")));
+        }
+
+        [Fact]
+        public void Should_show_the_view_the_host_names()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewSwitchTests();
+
+            // Act
+            var cut = ctx.Render(CreateThreeViews(view: "list"));
+            cut.WaitForState(() => cut.FindAll(".forma-data-list [role=listitem]").Count == 2);
+
+            // Assert
+            Assert.Empty(cut.FindAll("table.forma-data-grid"));
+            Assert.Equal("true", cut.FindAll(".forma-data-view-switch button")[1].GetAttribute("aria-pressed"));
+        }
+
+        [Fact]
+        public void Should_write_a_view_other_than_the_first_to_the_address_and_read_it_back()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewSwitchTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            var cut = ctx.Render(CreateThreeViews(address: new DataViewAddressOptions("shop")));
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
+
+            // Act
+            cut.FindAll(".forma-data-view-switch button")[1].Click();
+
+            // Assert — the list is in the address; the first view would not be
+            Assert.Contains("shop-view=list", navigation.Uri, StringComparison.Ordinal);
+
+            // Act — a fresh data view opened on that address shows the list
+            var reopened = ctx.Render(CreateThreeViews(address: new DataViewAddressOptions("shop")));
+            reopened.WaitForState(() => reopened.FindAll(".forma-data-list [role=listitem]").Count == 2);
+
+            // Assert
+            Assert.Empty(reopened.FindAll("table.forma-data-grid"));
+        }
+
+        [Fact]
+        public void Should_drop_the_view_from_the_address_when_the_first_shows_again()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewSwitchTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            var cut = ctx.Render(CreateThreeViews(address: new DataViewAddressOptions("shop")));
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
+            cut.FindAll(".forma-data-view-switch button")[1].Click();
+
+            // Act
+            cut.FindAll(".forma-data-view-switch button")[0].Click();
+
+            // Assert
+            Assert.DoesNotContain("shop-view", navigation.Uri, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_take_the_data_view_as_a_parameter_when_composed_outside_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewSwitchTests();
+            var dataView = ctx.Render(CreateThreeViews());
+            dataView.WaitForState(() => dataView.FindAll(".forma-data-view-switch button").Count == 3);
+            var engine = dataView.FindComponent<FormaDataView<Product>>().Instance;
+
+            // Act
+            var outside = ctx.Render(@<FormaDataViewSwitch DataView="engine" />);
+            outside.FindAll("button")[2].Click();
+
+            // Assert — the switch outside drives the same data view, and follows it
+            Assert.Single(dataView.FindAll(".forma-data-cards"));
+            Assert.Equal("true", outside.FindAll("button")[2].GetAttribute("aria-pressed"));
+        }
+
+        private sealed record Product(int Id, string Name, string Category);
+    }
+}

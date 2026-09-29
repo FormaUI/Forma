@@ -1,0 +1,39 @@
+@page "/data-view"
+@attribute [ShowcasePage("FormaDataView")]
+@rendermode InteractiveServer
+
+<h1>FormaDataView</h1>
+<p class="description">@L["The engine every browsing surface shares: it holds the set, its selection, sort, page, address and states, and hands what is on screen to the view that presents it. The grid, the list and the cards are three views of one data view, and a view switch chooses among them."]</p>
+
+<div class="demo-section">
+    <h2>@L["One Set, Three Views"]</h2>
+    <p class="description">@L["The same products as a grid, a list and cards. The switch is composed beside the data view; the view it chooses is written to the address, so a link reproduces it. Rows, list items and cards select by pointer and keyboard alike, the arrows moving across the cards in all four directions."]</p>
+    <div class="demo-box demo-row demo-controls">
+        @if (_dataView is not null)
+        {
+            <FormaDataViewSwitch DataView="_dataView" />
+        }
+    </div>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView @ref="_dataView" TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableItemSelection="true" AddressOptions='@(new DataViewAddressOptions("views"))' SelectedItems="_selectedProducts" SelectedItemsChanged="HandleSelectionChanged">
+            <ChildContent>
+                <FormaDataGrid TItem="ShowcaseProduct">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" Sortable="true" />
+                        <FormaPropertyColumn Property="@(product => product.Category)" Title="@L["Category"]" Sortable="true" />
+                        <FormaPropertyColumn Property="@(product => product.Price)" Title="@L["Price"]" Format="C0" Sortable="true" />
+                    </Columns>
+                </FormaDataGrid>
+                <FormaDataList TItem="ShowcaseProduct">
+                    <ThumbnailTemplate Context="product"><span class="demo-thumbnail demo-thumbnail-small"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></span></ThumbnailTemplate>
+                    <ItemTemplate Context="product">@product.Price.ToString("C0", System.Globalization.CultureInfo.CurrentCulture)</ItemTemplate>
+                </FormaDataList>
+                <FormaDataCards TItem="ShowcaseProduct">
+                    <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
+                    <ItemTemplate Context="product">@product.Category · @product.Price.ToString("C0", System.Globalization.CultureInfo.CurrentCulture)</ItemTemplate>
+                </FormaDataCards>
+            </ChildContent>
+            <Status>@L["{Selected} of {Total} selected.", _selectedProducts.Count, DataViewShowcaseProducts.All.Count()]</Status>
+        </FormaDataView>
+    </div>
+</div>

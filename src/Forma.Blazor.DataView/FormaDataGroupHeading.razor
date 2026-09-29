@@ -1,0 +1,9 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaComponentBase
+@typeparam TItem where TItem : notnull
+
+<FormaButton Variant="ButtonVariant.Ghost" class="forma-data-group-heading" aria-expanded="@(IsFolded ? "false" : "true")" OnClick="OnToggle">
+    <FormaIcon Icon="@(IsFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-group-chevron" />
+    <span class="forma-data-group-name">@Group.Name</span>
+    <span class="forma-data-group-count">@Group.Items.Count</span>
+</FormaButton>

@@ -12,9 +12,11 @@
     @* Fixed: the engine announces its changes through the view contract, so the cascade never has to change value under a view. *@
     <CascadingValue TValue="IDataView<TItem>" Value="this" IsFixed="true">
         <CascadingValue TValue="IDataViewInteraction<TItem>" Value="this" IsFixed="true">
-            <div class="forma-data-view-region" @ref="_regionElement">
-                @ChildContent
-            </div>
+            <CascadingValue TValue="IDataViewSwitcher" Value="this" IsFixed="true">
+                <div class="forma-data-view-region" @ref="_regionElement">
+                    @ChildContent
+                </div>
+            </CascadingValue>
         </CascadingValue>
     </CascadingValue>
 

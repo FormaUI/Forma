@@ -1,0 +1,11 @@
+/* ============================================================
+   FormaDataViewSwitch — CSS isolation
+   One toggle button per view in a row, the one showing pressed.
+   Logical properties throughout for RTL/LTR parity.
+   ============================================================ */
+
+.forma-data-view-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}

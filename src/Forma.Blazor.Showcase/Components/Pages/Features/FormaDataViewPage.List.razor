@@ -1,0 +1,30 @@
+@page "/data-view/list"
+@rendermode InteractiveServer
+@inject IStringLocale<FormaDataViewPage> L
+
+<h1>FormaDataView</h1>
+<p class="description">@L["This tab shows the list as a view of the data view: each product a row with its thumbnail, its name and its price, grouped by category under headings that fold, flowing into further columns as the width allows."]</p>
+
+<div class="demo-section">
+    <h2>@L["The List View"]</h2>
+    <div class="demo-box">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableItemSelection="true" GroupBy="DataViewShowcaseProducts.ByCategory" AddressOptions='@(new DataViewAddressOptions("list"))'>
+            <FormaDataList TItem="ShowcaseProduct">
+                <ThumbnailTemplate Context="product"><span class="demo-thumbnail demo-thumbnail-small"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></span></ThumbnailTemplate>
+                <ItemTemplate Context="product">@product.Price.ToString("C0", System.Globalization.CultureInfo.CurrentCulture)</ItemTemplate>
+            </FormaDataList>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Dense List"]</h2>
+    <p class="description">@L["The list at its compact density, names alone on the small step, flowing into further columns as the width allows."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" AddressOptions='@(new DataViewAddressOptions("dense"))'>
+            <FormaDataList TItem="ShowcaseProduct" Dense="true">
+                <ThumbnailTemplate Context="product"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
+            </FormaDataList>
+        </FormaDataView>
+    </div>
+</div>

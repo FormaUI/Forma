@@ -1,0 +1,89 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaElementBase
+@typeparam TItem where TItem : notnull
+
+@if (IsActive)
+{
+    RenderFragment<TItem> entry = item =>
+        @<div class="@GetItemClass(item)"
+              role="listitem"
+              aria-selected="@GetAriaSelected(item)"
+              data-item
+              @key="View.ItemKey(item)"
+              @onclick="() => Interaction.ActivateAsync(item)">
+            @if (HasSelection)
+            {
+                <span class="forma-data-list-item-lead" @onclick:stopPropagation>
+                    <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-list-item-marker")"
+                                   data-row-key="@View.GetItemToken(item)"
+                                   aria-label="@L["Select Item"]"
+                                   aria-disabled="@(!View.CanInteractWith(item) ? "true" : null)"
+                                   Value="@View.IsSelected(item)"
+                                   ValueChanged="isSelected => Interaction.ToggleSelectionAsync(item, isSelected)"
+                                   ValueExpression="() => ItemSelection" />
+                    @if (!View.EnableCheckedSelection && View.IsSelected(item))
+                    {
+                        <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" Class="forma-data-list-item-check" aria-hidden="true" />
+                    }
+                </span>
+            }
+            @if (ThumbnailTemplate is { } thumbnail)
+            {
+                <span class="forma-data-list-item-thumbnail">@thumbnail(item)</span>
+            }
+            <span class="forma-data-list-item-text">
+                <span class="forma-data-list-item-name">@View.ItemName(item)</span>
+                @if (ItemTemplate is { } detail)
+                {
+                    <span class="forma-data-list-item-detail">@detail(item)</span>
+                }
+            </span>
+        </div>;
+
+    <div id="@Id"
+         data-rid="@Context.RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement">
+        @if (!View.HasLoaded)
+        {
+            <div class="forma-data-list-state">@View.LoadingContent</div>
+        }
+        else if (View.Items.Count == 0)
+        {
+            <div class="forma-data-list-state">@View.EmptyContent</div>
+        }
+        else if (View.IsGrouped)
+        {
+            <div class="forma-data-list-groups">
+                @foreach (var group in View.Groups)
+                {
+                    var isFolded = View.IsFolded(group);
+
+                    <section class="forma-data-list-group" @key="group.Key">
+                        <FormaDataGroupHeading TItem="TItem" Group="group" IsFolded="isFolded" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                        @if (!isFolded)
+                        {
+                            <div class="forma-data-list-flow" role="list">
+                                @foreach (var item in group.Items)
+                                {
+                                    @entry(item)
+                                }
+                            </div>
+                        }
+                    </section>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="forma-data-list-flow" role="list">
+                @foreach (var item in View.Items)
+                {
+                    @entry(item)
+                }
+            </div>
+        }
+    </div>
+}

@@ -15,7 +15,7 @@ using Microsoft.JSInterop;
 
 /// <summary>The engine that browses a set of items, sorted, paged, selected and kept in the address, handing what is on screen to the view that presents it.</summary>
 /// <typeparam name="TItem">The item the data view browses.</typeparam>
-public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<TItem>, IDataViewInteraction<TItem>
+public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<TItem>, IDataViewInteraction<TItem>, IDataViewSwitcher
     where TItem : notnull
 {
     private const string DescendingOrder = "desc";
@@ -26,7 +26,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     private readonly StateNotifier _stateNotifier = new();
     private readonly ItemTokenTable<TItem> _itemTokens = new();
-    private readonly Dictionary<string, IDataViewViewport> _viewports = [with(StringComparer.Ordinal)];
+    private readonly List<DataViewRegistration> _registrations = [];
+    private readonly ParameterState<string?> _viewParameter = new();
+    private string? _activeViewKey;
     private readonly ParameterState<IReadOnlyList<TItem>?> _selectedItemsParameter = new();
     private readonly ParameterState<int> _pageParameter = new();
     private readonly ParameterState<DataViewGrouping<TItem>?> _groupByParameter = new();
@@ -68,6 +70,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Identifies an item across reloads, so a selection or an edit survives its item being replaced by an equal copy.</summary>
     [Parameter] public Func<TItem, object> ItemKey { get; set; } = item => item;
+
+    /// <summary>The key of the view to show among several, bindable; null shows the first declared.</summary>
+    [Parameter] public string? View { get; set; }
+
+    /// <summary>Raised with the key of the view the reader switched to.</summary>
+    [Parameter] public EventCallback<string?> ViewChanged { get; set; }
+
+    /// <summary>The name an item goes by, which a view without columns shows for it; the item's own text when omitted.</summary>
+    [Parameter] public Func<TItem, string>? ItemName { get; set; }
 
     /// <summary>The views that present the items; one of them shows.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
@@ -147,6 +158,20 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     IReadOnlyList<TItem> IDataView<TItem>.Items
         => _items;
+
+    /// <inheritdoc />
+    public IReadOnlyList<DataViewRegistration> Views
+        => _registrations;
+
+    /// <inheritdoc />
+    public string? ActiveViewKey
+        => _activeViewKey is { } key && _registrations.Any(registration => registration.Key == key)
+            ? key
+            : _registrations.FirstOrDefault()?.Key;
+
+    /// <inheritdoc />
+    Func<TItem, string> IDataView<TItem>.ItemName
+        => ItemName ?? GetItemText;
 
     /// <inheritdoc />
     public IReadOnlyList<DataViewGroup<TItem>> Groups
@@ -355,6 +380,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _page = Math.Max(1, Page);
         }
 
+        if (_viewParameter.Update(View))
+        {
+            _activeViewKey = View;
+        }
+
         if (!_isAddressRead)
         {
             _isAddressRead = true;
@@ -386,6 +416,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The views register while the data view first renders, so whatever reads them, the switch above all, is told once they have.
+        if (firstRender && _registrations.Count > 0)
+        {
+            await NotifyStateAsync();
+        }
+
         if (EnableItemSelection && !_isItemSelectionAttached)
         {
             // Claimed before the await so a render arriving mid-call cannot re-enter and attach a second listener to the same region.
@@ -394,7 +430,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isItemSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference);
+            _isItemSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector);
         }
 
         // Virtualization sizes its own scroll range, and an unpaged data view has no short page to hold a height for.
@@ -436,8 +472,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
-        // Only the active view is registered, since only it renders.
-        foreach (var viewport in _viewports.Values)
+        if (ActiveViewport is { } viewport)
         {
             await viewport.ScrollToItemAsync(index, cancellationToken);
         }
@@ -566,12 +601,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     }
 
     /// <inheritdoc />
-    public void RegisterView(string key, IDataViewViewport viewport)
+    public void RegisterView(DataViewRegistration registration)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        ArgumentNullException.ThrowIfNull(viewport);
+        ArgumentNullException.ThrowIfNull(registration);
 
-        _viewports[key] = viewport;
+        UnregisterView(registration.Key);
+        _registrations.Add(registration);
     }
 
     /// <inheritdoc />
@@ -579,8 +614,33 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        _viewports.Remove(key);
+        _registrations.RemoveAll(registration => registration.Key == key);
     }
+
+    /// <inheritdoc />
+    public async Task SwitchViewAsync(string key)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        if (!_registrations.Any(registration => registration.Key == key))
+        {
+            throw new ArgumentException($"No view is registered under '{key}'.", nameof(key));
+        }
+
+        if (key == ActiveViewKey)
+        {
+            return;
+        }
+
+        _activeViewKey = key;
+        WriteAddress();
+        await ViewChanged.InvokeAsync(key);
+        await NotifyStateAsync();
+    }
+
+    // The viewport of the view showing, which the engine scrolls and asks to fetch again.
+    private IDataViewViewport? ActiveViewport
+        => _registrations.FirstOrDefault(registration => registration.Key == ActiveViewKey)?.Viewport;
 
     /// <inheritdoc />
     public void BeginItemPass()
@@ -758,6 +818,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private HashSet<TItem> CreateSelection(IEnumerable<TItem> items)
         => new(items, _keyComparer);
 
+    private static string GetItemText(TItem item)
+        => item.ToString() ?? string.Empty;
+
+    /// <summary>The attribute an element carries to be the item a marker belongs to, whatever the view draws it as.</summary>
+    internal const string ItemAttribute = "data-item";
+
+    // The selection interaction reads a click and a key against the item the marker sits in, which every view marks the same way.
+    private const string ItemSelector = "[" + ItemAttribute + "]";
+
     // The items arrive with each group's members standing together, so a group is a run of one key.
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)
     {
@@ -859,12 +928,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             await SetTotalItemCountAsync(window.TotalCount);
 
             // A virtualizing view fetches its own windows, so it is asked to fetch them again.
-            if (IsVirtualizing)
+            if (IsVirtualizing && ActiveViewport is { } viewport)
             {
-                foreach (var viewport in _viewports.Values)
-                {
-                    await viewport.RefreshAsync();
-                }
+                await viewport.RefreshAsync();
             }
 
             // A page past the last, because the rows on it went away, gives way to the last page that exists.
@@ -953,6 +1019,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _page = page;
         }
 
+        if (query.TryGetValue(options.GetParameterName(options.ViewName), out var viewValue)
+            && !string.IsNullOrWhiteSpace(viewValue))
+        {
+            _activeViewKey = viewValue;
+        }
+
         if (query.TryGetValue(options.GetParameterName(options.SortName), out var sortValue)
             && !string.IsNullOrWhiteSpace(sortValue))
         {
@@ -977,6 +1049,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             [options.GetParameterName(options.PageName)] = EnablePagination && _page > 1 ? _page : null,
             [options.GetParameterName(options.SortName)] = _sortName,
             [options.GetParameterName(options.OrderName)] = _sortName is not null && _sortDirection == DataViewSortDirection.Descending ? DescendingOrder : null,
+            [options.GetParameterName(options.ViewName)] = ActiveViewKey is { } view && view != _registrations[0].Key ? view : null,
         };
 
         var uri = Navigation.GetUriWithQueryParameters(parameters);

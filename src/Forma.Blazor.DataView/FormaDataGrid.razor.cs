@@ -6,6 +6,7 @@ using Forma.Blazor.Components.Layout;
 using Forma.Framework.Browser.Interop.Behaviors;
 
 using Forma.Framework.Css;
+using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -87,6 +88,10 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     /// <summary>The grid's own id, generated where the host gave none, from which its parts derive theirs.</summary>
     internal string ElementId
         => Id ?? $"grid-{Context.RuntimeId:N}";
+
+    /// <summary>Whether the grid is the view showing, which it is alone or when the data view's active view names it.</summary>
+    internal bool IsActive
+        => View.ActiveViewKey == ViewKey;
 
     /// <summary>The columns collected in the current render, in the order written.</summary>
     internal IReadOnlyList<FormaColumnBase<TItem>> CollectedColumns
@@ -347,7 +352,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             throw new InvalidOperationException($"{nameof(FormaDataGrid<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        Interaction.RegisterView(ViewKey, this);
+        Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Grid"], Glyph.DetailsView, this));
         _columnFit = new ColumnFit(Context.JS);
         View.Subscribe(HandleViewChangedAsync);
     }

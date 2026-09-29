@@ -1,0 +1,95 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaElementBase
+@typeparam TItem where TItem : notnull
+
+@if (IsActive)
+{
+    RenderFragment<TItem> card = item =>
+        @<div class="@GetCardClass(item)"
+              role="listitem"
+              aria-selected="@GetAriaSelected(item)"
+              data-item
+              @key="View.ItemKey(item)"
+              @onclick="() => Interaction.ActivateAsync(item)">
+            <div class="forma-data-card-thumbnail">
+                @if (ThumbnailTemplate is { } thumbnail)
+                {
+                    @thumbnail(item)
+                }
+                @if (HasSelection)
+                {
+                    <span class="forma-data-card-lead" @onclick:stopPropagation>
+                        <FormaCheckBox class="@(View.EnableCheckedSelection ? "forma-data-card-box" : "forma-data-card-marker")"
+                                       data-row-key="@View.GetItemToken(item)"
+                                       aria-label="@L["Select Item"]"
+                                       aria-disabled="@(!View.CanInteractWith(item) ? "true" : null)"
+                                       Value="@View.IsSelected(item)"
+                                       ValueChanged="isSelected => Interaction.ToggleSelectionAsync(item, isSelected)"
+                                       ValueExpression="() => ItemSelection" />
+                        @if (!View.EnableCheckedSelection && View.IsSelected(item))
+                        {
+                            <span class="forma-data-card-check" aria-hidden="true"><FormaIcon Icon="Glyph.Check" Size="IconSize.Small" /></span>
+                        }
+                    </span>
+                }
+            </div>
+            <div class="forma-data-card-info">
+                <span class="forma-data-card-name">@View.ItemName(item)</span>
+                @if (!Dense && ItemTemplate is { } detail)
+                {
+                    <div class="forma-data-card-detail">@detail(item)</div>
+                }
+            </div>
+            @if (!Dense && ActionsTemplate is { } actions)
+            {
+                <div class="forma-data-card-actions" @onclick:stopPropagation>@actions(item)</div>
+            }
+        </div>;
+
+    <div id="@Id"
+         data-rid="@Context.RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement">
+        @if (!View.HasLoaded)
+        {
+            <div class="forma-data-cards-state">@View.LoadingContent</div>
+        }
+        else if (View.Items.Count == 0)
+        {
+            <div class="forma-data-cards-state">@View.EmptyContent</div>
+        }
+        else if (View.IsGrouped)
+        {
+            <div class="forma-data-cards-groups">
+                @foreach (var group in View.Groups)
+                {
+                    var isFolded = View.IsFolded(group);
+
+                    <section class="forma-data-cards-group" @key="group.Key">
+                        <FormaDataGroupHeading TItem="TItem" Group="group" IsFolded="isFolded" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                        @if (!isFolded)
+                        {
+                            <div class="forma-data-cards-pack" role="list">
+                                @foreach (var item in group.Items)
+                                {
+                                    @card(item)
+                                }
+                            </div>
+                        }
+                    </section>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="forma-data-cards-pack" role="list">
+                @foreach (var item in View.Items)
+                {
+                    @card(item)
+                }
+            </div>
+        }
+    </div>
+}

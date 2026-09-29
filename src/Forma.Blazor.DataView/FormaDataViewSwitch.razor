@@ -1,0 +1,22 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaElementBase
+
+<div id="@Id"
+     data-rid="@Context.RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     role="group"
+     aria-label="@L["View"]"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
+    @foreach (var view in Views.Views)
+    {
+        <FormaToggleButton Icon="@view.Glyph"
+                           Label="@view.Name"
+                           ShowLabel="true"
+                           class="forma-data-view-switch-button"
+                           Pressed="@(view.Key == Views.ActiveViewKey)"
+                           OnClick="() => Views.SwitchViewAsync(view.Key)"
+                           @key="view.Key" />
+    }
+</div>

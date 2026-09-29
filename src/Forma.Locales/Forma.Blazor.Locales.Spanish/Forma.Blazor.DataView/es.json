@@ -16,6 +16,18 @@
     "Columns": "Columnas",
     "Scroll Columns Back": "Desplazar Columnas Atrás",
     "Scroll Columns Forward": "Desplazar Columnas Adelante",
-    "Resize Frozen Columns": "Redimensionar las Columnas Fijadas"
+    "Resize Frozen Columns": "Redimensionar las Columnas Fijadas",
+    "Grid": "Tabla"
+  },
+  "FormaDataList": {
+    "List": "Lista",
+    "Select Item": "Seleccionar Elemento"
+  },
+  "FormaDataCards": {
+    "Cards": "Tarjetas",
+    "Select Item": "Seleccionar Elemento"
+  },
+  "FormaDataViewSwitch": {
+    "View": "Vista"
   }
 }

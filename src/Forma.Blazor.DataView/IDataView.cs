@@ -10,6 +10,12 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 public interface IDataView<TItem> : INotifyStateChanged
     where TItem : notnull
 {
+    /// <summary>The key of the view showing, which a view compares with its own to know whether to draw; null while none has registered.</summary>
+    string? ActiveViewKey { get; }
+
+    /// <summary>The name an item goes by, which a view without columns shows for it.</summary>
+    Func<TItem, string> ItemName { get; }
+
     /// <summary>The items on screen, in the order shown.</summary>
     IReadOnlyList<TItem> Items { get; }
 

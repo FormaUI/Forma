@@ -18,11 +18,14 @@
             </CascadingValue>
         }
 
-        @* The shell takes the region's height, so the pane inside it is the one box the rows scroll in, both ways. *@
-        <div class="forma-data-grid-shell">
-            <FormaFreezePane Options="PaneOptions" class="forma-data-grid-pane" FrozenExtentChanged="HandleFrozenExtentChanged">
-                <FormaDataGridTable TItem="TItem" Grid="this" Id="@Id" Class="@RootClass" Style="@RootStyle" @attributes="AdditionalAttributes" @ref="Table" />
-            </FormaFreezePane>
-        </div>
+        @if (IsActive)
+        {
+            @* The shell takes the region's height, so the pane inside it is the one box the rows scroll in, both ways. *@
+            <div class="forma-data-grid-shell">
+                <FormaFreezePane Options="PaneOptions" class="forma-data-grid-pane" FrozenExtentChanged="HandleFrozenExtentChanged">
+                    <FormaDataGridTable TItem="TItem" Grid="this" Id="@Id" Class="@RootClass" Style="@RootStyle" @attributes="AdditionalAttributes" @ref="Table" />
+                </FormaFreezePane>
+            </div>
+        }
     </CascadingValue>
 </CascadingValue>

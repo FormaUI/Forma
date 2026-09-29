@@ -62,6 +62,16 @@ describe('SelectionInteraction', () => {
             selected().toHaveBeenLastCalledWith('HandleSelectAsync', 2, false);
         });
 
+        it('lands focus on the clicked item, so the keys carry on from it', () => {
+            attachSelection(grid, { owner });
+
+            click(cellOf(2));
+            press(cellOf(2), 'ArrowDown');
+
+            expect(document.activeElement).toBe(cellOf(3));
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 3, false);
+        });
+
         it('toggles rather than replaces when control is held', () => {
             attachSelection(grid, { owner });
 
@@ -291,6 +301,97 @@ describe('SelectionInteraction', () => {
             expect(() => press(cellOf(4), 'j')).not.toThrow();
 
             selected().not.toHaveBeenCalled();
+        });
+    });
+
+    describe('across a packed layout', () => {
+        // Six cards packed three across, each a keyed marker inside a card the item selector names.
+        const card = key => `<div class="card"><span data-row-key="${key}" tabindex="-1">Card</span></div>`;
+        const pack = (columns, { width = 100, height = 100 } = {}) => {
+            [...document.querySelectorAll('.card')].forEach((element, index) => {
+                const left = (index % columns) * width;
+                const top = Math.floor(index / columns) * height;
+                element.getBoundingClientRect = () => ({ top, bottom: top + height, left, right: left + width, width, height, x: left, y: top });
+            });
+        };
+
+        beforeEach(() => {
+            document.body.innerHTML = `<div id="cards">${[1, 2, 3, 4, 5, 6].map(card).join('')}</div>`;
+            grid = document.querySelector('#cards');
+            pack(3);
+        });
+
+        it('moves to the card below on ArrowDown', () => {
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            cellOf(2).focus();
+
+            press(cellOf(2), 'ArrowDown');
+
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 5, false);
+        });
+
+        it('moves to the card above on ArrowUp', () => {
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            cellOf(6).focus();
+
+            press(cellOf(6), 'ArrowUp');
+
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 3, false);
+        });
+
+        it('moves along the row on ArrowRight and ArrowLeft', () => {
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            cellOf(1).focus();
+
+            press(cellOf(1), 'ArrowRight');
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 2, false);
+
+            press(cellOf(2), 'ArrowLeft');
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 1, false);
+        });
+
+        it('stays put at the end of a row rather than wrapping', () => {
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            cellOf(3).focus();
+
+            const event = press(cellOf(3), 'ArrowRight');
+
+            selected().not.toHaveBeenCalled();
+            expect(event.defaultPrevented).toBe(false);
+        });
+
+        it('reaches the ends of the row on Home and End', () => {
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            cellOf(5).focus();
+
+            press(cellOf(5), 'Home');
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 4, false);
+
+            press(cellOf(4), 'End');
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 6, false);
+        });
+
+        it("reads the ends of a row by the list's own direction", () => {
+            grid.style.direction = 'rtl';
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            cellOf(5).focus();
+
+            press(cellOf(5), 'Home');
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 6, false);
+
+            press(cellOf(6), 'End');
+            selected().toHaveBeenLastCalledWith('HandleSelectAsync', 4, false);
+        });
+
+        it('leaves a sideways arrow alone in a single column', () => {
+            pack(1);
+            attachSelection(grid, { owner, itemSelector: '.card' });
+            cellOf(2).focus();
+
+            const event = press(cellOf(2), 'ArrowRight');
+
+            selected().not.toHaveBeenCalled();
+            expect(event.defaultPrevented).toBe(false);
         });
     });
 

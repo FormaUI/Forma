@@ -1,0 +1,160 @@
+@inherits FormaBunitContext
+@using AngleSharp.Dom
+
+@code {
+    public sealed class Component
+    {
+        private static IQueryable<Product> CreateProducts() => new[]
+        {
+            new Product(1, "Hammer", "Tools"),
+            new Product(2, "Atlas", "Books"),
+            new Product(3, "Wrench", "Tools"),
+        }.AsQueryable();
+
+        [Fact]
+        public void Should_draw_a_row_per_item_with_its_name_its_thumbnail_and_its_detail()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product">
+                        <ThumbnailTemplate Context="product"><span class="thumb">@product.Id</span></ThumbnailTemplate>
+                        <ItemTemplate Context="product"><span class="detail">@product.Category</span></ItemTemplate>
+                    </FormaDataList>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            var rows = cut.FindAll("[role=listitem]");
+            Assert.Multiple(
+                () => Assert.Equal("list", cut.Find(".forma-data-list-flow").GetAttribute("role")),
+                () => Assert.Equal("Hammer", rows[0].QuerySelector(".forma-data-list-item-name")!.TextContent),
+                () => Assert.Equal("1", rows[0].QuerySelector(".thumb")!.TextContent),
+                () => Assert.Equal("Tools", rows[0].QuerySelector(".detail")!.TextContent),
+                () => Assert.True(rows[0].HasAttribute("data-item")),
+                () => Assert.Empty(cut.FindAll("input[type=checkbox]")));
+        }
+
+        [Fact]
+        public void Should_name_an_item_by_its_own_text_when_no_name_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.Contains("Hammer", cut.Find(".forma-data-list-item-name").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_mark_a_selected_row_with_the_tint_and_a_check_under_item_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" EnableItemSelection="true" SelectedItems="@(new[] { new Product(2, "Atlas", "Books") })">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert — the marker carries the row's key and selection semantics without taking any room
+            var rows = cut.FindAll("[role=listitem]");
+            Assert.Multiple(
+                () => Assert.Contains("forma-data-list-item-selected", rows[1].ClassName, StringComparison.Ordinal),
+                () => Assert.Equal("true", rows[1].GetAttribute("aria-selected")),
+                () => Assert.Equal("false", rows[0].GetAttribute("aria-selected")),
+                () => Assert.NotNull(rows[1].QuerySelector(".forma-data-list-item-check")),
+                () => Assert.Null(rows[0].QuerySelector(".forma-data-list-item-check")),
+                () => Assert.Equal(3, cut.FindAll("input.forma-data-list-item-marker[data-row-key]").Count));
+        }
+
+        [Fact]
+        public void Should_draw_a_box_per_row_under_checked_selection_and_select_through_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+            IReadOnlyList<Product>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" EnableCheckedSelection="true" SelectedItemsChanged="@((IReadOnlyList<Product> selected) => changedTo = selected)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Act
+            cut.FindAll("input[type=checkbox]")[2].Change(true);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-data-list-item-marker"));
+            Assert.Equal(3, Assert.Single(changedTo!).Id);
+        }
+
+        [Fact]
+        public void Should_fold_a_group_from_its_heading()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-group").Count == 2);
+
+            // Act
+            cut.Find(".forma-data-list-group button").Click();
+
+            // Assert — the books fold away; the tools stay
+            var groups = cut.FindAll(".forma-data-list-group");
+            Assert.Multiple(
+                () => Assert.Equal("Books", groups[0].QuerySelector(".forma-data-group-name")!.TextContent),
+                () => Assert.Equal("false", groups[0].QuerySelector("button")!.GetAttribute("aria-expanded")),
+                () => Assert.Empty(groups[0].QuerySelectorAll("[role=listitem]")),
+                () => Assert.Equal(2, groups[1].QuerySelectorAll("[role=listitem]").Length));
+        }
+
+        [Fact]
+        public void Should_tighten_the_rows_when_dense()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false">
+                    <FormaDataList TItem="Product" Dense="true" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.Contains("forma-data-list-dense", cut.Find(".forma-data-list").ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_refuse_to_show_a_virtualizing_data_view()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>));
+
+            // Assert
+            Assert.Contains("does not virtualize", ex.Message, StringComparison.Ordinal);
+        }
+
+        private sealed record Product(int Id, string Name, string Category);
+    }
+}

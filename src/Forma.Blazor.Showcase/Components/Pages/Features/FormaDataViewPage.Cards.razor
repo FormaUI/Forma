@@ -1,0 +1,53 @@
+@page "/data-view/cards"
+@rendermode InteractiveServer
+@using Forma.Framework.Css
+@inject IStringLocale<FormaDataViewPage> L
+
+<h1>FormaDataView</h1>
+<p class="description">@L["This tab shows the cards as a view of the data view: each product a card with its thumbnail, its name, its price and an action bar the page templates, packed across the width and grouped by category."]</p>
+
+<div class="demo-section">
+    <h2>@L["The Cards View"]</h2>
+    <p class="description">@L["Cards grouped by category under headings that fold, each with a box to check and an action bar the page templates; the master control lives with the data view, so the selection methods a page calls reach these cards as they reach the grid's rows."]</p>
+    <div class="demo-box demo-row demo-controls">
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _dataView!.SelectAllAsync()">@L["Select All"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _dataView!.ClearSelectionAsync()">@L["Clear"]</FormaButton>
+    </div>
+    <div class="demo-box">
+        <FormaDataView @ref="_dataView" TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableCheckedSelection="true" GroupBy="DataViewShowcaseProducts.ByCategory" AddressOptions='@(new DataViewAddressOptions("checked"))' SelectedItems="_checkedProducts" SelectedItemsChanged="HandleCheckedChanged">
+            <ChildContent>
+                <FormaDataCards TItem="ShowcaseProduct" CardSize="@CssLength.FromRem(11)">
+                    <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
+                    <ItemTemplate Context="product">@product.Price.ToString("C0", System.Globalization.CultureInfo.CurrentCulture)</ItemTemplate>
+                    <ActionsTemplate Context="product">
+                        <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" OnClick="() => _lastAction = product.Name">@L["Open"]</FormaButton>
+                    </ActionsTemplate>
+                </FormaDataCards>
+            </ChildContent>
+            <Status>@L["{Selected} checked; last opened: {Name}", _checkedProducts.Count, _lastAction ?? L["nothing yet"].Value]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Thumbnails"]</h2>
+    <p class="description">@L["The cards at their compact density, the thumbnail and the name alone, which is what a consumer shows as thumbnails."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableItemSelection="true" AddressOptions='@(new DataViewAddressOptions("thumbnails"))'>
+            <FormaDataCards TItem="ShowcaseProduct" Dense="true" CardSize="@CssLength.FromRem(7)">
+                <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
+            </FormaDataCards>
+        </FormaDataView>
+    </div>
+</div>
+
+@code {
+    private FormaDataView<ShowcaseProduct>? _dataView;
+
+    private IReadOnlyList<ShowcaseProduct> _checkedProducts = [];
+
+    private string? _lastAction;
+
+    private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selected)
+        => _checkedProducts = selected;
+}

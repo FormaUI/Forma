@@ -1,0 +1,144 @@
+/* ============================================================
+   FormaDataList — CSS isolation
+   Names flowing down the height and on into further columns,
+   each row a thumbnail, a name and the caller's secondary text,
+   with its selection drawn in the tint and a check beside
+   color. Logical properties throughout for RTL/LTR parity.
+   ============================================================ */
+
+/* Given a height by the region, the flow fills it and continues past its end into further columns, which the region
+   scrolls to; unbounded, it balances into as many columns as the width holds and grows downward instead. */
+.forma-data-list {
+    --forma-data-list-column-size: 16rem;
+    flex: 1 1 auto;
+    min-block-size: 0;
+    padding: var(--space-3);
+}
+
+.forma-data-list-flow {
+    block-size: 100%;
+    columns: var(--forma-data-list-column-size);
+    column-gap: var(--space-3);
+}
+
+/* Grouped, each group flows on its own under its heading, the groups standing one below the other. */
+.forma-data-list-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.forma-data-list-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.forma-data-list-group .forma-data-list-flow {
+    block-size: auto;
+}
+
+/* A row stands on the small target step; dense, it stands on the line of its name alone. */
+.forma-data-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-block-size: var(--target-size-sm);
+    padding-inline: var(--space-1);
+    border-radius: var(--radius-sm);
+    break-inside: avoid;
+    cursor: default;
+}
+
+.forma-data-list-dense .forma-data-list-item {
+    min-block-size: calc(var(--font-size-sm) * var(--line-height-target) + 2 * var(--space-1));
+}
+
+@media (hover: hover) {
+    .forma-data-list-item:not(.forma-data-list-item-disabled):hover {
+        background: var(--forma-data-list-item-hover-bg-color, var(--hover-bg-color));
+    }
+}
+
+/* A selected row takes the tint; the check beside the name says so without color, as does the name's weight. */
+.forma-data-list-item-selected {
+    background: var(--forma-data-list-item-selected-bg-color, var(--primary-subtle-color));
+}
+
+.forma-data-list-item-selected .forma-data-list-item-name {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.forma-data-list-item-disabled {
+    color: var(--disabled-text-color);
+    cursor: not-allowed;
+}
+
+/* The lead holds the box, or the collapsed marker with the check that stands in for it. */
+.forma-data-list-item-lead {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--target-size-sm);
+    flex-shrink: 0;
+}
+
+/* The marker is collapsed to nothing; focusing it scrolls to its own row. The box is FormaCheckBox's, so its class is reached with ::deep. */
+::deep .forma-data-list-item-marker {
+    inline-size: 0;
+    block-size: 0;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+::deep .forma-data-list-item-check {
+    color: var(--primary-color);
+}
+
+/* The marker carries the focus but cannot show it, so the row draws the ring. */
+.forma-data-list-item:has(::deep .forma-data-list-item-marker:focus-visible) {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
+}
+
+.forma-data-list-item-thumbnail {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.forma-data-list-item-text {
+    display: flex;
+    flex: 1;
+    min-inline-size: 0;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+}
+
+/* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
+.forma-data-list-item-name {
+    font-weight: 500;
+    color: var(--text-primary-color);
+    unicode-bidi: isolate;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-data-list-item-detail {
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* The empty and loading states speak in the supporting tone. */
+.forma-data-list-state {
+    padding: var(--space-4);
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}

@@ -8,18 +8,25 @@
  * reconstructed on this side. The keys are routes on the input router, declared on the list,
  * so a key inside a nested scope, a select open in a cell, is that scope's, and a key in a
  * field inside an item is the field's by the router's native table rather than by a check here.
+ *
+ * The arrows move by where the items stand: down and up to the item below or above in the same
+ * column, right and left to the neighbor in the same row, so one behavior serves rows down a
+ * table, names flowing on into further columns, and cards packed across the width. Items laid
+ * out nowhere yet, or all in one place, stand in one column in their document order.
  */
 
 import { Controls } from '../../../core/scripts/Controls.js';
 import { tell } from '../../../core/scripts/Owner.js';
 import { register } from '../../../input/scripts/InputRouter.js';
 
-/** Where each key sends the focused item: a step either way, or to either end. */
+/** Where each key sends the focused item: a step in a direction, or to either end of its row or the list. */
 const Moves = [
-    { action: 'selection.next', key: 'ArrowDown', target: (index, count) => index < 0 ? 0 : Math.min(count - 1, index + 1) },
-    { action: 'selection.previous', key: 'ArrowUp', target: (index, count) => index < 0 ? count - 1 : Math.max(0, index - 1) },
-    { action: 'selection.first', key: 'Home', target: () => 0 },
-    { action: 'selection.last', key: 'End', target: (index, count) => count - 1 },
+    { action: 'selection.next', key: 'ArrowDown', target: (layout, index) => layout.below(index) },
+    { action: 'selection.previous', key: 'ArrowUp', target: (layout, index) => layout.above(index) },
+    { action: 'selection.right', key: 'ArrowRight', target: (layout, index) => layout.beside(index, 1) },
+    { action: 'selection.left', key: 'ArrowLeft', target: (layout, index) => layout.beside(index, -1) },
+    { action: 'selection.first', key: 'Home', target: (layout, index) => layout.end(index, -1) },
+    { action: 'selection.last', key: 'End', target: (layout, index) => layout.end(index, 1) },
 ];
 
 /**
@@ -32,6 +39,87 @@ const Moves = [
  */
 export function attach(target, options) {
     return new SelectionInteraction(target, options);
+}
+
+/** Where the items stand, read once per key press: each item's box, and the neighbors each direction reaches. */
+class Layout {
+    #boxes;
+    #stacked;
+    #rightToLeft;
+
+    constructor(items, rightToLeft) {
+        this.#boxes = items.map(item => item.getBoundingClientRect());
+        this.#rightToLeft = rightToLeft;
+
+        // Boxes that are all one box carry no layout, so the items stand in one column in their order.
+        const first = this.#boxes[0];
+        this.#stacked = this.#boxes.every(box => box.top === first.top && box.left === first.left);
+    }
+
+    get count() {
+        return this.#boxes.length;
+    }
+
+    below(index) {
+        return index < 0 ? 0 : this.#stacked ? Math.min(this.count - 1, index + 1) : this.#nearest(index, box => this.#sameColumn(index, box) && box.top > this.#boxes[index].top, box => box.top);
+    }
+
+    above(index) {
+        return index < 0 ? this.count - 1 : this.#stacked ? Math.max(0, index - 1) : this.#nearest(index, box => this.#sameColumn(index, box) && box.top < this.#boxes[index].top, box => -box.top);
+    }
+
+    beside(index, direction) {
+        if (index < 0 || this.#stacked) {
+            return index < 0 ? 0 : index;
+        }
+
+        const left = this.#boxes[index].left;
+
+        return this.#nearest(index, box => this.#sameRow(index, box) && Math.sign(box.left - left) === direction, box => direction * box.left);
+    }
+
+    // A row's own end where the item has neighbors in its row, else the list's.
+    end(index, direction) {
+        const rowmates = index < 0 || this.#stacked ? [] : this.#boxes.map((box, candidate) => candidate).filter(candidate => candidate !== index && this.#sameRow(index, this.#boxes[candidate]));
+
+        if (rowmates.length === 0) {
+            return direction < 0 ? 0 : this.count - 1;
+        }
+
+        const row = [index, ...rowmates];
+        const toStart = direction < 0 ? !this.#rightToLeft : this.#rightToLeft;
+
+        return row.reduce((best, candidate) => (toStart ? this.#boxes[candidate].left < this.#boxes[best].left : this.#boxes[candidate].left > this.#boxes[best].left) ? candidate : best, index);
+    }
+
+    #sameColumn(index, box) {
+        return Math.abs(box.left - this.#boxes[index].left) < Math.max(1, this.#boxes[index].width / 2);
+    }
+
+    #sameRow(index, box) {
+        return Math.abs(box.top - this.#boxes[index].top) < Math.max(1, this.#boxes[index].height / 2);
+    }
+
+    // The item nearest along the measure among those the direction admits, or the item itself where none does.
+    #nearest(index, admits, measure) {
+        let best = index;
+        let bestMeasure = Infinity;
+
+        this.#boxes.forEach((box, candidate) => {
+            if (candidate === index || !admits(box)) {
+                return;
+            }
+
+            const value = measure(box);
+
+            if (value < bestMeasure) {
+                bestMeasure = value;
+                best = candidate;
+            }
+        });
+
+        return best;
+    }
 }
 
 class SelectionInteraction {
@@ -85,6 +173,10 @@ class SelectionInteraction {
 
     #markerIn(node) {
         return node?.closest(this.#itemSelector)?.querySelector(this.#markerSelector) ?? null;
+    }
+
+    #itemOf(marker) {
+        return marker.closest(this.#itemSelector) ?? marker;
     }
 
     #rangeTokens(from, to) {
@@ -142,6 +234,9 @@ class SelectionInteraction {
 
         event.stopPropagation();
 
+        // The click lands focus on the item's marker, so the keys carry on from the item the pointer chose.
+        this.#focusMarker(marker, this.#markers());
+
         const toggle = event.ctrlKey || event.metaKey;
 
         if (event.shiftKey && this.#anchor) {
@@ -165,7 +260,9 @@ class SelectionInteraction {
         // straight onto one sets the former and leaves the latter wherever it was.
         const focused = document.activeElement?.closest(this.#markerSelector);
         const currentIndex = focused ? all.indexOf(focused) : -1;
-        const nextIndex = target(currentIndex, all.length);
+        // The reading direction is the list's own, which the page's may differ from.
+        const rightToLeft = getComputedStyle(this.#target).direction === 'rtl';
+        const nextIndex = target(new Layout(all.map(marker => this.#itemOf(marker)), rightToLeft), currentIndex);
         const isEnd = key === 'Home' || key === 'End';
 
         return nextIndex === currentIndex && !isEnd ? null : { all, next: all[nextIndex] };

@@ -533,6 +533,23 @@ body {
     inline-size: 7rem;
 }
 
+/* A glyph standing in for an item's picture, filling a card's thumbnail or leading a list row. */
+.demo-thumbnail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 100%;
+    block-size: 100%;
+    color: var(--quiet-text-color);
+}
+
+.demo-thumbnail-small {
+    inline-size: var(--target-size-sm);
+    block-size: var(--target-size-sm);
+    border-radius: var(--radius-sm);
+    background: var(--hover-bg-color);
+}
+
 /* A bar standing in for a cell's text while its row's window loads. */
 .demo-skeleton {
     display: inline-block;

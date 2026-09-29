@@ -1,0 +1,151 @@
+@inherits FormaBunitContext
+@using AngleSharp.Dom
+
+@code {
+    public sealed class Component
+    {
+        private static IQueryable<Product> CreateProducts() => new[]
+        {
+            new Product(1, "Hammer", "Tools"),
+            new Product(2, "Atlas", "Books"),
+            new Product(3, "Wrench", "Tools"),
+        }.AsQueryable();
+
+        [Fact]
+        public void Should_draw_a_card_per_item_with_its_thumbnail_its_name_its_detail_and_its_actions()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" CardSize="@CssLength.FromRem(12)">
+                        <ThumbnailTemplate Context="product"><span class="thumb">@product.Id</span></ThumbnailTemplate>
+                        <ItemTemplate Context="product"><span class="detail">@product.Category</span></ItemTemplate>
+                        <ActionsTemplate Context="product"><button class="act">Open @product.Name</button></ActionsTemplate>
+                    </FormaDataCards>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            var cards = cut.FindAll("[role=listitem]");
+            Assert.Multiple(
+                () => Assert.Equal("list", cut.Find(".forma-data-cards-pack").GetAttribute("role")),
+                () => Assert.Contains("--forma-data-cards-size: 12rem", cut.Find(".forma-data-cards").GetAttribute("style"), StringComparison.Ordinal),
+                () => Assert.Equal("Hammer", cards[0].QuerySelector(".forma-data-card-name")!.TextContent),
+                () => Assert.Equal("1", cards[0].QuerySelector(".forma-data-card-thumbnail .thumb")!.TextContent),
+                () => Assert.Equal("Tools", cards[0].QuerySelector(".forma-data-card-detail .detail")!.TextContent),
+                () => Assert.Equal("Open Hammer", cards[0].QuerySelector(".forma-data-card-actions .act")!.TextContent),
+                () => Assert.True(cards[0].HasAttribute("data-item")));
+        }
+
+        [Fact]
+        public void Should_draw_the_thumbnail_and_the_name_alone_when_dense()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" Dense="true">
+                        <ThumbnailTemplate Context="product"><span class="thumb">@product.Id</span></ThumbnailTemplate>
+                        <ItemTemplate Context="product"><span class="detail">@product.Category</span></ItemTemplate>
+                        <ActionsTemplate Context="product"><button class="act">Open</button></ActionsTemplate>
+                    </FormaDataCards>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("forma-data-cards-dense", cut.Find(".forma-data-cards").ClassName, StringComparison.Ordinal),
+                () => Assert.Equal(3, cut.FindAll(".thumb").Count),
+                () => Assert.Equal(3, cut.FindAll(".forma-data-card-name").Count),
+                () => Assert.Empty(cut.FindAll(".detail")),
+                () => Assert.Empty(cut.FindAll(".act")));
+        }
+
+        [Fact]
+        public void Should_mark_a_selected_card_with_the_tint_and_a_check_under_item_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" EnableItemSelection="true" SelectedItems="@(new[] { new Product(2, "Atlas", "Books") })">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            var cards = cut.FindAll("[role=listitem]");
+            Assert.Multiple(
+                () => Assert.Contains("forma-data-card-selected", cards[1].ClassName, StringComparison.Ordinal),
+                () => Assert.Equal("true", cards[1].GetAttribute("aria-selected")),
+                () => Assert.NotNull(cards[1].QuerySelector(".forma-data-card-check")),
+                () => Assert.Null(cards[0].QuerySelector(".forma-data-card-check")),
+                () => Assert.Equal(3, cut.FindAll("input.forma-data-card-marker[data-row-key]").Count));
+        }
+
+        [Fact]
+        public void Should_draw_a_box_per_card_under_checked_selection_and_select_through_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            IReadOnlyList<Product>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" EnableCheckedSelection="true" SelectedItemsChanged="@((IReadOnlyList<Product> selected) => changedTo = selected)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Act
+            cut.FindAll("input.forma-data-card-box")[0].Change(true);
+
+            // Assert
+            Assert.Equal(1, Assert.Single(changedTo!).Id);
+        }
+
+        [Fact]
+        public void Should_fold_a_group_from_its_heading()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-group").Count == 2);
+
+            // Act
+            cut.Find(".forma-data-cards-group button").Click();
+
+            // Assert
+            var groups = cut.FindAll(".forma-data-cards-group");
+            Assert.Multiple(
+                () => Assert.Equal("1", groups[0].QuerySelector(".forma-data-group-count")!.TextContent),
+                () => Assert.Empty(groups[0].QuerySelectorAll("[role=listitem]")),
+                () => Assert.Equal(2, groups[1].QuerySelectorAll("[role=listitem]").Length));
+        }
+
+        [Fact]
+        public void Should_refuse_to_show_a_virtualizing_data_view()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>));
+
+            // Assert
+            Assert.Contains("does not virtualize", ex.Message, StringComparison.Ordinal);
+        }
+
+        private sealed record Product(int Id, string Name, string Category);
+    }
+}
