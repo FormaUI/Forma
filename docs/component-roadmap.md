@@ -131,6 +131,15 @@ A view over the data view drawing items down the height, a depiction, a name and
 | **Old pattern** | The explorer's list view, which flows names on its own |
 | **Used in** | The explorer's list view, and any page that shows records as a compact list |
 
+### `FormaDataSortMenu`
+
+A drop-down a page composes beside a data view, sorting it by the sorts it offers and turning the direction, whichever view shows. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The explorer's sort menu, which sorts and groups its own content area |
+| **Used in** | The explorer's toolbar, and any page that shows records as a list or cards |
+
 ### `FormaDataTree`
 
 A view over the data view drawing the hierarchy as nodes under their parents, each opened, closed and selected from the keyboard, with a template per node and a busy state while its children load. Its design is [data-view-design.md](data-view-design.md).
@@ -148,6 +157,15 @@ The collection component: an engine that manages a set of items, a queryable or 
 |---|---|
 | **Old pattern** | The same browsing built three times: `asp:GridView` over a repository data source on every list page, the explorer's content area, and the gallery's planned engine |
 | **Used in** | Every list page under `FormaDataGrid`, the explorer's content area, and the gallery |
+
+### `FormaDataViewSwitch`
+
+A row of toggle buttons a page composes beside a data view, one per view it registered, showing the one pressed. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The explorer's view-mode buttons, which switch its own three views |
+| **Used in** | The explorer's toolbar, and any page that offers one set in several views |
 
 ### `FormaDeleteButton`
 

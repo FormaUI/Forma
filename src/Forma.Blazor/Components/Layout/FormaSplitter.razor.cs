@@ -7,6 +7,7 @@ using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
+using Forma.Framework.Input.Pointer;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -18,6 +19,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     private const string ShrinkAction = "splitter.shrink";
     private const string MinAction = "splitter.min";
     private const string MaxAction = "splitter.max";
+    private const string ResizeAction = "splitter.resize";
 
     // A vertical bar moves along the inline axis, where the arrow along the reading direction grows the pane before it; a horizontal bar moves down the block axis.
     private static readonly InputProfile VerticalLeftToRightProfile = CreateProfile(grow: "ArrowRight", shrink: "ArrowLeft");
@@ -93,9 +95,16 @@ public sealed partial class FormaSplitter : FormaElementBase
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(RootElement, Profile);
 
-    // Moves the divider as the action says: a step either way, or to either bound.
+    // Moves the divider as the action says: a step either way, or to either bound; a press on the bar begins a resize.
     private async Task HandleBarActionAsync(string action, InputInfo input)
     {
+        if (action == ResizeAction && input is InputPointerInfo press)
+        {
+            await BeginResizeAsync(press);
+            StateHasChanged();
+            return;
+        }
+
         double? target = action switch
         {
             GrowAction => Value + Step,
@@ -111,14 +120,15 @@ public sealed partial class FormaSplitter : FormaElementBase
         }
     }
 
-    private async Task HandlePointerDownAsync(PointerEventArgs args)
+    // The rest of the resize rides the pointer captured here, as a drag's does.
+    private async Task BeginResizeAsync(InputPointerInfo press)
     {
         _isResizing = true;
-        _dragOrigin = IsVertical ? args.ClientX : args.ClientY;
+        _dragOrigin = IsVertical ? press.ClientX : press.ClientY;
         _dragStartValue = Value;
 
         await OnResizingChanged.InvokeAsync(true);
-        await _pointer.CaptureAsync(RootElement, args.PointerId);
+        await _pointer.CaptureAsync(RootElement, press.PointerId);
     }
 
     private async Task HandlePointerMoveAsync(PointerEventArgs args)
@@ -175,6 +185,7 @@ public sealed partial class FormaSplitter : FormaElementBase
                 new InputRoute(ShrinkAction, new KeyBinding(shrink)),
                 new InputRoute(MinAction, new KeyBinding("Home")),
                 new InputRoute(MaxAction, new KeyBinding("End")),
+                new InputRoute(ResizeAction, new PointerBinding { Button = 0 }),
             ],
         };
 

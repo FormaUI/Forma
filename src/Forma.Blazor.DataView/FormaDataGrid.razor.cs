@@ -626,7 +626,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         _isCollectingColumns = true;
     }
 
-    // The address names the sort it asked for by the column's name; failing that, the default sort column opens the grid sorted.
+    // The address names the sort it asked for by the column's name; a name no column carries is left for a sort menu beside the grid to apply. Where the address asked for nothing, the default sort column opens the grid sorted.
     private async Task ApplyInitialSortAsync()
     {
         if (View.RequestedSortName is { } requestedName)
@@ -640,7 +640,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             }
         }
 
-        if (View.SortName is null && _columns.FirstOrDefault(column => column.IsDefaultSortColumn && column.SortBy is not null) is { SortBy: { } defaultSort } defaultColumn)
+        if (View.SortName is null && View.RequestedSortName is null && _columns.FirstOrDefault(column => column.IsDefaultSortColumn && column.SortBy is not null) is { SortBy: { } defaultSort } defaultColumn)
         {
             await Interaction.SortByAsync(defaultColumn.SortName, defaultSort, defaultColumn.InitialSortDirection);
         }

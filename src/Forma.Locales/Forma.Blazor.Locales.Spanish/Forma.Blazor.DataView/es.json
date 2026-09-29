@@ -36,5 +36,13 @@
   },
   "FormaDataViewSwitch": {
     "View": "Vista"
+  },
+  "FormaDataSortMenu": {
+    "Sort": "Ordenar",
+    "Sort By": "Ordenar Por",
+    "Sort Direction": "Dirección de Orden",
+    "Ascending": "Ascendente",
+    "Descending": "Descendente",
+    "Sorted by {Name}, {Direction}": "Ordenado por {Name}, {Direction}"
   }
 }

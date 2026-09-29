@@ -13,9 +13,11 @@
     <CascadingValue TValue="IDataView<TItem>" Value="this" IsFixed="true">
         <CascadingValue TValue="IDataViewInteraction<TItem>" Value="this" IsFixed="true">
             <CascadingValue TValue="IDataViewSwitcher" Value="this" IsFixed="true">
-                <div class="@RegionClass" @ref="_regionElement">
-                    @ChildContent
-                </div>
+                <CascadingValue TValue="IDataViewSorter<TItem>" Value="this" IsFixed="true">
+                    <div class="@RegionClass" @ref="_regionElement">
+                        @ChildContent
+                    </div>
+                </CascadingValue>
             </CascadingValue>
         </CascadingValue>
     </CascadingValue>

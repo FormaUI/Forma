@@ -47,6 +47,10 @@ public sealed class InputRouterProbe
     public Task RouteAsync(ElementReference element, string action, string key)
         => RouteAsync(Registrations.Last(registration => ((ElementReference)registration.Arguments[0]!).Id == element.Id), action, key);
 
+    /// <summary>Raises <paramref name="action"/> with <paramref name="input"/> on the last registration that declares the action, on the renderer.</summary>
+    public Task RouteAsync(string action, InputInfo input)
+        => DispatchAsync(Registrations.Last(registration => GetProfile(registration).InputRoutes.Any(route => route.Action == action)), action, input);
+
     /// <summary>Clicks as <paramref name="action"/> on the last registration that declares the action, on the renderer.</summary>
     public Task ClickAsync(string action)
         => DispatchAsync(Registrations.Last(registration => GetProfile(registration).InputRoutes.Any(route => route.Action == action)), action, new InputPointerInfo { Type = "click" });

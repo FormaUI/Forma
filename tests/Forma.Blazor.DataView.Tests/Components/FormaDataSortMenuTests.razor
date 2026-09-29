@@ -1,0 +1,172 @@
+@inherits FormaBunitContext
+@using AngleSharp.Dom
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.DependencyInjection
+
+@code {
+    public sealed class Component
+    {
+        private static IQueryable<Product> CreateProducts() => new[]
+        {
+            new Product("Hammer", 12),
+            new Product("Atlas", 30),
+            new Product("Wrench", 8),
+        }.AsQueryable();
+
+        private static readonly IReadOnlyList<DataViewSortOption<Product>> Sorts =
+        [
+            new("name", "Name", DataViewSort<Product>.ByAscending(product => product.Name)),
+            new("price", "Price", DataViewSort<Product>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
+        ];
+
+        // The menu inside the data view, where the cascade reaches it, over a list that sorts nothing itself.
+        private static RenderFragment CreateList(DataViewAddressOptions? address = null) =>
+            @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" AddressOptions="address">
+                <FormaDataSortMenu TItem="Product" Sorts="Sorts" />
+                <FormaDataList TItem="Product" />
+            </FormaDataView>;
+
+        private static List<string> GetNames<TComponent>(IRenderedComponent<TComponent> cut)
+            where TComponent : IComponent
+            => [.. cut.FindAll(".forma-data-list-item-name").Select(name => name.TextContent)];
+
+        private static IElement FindItem<TComponent>(IRenderedComponent<TComponent> cut, string selector)
+            where TComponent : IComponent
+        {
+            cut.Find(".forma-data-sort-menu").Click();
+
+            return cut.Find(selector);
+        }
+
+        [Fact]
+        public void Should_offer_every_sort_and_both_directions_with_nothing_checked_while_unsorted()
+        {
+            // Arrange
+            using var ctx = new FormaDataSortMenuTests();
+            var cut = ctx.Render(CreateList());
+            cut.WaitForState(() => GetNames(cut).Count == 3);
+
+            // Act
+            cut.Find(".forma-data-sort-menu").Click();
+
+            // Assert — the trigger says Sort; the directions wait for a sort
+            var sorts = cut.FindAll("[data-sort]");
+            var directions = cut.FindAll("[data-sort-direction]");
+            Assert.Multiple(
+                () => Assert.Equal("Sort", cut.Find(".forma-data-sort-menu").GetAttribute("aria-label")),
+                () => Assert.Equal(["Name", "Price"], sorts.Select(item => item.TextContent.Trim()).ToList()),
+                () => Assert.All(sorts, item => Assert.Equal("false", item.GetAttribute("aria-checked"))),
+                () => Assert.All(directions, item => Assert.True(item.HasAttribute("disabled") || item.GetAttribute("aria-disabled") == "true")));
+        }
+
+        [Fact]
+        public void Should_sort_the_view_by_the_sort_chosen_in_its_own_direction()
+        {
+            // Arrange
+            using var ctx = new FormaDataSortMenuTests();
+            var cut = ctx.Render(CreateList());
+            cut.WaitForState(() => GetNames(cut).Count == 3);
+
+            // Act — price opens descending
+            FindItem(cut, "[data-sort=price]").Click();
+            cut.WaitForState(() => GetNames(cut)[0] == "Atlas");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Atlas", "Hammer", "Wrench"], GetNames(cut)),
+                () => Assert.Equal("Sorted by Price, Descending", cut.Find(".forma-data-sort-menu").GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public void Should_turn_the_direction_of_the_sort_applied()
+        {
+            // Arrange
+            using var ctx = new FormaDataSortMenuTests();
+            var cut = ctx.Render(CreateList());
+            cut.WaitForState(() => GetNames(cut).Count == 3);
+            FindItem(cut, "[data-sort=name]").Click();
+            cut.WaitForState(() => GetNames(cut)[0] == "Atlas");
+
+            // Act
+            FindItem(cut, "[data-sort-direction=Descending]").Click();
+            cut.WaitForState(() => GetNames(cut)[0] == "Wrench");
+
+            // Assert — the sort chosen keeps its name, turned; choosing it again keeps the turn
+            Assert.Equal(["Wrench", "Hammer", "Atlas"], GetNames(cut));
+            FindItem(cut, "[data-sort=name]").Click();
+            Assert.Equal(["Wrench", "Hammer", "Atlas"], GetNames(cut));
+        }
+
+        [Fact]
+        public void Should_write_the_sort_chosen_to_the_address_and_open_sorted_by_it_from_a_link()
+        {
+            // Arrange
+            using var ctx = new FormaDataSortMenuTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            var cut = ctx.Render(CreateList(new DataViewAddressOptions("shop")));
+            cut.WaitForState(() => GetNames(cut).Count == 3);
+
+            // Act
+            FindItem(cut, "[data-sort=price]").Click();
+
+            // Assert
+            Assert.Contains("shop-sort=price", navigation.Uri, StringComparison.Ordinal);
+            Assert.Contains("shop-order=desc", navigation.Uri, StringComparison.Ordinal);
+
+            // Act — a fresh data view opened on that address
+            var reopened = ctx.Render(CreateList(new DataViewAddressOptions("shop")));
+            reopened.WaitForState(() => GetNames(reopened).Count == 3 && GetNames(reopened)[0] == "Atlas");
+
+            // Assert
+            Assert.Equal(["Atlas", "Hammer", "Wrench"], GetNames(reopened));
+        }
+
+        [Fact]
+        public void Should_leave_a_sort_the_address_names_for_the_menu_when_the_grid_has_no_column_for_it()
+        {
+            // Arrange — the grid opens by name unless asked otherwise, and has no column for price
+            using var ctx = new FormaDataSortMenuTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            navigation.NavigateTo(navigation.GetUriWithQueryParameters(new Dictionary<string, object?> { ["shop-sort"] = "price", ["shop-order"] = "asc" }));
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" AddressOptions='@(new DataViewAddressOptions("shop"))'>
+                    <FormaDataSortMenu TItem="Product" Sorts="Sorts" />
+                    <FormaDataGrid TItem="Product">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(product => product.Name)" Title="Name" IsDefaultSortColumn="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3 && cut.Find("tbody tr.forma-data-grid-row td").TextContent == "Wrench");
+
+            // Assert — the menu applied the price, ascending, and the grid's default did not overtake it
+            Assert.Equal(["Wrench", "Hammer", "Atlas"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList());
+        }
+
+        [Fact]
+        public void Should_refuse_two_sorts_of_one_name()
+        {
+            // Arrange
+            using var ctx = new FormaDataSortMenuTests();
+            IReadOnlyList<DataViewSortOption<Product>> repeated =
+            [
+                new("name", "Name", DataViewSort<Product>.ByAscending(product => product.Name)),
+                new("name", "Title", DataViewSort<Product>.ByAscending(product => product.Name)),
+            ];
+
+            // Act
+            var exception = Record.Exception(() => ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false">
+                    <FormaDataSortMenu TItem="Product" Sorts="repeated" />
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>));
+
+            // Assert
+            Assert.IsType<ArgumentException>(exception);
+        }
+    }
+
+    private sealed record Product(string Name, decimal Price);
+}

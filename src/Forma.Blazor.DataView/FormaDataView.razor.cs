@@ -17,7 +17,7 @@ using Microsoft.JSInterop;
 
 /// <summary>The collection component: an engine that manages a set of items and the state around them, sorted, paged, selected and kept in the address, handing what is on screen to the view that presents it.</summary>
 /// <typeparam name="TItem">The item the data view manages.</typeparam>
-public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<TItem>, IDataViewInteraction<TItem>, IDataViewSwitcher
+public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<TItem>, IDataViewInteraction<TItem>, IDataViewSwitcher, IDataViewSorter<TItem>
     where TItem : notnull
 {
     private const string DescendingOrder = "desc";

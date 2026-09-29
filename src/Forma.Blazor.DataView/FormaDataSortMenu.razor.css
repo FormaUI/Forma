@@ -1,0 +1,15 @@
+/* ============================================================
+   FormaDataSortMenu — CSS isolation
+   A quiet trigger naming the sort applied and its direction,
+   opening the sorts and the two directions. Logical properties
+   throughout for RTL/LTR parity.
+   ============================================================ */
+
+.forma-data-sort-menu-text {
+    font-size: var(--font-size-sm);
+}
+
+.forma-data-sort-menu-caret {
+    font-size: var(--font-size-xs);
+    color: inherit;
+}

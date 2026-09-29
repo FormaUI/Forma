@@ -185,6 +185,9 @@ hidden rule.
 A handler is a script function, `handle(event, { action, owner, binding })`, or the router
 invokes the .NET owner with the resolved action: `HandleInputActionAsync(action, input)`,
 where the input is described by its family so the owner reads it as the matching record.
+The record carries the input, never the element it landed on, so a route whose action
+depends on which element was pressed — which item of a list — is handled in script, which
+tells its owner which one.
 That is one round trip, the same count as Blazor's own event delegation. The
 handler runs from whichever listener resolved the event — the document's for a key, an
 outer scope's for a press that an inner scope owns — so it takes the owning element from
@@ -468,6 +471,16 @@ scope each: a scope per row would cost a round trip per folder on every explorer
 the tree registers once, matching only the data kinds it accepts, and its script finds the
 row under the drop and tells the sidebar that folder's key. A drop a nested scope routes
 still never reaches the zone around it.
+
+### A press observed, not owned
+
+Every key, press, wheel turn, click and drop a component acts on is a route or an active
+registration, with one kind of exception: a press a component only observes. A window
+comes to the front on any press inside it, whoever owns that press — a splitter's resize,
+a drag, a selection — so a route on the window would never hear the presses its content
+routes. The window listens for them itself, and neither prevents their default nor stops
+them, so the press stays the owner's. Observing never decides who acts on an input, which
+is the one thing the router is there to decide.
 
 ## Non-goals
 

@@ -96,12 +96,14 @@ Forma.Blazor/Components/
 src/
 ├── (1 / 1) Forma.Blazor.Composer/
 │   └── ✅ FormaComposer
-├── (0 / 5) Forma.Blazor.DataView/
+├── (0 / 7) Forma.Blazor.DataView/
 │   ├── ◐ FormaDataCards
 │   ├── ◐ FormaDataGrid
 │   ├── ◐ FormaDataList
+│   ├── ◐ FormaDataSortMenu
 │   ├── ◐ FormaDataTree
-│   └── ◐ FormaDataView
+│   ├── ◐ FormaDataView
+│   └── ◐ FormaDataViewSwitch
 └── (1 / 1) Forma.Blazor.Explorer/
     └── ✅ FormaExplorer
 ```

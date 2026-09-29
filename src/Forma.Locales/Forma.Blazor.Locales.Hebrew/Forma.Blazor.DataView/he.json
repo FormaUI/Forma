@@ -36,5 +36,13 @@
   },
   "FormaDataViewSwitch": {
     "View": "תצוגה"
+  },
+  "FormaDataSortMenu": {
+    "Sort": "מיון",
+    "Sort By": "מיון לפי",
+    "Sort Direction": "כיוון מיון",
+    "Ascending": "סדר עולה",
+    "Descending": "סדר יורד",
+    "Sorted by {Name}, {Direction}": "ממוין לפי {Name}, {Direction}"
   }
 }

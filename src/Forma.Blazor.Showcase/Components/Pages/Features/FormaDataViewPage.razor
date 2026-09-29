@@ -7,11 +7,12 @@
 
 <div class="demo-section">
     <h2>@L["One Set, Three Views"]</h2>
-    <p class="description">@L["The same products as a grid, a list and cards. The switch is composed beside the data view; the view it chooses is written to the address, so a link reproduces it. Rows, list items and cards select by pointer and keyboard alike, the arrows moving across the cards in all four directions."]</p>
+    <p class="description">@L["The same products as a grid, a list and cards. The switch and the sort menu are composed beside the data view; the view one chooses and the sort the other chooses are written to the address, so a link reproduces both, and the menu sorts whichever view shows. Rows, list items and cards select by pointer and keyboard alike, the arrows moving across the cards in all four directions."]</p>
     <div class="demo-box demo-row demo-controls">
         @if (_dataView is not null)
         {
             <FormaDataViewSwitch DataView="_dataView" />
+            <FormaDataSortMenu TItem="ShowcaseProduct" DataView="_dataView" Sorts="_sorts" />
         }
     </div>
     <div class="demo-box demo-box-bounded">

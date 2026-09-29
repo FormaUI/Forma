@@ -446,6 +446,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     }
 
     // A press anywhere inside makes the window current, whether or not what was pressed can take focus; one already current comes forward from wherever it was sent.
+    // The press is observed rather than routed, so it stays whatever inside the window owns it.
     private async Task HandlePointerDownAsync()
     {
         if (IsInert)
