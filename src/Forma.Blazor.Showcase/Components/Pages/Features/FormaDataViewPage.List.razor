@@ -28,3 +28,16 @@
         </FormaDataView>
     </div>
 </div>
+
+<div class="demo-section">
+    <h2>@L["A Hundred Thousand Items"]</h2>
+    <p class="description">@L["The list virtualizing over a hundred thousand products in a bounded box: each item a row of its own, only the rows near the viewport drawn, and a box to check on each."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.Many" EnablePagination="false" Virtualize="true" ItemHeight="32" ItemName="@(product => product.Name)" EnableCheckedSelection="true" AddressOptions='@(new DataViewAddressOptions("many"))'>
+            <FormaDataList TItem="ShowcaseProduct">
+                <ThumbnailTemplate Context="product"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
+                <ItemTemplate Context="product">@product.Price.ToString("C0", System.Globalization.CultureInfo.CurrentCulture)</ItemTemplate>
+            </FormaDataList>
+        </FormaDataView>
+    </div>
+</div>

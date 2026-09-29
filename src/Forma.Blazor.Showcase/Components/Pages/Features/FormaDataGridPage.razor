@@ -372,6 +372,21 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Grouped and Virtualized"]</h2>
+    <p class="description">@L["The same rows in blocks of ten thousand: each heading is a row the virtualization scrolls past with the rest, counts its whole block and folds it, and a folded block's rows are never fetched."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView Items="_hugeItems" EnablePagination="false" Virtualize="true" GroupBy="_blockGrouping" AddressOptions='@(new DataViewAddressOptions("blocks"))'>
+            <FormaDataGrid>
+                <Columns>
+                    <FormaPropertyColumn Property="@(item => item.Id)" />
+                    <FormaPropertyColumn Property="@(item => item.Title)" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Opening on a Row"]</h2>
     <p class="description">@L["A virtualized grid opens on the row its initial item index names, and scrolls to any row on request."]</p>
     <div class="demo-box demo-row demo-controls">

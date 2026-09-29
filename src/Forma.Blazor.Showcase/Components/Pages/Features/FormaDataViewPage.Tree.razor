@@ -31,6 +31,18 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["A Hundred Thousand Nodes"]</h2>
+    <p class="description">@L["Ten folders of ten thousand files each: open them and the tree virtualizes over the nodes it shows, drawing only the rows near the viewport, each saying its level and its place among its siblings. End and Home reach the last and the first node however far they lie."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView TItem="ShowcaseEntry" Items="DataViewShowcaseFolders.Many" EnablePagination="false" Virtualize="true" ItemHeight="32" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.Parent)" HasChildren="@(entry => entry.IsFolder)">
+            <FormaDataTree TItem="ShowcaseEntry" aria-label="@L["Archives"]">
+                <ThumbnailTemplate Context="entry"><FormaIcon Icon="@entry.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
+            </FormaDataTree>
+        </FormaDataView>
+    </div>
+</div>
+
 @code {
     private ShowcaseEntry? _currentFolder;
 }

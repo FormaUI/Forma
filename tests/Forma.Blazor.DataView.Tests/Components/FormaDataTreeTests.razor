@@ -95,6 +95,53 @@
         }
 
         [Fact]
+        public void Should_draw_the_visible_nodes_in_one_run_saying_each_level_and_place_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" Virtualize="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Act
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            // Assert — no group holds the children, so each node says its level, its siblings' count and its place among them
+            var nodes = cut.FindAll("[role=treeitem]");
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("[role=group]")),
+                () => Assert.Equal(["Documents", "Reports", "Notes.txt", "Pictures"], nodes.Select(node => node.QuerySelector(".forma-data-tree-node-name")!.TextContent).ToList()),
+                () => Assert.Equal(["1", "2", "2", "1"], nodes.Select(node => node.GetAttribute("aria-level")).ToList()),
+                () => Assert.Equal(["1", "1", "2", "2"], nodes.Select(node => node.GetAttribute("aria-posinset")).ToList()),
+                () => Assert.Equal(["2", "2", "2", "2"], nodes.Select(node => node.GetAttribute("aria-setsize")).ToList()),
+                () => Assert.Null(nodes[0].GetAttribute("aria-owns")));
+        }
+
+        [Fact]
+        public async Task Should_walk_a_virtualizing_sidebar_to_its_last_node()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" Virtualize="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find(".forma-data-tree-node").FocusIn();
+
+            // Act
+            await router.RouteAsync("tree.last", "End");
+
+            // Assert
+            Assert.Equal("Pictures", current!.Name);
+        }
+
+        [Fact]
         public void Should_keep_an_opened_node_open_when_the_data_view_is_given_a_new_source()
         {
             // Arrange

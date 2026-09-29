@@ -352,6 +352,13 @@ and opens again on a new grouping. The engine groups a set itself and asks a pro
 the sorted window a grouping needs. A group heading carries the group's name and count and
 is a target, so a reader folds it from the keyboard.
 
+A virtualizing data view draws its groups before it has read their items, so with the
+set's count it learns the size of every group: a held queryable counts them through the
+store, grouped and ordered as its items are, and a provider answers the request that asks
+for them, `IncludesGroupSizes`, with `GroupSizes`, which `CountGroups` computes for a
+provider holding a queryable of its own. A heading then counts its whole group rather than
+the part of it on screen.
+
 ### Virtualization and the scroll region
 
 The items live in a scroll region the engine owns, with what a view pins, the grid's
@@ -364,8 +371,13 @@ page, so a short last page does not shrink it.
 `Virtualize` is for the bounded case with paging off: the engine renders only the items
 near the viewport through the framework's list virtualization, in units the view names,
 a row for the grid and the list, a row of cards for the cards, with `ItemHeight` the
-height of that unit and `OverscanCount` the units drawn beyond each edge. An item whose
-window has not loaded draws the view's placeholder. `AnchorMode` says where the viewport
+height of that unit and `OverscanCount` the units drawn beyond each edge. A row of cards
+holds as many as the pack lays out at the width, a count the browser resolves from the
+card size and tells the cards, so a narrower width packs fewer across and more rows down.
+Grouped, a heading is a row of its own before its group's rows, a group starts a row of
+its own, and a folded group keeps its heading while its rows are neither drawn nor read.
+The items a view draws say where they stand in the whole set, since the page holds only
+some of them. An item whose window has not loaded draws the view's placeholder. `AnchorMode` says where the viewport
 holds when items arrive at an edge, `ItemComparer` tells a prepend from an append so the
 items on screen stay put, `InitialItemIndex` opens the data view on an item, and
 `ScrollToItemAsync` scrolls to one later, and moves a paged data view to the item's page. The region announces its real item count, so
@@ -493,7 +505,8 @@ further columns when the height runs out and the width allows, as the explorer's
 does. It has no header; its sort comes from the sort menu the page composes. Its rows
 stand on the small target step, with `Dense` tightening them further for names alone. A
 selected row takes the selected tint and its check mark; the arrow keys move up and down
-the flow, and Home and End reach its ends.
+the flow, and Home and End reach its ends. Virtualizing, the list draws one item to a row
+down the height, the unit the framework's virtualization scrolls, in place of the flow.
 
 ### The cards
 
@@ -525,7 +538,9 @@ what a sidebar does, and `NodeFilter` narrows the tree to the items it admits, t
 folders alone for a sidebar over a source that holds files too. The tree announces itself
 as a tree with each node's level, its
 open state and whether it has children, and virtualizes over the visible nodes with a
-row as its unit.
+row as its unit: the nodes then stand in one run, each saying its level, how many
+siblings it has and its place among them in place of the group that would hold it, and a
+key that moves to a node scrolled out of the window scrolls it back and focuses it.
 
 ### A host's own view
 

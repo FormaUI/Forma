@@ -41,6 +41,18 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["A Hundred Thousand Thumbnails"]</h2>
+    <p class="description">@L["The cards virtualizing over a hundred thousand products grouped by category, as a gallery browses its media: the rows hold as many thumbnails as the width packs, each heading counts its whole group and folds it, and only the rows near the viewport are drawn."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.Many" EnablePagination="false" Virtualize="true" ItemHeight="160" ItemName="@(product => product.Name)" EnableCheckedSelection="true" GroupBy="DataViewShowcaseProducts.ByCategory" AddressOptions='@(new DataViewAddressOptions("many"))'>
+            <FormaDataCards TItem="ShowcaseProduct" Dense="true" CardSize="@CssLength.FromRem(7)">
+                <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
+            </FormaDataCards>
+        </FormaDataView>
+    </div>
+</div>
+
 @code {
     private FormaDataView<ShowcaseProduct>? _dataView;
 

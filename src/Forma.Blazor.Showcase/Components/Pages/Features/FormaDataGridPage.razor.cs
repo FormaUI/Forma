@@ -16,6 +16,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
     private const int ManyRowCount = 47;
     private const int ManyPageSize = 10;
     private const int HugeRowCount = 100_000;
+    private const int BlockRowCount = 10_000;
     private const int InitialRowIndex = 49_999;
     private const int FeedBatchSize = 5;
     private static readonly TimeSpan _slowWindowDelay = TimeSpan.FromMilliseconds(600);
@@ -39,6 +40,9 @@ public sealed partial class FormaDataGridPage : ComponentBase
     private static readonly IQueryable<GridItem> _hugeItems = Enumerable.Range(1, HugeRowCount)
         .Select(id => new GridItem(id, $"Sample item {id}"))
         .AsQueryable();
+
+    // The huge set in blocks of ten thousand rows, each named by the rows it holds.
+    private DataViewGrouping<GridItem> _blockGrouping = default!;
 
     private readonly List<EditableEmployee> _editableEmployees =
     [
@@ -117,6 +121,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
     protected override void OnInitialized()
     {
         _feedItems = _feedList.AsQueryable();
+        _blockGrouping = DataViewGrouping<GridItem>.By(item => (item.Id - 1) / BlockRowCount, block => L["Rows {First:N0} to {Last:N0}", (block * BlockRowCount) + 1, (block + 1) * BlockRowCount].Value);
 
         _limitsOptions = new CheckedSelectionOptions
         {

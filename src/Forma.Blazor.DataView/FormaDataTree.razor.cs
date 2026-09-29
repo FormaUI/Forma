@@ -11,6 +11,8 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.JSInterop;
 
 /// <summary>A view over a data view drawing the hierarchy as nodes under their parents, each opened, closed and selected from the keyboard, with a busy state while its children load.</summary>
 /// <typeparam name="TItem">The item a node shows.</typeparam>
@@ -61,6 +63,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private bool _isRevealing;
     private object? _tabStopKey;
     private object? _currentKey;
+    private object? _pendingFocusKey;
+    private Virtualize<VisibleNode>? _virtualizer;
+    private List<VisibleNode> _visibleRows = [];
 
     // The field a node's box names to the input base; the selection is not a form field and nothing binds it.
     private bool NodeSelection { get; }
@@ -75,6 +80,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     // Without a marker to carry the focus, the rows carry it themselves, one of them the tab stop.
     private bool KeepsFocus
         => !HasSelection;
+
+    private bool IsVirtualizing
+        => View.Virtualize && !View.EnablePagination;
 
     /// <inheritdoc />
     public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)
@@ -143,6 +151,11 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: IsActive);
+
+        if (_pendingFocusKey is { } pending && await TryFocusAsync(pending))
+        {
+            _pendingFocusKey = null;
+        }
 
         // The roots are asked for once the tree shows, and again after the source or the sort left the data view with none.
         if (IsActive && View.HasHierarchy && !View.AreRootsLoaded && !View.IsLoadingRoots && !_areRootsRequested)
@@ -247,24 +260,13 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         if (HasSelection)
         {
             await Interaction.SelectItemAsync(node);
-
-            if (_nodeMarkers.TryGetValue(View.ItemKey(node), out var marker))
-            {
-                await marker.RootElement.FocusAsync();
-            }
-
-            return;
         }
-
-        if (SelectsCurrent)
+        else if (SelectsCurrent)
         {
             await Interaction.MakeCurrentAsync(node);
         }
 
-        if (_nodeElements.TryGetValue(View.ItemKey(node), out var element))
-        {
-            await element.FocusAsync();
-        }
+        await FocusNodeAsync(node);
     }
 
     private bool IsSame(TItem node, TItem other)
@@ -292,25 +294,78 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         => KeepsFocus ? Equals(_tabStopKey, key) ? "0" : "-1" : null;
 
     private List<TItem> GetVisibleNodes()
+        => GetVisibleRows().ConvertAll(row => row.Node);
+
+    // The nodes a reader can see, from the roots down through every open node, each with its level and its place among its siblings.
+    private List<VisibleNode> GetVisibleRows()
     {
-        List<TItem> visible = [];
-        Collect(GetRoots());
+        List<VisibleNode> visible = [];
+        Collect(GetRoots(), 1);
 
         return visible;
 
-        void Collect(IReadOnlyList<TItem> nodes)
+        void Collect(IReadOnlyList<TItem> nodes, int depth)
         {
-            foreach (var node in nodes)
+            for (var index = 0; index < nodes.Count; index++)
             {
-                visible.Add(node);
+                var node = nodes[index];
+                visible.Add(new VisibleNode(node, depth, index + 1, nodes.Count));
 
                 if (View.CanOpen(node) && View.IsOpen(node))
                 {
-                    Collect(GetChildren(node));
+                    Collect(GetChildren(node), depth + 1);
                 }
             }
         }
     }
+
+    // A node's element, or its marker's where a marker carries the focus; one scrolled out of a virtualizing tree has none to focus.
+    private async Task<bool> TryFocusAsync(object key)
+    {
+        ElementReference? target = HasSelection
+            ? _nodeMarkers.TryGetValue(key, out var marker) ? marker.RootElement : null
+            : _nodeElements.TryGetValue(key, out var element) ? element : null;
+
+        if (target is not { } focusable)
+        {
+            return false;
+        }
+
+        try
+        {
+            await focusable.FocusAsync();
+
+            return true;
+        }
+        catch (JSException)
+        {
+            return false;
+        }
+    }
+
+    // A node a virtualizing tree has scrolled out of its window is scrolled back first, and focused once its row is drawn.
+    private async Task FocusNodeAsync(TItem node)
+    {
+        var key = View.ItemKey(node);
+        _pendingFocusKey = null;
+
+        if (await TryFocusAsync(key) || !IsVirtualizing || _virtualizer is not { } virtualizer)
+        {
+            return;
+        }
+
+        var index = GetVisibleNodes().FindIndex(candidate => IsSame(candidate, node));
+
+        if (index >= 0)
+        {
+            _pendingFocusKey = key;
+            await virtualizer.ScrollToItemAsync(index);
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>A node the tree shows: the node, its level, and its place among its siblings where the tree virtualizes.</summary>
+    private readonly record struct VisibleNode(TItem Node, int Depth, int? Position, int? SetSize);
 
     private string? GetNodeClass(TItem node)
     {

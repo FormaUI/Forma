@@ -23,6 +23,20 @@ internal static class DataViewShowcaseProducts
         new ShowcaseProduct(9, "Luggage tag", "Travel", 9, Glyph.Bookmark),
     }.AsQueryable();
 
+    /// <summary>A hundred thousand products numbered after the nine, the set the tabs show the data view virtualizing at its scale.</summary>
+    public static IQueryable<ShowcaseProduct> Many
+        => field ??= CreateMany();
+
     /// <summary>The products folded under their categories.</summary>
     public static DataViewGrouping<ShowcaseProduct> ByCategory { get; } = DataViewGrouping<ShowcaseProduct>.By(product => product.Category);
+
+    private static IQueryable<ShowcaseProduct> CreateMany()
+    {
+        var models = All.ToArray();
+
+        return Enumerable.Range(0, 100_000)
+            .Select(index => models[index % models.Length] with { Id = index + 1, Name = $"{models[index % models.Length].Name} {index + 1}" })
+            .ToArray()
+            .AsQueryable();
+    }
 }

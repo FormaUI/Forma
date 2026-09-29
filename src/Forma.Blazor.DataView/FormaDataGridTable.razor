@@ -1,12 +1,28 @@
 @namespace Forma.Blazor.Components.DataView
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
+@using System.Globalization
 @using Forma.Blazor.Components.Menus
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 @{
     Grid.FinishCollectingColumns();
     Interaction.BeginItemPass();
+
+    RenderFragment<DataViewGroup<TItem>> groupHeading = group =>
+    {
+        var isFolded = View.IsFolded(group);
+
+        return @<tr class="forma-data-grid-group-row">
+            <th scope="rowgroup" colspan="@Grid.ColumnCount" class="forma-data-grid-group-cell">
+                <FormaButton Variant="ButtonVariant.Ghost" class="forma-data-grid-group-heading" aria-expanded="@(isFolded ? "false" : "true")" OnClick="() => Interaction.ToggleGroupAsync(group)">
+                    <FormaIcon Icon="@(isFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-grid-group-chevron" />
+                    <span class="forma-data-grid-group-name">@group.Name</span>
+                    <span class="forma-data-grid-group-count">@group.Count.ToString("N0", CultureInfo.CurrentCulture)</span>
+                </FormaButton>
+            </th>
+        </tr>;
+    };
 }
 <table id="@Id"
        data-rid="@Context.RuntimeId"
@@ -112,15 +128,7 @@
             var isFolded = View.IsFolded(group);
 
             <tbody class="forma-data-grid-group" @key="group.Key">
-                <tr class="forma-data-grid-group-row">
-                    <th scope="rowgroup" colspan="@Grid.ColumnCount" class="forma-data-grid-group-cell">
-                        <FormaButton Variant="ButtonVariant.Ghost" class="forma-data-grid-group-heading" aria-expanded="@(isFolded ? "false" : "true")" OnClick="() => Interaction.ToggleGroupAsync(group)">
-                            <FormaIcon Icon="@(isFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-grid-group-chevron" />
-                            <span class="forma-data-grid-group-name">@group.Name</span>
-                            <span class="forma-data-grid-group-count">@group.Items.Count</span>
-                        </FormaButton>
-                    </th>
-                </tr>
+                @groupHeading(group)
                 @if (!isFolded)
                 {
                     @foreach (var item in group.Items)
@@ -140,21 +148,32 @@
                 <td colspan="@Grid.ColumnCount" class="forma-data-grid-state-cell">@View.LoadingContent</td>
             </tr>
         }
-        else if (View.Virtualize && !View.EnablePagination)
+        else if (View.Virtualize && !View.EnablePagination && View.TotalItemCount != 0)
         {
+            @* A row is one item, or a group's heading where the data view groups. *@
             <Virtualize @ref="Virtualizer"
-                        TItem="TItem"
-                        ItemsProvider="Grid.ProvideVirtualizedItemsAsync"
-                        ItemComparer="View.ItemComparer"
+                        TItem="DataViewRow<TItem>"
+                        ItemsProvider="Grid.ProvideVirtualizedRowsAsync"
+                        ItemComparer="Grid.RowComparer"
                         ItemSize="View.ItemHeight"
                         OverscanCount="View.OverscanCount"
                         AnchorMode="View.AnchorMode"
-                        InitialItemIndex="View.InitialItemIndex">
-                <ItemContent>
-                    <FormaDataGridRow TItem="TItem" Item="context" />
+                        InitialItemIndex="Grid.InitialRowIndex">
+                <ItemContent Context="row">
+                    @if (row.Group is { } group)
+                    {
+                        @groupHeading(group)
+                    }
+                    else
+                    {
+                        @foreach (var item in row.Items)
+                        {
+                            <FormaDataGridRow TItem="TItem" Item="item" @key="View.ItemKey(item)" />
+                        }
+                    }
                 </ItemContent>
                 <Placeholder>
-                    <tr class="forma-data-grid-row forma-data-grid-placeholder-row" style="@Grid.PlaceholderStyle" aria-rowindex="@(context.Index + 1)">
+                    <tr class="forma-data-grid-row forma-data-grid-placeholder-row" style="@Grid.PlaceholderStyle" aria-rowindex="@(View.IsGrouped ? null : context.Index + 1)">
                         @if (Grid.HasSelectionColumn)
                         {
                             <td class="@Grid.SelectionCellClass"></td>

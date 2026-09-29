@@ -173,19 +173,112 @@
         }
 
         [Fact]
-        public void Should_refuse_to_show_a_virtualizing_data_view()
+        public void Should_wait_for_the_columns_before_drawing_virtualized_rows()
         {
             // Arrange
             using var ctx = new FormaDataCardsTests();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true">
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" ItemName="@(product => product.Name)">
                     <FormaDataCards TItem="Product" />
-                </FormaDataView>));
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
 
-            // Assert
-            Assert.Contains("does not virtualize", ex.Message, StringComparison.Ordinal);
+            // Assert — the rows are laid out once the ruler reports how many columns the width holds
+            Assert.Empty(cut.FindAll(".forma-data-card"));
+        }
+
+        [Fact]
+        public async Task Should_draw_virtualized_rows_of_the_columns_the_width_holds()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
+
+            // Act
+            var cards = cut.FindComponent<FormaDataCards<Product>>();
+            await cards.InvokeAsync(() => cards.Instance.HandleGridColumnsAsync(2));
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count == 3);
+
+            // Assert — two across then one, each card saying where it stands in the set
+            Assert.Multiple(
+                () => Assert.Equal([2, 1], cut.FindAll(".forma-data-cards-row").Select(row => row.QuerySelectorAll(".forma-data-card").Length)),
+                () => Assert.Equal(["1", "2", "3"], cut.FindAll(".forma-data-card").Select(card => card.GetAttribute("aria-posinset"))),
+                () => Assert.All(cut.FindAll(".forma-data-card"), card => Assert.Equal("3", card.GetAttribute("aria-setsize"))));
+        }
+
+        [Fact]
+        public async Task Should_measure_the_columns_again_when_the_cards_show_again()
+        {
+            // Arrange — the cards beside the list, so the view switch takes them off the page and back
+            using var ctx = new FormaDataCardsTests();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" Virtualize="true" View="cards" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.SwitchViewAsync("list"));
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 0);
+            await engine.InvokeAsync(() => engine.Instance.SwitchViewAsync("cards"));
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
+
+            // Assert — the new ruler is watched from when it shows, the one taken away no longer
+            var rulerAttaches = ctx.JSInterop.Invocations.Count(invocation => invocation.Identifier == "attach"
+                && invocation.Arguments is [ElementReference, { } options]
+                && options.GetType().GetProperties() is [{ Name: "owner" }]);
+            Assert.Equal(2, rulerAttaches);
+        }
+
+        [Fact]
+        public async Task Should_open_on_the_heading_of_the_group_whose_first_row_holds_the_initial_item()
+        {
+            // Arrange — the rows are Books' heading, Atlas, Tools' heading, then Hammer and Wrench together
+            using var ctx = new FormaDataCardsTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" InitialItemIndex="2" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
+
+            // Act
+            var cards = cut.FindComponent<FormaDataCards<Product>>();
+            await cards.InvokeAsync(() => cards.Instance.HandleGridColumnsAsync(2));
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count > 0);
+
+            // Assert — Wrench stands in Tools' first row, so the rows open on Tools' heading
+            var virtualization = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<>)).Instance;
+            Assert.Equal(2, virtualization.GetType().GetProperty("InitialItemIndex")!.GetValue(virtualization));
+        }
+
+        [Fact]
+        public async Task Should_draw_each_group_s_heading_above_its_virtualized_rows()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
+
+            // Act
+            var cards = cut.FindComponent<FormaDataCards<Product>>();
+            await cards.InvokeAsync(() => cards.Instance.HandleGridColumnsAsync(4));
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count == 3);
+
+            // Assert — a group's cards start a row of their own beneath its heading
+            Assert.Multiple(
+                () => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-group-name").Select(name => name.TextContent)),
+                () => Assert.Equal([1, 2], cut.FindAll(".forma-data-cards-row").Select(row => row.QuerySelectorAll(".forma-data-card").Length)));
         }
 
         private sealed record Product(int Id, string Name, string Category);

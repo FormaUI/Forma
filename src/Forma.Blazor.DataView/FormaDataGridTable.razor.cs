@@ -21,7 +21,7 @@ public sealed partial class FormaDataGridTable<TItem> : FormaElementBase
     private bool MasterSelection { get; }
 
     /// <summary>The virtualization the table renders its rows through, while the data view virtualizes.</summary>
-    internal Virtualize<TItem>? Virtualizer { get; private set; }
+    internal Virtualize<DataViewRow<TItem>>? Virtualizer { get; private set; }
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType

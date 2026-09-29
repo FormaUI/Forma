@@ -65,6 +65,11 @@ sort and the page in the address, apart from any other data view on the page. `G
 items under headings, a `DataViewGrouping` naming the key and the name a heading shows; a heading
 folds its group away and opens it again, and a folded group stays folded until the grouping changes.
 
+`Virtualize` draws only the rows near the viewport, in every view, grouped or not. A grouped data
+view that virtualizes asks for the size of each group with the set's count: a provider answers a
+request whose `IncludesGroupSizes` is set with `GroupSizes`, which `CountGroups` computes from a
+queryable the provider holds.
+
 A checkbox column comes with `EnableCheckedSelection`, and selection through the rows themselves,
 by pointer and keyboard, with `EnableItemSelection`; both report through `SelectedItems` and
 `SelectedItemsChanged`, bounded by `CheckedSelectionOptions`. Inline editing is the grid's:
@@ -72,5 +77,5 @@ by pointer and keyboard, with `EnableItemSelection`; both report through `Select
 `CancelEditAsync` on the grid.
 
 Every view, the engine's selection and its states are localized through the locale packs, and the
-[design document](../../docs/data-view-design.md) states the engine, its views and the rules a
+[design document](https://github.com/FormaUI/Forma/blob/main/docs/data-view-design.md) states the engine, its views and the rules a
 change to them keeps.

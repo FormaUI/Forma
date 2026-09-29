@@ -29,4 +29,16 @@ internal static class DataViewShowcaseFolders
         new ShowcaseEntry(12, 10, "Sunset.jpg", false, "Image", Glyph.Image),
         new ShowcaseEntry(13, 10, "Harbor.jpg", false, "Image", Glyph.Image),
     }.AsQueryable();
+
+    /// <summary>Ten folders of ten thousand files each, the hierarchy the tree tab shows virtualizing at the data view's scale.</summary>
+    public static IQueryable<ShowcaseEntry> Many
+        => field ??= CreateMany();
+
+    private static IQueryable<ShowcaseEntry> CreateMany()
+        => Enumerable.Range(1, 10)
+            .SelectMany(folder => Enumerable.Range(1, 10_000)
+                .Select(file => new ShowcaseEntry((folder * 100_000) + file, folder, $"Scan {folder}-{file:D5}.jpg", false, "Image", Glyph.Image))
+                .Prepend(new ShowcaseEntry(folder, null, $"Archive {folder}", true, "Folder", Glyph.Folder)))
+            .ToArray()
+            .AsQueryable();
 }

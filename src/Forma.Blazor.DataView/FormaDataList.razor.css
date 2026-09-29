@@ -38,6 +38,11 @@
     block-size: auto;
 }
 
+/* Virtualizing, each item is a row of its own down the height, and a group's heading a row above its items. */
+.forma-data-list-heading-row {
+    padding-block: var(--space-1);
+}
+
 /* A row stands on the small target step; dense, it stands on the line of its name alone. */
 .forma-data-list-item {
     display: flex;

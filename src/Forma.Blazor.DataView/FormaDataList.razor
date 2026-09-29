@@ -2,14 +2,21 @@
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
 
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
 @if (IsActive)
 {
-    RenderFragment<TItem> entry = item =>
-        @<div class="@GetItemClass(item)"
-              role="listitem"
-              aria-selected="@GetAriaSelected(item)"
-              data-item="@View.GetItemToken(item)"
-              @key="View.ItemKey(item)">
+    RenderFragment<(TItem Item, int? Position)> entry = row =>
+    {
+        var item = row.Item;
+
+        return @<div class="@GetItemClass(item)"
+                     role="listitem"
+                     aria-selected="@GetAriaSelected(item)"
+                     aria-setsize="@(row.Position is null ? null : View.TotalItemCount)"
+                     aria-posinset="@row.Position"
+                     data-item="@View.GetItemToken(item)"
+                     @key="View.ItemKey(item)">
             @if (HasSelection)
             {
                 <span class="forma-data-list-item-lead" data-item-control>
@@ -41,6 +48,7 @@
                 }
             </span>
         </div>;
+    };
 
     <div id="@Id"
          data-rid="@Context.RuntimeId"
@@ -51,6 +59,45 @@
         @if (!View.HasLoaded)
         {
             <div class="forma-data-list-state">@View.LoadingContent</div>
+        }
+        else if (IsVirtualizing)
+        {
+            <div class="forma-data-list-rows" role="list" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
+                @if (View.TotalItemCount == 0)
+                {
+                    <div class="forma-data-list-state" role="none">@View.EmptyContent</div>
+                }
+                else
+                {
+                    <Virtualize @ref="_virtualizer"
+                                TItem="DataViewRow<TItem>"
+                                ItemsProvider="_rows.ProvideAsync"
+                                ItemComparer="_rows.Comparer"
+                                ItemSize="View.ItemHeight"
+                                OverscanCount="View.OverscanCount"
+                                AnchorMode="View.AnchorMode"
+                                InitialItemIndex="_rows.GetRowIndex(View.InitialItemIndex)">
+                        <ItemContent Context="row">
+                            @if (row.Group is { } group)
+                            {
+                                <div class="forma-data-list-heading-row" role="listitem" @key="group.Key">
+                                    <FormaDataGroupHeading TItem="TItem" Group="group" IsFolded="View.IsFolded(group)" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var item in row.Items)
+                                {
+                                    @entry((item, View.IsGrouped ? null : row.FirstItemIndex + 1))
+                                }
+                            }
+                        </ItemContent>
+                        <Placeholder>
+                            <div class="forma-data-list-placeholder-row" role="none" style="@PlaceholderStyle"></div>
+                        </Placeholder>
+                    </Virtualize>
+                }
+            </div>
         }
         else if (View.Items.Count == 0)
         {
@@ -71,7 +118,7 @@
                             <div class="forma-data-list-flow" role="list" aria-labelledby="@nameId">
                                 @foreach (var item in group.Items)
                                 {
-                                    @entry(item)
+                                    @entry((item, null))
                                 }
                             </div>
                         }
@@ -84,7 +131,7 @@
             <div class="forma-data-list-flow" role="list" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 @foreach (var item in View.Items)
                 {
-                    @entry(item)
+                    @entry((item, null))
                 }
             </div>
         }

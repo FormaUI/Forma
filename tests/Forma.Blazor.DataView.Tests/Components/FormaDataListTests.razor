@@ -206,19 +206,69 @@
         }
 
         [Fact]
-        public void Should_refuse_to_show_a_virtualizing_data_view()
+        public void Should_draw_a_row_per_item_saying_where_it_stands_while_virtualizing()
         {
             // Arrange
             using var ctx = new FormaDataListTests();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true">
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" ItemName="@(product => product.Name)">
                     <FormaDataList TItem="Product" />
-                </FormaDataView>));
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
 
             // Assert
-            Assert.Contains("does not virtualize", ex.Message, StringComparison.Ordinal);
+            Assert.Multiple(
+                () => Assert.Equal(["Hammer", "Atlas", "Wrench"], cut.FindAll(".forma-data-list-item-name").Select(name => name.TextContent)),
+                () => Assert.Equal(["1", "2", "3"], cut.FindAll("[role=listitem]").Select(item => item.GetAttribute("aria-posinset"))),
+                () => Assert.All(cut.FindAll("[role=listitem]"), item => Assert.Equal("3", item.GetAttribute("aria-setsize"))));
+        }
+
+        [Fact]
+        public void Should_ask_a_provider_for_each_window_once_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+            List<(int StartIndex, int? Count)> requests = [];
+            DataViewItemsProvider<Product> provider = request =>
+            {
+                requests.Add((request.StartIndex, request.Count));
+
+                return ValueTask.FromResult(new DataViewPage<Product>([.. CreateProducts().Skip(request.StartIndex).Take(request.Count ?? 3)], 3));
+            };
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" Virtualize="true" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert — the count, then the rows on screen, each asked for once
+            Assert.Equal([(0, 0), (0, 3)], requests);
+        }
+
+        [Fact]
+        public void Should_fold_a_group_under_its_heading_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 3);
+
+            // Act
+            cut.Find(".forma-data-group-heading").Click();
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 2);
+
+            // Assert — the folded group keeps its heading and its count
+            Assert.Multiple(
+                () => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-group-name").Select(name => name.TextContent)),
+                () => Assert.Equal(["1", "2"], cut.FindAll(".forma-data-group-count").Select(count => count.TextContent)),
+                () => Assert.Equal(["Hammer", "Wrench"], cut.FindAll(".forma-data-list-item-name").Select(name => name.TextContent)));
         }
 
         private sealed record Product(int Id, string Name, string Category);

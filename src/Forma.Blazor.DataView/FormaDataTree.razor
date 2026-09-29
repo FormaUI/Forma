@@ -2,6 +2,8 @@
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
 
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
 @if (IsActive)
 {
     <div id="@Id"
@@ -18,6 +20,20 @@
         {
             <div class="forma-data-tree-state">@View.EmptyContent</div>
         }
+        else if (IsVirtualizing)
+        {
+            _visibleRows = GetVisibleRows();
+            SettleTabStop();
+
+            @* Virtualizing, the visible nodes stand in one run, each saying its level and its place among its siblings in place of the group that would hold it. *@
+            <div class="forma-data-tree-level" role="tree" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
+                <Virtualize @ref="_virtualizer" Items="_visibleRows" ItemSize="View.ItemHeight" OverscanCount="View.OverscanCount" Context="row">
+                    <div class="forma-data-tree-item" role="none" @key="View.ItemKey(row.Node)">
+                        @RenderNode(row, null)
+                    </div>
+                </Virtualize>
+            </div>
+        }
         else
         {
             SettleTabStop();
@@ -29,79 +45,17 @@
 }
 
 @code {
-    // Each node is a row with its disclosure, its marker, its thumbnail, its name and the caller's content, and its children in a group beneath it while open.
+    // Each node is a row, its children in a group beneath it while open, which the row owns.
     private RenderFragment RenderLevel(IReadOnlyList<TItem> nodes, int depth) => __builder =>
     {
         foreach (var node in nodes)
         {
-            var key = View.ItemKey(node);
-            var canOpen = View.CanOpen(node);
-            var isOpen = canOpen && View.IsOpen(node);
-            var isLoading = View.IsLoadingChildren(node);
-            var name = View.ItemName(node);
-            var children = isOpen ? GetChildren(node) : [];
-            var nameId = GetNodeNameId(node);
+            var children = View.CanOpen(node) && View.IsOpen(node) ? GetChildren(node) : [];
             var childrenId = GetNodeChildrenId(node);
 
-            @* The row is the tree item, since it is what carries the focus; the list item around it holds the row and the children's group, which the row owns. *@
-            <li class="forma-data-tree-item" role="none" @key="key">
-                <div class="@GetNodeClass(node)"
-                     style="@GetNodeStyle(depth)"
-                     role="treeitem"
-                     aria-level="@depth"
-                     aria-expanded="@(canOpen ? isOpen ? "true" : "false" : null)"
-                     aria-selected="@GetAriaSelected(node)"
-                     aria-labelledby="@nameId"
-                     aria-owns="@(children.Count > 0 ? childrenId : null)"
-                     tabindex="@GetNodeTabIndex(key)"
-                     data-item="@(HasSelection ? View.GetItemToken(node) : null)"
-                     @onfocusin="() => _focusedNode = node"
-                     @onfocusout="() => _focusedNode = default"
-                     @ref="_nodeElements[key]">
-                    @if (isLoading)
-                    {
-                        <span class="forma-data-tree-disclosure forma-data-tree-loading"><FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Small" /></span>
-                    }
-                    else if (canOpen)
-                    {
-                        <span class="forma-data-tree-disclosure" data-item-control>
-                            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" class="forma-data-tree-disclosure-button"
-                                         aria-label="@(isOpen ? L["Close {Name}", name] : L["Open {Name}", name])" tabindex="-1"
-                                         OnClick="() => ToggleNodeAsync(node)">
-                                <FormaIcon Icon="@(isOpen ? Glyph.ChevronDown : Glyph.ChevronRight)" Size="IconSize.Small" />
-                            </FormaButton>
-                        </span>
-                    }
-                    else
-                    {
-                        <span class="forma-data-tree-disclosure" aria-hidden="true"></span>
-                    }
-                    @if (HasSelection)
-                    {
-                        <span class="forma-data-tree-node-lead" data-item-control>
-                            <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
-                                <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
-                                               data-row-key="@View.GetItemToken(node)"
-                                               aria-label="@L["Select Item"]"
-                                               aria-disabled="@(!View.CanInteractWith(node) ? "true" : null)"
-                                               Value="@View.IsSelected(node)"
-                                               PreventDefault="true"
-                                               OnClick="() => Interaction.ToggleSelectionAsync(node, !View.IsSelected(node))"
-                                               ValueExpression="() => NodeSelection"
-                                               @ref="_nodeMarkers[key]" />
-                            </label>
-                        </span>
-                    }
-                    @if (ThumbnailTemplate is { } thumbnail)
-                    {
-                        <span class="forma-data-tree-node-thumbnail">@thumbnail(node)</span>
-                    }
-                    <span class="forma-data-tree-node-name" id="@nameId">@name</span>
-                    @if (ItemTemplate is { } detail)
-                    {
-                        <span class="forma-data-tree-node-detail">@detail(node)</span>
-                    }
-                </div>
+            @* The row is the tree item, since it is what carries the focus; the list item around it holds the row and the children's group. *@
+            <li class="forma-data-tree-item" role="none" @key="View.ItemKey(node)">
+                @RenderNode(new VisibleNode(node, depth, null, null), children.Count > 0 ? childrenId : null)
                 @if (children.Count > 0)
                 {
                     <ul class="forma-data-tree-level" role="group" id="@childrenId">
@@ -110,5 +64,77 @@
                 }
             </li>
         }
+    };
+
+    // A node's row: its disclosure, its marker, its thumbnail, its name and the caller's content.
+    private RenderFragment RenderNode(VisibleNode row, string? ownsId) => __builder =>
+    {
+        var node = row.Node;
+        var key = View.ItemKey(node);
+        var canOpen = View.CanOpen(node);
+        var isOpen = canOpen && View.IsOpen(node);
+        var isLoading = View.IsLoadingChildren(node);
+        var name = View.ItemName(node);
+        var nameId = GetNodeNameId(node);
+
+        <div class="@GetNodeClass(node)"
+             style="@GetNodeStyle(row.Depth)"
+             role="treeitem"
+             aria-level="@row.Depth"
+             aria-setsize="@row.SetSize"
+             aria-posinset="@row.Position"
+             aria-expanded="@(canOpen ? isOpen ? "true" : "false" : null)"
+             aria-selected="@GetAriaSelected(node)"
+             aria-labelledby="@nameId"
+             aria-owns="@ownsId"
+             tabindex="@GetNodeTabIndex(key)"
+             data-item="@(HasSelection ? View.GetItemToken(node) : null)"
+             @onfocusin="() => _focusedNode = node"
+             @onfocusout="() => _focusedNode = default"
+             @ref="_nodeElements[key]">
+            @if (isLoading)
+            {
+                <span class="forma-data-tree-disclosure forma-data-tree-loading"><FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Small" /></span>
+            }
+            else if (canOpen)
+            {
+                <span class="forma-data-tree-disclosure" data-item-control>
+                    <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" class="forma-data-tree-disclosure-button"
+                                 aria-label="@(isOpen ? L["Close {Name}", name] : L["Open {Name}", name])" tabindex="-1"
+                                 OnClick="() => ToggleNodeAsync(node)">
+                        <FormaIcon Icon="@(isOpen ? Glyph.ChevronDown : Glyph.ChevronRight)" Size="IconSize.Small" />
+                    </FormaButton>
+                </span>
+            }
+            else
+            {
+                <span class="forma-data-tree-disclosure" aria-hidden="true"></span>
+            }
+            @if (HasSelection)
+            {
+                <span class="forma-data-tree-node-lead" data-item-control>
+                    <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
+                        <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
+                                       data-row-key="@View.GetItemToken(node)"
+                                       aria-label="@L["Select Item"]"
+                                       aria-disabled="@(!View.CanInteractWith(node) ? "true" : null)"
+                                       Value="@View.IsSelected(node)"
+                                       PreventDefault="true"
+                                       OnClick="() => Interaction.ToggleSelectionAsync(node, !View.IsSelected(node))"
+                                       ValueExpression="() => NodeSelection"
+                                       @ref="_nodeMarkers[key]" />
+                    </label>
+                </span>
+            }
+            @if (ThumbnailTemplate is { } thumbnail)
+            {
+                <span class="forma-data-tree-node-thumbnail">@thumbnail(node)</span>
+            }
+            <span class="forma-data-tree-node-name" id="@nameId">@name</span>
+            @if (ItemTemplate is { } detail)
+            {
+                <span class="forma-data-tree-node-detail">@detail(node)</span>
+            }
+        </div>
     };
 }

@@ -1,0 +1,62 @@
+/**
+ * GridColumns — telling its owner how many columns a grid lays out
+ *
+ * A stylesheet packs a grid with as many columns as its width holds, and the browser resolves that
+ * into tracks. The target's resolved tracks are counted each time it is laid out again and reported
+ * to the owner only when the count changes, so the arithmetic behind the count lives once, in the
+ * stylesheet, and the component arranges its items in rows of that many.
+ */
+
+import { tell } from '../../../core/scripts/Owner.js';
+
+/** @typedef {import('../../../core/scripts/Owner.js').Owner} Owner */
+
+/**
+ * @param {HTMLElement} target The grid whose columns are counted.
+ * @param {{ owner: Owner }} options The owner told the count through HandleGridColumnsAsync.
+ */
+export function attach(target, options) {
+    return new GridColumns(target, options);
+}
+
+class GridColumns {
+    #target;
+    #owner;
+    #observer;
+    #last = 0;
+
+    constructor(target, { owner }) {
+        this.#target = target;
+        this.#owner = owner;
+        this.#observer = new ResizeObserver(() => this.#report());
+        this.#observer.observe(target);
+        this.#report();
+    }
+
+    dispose() {
+        this.#observer.disconnect();
+    }
+
+    #report() {
+        // A target taken out of the document lays nothing out, and its owner is on its way out with it.
+        if (!this.#target.isConnected) {
+            return;
+        }
+
+        const count = GridColumns.#count(getComputedStyle(this.#target).gridTemplateColumns);
+
+        if (count === this.#last) {
+            return;
+        }
+
+        this.#last = count;
+        tell(this.#owner, 'HandleGridColumnsAsync', count);
+    }
+
+    // The resolved value lists one size per track, with any line names in brackets between them; a grid with none has one column.
+    static #count(tracks) {
+        const sizes = (tracks ?? '').replace(/\[[^\]]*\]/g, ' ').trim();
+
+        return sizes === '' || sizes === 'none' ? 1 : sizes.split(/\s+/).length;
+    }
+}

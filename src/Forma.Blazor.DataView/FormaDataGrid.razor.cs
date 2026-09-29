@@ -84,6 +84,11 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     private FormaDataGridTable<TItem>? Table { get; set; }
 
     private Dictionary<TItem, int> _rowIndices = [];
+    private DataViewRows<TItem> _rows = default!;
+    private bool _isRefreshWanted;
+
+    private bool IsVirtualizing
+        => View.Virtualize && !View.EnablePagination;
 
     /// <summary>Whether the grid is the view showing, which it is alone or when the data view's active view names it.</summary>
     internal bool IsActive
@@ -349,6 +354,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
 
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Grid"], Glyph.DetailsView, this));
+        _rows = new DataViewRows<TItem>(View);
         _columnFit = new ColumnFit(Context.JS);
         View.Subscribe(HandleViewChangedAsync);
     }
@@ -372,6 +378,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
 
         _editSession.KeySelector = View.ItemKey;
+        _isRefreshWanted |= IsVirtualizing && _rows.Update() && Table?.Virtualizer is not null;
     }
 
     /// <inheritdoc />
@@ -391,6 +398,14 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             _isColumnFitAttached = true;
             _selfReference ??= DotNetObjectReference.Create(this);
             _isColumnFitAttached = await _columnFit.AttachAsync(table.RootElement, ColumnAttribute, MeasuringClass, _selfReference);
+        }
+
+        if (_isRefreshWanted && Table?.Virtualizer is { } virtualizer)
+        {
+            _isRefreshWanted = false;
+            // The virtualization fetches the rows without drawing them, leaving the draw to its host.
+            await virtualizer.RefreshDataAsync();
+            StateHasChanged();
         }
     }
 
@@ -654,20 +669,32 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    internal async ValueTask<ItemsProviderResult<TItem>> ProvideVirtualizedItemsAsync(ItemsProviderRequest request)
+    /// <summary>Tells a virtualized row from a re-fetched copy of it, by its heading's group or its item's key.</summary>
+    internal IEqualityComparer<DataViewRow<TItem>> RowComparer
+        => _rows.Comparer;
+
+    /// <summary>The row the grid opens on: the one holding the data view's initial item.</summary>
+    internal int InitialRowIndex
+        => _rows.GetRowIndex(View.InitialItemIndex);
+
+    internal async ValueTask<ItemsProviderResult<DataViewRow<TItem>>> ProvideVirtualizedRowsAsync(ItemsProviderRequest request)
     {
-        var window = await View.LoadWindowAsync(request.StartIndex, request.Count, request.CancellationToken);
+        var result = await _rows.ProvideAsync(request);
 
         // The rows drawn are the last window's, so their places in the set are recorded once per fetch, never per render.
-        var rowIndices = new Dictionary<TItem, int>(window.Items.Count, View.ItemComparer);
-        for (var offset = 0; offset < window.Items.Count; offset++)
+        var rowIndices = new Dictionary<TItem, int>(View.ItemComparer);
+
+        foreach (var row in result.Items)
         {
-            rowIndices[window.Items[offset]] = request.StartIndex + offset;
+            for (var offset = 0; offset < row.Items.Count; offset++)
+            {
+                rowIndices[row.Items[offset]] = row.FirstItemIndex + offset;
+            }
         }
 
         _rowIndices = rowIndices;
 
-        return new ItemsProviderResult<TItem>(window.Items, window.TotalCount ?? window.Items.Count);
+        return result;
     }
 
     /// <summary>The one-based place of <paramref name="item"/> in the whole set, for a row a virtualizing grid draws; null where the grid does not virtualize.</summary>
@@ -677,17 +704,26 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     /// <inheritdoc />
     public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)
         => Table?.Virtualizer is { } virtualizer
-            ? new ValueTask(virtualizer.ScrollToItemAsync(index, cancellationToken))
+            ? new ValueTask(virtualizer.ScrollToItemAsync(_rows.GetRowIndex(index), cancellationToken))
             : ValueTask.CompletedTask;
 
     /// <inheritdoc />
     public ValueTask RefreshAsync()
-        => Table?.Virtualizer is { } virtualizer
+    {
+        _rows.Update();
+
+        return Table?.Virtualizer is { } virtualizer
             ? new ValueTask(virtualizer.RefreshDataAsync())
             : ValueTask.CompletedTask;
+    }
 
+    // A fold, a new count or a new grouping lays the virtualized rows out again, and the rows on screen are fetched again after the render.
     private Task HandleViewChangedAsync()
-        => InvokeAsync(StateHasChanged);
+    {
+        _isRefreshWanted |= IsVirtualizing && _rows.Update() && Table?.Virtualizer is not null;
+
+        return InvokeAsync(StateHasChanged);
+    }
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

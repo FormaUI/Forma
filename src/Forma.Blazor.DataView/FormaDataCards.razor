@@ -2,14 +2,21 @@
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
 
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
 @if (IsActive)
 {
-    RenderFragment<TItem> card = item =>
-        @<div class="@GetCardClass(item)"
-              role="listitem"
-              aria-selected="@GetAriaSelected(item)"
-              data-item="@View.GetItemToken(item)"
-              @key="View.ItemKey(item)">
+    RenderFragment<(TItem Item, int? Position)> card = entry =>
+    {
+        var item = entry.Item;
+
+        return @<div class="@GetCardClass(item)"
+                     role="listitem"
+                     aria-selected="@GetAriaSelected(item)"
+                     aria-setsize="@(entry.Position is null ? null : View.TotalItemCount)"
+                     aria-posinset="@entry.Position"
+                     data-item="@View.GetItemToken(item)"
+                     @key="View.ItemKey(item)">
             <div class="forma-data-card-thumbnail">
                 @if (ThumbnailTemplate is { } thumbnail)
                 {
@@ -47,6 +54,7 @@
                 <div class="forma-data-card-actions" data-item-control>@actions(item)</div>
             }
         </div>;
+    };
 
     <div id="@Id"
          data-rid="@Context.RuntimeId"
@@ -57,6 +65,49 @@
         @if (!View.HasLoaded)
         {
             <div class="forma-data-cards-state">@View.LoadingContent</div>
+        }
+        else if (IsVirtualizing)
+        {
+            @* The ruler packs no cards; the columns it lays out at the width are the columns every row holds. *@
+            <div class="forma-data-cards-rows" role="list" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
+                <div class="forma-data-cards-pack forma-data-cards-ruler" aria-hidden="true" @ref="_rulerElement"></div>
+                @if (View.TotalItemCount == 0)
+                {
+                    <div class="forma-data-cards-state" role="none">@View.EmptyContent</div>
+                }
+                else if (_areColumnsKnown)
+                {
+                    <Virtualize @ref="_virtualizer"
+                                TItem="DataViewRow<TItem>"
+                                ItemsProvider="_rows.ProvideAsync"
+                                ItemComparer="_rows.Comparer"
+                                ItemSize="View.ItemHeight"
+                                OverscanCount="View.OverscanCount"
+                                AnchorMode="View.AnchorMode"
+                                InitialItemIndex="_initialRowIndex">
+                        <ItemContent Context="row">
+                            @if (row.Group is { } group)
+                            {
+                                <div class="forma-data-cards-heading-row" role="listitem" @key="group.Key">
+                                    <FormaDataGroupHeading TItem="TItem" Group="group" IsFolded="View.IsFolded(group)" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="forma-data-cards-pack forma-data-cards-row" role="none" @key="row.FirstItemIndex">
+                                    @foreach (var (offset, item) in row.Items.Index())
+                                    {
+                                        @card((item, View.IsGrouped ? null : row.FirstItemIndex + offset + 1))
+                                    }
+                                </div>
+                            }
+                        </ItemContent>
+                        <Placeholder>
+                            <div class="forma-data-cards-placeholder-row" role="none" style="@PlaceholderStyle"></div>
+                        </Placeholder>
+                    </Virtualize>
+                }
+            </div>
         }
         else if (View.Items.Count == 0)
         {
@@ -77,7 +128,7 @@
                             <div class="forma-data-cards-pack" role="list" aria-labelledby="@nameId">
                                 @foreach (var item in group.Items)
                                 {
-                                    @card(item)
+                                    @card((item, null))
                                 }
                             </div>
                         }
@@ -90,7 +141,7 @@
             <div class="forma-data-cards-pack" role="list" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 @foreach (var item in View.Items)
                 {
-                    @card(item)
+                    @card((item, null))
                 }
             </div>
         }

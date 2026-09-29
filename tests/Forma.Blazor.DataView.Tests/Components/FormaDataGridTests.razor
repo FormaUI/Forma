@@ -301,23 +301,107 @@
         }
 
         [Fact]
-        public void Should_throw_when_grouping_a_virtualizing_data_view()
+        public void Should_draw_each_group_s_heading_as_a_row_while_virtualizing()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+            var cut = ctx.Render(
                 @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" Virtualize="true" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
                     <FormaDataGrid>
                         <Columns>
-                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-group-row").Count == 2);
+
+            // Assert — each heading counts its whole group, and its items follow it
+            Assert.Multiple(
+                () => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent)),
+                () => Assert.Equal(["3", "3"], cut.FindAll(".forma-data-grid-group-count").Select(count => count.TextContent)),
+                () => Assert.Equal(["Books", "Atlas", "Primer", "Reader", "Tools", "Hammer", "Wrench", "Saw"], cut.FindAll("tbody tr").Select(row => row.QuerySelector(".forma-data-grid-group-name")?.TextContent ?? row.QuerySelector("td:not(.forma-data-grid-select-column)")!.TextContent.Trim())));
+        }
+
+        [Fact]
+        public void Should_leave_a_folded_group_s_items_unread_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" Virtualize="true" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 6);
+
+            // Act
+            cut.Find(".forma-data-grid-group-heading").Click();
+            cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 3);
+
+            // Assert — the folded group keeps its heading and its count
+            Assert.Multiple(
+                () => Assert.Equal("false", cut.Find(".forma-data-grid-group-heading").GetAttribute("aria-expanded")),
+                () => Assert.Equal(["Hammer", "Wrench", "Saw"], cut.FindAll("tr.forma-data-grid-row td:not(.forma-data-grid-select-column)").Select(cell => cell.TextContent.Trim())));
+        }
+
+        [Fact]
+        public void Should_ask_a_provider_for_each_group_s_size_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var asked = false;
+            DataViewItemsProvider<Product> provider = request =>
+            {
+                var sorted = request.ApplySorting(CreateProducts());
+                asked |= request.IncludesGroupSizes;
+
+                return ValueTask.FromResult(new DataViewPage<Product>([.. sorted.Skip(request.StartIndex).Take(request.Count ?? 6)], 6)
+                {
+                    GroupSizes = request.IncludesGroupSizes ? [.. request.CountGroups(CreateProducts())] : null,
+                });
+            };
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" ItemsProvider="provider" EnablePagination="false" Virtualize="true" GroupBy="@(DataViewGrouping<Product>.ByDescending(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 6);
+
+            // Assert — the groups come largest key first, as the grouping orders them
+            Assert.Multiple(
+                () => Assert.True(asked),
+                () => Assert.Equal(["Tools", "Books"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent)));
+        }
+
+        [Fact]
+        public void Should_refuse_a_provider_that_leaves_the_group_sizes_out_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            DataViewItemsProvider<Product> provider = request => ValueTask.FromResult(new DataViewPage<Product>([.. request.ApplySorting(CreateProducts())], 6));
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataView TItem="Product" ItemsProvider="provider" EnablePagination="false" Virtualize="true" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
                         </Columns>
                     </FormaDataGrid>
                 </FormaDataView>));
 
             // Assert
-            Assert.Contains(nameof(FormaDataView<Product>.GroupBy), ex.Message, StringComparison.Ordinal);
+            Assert.Contains(nameof(DataViewPage<Product>.GroupSizes), ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -1049,14 +1133,14 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
 
-            // Assert
-            var virtualization = cut.FindComponent<Virtualize<GridItem>>().Instance;
+            // Assert — the grid virtualizes its rows, one item each here, so the initial item opens the row that holds it
+            var virtualization = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(Virtualize<>)).Instance;
+            object? Read(string property) => virtualization.GetType().GetProperty(property)!.GetValue(virtualization);
             Assert.Multiple(
-                () => Assert.Equal(40, virtualization.ItemSize),
-                () => Assert.Equal(5, virtualization.OverscanCount),
-                () => Assert.Equal(VirtualizeAnchorMode.End, virtualization.AnchorMode),
-                () => Assert.Equal(12, virtualization.InitialItemIndex),
-                () => Assert.Same(((IDataView<GridItem>)cut.FindComponent<FormaDataView<GridItem>>().Instance).ItemComparer, virtualization.ItemComparer));
+                () => Assert.Equal(40f, Read(nameof(Virtualize<GridItem>.ItemSize))),
+                () => Assert.Equal(5, Read(nameof(Virtualize<GridItem>.OverscanCount))),
+                () => Assert.Equal(VirtualizeAnchorMode.End, Read(nameof(Virtualize<GridItem>.AnchorMode))),
+                () => Assert.Equal(12, Read(nameof(Virtualize<GridItem>.InitialItemIndex))));
         }
 
         [Fact]

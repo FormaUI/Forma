@@ -437,13 +437,6 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         ArgumentOutOfRangeException.ThrowIfNegative(OverscanCount);
         ArgumentOutOfRangeException.ThrowIfNegative(InitialItemIndex);
 
-        // A virtualizing view draws its windows flat, with no place for a heading between them.
-        if (GroupBy is not null && Virtualize && !EnablePagination)
-        {
-            throw new InvalidOperationException(
-                $"{nameof(GroupBy)} is not supported with {nameof(Virtualize)}; group a paged data view instead.");
-        }
-
         // Every group opens again under a new grouping, whose keys mean something else.
         if (_groupByParameter.Update(GroupBy))
         {
@@ -1178,6 +1171,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private const string ControlSelector = "[" + ControlAttribute + "]";
 
     // The items arrive with each group's members standing together, so a group is a run of one key.
+    // A virtualizing view fetches the items as it scrolls, so its groups are the whole set's, known by their sizes alone.
+    private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<DataViewGroupSize>? sizes)
+        => GroupBy is { } grouping && sizes is not null
+            ? [.. sizes.Where(size => size.Count > 0).Select(size => new DataViewGroup<TItem>(size.Key, grouping.GetName(size.Key), []) { Count = size.Count })]
+            : [];
+
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)
     {
         if (GroupBy is not { } grouping || items.Count == 0)
@@ -1282,9 +1281,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         try
         {
-            // A virtualizing view fetches its own windows, so the engine asks for the count alone.
-            var window = Virtualize && !EnablePagination
-                ? await LoadWindowCoreAsync(0, 0, cancellation.Token)
+            // A virtualizing view fetches its own windows, so the engine asks for the count alone, with the size of each group where it groups.
+            var window = IsVirtualizing
+                ? await LoadWindowCoreAsync(0, 0, cancellation.Token, includesGroupSizes: GroupBy is not null)
                 : await LoadWindowCoreAsync(StartIndex, WindowCount, cancellation.Token);
 
             if (cancellation.IsCancellationRequested)
@@ -1293,7 +1292,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             }
 
             _items = window.Items;
-            _groups = CreateGroups(window.Items);
+            _groups = IsVirtualizing ? CreateGroups(window.GroupSizes) : CreateGroups(window.Items);
             _hasLoaded = true;
             await SetTotalItemCountAsync(window.TotalCount);
 
@@ -1369,17 +1368,26 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         _settledCount = _totalItemCount;
     }
 
-    private async ValueTask<DataViewPage<TItem>> FetchWindowAsync(int startIndex, int? count, CancellationToken cancellationToken)
+    private async ValueTask<DataViewPage<TItem>> FetchWindowAsync(int startIndex, int? count, bool includesGroupSizes, CancellationToken cancellationToken)
     {
         // The views without a tree show the current node's children, which over a set means the items naming it as parent.
-        var request = new DataViewRequest<TItem>(startIndex, count, _currentItem, GroupBy, _sort, _sortDirection, cancellationToken);
+        var request = new DataViewRequest<TItem>(startIndex, count, _currentItem, GroupBy, _sort, _sortDirection, cancellationToken)
+        {
+            IncludesGroupSizes = includesGroupSizes,
+        };
 
         if (ItemsProvider is { } provider)
         {
-            return await provider(request);
+            var answer = await provider(request);
+
+            return includesGroupSizes && answer.GroupSizes is null
+                ? throw new InvalidOperationException(
+                    $"A grouped data view that virtualizes asks its {nameof(ItemsProvider)} for the size of each group; answer a request whose {nameof(DataViewRequest<>.IncludesGroupSizes)} is set with {nameof(DataViewPage<>.GroupSizes)}.")
+                : answer;
         }
 
-        var query = request.ApplySorting(FilterChildren(Items!, _currentItem));
+        var children = FilterChildren(Items!, _currentItem);
+        var query = request.ApplySorting(children);
         var executor = GetExecutor(query);
         var total = await executor.CountAsync(query, cancellationToken);
         var window = query.Skip(startIndex);
@@ -1390,14 +1398,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         var items = await executor.ToArrayAsync(window, cancellationToken);
+        var groupSizes = includesGroupSizes ? await executor.ToArrayAsync(request.CountGroups(children), cancellationToken) : null;
 
-        return new DataViewPage<TItem>(items, total);
+        return new DataViewPage<TItem>(items, total) { GroupSizes = groupSizes };
     }
 
     // Every window is a set of the current node's children, so each item in it is remembered under that node.
-    private async ValueTask<DataViewPage<TItem>> LoadWindowCoreAsync(int startIndex, int? count, CancellationToken cancellationToken)
+    private async ValueTask<DataViewPage<TItem>> LoadWindowCoreAsync(int startIndex, int? count, CancellationToken cancellationToken, bool includesGroupSizes = false)
     {
-        var window = await FetchWindowAsync(startIndex, count, cancellationToken);
+        var window = await FetchWindowAsync(startIndex, count, includesGroupSizes, cancellationToken);
 
         if (HasHierarchy && !cancellationToken.IsCancellationRequested)
         {

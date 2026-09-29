@@ -2,8 +2,10 @@
 @inherits FormaComponentBase
 @typeparam TItem where TItem : notnull
 
+@using System.Globalization
+
 <FormaButton Variant="ButtonVariant.Ghost" class="forma-data-group-heading" aria-expanded="@(IsFolded ? "false" : "true")" OnClick="OnToggle">
     <FormaIcon Icon="@(IsFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-group-chevron" />
     <span class="forma-data-group-name" id="@NameId">@Group.Name</span>
-    <span class="forma-data-group-count">@Group.Items.Count</span>
+    <span class="forma-data-group-count">@Group.Count.ToString("N0", CultureInfo.CurrentCulture)</span>
 </FormaButton>
