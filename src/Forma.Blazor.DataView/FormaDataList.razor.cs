@@ -90,6 +90,12 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     private Task HandleMarkerKeyDownAsync(KeyboardEventArgs args, TItem item)
         => args.Key == "Enter" ? Interaction.ActivateAsync(item) : Task.CompletedTask;
 
+    private string ElementId
+        => Id ?? $"data-list-{Context.RuntimeId:N}";
+
+    private string GetGroupNameId(int index)
+        => $"{ElementId}-group-{index}";
+
     private Task HandleViewChangedAsync()
         => InvokeAsync(StateHasChanged);
 

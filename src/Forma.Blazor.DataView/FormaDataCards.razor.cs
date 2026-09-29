@@ -96,6 +96,12 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     private Task HandleMarkerKeyDownAsync(KeyboardEventArgs args, TItem item)
         => args.Key == "Enter" ? Interaction.ActivateAsync(item) : Task.CompletedTask;
 
+    private string ElementId
+        => Id ?? $"data-cards-{Context.RuntimeId:N}";
+
+    private string GetGroupNameId(int index)
+        => $"{ElementId}-group-{index}";
+
     private Task HandleViewChangedAsync()
         => InvokeAsync(StateHasChanged);
 

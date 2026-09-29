@@ -10,6 +10,9 @@ public sealed partial class FormaDataGroupHeading<TItem> : FormaComponentBase
     /// <summary>The group the heading stands over.</summary>
     [Parameter, EditorRequired] public DataViewGroup<TItem> Group { get; set; } = default!;
 
+    /// <summary>The id the group's name carries, so the list under the heading can be named by it.</summary>
+    [Parameter] public string? NameId { get; set; }
+
     /// <summary>Whether the group's items are folded away under the heading.</summary>
     [Parameter] public bool IsFolded { get; set; }
 

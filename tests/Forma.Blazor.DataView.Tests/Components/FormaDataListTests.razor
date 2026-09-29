@@ -100,6 +100,48 @@
         }
 
         [Fact]
+        public void Should_carry_the_caller_s_name_on_the_list_rather_than_the_root()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" aria-label="Products" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Products", cut.Find("[role=list]").GetAttribute("aria-label")),
+                () => Assert.Null(cut.Find(".forma-data-list").GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public void Should_name_the_groups_by_the_caller_and_each_group_s_list_by_its_heading()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataList TItem="Product" aria-label="Products" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-group").Count == 2);
+
+            // Assert
+            var groups = cut.Find(".forma-data-list-groups");
+            var first = cut.Find(".forma-data-list-group");
+            Assert.Multiple(
+                () => Assert.Equal("group", groups.GetAttribute("role")),
+                () => Assert.Equal("Products", groups.GetAttribute("aria-label")),
+                () => Assert.Equal(first.QuerySelector(".forma-data-group-name")!.Id, first.QuerySelector("[role=list]")!.GetAttribute("aria-labelledby")),
+                () => Assert.False(string.IsNullOrEmpty(first.QuerySelector(".forma-data-group-name")!.Id)));
+        }
+
+        [Fact]
         public void Should_fold_a_group_from_its_heading()
         {
             // Arrange

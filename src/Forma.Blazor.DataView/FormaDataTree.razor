@@ -8,7 +8,7 @@
          data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
-         @attributes="AdditionalAttributes"
+         @attributes="CollectionName.WithoutName(AdditionalAttributes)"
          @ref="RootElement">
         @if (!View.AreRootsLoaded)
         {
@@ -21,7 +21,7 @@
         else
         {
             SettleTabStop();
-            <ul class="forma-data-tree-level" role="tree">
+            <ul class="forma-data-tree-level" role="tree" aria-label="@CollectionName.LabelOf(AdditionalAttributes)" aria-labelledby="@CollectionName.LabelledByOf(AdditionalAttributes)">
                 @RenderLevel(GetRoots(), 1)
             </ul>
         }
@@ -40,14 +40,25 @@
             var isLoading = View.IsLoadingChildren(node);
             var name = View.ItemName(node);
             var children = isOpen ? GetChildren(node) : [];
+            var nameId = GetNodeNameId(node);
+            var childrenId = GetNodeChildrenId(node);
 
-            <li class="forma-data-tree-item"
-                role="treeitem"
-                aria-level="@depth"
-                aria-expanded="@(canOpen ? isOpen ? "true" : "false" : null)"
-                aria-selected="@GetAriaSelected(node)"
-                @key="key">
-                <div class="@GetNodeClass(node)" style="@GetNodeStyle(depth)" tabindex="@GetNodeTabIndex(key)" data-item="@(HasSelection ? "" : null)" @onclick="() => HandleNodeClickAsync(node)" @onfocusin="() => _focusedNode = node" @onkeydown="args => HandleNodeKeyDownAsync(args, node)" @ref="_nodeElements[key]">
+            @* The row is the tree item, since it is what carries the focus; the list item around it holds the row and the children's group, which the row owns. *@
+            <li class="forma-data-tree-item" role="none" @key="key">
+                <div class="@GetNodeClass(node)"
+                     style="@GetNodeStyle(depth)"
+                     role="treeitem"
+                     aria-level="@depth"
+                     aria-expanded="@(canOpen ? isOpen ? "true" : "false" : null)"
+                     aria-selected="@GetAriaSelected(node)"
+                     aria-labelledby="@nameId"
+                     aria-owns="@(children.Count > 0 ? childrenId : null)"
+                     tabindex="@GetNodeTabIndex(key)"
+                     data-item="@(HasSelection ? "" : null)"
+                     @onclick="() => HandleNodeClickAsync(node)"
+                     @onfocusin="() => _focusedNode = node"
+                     @onkeydown="args => HandleNodeKeyDownAsync(args, node)"
+                     @ref="_nodeElements[key]">
                     @if (isLoading)
                     {
                         <span class="forma-data-tree-disclosure forma-data-tree-loading"><FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Small" /></span>
@@ -83,7 +94,7 @@
                     {
                         <span class="forma-data-tree-node-thumbnail">@thumbnail(node)</span>
                     }
-                    <span class="forma-data-tree-node-name">@name</span>
+                    <span class="forma-data-tree-node-name" id="@nameId">@name</span>
                     @if (ItemTemplate is { } detail)
                     {
                         <span class="forma-data-tree-node-detail">@detail(node)</span>
@@ -91,7 +102,7 @@
                 </div>
                 @if (children.Count > 0)
                 {
-                    <ul class="forma-data-tree-level" role="group">
+                    <ul class="forma-data-tree-level" role="group" id="@childrenId">
                         @RenderLevel(children, depth + 1)
                     </ul>
                 }

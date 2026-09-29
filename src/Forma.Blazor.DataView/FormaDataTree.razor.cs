@@ -325,6 +325,16 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         return builder.ToStringOrNull();
     }
 
+    private string ElementId
+        => Id ?? $"data-tree-{Context.RuntimeId:N}";
+
+    // A node is named by its name alone, its disclosure's label left out of it.
+    private string GetNodeNameId(TItem node)
+        => $"{ElementId}-node-{View.GetItemToken(node)}";
+
+    private string GetNodeChildrenId(TItem node)
+        => $"{ElementId}-children-{View.GetItemToken(node)}";
+
     private static string GetNodeStyle(int depth)
         => string.Create(CultureInfo.InvariantCulture, $"--forma-data-tree-depth: {depth - 1}");
 

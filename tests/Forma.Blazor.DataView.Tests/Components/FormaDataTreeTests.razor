@@ -37,7 +37,27 @@
                 () => Assert.Equal(["Documents", "Pictures"], nodes.Select(node => node.QuerySelector(".forma-data-tree-node-name")!.TextContent).ToList()),
                 () => Assert.Equal("1", nodes[0].GetAttribute("aria-level")),
                 () => Assert.Equal("false", nodes[0].GetAttribute("aria-expanded")),
+                () => Assert.Equal(nodes[0].QuerySelector(".forma-data-tree-node-name")!.Id, nodes[0].GetAttribute("aria-labelledby")),
                 () => Assert.NotNull(nodes[0].QuerySelector("button.forma-data-tree-disclosure-button")));
+        }
+
+        [Fact]
+        public void Should_carry_the_caller_s_name_on_the_tree_rather_than_the_root()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" aria-label="Folders" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Folders", cut.Find("[role=tree]").GetAttribute("aria-label")),
+                () => Assert.Null(cut.Find(".forma-data-tree").GetAttribute("aria-label")));
         }
 
         [Fact]
@@ -55,11 +75,13 @@
             cut.Find("button.forma-data-tree-disclosure-button").Click();
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
-            // Assert — the folder's children stand in a group under it, one level deeper, and a file has no disclosure
+            // Assert — the folder's children stand in a group it owns, one level deeper, and a file has no disclosure
             var documents = cut.FindAll("[role=treeitem]")[0];
-            var children = documents.QuerySelectorAll("[role=group] > [role=treeitem]");
+            var group = cut.Find("[role=group]");
+            var children = group.QuerySelectorAll("[role=treeitem]");
             Assert.Multiple(
                 () => Assert.Equal("true", documents.GetAttribute("aria-expanded")),
+                () => Assert.Equal(group.Id, documents.GetAttribute("aria-owns")),
                 () => Assert.Equal(["Reports", "Notes.txt"], children.Select(node => node.QuerySelector(".forma-data-tree-node-name")!.TextContent).ToList()),
                 () => Assert.Equal("2", children[0].GetAttribute("aria-level")),
                 () => Assert.Null(children[1].GetAttribute("aria-expanded")),

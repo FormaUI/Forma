@@ -51,7 +51,7 @@
          data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
-         @attributes="AdditionalAttributes"
+         @attributes="CollectionName.WithoutName(AdditionalAttributes)"
          @ref="RootElement">
         @if (!View.HasLoaded)
         {
@@ -63,16 +63,17 @@
         }
         else if (View.IsGrouped)
         {
-            <div class="forma-data-cards-groups">
-                @foreach (var group in View.Groups)
+            <div class="forma-data-cards-groups" role="group" aria-label="@CollectionName.LabelOf(AdditionalAttributes)" aria-labelledby="@CollectionName.LabelledByOf(AdditionalAttributes)">
+                @foreach (var (index, group) in View.Groups.Index())
                 {
                     var isFolded = View.IsFolded(group);
+                    var nameId = GetGroupNameId(index);
 
                     <section class="forma-data-cards-group" @key="group.Key">
-                        <FormaDataGroupHeading TItem="TItem" Group="group" IsFolded="isFolded" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                        <FormaDataGroupHeading TItem="TItem" Group="group" NameId="@nameId" IsFolded="isFolded" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
                         @if (!isFolded)
                         {
-                            <div class="forma-data-cards-pack" role="list">
+                            <div class="forma-data-cards-pack" role="list" aria-labelledby="@nameId">
                                 @foreach (var item in group.Items)
                                 {
                                     @card(item)
@@ -85,7 +86,7 @@
         }
         else
         {
-            <div class="forma-data-cards-pack" role="list">
+            <div class="forma-data-cards-pack" role="list" aria-label="@CollectionName.LabelOf(AdditionalAttributes)" aria-labelledby="@CollectionName.LabelledByOf(AdditionalAttributes)">
                 @foreach (var item in View.Items)
                 {
                     @card(item)
