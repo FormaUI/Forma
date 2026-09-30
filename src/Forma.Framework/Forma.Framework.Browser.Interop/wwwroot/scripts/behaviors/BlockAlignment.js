@@ -2,7 +2,7 @@
  * BlockAlignment — rows kept level with the blocks of another element
  *
  * A gutter beside a document names, on each of its rows, the block the row belongs to. Where
- * that block sits is the browser's to decide, and it moves as text is typed, as the window
+ * that block sits is the browser's to decide, and it moves as text is typed, as the browser window
  * narrows and as the document scrolls, so the rows are placed from the blocks' current
  * geometry, once per frame however many changes ask for it. A row naming a block that no
  * longer exists is hidden rather than left where the block was.

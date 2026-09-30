@@ -107,7 +107,7 @@
     "Archive": "אחסון בארכיון",
     "Delete": "מחיקה",
     "Commands That Change": "פקודות משתנות",
-    "A bar notices its commands being added or removed, not only the window being resized, so the arrows appear the moment the bar stops fitting.": "סרגל מבחין בהוספה או בהסרה של פקודותיו, ולא רק בשינוי גודל החלון, כך שהחצים מופיעים ברגע שהסרגל חדל להיכנס.",
+    "A bar notices its commands being added or removed, not only the browser window being resized, so the arrows appear the moment the bar stops fitting.": "סרגל מבחין בהוספה או בהסרה של פקודותיו, ולא רק בשינוי גודל חלון הדפדפן, כך שהחצים מופיעים ברגע שהסרגל חדל להיכנס.",
     "Add Commands": "הוספת פקודות",
     "Remove Commands": "הסרת פקודות",
     "A Bar That Fits": "סרגל שנכנס",

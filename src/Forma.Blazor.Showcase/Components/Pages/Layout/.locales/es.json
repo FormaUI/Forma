@@ -108,7 +108,7 @@
     "Archive": "Archivar",
     "Delete": "Eliminar",
     "Commands That Change": "Comandos Que Cambian",
-    "A bar notices its commands being added or removed, not only the window being resized, so the arrows appear the moment the bar stops fitting.": "Una barra advierte que se añaden o se quitan comandos, no solo que cambia el tamaño de la ventana, así que las flechas aparecen en el momento en que la barra deja de caber.",
+    "A bar notices its commands being added or removed, not only the browser window being resized, so the arrows appear the moment the bar stops fitting.": "Una barra advierte que se añaden o se quitan comandos, no solo que cambia el tamaño de la ventana del navegador, así que las flechas aparecen en el momento en que la barra deja de caber.",
     "Add Commands": "Añadir Comandos",
     "Remove Commands": "Quitar Comandos",
     "A Bar That Fits": "Una Barra Que Cabe",

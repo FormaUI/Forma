@@ -426,7 +426,7 @@ Serialized, that tree is a `ComposerDocument.Content` of format `widget-tree` (�
 
 The engine never deserializes `Settings`. It hands the `JsonElement` to the widget's `SettingsComponent`, which reads it as its own record, so a host's race-results widget defines `RaceResultsSettings` and Forma never learns the field names.
 
-**Every `Settings` element must be cloned into its node.** A `JsonElement` is a window onto its owning `JsonDocument`'s pooled buffers and is invalid once that document is disposed, so a node holding an unowned element outlives its own data. `JsonElement.Clone()` returns one that owns itself, which is also what keeps a node immutable enough for the undo stack in §3.4 to snapshot the tree.
+**Every `Settings` element must be cloned into its node.** A `JsonElement` is a view onto its owning `JsonDocument`'s pooled buffers and is invalid once that document is disposed, so a node holding an unowned element outlives its own data. `JsonElement.Clone()` returns one that owns itself, which is also what keeps a node immutable enough for the undo stack in §3.4 to snapshot the tree.
 
 **A column is a node, not a number on its parent.** A row holds `column` children, each an ordinary container widget with its own settings, rather than a `columns: [50, 50]` array. A column is a drop target with its own children, so it needs a stable identity that "index 0 of the row's children" cannot give it; it needs settings that grow past a width — alignment, padding, background; and per-breakpoint widths are the mobile-first default rather than an afterthought.
 

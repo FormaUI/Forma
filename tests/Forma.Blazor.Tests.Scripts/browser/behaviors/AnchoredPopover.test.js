@@ -138,7 +138,7 @@ describe('AnchoredPopover', () => {
 
     // The popover's own content can grow after it opens — a progressively loaded picker, a search
     // result count, a category switch — so its size alone must trigger repositioning, not only
-    // a window resize or scroll.
+    // a browser window resize or scroll.
     it('recalculates position when the popover itself changes size after opening', () => {
         setAnchorRect({ top: 700, bottom: 730, left: 50, right: 90, width: 40, height: 30 });
         setPopupHeight(30);
@@ -217,7 +217,7 @@ describe('AnchoredPopover', () => {
         expect(document.activeElement.id).toBe('inside');
     });
 
-    it('repositions when the window scrolls or resizes', () => {
+    it('repositions when the browser window scrolls or resizes', () => {
         const handle = attach(popover, { anchor });
         handle.open();
 

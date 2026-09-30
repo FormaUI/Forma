@@ -2,15 +2,15 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Globalization;
 
-/// <summary>One culture's calendar over a bounded month window: coordinates, names, clamping, and the day grid.</summary>
-internal sealed class CalendarMonthWindow
+/// <summary>One culture's calendar over a bounded range of months: coordinates, names, clamping, and the day grid.</summary>
+internal sealed class CalendarMonthRange
 {
     private const int DefaultYearRadius = 10;
 
     private readonly Calendar _calendar;
     private readonly DateTimeFormatInfo _dateFormat;
 
-    private CalendarMonthWindow(Calendar calendar, DateTimeFormatInfo format, DateOnly? minDate, DateOnly? maxDate)
+    private CalendarMonthRange(Calendar calendar, DateTimeFormatInfo format, DateOnly? minDate, DateOnly? maxDate)
     {
         _calendar = calendar;
         _dateFormat = format;
@@ -28,7 +28,7 @@ internal sealed class CalendarMonthWindow
     }
 
     /// <summary>Builds the view for a culture, preferring its non-Gregorian calendar when asked to.</summary>
-    public static CalendarMonthWindow Create(CultureInfo culture, bool useNonGregorianMonths, DateOnly? minDate, DateOnly? maxDate)
+    public static CalendarMonthRange Create(CultureInfo culture, bool useNonGregorianMonths, DateOnly? minDate, DateOnly? maxDate)
     {
         var calendar = useNonGregorianMonths
             ? (culture.OptionalCalendars.FirstOrDefault(candidate => candidate is not GregorianCalendar)
@@ -43,19 +43,19 @@ internal sealed class CalendarMonthWindow
             format.Calendar = calendar;
         }
 
-        return new CalendarMonthWindow(calendar, format, minDate, maxDate);
+        return new CalendarMonthRange(calendar, format, minDate, maxDate);
     }
 
-    /// <summary>The first Gregorian year the window reaches.</summary>
+    /// <summary>The first Gregorian year the range reaches.</summary>
     public int MinYear { get; }
 
-    /// <summary>The last Gregorian year the window reaches.</summary>
+    /// <summary>The last Gregorian year the range reaches.</summary>
     public int MaxYear { get; }
 
-    /// <summary>The first month the window shows.</summary>
+    /// <summary>The first month the range holds.</summary>
     public DateOnly MinMonth { get; }
 
-    /// <summary>The last month the window shows.</summary>
+    /// <summary>The last month the range holds.</summary>
     public DateOnly MaxMonth { get; }
 
     /// <summary>The weekday the grid's first column carries.</summary>
@@ -101,7 +101,7 @@ internal sealed class CalendarMonthWindow
     public string GetDayLabel(DateOnly date)
         => date.ToDateTime(TimeOnly.MinValue).ToString("D", _dateFormat);
 
-    /// <summary>The given month pulled inside the window.</summary>
+    /// <summary>The given month pulled inside the range.</summary>
     public DateOnly Clamp(DateOnly month)
     {
         if (month < MinMonth)

@@ -54,7 +54,7 @@ const BindingFields = ['key', 'axis', 'button', 'buttons', 'pointerType', 'data'
 const ModifierFields = ['control', 'meta', 'alt', 'shift'];
 
 /** How long a click can follow the release of a press whose click was claimed and still be its click. */
-const ClickSuppressionWindow = 1000;
+const ClickSuppressionPeriod = 1000;
 
 /** An action identifier: a component or application name, a dot, and the action, so host overrides key one thing. */
 const ActionIdentifier = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/;
@@ -756,7 +756,7 @@ function apply(event, resolution) {
 }
 
 // The click that follows the press is the one from the same pointer, on what was pressed or on what captured it, within
-// the window after release; any other click from a pointer ends the suppression without being swallowed, and a click raised
+// the period after release; any other click from a pointer ends the suppression without being swallowed, and a click raised
 // from the keyboard follows no press, so it is never swallowed and leaves the suppression as it was.
 function swallowSuppressedClick(event) {
     if (!suppressedClick || event.detail === 0) {
@@ -768,13 +768,13 @@ function swallowSuppressedClick(event) {
     const samePointer = event.pointerId === undefined || event.pointerId === pointerId;
     const related = event.target instanceof Node && (target.contains(event.target) || event.target.contains(target));
 
-    if (samePointer && related && performance.now() - time <= ClickSuppressionWindow) {
+    if (samePointer && related && performance.now() - time <= ClickSuppressionPeriod) {
         event.stopPropagation();
         event.preventDefault();
     }
 }
 
-// The window a suppressed click has runs from the release, since a drag lasts as long as the pointer is held.
+// The period a suppressed click has runs from the release, since a drag lasts as long as the pointer is held.
 function stampRelease(event) {
     if (suppressedClick?.pointerId === event.pointerId) {
         suppressedClick.time = performance.now();

@@ -33,7 +33,7 @@ public sealed partial class FormaCalendar : FormaComponentBase
 
     private DateOnly _leftMonth;
     private DateOnly _rightMonth;
-    private CalendarMonthWindow _calendar = default!;
+    private CalendarMonthRange _calendar = default!;
 
     private bool ShowsTwoMonths
         => Months == 2;
@@ -49,7 +49,7 @@ public sealed partial class FormaCalendar : FormaComponentBase
         ArgumentOutOfRangeException.ThrowIfLessThan(Months, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(Months, 2);
 
-        _calendar = CalendarMonthWindow.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
+        _calendar = CalendarMonthRange.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
 
         if (MinDate.HasValue && MaxDate.HasValue && MinDate.Value > MaxDate.Value)
         {

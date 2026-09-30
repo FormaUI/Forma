@@ -344,7 +344,7 @@ body {
     --forma-command-area-bg-color: var(--hover-bg-color);
 }
 
-/* Forces the overflow case without needing the window resized. */
+/* Forces the overflow case without needing the browser window resized. */
 .demo-command-bar-narrow {
     max-inline-size: 26rem;
 }

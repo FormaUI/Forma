@@ -21,7 +21,7 @@ public sealed partial class FormaPagination : FormaElementBase
     private const int LookAhead = 4;
     private const int StepCount = LookAhead + 3;
 
-    // Beside the steps a navigation button moves a whole window.
+    // Beside the steps a navigation button moves a whole run of steps.
     private const int StepsStride = LookAhead;
 
     private const string PageAction = "pagination.page";
@@ -143,7 +143,7 @@ public sealed partial class FormaPagination : FormaElementBase
         }
     }
 
-    // The window starts at the current page and looks ahead; near the end the last seven pages show whole; a shorter list pads with empty steps so the first page sits in the same place.
+    // The run of steps starts at the current page and looks ahead; near the end the last seven pages show whole; a shorter list pads with empty steps so the first page sits in the same place.
     private static List<NavigationStep> BuildNavigationSteps(int currentPage, int pageCount)
     {
         var steps = new List<NavigationStep>(StepCount);

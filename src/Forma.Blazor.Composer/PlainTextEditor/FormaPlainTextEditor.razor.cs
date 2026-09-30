@@ -12,7 +12,7 @@ using Microsoft.JSInterop;
 /// <summary>The plain text canvas, filling the surface the engine gives its editor.</summary>
 public sealed partial class FormaPlainTextEditor : FormaComponentBase
 {
-    // Keystrokes within this window commit as one state, so undo steps back a phrase rather than a character.
+    // Keystrokes within this delay commit as one state, so undo steps back a phrase rather than a character.
     private static readonly TimeSpan CommitDelay = TimeSpan.FromMilliseconds(400);
 
     /// <summary>The composer state cascaded from the parent shell.</summary>

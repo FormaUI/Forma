@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A field for picking a range of dates from two months side by side, with presets for the usual spans; the range is one value, committed once both ends are picked.</summary>
 public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
 {
-    // The rolling windows the Last7Days and Last30Days presets cover, ending today.
+    // The rolling spans the Last7Days and Last30Days presets cover, ending today.
     private const int ShortRangeDays = 7;
     private const int LongRangeDays = 30;
 
@@ -37,7 +37,7 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     private ElementReference _anchorElement;
     private FormaPopover Popover { get; set; } = default!;
     private readonly DateRangeDraft _draft = new();
-    private CalendarMonthWindow _calendar = default!;
+    private CalendarMonthRange _calendar = default!;
 
     private bool IsOpen
         => Popover is { IsOpen: true };
@@ -62,7 +62,7 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
-        _calendar = CalendarMonthWindow.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
+        _calendar = CalendarMonthRange.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
 
         if (MinDate.HasValue && MaxDate.HasValue && MinDate.Value > MaxDate.Value)
         {

@@ -458,7 +458,7 @@ describe('InputRouter clicks', () => {
         expect(swallowed.defaultPrevented).toBe(true);
     });
 
-    it('counts the window from the release rather than the press', () => {
+    it('counts the period from the release rather than the press', () => {
         const chosen = vi.fn();
         const gesture = scope(grid(), { routes: [route('test.choose', chosen, clickBinding())] });
         const now = vi.spyOn(performance, 'now');
@@ -1069,7 +1069,7 @@ describe('InputRouter active routing', () => {
         expect(clicked).toHaveBeenCalledOnce();
     });
 
-    it('does not swallow a click that arrives after the window', () => {
+    it('does not swallow a click that arrives after the period', () => {
         scope(popup(), { onDismiss: vi.fn() }).activate();
         const clicked = vi.fn();
         elsewhere().addEventListener('click', clicked);
