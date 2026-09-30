@@ -1,14 +1,13 @@
 /*
     forma-tokens.css — The design tokens every Forma component reads.
 
-    Values only, no selectors. A background ends in -bg-color, a foreground in -fg-color, and the
-    readable content of a control in -text-color.
+    A background ends in -bg-color, a foreground in -fg-color, and the readable content of a
+    control in -text-color.
 
-    The theme contract. A theme is a selector that redefines two things and nothing else: the gray
-    scale, and the solid of each role. Every other token derives from those by name, so it follows
-    without being touched. A token that points at a scale step or a role changes with the theme; a
-    token that points at --white-color or --black-color is the same in every theme, and only what
-    must stay fixed — the media viewer — points there.
+    The theme contract: a theme is a selector that redefines the gray scale and the solid of each
+    role. Every other token derives from those by name. A token that points at a scale step or a
+    role changes with the theme; a token that points at --white-color or --black-color is the same
+    in every theme.
 */
 
 :root {
@@ -16,7 +15,7 @@
     --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
         'Noto Sans Hebrew', sans-serif;
     --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-    /* Faces that draw signs and symbols as text, so a character standing in for an icon never arrives as color emoji. */
+    /* Faces that draw signs and symbols as monochrome text, for a character standing in for an icon. */
     --font-family-symbol: 'Segoe UI Symbol', 'Apple Symbols', 'Noto Sans Symbols 2', sans-serif;
 
     /* Type scale, in rem so a reader's own font size carries through. Each step has one job. */
@@ -32,7 +31,7 @@
     --line-height-target: 1.25;
 
     /* Spacing scale on a 4px grid, in rem so padding and gaps grow with the text they surround.
-       Each step has one job, so two components that make the same decision pick the same value. */
+       Each step has one job. */
     --space-1: 0.25rem;   /* inside one target: a glyph beside its label, a badge's padding; between the backdrops laid on a canvas */
     --space-2: 0.5rem;    /* between targets in a row; a target's block padding */
     --space-3: 0.75rem;   /* a target's inline padding; between groups in a row */
@@ -60,10 +59,10 @@
     --radius-sm: 0.25rem;   /* a target: button, input, checkbox, cell */
     --radius-md: 0.375rem;  /* a card, a popover, a panel */
     --radius-lg: 0.5rem;    /* a dialog, a toast */
-    --radius-pill: 9999px;  /* a badge, a chip, a tab pill; intentionally oversized; CSS caps it to form fully rounded ends */
+    --radius-pill: 9999px;  /* a badge, a chip, a tab pill; oversized, which CSS caps to fully rounded ends */
 
     /* ============================================================
-       Constants — the same in every theme. Only what must stay fixed points here.
+       Constants — the same in every theme.
        ============================================================ */
     --white-color: #fff;
     --black-color: #000;
@@ -125,7 +124,7 @@
     --warning-color: #ffc107;
     --warning-emphasis-color: color-mix(in srgb, var(--warning-color) 82%, black);
     --warning-subtle-color: color-mix(in srgb, var(--warning-color) 10%, transparent);
-    --warning-fg-color: var(--gray-800);  /* dark on yellow; white would not read */
+    --warning-fg-color: var(--gray-800);  /* dark on yellow */
 
     --info-color: #307fdd;
     --info-emphasis-color: color-mix(in srgb, var(--info-color) 82%, black);
@@ -142,13 +141,11 @@
     --text-secondary-color: var(--gray-500);
 
     /* ============================================================
-       Interactive states — two axes, both distinct from Buttons below. Quiet is an emphasis
-       level on something still usable: the label or glyph of an enabled target on a quiet fill
-       or on no fill at all, such as a ghost button or a toolbar icon. It is the secondary role
-       worn as text and as a subtle fill — a tertiary button rests in it, a ghost button reaches
-       it on hover — and it points at secondary so that reads as one decision. Disabled is a state:
-       every disabled target, whatever it was when live, so a gray that weak always means
-       "unavailable." Neither is Muted below, which decorates content rather than describing a target.
+       Interactive states — two axes. Quiet is an emphasis level on something still usable: the
+       label or glyph of an enabled target on a quiet fill or on no fill at all, such as a ghost
+       button or a toolbar icon. It is the secondary role worn as text and as a subtle fill, so it
+       points at secondary. Disabled is a state: every disabled target, whatever it was when live,
+       so a gray that weak always means "unavailable."
        ============================================================ */
     --quiet-text-color: var(--secondary-color);
     --disabled-bg-color: var(--gray-100);
@@ -157,7 +154,7 @@
     /* ============================================================
        Backdrops — the canvas a page paints, the backdrops laid on it, and the tone a region takes
        inside a backdrop, one token per BackdropVariant. Regions are told apart by tone and by a
-       backdrop's own edge, never by a line drawn across a backdrop.
+       backdrop's own edge.
        ============================================================ */
     --backdrop-canvas-bg-color: var(--gray-100);  /* the canvas: the backdrop other backdrops are laid on */
     --backdrop-flat-bg-color: var(--gray-0);      /* a flat backdrop: a panel, a sheet, a content area */
@@ -168,7 +165,7 @@
     --input-bg-color: var(--gray-0);
     --inactive-bg-color: var(--gray-50);  /* a whole surface gone inactive: a disabled or a read-only composer */
     --inactive-opacity: 0.6;              /* how far a whole surface gone inactive fades: a disabled composer, an inert backdrop */
-    --muted-bg-color: var(--gray-100);    /* content decoration, not a target: inline code, a quote, a placeholder box */
+    --muted-bg-color: var(--gray-100);    /* content decoration: inline code, a quote, a placeholder box */
     --hover-bg-color: color-mix(in srgb, var(--gray-600) 6%, transparent);
 
     /* ============================================================
@@ -207,8 +204,7 @@
     --focus-ring: 0 0 0 var(--focus-ring-gap) var(--input-bg-color), 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--focus-color);
     --focus-ring-inset: inset 0 0 0 var(--focus-ring-width) var(--focus-color), inset 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--input-bg-color);
 
-    /* Links — the primary emphasis, so a link reads as accent text over prose rather than as the
-       full-strength solid a primary button wears; hover darkens further to raise its emphasis. */
+    /* Links — the primary emphasis, so a link reads as accent text over prose; hover darkens further. */
     --link-color: var(--primary-emphasis-color);
     --link-hover-color: color-mix(in srgb, var(--primary-color) 62%, black);
 
@@ -218,24 +214,22 @@
     --border-emphasis-color: color-mix(in srgb, var(--gray-600) 31%, transparent);
 
     /* ============================================================
-       Media — the chrome for viewing a photo, a video or a document. Fixed to a dark viewer in
-       every theme, the way a photo viewer stays dark in light mode, so it points at the constants.
+       Media — the chrome for viewing a photo, a video or a document, fixed to a dark viewer in
+       every theme through the constants.
        ============================================================ */
     --media-bg-color: var(--black-color);
     --media-fg-color: var(--white-color);
     --media-muted-fg-color: color-mix(in srgb, var(--white-color) 72%, transparent);
-    /* A shade is a translucent dark layer laid over a picture so that what is drawn on top of it — a
-       caption, the viewer's arrows, a preview's surroundings — stays readable whatever the picture's
-       colors are. It is not a background: a background is what a thing sits on, a shade is what it
-       is seen through. A layer behind a modal is a scrim; a generic positioned layer an overlay. */
+    /* A shade is a translucent dark layer laid over a picture, keeping what is drawn on top of it — a
+       caption, the viewer's arrows, a preview's surroundings — readable whatever the picture's colors are. */
     --media-shade-color: color-mix(in srgb, var(--black-color) 70%, transparent);
 
     /* ============================================================
-       Chrome — the band a specific kind of surface paints for itself, each independently themable even where
-       today's value happens to match another. A frame is a raised backdrop with chrome: a title bar, an
-       optional header band, the body, an optional footer band; a window floats a frame and a dialog is a
-       modal window, and both read the same tokens. The bands read as inset backdrops and the body as a flat one; a toolbar and a status strip read
-       as a stronger, more visible muted tone so they stay legible beside a dimmed, inactive surface.
+       Chrome — the band a specific kind of surface paints for itself, each themable on its own. A frame
+       is a raised backdrop with chrome: a title bar, an optional header band, the body, an optional
+       footer band; a window floats a frame and a dialog is a modal window, and both read the same tokens.
+       The bands read as inset backdrops and the body as a flat one; a toolbar and a status strip read as
+       the stronger muted tone, legible beside a dimmed, inactive surface.
        ============================================================ */
     --toolbar-bg-color: var(--muted-bg-color);
     --command-area-bg-color: var(--backdrop-inset-bg-color);
@@ -244,14 +238,12 @@
     --chrome-header-bg-color: var(--backdrop-inset-bg-color);
     --chrome-body-bg-color: var(--backdrop-flat-bg-color);
     --chrome-footer-bg-color: var(--backdrop-inset-bg-color);
-    /* The scrim: the translucent dark layer a modal stands on, dimming and blocking what lies beneath. A
-       see-through layer, not a surface, so it is named like the shade rather than as a -bg-color; fixed dark in
-       every theme, so it points at the constant. */
+    /* The scrim: the translucent dark layer a modal stands on, dimming and blocking what lies beneath,
+       named like the shade as a see-through layer and fixed dark in every theme. */
     --scrim-color: color-mix(in srgb, var(--black-color) 45%, transparent);
 
-    /* Layers — what stacks over the page, on Bootstrap's scale so the numbers mean the same thing
-       they do elsewhere. A dialog needs none: the native element sits in the top layer above all of these.
-       Stacking inside one component uses its own small integers and is not a layer. */
+    /* Layers — what stacks over the page, on Bootstrap's scale. A native dialog sits in the top layer
+       above all of these; stacking inside one component uses its own small integers. */
     --z-index-popover: 1000;    /* a popover, a drop-down menu, a maximized composer: over the page */
     --z-index-window: 1030;   /* a floating window or a placed frame: over the page and its popovers, which live in the top layer regardless */
     --z-index-floating-bar: 1060;  /* a bar floating over a popover, such as the selection bar */

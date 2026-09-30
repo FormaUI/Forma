@@ -1,9 +1,5 @@
 /*
-    forma-input.css — The one definition of a Forma input box.
-
-    Loads after forma-base.css. Every input listed here draws the same box;
-    each owning component sets only how its own differs, such as the padding it
-    needs for a floating label or a leading glyph.
+    forma-input.css — The one definition of a Forma input box, drawn by every input listed here.
 */
 
 .forma-field-input,
@@ -49,7 +45,7 @@
     }
 }
 
-/* Forced colors drops the shadow and overrides the border, leaving no focus ring. */
+/* Forced colors drops the shadow and overrides the border, so focus shows as an outline. */
 @media (forced-colors: active) {
     .forma-field-input:focus,
     .forma-text-box:focus,

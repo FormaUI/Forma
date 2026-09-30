@@ -23,11 +23,11 @@ public sealed class ZoomScale
     public bool IsZoomedIn
         => _index > 0;
 
-    /// <summary>Whether no step lies below the current one.</summary>
+    /// <summary>Whether the zoom stands on its first step.</summary>
     public bool IsAtMinimum
         => _index == 0;
 
-    /// <summary>Whether no step lies above the current one.</summary>
+    /// <summary>Whether the zoom stands on its last step.</summary>
     public bool IsAtMaximum
         => _index == _steps.Count - 1;
 

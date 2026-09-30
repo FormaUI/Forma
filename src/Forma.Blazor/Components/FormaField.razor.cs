@@ -8,25 +8,26 @@ using Microsoft.AspNetCore.Components.Forms;
 /// <summary>Field chrome — the label, required marker and validation messages around a form element.</summary>
 public sealed partial class FormaField : FormaElementBase
 {
-    /// <summary>The label text, absent which no label renders.</summary>
+    /// <summary>The label text.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>Id of the element the label points at.</summary>
+    /// <summary>The id of the element the label points at.</summary>
     [Parameter] public string? TargetId { get; set; }
 
-    /// <summary>Shows the required marker beside the label.</summary>
+    /// <summary>Whether the field is required, marked beside the label.</summary>
     [Parameter] public bool Required { get; set; }
 
-    /// <summary>Anchors the label to the top for an element taller than one line.</summary>
+    /// <summary>Whether the element is taller than one line, with the label anchored to its top.</summary>
     [Parameter] public bool Multiline { get; set; }
 
     /// <summary>Where the label sits relative to the element.</summary>
     [Parameter] public FieldLabelMode LabelMode { get; set; }
 
-    /// <summary>The element the chrome wraps; the forma-field-input class opts it into the field's box.</summary>
+    /// <summary>The element the chrome wraps.</summary>
+    /// <remarks>An element carrying the forma-field-input class takes the field's box, with the label floating over its value.</remarks>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    /// <summary>The model field whose validation messages render beneath the element; absent, none render.</summary>
+    /// <summary>The model field whose validation messages render beneath the element.</summary>
     [Parameter] public FieldIdentifier? Field { get; set; }
 
     [CascadingParameter] private EditContext? EditContext { get; set; }
@@ -58,7 +59,7 @@ public sealed partial class FormaField : FormaElementBase
 
         ArgumentNullException.ThrowIfNull(ChildContent);
 
-        // The messages change when the form validates, which the form reports through its context rather than through a parameter.
+        // The form reports validation through its edit context's event, which renders the messages again.
         if (!ReferenceEquals(EditContext, _observedEditContext))
         {
             StopObservingValidation();

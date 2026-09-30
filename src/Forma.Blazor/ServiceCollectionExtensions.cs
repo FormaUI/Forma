@@ -30,8 +30,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // What every component injects resolves even where the host registered none of it: the logger
-        // discards, the locale speaks the source language, and the runtime refuses at the first call.
+        // Fallbacks for what every component injects: a discarding logger, the source-language locale, and a runtime that throws at the first call.
         services.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
         services.TryAddSingleton<IStringLocaleFactory>(NullStringLocaleFactory.Instance);
@@ -43,7 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddFormaSanitizationServices();
 
         services.AddFormaEmojiServices();
-        // Scoped, because the sheets it has adopted are the ones in this circuit's own document.
+        // Scoped to the circuit, whose own document holds the adopted sheets.
         services.TryAddScoped<IEmojiSpriteLoader, EmojiSpriteLoader>();
         services.AddFormaGlyphServices();
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-/// <summary>What every Forma component is: it reaches the browser, speaks the reader's language, can say what happened to it, and is disposed once.</summary>
+/// <summary>The base of every Forma component: its context, strings, log and JS environment, and its disposal.</summary>
 public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
 {
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
@@ -17,11 +17,11 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }
 
-    /// <summary>The type whose translation files the component reads: its own, unless it shares a feature's.</summary>
+    /// <summary>The type whose locale files the component reads.</summary>
     protected virtual Type LocalizationSourceType
         => GetType();
 
-    /// <summary>What the component is given: its identity, its strings, its log and its JS environment.</summary>
+    /// <summary>The component's context: its identity, its strings, its log and its JS environment.</summary>
     protected IComponentContext Context
         => field ??= new ComponentContext(
             () => JSRuntime,
@@ -45,7 +45,8 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>Releases what the component holds; runs once.</summary>
+    /// <summary>Releases what the component holds.</summary>
+    /// <remarks>The base runs it once.</remarks>
     protected virtual ValueTask DisposeAsyncCore()
         => ValueTask.CompletedTask;
 }

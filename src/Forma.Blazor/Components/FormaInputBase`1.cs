@@ -9,14 +9,15 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-/// <summary>What every Forma form input is: the framework's input with the same reach, strings, log, host surface and disposal as any other Forma component.</summary>
+/// <summary>The base of every Forma form input: the framework's input with the context, strings, log, host surface and disposal of any Forma component.</summary>
 /// <typeparam name="TValue">The value the input binds.</typeparam>
 public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposable
 {
-    /// <summary>The root element's id, verbatim.</summary>
+    /// <summary>The root element's id.</summary>
     [Parameter] public string? Id { get; set; }
 
-    /// <summary>The id the input's elements derive theirs from: the root's own when the host gave one, and one minted from the runtime id otherwise.</summary>
+    /// <summary>The id the input's elements derive theirs from.</summary>
+    /// <remarks>The host's id when it gave one, otherwise one minted from the runtime id.</remarks>
     public string ElementId
         => Id ?? $"forma-{Context.RuntimeId:N}";
 
@@ -36,11 +37,11 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>The root element, once rendered.</summary>
     public virtual ElementReference RootElement { get; protected set; }
 
-    /// <summary>The type whose translation files the component reads: its own, unless it shares a feature's.</summary>
+    /// <summary>The type whose locale files the component reads.</summary>
     protected virtual Type LocalizationSourceType
         => GetType();
 
-    /// <summary>What the component is given: its identity, its strings, its log and its JS environment.</summary>
+    /// <summary>The component's context: its identity, its strings, its log and its JS environment.</summary>
     protected IComponentContext Context
         => field ??= new ComponentContext(
             () => JSRuntime,
@@ -51,7 +52,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     protected IStringLocale L
         => Context.Locale;
 
-    /// <summary>The class written on the root element: the component's own, the host's, then the field's validation class; null when there is none.</summary>
+    /// <summary>The class written on the root element: the component's own, the host's, then the field's validation class.</summary>
     protected string? RootClass
     {
         get
@@ -65,7 +66,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
     }
 
-    /// <summary>The style written on the root element: the component's own, then the host's; null when there is none.</summary>
+    /// <summary>The style written on the root element: the component's own, then the host's.</summary>
     protected string? RootStyle
     {
         get
@@ -104,7 +105,8 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     {
     }
 
-    /// <summary>Releases what the component holds; runs once.</summary>
+    /// <summary>Releases what the component holds.</summary>
+    /// <remarks>The base runs it once.</remarks>
     protected virtual ValueTask DisposeAsyncCore()
         => ValueTask.CompletedTask;
 }

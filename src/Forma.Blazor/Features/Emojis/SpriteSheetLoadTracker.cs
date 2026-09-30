@@ -7,7 +7,7 @@ public sealed class SpriteSheetLoadTracker
     private readonly HashSet<string> _loadingSheets = [with(StringComparer.Ordinal)];
     private readonly HashSet<string> _failedSheets = [with(StringComparer.Ordinal)];
 
-    /// <summary>Whether the sheet has arrived or failed, either way no longer worth waiting for.</summary>
+    /// <summary>Whether the sheet has arrived or failed.</summary>
     public bool IsCompleted(string sheet)
         => _loadedSheets.Contains(sheet) || _failedSheets.Contains(sheet);
 
@@ -29,7 +29,7 @@ public sealed class SpriteSheetLoadTracker
         _failedSheets.Add(sheet);
     }
 
-    /// <summary>Forgets every failure, so each failed sheet may be asked for again.</summary>
+    /// <summary>Forgets every failed sheet.</summary>
     public void ClearFailures()
         => _failedSheets.Clear();
 }

@@ -1,7 +1,7 @@
 /* ============================================================
    FormaField — CSS isolation
-   Floating label via :placeholder-shown / :focus. The input element is
-   rendered by the consuming component, so it is reached with ::deep.
+   The label, required marker and validation messages around an input
+   element the wrapping component renders, reached with ::deep.
    ============================================================ */
 
 /* Autofill keyframes — global (not scoped by isolation) */
@@ -43,7 +43,7 @@
     color: var(--forma-label-disabled-color, var(--disabled-text-color));
 }
 
-/* The borderless modes carry no forma-field-input, and hold no input but their own. */
+/* The borderless modes hold a bare input of their own. */
 .forma-field-label-above:has(input:disabled) .forma-field-label,
 .forma-field-label-inline:has(input:disabled) .forma-field-label {
     color: var(--forma-label-disabled-color, var(--disabled-text-color));
@@ -87,14 +87,14 @@
     max-inline-size: calc(100% - 2 * var(--space-3));
 }
 
-/* An input element taller than one line has no vertical center to sit against. */
+/* An input element taller than one line holds the label at its top. */
 .forma-field-multiline .forma-field-label {
     inset-block-start: var(--space-4);
     transform: none;
 }
 
-/* Float label: focused, has value (via placeholder trick), or autofilled. A general sibling
-   rather than adjacent, so a field may put a button between its input and the label. */
+/* Float label: focused, holding a value (placeholder not shown, or has-value), or pinned.
+   A general sibling, so a button may sit between the input and the label. */
 ::deep .forma-field-input:focus ~ .forma-field-label,
 ::deep .forma-field-input:not(:placeholder-shown) ~ .forma-field-label,
 ::deep .forma-field-input.has-value ~ .forma-field-label,
@@ -106,8 +106,8 @@
     color: var(--forma-label-color, var(--text-primary-color));
 }
 
-/* Above and Inline: a static label ahead of an element that draws no box for one to float over.
-   Ordered rather than reordered in markup, so the floating modes keep their sibling selector. */
+/* Above and Inline: a static label ahead of the element, placed first by order so the markup
+   keeps the floating modes' sibling selector. */
 .forma-field-label-above {
     display: flex;
     flex-direction: column;

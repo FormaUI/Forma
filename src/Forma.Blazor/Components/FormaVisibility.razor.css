@@ -1,11 +1,10 @@
 /* ============================================================
    FormaVisibility — CSS isolation
-   Collapses ChildContent to nothing instead of unmounting it.
+   Collapses its content to nothing while keeping it mounted.
    ============================================================ */
 
-/* Hidden content leaves layout entirely — a sibling gap closes over it — while staying
-   mounted in the DOM; the discrete display transition holds it rendered through the
-   collapse animation and takes it out only once that ends. */
+/* Hidden content leaves layout while staying mounted; the discrete display transition keeps
+   it rendered until the collapse animation ends. */
 .forma-visibility {
     display: none;
     grid-template-rows: 0fr;

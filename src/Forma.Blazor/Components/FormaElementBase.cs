@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A component with a root element its host addresses: by id, class, style and any further attribute.</summary>
 public abstract class FormaElementBase : FormaComponentBase
 {
-    /// <summary>The root element's id, verbatim.</summary>
+    /// <summary>The root element's id.</summary>
     [Parameter] public string? Id { get; set; }
 
     /// <summary>The classes the host adds to the root element.</summary>
@@ -23,11 +23,12 @@ public abstract class FormaElementBase : FormaComponentBase
     /// <summary>The root element, once rendered.</summary>
     public virtual ElementReference RootElement { get; protected set; }
 
-    /// <summary>The id the component's elements derive theirs from: the root's own when the host gave one, and one minted from the runtime id otherwise.</summary>
+    /// <summary>The id the component's elements derive theirs from.</summary>
+    /// <remarks>The host's id when it gave one, otherwise one minted from the runtime id.</remarks>
     public string ElementId
         => Id ?? $"forma-{Context.RuntimeId:N}";
 
-    /// <summary>The class written on the root element: the component's own, then the host's; null when there is none.</summary>
+    /// <summary>The class written on the root element: the component's own, then the host's.</summary>
     protected string? RootClass
     {
         get
@@ -40,7 +41,7 @@ public abstract class FormaElementBase : FormaComponentBase
         }
     }
 
-    /// <summary>The style written on the root element: the component's own, then the host's; null when there is none.</summary>
+    /// <summary>The style written on the root element: the component's own, then the host's.</summary>
     protected string? RootStyle
     {
         get

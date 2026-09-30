@@ -1,7 +1,5 @@
 /*
-    forma-reset.css — Cross-browser normalization.
-
-    Structural only: no colors and no type choices.
+    forma-reset.css — Structural cross-browser normalization.
 */
 
 *,
@@ -19,7 +17,7 @@ html {
     -webkit-text-size-adjust: 100%;
 }
 
-/* Form elements take the OS UI font until told otherwise. */
+/* Form elements inherit the page's font in place of the OS UI font. */
 button,
 input,
 optgroup,

@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Features.Emojis;
 
-/// <summary>Adopts emoji sprite sheets into the document, so a surface drawing from a sheet can ask for it and know when its symbols are there.</summary>
+/// <summary>Adopts emoji sprite sheets into the document.</summary>
 public interface IEmojiSpriteLoader
 {
     /// <summary>Adopts a sheet's symbols into the document, reporting whether they arrived.</summary>

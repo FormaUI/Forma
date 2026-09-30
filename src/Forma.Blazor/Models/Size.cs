@@ -3,7 +3,7 @@ namespace Forma.Blazor.Models;
 /// <summary>A width and a height, in CSS pixels.</summary>
 public readonly record struct Size
 {
-    /// <summary>Creates a size; neither side may be negative.</summary>
+    /// <summary>Creates a size from its width and height.</summary>
     public Size(double width, double height)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(width);

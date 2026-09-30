@@ -3,7 +3,7 @@ namespace Forma.Blazor.Models;
 /// <summary>A span of whole days from a first date to a last date, both included.</summary>
 public readonly record struct DateRange
 {
-    /// <summary>Creates a range; the last date may not come before the first.</summary>
+    /// <summary>Creates a range from its first and last dates.</summary>
     public DateRange(DateOnly start, DateOnly end)
     {
         if (end < start)

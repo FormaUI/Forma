@@ -1,16 +1,11 @@
 /*
-    forma-prose.css — The look of a document the composer authored: headings, paragraphs,
-    quotes, code, lists, tables, figures, links and the placeholders the composer stores.
-
-    Applies inside any element carrying the forma-prose class — the rich text canvas, its
-    preview, a printed page, and a host page rendering the document to readers.
-
-    Loads after forma-tokens.css.
+    forma-prose.css — The look of a document the composer authored, inside any element carrying
+    the forma-prose class: headings, paragraphs, quotes, code, lists, tables, figures, links and
+    the placeholders the composer stores.
 */
 
-/* Each block resolves its own base direction from its first strong character, so an English
-   paragraph reads left-to-right inside an RTL page and a Hebrew one right-to-left beside it.
-   Skipping [dir] leaves a direction the author set in charge. */
+/* Each block takes its base direction from its first strong character; a block with its own
+   [dir] keeps the direction the author set. */
 .forma-prose p:not([dir]),
 .forma-prose h1:not([dir]),
 .forma-prose h2:not([dir]),
@@ -127,9 +122,7 @@
     align-items: center;
 }
 
-/* A link is underlined as well as colored, because color alone leaves the state unreadable without it.
-   The underline is set away from the baseline and skips the ink of a descender, which a rule sitting
-   tight under the text would otherwise cut through. */
+/* A link is underlined as well as colored, so it reads without color. */
 .forma-prose a[href] {
     color: var(--forma-composer-link-color, var(--link-color));
     text-decoration: underline;
@@ -156,7 +149,7 @@
     border-radius: var(--radius-sm);
 }
 
-/* A named anchor carries no visible text of its own, so it is drawn as a badge the author can see, select and remove. */
+/* An empty named anchor is drawn as a badge the author can see, select and remove. */
 .forma-prose a[name]:empty {
     display: inline-block;
     margin-inline: var(--space-1);
@@ -177,8 +170,7 @@
     border-block-end: 1px dashed var(--border-color);
 }
 
-/* The marker requests text presentation through a symbol font, so an emoji-capable character
-   cannot arrive as color emoji. */
+/* The marker requests text presentation through a symbol font, so it renders as a monochrome glyph. */
 .forma-prose a[name]:empty::before {
     content: "\2693\FE0E";
     font-family: var(--font-family-symbol);
@@ -203,8 +195,7 @@
     text-align: center;
 }
 
-/* A video is stored as a placeholder the host resolves into a player, so it is marked as a
-   video with a play badge rather than left to read as an ordinary link. */
+/* A video placeholder the host resolves into a player, marked with a play badge. */
 .forma-prose .forma-composer-video {
     display: flex;
     align-items: center;
@@ -216,8 +207,8 @@
     border-radius: var(--radius-md);
 }
 
-/* Play reads the same in both directions, so the triangle is deliberately left unmirrored.
-   It requests text presentation through a symbol font, so it cannot arrive as color emoji. */
+/* The play triangle stays unmirrored in both directions, and requests text presentation
+   through a symbol font so it renders as a monochrome glyph. */
 .forma-prose .forma-composer-video::before {
     content: "\25B6\FE0E";
     font-family: var(--font-family-symbol);
