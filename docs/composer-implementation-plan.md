@@ -1,6 +1,25 @@
 # Forma Composer Implementation Plan
 
-The plan for building the composer that [the composer design](composer-design.md) states: the phases it lands through, their state, and where the build departed from the design. Section numbers refer to the design.
+The plan for building the composer that [the composer design](composer-design.md) states: the survey it rests on, the phases it lands through, their state, and where the build departed from the design. Section numbers refer to the design.
+
+## What Coi shipped
+
+Two surfaces, not one — and the second is the larger of them.
+
+**The rich text editor.** CKEditor 4 (`Controls/CKeditor2/config.js`) in three presets — `Website`, `Basic`, `Mini` — plus a collapsed arrangement under 600px. `enterMode = ENTER_BR`, `format_tags = p;h1;h2;h3;h4`, `contentsLangDirection = rtl`, `allowedContent = true` (no filtering at all). Custom plugins: `imagelibrary` (opened `pops/images.aspx?type=editor`), `youtube` (iframe embed dialog with width/height/autoplay/loop), `lineheight` (pixel line-heights, `1px`–`72px`), `qform` (injected `<script src="/c.js">`), plus bundled `smiley`, `specialchar`, `colordialog`, `table`, `tabletools`, `pastefromword`, `link`, `image`, `a11yhelp`.
+
+**The page designer.** `admin/pops/template.aspx` over `Controls/Edit/` — a drag-and-drop page builder, and the surface Coi actually used to compose a page. A palette down the side, a live canvas in the middle, and per-element chrome (`.iHndl`) carrying delete, style and edit affordances. Reordering is drag-and-drop through jquery-sortable (`drag_src.js`), with column resizing (`InitColsResize`), element resizing (`InitResize`) and a context menu (`InitContext`). `elm.js` holds a settings editor per element kind.
+
+The palette: text, image, Facebook, contact form, table/cells, horizontal rule, button, image slider, add-ons, image gallery, YouTube/video, map, spacer, code/script. On top of those sit **host-domain token elements** the palette swaps in per target — product name, summary, images, price, details, body, options, buy button, quantity; the mini-product tile variants; page name, summary, image and read-more for a category tile.
+
+One entry point, `OpenTemplate(type, title)`, serves every target through a numeric type: `100`/`112`/`113` product page templates, `101` product tile, `102` heading template, `110` rich content, `120` popup, `130` custom dropdown menu.
+
+Two details matter more than the rest:
+
+- **It persists HTML plus a scoped `<style>` block.** `SavePage()` posts `body`, `header`, `side` and `footer` through `HandleHtml`, which strips the editor chrome, swaps the menus for `{TOPMENU}`/`{SIDEMENU}` tokens and marks images lazy. There is no structured document — the DOM *is* the document.
+- **A text element hosts the rich text editor inline.** `ElmText` calls `CKEDITOR.inline(…)` on the element's own `.elIn`. The designer is the outer surface and the rich text editor is one element inside it.
+
+> On naming: Coi has no surface called "Website". `toolbar_Website` is the CKEditor preset, and `Website` is a C# class whose `Theme` the designer reads. The designer itself is *template* (תבנית) throughout.
 
 ## Phases
 

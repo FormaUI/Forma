@@ -4,10 +4,8 @@ An extensible authoring surface for the **Forma** component library, replacing b
 
 The name is the claim: **the composer composes content, and content can be composed of more content.** A page designer places widgets; one of those widgets is a text widget; that text widget hosts the rich text editor. Coi did exactly this with `CKEDITOR.inline`, and the plugin model makes it fall out rather than be special-cased.
 
-- **Component category:** its own project `Forma.Blazor.Composer`, namespace `Forma.Blazor.Components.Composer`
 - **Root component:** `FormaComposer`
 - **Supersedes:** the standalone rich text editor, and Coi's `admin/pops/template.aspx` over `Controls/Edit/`
-- **Consumers:** Coi's admin, whose page designer and product templates this replaces wholesale; Épica Deportiva's News article body (P6), page and product editors
 
 ## Vocabulary
 
@@ -15,7 +13,7 @@ There is no such thing as a composer *mode*. An editing surface is an **editor p
 
 The page designer places **widgets**. Deliberately not *element*, which the repository's naming section reserves for raw HTML against *component* for something Forma ships; and deliberately not *block*, which this document already uses for a code block, a Markdown block, a blockquote and a `<style>` block. Widget is a fresh word for a genuinely distinct thing — a palette entry describing something the designer can place — so all four concepts keep one word each.
 
-§1 keeps Coi's own vocabulary when describing Coi: its palette entries were *elements* (`iElm`, `elm.js`, *גרור מכאן אלמנטים*), and that is what someone reading the legacy source will find.
+Coi called its palette entries *elements* (`iElm`, `elm.js`, *גרור מכאן אלמנטים*), which is what a reader of the legacy source will find.
 
 ---
 
@@ -25,24 +23,12 @@ The page designer places **widgets**. Deliberately not *element*, which the repo
 
 ### 1.1 What Coi shipped
 
-Two surfaces, not one — and the second is the larger of them.
+Coi shipped two surfaces: CKEditor 4 in three presets with custom plugins, and a drag-and-drop page designer over `admin/pops/template.aspx`, the surface Coi actually composed pages with. Two of its details decide this design:
 
-**The rich text editor.** CKEditor 4 (`Controls/CKeditor2/config.js`) in three presets — `Website`, `Basic`, `Mini` — plus a collapsed arrangement under 600px. `enterMode = ENTER_BR`, `format_tags = p;h1;h2;h3;h4`, `contentsLangDirection = rtl`, `allowedContent = true` (no filtering at all). Custom plugins: `imagelibrary` (opened `pops/images.aspx?type=editor`), `youtube` (iframe embed dialog with width/height/autoplay/loop), `lineheight` (pixel line-heights, `1px`–`72px`), `qform` (injected `<script src="/c.js">`), plus bundled `smiley`, `specialchar`, `colordialog`, `table`, `tabletools`, `pastefromword`, `link`, `image`, `a11yhelp`.
-
-**The page designer.** `admin/pops/template.aspx` over `Controls/Edit/` — a drag-and-drop page builder, and the surface Coi actually used to compose a page. A palette down the side, a live canvas in the middle, and per-element chrome (`.iHndl`) carrying delete, style and edit affordances. Reordering is drag-and-drop through jquery-sortable (`drag_src.js`), with column resizing (`InitColsResize`), element resizing (`InitResize`) and a context menu (`InitContext`). `elm.js` holds a settings editor per element kind.
-
-The palette: text, image, Facebook, contact form, table/cells, horizontal rule, button, image slider, add-ons, image gallery, YouTube/video, map, spacer, code/script. On top of those sit **host-domain token elements** the palette swaps in per target — product name, summary, images, price, details, body, options, buy button, quantity; the mini-product tile variants; page name, summary, image and read-more for a category tile.
-
-One entry point, `OpenTemplate(type, title)`, serves every target through a numeric type: `100`/`112`/`113` product page templates, `101` product tile, `102` heading template, `110` rich content, `120` popup, `130` custom dropdown menu.
-
-Two details matter more than the rest:
-
-- **It persists HTML plus a scoped `<style>` block.** `SavePage()` posts `body`, `header`, `side` and `footer` through `HandleHtml`, which strips the editor chrome, swaps the menus for `{TOPMENU}`/`{SIDEMENU}` tokens and marks images lazy. There is no structured document — the DOM *is* the document.
-- **A text element hosts the rich text editor inline.** `ElmText` calls `CKEDITOR.inline(…)` on the element's own `.elIn`. The designer is the outer surface and the rich text editor is one element inside it.
+- **It persisted HTML plus a scoped `<style>` block.** There was no structured document; the DOM was the document.
+- **A text element hosted the rich text editor inline.** The designer was the outer surface, and the rich text editor one element inside it.
 
 That second point is the whole argument for this component's name. **The composer composes content, and one of the things content can be composed of is more content.** An editor plugin must therefore be able to host another editor plugin.
-
-> On naming: Coi has no surface called "Website". `toolbar_Website` is the CKEditor preset, and `Website` is a C# class whose `Theme` the designer reads. The designer itself is *template* (תבנית) throughout.
 
 ### 1.2 Full parity, nothing dropped
 
@@ -70,16 +56,6 @@ The composer is two assemblies, split along what an outside package needs. `Form
 
 The split exists because a plugin may live outside the composer's own package, as the explorer's does. Whatever such a package extends has to be a package in its own right, or both would carry a copy of the same assembly and a host installing both would get two. Publishing the engine alongside the contracts would put the catalog, the command registry, the key-binding catalog and the history into public API for callers who never touch them, so only the contracts go.
 
-| Project | Namespace | References |
-|---|---|---|
-| `Forma.Framework.Composer.Extensibility` | `Forma.Framework.Composer` | `Forma.Framework.Plugins`, `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
-| `Forma.Framework.Composer` | `Forma.Framework.Composer` | the contracts, `Forma.Framework.Icons`, `Forma.Framework.Toolbar` |
-| `Forma.AddOns.Composer.Markdown` | `Forma.Framework.Composer.Markdown` | the contracts + Markdig |
-| `Forma.AddOns.Composer.TextMate` | `Forma.Framework.Composer.TextMate` | the contracts + TextMateSharp |
-| `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the contracts + KaTeX browser assets |
-| `Forma.Blazor.Composer` | `Forma.Blazor.Components.Composer` | the engine and `Forma.Framework.Sanitization` |
-| `Forma.AddOns.Composer.Plugins.Explorer` | `Forma.Blazor.Components.Composer.Plugins` | the contracts + `Forma.Blazor.Explorer`, whose `FormaExplorer` its dialog composes |
-
 Both assemblies share the namespace `Forma.Framework.Composer`, because the split is a packaging boundary rather than a second concept: a host moving a type across it should not have to change a `using`.
 
 Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract and the allowlist implementation sit together in `Forma.Framework.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
@@ -98,57 +74,7 @@ The engine ships inside the components' own package, because a host installing t
 
 ### 3.1 Plugin contracts
 
-```csharp
-namespace Forma.Framework.Composer.Plugins;
-
-public interface IComposerPlugin : IComposerKeyBindingSource
-{
-    string Id { get; }
-
-    IReadOnlyList<ComposerToolbarItem> Items => [];
-
-    IReadOnlyList<ComposerToolbarRow> Rows => [];
-
-    IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    IReadOnlyList<string> CommandPrefixes => [];
-
-    IReadOnlyList<ComposerAsset> Assets => [];
-
-    IReadOnlyCollection<string> ActiveStates => [];
-
-    ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
-
-    ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
-        => ValueTask.CompletedTask;
-}
-
-public interface IComposerFeaturePlugin : IComposerPlugin;
-
-public interface IComposerEditorPlugin : IComposerPlugin
-{
-    string Title { get; }
-
-    Icon Icon { get; }
-
-    ComposerDocumentFormat Format { get; }
-
-    Type EditorComponent { get; }
-
-    ValueTask<bool> TryInsertAsync(ComposerInsertion insertion, CancellationToken cancellationToken = default)
-        => ValueTask.FromResult(false);
-}
-
-public interface IComposerViewPlugin : IComposerPlugin
-{
-    string Kind { get; }
-
-    string Title { get; }
-    Icon Icon { get; }
-
-    Type ViewComponent { get; }
-}
-```
+A plugin takes one of three roles. A **feature plugin** contributes commands, toolbar items and rows, input triggers and assets to the surface it is registered under. An **editor plugin** is an editing surface over one document format, drawn by a component of its own and taking what a dialog inserts. A **view plugin** shows one editor's document read-only. Every plugin declares what it contributes, answers whether it is available, reports which of its toggles are active, and runs the commands it named.
 
 Key bindings come through `IComposerKeyBindingSource`, which every plugin is and which the engine's own `ComposerKeyBindingSource.Default` also implements, so one `ComposerKeyBindingCatalog` merges them all, the earliest source winning a contested command. **No plugin declares where it applies**; §3.1a's registration tree says that, so a plugin shipped by another package never has to name an editor whose type it cannot reference.
 
@@ -170,7 +96,7 @@ services.AddFormaComposer(composer => composer
     .TryAddDefaultPlugins());
 ```
 
-**Where a registration sits is the scope it applies to.** The composer root spans every editor and every view; under an editor is that editor's surface; under a view is that view's bar. This replaces the three properties that declared the same thing — a feature's supported editors, whether it joined view bars, and the editor a view belonged to — and it puts the decision where the knowledge is, since the host knows what it installed and a plugin from another package cannot.
+**Where a registration sits is the scope it applies to.** The composer root spans every editor and every view; under an editor is that editor's surface; under a view is that view's bar. The decision sits where the knowledge is, since the host knows what it installed and a plugin from another package cannot.
 
 **Role comes from the method**, `AddEditorPlugin`, `AddFeaturePlugin` and `AddViewPlugin`, each constraining its type parameter, so a miscategorized plugin is a compile error rather than a surprise in the catalog. `AddRichTextEditor` and its siblings are sugar over `AddEditorPlugin<T>`.
 
@@ -178,7 +104,7 @@ services.AddFormaComposer(composer => composer
 
 **No call depends on the order it was written in.** Defaults and anything else resolved against the whole tree are recorded and applied when the definition is built, so `TryAddDefaultFeatures` means "whatever this scope has not registered itself" however early it appears. Each builder carries only its own defaults method, so attaching one to the wrong scope does not compile.
 
-**Each editor has its own defaults.** An editor's builder is typed by the editor it describes, `ComposerEditorBuilder<TEditor>`, and each editor's package extends its own: the rich text editor's `TryAddDefaultFeatures` brings its formatting, attaching, the selection bar and its views; the plain text editor's brings attaching. Calling one editor's defaults on another does not compile, since the rich text defaults depend on the rich text editor and would otherwise fail only when a composer activated them. The composer's own `TryAddDefaultPlugins` brings what belongs on every editor and every view alike, which is maximizing.
+**Each editor has its own defaults.** An editor's builder is typed by the editor it describes, `ComposerEditorBuilder<TEditor>`, and each editor's package extends its own: the rich text editor's `TryAddDefaultFeatures` brings its formatting, attaching, the selection bar and its views; the plain text editor's brings attaching. Calling one editor's defaults on another does not compile, since the rich text defaults depend on the rich text editor and would otherwise fail only when a composer activated them. The composer's own `TryAddDefaultPlugins` brings what belongs on every editor and every view alike, which is maximizing and the shortcut reference.
 
 **A registration is a type, its options type and a delegate to configure them** — never a constructed instance, which would be shared. An implementation declares the options it takes through `IPluginConfigurable<TOptions>`, so a registration naming the wrong pair does not compile. Each activation creates its own options, and options are settable rather than `init`-only, which is what a configure delegate and binding from configuration both need; an options record's `Default` therefore answers a fresh value rather than one every plugin could write to.
 
@@ -190,7 +116,7 @@ Activation resolves each constructor parameter in order: a plugin in this compos
 
 An identifier is unique within its owner rather than across the composer, so two editors may each own a link plugin. Command dispatch is therefore rebuilt from the scope in play — root, active editor, active view — whenever the active editor or view changes.
 
-There is **no assembly scanning**. Scanning cannot decide scope, since the property that would have told it is the one the tree replaced, so every scan would be the host asserting a placement nothing checked. Naming a type from a package costs a host no more than naming its assembly did, and the set a scan was really wanted for — an editor's own standard features — is what `TryAddDefaultFeatures` supplies.
+There is **no assembly scanning**. Scanning cannot decide scope, so every scan would be the host asserting a placement nothing checked. Naming a type from a package costs a host no more than naming its assembly did, and the set a scan was really wanted for — an editor's own standard features — is what `TryAddDefaultFeatures` supplies.
 
 ### 3.2 One plugin model for every kind of dependency
 
@@ -199,14 +125,6 @@ A capability may come from .NET, from a browser module, from a native library be
 - **Managed dependencies** arrive by constructor injection. If the host never registered `IComposerDocumentConverter` for Markdown, `MarkdownEditorPlugin` is never constructed, is never registered, and its entry never appears in the switcher.
 - **Browser dependencies** are declared as `ComposerAsset` values and loaded by the engine's `IComposerAssetLoader`, once per circuit, on demand by default. The loader owns caching, `JSException`/`JSDisconnectedException` handling and disposal, so no plugin writes that boilerplate twice.
 - **Availability** is a question the plugin answers through `IsAvailableAsync`. An unavailable plugin degrades to absent — never to a control that throws when pressed.
-
-```csharp
-public sealed record ComposerAsset(ComposerAssetKind Kind, string Url, ComposerAssetLoading Loading = ComposerAssetLoading.OnDemand);
-
-public enum ComposerAssetKind { Module, Stylesheet, Font }
-
-public enum ComposerAssetLoading { Eager, OnDemand }
-```
 
 This is what makes KaTeX, TextMate and Markdig the same shape of problem: each is a satellite package registering a service and, where it needs one, declaring an asset. Adding a capability never edits the engine.
 
@@ -245,30 +163,6 @@ These are not plugins, because a plugin can be absent and these cannot:
 
 A plugin that collects something from the author asks the engine for a dialog and supplies only its body; the engine owns the shell. Every composer dialog collects something to put into the document, so the contract says insertion rather than claiming to host any dialog at all.
 
-```csharp
-public sealed record ComposerInsertionRequest
-{
-    public required Type Body { get; init; }
-    public IReadOnlyDictionary<string, object?> Parameters { get; init; } = ReadOnlyDictionary<string, object?>.Empty;
-    public ComposerDialogSize Size { get; init; } = ComposerDialogSize.Medium;
-}
-
-public interface IComposerInsertionDialog
-{
-    string Title { get; }
-
-    string? Notice => null;
-
-    IReadOnlyList<string> Messages => [];
-
-    ValueTask<ComposerInsertion?> TryConfirmAsync(CancellationToken cancellationToken = default);
-}
-
-public abstract record ComposerInsertion;
-
-public sealed record ResourceInsertion(string Source, string Name, string Kind, bool Embed, bool Link) : ComposerInsertion;
-```
-
 The engine hosts `Body` in a `<DynamicComponent>` inside its own shell, which draws the header, the notice, the message list and the confirm and cancel controls, so every dialog looks the same however it arrived. A `Body` that does not implement the interface is rejected where the request is made rather than ignored at confirm time.
 
 **The body resolves its own title, notice and messages**, rather than the request carrying them, because those strings belong to whichever package ships the body: a plugin never resolves a localizer, and the composer has no resources for a body it has never heard of. The request says which body and how much room it gets, and nothing about what it says.
@@ -287,7 +181,7 @@ The surface is carried as the plugins themselves rather than their identifiers, 
 
 ### 3.6 Where the editing surface actually lives
 
-The rich text editor's script module, in the interop assembly and reached through `RichTextEditor`, owns the `contenteditable` surface and the browser selection. C# receives changes **debounced, and on blur** — never per keystroke. Under Interactive Server every keystroke would otherwise be a SignalR round-trip, and an article body over a mobile connection is exactly the case that has to feel local. Commands travel the other way as explicit calls into the module; the document in C# is the source of truth for persistence, the DOM is the source of truth for the caret. The selection report is deduplicated rather than debounced: the canvas reports a selection once per distinct block, styles and caret-or-range — on click, on key-up and on `selectionchange` — which is what the toolbar reflects, so a keystroke or an arrow that moves the caret within one formatting costs no round-trip; the offsets a report carries are those of the change that raised it, and nothing on the rich text path reads them. The plain text editor, over a `<textarea>`, coalesces keystroke-driven caret movement on the same debounce as its content commit.
+The rich text editor's script module, reached through `RichTextEditor`, owns the `contenteditable` surface and the browser selection. C# receives changes **debounced, and on blur** — never per keystroke. Under Interactive Server every keystroke would otherwise be a SignalR round-trip, and an article body over a mobile connection is exactly the case that has to feel local. Commands travel the other way as explicit calls into the module; the document in C# is the source of truth for persistence, the DOM is the source of truth for the caret. The selection report is deduplicated rather than debounced: the canvas reports a selection once per distinct block, styles and caret-or-range — on click, on key-up and on `selectionchange` — which is what the toolbar reflects, so a keystroke or an arrow that moves the caret within one formatting costs no round-trip. The plain text editor, over a `<textarea>`, coalesces keystroke-driven caret movement on the same debounce as its content commit.
 
 ### 3.7 What the host binds
 
@@ -347,19 +241,18 @@ Being pushed makes a status readout change often, which decides how it is announ
 ## 4. Plugins
 
 ### 4.1 Editor plugins
-Each lives in its own directory, mirroring how `Explorer` earned a category of its own.
 
-| Directory | Plugin | Surface |
-|---|---|---|
-| `PlainTextEditor/` | `PlainTextEditorPlugin` | A `<textarea>` over the document's text, and the editor the composer falls back to when no registered editor is available. |
-| `RichTextEditor/` | `RichTextEditorPlugin` | Visual `contenteditable` canvas. Hosts the feature plugins, the selection bar, and embedded Markdown and code blocks. |
-| `MarkdownEditor/` | `MarkdownEditorPlugin` | Markdown source with line numbers, highlighting and a live rendered preview. |
-| `CodeEditor/` | `CodeEditorPlugin` | Lightweight code editor — line numbers, active-line marker, smart `Tab`, bracket pairing, language picker. Not a Monaco replacement, and not HTML-only: HTML, CSS, JavaScript, TypeScript, C#, SQL, JSON, YAML, Bash, Python. |
-| `PageDesigner/` | `PageDesignerPlugin` | Drag-and-drop widget canvas with a palette, per-widget chrome, nesting through rows and columns, and a settings panel per widget. Replaces Coi's `template.aspx`. |
+| Plugin | Surface |
+|---|---|
+| `PlainTextEditorPlugin` | A `<textarea>` over the document's text, and the editor the composer falls back to when no registered editor is available. |
+| `RichTextEditorPlugin` | Visual `contenteditable` canvas. Hosts the feature plugins, the selection bar, and embedded Markdown and code blocks. |
+| `MarkdownEditorPlugin` | Markdown source with line numbers, highlighting and a live rendered preview. |
+| `CodeEditorPlugin` | Lightweight code editor — line numbers, active-line marker, smart `Tab`, bracket pairing, language picker. Not a Monaco replacement, and not HTML-only: HTML, CSS, JavaScript, TypeScript, C#, SQL, JSON, YAML, Bash, Python. |
+| `PageDesignerPlugin` | Drag-and-drop widget canvas with a palette, per-widget chrome, nesting through rows and columns, and a settings panel per widget. Replaces Coi's `template.aspx`. |
 
 #### Views
 
-The rich text editor ships two views under `RichTextEditor/Views/`. **Preview** lays the document out as a reader will see it at a chosen size — the ISO A series, Letter and Legal as sheets with a printer's margin, or the width of a phone, tablet or desktop — turned to landscape or zoomed, so the author can see how it reads at that size; Print sends the document alone to the printer, whose dialog owns the paper, and Export saves it as an HTML file. **Source** shows the document's HTML one block per numbered line, wrapped or not, copied to the clipboard or downloaded. Both are read-only by design; a source that edits and commits back is what the code editor is for. The document's own look — headings, quotes, code, lists, tables, figures, links and the composer's placeholders — lives in `forma-prose.css` under the `forma-prose` class, so the canvas, the preview, the printed page and a host page rendering the document to readers all draw it the same way.
+The rich text editor ships two views. **Preview** lays the document out as a reader will see it at a chosen size — the ISO A series, Letter and Legal as sheets with a printer's margin, or the width of a phone, tablet or desktop — turned to landscape or zoomed, so the author can see how it reads at that size; Print sends the document alone to the printer, whose dialog owns the paper, and Export saves it as an HTML file. **Source** shows the document's HTML one block per numbered line, wrapped or not, copied to the clipboard or downloaded. Both are read-only by design; a source that edits and commits back is what the code editor is for. The document's own look — headings, quotes, code, lists, tables, figures, links and the composer's placeholders — is one prose stylesheet, so the canvas, the preview, the printed page and a host page rendering the document to readers all draw it the same way.
 
 ### 4.2 The page designer
 
@@ -470,7 +363,7 @@ One shape considered and rejected: **HTML authoritative for rendering with a sid
 
 **Drag-and-drop follows the rules `FormaSortableList` already established** — Pointer Events rather than mouse events, press-and-hold before a touch drag so an ordinary swipe still scrolls, and a guarded non-passive `touchmove` so the compositor cannot cancel the gesture mid-drag. Reordering must also be possible from the keyboard; Coi's was mouse-only, and that is not a bar Forma clears by matching.
 
-#### Templates, layouts and themes — deferred, and why
+#### Templates, layouts and themes
 
 Three separate concerns, and Coi did **not** bundle them under one umbrella:
 
@@ -482,9 +375,9 @@ Three separate concerns, and Coi did **not** bundle them under one umbrella:
 
 So the gap is layout, and it is the one Coi papered over: because there was no layout object, structure and content were the same HTML string, which is why changing a design had to destroy the header and footer rather than re-frame them.
 
-**None of this is in scope for `FormaComposer` yet.** A theme is a set of design tokens, and a layout is a structural frame — both are library-wide concerns that outlive any one editor, and building either *inside* the composer would put them in the wrong place and make them unreusable. `FormaLayout` and `FormaTheme` come first, as components in their own right; the designer then composes them the way it already composes `FormaExplorer` and `FormaVideoPlayer`.
+**Neither a theme nor a layout is the composer's.** A theme is a set of design tokens, and a layout is a structural frame — both are library-wide concerns that outlive any one editor, and building either *inside* the composer would put them in the wrong place and make them unreusable. `FormaLayout` and `FormaTheme` come first, as components in their own right; the designer then composes them the way it already composes `FormaExplorer` and `FormaVideoPlayer`.
 
-What the designer keeps for itself is the template: the widget tree, its ordering and its settings. `TemplatePlugin` (§4.3) already covers loading a ready-made one, which is Coi's `premade.aspx` without the design-wiping.
+What the designer keeps for itself is the template: the widget tree, its ordering and its settings. `TemplatePlugin` (§4.3) covers loading a ready-made one, which is Coi's `premade.aspx` without the design-wiping.
 
 #### What the canvas may contain
 
@@ -528,7 +421,7 @@ Clipboard note: browsers do not grant programmatic cut/copy/paste without user a
 
 ### 4.3a Engine-agnostic plugins
 
-`MaximizePlugin`, `SelectionBarPlugin`, `FileUploadPlugin` and `ShortcutsPlugin` are not rich text features: full-viewport editing, the choice of whether a formatting bar follows the selection, attaching files beside the document, and a reference of the shortcuts in play are useful to more than one editor, so all four take no dependency on `RichTextEditorPlugin` and live at `Composer/Plugins/`, one level up from the editor-specific ones.
+`MaximizePlugin`, `SelectionBarPlugin`, `FileUploadPlugin` and `ShortcutsPlugin` are not rich text features: full-viewport editing, the choice of whether a formatting bar follows the selection, attaching files beside the document, and a reference of the shortcuts in play are useful to more than one editor, so all four take no dependency on `RichTextEditorPlugin`.
 
 Where each is registered follows what it acts on. Maximizing and the shortcut reference act on the composer, so they sit at the root and reach every editor and every view. Attaching changes the document, and a view never edits it, so it is each editor's default rather than the root's; the selection bar follows formatting a surface must have for it to show anything, so it is a default of the rich text editor alone. An editor registering its own copy is one surface's plugin, never a second one beside the first, because only one surface is in play at a time and a surface's own registration answers in place of the composer's.
 
@@ -541,11 +434,11 @@ Where each is registered follows what it acts on. Maximizing and the shortcut re
 
 All four commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.SelectionBar`, `ComposerCommands.Attach`, `ComposerCommands.Shortcuts`) on `FormaComposer` itself, which owns the maximized and selection-bar state and the attachments and shortcuts dialogs because it, not any one editor, renders the chrome that changes.
 
-The selection bar itself sits beneath the selection, moving above it only when the viewport leaves no room beneath, so it never covers the line being read or the toolbar above the first line. Its handle drags it, or arrow-keys it, to wherever the author wants it, and the bar keeps that displacement from one selection to the next. `ComposerCommandRegistry.ExecuteAsync` resolves an engine command before ever consulting a plugin, so each plugin's `ExecuteAsync` is unreachable by design — the plugin exists only to contribute the toolbar entry that names the engine's own command.
+The selection bar itself sits beneath the selection, moving above it only when the viewport leaves no room beneath, so it never covers the line being read or the toolbar above the first line. Its handle drags it, or arrow-keys it, to wherever the author wants it, and the bar keeps that displacement from one selection to the next. An engine command resolves before any plugin's, so each of these plugins contributes only the toolbar entry that names the engine's own command.
 
 ### 4.4 Plugin options
 
-Options follow the repository's existing convention — a `sealed record` with `init` properties and a `Default`, per plugin, named for it: `TypographyPluginOptions` chooses which sizes and families are offered, `TablePluginOptions` caps dimensions, `ExplorerPluginOptions` gates upload and chooses how a chosen file is inserted. A plugin with a single flag keeps a plain property instead.
+Options are a `sealed record` per plugin, named for it, with settable properties a configure delegate writes and a `Default` answering a fresh value: `TypographyPluginOptions` chooses which sizes and families are offered, `TablePluginOptions` caps dimensions, `ExplorerPluginOptions` gates upload and chooses how a chosen file is inserted. A plugin with a single flag keeps a plain property instead.
 
 ### 4.5 Presets are components, not subclasses
 
@@ -557,57 +450,17 @@ Three components differing only in which plugins they register, each taking the 
 | `FormaStandardRichTextEditor` | Formatting, typography, paragraph, lists, alignment/bidi, link, image, table, horizontal rule | Coi `Basic` |
 | `FormaCompactRichTextEditor` | Formatting, typography, alignment/bidi, link | Coi `Mini` |
 
-The two presets live in `RichTextEditor/` beside the editor they present, not at the category root: each is a rich text surface with a narrower plugin set, so they belong with `FormaRichTextEditor` rather than with the engine. `FormaComposer` stays at the root because it is the engine, and it presents whatever is registered rather than any one editor.
-
-The `Forma` prefix is required on all three: the repository's naming rule puts it on every component tag.
-
 ---
 
 ## 5. Conversion
 
 ### 5.1 One seam, not one per format
 
-```csharp
-public sealed record ComposerDocumentFormat
-{
-    public ComposerDocumentFormat(string id)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        Id = id.ToLowerInvariant();
-    }
-
-    public string Id { get; }
-
-    public static ComposerDocumentFormat Html { get; } = new("html");
-    public static ComposerDocumentFormat Markdown { get; } = new("markdown");
-    public static ComposerDocumentFormat PlainText { get; } = new("text");
-    public static ComposerDocumentFormat WidgetTree { get; } = new("widget-tree");
-}
-
-public interface IComposerDocumentConverter
-{
-    ComposerDocumentFormat Source { get; }
-
-    ComposerDocumentFormat Target { get; }
-
-    ComposerConversionResult Convert(string content);
-}
-
-public sealed record ComposerConversionResult
-{
-    public required bool Succeeded { get; init; }
-
-    public string? Content { get; init; }
-
-    public IReadOnlyList<string> UnsupportedFeatures { get; init; } = [];
-}
-```
+A converter names its source and target formats and converts content, answering whether it succeeded, the content it produced and the features it could not carry.
 
 `IComposerDocumentConverter` rather than `IComposerMarkdownConverter` because Markdown is not the last format the composer will meet — LaTeX, plain text and whatever a host adds all fit the same shape, and a registry keyed on `(Source, Target)` resolves them uniformly. The extra cost over a Markdown-specific interface is one record and one lookup.
 
 **`ComposerDocumentFormat` is a string-keyed value, not an enum**, so a host or a satellite mints a format without the library changing: `new ComposerDocumentFormat("latex")`, an editor plugin declaring it, a converter registered for `(latex, html)`, and the switcher offers it. The statics are conveniences for the formats Forma ships a surface for, not the set of legal values.
-
-It is a record **class** rather than a record struct because a struct's `default` would bypass the constructor and carry a null `Id` into the converter registry's keys, where it would compare and hash as a legitimate format and then throw on first read. The statics are cached rather than expression-bodied for the same reason the constructor exists: each one otherwise re-validates and re-lowercases on every access.
 
 The engine therefore never `switch`es on a format. `ComposerAssetKind` (§3.2) is a closed enum because the loader must know how to load each kind, whereas a format the engine only ever hands to a registry lookup needs no such knowledge. Behavior comes from what is registered, which is what makes "no converter, no editor" (§3.2) fall out rather than have to be enforced.
 
@@ -629,14 +482,7 @@ The refusal is surfaced, not swallowed: the switcher disables the Markdown edito
 
 An editor that accepts HTML, offers a code editor over raw markup, and pastes from Word is a stored-XSS surface. Coi got this wrong with `allowedContent = true`.
 
-```csharp
-public interface IHtmlSanitizer
-{
-    IMarkupPolicy MarkupPolicy { get; }
-
-    string Sanitize(string html);
-}
-```
+A sanitizer applies a markup policy to HTML.
 
 - Forma ships `AllowlistHtmlSanitizer` in `Forma.Framework.Sanitization` with no external dependency, covering the element and attribute set the built-in plugins can produce. The library registers it as the default when a host has registered none, so a composer is never unsanitised.
 - A host may replace it — a satellite wrapping Ganss.Xss suits a host wanting a hardened, widely-reviewed implementation, and any registration overrides the default.
@@ -650,16 +496,7 @@ public interface IHtmlSanitizer
 
 ## 7. Syntax highlighting
 
-```csharp
-public readonly record struct ComposerSyntaxToken(int Start, int Length, string Scope);
-
-public interface IComposerSyntaxHighlighter
-{
-    IReadOnlyList<string> SupportedLanguages { get; }
-
-    IReadOnlyList<ComposerSyntaxToken> Tokenize(string code, string language);
-}
-```
+A highlighter tokenizes code in one of the languages it supports, each token an offset, a length and a scope.
 
 Returning **tokens, not HTML**. A highlighter that returned `"<span class=…>"` would put the burden of HTML-encoding the author's code on every implementation, and one that forgot would execute `<script>` inside a code block. With offsets and scopes the component emits the text through normal Razor encoding, so an implementation *cannot* introduce markup.
 
@@ -684,15 +521,11 @@ These are correctness requirements for every Forma component, and the composer i
 
 ---
 
-## 9. File layout
-
-Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are real namespace segments.
-
-**The composer projects are foldered by concern rather than flat** — assets, documents, editing, plugins, syntax, widgets — and the two assemblies use the same folder names, so a contract in the extensibility package and the engine's implementation of it sit under the same folder name in their own projects and the test tree mirrors both.
+## 9. Packaging and localization
 
 **A plugin joining the composer to another component is an AddOn of its own**, `Forma.AddOns.Composer.Plugins.{Component}`, borrowing the composer plugins' namespace as an AddOn borrows what it extends. The stored-files plugin and its dialog body are `Forma.AddOns.Composer.Plugins.Explorer`, with their own strings beside them, so the composer never depends on the explorer, the explorer never depends on the composer, and a host wanting both adds the one package that joins them.
 
-**Localization follows `FormaExplorer`:** the composer's package is its own category and carries one locale pair at its root, sectioned by the component each part reads through. Every component in the package, including those in sub-namespaces, names that component with `LocalizationSourceType` — `FormaComposer` for the engine, its bars, its dialogs and the editor canvases, `FormaRichTextEditor` for the rich text selection bar and views — and its strings sit in that component's section, nested as the component's namespace is. Resources resolve by the named type's full name, so a string filed under the section of a component other than the one its reader names silently falls back to its English key; that is the failure mode to re-verify whenever a type moves or renames. A plugin's titles are the exception, read through the locale the plugin names and then the composer's (§3.1), and an AddOn carries its own pair.
+**Every component in the composer's package reads its strings through the component it names with `LocalizationSourceType`**: `FormaComposer` for the engine, its bars, its dialogs and the editor canvases, `FormaRichTextEditor` for the rich text selection bar and views. Its strings sit in that component's section of the language packs, nested as the component's namespace is. A plugin's titles are the exception, read through the locale the plugin names and then the composer's (§3.1), and an AddOn carries its own.
 
 ---
 
@@ -707,13 +540,13 @@ Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are re
 | C5 | Are `TemplatePlugin`'s templates host-supplied or does Forma ship a set? | Host-supplied, through `TemplatePluginOptions`; the default options carry two sample layouts a host replaces with its own. A template is editorial content and Forma has no editorial opinion. |
 | C6 | What *is* the page designer's saved document? | A `ComposerWidgetTree` — JSON, with HTML as output rather than storage (§4.2). Coi's saved HTML froze rendering decisions at save time and never escaped the tree anyway, since recovering a widget needs `data-widget` and `data-settings` attributes. Columns are nodes, not an array on the row. Document metadata stays on the host's row. |
 | C7 | One designer plugin or several, given Coi drove seven targets through `OpenTemplate`'s numeric type? | One, varied by its options and the registered widget set. The palette is already extensible, so a second plugin would only re-register widgets. |
-| C8 | Who owns layout and theme? | Not the composer. `FormaLayout` and `FormaTheme` are library-wide components built first and composed afterwards; the designer ships template-only and nothing in the composer waits on them. Both want their own catalog entries. |
+| C8 | Who owns layout and theme? | Not the composer. `FormaLayout` and `FormaTheme` are library-wide components built first and composed afterwards; the designer ships template-only and nothing in the composer waits on them. |
 | C9 | May a designer be placed on a designer canvas? | No. `PageDesignerPlugin` implements both `IComposerEditorPlugin` and `IComposerDesignerPlugin`, so the placeable set is "any editor plugin that is not also a designer plugin" — a type test, and a designer excludes itself. |
 | C10 | How does an editor choose between the shared toolbar row and one of its own? | By the row each item names through `ComposerToolbarItem.RowId` (§3.8). Both editors and external plugins declare rows through `Rows`, so there is one mechanism rather than a separate registration path per category. |
 | C11 | Are gutter markers and status readouts pushed or pulled? | Pushed, through a handle the plugin mutates and disposes. Toolbar items stay static lists. This matches VS Code's `createStatusBarItem` and decoration types, and the dispose pattern its API reference states as the general rule (§3.8). |
 | C12 | Where do the common editing operations live? | In the engine, as `ComposerText` returning `ComposerEdit` (§3.4). Word-at-caret, selected text, range replacement, per-line mapping and replace-all are needed by every editor and every plugin that touches text; leaving them out means each one reimplements them against raw strings. |
 | C13 | Why do the contracts split from the engine (§2)? | Because a plugin may ship from another package, and what such a package extends has to be a package itself or both carry a copy of it. Only the contracts go: publishing the catalog, the command registry and the history would make engine internals public API for callers who never touch them. |
-| C14 | What decides which editors and views a plugin applies to (§3.1a)? | Where the host registers it. A plugin from another package cannot name an editor whose type it cannot reference, and the host is the only party that knows what it installed. This retires a feature's supported-editor list, its view opt-in, and the editor id a view carried. |
+| C14 | What decides which editors and views a plugin applies to (§3.1a)? | Where the host registers it. A plugin from another package cannot name an editor whose type it cannot reference, and the host is the only party that knows what it installed. |
 | C15 | May the composer scan assemblies for plugins? | No. Scanning cannot decide scope once the registration tree is what declares it, so every scan would assert a placement nothing checked. Naming a plugin costs a host no more than naming its assembly, and an editor's standard set comes from its own defaults instead. |
 | C16 | How does a plugin from another package open a dialog and put something into the document? | It supplies a body and the engine supplies the shell (§3.4a), and the result travels as a `ComposerInsertion` handed to the active editor. The editor answering false is the whole compatibility check, so no capability contract is needed to describe what an editor accepts. |
 | C17 | Does a plugin instance belong to the host or to the composer? | To the composer. Registration records a type and its configuration; each composer builds, owns and disposes its own set, because an editor plugin carries events its component subscribes to and a shared one would answer another composer's commands. |
