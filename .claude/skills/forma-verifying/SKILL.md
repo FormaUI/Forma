@@ -1,6 +1,6 @@
 ---
 name: forma-verifying
-description: The build and verification gate — the build, tests, format check and script tests all passing with warnings as failures, the sweep for undocumented public API, rebuilding and running the showcase without serving stale code, inspecting every culture, driving browser checks in a visible window, and the shape of a task script. Use when building, testing, formatting, running the showcase, verifying a change in a browser, or adding a task script.
+description: The build and verification gate — the build, tests, format check and script tests all passing with warnings as failures, the sweep for undocumented public API, rebuilding and running the showcase without serving stale code, inspecting every culture, driving browser checks in a visible browser window, and the shape of a task script. Use when building, testing, formatting, running the showcase, verifying a change in a browser, or adding a task script.
 ---
 
 # Build and verification
@@ -19,7 +19,7 @@ No project generates a documentation file, so nothing reports an undocumented pu
 - Do run `scripts/Stop-MsBuild.ps1` when a build fails to copy a file nothing appears to be using: MSBuild keeps its worker nodes alive between builds and they keep a handle on what they last built. `scripts/Stop-DotNet.ps1` goes further and also stops whatever is running out of this repository, such as the showcase; neither touches the language server an editor runs for C# unless asked with `-All`.
 - Do confirm the rebuild actually reached the app before drawing any conclusion from the browser: the showcase runs a compiled binary with no hot reload, so verify the build succeeded and that the library's DLL in the showcase's output is newer than the sources you changed. A stale process silently serves the old code and every experiment against it is void.
 - Do inspect the component in every culture the library ships through the showcase.
-- Do drive end-to-end browser checks in a **visible** window rather than a headless one, so the maintainer can watch what is actually being exercised; a headless run reports only what its script thought to assert, so a mis-scoped page and a genuine pass look alike.
+- Do drive end-to-end browser checks in a **visible** browser window rather than a headless one, so the maintainer can watch what is actually being exercised; a headless run reports only what its script thought to assert, so a mis-scoped page and a genuine pass look alike.
 - Do slow such a run enough to be followed, and hold the final state on screen before closing.
 - Don't pipe the showcase's output into `Select-String`, `Select-Object`, or another filter; closing the pipeline terminates the server.
 - Don't present a component as complete while build, tests, accessibility, touch, or direction checks remain unresolved.

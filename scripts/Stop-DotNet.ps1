@@ -16,7 +16,7 @@ that is stopped outright, together with anything running out of this repository,
 Showcase or a stray test host is.
 
 Every other .NET process is left alone and counted, because they belong to something else: an editor
-keeps a language server of its own, and stopping it costs a reload of the window for no gain here.
+keeps a language server of its own, and stopping it costs a reload of the editor window for no gain here.
 Pass -All to stop those too.
 
 .PARAMETER All

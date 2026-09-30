@@ -51,7 +51,7 @@ Every measurement a component makes comes from one scale, so a child agrees with
 A component is handed a width, never a device: it sits in a phone's full column, a tablet's half, a desktop's dialog or a sidebar's sliver, and must fit whatever it is given rather than a viewport it assumed.
 
 - Do size in `rem` for spacing, radii and type so a reader's own font size carries through, and keep `px` for a hairline, a focus ring, a shadow, and the 24×24 and 44×44 target minimums the standard defines in CSS pixels.
-- Do adapt to the component's own width with a `@container` query, and reserve `@media` for facts about the reader — hover, pointer, motion, forced colors — or the viewport as a whole; a component inside a narrow pane is narrow whatever the window is.
+- Do adapt to the component's own width with a `@container` query, and reserve `@media` for facts about the reader — hover, pointer, motion, forced colors — or the viewport as a whole; a component inside a narrow pane is narrow whatever the browser window is.
 - Do choose how a row gives way when it cannot fit, and make it the design rather than the accident: a bar of commands scrolls behind arrows, a pager hides the pages it cannot show, a two-column layout stacks. Wrapping onto a second line is a choice too, and rarely the right one for a control row.
 - Do pack before you stack: a grid of tiles or cells shrinks them to keep several across a narrow column, and a pager keeps as many pages as fit, because one column of full-size items is a long scroll that shows less, not a layout that adapted.
 - Do let a flex item shrink: an input has an intrinsic width, and a flex child defaults to `min-inline-size: auto`, so either pushes its parent wider than the page unless told `min-inline-size: 0`.
