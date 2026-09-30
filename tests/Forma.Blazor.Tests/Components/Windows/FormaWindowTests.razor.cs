@@ -10,6 +10,6 @@ public sealed partial class FormaWindowTests
         JSInterop.SetupModule("./_content/forma/browser/scripts/components/Frame.js").SetupModule("attach", _ => true);
     }
 
-    /// <summary>The input router's stand-in, set up before any render so every window's registration is recorded and a dismissal can be delivered to it.</summary>
+    /// <summary>The input router's stand-in, recording every window's registration from the first render and delivering dismissals to a window.</summary>
     internal InputRouterProbe Router { get; }
 }

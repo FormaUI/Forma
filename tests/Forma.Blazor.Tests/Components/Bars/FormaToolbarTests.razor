@@ -21,8 +21,6 @@
             Assert.Equal("Bold", cut.Find("button").TextContent);
         }
 
-        // A command's Title can be plugin- or host-supplied text of unknown direction, same as a readout; the button
-        // itself follows the page, so a glyph in it is turned for the reading direction.
         [Fact]
         public void Should_isolate_the_direction_of_a_command_but_not_of_its_button()
         {
@@ -455,7 +453,6 @@
             Assert.Contains("background-color:#d32f2f", cut.Find(".forma-toolbar-menu-bar").GetAttribute("style"));
         }
 
-        // A first option shown as the value would claim a size or a family the text does not have.
         [Fact]
         public void Should_show_the_menu_s_own_title_until_an_option_is_active()
         {
@@ -479,7 +476,6 @@
             Assert.Equal("Font Size", cut.Find(".forma-toolbar-menu-value").TextContent);
         }
 
-        // The icon stands for the menu until a color is chosen; without one, the name does, as for any menu.
         [Fact]
         public void Should_show_the_icon_alone_until_a_color_is_active()
         {
@@ -900,7 +896,7 @@
             // Act
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" />);
 
-            // Assert - the command becomes the toolbar's action, and Control stands for the platform's shortcut key
+            // Assert — Control stands for the platform's shortcut key
             var profile = Assert.Single(GetRegistrations(ctx));
             var route = Assert.Single(profile.InputRoutes);
             var binding = Assert.IsType<KeyBinding>(Assert.Single(route.Bindings));

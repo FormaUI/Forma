@@ -53,7 +53,7 @@
             // Act — scrolled a thousand pixels in, two hundred tall
             await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
 
-            // Assert — rows 48 to 61: the fifty from 50 to 59 in view and two beyond each edge
+            // Assert — rows 48 to 61: the ten from 50 to 59 in view and two beyond each edge
             Assert.Multiple(
                 () => Assert.Equal([.. Enumerable.Range(48, 14).Select(id => $"Row {id}")], Drawn(cut)),
                 () => Assert.Equal(["start 960px", "end 760px"], Spacers(cut)));
@@ -470,7 +470,7 @@
         private sealed record Row(int Id, string Name);
     }
 
-    // A row's content that records each time it is made, so a test can tell an item kept from an item drawn again.
+    // A row's content that records each time it is made.
     public sealed class Stamp : ComponentBase
     {
         [Parameter] public int Id { get; set; }

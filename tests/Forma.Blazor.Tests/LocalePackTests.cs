@@ -7,7 +7,7 @@ public sealed class LocalePackTests
     [Fact]
     public void Should_record_the_packs_the_shared_context_references_in_its_own_assembly()
     {
-        // Arrange — the context's project references the packs directly, so the build records them there as a package's targets would in an application.
+        // Arrange — the shared context's project references the packs directly, so its assembly records them.
         var assembly = typeof(FormaBunitContext).Assembly;
 
         // Act

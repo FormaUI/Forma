@@ -200,7 +200,7 @@
             var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
             cut.Find(".forma-dropdown-menu-anchor button").Click();
 
-            // Assert — email, copy link and print stand in the open, and with no consumer actions there is no More at all.
+            // Assert
             Assert.Contains(cut.FindAll("a"), item => item.GetAttribute("href")?.StartsWith("mailto:", StringComparison.Ordinal) == true);
             Assert.Contains(cut.FindAll("button"), item => item.TextContent.Contains("Copy Link", StringComparison.Ordinal));
             Assert.Contains(cut.FindAll("button"), item => item.TextContent.Contains("Print", StringComparison.Ordinal));

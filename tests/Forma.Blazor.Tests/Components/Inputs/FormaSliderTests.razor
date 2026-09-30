@@ -182,8 +182,6 @@
             Assert.True(cut.Find(".forma-slider").HasAttribute("disabled"));
         }
 
-        // The html attributes must stay machine-readable while the shown value follows the
-        // reader's culture, so a comma-decimal culture is where the two would collide.
         [Fact]
         public void Should_keep_the_html_bounds_invariant_under_a_comma_decimal_culture()
         {

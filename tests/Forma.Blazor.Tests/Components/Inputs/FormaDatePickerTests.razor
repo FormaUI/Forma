@@ -73,7 +73,6 @@
             Assert.Multiple(
                 () => Assert.NotNull(cut.Find(".forma-date-picker-popover")),
                 () => Assert.Single(cut.FindAll(".forma-calendar-month")),
-                // Manual, because the input router owns dismissal rather than light-dismiss.
                 () => Assert.Equal("manual", cut.Find(".forma-popover").GetAttribute("popover")));
         }
 

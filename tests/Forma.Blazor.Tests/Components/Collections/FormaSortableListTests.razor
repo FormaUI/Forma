@@ -222,7 +222,7 @@
                 </FormaSortableList>);
             var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
 
-            // Act — item 1 (index 0) moved to the end via Home/End-style targeting
+            // Act — item 1 (index 0) moved after the last item (index 3)
             await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 0, targetIndex: 3, insertAfter: true));
 
             // Assert

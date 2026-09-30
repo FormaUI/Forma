@@ -22,7 +22,6 @@
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Assert
-            // Every emoji on a circuit shares one loader, so hundreds of cells drawing from a sheet fetch it once.
             var sheets = ctx.JSInterop.Invocations["loadSprite"]
                 .Select(invocation => (string)invocation.Arguments[0]!)
                 .ToArray();
@@ -251,7 +250,7 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
-            // A persisted list can carry an empty or run-together entry; neither is an emoji, and neither may break the picker.
+            // An empty entry and a run-together entry, neither of them an emoji.
             IReadOnlyList<string> recent = ["", "😀😀", "😀"];
 
             // Act
@@ -388,7 +387,7 @@
             Assert.All(tabs.Skip(1), tab => Assert.Equal("-1", tab.GetAttribute("tabindex")));
         }
 
-        // The search box registers a route of its own, so the tab strip's registrations are told apart by their actions.
+        // The tab strip's registrations, told apart from the search box's by their emoji-picker actions.
         private static List<JSRuntimeInvocation> GetStripRegistrations(InputRouterProbe router)
             => [.. router.Registrations.Where(registration => InputRouterProbe.GetRoutes(registration).Any(route => route.StartsWith("emoji-picker.", StringComparison.Ordinal)))];
 

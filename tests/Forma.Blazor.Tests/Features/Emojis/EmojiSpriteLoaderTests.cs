@@ -24,7 +24,6 @@ public sealed class EmojiSpriteLoaderTests
         handler.SetResult(true);
 
         // Assert
-        // Racers share the one load, so a surface drawing hundreds of emoji costs one fetch per sheet.
         Assert.True(await first);
         Assert.True(await second);
         Assert.Single(js.Invocations["loadSprite"]);
@@ -62,8 +61,6 @@ public sealed class EmojiSpriteLoaderTests
         var second = await loader.LoadAsync("smileys-0.svg");
 
         // Assert
-        // A failed sheet is forgotten rather than remembered as failed, so a later surface retries it
-        // instead of leaving its emoji blank for the rest of the circuit.
         Assert.Multiple(
             () => Assert.False(first),
             () => Assert.False(second),
@@ -85,7 +82,6 @@ public sealed class EmojiSpriteLoaderTests
         await loader.LoadAsync("smileys-0.svg");
 
         // Assert
-        // A navigation replaces the document's body, symbols included, so what arrived before it is gone.
         Assert.Equal(2, js.Invocations["loadSprite"].Count);
     }
 

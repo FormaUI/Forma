@@ -137,7 +137,6 @@
             var cut = ctx.Render(@<FormaIcon Icon="Glyph.Check" />);
 
             // Assert
-            // An inline icon follows the text around it, so nothing sets its size.
             Assert.Equal("forma-icon", cut.Find("svg").ClassName);
         }
 
@@ -169,7 +168,7 @@
             var check = ctx.Render(@<FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />).Find("svg");
 
             // Assert
-            // The stylesheet turns the marked glyph over where text runs the direction it names; a tick reads the same either way.
+            // The back arrow adapts for right-to-left; a tick reads the same in either direction.
             Assert.Multiple(
                 () => Assert.Equal("forma-icon forma-icon-sm forma-icon-logical-direction", back.ClassName),
                 () => Assert.Equal("rtl", back.GetAttribute("data-direction")),
@@ -188,7 +187,6 @@
             var character = ctx.Render(@<FormaIcon Icon="new Rune('‹')" />).Find("span");
 
             // Assert
-            // A mark is a trademark drawn one way, and the browser mirrors a character itself where its script calls for it.
             Assert.Multiple(
                 () => Assert.DoesNotContain("forma-icon-logical-direction", mark.ClassName, StringComparison.Ordinal),
                 () => Assert.Null(mark.GetAttribute("data-direction")),
@@ -206,7 +204,7 @@
             var span = ctx.Render(@<FormaIcon Icon="Glyph.ArrowLeft" Provider="characters" />).Find("span");
 
             // Assert
-            // The glyph adapts for right-to-left, but a character is the browser's to mirror, so nothing marks it.
+            // The glyph adapts for right-to-left, and the character drawn for it carries no mark.
             Assert.Multiple(
                 () => Assert.Equal("←", span.TextContent),
                 () => Assert.DoesNotContain("forma-icon-logical-direction", span.ClassName, StringComparison.Ordinal));
@@ -223,7 +221,7 @@
             var medium = ctx.Render(@<FormaIcon Icon="Glyph.Check" Size="IconSize.Medium" />).Find("svg");
 
             // Assert
-            // At 24px a 24-unit grid puts the stroke on whole pixels; at 32px the 32-unit grid does.
+            // Small draws at 24px and medium at 32px.
             Assert.Multiple(
                 () => Assert.Equal("0 0 24 24", small.GetAttribute("viewBox")),
                 () => Assert.Equal("0 0 32 32", medium.GetAttribute("viewBox")));
@@ -240,7 +238,6 @@
             var cut = ctx.Render(@<FormaIcon Icon="Glyph.Check" Provider="marker" />);
 
             // Assert
-            // The librarys own artwork would draw the tick; the parameter takes precedence.
             Assert.Equal(MarkerIconProvider.Data, cut.Find("svg path").GetAttribute("d"));
         }
 
@@ -257,7 +254,6 @@
                                   </CascadingValue>);
 
             // Assert
-            // A subtree names its own artwork without every icon in it repeating the parameter.
             Assert.Equal(MarkerIconProvider.Data, cut.Find("svg path").GetAttribute("d"));
         }
 
@@ -274,7 +270,6 @@
                                   </CascadingValue>);
 
             // Assert
-            // The nearer answer wins, so one icon can differ from the subtree around it.
             Assert.NotEqual(MarkerIconProvider.Data, cut.Find("svg path").GetAttribute("d"));
         }
 
@@ -289,7 +284,6 @@
             var cut = ctx.Render(@<FormaIcon Icon="Brand.GitHub" Provider="marker" />);
 
             // Assert
-            // A provider that only knows glyphs still leaves brands and characters drawable.
             Assert.NotEqual(MarkerIconProvider.Data, cut.Find("svg path").GetAttribute("d"));
         }
 
@@ -346,14 +340,13 @@
             var svg = ctx.Render(@<FormaIcon Icon="Brand.GitHub" Size="IconSize.Small" />).Find("svg");
 
             // Assert
-            // A mark often stands alone as a link, so it carries its own accessible name rather than hiding.
             Assert.Multiple(
                 () => Assert.Equal("img", svg.GetAttribute("role")),
                 () => Assert.Equal("GitHub", svg.GetAttribute("aria-label")),
                 () => Assert.Null(svg.GetAttribute("aria-hidden")),
                 () => Assert.Equal("forma-icon forma-icon-sm", svg.ClassName),
                 () => Assert.Null(svg.QuerySelector("path")!.GetAttribute("stroke")),
-                // The source draws its mark under the default nonzero rule; evenodd would punch holes where its subpaths overlap.
+                // The brand's source artwork draws under the default nonzero fill rule.
                 () => Assert.Null(svg.QuerySelector("path")!.GetAttribute("fill-rule")));
         }
 
@@ -389,7 +382,7 @@
         }
     }
 
-    /// <summary>Answers every glyph with an arrow character, the way a provider with no drawings might.</summary>
+    /// <summary>Answers every glyph with an arrow character.</summary>
     private sealed class CharacterGlyphProvider : IIconProvider
     {
         public bool TryGetArtwork(Icon icon, IconSize size, out IconArtwork artwork)
@@ -408,7 +401,7 @@
             => TryGetArtwork(icon, size, out var artwork) ? artwork : IconArtwork.None;
     }
 
-    /// <summary>Answers every glyph with one recognizable path and declines everything else, so a test can tell which provider drew it.</summary>
+    /// <summary>Answers every glyph with one recognizable path and declines everything else.</summary>
     private sealed class MarkerIconProvider : IIconProvider
     {
         public const string Data = "M 0 0 L 32 32";

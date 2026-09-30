@@ -9,7 +9,7 @@ public sealed partial class FormaDialogTests
         Dialog = JSInterop.SetupModule("./_content/forma/browser/scripts/components/Dialog.js").SetupModule("attach", _ => true);
     }
 
-    /// <summary>The input router's stand-in, set up before any render so the dialog's registrations on it are recorded and a dismissal can be delivered to it.</summary>
+    /// <summary>The input router's stand-in, which records the dialog's registrations and delivers dismissals.</summary>
     internal InputRouterProbe Router { get; }
 
     /// <summary>The attached dialog script instance, whose open and close calls are recorded.</summary>

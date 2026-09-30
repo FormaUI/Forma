@@ -9,9 +9,9 @@ public sealed partial class FormaToolbarTests
         Focus = JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/Focus.js");
     }
 
-    /// <summary>The input router module, set up before any render so the toolbar's registrations on it are recorded.</summary>
+    /// <summary>The input router module, which records the toolbar's registrations.</summary>
     internal BunitJSModuleInterop Router { get; }
 
-    /// <summary>The focus module, set up before any render so the toolbar's attachment to it is recorded.</summary>
+    /// <summary>The focus module, which records the toolbar's attachment.</summary>
     internal BunitJSModuleInterop Focus { get; }
 }

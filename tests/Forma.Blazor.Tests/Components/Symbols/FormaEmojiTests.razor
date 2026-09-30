@@ -21,7 +21,7 @@
         {
             // Arrange
             using var ctx = new FormaEmojiTests();
-            // One character, but a joining Unicode never defined, so no set holds it.
+            // One character: a joining sequence Unicode never defined, which no set holds.
             Emoji emoji = "👨‍🥑";
 
             // Act
@@ -89,7 +89,6 @@
             ctx.Render(@<FormaEmoji Emoji="emoji" />);
 
             // Assert
-            // A sprite reference resolves against symbols in the document, which nothing else would have fetched.
             Assert.Contains(
                 ctx.JSInterop.Invocations["loadSprite"],
                 invocation => invocation.Arguments is [string sheet, ..] && sheet.EndsWith(".svg", StringComparison.Ordinal));
