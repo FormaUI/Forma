@@ -6,7 +6,7 @@ using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Resources;
 
-/// <summary>The stored images the composer's insert dialog browses in this application.</summary>
+/// <summary>The Showcase's stored images.</summary>
 internal sealed class ShowcaseImageLibrary : ICatalogProvider
 {
     private static readonly DateTimeOffset Seeded = new(2026, 3, 14, 9, 30, 0, TimeSpan.Zero);

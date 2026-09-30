@@ -10,7 +10,6 @@
     {
         <h3>@L[group.Title] <span class="demo-count">@rows.Sum(row => row.Length)</span></h3>
         <div class="demo-box">
-            @* Only the rows in view are mounted. *@
             <Virtualize Items="rows" ItemSize="RowHeight" Context="row">
                 <ul class="glyph-grid glyph-grid-emoji glyph-grid-row">
                     @foreach (var info in row)

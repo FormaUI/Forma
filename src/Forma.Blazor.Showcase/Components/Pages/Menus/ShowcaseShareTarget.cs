@@ -3,17 +3,17 @@ namespace Forma.Blazor.Showcase.Components.Pages.Menus;
 using Forma.Framework.Icons;
 using Forma.Framework.Share;
 
-/// <summary>A stand-in cloud drive taking files alone under the visitor's account, showing how a host-registered target joins the share menu.</summary>
-/// <param name="tokens">Answers the visitor's token for the vault.</param>
+/// <summary>A sample cloud drive share target taking files under the visitor's account.</summary>
+/// <param name="tokens">The source of the visitor's tokens.</param>
 public sealed class ShowcaseShareTarget(IShareTokenSource tokens) : IShareTarget
 {
     /// <summary>The vault's target id.</summary>
     public const string VaultId = "showcase-vault";
 
-    /// <summary>The item last sent here, for the demo to display.</summary>
+    /// <summary>The item last shared to the vault.</summary>
     public ShareItem? LastShared { get; private set; }
 
-    /// <summary>Raised when an item arrives.</summary>
+    /// <summary>Raised when an item is shared to the vault.</summary>
     public event Action? Shared;
 
     /// <inheritdoc />

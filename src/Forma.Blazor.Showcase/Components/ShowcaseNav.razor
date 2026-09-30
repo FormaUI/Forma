@@ -4,8 +4,7 @@
 @inject IStringLocale<ShowcaseNav> L
 @inject NavigationManager Nav
 
-@* The toggle carries the open state in aria-expanded, which the stylesheet reads as well, so the
-   drawer's appearance and what assistive technology is told cannot drift apart. *@
+@* The stylesheet opens the drawer from the toggle's aria-expanded. *@
 <button type="button"
         class="showcase-nav-toggle"
         aria-expanded="@(_isOpen ? "true" : "false")"
@@ -27,7 +26,6 @@
     public void Dispose()
         => Nav.LocationChanged -= HandleLocationChanged;
 
-    // Choosing a page is the end of what the drawer was opened for.
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         _isOpen = false;

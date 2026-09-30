@@ -3,7 +3,7 @@ namespace Forma.Blazor.Showcase.Components.Pages.Menus;
 using Forma.Framework.Events;
 using Forma.Framework.Share;
 
-/// <summary>The accounts a Showcase visitor has connected, the vault and a Mastodon server, connected and disconnected from the page as a host would after its sign-in.</summary>
+/// <summary>The share accounts a Showcase visitor has connected: the vault and a Mastodon server.</summary>
 public sealed class ShowcaseShareAccounts : IShareTokenSource, IShareServerSource, IShareConnections
 {
     private const string MastodonId = "mastodon";
@@ -13,15 +13,15 @@ public sealed class ShowcaseShareAccounts : IShareTokenSource, IShareServerSourc
     private readonly StateNotifier _notifier = new();
     private readonly HashSet<string> _connected = [with(StringComparer.Ordinal)];
 
-    /// <summary>Whether the visitor counts as connected to the vault.</summary>
+    /// <summary>Whether the visitor is connected to the vault.</summary>
     public bool IsVaultConnected
         => _connected.Contains(ShowcaseShareTarget.VaultId);
 
-    /// <summary>Whether the visitor has named a Mastodon server.</summary>
+    /// <summary>Whether the visitor is connected to a Mastodon server.</summary>
     public bool IsMastodonConnected
         => _connected.Contains(MastodonId);
 
-    /// <summary>Whether the vault's token is still on hand, which a connected status does not guarantee.</summary>
+    /// <summary>Whether the vault's token is on hand.</summary>
     public bool HasVaultToken { get; set; } = true;
 
     /// <inheritdoc />
@@ -51,7 +51,7 @@ public sealed class ShowcaseShareAccounts : IShareTokenSource, IShareServerSourc
     public Task SetVaultConnectedAsync(bool isConnected)
         => SetConnectedAsync(ShowcaseShareTarget.VaultId, isConnected);
 
-    /// <summary>Names or forgets the Mastodon server and tells the subscribers.</summary>
+    /// <summary>Connects or disconnects the Mastodon server and tells the subscribers.</summary>
     public Task SetMastodonConnectedAsync(bool isConnected)
         => SetConnectedAsync(MastodonId, isConnected);
 

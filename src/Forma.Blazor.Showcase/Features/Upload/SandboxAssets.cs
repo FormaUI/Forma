@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Showcase.Features.Upload;
 
+/// <summary>The Showcase's file sandbox: generated asset files and the directory uploads are written to.</summary>
 internal sealed class SandboxAssets
 {
     private const string AssetsFolder = "Assets";
@@ -39,19 +40,19 @@ internal sealed class SandboxAssets
         }
     }
 
-    /// <summary>Directory containing generated files for picker exercises.</summary>
+    /// <summary>The directory of generated asset files.</summary>
     public string AssetDirectory { get; }
 
-    /// <summary>The asset directory written from the project folder down, for display.</summary>
+    /// <summary>The asset directory's path from the project folder down.</summary>
     public string AssetDisplayPath { get; }
 
     /// <summary>Serializes changes to the shared upload directory.</summary>
     public SemaphoreSlim Gate { get; } = new(1, 1);
 
-    /// <summary>Directory receiving files written by the Showcase uploader.</summary>
+    /// <summary>The directory uploads are written to.</summary>
     public string UploadDirectory { get; }
 
-    /// <summary>The upload directory written from the project folder down, for display.</summary>
+    /// <summary>The upload directory's path from the project folder down.</summary>
     public string UploadDisplayPath { get; }
 
     /// <summary>Removes every file from the upload directory.</summary>
@@ -81,7 +82,7 @@ internal sealed class SandboxAssets
         return path;
     }
 
-    /// <summary>Writes an upload's address relative to the content root.</summary>
+    /// <summary>Returns the named upload's address relative to the content root.</summary>
     public static string GetUploadSource(string name)
         => Path.Combine(SandboxFolder, UploadFolder, Path.GetFileName(name));
 

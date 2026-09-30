@@ -43,7 +43,7 @@ builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();
 builder.Services.AddScoped<IResourceProvider, MarkdownResourceProvider>();
 builder.Services.AddScoped<IPlayerProvider, CustomPlayerProvider>();
 
-// A stand-in cloud drive under the visitor's account, so the share menu page can show a host-registered destination and how it connects.
+// The visitor's share accounts and a sample cloud drive share target.
 builder.Services.AddScoped<ShowcaseShareAccounts>();
 builder.Services.AddScoped<IShareTokenSource>(services => services.GetRequiredService<ShowcaseShareAccounts>());
 builder.Services.AddScoped<IShareServerSource>(services => services.GetRequiredService<ShowcaseShareAccounts>());
@@ -52,11 +52,11 @@ builder.Services.AddFormaMastodonSharing();
 builder.Services.AddScoped<ShowcaseShareTarget>();
 builder.Services.AddScoped<IShareTarget>(services => services.GetRequiredService<ShowcaseShareTarget>());
 
-// What the composer's image dialog browses and uploads into; without these it offers an address alone.
+// The stored images and the file store uploads are written to.
 builder.Services.AddScoped<ICatalogProvider>(_ => new ShowcaseImageLibrary());
 builder.Services.AddScoped<IFileStore, DefaultFileStore>();
 
-// The statuses this application defines for itself — the library ships none.
+// The statuses the Showcase defines.
 builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 [
     new("draft", CssColor.FromRgba(98, 105, 118, 0.12), CssColor.FromHex(0x2c384a)) { Marker = Glyph.Pen },
@@ -66,7 +66,7 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
     new("rejected", CssColor.FromRgba(214, 57, 57, 0.14), CssColor.FromHex(0xa32222)) { Marker = Glyph.CircleCross }
 ]));
 
-// French ships with neither the library nor the Showcase; the .locales folder supplies it, so a host adding a language can be seen.
+// French comes from the .locales folder, as a language a host adds.
 builder.Services.AddCultureRouting(new CultureRouterOptions
 {
     Prefix = CulturePrefix.ExceptDefault,

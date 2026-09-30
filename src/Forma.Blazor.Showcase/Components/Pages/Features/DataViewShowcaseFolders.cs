@@ -2,17 +2,17 @@ namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
 using Forma.Framework.Icons;
 
-/// <summary>An entry of the folder hierarchy the data view's tree tab browses: a folder or a file under its parent.</summary>
+/// <summary>An entry of the folder hierarchy the data view's tree tab shows: a folder or a file under its parent.</summary>
 internal sealed record ShowcaseEntry(int Id, int? ParentId, string Name, bool IsFolder, string Kind, Glyph Glyph)
 {
-    /// <summary>The entry's parent, as the tree's hierarchy names it.</summary>
+    /// <summary>The entry's parent, where null is the top level.</summary>
     public int? Parent => ParentId;
 }
 
 /// <summary>The folders and files the data view's tree tab shows.</summary>
 internal static class DataViewShowcaseFolders
 {
-    /// <summary>The entries, as the set a data view manages.</summary>
+    /// <summary>The entries.</summary>
     public static IQueryable<ShowcaseEntry> All { get; } = new[]
     {
         new ShowcaseEntry(1, null, "Documents", true, "Folder", Glyph.Folder),
@@ -30,7 +30,7 @@ internal static class DataViewShowcaseFolders
         new ShowcaseEntry(13, 10, "Harbor.jpg", false, "Image", Glyph.Image),
     }.AsQueryable();
 
-    /// <summary>Ten folders of ten thousand files each, the hierarchy the tree tab shows virtualizing at the data view's scale.</summary>
+    /// <summary>Ten folders of ten thousand files each.</summary>
     public static IQueryable<ShowcaseEntry> Many
         => field ??= CreateMany();
 

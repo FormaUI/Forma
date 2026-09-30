@@ -9,13 +9,13 @@ internal sealed class DefaultFileStore(SandboxAssets sandbox) : IFileStore
 
     private const int PacedBufferSize = 1024;
 
-    /// <summary>Pauses between reads so a transfer is slow enough to watch and to cancel.</summary>
+    /// <summary>The pause between reads.</summary>
     public TimeSpan ChunkDelay { get; init; }
 
     /// <summary>Whether the upload directory is emptied before the next file is saved.</summary>
     public bool ClearBeforeSave { get; set; } = true;
 
-    /// <summary>The files currently present in the sandbox upload directory.</summary>
+    /// <summary>The files in the sandbox upload directory.</summary>
     public IReadOnlyCollection<ResourceInfo> Held
         => Directory
             .EnumerateFiles(sandbox.UploadDirectory)
@@ -25,7 +25,7 @@ internal sealed class DefaultFileStore(SandboxAssets sandbox) : IFileStore
             })
             .ToList();
 
-    /// <summary>Refuses any file past this many bytes, standing in for a store with a quota.</summary>
+    /// <summary>The size in bytes past which the store refuses a file, where null is no limit.</summary>
     public long? RefusesOver { get; init; }
 
     /// <inheritdoc />

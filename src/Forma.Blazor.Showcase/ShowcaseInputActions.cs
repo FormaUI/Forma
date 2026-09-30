@@ -2,10 +2,10 @@ namespace Forma.Blazor.Showcase;
 
 using Forma.Framework.Input;
 
-/// <summary>The showcase's own answer to its host routes: it remembers the last action and tells the page showing it.</summary>
+/// <summary>The Showcase's handler for its host routes, holding the last action performed.</summary>
 public sealed class ShowcaseInputActions : IInputActionHandler
 {
-    /// <summary>The last host action performed, or <see langword="null"/> before any.</summary>
+    /// <summary>The last host action performed.</summary>
     public string? LastAction { get; private set; }
 
     /// <summary>The input that raised <see cref="LastAction"/>.</summary>

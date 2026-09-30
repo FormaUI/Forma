@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Showcase page demonstrating the FormaExplorer component.</summary>
 public sealed partial class FormaExplorerPage : ComponentBase
 {
-    // The folder is the page's to know, so the explorer never has to send it back in a query.
+    // Answers queries from the folder the page holds.
     private sealed class FolderScopedProvider(SampleMediaStore store, Func<string?> folder) : ICatalogProvider
     {
         public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
@@ -219,7 +219,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
             }
         ];
 
-        // Every browsing demo reads through a store, so folder, search, sort and paging are answered the way a real library answers them.
+        // The browsing demos read through a store that answers folder, search, sort and paging.
         _mediaStore = Store(media);
         SyncFromStore();
 
@@ -282,7 +282,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    // The store is the demo's only copy of the media, so what a mutation changed has to be read back out of it.
+    // The store holds the only copy of the media, so a mutation is read back out of it.
     private void SyncFromStore()
     {
         _allMedia = [.. _mediaStore.GetAll()];
@@ -334,7 +334,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    /// <summary>The resources behind the items, for the store that holds them.</summary>
+    /// <summary>The resources behind the items.</summary>
     private static List<ResourceInfo> GetResources(IEnumerable<ICatalogItem> items)
         => [.. items.Select(item => item.Resource).OfType<ResourceInfo>()];
 

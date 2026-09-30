@@ -3,10 +3,7 @@ namespace Forma.Blazor.Showcase;
 using Forma.Blazor.Components.Media;
 using Forma.Framework.Media;
 
-/// <summary>
-/// Claims the Showcase's own <c>custom:</c> addresses and resolves them against its storage,
-/// standing in for a host that identifies videos its own way rather than by a public address.
-/// </summary>
+/// <summary>A player provider resolving the Showcase's own <c>custom:</c> addresses against its media folder.</summary>
 public sealed class CustomPlayerProvider : IPlayerProvider
 {
     private const string Scheme = "custom:";

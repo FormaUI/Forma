@@ -165,8 +165,7 @@
     private ComposerDocument _anyFileDoc = new(ComposerDocumentFormat.Html, "<p>Browse any stored file, or attach one from this device.</p>");
     private readonly ComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
     private readonly ComposerOptions _fixedHeightOptions = new() { IsResizable = false };
-    // The demo editors are cascaded to the page's own components as well, so these compositions hand the
-    // composer the very instances the page holds rather than letting it build its own.
+    // Built from the editor instances the page holds, so the composer and the page's own components share them.
     private ComposerDefinition _statusPlugins = ComposerDefinition.Empty;
     private ComposerDefinition _sourcePlugins = ComposerDefinition.Empty;
     private ComposerDefinition _demoPlugins = ComposerDefinition.Empty;

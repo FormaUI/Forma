@@ -1,14 +1,6 @@
 /* ============================================================
-   Showcase chrome — the shell the components are displayed in.
-   None of it ships in the library.
-
-   A page is a title, an intro, then one demo-section per scenario:
-   an h2, an optional description and a demo-box. A box stacks what
-   it holds a group's gap apart; demo-row lays the same things out on
-   one line at that gap. Every measure is a token: --space-3 between
-   things inside a box, --space-4 between a heading and its box,
-   --space-6 between sections. One rule per box; the heading above
-   it draws none, and neither does a cell inside it.
+   Showcase chrome: the shell the components are displayed in,
+   and the demo sections, boxes and rows a page is built from.
    ============================================================ */
 
 body {
@@ -20,8 +12,7 @@ body {
     min-block-size: 100vh;
 }
 
-/* The page list is a viewport-tall column that scrolls on its own, so it keeps its place while the content
-   beside it changes and scrolls. */
+/* The page list: a viewport-tall column that scrolls on its own. */
 .showcase-sidebar {
     position: sticky;
     inset-block-start: 0;
@@ -104,7 +95,7 @@ body {
 
 .showcase-main {
     flex: 1;
-    /* A flex item refuses to shrink under its content without this, which pushes the page sideways. */
+    /* Lets the flex item shrink below its content's width. */
     min-inline-size: 0;
     max-inline-size: 56.25rem;
     padding: var(--space-6) var(--space-6);
@@ -160,7 +151,7 @@ body {
     }
 }
 
-/* The glyph and emoji galleries every Design page lays out the same way. */
+/* The glyph and emoji galleries of the Symbols pages. */
 .glyph-grid {
     display: grid;
     /* Wide enough for a glyph pair beside its name on one line: the longest name in the set at the caption size (7.5rem), a 32px and a 24px glyph (3.5rem), two gaps and the padding (2rem). */
@@ -187,7 +178,7 @@ body {
     overflow-wrap: anywhere;
 }
 
-/* A gallery of bare emoji has no name to fit, so its cells pack to the glyph pair and its padding. */
+/* A gallery of bare emoji packs its cells to the glyph pair and its padding. */
 .glyph-grid-emoji {
     grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
 }
@@ -245,7 +236,7 @@ body {
     margin-block-end: -1px;
 }
 
-/* The active variant is marked by its underline as well as its color, so the strip reads without it. */
+/* The active variant is marked by an underline as well as its color. */
 .showcase-tabs a.active {
     color: var(--primary-color);
     font-weight: 600;
@@ -332,7 +323,7 @@ body {
     margin-block-start: 0;
 }
 
-/* Lets a region reach the box's own edges, the way it would seat in a real backdrop. */
+/* Lets a region reach the box's own edges. */
 .demo-box-flush {
     gap: 0;
     padding: 0;
@@ -344,12 +335,12 @@ body {
     --forma-command-area-bg-color: var(--hover-bg-color);
 }
 
-/* Forces the overflow case without needing the browser window resized. */
+/* Forces the overflow case at any window width. */
 .demo-command-bar-narrow {
     max-inline-size: 26rem;
 }
 
-/* A focusable region, so a toolbar's Target-scoped shortcuts have somewhere real to be pressed. */
+/* A focusable region a toolbar's Target-scoped shortcuts are pressed in. */
 .demo-shortcut-surface {
     padding: var(--space-5);
     border-block-start: 1px solid var(--border-color);
@@ -362,7 +353,7 @@ body {
     outline-offset: -2px;
 }
 
-/* Two panes with a divider between them, so a splitter has something real to resize. */
+/* Two panes with a divider between them for a splitter to resize. */
 .demo-split {
     display: flex;
     block-size: 12rem;
@@ -400,7 +391,7 @@ body {
     background: transparent;
 }
 
-/* A drag must not leave the panes selecting text as the pointer sweeps across them. */
+/* Keeps a drag across the panes from selecting their text. */
 .demo-split.is-resizing {
     user-select: none;
 }
@@ -409,8 +400,7 @@ body {
     opacity: 0.5;
 }
 
-/* Stands in for an app shell that bounds its content area, so a grid inside
-   it has a height to fill and its rows scroll instead of the page. */
+/* A bounded content area a grid fills, its rows scrolling inside it. */
 .demo-box-bounded {
     box-sizing: border-box;
     block-size: 20rem;
@@ -423,8 +413,7 @@ body {
 }
 
 /* Holds an explorer at a phone's size: its 20rem floor plus the box's padding across, under the header's 25.75rem
-   tier, and a phone's viewport less its browser chrome down, so the explorer fills a bounded height as it would
-   in an app. */
+   tier, and a phone's viewport less its browser chrome down. */
 .demo-box-phone {
     box-sizing: border-box;
     max-inline-size: 24rem;
@@ -445,7 +434,7 @@ body {
     display: inline-flex;
 }
 
-/* The box a popover demo draws, since FormaPopover itself draws none. */
+/* The box a popover demo draws. */
 .demo-popover {
     padding: var(--space-3);
     border-radius: var(--radius-md);
@@ -733,8 +722,7 @@ body {
     margin-block-start: var(--space-1);
 }
 
-/* Stands in for a saturated surface, so a ghost button's retint knobs are visible. The resting
-   alpha is what it is because 0.75 lands at 2.97:1 against this background. */
+/* A saturated surface showing a ghost button's retint knobs; the resting alpha of 0.85 holds 3:1 against it. */
 .demo-tinted {
     display: flex;
     align-items: center;
@@ -793,7 +781,7 @@ body {
     font-size: var(--font-size-sm);
 }
 
-/* A filtered result set, shown so a reader can see a search actually narrow it. */
+/* A filtered result set. */
 .demo-list {
     display: flex;
     flex-direction: column;
@@ -816,8 +804,7 @@ body {
     gap: var(--space-3);
 }
 
-/* Reproduces the case a popover has to survive: a bounded box that scrolls and would
-   clip an ordinary absolutely-positioned panel. */
+/* A bounded box that scrolls and clips an absolutely positioned panel inside it. */
 .demo-scroll-box {
     box-sizing: border-box;
     block-size: 11.25rem;
@@ -852,8 +839,7 @@ body {
     block-size: 9rem;
 }
 
-/* A demo names types, paths and identifiers that have nowhere to break, so the prose around
-   them is allowed to break anywhere rather than running off the side of a phone. */
+/* Demo prose breaks anywhere, since the types, paths and identifiers it names have nowhere to break. */
 .showcase-main :is(h1, h2, h3, p, li, code, bdi, strong) {
     overflow-wrap: anywhere;
 }
@@ -911,7 +897,7 @@ body {
     flex: 1;
 }
 
-/* A drag must not leave the regions selecting text as the pointer sweeps across them. */
+/* Keeps a drag across the regions from selecting their text. */
 .forma-stack-layout.is-resizing {
     user-select: none;
 }

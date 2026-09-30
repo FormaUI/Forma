@@ -8,7 +8,7 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Hosting;
 
-/// <summary>Reads resource content from the Showcase's own web root, standing in for a host's real storage.</summary>
+/// <summary>Reads resource content from the Showcase's web root.</summary>
 public sealed class WebRootContentReader(IWebHostEnvironment environment) : IResourceContentReader
 {
     /// <inheritdoc />

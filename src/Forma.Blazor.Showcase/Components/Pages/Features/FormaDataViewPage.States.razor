@@ -108,7 +108,7 @@
     private IReadOnlyList<ShowcaseProduct> _bounded = [DataViewShowcaseProducts.All.First()];
     private string? _refusal;
 
-    // One queryable over the shelf for the page's life: a new one each render would read as a new source and reload the view.
+    // One queryable over the shelf for the page's life, since the view reloads on a new source.
     private IQueryable<ShowcaseProduct> ShelfItems
         => _shelfItems ??= _shelf.AsQueryable();
 
@@ -122,7 +122,7 @@
         return new DataViewPage<ShowcaseProduct>([.. request.Count is { } count ? slice.Take(count) : slice], DataViewShowcaseProducts.All.Count());
     }
 
-    // A node's children, or the roots for none, each answer arriving after a moment.
+    // Answers a node's children, or the roots at the top level, after a delay.
     private static async ValueTask<DataViewPage<ShowcaseEntry>> ProvideFolderSlowlyAsync(DataViewRequest<ShowcaseEntry> request)
     {
         await Task.Delay(SlowAnswer, request.CancellationToken);

@@ -23,7 +23,7 @@ public sealed partial class FormaStatusBadgePage : ComponentBase
         ("order-canceled", L["Canceled"])
     ];
 
-    // A second application vocabulary, registered from the page to show the catalog API.
+    // Registers the order statuses as a second application vocabulary.
     /// <inheritdoc />
     protected override void OnInitialized()
     {

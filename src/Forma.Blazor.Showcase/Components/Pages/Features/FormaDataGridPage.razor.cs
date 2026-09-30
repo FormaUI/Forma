@@ -158,7 +158,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
             ? dataView.ScrollToItemAsync(Math.Clamp(_scrollTargetRow, 1, HugeRowCount) - 1)
             : Task.CompletedTask;
 
-    // Answers a slice after a pause long enough to see the placeholders it leaves.
+    // Answers a slice after a pause, with its placeholders shown meanwhile.
     private static async ValueTask<DataViewPage<GridItem>> ProvideSlowItemsAsync(DataViewRequest<GridItem> request)
     {
         if (request.Count is not 0)

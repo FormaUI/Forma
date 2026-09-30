@@ -7,7 +7,7 @@ using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Resources;
 
-/// <summary>An in-memory store standing in for one the explorer would reach over IO.</summary>
+/// <summary>An in-memory media store answering after a set latency.</summary>
 public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, TimeSpan latency)
 {
     private readonly List<SampleResource> _resources = [.. resources];
@@ -21,7 +21,7 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
     /// <summary>Raised once a slice has been answered.</summary>
     public Func<Task>? Queried { get; set; }
 
-    /// <summary>Answers one slice of the named folder.</summary>
+    /// <summary>Answers one slice of the folder, where null is all media.</summary>
     public async ValueTask<CatalogPage> GetPageAsync(string? folder, CatalogQuery query, CancellationToken cancellationToken)
     {
         QueryCount++;
@@ -29,7 +29,6 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
 
         await Task.Delay(latency, cancellationToken).ConfigureAwait(false);
 
-        // The sidebar's root is "All media" rather than an unfiled folder, so no folder means no filter.
         IEnumerable<SampleResource> matching = folder is null
             ? _resources
             : _resources.Where(resource => resource.Folder == folder);
@@ -68,7 +67,7 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
         return page;
     }
 
-    /// <summary>Everything held, for a demo that hands the explorer its collection instead of a provider.</summary>
+    /// <summary>The resources held.</summary>
     public IReadOnlyList<ResourceInfo> GetAll()
         => [.. _resources.Select(held => held.Resource)];
 
@@ -80,7 +79,7 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
     public long GetSize(string folder)
         => _resources.Where(held => held.Folder == folder).Sum(held => held.Resource.Size ?? 0);
 
-    /// <summary>Moves the resources into the folder, or to the root when none is named.</summary>
+    /// <summary>Moves the resources into the folder, where null is the root.</summary>
     public void Move(IReadOnlyList<ResourceInfo> resources, string? folder)
     {
         ArgumentNullException.ThrowIfNull(resources);
@@ -107,7 +106,7 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
         }
     }
 
-    /// <summary>Removes everything the folder held, as deleting a folder takes its contents with it.</summary>
+    /// <summary>Removes the resources the folder holds.</summary>
     public void RemoveFolder(string folder)
         => _resources.RemoveAll(held => held.Folder == folder);
 
@@ -129,6 +128,6 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
 }
 
 /// <summary>A stored resource together with the folder holding it.</summary>
-/// <param name="Resource">The resource itself.</param>
-/// <param name="Folder">The source of the folder it belongs to, or null when it sits at the root.</param>
+/// <param name="Resource">The resource.</param>
+/// <param name="Folder">The source of the folder holding the resource, where null is the root.</param>
 public sealed record SampleResource(FileResourceInfo Resource, string? Folder);

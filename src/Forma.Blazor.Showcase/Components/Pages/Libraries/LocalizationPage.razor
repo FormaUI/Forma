@@ -308,7 +308,7 @@
     private CultureRoute French
         => Router.Routes.First(route => route.Token == "fr");
 
-    // A lookup under the French culture, restored at once, so the page itself stays in the culture on screen.
+    // Looks the key up under French and restores the culture on screen at once.
     private string GetFrench(string key)
     {
         var current = CultureInfo.CurrentUICulture;

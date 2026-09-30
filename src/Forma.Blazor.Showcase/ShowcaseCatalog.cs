@@ -5,7 +5,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>One page the showcase serves, and which variant of its component that page demonstrates.</summary>
-/// <param name="Component">The page the variant belongs to, which is the page itself for Forma's own.</param>
+/// <param name="Component">The page the variant belongs to.</param>
 /// <param name="Title">The component the page demonstrates.</param>
 /// <param name="Category">The sidebar section the page sits in.</param>
 /// <param name="Route">The page's own route.</param>
@@ -16,7 +16,7 @@ public sealed record ShowcasePage(string Component, string Title, string Categor
 /// <remarks>
 /// A page named <c>FormaEmojiPage.Twemoji.razor</c> demonstrates the same component as
 /// <c>FormaEmojiPage.razor</c> through a different package, and joins that page's tab strip by
-/// virtue of its name. Adding such a file is all it takes to add a tab.
+/// its name.
 /// </remarks>
 public static class ShowcaseCatalog
 {
@@ -34,8 +34,8 @@ public static class ShowcaseCatalog
         .ToLookup(page => page.Category);
 
     /// <summary>The variants of whichever page <paramref name="path"/> names, Forma's own first.</summary>
-    /// <param name="path">A route, already stripped of any culture segment.</param>
-    /// <returns>The page's variants, or nothing when the path names no page or the page has only one.</returns>
+    /// <param name="path">A route without its culture segment.</param>
+    /// <returns>The page's variants, empty for a page with only one.</returns>
     public static IReadOnlyList<ShowcasePage> GetVariants(string path)
     {
         var current = All.FirstOrDefault(page => IsRoute(page, path));
@@ -98,8 +98,7 @@ public static class ShowcaseCatalog
         return pages >= 0 && pages + 1 < segments.Length ? segments[pages + 1] : segments[^1];
     }
 
-    // Symbols leads as the library's own vocabulary, Features and Libraries group the composite demos,
-    // everything else follows alphabetically, and Debugging closes the list as tooling rather than a component.
+    // Features, Libraries, Debugging and Symbols lead in that order, and every other category follows alphabetically.
     private static int GetCategoryRank(string category)
         => category switch
         {

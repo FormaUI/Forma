@@ -7,9 +7,7 @@
 @inject NavigationManager Nav
 @inject IStringLocale<ShowcaseTabs> L
 
-@* Each variant is a page of its own, so these are links in a nav rather than an ARIA tablist,
-   which would promise panels on this same page. Which link is current is decided against the
-   culture-stripped path rather than by NavLink, whose comparison a culture prefix defeats. *@
+@* Each variant links to a page of its own; the current one is matched on the path without its culture segment. *@
 @if (_variants.Count > 0)
 {
     <nav class="showcase-tabs" aria-label="@L["Variants"]">
@@ -38,7 +36,7 @@
     public void Dispose()
         => Nav.LocationChanged -= HandleLocationChanged;
 
-    // The layout outlives a navigation, so the strip has to be rebuilt rather than re-rendered as it stands.
+    // The layout outlives a navigation, so the strip is rebuilt on each one.
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         Refresh();

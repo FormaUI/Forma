@@ -3,13 +3,13 @@ namespace Forma.Blazor.Showcase.Components.Pages.Features;
 using Forma.Blazor.Components.DataView;
 using Forma.Framework.Icons;
 
-/// <summary>A product the data view's pages browse: its name, its category, its price and the glyph standing in for its picture.</summary>
+/// <summary>A product the data view's pages show: its name, its category, its price and the glyph standing in for its picture.</summary>
 internal sealed record ShowcaseProduct(int Id, string Name, string Category, decimal Price, Glyph Glyph);
 
-/// <summary>The products every page and tab of the data view's showcase shows, and the grouping they share.</summary>
+/// <summary>The products the data view's showcase pages show, and their grouping by category.</summary>
 internal static class DataViewShowcaseProducts
 {
-    /// <summary>The products, as the set a data view browses.</summary>
+    /// <summary>The products.</summary>
     public static IQueryable<ShowcaseProduct> All { get; } = new[]
     {
         new ShowcaseProduct(1, "Camera", "Electronics", 549, Glyph.Camera),
@@ -23,7 +23,7 @@ internal static class DataViewShowcaseProducts
         new ShowcaseProduct(9, "Luggage tag", "Travel", 9, Glyph.Bookmark),
     }.AsQueryable();
 
-    /// <summary>A hundred thousand products numbered after the nine, the set the tabs show the data view virtualizing at its scale.</summary>
+    /// <summary>A hundred thousand products, the nine repeated and numbered.</summary>
     public static IQueryable<ShowcaseProduct> Many
         => field ??= CreateMany();
 

@@ -74,7 +74,7 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
 /// <summary>A prose-oriented editor, rewriting whole lines and reporting the document's size in the status strip.</summary>
 public sealed class TextEditorPlugin : IComposerEditorPlugin
 {
-    /// <summary>The identifier a plugin names to scope itself to this editor.</summary>
+    /// <summary>The editor's identifier.</summary>
     public const string EditorId = "text";
 
     /// <summary>The command prefixing every line with its position.</summary>
@@ -163,7 +163,7 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
         await interaction.ChangeDocumentAsync(context.Document with { Content = content }).ConfigureAwait(false);
     }
 
-    /// <summary>Brings the readout back in step with a document that has changed, whoever changed it.</summary>
+    /// <summary>Brings the word count readout in step with the content.</summary>
     public void RefreshReadout(string content)
     {
         ArgumentNullException.ThrowIfNull(content);
@@ -242,7 +242,7 @@ public sealed class TimestampPlugin : IComposerFeaturePlugin
     }
 }
 
-/// <summary>An external plugin that declares a row of its own rather than joining the shared plugin row.</summary>
+/// <summary>An external plugin adding a group of cleanup commands to the shared plugin row.</summary>
 public sealed class CleanupPlugin : IComposerFeaturePlugin
 {
     /// <summary>The command dropping lines that hold nothing but whitespace.</summary>
@@ -300,7 +300,7 @@ public sealed class CleanupPlugin : IComposerFeaturePlugin
 /// <param name="editor">The rich text editor whose canvas the markers stand beside.</param>
 public sealed partial class LongParagraphPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
-    /// <summary>The command flagging the long blocks, or taking the flags back when they stand.</summary>
+    /// <summary>The command flagging the long blocks or clearing their flags.</summary>
     public const string ToggleCommand = "long-paragraph.toggle";
 
     /// <summary>The words a block may run to before it is flagged.</summary>

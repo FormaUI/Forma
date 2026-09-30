@@ -8,7 +8,7 @@
     min-block-size: 12rem;
 }
 
-/* The gutter and the textarea scroll as one because this box owns the scrollbar, not the textarea. */
+/* This box owns the scrollbar, so the gutter and the textarea scroll as one. */
 .demo-source-body {
     display: flex;
     flex: 1;

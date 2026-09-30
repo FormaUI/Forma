@@ -13,7 +13,7 @@ public sealed partial class FormaDataViewPage : ComponentBase
 
     private IReadOnlyList<ShowcaseProduct> _selectedProducts = [];
 
-    // Named by the grid's columns' sort names, their properties' paths, so a sort chosen from the menu marks the column's header too and a link means the same sort in every culture.
+    // Named by the grid columns' sort names, their property paths, so a menu sort marks the column header and a link holds the same sort in every culture.
     private IReadOnlyList<DataViewSortOption<ShowcaseProduct>> _sorts = [];
 
     /// <inheritdoc />

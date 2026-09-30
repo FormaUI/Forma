@@ -109,7 +109,7 @@ public partial class FormaIconPage
         ]),
     ];
 
-    // Every glyph the sections above leave out lands in a last section, so nothing is hidden by omission.
+    // The named sections followed by a last section holding every glyph they leave out.
     private static readonly IReadOnlyList<GlyphSection> Sections = Complete(Named);
 
     private static readonly int Total = Sections.Sum(section => section.Glyphs.Count);

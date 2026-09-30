@@ -10,15 +10,16 @@ using Microsoft.AspNetCore.Components.Web;
 /// <summary>The source canvas for the composer demo, numbering its lines and renaming a symbol throughout the document.</summary>
 public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
 {
-    // A pattern built from what the author typed, so a pathological name cannot run away with the request.
+    // Bounds a match against the pattern built from typed input.
     private static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(250);
 
-    /// <summary>The composer state cascaded from the parent shell.</summary>
+    /// <summary>The composer's context.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
 
+    /// <summary>The composer's interaction.</summary>
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
-    /// <summary>The plugin this canvas belongs to, cascaded by the host so each composer drives its own.</summary>
+    /// <summary>The plugin this canvas belongs to.</summary>
     [CascadingParameter] public SourceEditorPlugin? Plugin { get; set; }
 
     private ElementReference _oldNameElement;
@@ -121,7 +122,6 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
             return;
         }
 
-        // Whole-word matching is what separates renaming a symbol from replacing a substring.
         var pattern = $@"\b{Regex.Escape(_oldName)}\b";
         var replaced = 0;
         string content;
