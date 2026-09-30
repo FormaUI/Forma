@@ -4,11 +4,11 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-/// <summary>What an assembly's <c>.locale.json</c> says about its locale files; a key the file leaves out is null.</summary>
+/// <summary>The settings an assembly's <c>.locale.json</c> declares for its locale files.</summary>
 /// <param name="RootNamespace">The root namespace the assembly's anchors are counted from.</param>
 /// <param name="RootDir">The folder beneath the assembly's root where its files begin, written with <c>/</c> between folders.</param>
 /// <param name="LocalesDir">The name a folder of locale files has, written with <c>/</c> between folders.</param>
-/// <param name="Paths">The paths the assembly's files are read by, replacing the default ones.</param>
+/// <param name="Paths">The paths the assembly's files are read by.</param>
 public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string? LocalesDir, IReadOnlyList<LocalePath>? Paths)
 {
     /// <summary>The name a config file has.</summary>
@@ -26,7 +26,7 @@ public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string
     /// <summary>The key listing the paths.</summary>
     public const string PathsKey = "paths";
 
-    /// <summary>The name a folder of locale files has unless the config names another.</summary>
+    /// <summary>The default name of a folder of locale files.</summary>
     public const string DefaultLocalesDir = ".locales";
 
     private static readonly SearchValues<char> NotInARelativePath = SearchValues.Create("\\:");
@@ -38,15 +38,15 @@ public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string
         AllowDuplicateProperties = false,
     };
 
-    /// <summary>The keys the runtime reads, in the order a file is expected to write them; a file names no other.</summary>
+    /// <summary>The keys the runtime reads, in the order a file writes them.</summary>
     public static IReadOnlyList<string> Keys { get; } = [RootNamespaceKey, RootDirKey, LocalesDirKey, PathsKey];
 
-    /// <summary>A config that says nothing, leaving every value to the default.</summary>
+    /// <summary>A config with every value left to the default.</summary>
     public static LocaleConfig Empty { get; } = new(null, null, null, null);
 
-    /// <summary>Reads a config file, passing over a key this runtime does not read so that a file written for a later one still loads.</summary>
+    /// <summary>Reads a config file.</summary>
     /// <param name="stream">The file's content.</param>
-    /// <param name="fileName">The file being read, named in anything thrown.</param>
+    /// <param name="fileName">The name of the file being read.</param>
     /// <exception cref="LocaleConfigException">The file is not a JSON object, or a key the runtime owns is malformed.</exception>
     public static LocaleConfig Read(Stream stream, string fileName)
     {
@@ -96,10 +96,10 @@ public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string
         }
     }
 
-    /// <summary>Whether a key whose value is text accepts one, and what is wrong with it when it does not.</summary>
-    /// <param name="key">The key, as a file writes it; one the runtime does not read, and <see cref="PathsKey"/>, whose value is a list of paths each read by <see cref="LocalePath.Parse"/>, accept any text.</param>
+    /// <summary>Whether a key accepts a text value.</summary>
+    /// <param name="key">The key, as a file writes it.</param>
     /// <param name="value">The value, as a file writes it.</param>
-    /// <param name="problem">What is wrong with the value, in a sentence, when the key does not accept it.</param>
+    /// <param name="problem">What is wrong with the value, in a sentence.</param>
     public static bool Accepts(string key, string value, [NotNullWhen(false)] out string? problem)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
@@ -152,7 +152,6 @@ public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string
         return paths;
     }
 
-    // Dots divide the segments, and a segment is one or more characters with no whitespace among them.
     private static bool IsNamespace(ReadOnlySpan<char> text)
     {
         foreach (var range in text.Split('.'))
@@ -180,7 +179,6 @@ public sealed record LocaleConfig(string? RootNamespace, string? RootDir, string
         return false;
     }
 
-    // A path is relative, written with '/' alone, and never doubles a separator.
     private static bool IsRelativePath(ReadOnlySpan<char> text)
     {
         if (text[0] == Path.AltDirectorySeparatorChar || text.ContainsAny(NotInARelativePath))

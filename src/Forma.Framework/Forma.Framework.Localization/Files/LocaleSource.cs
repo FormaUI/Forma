@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Text;
 
-/// <summary>Where locale files are read from: every name the source holds, listed once, each placed at the anchor it stands for by its assembly's paths.</summary>
+/// <summary>A store locale files are read from, each file placed at the anchor its assembly's paths read it for.</summary>
 /// <param name="format">The format the files are written in.</param>
 public abstract class LocaleSource(ILocaleFileFormat format)
 {
@@ -20,18 +20,22 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <summary>The format the files are written in.</summary>
     protected ILocaleFileFormat Format { get; } = format ?? throw new ArgumentNullException(nameof(format));
 
-    /// <summary>The character written between folders in this source's names: <see cref="Path.AltDirectorySeparatorChar"/> for a file path, <c>.</c> for an embedded resource's name, which no path separator describes.</summary>
+    /// <summary>The character written between folders in this source's names: <see cref="Path.AltDirectorySeparatorChar"/> for a file path, <c>.</c> for an embedded resource's name.</summary>
     protected abstract char FolderSeparator { get; }
 
-    /// <summary>The paths this source reads an assembly's files by where it has no <c>.locale.json</c> or its file states none, <see cref="LocalePath.Defaults"/> unless the source reads more.</summary>
+    /// <summary>The paths this source reads an assembly's files by when its <c>.locale.json</c> states none.</summary>
     protected virtual IReadOnlyList<LocalePath> DefaultPaths
         => LocalePath.Defaults;
 
-    /// <summary>How this source compares names, <see cref="StringComparison.Ordinal"/> unless its store ignores case.</summary>
+    /// <summary>How this source compares names.</summary>
     protected virtual StringComparison NameComparison
         => StringComparison.Ordinal;
 
-    /// <summary>The translations for a type in one culture: anchor by anchor from the root down to the type, within an anchor by the paths in their order and then the rooted sections naming the anchor, so a later entry overrides an earlier one.</summary>
+    /// <summary>The translations for a type in one culture, in the order they apply.</summary>
+    /// <remarks>
+    /// The entries are read anchor by anchor from the root down to the type, and within an anchor by the paths in their
+    /// order and then the rooted sections naming the anchor, so a later entry overrides an earlier one.
+    /// </remarks>
     /// <param name="assemblyName">The name of the assembly the type lives in.</param>
     /// <param name="typeName">The type's full name.</param>
     /// <param name="cultureName">The culture the files are named for.</param>
@@ -87,7 +91,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return entries;
     }
 
-    /// <summary>The full name of every type or namespace the assembly's paths place a file at in one culture, none when no path reads it there.</summary>
+    /// <summary>The full name of every type or namespace the assembly's paths place a file at in one culture.</summary>
     /// <param name="assemblyName">The name of the assembly the file belongs to.</param>
     /// <param name="name">The file's name in the source.</param>
     /// <param name="cultureName">The culture the file is read for.</param>
@@ -114,7 +118,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
 
                 string[] anchor = anchorKey.Length == 0 ? [] : anchorKey.Split(AnchorKeySeparator);
 
-                // An anchor outside the root namespace is a full name, which only a type the root namespace does not start is read by.
+                // An anchor outside the root namespace is a full name, read only by a type outside the root namespace.
                 if (isOutsideRootNamespace)
                 {
                     if (anchor.Length > 0 && !IsUnderRootNamespace(anchor, rootSegments))
@@ -145,31 +149,31 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <summary>Every name the source's own store holds, config files included, written with <see cref="FolderSeparator"/> between folders.</summary>
     protected abstract IEnumerable<string> EnumerateNames();
 
-    /// <summary>The names a culture's own store holds apart from the source's, each written as the source's store would write it; none unless the source keeps such stores.</summary>
+    /// <summary>The names a culture's own store holds apart from the source's, each written as the source's store would write it.</summary>
     /// <param name="cultureName">The culture.</param>
     protected virtual IEnumerable<string> EnumerateCultureNames(string cultureName)
         => [];
 
-    /// <summary>Where an assembly's names begin when it has no config file.</summary>
+    /// <summary>Where an assembly's names begin by default.</summary>
     /// <param name="assemblyName">The assembly's name.</param>
     protected abstract string GetDefaultRootDir(string assemblyName);
 
-    /// <summary>Where the names of a type outside the root namespace begin, given where the root's begin; the same place unless the store spells a namespace at the front of every name.</summary>
+    /// <summary>Where the names of a type outside the root namespace begin, given where the root's begin.</summary>
     /// <param name="rootDir">Where the root's names begin.</param>
     protected virtual string GetRootDirOutsideRootNamespace(string rootDir)
         => rootDir;
 
-    /// <summary>The name a file has in anything thrown or reported, the name itself unless the source knows it better.</summary>
+    /// <summary>The name a file is reported by.</summary>
     /// <param name="name">The file's name in the source.</param>
     protected virtual string GetDisplayName(string name)
         => name;
 
-    /// <summary>Opens a file the source lists, or null when it cannot; a source that reads its files itself opens none.</summary>
+    /// <summary>Opens a file the source lists.</summary>
     /// <param name="name">The file's name in the source.</param>
     protected virtual Stream? OpenFile(string name)
         => null;
 
-    /// <summary>The assembly's config file with the folder it sits in, or null where the assembly ships none: the one config file among the source's names, unless a derived source knows the assembly's config another way.</summary>
+    /// <summary>The assembly's config with the folder it sits in.</summary>
     /// <param name="assemblyName">The assembly's name.</param>
     /// <exception cref="LocaleConfigException">The source holds more than one config file, or the file is malformed.</exception>
     protected virtual (string Folder, LocaleConfig Config)? GetConfig(string assemblyName)
@@ -193,7 +197,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return configFiles is [var configFile] ? (configFile.Folder, ReadConfig(configFile.Name)) : null;
     }
 
-    /// <summary>Reads a locale file the source lists, or null when it cannot be opened; opens it for the format to read unless a derived class already holds it read.</summary>
+    /// <summary>Reads a locale file the source lists.</summary>
     /// <param name="name">The file's name in the source.</param>
     /// <param name="cultureName">The culture the file's name gives it.</param>
     protected virtual LocaleFile? ReadFile(string name, string cultureName)
@@ -209,7 +213,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         }
     }
 
-    /// <summary>Reads a config file the source lists, or a config that says nothing when it cannot be opened.</summary>
+    /// <summary>Reads a config file the source lists.</summary>
     /// <param name="name">The file's name in the source.</param>
     /// <exception cref="LocaleConfigException">The file is malformed.</exception>
     protected virtual LocaleConfig ReadConfig(string name)
@@ -252,7 +256,6 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return false;
     }
 
-    // An assembly has at most one config file, at its root, which puts its keys in force for every file beneath; without one its files read by the defaults.
     private LocaleRoot CreateRoot(string assemblyName)
     {
         if (GetConfig(assemblyName) is not var (folder, config))
@@ -297,7 +300,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
             {
                 var path = root.Paths[pathIndex];
 
-                // A path standing for the root alone speaks for the root namespace, which a type outside it does not start with.
+                // A path standing for the root alone speaks for the root namespace only.
                 if ((key.IsOutsideRootNamespace && path.IsRootOnly) || !matcher.TryGetAnchor(path, name, out var anchor))
                 {
                     continue;

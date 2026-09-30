@@ -7,7 +7,7 @@ public sealed record LocaleParseResult(
     IReadOnlyList<LocaleExpression> Expressions,
     IReadOnlyList<LocaleDiagnostic> Diagnostics)
 {
-    /// <summary>A result for text that carries no expression.</summary>
+    /// <summary>The result with no expressions and no diagnostics.</summary>
     public static LocaleParseResult Empty { get; } = new([], []);
 
     /// <summary>Whether the parser found nothing wrong.</summary>

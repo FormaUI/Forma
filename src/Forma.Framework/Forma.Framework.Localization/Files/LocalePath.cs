@@ -6,14 +6,15 @@ using Forma.Framework.Localization.Parser.Syntax;
 /// <summary>The path of a locale file, written from a source's root with tokens for what varies by anchor, culture and source.</summary>
 public sealed class LocalePath
 {
-    /// <summary>The paths a source reads by unless a setting states others: a folder's own <c>.locales</c> folder, holding one file per culture for everything the folder completes, and in the same folder one file per culture named for a segment beneath the folder, a type's own file among them.</summary>
+    /// <summary>The paths a source reads by default: a folder's own <c>.locales</c> folder, holding one file per culture for everything the folder completes, and in the same folder one file per culture named for a segment beneath the folder.</summary>
     public static IReadOnlyList<LocalePath> Defaults { get; } =
     [
         Parse("$RootDir/$AnchorName/$LocalesDir/$Culture$Extension"),
         Parse("$RootDir/$ParentName/$LocalesDir/$CurrentName.$Culture$Extension"),
     ];
 
-    /// <summary>The paths a host's folder reads by: the paths every source reads, and the same two files directly inside the folder, since the host's folder is itself a folder of locale files; a file in both places stands for one anchor twice, neither overriding the other.</summary>
+    /// <summary>The paths a host's folder reads by: the default paths, and the same two files directly inside the folder.</summary>
+    /// <remarks>Files in both places are both read for the same anchor, in the order of the paths.</remarks>
     public static IReadOnlyList<LocalePath> HostDefaults { get; } =
     [
         .. Defaults,
@@ -40,7 +41,7 @@ public sealed class LocalePath
     /// <summary>The path's runs: literal text and tokens, in the order written.</summary>
     public IReadOnlyList<LocalePathPart> Parts { get; }
 
-    /// <summary>Whether the path names no part of an anchor, and so stands for the root alone.</summary>
+    /// <summary>Whether the path stands for the root alone.</summary>
     public bool IsRootOnly { get; }
 
     internal bool HasAnchorName { get; }
@@ -77,7 +78,7 @@ public sealed class LocalePath
     public override string ToString()
         => Text;
 
-    /// <summary>What is wrong with a path, in a sentence, as <see cref="Parse"/> would refuse it.</summary>
+    /// <summary>What is wrong with a path, in a sentence.</summary>
     /// <param name="text">The path as written.</param>
     /// <param name="diagnostic">What reading it found wrong.</param>
     public static string FormatProblem(string text, LocaleDiagnostic diagnostic)

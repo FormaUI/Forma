@@ -3,15 +3,15 @@ namespace Forma.Framework.Localization.Language;
 /// <summary>The cardinal plural rules from CLDR, covering every locale it publishes.</summary>
 public sealed partial class CommonPluralRuleSet : IPluralRuleSet
 {
-    /// <summary>A shared instance, since the rules carry no state.</summary>
+    /// <summary>The shared instance.</summary>
     public static IPluralRuleSet Default { get; } = new CommonPluralRuleSet();
 
-    /// <summary>The category the operands fall into, or null when CLDR carries no rules for the locale.</summary>
+    /// <inheritdoc />
     public PluralCategory? Select(string locale, PluralOperands operands)
     {
         ArgumentNullException.ThrowIfNull(locale);
 
-        // CLDR keys a handful of entries by script or region, so the fullest identifier has to win over its language.
+        // CLDR keys a few entries by script or region, so the fullest identifier is tried before its language.
         var candidate = locale;
         while (candidate.Length != 0)
         {

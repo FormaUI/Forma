@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization;
 
 using System.Globalization;
 
-/// <summary>The factory a component gets where none is registered: every locale it creates speaks the source language, each key being its own text.</summary>
+/// <summary>A factory whose locales speak the source language, each key being its own text.</summary>
 public sealed class NullStringLocaleFactory : IStringLocaleFactory
 {
     private readonly NullStringLocale _locale = new(CultureInfo.GetCultureInfo(new LocalizationOptions().SourceLanguage));
@@ -11,7 +11,7 @@ public sealed class NullStringLocaleFactory : IStringLocaleFactory
     {
     }
 
-    /// <summary>The one instance, since the factory holds no files.</summary>
+    /// <summary>The shared instance.</summary>
     public static NullStringLocaleFactory Instance { get; } = new();
 
     /// <inheritdoc />

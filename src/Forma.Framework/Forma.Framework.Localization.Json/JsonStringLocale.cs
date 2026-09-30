@@ -5,9 +5,10 @@ using System.Globalization;
 using Forma.Framework.Localization;
 using Forma.Framework.Localization.Files;
 
-/// <summary>Reads the strings for one resource location, walking the culture chain and falling back to the key itself.</summary>
+/// <summary>A locale reading the strings for one resource location from JSON locale files.</summary>
 internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocation location) : IStringLocale
 {
+    /// <inheritdoc />
     public LocalizedText this[string name]
     {
         get
@@ -18,6 +19,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         }
     }
 
+    /// <inheritdoc />
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
     {
         get
@@ -28,6 +30,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         }
     }
 
+    /// <inheritdoc />
     public LocalizedPattern Resolve(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -37,6 +40,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         return Resolve(name, arguments);
     }
 
+    /// <inheritdoc />
     public LocalizedPattern Resolve(string name, params object?[] values)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -45,6 +49,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         return Resolve(name, LocalizedFormat.Bind(name, values));
     }
 
+    /// <inheritdoc />
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -70,7 +75,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         }
     }
 
-    // The key is matched and falls back as the text it stands for, so a doubled dollar sign escapes the reserved shape at a call site as it does in a file.
+    // The key is looked up and falls back as the text it stands for, with its escape removed.
     private LocalizedText Render(string name, LocalizedArgument[] arguments)
     {
         var key = LocalizationSchema.Unescape(name);
@@ -91,11 +96,11 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         return new LocalizedPattern(name, Evaluate(found ? entry.Format : key, IsLocalized(found, entry), arguments), arguments, !found, location.BaseName);
     }
 
-    // A format that is the key is source-language text, whether it was written as null or never found at all.
+    // A format that is the key itself is source-language text.
     private static bool IsLocalized(bool found, JsonResourceEntry entry)
         => found && !entry.IsSourceText;
 
-    // The text a plural expression inflects decides the rules, so source-language text follows the source language.
+    // Plural rules follow the language the text is written in.
     private string Evaluate(string format, bool localized, IReadOnlyList<LocalizedArgument> arguments)
         => context.PluralEvaluator.Evaluate(
             format,
@@ -103,7 +108,6 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
             CultureInfo.CurrentUICulture,
             arguments);
 
-    // Listing every string stays a survey rather than a demand, so it reports a miss instead of refusing it.
     private void RequireFound(string name, bool found)
     {
         if (!found && context.Options.RequireMatchingLocalization)

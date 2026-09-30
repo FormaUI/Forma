@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization;
 
 /// <summary>A localized string together with the key it was looked up under.</summary>
 /// <param name="Name">The key the text was looked up under.</param>
-/// <param name="Value">The localized text, or the key itself when no translation exists.</param>
+/// <param name="Value">The localized text.</param>
 /// <param name="ResourceNotFound">Whether the lookup fell back to the key.</param>
 /// <param name="SearchedLocation">The resource base name that was searched.</param>
 public readonly record struct LocalizedText(
@@ -11,11 +11,11 @@ public readonly record struct LocalizedText(
     bool ResourceNotFound = false,
     string? SearchedLocation = null)
 {
-    /// <summary>The localized text.</summary>
+    /// <inheritdoc />
     public override string ToString()
         => Value;
 
-    /// <summary>Yields the localized text, so a localized value can be used wherever a string is expected.</summary>
+    /// <summary>Converts a localized text to its value.</summary>
     public static implicit operator string(LocalizedText text)
     {
         return text.Value;

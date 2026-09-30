@@ -13,7 +13,7 @@ public readonly record struct LocalizedPattern(
     bool ResourceNotFound = false,
     string? SearchedLocation = null)
 {
-    /// <summary>Walks the format as literal runs and argument holes, without copying either.</summary>
+    /// <summary>Enumerates the format's literal runs and argument holes.</summary>
     public LocalizedSegmentEnumerator EnumerateSegments()
         => new(Format);
 }

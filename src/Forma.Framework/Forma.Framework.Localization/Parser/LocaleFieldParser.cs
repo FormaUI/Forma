@@ -38,7 +38,7 @@ public static class LocaleFieldParser
         return new LocaleFieldResult(Parse(text, new LocaleTextSpan(start, end - start - 1), [], diagnostics), diagnostics);
     }
 
-    /// <summary>Splits a body into its pairs, reporting what is wrong rather than throwing.</summary>
+    /// <summary>Splits a body into its pairs, with a diagnostic for each problem found.</summary>
     /// <param name="text">The whole text the offsets index into.</param>
     /// <param name="body">The range holding the pairs, without the trailing semicolon.</param>
     /// <param name="knownNames">The names this body may use, or empty to accept any name.</param>
@@ -78,7 +78,7 @@ public static class LocaleFieldParser
         return fields;
     }
 
-    // A semicolon only ends a pair when a name this body knows follows it, so prose keeps its own punctuation.
+    // A semicolon ends a pair only when a name this body knows follows it.
     private static bool IsSplit(
         string text,
         int position,
@@ -118,7 +118,7 @@ public static class LocaleFieldParser
             return false;
         }
 
-        // Prose cannot be told from a typo without names to check against, so the exact separator stays required.
+        // Without known names, only the exact separator ends a pair.
         if (knownNames.IsEmpty)
         {
             separator = Separator.Length;
@@ -171,7 +171,7 @@ public static class LocaleFieldParser
         var raw = new LocaleTextSpan(colon + 1, span.End - colon - 1);
         var value = Trim(text, raw);
 
-        // An empty value leaves nothing for the separator to introduce, so reporting its shape as well would only mislead.
+        // An empty value is reported alone, its separator's shape unchecked.
         if (value.IsEmpty)
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.EmptyFieldValue, span));

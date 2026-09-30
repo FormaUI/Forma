@@ -9,19 +9,19 @@ public static class LocalizationSchema
     /// <summary>The field naming the culture the file carries translations for.</summary>
     public const string CultureField = "Culture";
 
-    /// <summary>The schema this build defines, which every file it owns declares.</summary>
+    /// <summary>The schema version this build defines.</summary>
     public const string CurrentVersion = "1.0.0";
 
     /// <summary>The key the entry sits under, which also marks the file as a localization file.</summary>
     public const string Marker = "$localization";
 
-    /// <summary>The key of the section whose entries every type reached through its node shares, unless a section of its own says otherwise.</summary>
+    /// <summary>The key of the section whose entries every type reached through its node shares.</summary>
     public const string SharedKey = "$shared";
 
     /// <summary>The prefix that keeps a key shaped like a reserved entry as text; one dollar sign is dropped and the rest is read as written.</summary>
     public const string EscapePrefix = "$$";
 
-    /// <summary>The prefix marking a top-level section's name as counted from the assembly's root rather than from where the file sits.</summary>
+    /// <summary>The prefix marking a top-level section's name as counted from the assembly's root.</summary>
     public const string RootedSectionPrefix = "@.";
 
     /// <summary>The field naming the revision the translations are at.</summary>
@@ -36,7 +36,7 @@ public static class LocalizationSchema
     /// <summary>The fields every entry declares, in the order it declares them.</summary>
     public static IReadOnlyList<string> RequiredFields { get; } = [SchemaVersionField, CultureField];
 
-    /// <summary>The schema major version this build reads, which is the only part that decides readability.</summary>
+    /// <summary>The schema major version this build reads.</summary>
     public static int SupportedMajor { get; } = Version.Parse(CurrentVersion).Major;
 
     /// <summary>Whether a key is shaped like a reserved entry: a dollar sign, then one or more lowercase ASCII letters, and nothing else.</summary>

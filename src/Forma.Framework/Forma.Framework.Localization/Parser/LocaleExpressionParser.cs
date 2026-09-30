@@ -19,11 +19,10 @@ public static class LocaleExpressionParser
 
     /// <summary>Rewrites the interpolation holes an interpolated key carries into plain argument names.</summary>
     /// <param name="text">The text to examine.</param>
-    /// <param name="normalized">The rewritten text, or <see langword="null"/> when the text already reads as written.</param>
+    /// <param name="normalized">The rewritten text, where <see langword="null"/> means the text already reads as written.</param>
     /// <remarks>
-    /// An interpolated call site writes <c>[{files}]</c>, which the handler keeps as a hole, while a locale
-    /// file carries the canonical <c>[files]</c>. Rewriting is confined to an expression's header so that prose
-    /// such as <c>See [{files}] for details</c> keeps the hole it means to fill.
+    /// Only an expression's header is rewritten, from the <c>[{files}]</c> an interpolated call site writes to the
+    /// <c>[files]</c> a locale file carries; prose such as <c>See [{files}] for details</c> keeps its hole.
     /// </remarks>
     public static bool TryNormalize(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? normalized)
     {
@@ -61,7 +60,6 @@ public static class LocaleExpressionParser
                 end++;
             }
 
-            // Only what the handler itself wrote is rewritten, so anything other than [{ name }] is left alone.
             if (!LocaleName.IsValid(text[name..end]) || end + 1 >= text.Length || text[end] != '}' || text[end + 1] != ']')
             {
                 continue;
@@ -77,7 +75,7 @@ public static class LocaleExpressionParser
         return true;
     }
 
-    /// <summary>Reads every expression in the text, reporting what is wrong rather than throwing.</summary>
+    /// <summary>Reads every expression in the text, with a diagnostic for each problem found.</summary>
     /// <param name="text">The text to read.</param>
     /// <param name="keywords">The keywords to recognize, which decide what a field name may be.</param>
     public static LocaleParseResult Parse(string text, LocaleKeywords keywords)
@@ -85,7 +83,6 @@ public static class LocaleExpressionParser
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(keywords);
 
-        // Most text carries no expression, and this keeps it clear of every allocation below.
         var first = text.IndexOf(Opening, StringComparison.Ordinal);
         if (first < 0)
         {
@@ -170,7 +167,7 @@ public static class LocaleExpressionParser
             defined is null ? default : defined.FieldNames,
             diagnostics);
 
-        // A field that failed to parse already explains the empty list, so saying so again is noise.
+        // A missing-fields diagnostic is added only where no field diagnostic explains the empty list.
         if (fields.Count == 0 && diagnostics.Count == reported)
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingFields, span));

@@ -13,7 +13,7 @@ public static class LocalePathParser
     private static readonly Dictionary<string, LocalePathToken>.AlternateLookup<ReadOnlySpan<char>> TokensByName =
         Enum.GetValues<LocalePathToken>().ToDictionary(token => token.ToString(), StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
 
-    /// <summary>Splits a path into its runs, reporting what is wrong rather than throwing.</summary>
+    /// <summary>Splits a path into its runs, with a diagnostic for each problem found.</summary>
     /// <param name="text">The path as written.</param>
     public static LocalePathResult Parse(string text)
     {

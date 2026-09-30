@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Files;
 
-/// <summary>What one assembly's <c>.locale.json</c> puts in force in a source, or the defaults where it has none: where its files begin, the root namespace their anchors are counted from, the name of a folder of locale files, and the paths its files are read by.</summary>
+/// <summary>The locale settings in force for one assembly in a source, from its <c>.locale.json</c> or the defaults.</summary>
 /// <param name="RootDir">Where the source's names begin, written with the source's separator.</param>
 /// <param name="RootNamespace">The root namespace anchors are counted from.</param>
 /// <param name="LocalesDir">The name <c>$LocalesDir</c> stands for.</param>

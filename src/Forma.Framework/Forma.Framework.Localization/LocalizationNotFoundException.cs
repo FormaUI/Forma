@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization;
 
-/// <summary>Thrown when a key has no translation for the culture on screen and the host requires one.</summary>
+/// <summary>Thrown when a key has no translation for the current UI culture and the host requires one.</summary>
 public sealed class LocalizationNotFoundException : Exception
 {
     /// <summary>Creates an exception naming the key that has no translation.</summary>

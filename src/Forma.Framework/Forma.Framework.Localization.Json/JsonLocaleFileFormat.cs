@@ -47,7 +47,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
         }
     }
 
-    // The reserved names are read as written, before any escape: the marker is the file's own, and the shared section's entries go to everything beneath the node. Every other key is read as the text behind its escape; an object is a section, text or null a translation.
+    // A reserved name is matched as written, before any escape is removed from a key.
     private static LocaleSection ReadSection(JsonElement node, string fileName)
     {
         var sections = new List<KeyValuePair<string, LocaleSection>>();
@@ -99,7 +99,6 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
         return new LocaleSection(sections, entries, shared);
     }
 
-    // A key shaped like a reserved entry is the runtime's to define, so one it does not define is refused rather than read as text.
     private static string GetKey(string name, string fileName)
     {
         if (name.StartsWith(LocalizationSchema.EscapePrefix, StringComparison.Ordinal))

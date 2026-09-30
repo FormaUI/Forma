@@ -24,10 +24,10 @@ public sealed class LocaleKeywords
         _keywords = keywords;
     }
 
-    /// <summary>Recognizes nothing, so every keyword is reported and no field name is checked.</summary>
+    /// <summary>The empty set of keywords.</summary>
     public static LocaleKeywords None { get; } = new();
 
-    /// <summary>The keyword written as the given name, or null when the set defines none.</summary>
+    /// <summary>The keyword written as the given name.</summary>
     /// <param name="name">The name to look for.</param>
     public LocaleKeyword? Find(ReadOnlySpan<char> name)
     {

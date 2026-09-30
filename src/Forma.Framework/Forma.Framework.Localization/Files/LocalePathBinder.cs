@@ -6,13 +6,13 @@ using Forma.Framework.Localization.Parser.Syntax;
 
 /// <summary>Builds a file's name from a locale path, for one source and one culture.</summary>
 /// <param name="values">What the path's tokens stand for apart from the anchor.</param>
-/// <param name="separator">The character written between folders: <see cref="Path.AltDirectorySeparatorChar"/> for a path, <c>.</c> for an embedded resource's name, which no path separator describes.</param>
+/// <param name="separator">The character written between folders: <see cref="Path.AltDirectorySeparatorChar"/> for a path, <c>.</c> for an embedded resource's name.</param>
 public sealed class LocalePathBinder(LocalePathValues values, char separator)
 {
     private readonly LocalePathValues _values = values;
     private readonly char _separator = separator;
 
-    /// <summary>The name the path gives the file for an anchor, or null when the path names none there.</summary>
+    /// <summary>The name the path gives the file for an anchor.</summary>
     /// <param name="path">The path.</param>
     /// <param name="anchor">The anchor's segments below the root, empty for the root itself.</param>
     public string? GetName(LocalePath path, IReadOnlyList<string> anchor)
@@ -83,7 +83,6 @@ public sealed class LocalePathBinder(LocalePathValues values, char separator)
             _ => throw new ArgumentOutOfRangeException(nameof(token), token, null),
         };
 
-    // The anchor tokens are written segment by segment, and the folder tokens with the separator in use.
     private void AppendValue(StringBuilder name, LocalePathToken token, IReadOnlyList<string> anchor)
     {
         switch (token)

@@ -14,7 +14,7 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
     /// <summary>The segment the last <see cref="MoveNext"/> produced.</summary>
     public LocalizedSegment Current { get; private set; } = default;
 
-    /// <summary>Returns this enumerator, so it can drive a foreach directly.</summary>
+    /// <summary>Returns this enumerator.</summary>
     public readonly LocalizedSegmentEnumerator GetEnumerator()
         => this;
 
@@ -37,7 +37,7 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
             return TakeText(brace);
         }
 
-        // A doubled brace stands for one literal brace, which is why the pair is yielded as a run of its own.
+        // A doubled brace stands for one literal brace.
         if (_remaining.Length > 1 && _remaining[1] == _remaining[0])
         {
             Current = new LocalizedSegment(_remaining[..1], default, 0, default);

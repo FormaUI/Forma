@@ -4,7 +4,8 @@ namespace Forma.Framework.Localization.Files;
 /// <param name="Root">The file's top-level node.</param>
 public sealed record LocaleFile(LocaleSection Root)
 {
-    /// <summary>Every translation the file declares, each with the part of a type's name its sections complete, in the order the file writes them; a shared section is listed under its own reserved name.</summary>
+    /// <summary>Every translation the file declares, each with the part of a type's name its sections complete, in the order the file writes them.</summary>
+    /// <remarks>A shared section's entries are listed under the section's reserved name.</remarks>
     public IReadOnlyList<LocaleFileEntry> GetEntries()
     {
         var entries = new List<LocaleFileEntry>();
@@ -13,7 +14,11 @@ public sealed record LocaleFile(LocaleSection Root)
         return entries;
     }
 
-    /// <summary>Adds the entries for a type from where the file sits: the shared ones of every node on the way first, in the order the file writes them, through the sections completing the type's name from the file's own position.</summary>
+    /// <summary>Adds the entries for a type from the sections completing the type's name from where the file sits.</summary>
+    /// <remarks>
+    /// The shared entries of every node on the way come first, in the order the file writes them, so an entry of the
+    /// type's own overrides one. A section's name can spell one segment of the type's name or several.
+    /// </remarks>
     /// <param name="nameSegments">The type's name below the assembly's root, or its full name for a type outside the root namespace.</param>
     /// <param name="depth">How many of the segments the file's own position spells.</param>
     /// <param name="entries">The list the entries are added to.</param>
@@ -21,7 +26,7 @@ public sealed record LocaleFile(LocaleSection Root)
     internal void Collect(ReadOnlySpan<string> nameSegments, int depth, List<LocaleSourceEntry> entries, string fileName)
         => Collect(Root, nameSegments, depth, entries, fileName, string.Empty);
 
-    /// <summary>Adds the entries for a type from a rooted section: the top-level section naming the type's first segments from the root, whatever the file's own position.</summary>
+    /// <summary>Adds the entries for a type from the file's rooted sections, the top-level sections naming the type's first segments from the assembly's root.</summary>
     /// <param name="nameSegments">The type's name below the assembly's root, or its full name for a type outside the root namespace.</param>
     /// <param name="depth">How many of the segments the section names.</param>
     /// <param name="entries">The list the entries are added to.</param>
@@ -44,7 +49,6 @@ public sealed record LocaleFile(LocaleSection Root)
             ? name[LocalizationSchema.RootedSectionPrefix.Length..].Split('.')
             : null;
 
-    // A node's shared entries belong to every type reached through it and come first, so an entry of the type's own overrides one; a section completes the type's name, whether its key spells several segments or one, and a rooted one is left to its own collection; the entries are the type's once the name is complete.
     private static void Collect(LocaleSection node, ReadOnlySpan<string> nameSegments, int depth, List<LocaleSourceEntry> entries, string fileName, string typeName)
     {
         var sharedName = Join(typeName, LocalizationSchema.SharedKey);

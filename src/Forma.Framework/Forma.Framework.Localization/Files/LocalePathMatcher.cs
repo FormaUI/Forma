@@ -17,7 +17,7 @@ public sealed class LocalePathMatcher
 
     /// <summary>Creates a matcher for one source and one culture.</summary>
     /// <param name="values">What the path's tokens stand for apart from the anchor.</param>
-    /// <param name="separator">The character written between folders: <see cref="Path.AltDirectorySeparatorChar"/> for a path, <c>.</c> for an embedded resource's name, which no path separator describes.</param>
+    /// <param name="separator">The character written between folders: <see cref="Path.AltDirectorySeparatorChar"/> for a path, <c>.</c> for an embedded resource's name.</param>
     /// <param name="comparison">How a name is compared: <see cref="StringComparison.Ordinal"/> or <see cref="StringComparison.OrdinalIgnoreCase"/>.</param>
     public LocalePathMatcher(LocalePathValues values, char separator, StringComparison comparison)
     {
@@ -52,8 +52,8 @@ public sealed class LocalePathMatcher
 
     /// <summary>Reads the anchor a file's name stands for under a path.</summary>
     /// <param name="path">The path.</param>
-    /// <param name="name">The file's name, as <see cref="LocalePathBinder.GetName"/> would give it.</param>
-    /// <param name="anchor">The anchor's segments below the root, when the name reads under the path.</param>
+    /// <param name="name">The file's name.</param>
+    /// <param name="anchor">The anchor's segments below the root.</param>
     public bool TryGetAnchor(LocalePath path, string name, [NotNullWhen(true)] out IReadOnlyList<string>? anchor)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -208,7 +208,7 @@ public sealed class LocalePathMatcher
         return pieces;
     }
 
-    // Matches the pieces from one onward against the name from one position, trying every way a run of segments can end before giving up on it.
+    // Matches the pieces from an index onward against the name from a position, backtracking over where each run of segments ends.
     private bool TryMatch(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matched)
     {
         if (index == pieces.Count)
@@ -310,7 +310,7 @@ public sealed class LocalePathMatcher
         return false;
     }
 
-    // A run of one or more segments, the anchor or the parent, longest first; an anchor written after the name it ends with ends with that name.
+    // Matches a run of one or more segments, the anchor or the parent, trying the longest first.
     private bool TryMatchSegments(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matched)
     {
         var piece = pieces[index];
@@ -394,7 +394,7 @@ public sealed class LocalePathMatcher
     private bool TryReadSeparator(string name, int position)
         => position < name.Length && name[position] == _separator;
 
-    // A segment is written as a C# identifier is, and never spells the folder of locale files, which completes no name.
+    // A segment is written as a C# identifier is, the name of the folder of locale files excluded.
     private bool TryReadSegment(string name, int position, out int end)
     {
         end = position;

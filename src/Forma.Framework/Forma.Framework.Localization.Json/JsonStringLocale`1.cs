@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization.Json;
 
 using Forma.Framework.Localization;
 
-/// <summary>Reads the strings belonging to <typeparamref name="T"/>.</summary>
+/// <summary>A locale for the strings belonging to <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type whose locale files hold the strings.</typeparam>
 public sealed class JsonStringLocale<T> : IStringLocale<T>
 {
@@ -15,23 +15,23 @@ public sealed class JsonStringLocale<T> : IStringLocale<T>
         _locale = factory.Create(typeof(T));
     }
 
-    /// <summary>The translation for a key, falling back to the key itself.</summary>
+    /// <inheritdoc />
     public LocalizedText this[string name]
         => _locale[name];
 
-    /// <summary>The translation for a key, formatted with values paired to the key's holes by position.</summary>
+    /// <inheritdoc />
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
         => _locale[name, values];
 
-    /// <summary>The localized format for a key, with every hole left open.</summary>
+    /// <inheritdoc />
     public LocalizedPattern Resolve(string name)
         => _locale.Resolve(name);
 
-    /// <summary>The localized format for a key, with values paired to its holes by position.</summary>
+    /// <inheritdoc />
     public LocalizedPattern Resolve(string name, params object?[] values)
         => _locale.Resolve(name, values);
 
-    /// <summary>Every string reachable for the current culture.</summary>
+    /// <inheritdoc />
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
         => _locale.GetAllStrings(includeParentCultures);
 }

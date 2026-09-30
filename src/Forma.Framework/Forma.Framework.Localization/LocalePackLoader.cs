@@ -4,11 +4,11 @@ using System.Reflection;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>The locale packs an assembly was built against, named by the <see cref="LocalePackAttribute"/>s its build wrote into it.</summary>
+/// <summary>Reads the locale packs an assembly was built against from the <see cref="LocalePackAttribute"/>s its build wrote into it.</summary>
 public static class LocalePackLoader
 {
     /// <summary>The name of every pack the assembly was built against, in the order the attributes were written, each named once.</summary>
-    /// <param name="assembly">The assembly whose build stamped the names, the entry assembly in a host that references its packs directly.</param>
+    /// <param name="assembly">The assembly whose build stamped the names.</param>
     public static IReadOnlyList<string> GetNames(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
@@ -20,7 +20,7 @@ public static class LocalePackLoader
             .Distinct(StringComparer.Ordinal)];
     }
 
-    /// <summary>The packs the assembly was built against, loaded by name; one that cannot be loaded is reported and left out, so a host whose deployment lost a language still renders in the language its keys are written in.</summary>
+    /// <summary>The packs the assembly was built against, loaded by name.</summary>
     /// <param name="assembly">The assembly whose build stamped the names.</param>
     /// <param name="logger">Where a pack that cannot be loaded is reported.</param>
     public static IReadOnlyList<Assembly> Load(Assembly assembly, ILogger logger)
@@ -40,7 +40,6 @@ public static class LocalePackLoader
         return packs;
     }
 
-    // A pack is named by a build that has finished, so what is left is a deployment that lost the file or a trimmer that took it.
     private static Assembly? LoadPack(string name, ILogger logger)
     {
         try

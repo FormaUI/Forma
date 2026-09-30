@@ -5,8 +5,8 @@ namespace Forma.Framework.Localization;
 /// <param name="Value">The value the hole renders.</param>
 public readonly record struct LocalizedArgument(string Name, object? Value)
 {
-    /// <summary>An argument held under a name no hole can spell, reachable only by an expression naming none.</summary>
-    /// <param name="value">The value the expression reads.</param>
+    /// <summary>An argument under the empty name, which an expression naming no argument reads.</summary>
+    /// <param name="value">The value.</param>
     public static LocalizedArgument Unnamed(object? value)
         => new(string.Empty, value);
 }

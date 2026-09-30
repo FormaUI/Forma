@@ -7,9 +7,9 @@ using System.Text;
 public static class LocalizedFormat
 {
     /// <summary>Pairs values with the names a format's holes use, in the order those holes first appear.</summary>
-    /// <param name="format">The format to read the names from, which is the key rather than a translation.</param>
+    /// <param name="format">The format the names are read from.</param>
     /// <param name="values">The values to pair, one per distinct hole.</param>
-    /// <remarks>A format naming no hole takes a single value, which is what an expression without a name reads.</remarks>
+    /// <remarks>A format naming no hole takes a single value, which an expression without a name reads.</remarks>
     public static LocalizedArgument[] Bind(string format, params ReadOnlySpan<object?> values)
     {
         ArgumentNullException.ThrowIfNull(format);
@@ -47,7 +47,7 @@ public static class LocalizedFormat
     /// <param name="format">The composite format, whose holes name their arguments.</param>
     /// <param name="arguments">The values the holes name.</param>
     /// <param name="culture">The culture the values are rendered in.</param>
-    /// <remarks>A hole naming an argument that was not supplied keeps its own text, so the gap is visible rather than silent.</remarks>
+    /// <remarks>A hole naming an argument that was not supplied is written as its own text.</remarks>
     public static string Render(string format, IReadOnlyList<LocalizedArgument> arguments, CultureInfo culture)
     {
         ArgumentNullException.ThrowIfNull(format);

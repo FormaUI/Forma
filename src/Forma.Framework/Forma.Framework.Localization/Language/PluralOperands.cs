@@ -40,12 +40,12 @@ public readonly record struct PluralOperands
     /// <summary>CLDR e — the compact decimal exponent, which is zero for a number written out in full.</summary>
     public int Exponent { get; }
 
-    /// <summary>Derives the operands from a number, reading the visible digit count from its scale.</summary>
+    /// <summary>The operands of a number.</summary>
+    /// <remarks>The visible fraction digits are the decimal's scale, so <c>1.50m</c> has two.</remarks>
     public static PluralOperands From(decimal value)
     {
         var absolute = Math.Abs(value);
 
-        // decimal keeps the authored scale, which is exactly CLDR's visible fraction digit count.
         var scale = (decimal.GetBits(absolute)[3] >> 16) & 0xFF;
 
         var truncated = decimal.Truncate(absolute);

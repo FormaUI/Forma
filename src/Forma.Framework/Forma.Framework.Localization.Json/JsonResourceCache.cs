@@ -7,7 +7,7 @@ using System.Reflection;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>Reads the translations for a type in one culture, the files embedded in its assembly with the locale packs and then the host's own laid over them, and keeps each result in memory after the first read.</summary>
+/// <summary>A cache of the translations for a type in one culture, merged from the files embedded in the type's assembly, the locale packs and the host's own files, in that order.</summary>
 internal sealed class JsonResourceCache
 {
     private readonly ILocaleFileFormat _format;
@@ -17,9 +17,9 @@ internal sealed class JsonResourceCache
     private readonly LocalePackSource[] _packs;
     private readonly HostLocaleSource _host;
 
-    /// <summary>Creates a cache reading files in one format, with the packs and then the host's own laid over each assembly's.</summary>
+    /// <summary>Creates a cache reading files in one format.</summary>
     /// <param name="format">The format the files are written in.</param>
-    /// <param name="localesPath">The folder the host keeps its own locale files in, or empty when it keeps none.</param>
+    /// <param name="localesPath">The folder the host keeps its own locale files in.</param>
     /// <param name="packs">The locale packs, in the order they are laid over one another.</param>
     public JsonResourceCache(ILocaleFileFormat format, string localesPath, IReadOnlyList<Assembly> packs)
     {
@@ -28,7 +28,7 @@ internal sealed class JsonResourceCache
         _packs = [.. packs.Select(pack => new LocalePackSource(pack, format, GetRootNamespace))];
     }
 
-    /// <summary>The translations for one culture, or null when neither the assembly nor the host carries any for it.</summary>
+    /// <summary>The translations for a location in one culture.</summary>
     public FrozenDictionary<string, JsonResourceEntry>? Read(ResourceLocation location, CultureInfo culture)
         => _files.GetOrAdd(new CacheKey(location, culture.Name), Load);
 
@@ -39,7 +39,6 @@ internal sealed class JsonResourceCache
         var embedded = _embeddedByAssembly.GetOrAdd(assembly, static (owner, format) => new EmbeddedLocaleSource(owner, format), _format);
         _embeddedByAssemblyName[assemblyName] = embedded;
 
-        // The assembly's own files, then each pack in the order the host was built against them, then the host's own.
         var entries = new Dictionary<string, string?>(StringComparer.Ordinal);
         foreach (var source in (LocaleSource[])[embedded, .. _packs, _host])
         {
@@ -54,14 +53,14 @@ internal sealed class JsonResourceCache
             return null;
         }
 
-        // A null value says the translation is deliberately the key itself, so nothing downstream ever sees one.
+        // A null value is a translation that is deliberately the key itself.
         return entries.ToFrozenDictionary(
             entry => entry.Key,
             entry => new JsonResourceEntry(entry.Key, entry.Value ?? entry.Key, entry.Value is null),
             StringComparer.Ordinal);
     }
 
-    // A host's folder and a pack both lay an assembly's files out by the root namespace its own config declares, which the assembly's embedded source has read.
+    // The root namespace an assembly's embedded config declares, which a host's folder and a pack lay its files out by.
     private string? GetRootNamespace(string assemblyName)
         => _embeddedByAssemblyName.TryGetValue(assemblyName, out var embedded) ? embedded.GetRootNamespace(assemblyName) : null;
 

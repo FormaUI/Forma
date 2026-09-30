@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>The messages localization writes for the fallbacks it takes.</summary>
+/// <summary>The log messages localization writes.</summary>
 internal static partial class LocalizationLog
 {
     [LoggerMessage(Level = LogLevel.Debug, Message = "Plural argument {Argument} of type {ArgumentType} in {Format} is not numeric; using zero.")]

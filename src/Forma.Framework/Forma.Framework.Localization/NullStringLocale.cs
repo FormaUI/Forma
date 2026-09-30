@@ -4,11 +4,12 @@ using System.Globalization;
 
 using Forma.Framework.Localization.Language;
 
-/// <summary>A locale with no translations: every key is its own text, with its holes and plural forms resolved for the source language.</summary>
+/// <summary>A locale whose every key is its own text, with its holes and plural forms resolved for the source language.</summary>
 internal sealed class NullStringLocale(CultureInfo sourceCulture) : IStringLocale
 {
     private readonly PluralExpressionEvaluator _pluralEvaluator = new(CommonPluralRuleSet.Default);
 
+    /// <inheritdoc />
     public LocalizedText this[string name]
     {
         get
@@ -19,6 +20,7 @@ internal sealed class NullStringLocale(CultureInfo sourceCulture) : IStringLocal
         }
     }
 
+    /// <inheritdoc />
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
     {
         get
@@ -29,6 +31,7 @@ internal sealed class NullStringLocale(CultureInfo sourceCulture) : IStringLocal
         }
     }
 
+    /// <inheritdoc />
     public LocalizedPattern Resolve(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -38,6 +41,7 @@ internal sealed class NullStringLocale(CultureInfo sourceCulture) : IStringLocal
         return Resolve(name, arguments);
     }
 
+    /// <inheritdoc />
     public LocalizedPattern Resolve(string name, params object?[] values)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -46,6 +50,7 @@ internal sealed class NullStringLocale(CultureInfo sourceCulture) : IStringLocal
         return Resolve(name, LocalizedFormat.Bind(name, values));
     }
 
+    /// <inheritdoc />
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
         => [];
 
@@ -55,7 +60,6 @@ internal sealed class NullStringLocale(CultureInfo sourceCulture) : IStringLocal
     private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
         => new(name, Evaluate(name, arguments), arguments, ResourceNotFound: true);
 
-    // The key is source-language text; its plural forms are chosen by the source language's rules.
     private string Evaluate(string format, IReadOnlyList<LocalizedArgument> arguments)
         => _pluralEvaluator.Evaluate(format, sourceCulture, CultureInfo.CurrentUICulture, arguments);
 }

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>Evaluates the <c>[$ [count] plural; one: text; other: text; $]</c> expression inside localized text.</summary>
 /// <param name="rules">The rules deciding which category a count falls into.</param>
-/// <param name="logger">The log an argument that is not a count is reported to; null discards.</param>
+/// <param name="logger">The logger an argument that is not a count is reported to; null discards.</param>
 public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? logger = null)
 {
     private readonly IPluralRuleSet _rules = rules ?? throw new ArgumentNullException(nameof(rules));
@@ -24,7 +24,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
 
     private static LocaleKeywords Known { get; } = new(Keyword);
 
-    /// <summary>Replaces every plural expression with the field the count selects, leaving other holes open.</summary>
+    /// <summary>The format with every plural expression replaced by the field its count selects.</summary>
     public string Evaluate(string format, CultureInfo culture, IReadOnlyList<LocalizedArgument> arguments)
     {
         ArgumentNullException.ThrowIfNull(format);
@@ -33,7 +33,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         return Evaluate(format, culture, culture, arguments);
     }
 
-    /// <summary>Replaces every plural expression, choosing the field by the culture the text is written in and formatting the count for the culture it is shown in.</summary>
+    /// <summary>The format with every plural expression replaced, the field chosen by the culture the text is written in and the count formatted for the culture it is shown in.</summary>
     public string Evaluate(string format, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<LocalizedArgument> arguments)
     {
         ArgumentNullException.ThrowIfNull(format);
@@ -41,7 +41,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         ArgumentNullException.ThrowIfNull(displayCulture);
         ArgumentNullException.ThrowIfNull(arguments);
 
-        // An expression the parser rejected is absent from the result, so its text survives rather than vanishing.
+        // An expression the parser rejected stays in the text as written.
         var parsed = LocaleExpressionParser.Parse(format, Known);
         if (parsed.Expressions.Count == 0)
         {
@@ -55,7 +55,6 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         {
             builder.Append(format, position, expression.Span.Start - position);
 
-            // An expression named for something else keeps its text, so whatever owns it can still find it.
             if (expression.KeywordSpan.Slice(format).SequenceEqual(Keyword.Name))
             {
                 AppendField(builder, format, expression, localeCulture, displayCulture, arguments);
@@ -149,7 +148,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         return null;
     }
 
-    // Naming no argument means "the only one there is", so more than one would make it mean "the first".
+    // An expression naming no argument reads the sole unnamed argument.
     private static void RequireSoleArgument(IReadOnlyList<LocalizedArgument> arguments)
     {
         if (arguments.Count != 1 || arguments[0].Name.Length != 0)
