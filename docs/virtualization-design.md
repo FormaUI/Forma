@@ -6,6 +6,25 @@
 
 A component over a large collection draws only what the reader can see, so its items come and go as the reader scrolls. An item holding the focus has to stay: when its element is removed, the browser drops the focus to the page, a roving tab stop that scrolled away leaves the component with none, and a focused checkbox inside an item goes with its item. A component that keeps its focus, its tab stop and its focused control needs the element that holds them to stay on the page. `FormaVirtualize` renders the window and keeps the items its owner names, so the element that holds the focus is the same element from the moment it is drawn until the owner lets it go.
 
+## Why Forma has its own
+
+Blazor's `Virtualize` renders one contiguous window between two spacers, and nothing outside that window. An owner can neither ask it to keep an item nor keep one itself: an item the owner drew beside the component, outside the window, would stand under another parent or in another run of siblings than the same item drawn inside it, and Blazor's keys match only among siblings of one sequence, so the item crossing from one to the other is torn down and drawn afresh, taking the focus with it. Keeping the focused item therefore has to happen inside the virtualizer, where the window and the pinned items are one sequence of keyed siblings, and that is the virtualizer Forma carries.
+
+## Compared with Blazor's `Virtualize`
+
+`FormaVirtualize` speaks the framework's own source contract, `ItemsProviderDelegate`, `ItemsProviderRequest`, `ItemsProviderResult` and `PlaceholderContext`, so a provider written for one serves the other, and it keeps the framework's names where the two mean the same thing: `Items`, `ItemsProvider`, `ItemContent`, `Placeholder`, `ItemSize`, `OverscanCount` and `SpacerElement`. Where they differ:
+
+| Concern | Blazor's `Virtualize` | `FormaVirtualize` |
+|---|---|---|
+| What it renders | One contiguous window between a spacer before it and a spacer after it | The window and every pinned item, in order, with a spacer standing for each run of items between them |
+| An item's element | Whatever the owner's template keys, inside the component's own regions | Keyed by the owner's item key, so an item that stays rendered keeps its element as the ranges around it change |
+| Measurement | The distance between its two spacers as they come into view, divided among the items between them | The room each drawn item takes, from its top to the next item's, reported at most once a frame while the list scrolls, resizes or changes |
+| Scrolling to an item | By index, aligned to the top, completing once the item is aligned or a newer scroll supersedes it, and refusing before the component is interactive | By index, by the least scroll that shows the item or aligned to the top, completing true once the item is in view and false where no item stands at the index, a newer scroll or the caller's token canceling it |
+| Reading the items again | Reads them again, and the owner renders to show them | Reads them again and renders them, keeping a pinned item outside the window only while its position still holds it |
+| An empty set | Draws the owner's `EmptyContent` | Draws nothing, leaving the empty state to the owner, which knows what an empty collection means to it |
+| How many items it draws | The viewport and the overscan, capped by `MaxItemCount` | The viewport and the overscan, and the pinned items |
+| Anchoring | `AnchorMode`, `InitialItemIndex` and `ItemComparer` | The same set, described under Anchoring |
+
 ## What it is responsible for
 
 The virtualizer owns the geometry and the rendered set, and nothing about what the items mean:
