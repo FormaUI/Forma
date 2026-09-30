@@ -97,62 +97,18 @@ that fails to load, reaches a host through the log the host already configures.
 
 ### `FormaComponentBase`
 
-```csharp
-public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
-{
-    [Inject] private IJSRuntime JSRuntime { get; set; }
-    [Inject] private ILoggerFactory LoggerFactory { get; set; }
-    [Inject] private IStringLocaleFactory LocaleFactory { get; set; }
+`FormaComponentBase` injects the runtime, the logger factory and the locale factory, all
+required, and builds the component's context once from them and its
+`LocalizationSourceType`. It gives the component its strings as `L`, reports whether it is
+disposed, and runs `DisposeAsyncCore` once on disposal. The context carries the component's
+identity, strings, log and JS environment.
 
-    public bool IsDisposed { get; private set; }
-
-    protected virtual Type LocalizationSourceType => GetType();
-
-    protected IComponentContext Context { get; }   // built once, from the three injections and LocalizationSourceType
-
-    protected IStringLocale L => Context.Locale;
-
-    protected virtual ValueTask DisposeAsyncCore();
-
-    public async ValueTask DisposeAsync();         // sets IsDisposed, then runs DisposeAsyncCore once
-}
-```
-
-The context and the environment behind `Context`:
-
-```csharp
-public interface IComponentContext
-{
-    Guid RuntimeId { get; }
-
-    IStringLocale Locale { get; }
-
-    ILogger Logger { get; }
-
-    IJSEnvironment JS { get; }
-}
-
-public interface IJSEnvironment : IJSRuntime
-{
-    Guid RuntimeId { get; }
-
-    ILogger Logger { get; }
-}
-```
-
-`ComponentContext` takes the runtime, the locale and the logger as `Func<T>` and holds
-each in a `Lazy<T>`, mints `RuntimeId`, and builds its `JS` once as
-`new JSEnvironment(runtime, Logger, RuntimeId)`, so the environment's identity and log are
-the context's by construction. `JSEnvironment` delegates the two `InvokeAsync` overloads
-to the runtime it wraps; the framework's `InvokeVoidAsync` and the rest are extension
-methods on `IJSRuntime` and work on it unchanged. A service that is not a component, such
-as the input router or the emoji sprite loader, has no context and builds its own
-environment from the runtime and the `ILogger<T>` it takes, minting an identity for the
-instance. Synchronous calls are not wrapped: no Forma wrapper makes one. Should one need
-to, a second environment, `JSInProcessEnvironment : IJSEnvironment, IJSInProcessRuntime`,
-forwards the synchronous calls as well, and the context builds it where the injected
-runtime is in-process, so a wrapper tests its environment for `IJSInProcessRuntime`
-exactly as the framework tests the runtime.
+The context builds its JS environment once from the runtime, its logger and its identity,
+so the environment's identity and log are the context's by construction. The environment
+carries the runtime's asynchronous calls, which are the ones every Forma wrapper makes. A
+service that is not a component, such as the input router or the emoji sprite loader, has
+no context and builds its own environment from the runtime and the `ILogger<T>` it takes,
+minting an identity for the instance.
 
 `RuntimeId` is a version 7 GUID, so instances sort by creation and a log filtered to one
 component reads in the order its instances were made. A root that needs an id when the
@@ -172,29 +128,11 @@ never logs and never reads a string pays for neither.
 
 ### `FormaElementBase`
 
-```csharp
-public abstract class FormaElementBase : FormaComponentBase
-{
-    [Parameter] public string? Id { get; set; }
-
-    [Parameter] public string? Class { get; set; }
-
-    [Parameter] public string? Style { get; set; }
-
-    [Parameter(CaptureUnmatchedValues = true)]
-    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
-
-    public virtual ElementReference RootElement { get; protected set; }
-
-    protected string? RootClass { get; }   // BuildRootClass, then Class; null when nothing was added
-
-    protected string? RootStyle { get; }   // BuildRootStyle, then Style; null when nothing was added
-
-    protected virtual void BuildRootClass(CssClassBuilder builder);
-
-    protected virtual void BuildRootStyle(CssStyleBuilder builder);
-}
-```
+`FormaElementBase` adds the host surface: `Id`, `Class`, `Style` and the captured
+attributes the host passes, `RootElement` once the root is rendered, and `RootClass` and
+`RootStyle`, which the component builds through the `BuildRootClass` and `BuildRootStyle`
+hooks and the base follows with the host's own values, omitting an attribute nothing was
+added to.
 
 Blazor binds attributes to parameters case-insensitively, so a host's `class="…"` lands
 in `Class` and its `style="…"` in `Style`, and neither reaches `AdditionalAttributes`.
@@ -226,17 +164,11 @@ are the extension points, and the composition rule is the base's.
 
 ### `FormaInputBase<TValue>`
 
-```csharp
-public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposable
-{
-    // The three injections, Context and L, LocalizationSourceType, IsDisposed and DisposeAsyncCore
-    // as on FormaComponentBase; Id, Class, Style, RootElement, RootClass, RootStyle, BuildRootClass and
-    // BuildRootStyle as on FormaElementBase. AdditionalAttributes is InputBase's own. RootClass is built from
-    // BuildRootClass, Class and the field's validation class, in that order.
-
-    public async ValueTask DisposeAsync();   // sets IsDisposed, runs DisposeAsyncCore once, then InputBase's Dispose(true)
-}
-```
+`FormaInputBase<TValue>` derives from the framework's `InputBase<TValue>` and carries what
+the other two do: the injections, the context and `L`, the disposal, and the host surface,
+with `AdditionalAttributes` the framework's own and the field's validation class following
+the component's and the host's classes on the root. Its disposal runs `InputBase`'s
+`Dispose(true)` after `DisposeAsyncCore`.
 
 C# has one base slot, so the input base repeats what the other two carry rather than
 deriving from them. The context carries what both can share, the identity, the strings,
@@ -251,15 +183,15 @@ A dialog base a composite owns derives from `FormaComponentBase` and overrides
 
 ### The null objects
 
-| Contract | Null object | Lives in | Behavior |
-| --- | --- | --- | --- |
-| `IJSRuntime` | `UnavailableJSRuntime.Instance` | `Forma.Framework.JavaScript.Interop` | Throws `JSRuntimeUnavailableException` on any call. |
-| `ILoggerFactory` | `NullLoggerFactory.Instance` | `Microsoft.Extensions.Logging.Abstractions` | Discards. |
-| `ILogger<T>` | `NullLogger<T>` | `Microsoft.Extensions.Logging.Abstractions` | Discards; for services that inject a typed logger. |
-| `IStringLocaleFactory` | `NullStringLocaleFactory.Instance` | `Forma.Framework.Localization` | Every key is its own text, holes and plurals resolved for the source language, as the JSON locale does when no file matches. |
+| Contract | Null object | Behavior |
+| --- | --- | --- |
+| `IJSRuntime` | `UnavailableJSRuntime.Instance` | Throws `JSRuntimeUnavailableException` on any call. |
+| `ILoggerFactory` | `NullLoggerFactory.Instance` | Discards. |
+| `ILogger<T>` | `NullLogger<T>` | Discards; for services that inject a typed logger. |
+| `IStringLocaleFactory` | `NullStringLocaleFactory.Instance` | Every key is its own text, holes and plurals resolved for the source language, as the JSON locale does when no file matches. |
 
 `AddFormaUI` registers all four with `TryAdd`. A host that wants translations calls
-`AddJsonLocalization()` first, as the Showcase does; a host with its own logging or its
+`AddJsonLocalization()` first; a host with its own logging or its
 own runtime has it in place before `AddFormaUI` runs, as ASP.NET Core's are. A feature
 registrar whose services log also `TryAdd`s the logger fallback for them, the way `Timing`
 registers `TimeProvider.System`, so a feature stays usable on its own.
@@ -331,10 +263,7 @@ cannot tell an ordinary step to the parent from a missing expected file.
 - Logging on the script side beyond its one `console.error` for the rare script-side
   failure; the gap this design closes is on the .NET side.
 - Retiring `IStringLocale<T>`. It stays for services and hosts.
-- A root object, `Root.Class` and `Root.Style`, and the splatted attribute dictionary it
-  would own. With the class and style built through the two builders, such an object holds
-  two strings and no rule of its own, and `RootElement` stays outside it either way, since
-  forwarders override it and `@ref` binds it. It is worth having only alongside the splat,
-  which is where a precedence rule would live: the renderer lets a later attribute win and
-  omits a null one, so the splat would work, but it turns the attribute-order rule into a
-  precedence rule that has to be written down first, and that is its own change.
+- A root object, `Root.Class` and `Root.Style`, owning the splatted attributes. With the
+  class and style built through the two builders, such an object holds two strings and no
+  rule of its own, and `RootElement` stays outside it, since forwarders override it and
+  `@ref` binds it.
