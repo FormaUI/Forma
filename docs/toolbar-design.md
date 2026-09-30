@@ -17,17 +17,15 @@ a command by adding an item rather than markup.
 
 ## The item model
 
-`ToolbarItem` is abstract, carrying `Id`, `Title`, `Tooltip`, `Icon` and
-`IsDisabled`; the subtype decides the rendering. `ToolbarGroup` adds `Items`, so one
-`Items` list mixes bare items and clusters and a caller with nothing to group skips the
-ceremony; groups do not nest, and the guard says so. `ToolbarAction` adds `Command`,
-the shortcut's display and ARIA forms, and `RequiresState`, the state the host must report
-before the action can run; it is specialized by `ToolbarCommand`, which fires once,
-and `ToolbarToggle`, which adds `IsActive` and an alternate title and icon shown while
-on. `ToolbarMenu` adds `Options`, at least one, each a `ToolbarOption` with an
-`Id`, a `Title`, a `Command`, `IsActive`, and an optional icon, preview style or swatch.
-`ToolbarReadout` adds `Value` and `IsAnnounced`. `ToolbarCustomItem` adds
-`Component` and `Parameters`.
+Every item has an identity, a title, a tooltip and an icon, and can be disabled on its
+own; its kind decides how it is drawn. A **group** clusters items under its title, and
+one list mixes bare items and groups, which do not nest. An **action** runs a
+command, shows its shortcut, and may require a state the host reports before it can run;
+it is a **command**, which fires once, or a **toggle**, which is on or off and may show
+another title and icon while on. A **menu** offers options, each with an identity, a
+title, a command and whether it is active, and optionally an icon, a preview style or a
+swatch. A **readout** shows a value and may announce it. A **custom item** hosts a
+component of the host's own.
 
 ## Decision summary
 
@@ -40,11 +38,11 @@ on. `ToolbarMenu` adds `Options`, at least one, each a `ToolbarOption` with an
   `aria-label`. An action with no icon shows its label regardless. A tooltip that would
   only repeat a visible label is dropped.
 - **Each kind renders its own way.** A group becomes a `role="group"` cluster named by its
-  title and separated from its neighbors by a rule; a bare item joins the row in a
-  `display: contents` wrapper without inheriting a separator; a menu becomes a
+  title and separated from its neighbors by a rule; a bare item joins the row without
+  inheriting a separator; a menu becomes a
   `FormaDropDownMenu` showing the active option's title or a color swatch, the first
   option standing in while none is active; a readout
-  becomes a span that gains `role="status"` and a polite live region when `IsAnnounced`;
+  becomes a span that gains `role="status"` and a polite live region when it announces;
   a custom item becomes a `DynamicComponent`. The root carries `role="toolbar"` and the
   label whichever way it renders.
 - **`Scrollable` decides the root.** Set, the items go on a `FormaCommandBar` rather than
@@ -89,15 +87,12 @@ on. `ToolbarMenu` adds `Options`, at least one, each a `ToolbarOption` with an
 - **`FormaSelectionToolbar`** pairs with `FormaDataGrid`'s checked selection, taking only the
   count, or a `Caption` standing in for the count text, so it stays non-generic, renders
   its actions with `ShowLabels`, and keeps `FormaCloseButton` beside them as the clear
-  control while `OnClear` is handled. It collapses through
-  `grid-template-rows` rather than a positioned cross-fade, so no wrapper positioning is
-  imposed on the caller, and `inert` sits on the controls alone, leaving the caption's
+  control while `OnClear` is handled. It collapses in place, imposing no positioning on
+  the caller, and `inert` sits on the controls alone, leaving the caption's
   live region in the accessibility tree so the first count change is announced.
 - **`FormaStatusStrip`** is a toolbar of readouts and commands whose announcer is the
   toolbar's own. `EmptyMode` decides whether an empty `Items` renders nothing, the
   default, or keeps the strip's chrome as an empty bar; either way no nested toolbar is
-  rendered while there is nothing to show. `Hidden` is independent of `EmptyMode`: it
-  collapses the strip even while it holds items, keeping it mounted. `Disabled` forwards to
-  the inner toolbar; `Hidden` and `Animated` do not, since the strip's own `FormaVisibility`
-  already collapses everything inside it and a second collapse would run two transitions
-  over the same content.
+  rendered while there is nothing to show. `Hidden` collapses the strip even while it
+  holds items, keeping it mounted, and the strip's own collapse is the only one, so its
+  contents never run a second transition.

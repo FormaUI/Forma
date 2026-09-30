@@ -40,28 +40,25 @@ without any of them knowing where bytes live.
   exists so one decision about what counts is made once rather than in every caller's
   `accept` string.
 - **The uploader moves; the store keeps.** `FormaFileUploader` takes the files a picker
-  produced and moves them one at a time, owning the whole transfer: opening each stream
-  with the file's own size as the ceiling, wrapping it in a counting stream that drives a
-  per-file progress bar as the store reads it, disposing it, and canceling the set, which
-  leaves what already landed in place. Where the
-  bytes land is the host's, as an `IFileStore` whose `SaveAsync` takes a file's content
-  and returns the `ResourceInfo` it became and whose `DeleteAsync` reports whether it
-  removed one. The store comes from the `Store` parameter or, when that is unset, from the
-  host's registration, so one registration serves every instance.
+  produced and moves them one at a time, owning the whole transfer, with a progress bar
+  per file and a cancellation of the set that leaves what already landed in place. Where
+  the bytes land is the host's, as an `IFileStore` that saves a file's content as the
+  resource it became and deletes one, reporting whether it did. The store comes from the
+  `Store` parameter or, when that is unset, from the host's registration, so one
+  registration serves every instance.
 - **`ResourceInfo` closes the chain.** It is what `FormaExplorer` can list, an item being
-  a resource or nothing at all, so an upload feeds the browsing surface with no host-side translation. `IFileStore` and
+  a resource or nothing at all, so an upload feeds the browsing surface with no host-side
+  translation. `IFileStore` and
   `FileContent` live in `Forma.Framework.Resources` beside it, which carries no ASP.NET
   Core reference, so a host implements a store from a plain class library.
 - **Failure is per file, and a rollback that fails is a failure.** A failed file leaves the
   rest of the set running unless `StopOnFailure` marks the remainder skipped;
   `RollbackOnFailure` removes what already landed, and a store that reports it did not
   remove a file is a failure rather than a silent success. The uploader composes beside a
-  picker rather than rendering one, and retrying a single failed file is not in its
-  contract. The outcome reaches the host as `OnFailed` per file that did not store and
-  `OnCompleted` with the resources the stored files became. How the set runs and what it
-  reports travel in `FileUploaderOptions`: `AutoStart`, `StopOnFailure`,
-  `RollbackOnFailure`, `ShowSummary` and the measurements, with `Default` showing the
-  progress bar, state and summary alone and `Detailed` turning every measurement on.
+  picker rather than rendering one. The outcome reaches the host per file that did not
+  store, and once with the resources the stored files became. How the set runs and what
+  it reports travel in an options record, with presets for the progress and summary alone
+  and for every measurement.
 - **The viewer resolves, then shows.** An ordered chain of `IResourceProvider`s resolves
   the address into a `ResourceInfo`; the first to claim it decides what the resource is,
   and the viewer owns the markup for every kind, so a converting package never ships
@@ -95,14 +92,12 @@ without any of them knowing where bytes live.
 
 ## The viewer's frame
 
-The frame is a plain scrollable region rather than a transform-driven canvas. Touch and
-pen pan it natively, and `touch-action: pan-x pan-y pinch-zoom` hands pinch-to-zoom to the
-platform. The one gap native scrolling leaves is a mouse click-drag, which the shared pan
-gesture adds while the image is zoomed, gated to `pointerType === 'mouse'` so it never
-fights the browser's own touch scrolling. Zoom moves in five fixed steps, 100 to 400
-percent, through on-screen buttons and Ctrl with a wheel rolled over the image through the
-shared wheel behavior, which `ZoomOnWheelGesture` turns off; the plain wheel keeps
-scrolling a zoomed image, and each step re-centers the frame. With `Siblings` supplied the
-viewer shows previous and next buttons and takes the horizontal arrow keys, reversed under
-a right-to-left culture, raising `OnNavigate` with the address stepped to for the host to
-switch `Source`; the host dialog keeps `Escape`.
+The frame is a plain scrollable region. Touch and pen pan it natively, and pinch-to-zoom
+is the platform's. The one gap native scrolling leaves is a mouse click-drag, which the
+shared pan gesture adds for a mouse alone while the image is zoomed, so it never fights
+the browser's own touch scrolling. Zoom moves in five fixed steps, 100 to 400 percent,
+through on-screen buttons and Ctrl with a wheel rolled over the image, which a host can
+turn off; the plain wheel keeps scrolling a zoomed image, and each step re-centers the
+frame. With `Siblings` supplied the viewer shows previous and next buttons and takes the
+horizontal arrow keys, reversed under a right-to-left culture, raising `OnNavigate` with
+the address stepped to for the host to switch `Source`; the host dialog keeps `Escape`.
