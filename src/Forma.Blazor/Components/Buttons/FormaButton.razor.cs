@@ -5,28 +5,29 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A button with a visual variant, a size, and a busy state; a button with a click handler is disabled until its renderer is interactive, so a press can never be lost to a page that is not yet listening.</summary>
+/// <summary>A button with a visual variant, a size, and a busy state.</summary>
+/// <remarks>A button with a click handler is disabled until its renderer is interactive.</remarks>
 public sealed partial class FormaButton : FormaElementBase
 {
-    /// <summary>Visual weight the button is drawn with.</summary>
+    /// <summary>The visual weight the button is drawn with.</summary>
     [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Secondary;
 
-    /// <summary>Padding and text size the button is drawn at, or the square size when icon-only.</summary>
+    /// <summary>The size the button is drawn at.</summary>
     [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Normal;
 
-    /// <summary>Draws the button square around a single glyph instead of padding it for text.</summary>
+    /// <summary>Whether the button is drawn square around a single glyph.</summary>
     [Parameter] public bool IconOnly { get; set; }
 
-    /// <summary>Behavior the button has inside a form.</summary>
+    /// <summary>The behavior the button has inside a form.</summary>
     [Parameter] public ButtonType Type { get; set; } = ButtonType.Button;
 
-    /// <summary>Holds the button unavailable while work is in flight, dimmed to its busy tint with a progress bar along its edge, until the work is done.</summary>
+    /// <summary>Whether the button is busy with work in flight.</summary>
     [Parameter] public bool Busy { get; set; }
 
-    /// <summary>Text shown in place of the content while busy; the button keeps the wider of the two so it never changes size.</summary>
+    /// <summary>The text shown in place of the content while busy.</summary>
     [Parameter] public string? BusyText { get; set; }
 
-    /// <summary>Blocks interaction and draws the button in the neutral disabled colors.</summary>
+    /// <summary>Whether the button is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>Raised when the button is clicked.</summary>
@@ -35,10 +36,9 @@ public sealed partial class FormaButton : FormaElementBase
     /// <summary>Content rendered inside the button.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    // A click handler needs the interactive renderer; until it is there the button is disabled rather than silently inert.
     private bool IsDisabled => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
 
-    // Busy is announced, not disabled, so the button keeps focus.
+    // Busy is announced through aria-disabled, so the button keeps focus.
     private string? AriaDisabled => Busy ? "true" : null;
 
     private string? AriaBusy => Busy ? "true" : null;

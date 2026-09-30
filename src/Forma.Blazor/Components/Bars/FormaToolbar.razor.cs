@@ -13,13 +13,13 @@ using Forma.Framework.Toolbar;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A toolbar of grouped, item-driven commands, built on <see cref="FormaCommandBar"/>.</summary>
+/// <summary>A toolbar of items and groups of items.</summary>
 public sealed partial class FormaToolbar : FormaElementBase
 {
     private static readonly ButtonOptions MenuTriggerOptions =
         new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
 
-    /// <summary>The owner every toolbar action is qualified under, so a host remaps a toolbar shortcut by <c>toolbar.{command}</c>.</summary>
+    /// <summary>The owner every toolbar action is qualified under, which names an action <c>toolbar.{command}</c>.</summary>
     private const string ActionOwner = "toolbar";
 
     private DotNetObjectReference<FormaToolbar>? _selfReference;
@@ -32,37 +32,37 @@ public sealed partial class FormaToolbar : FormaElementBase
     /// <summary>The accessible name of the toolbar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>The items the toolbar renders; a <see cref="ToolbarGroup"/> clusters the items it holds.</summary>
+    /// <summary>The items the toolbar renders.</summary>
     [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
     /// <summary>Whether every control in the toolbar is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    /// <summary>Whether an item with an icon also shows its label; icon-only when false.</summary>
+    /// <summary>Whether an item with an icon also shows its label.</summary>
     [Parameter] public bool ShowLabels { get; set; }
 
-    /// <summary>Callback invoked with the command an item raised.</summary>
+    /// <summary>The callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>The element a bound action's shortcut answers on while it or a descendant has focus. Shortcuts are inert until this is set — the toolbar never listens document-wide.</summary>
+    /// <summary>The element the actions' shortcuts answer on while it or a descendant has focus, where null leaves the shortcuts unbound.</summary>
     [Parameter] public ElementReference? Target { get; set; }
 
-    /// <summary>Content pinned past the end of the row, staying put while the commands scroll.</summary>
+    /// <summary>The content pinned past the end of the row.</summary>
     [Parameter] public RenderFragment? TrailingContent { get; set; }
 
-    /// <summary>Lays the items on a <see cref="FormaCommandBar"/> that scrolls them behind arrows once they outgrow the width; they wrap instead when false.</summary>
+    /// <summary>Whether the items scroll behind arrows, rather than wrap, once they outgrow the width.</summary>
     [Parameter] public bool Scrollable { get; set; } = true;
 
-    /// <summary>How the track carrying the items scrolls.</summary>
+    /// <summary>The options of the command bar that scrolls the items.</summary>
     [Parameter] public FreezePaneOptions CommandBarOptions { get; set; } = FreezePaneOptions.Arrows;
 
-    /// <summary>Hides the toolbar while keeping it mounted, so a bound <see cref="Target"/>'s shortcuts come back across toggles.</summary>
+    /// <summary>Whether the toolbar is hidden while it stays mounted.</summary>
     [Parameter] public bool Hidden { get; set; }
 
-    /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
+    /// <summary>Whether the toolbar animates between hidden and shown.</summary>
     [Parameter] public bool Animated { get; set; }
 
-    /// <summary>The states the host currently reports, by item id, which drive toggle state and action availability.</summary>
+    /// <summary>The states the host currently reports active, by id.</summary>
     [Parameter] public IReadOnlySet<string> ActiveStates { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     private FormaCommandBar CommandBar { get; set; } = default!;
@@ -113,7 +113,7 @@ public sealed partial class FormaToolbar : FormaElementBase
     {
         await RoveAsync();
 
-        // Target is an element elsewhere, so hiding the toolbar does not stand its shortcuts down on its own.
+        // Target lies outside the toolbar, so hiding the toolbar releases its shortcuts here.
         // An unrendered @ref still arrives as a non-null ElementReference carrying no id, and registering it fails silently.
         if (Hidden || Target is not { Id.Length: > 0 } target)
         {
@@ -131,7 +131,6 @@ public sealed partial class FormaToolbar : FormaElementBase
 
         var profile = new InputProfile { InputRoutes = ToRoutes(shortcuts) };
 
-        // The same element keeps its scope and takes the new shortcuts; another element starts afresh.
         if (_inputScope is { } inputScope && target.Id == _registeredTargetId)
         {
             if (await inputScope.UpdateAsync(profile))
@@ -153,7 +152,7 @@ public sealed partial class FormaToolbar : FormaElementBase
         }
     }
 
-    /// <summary>Runs the command whose shortcut the router matched, unless the toolbar or the matching action is disabled.</summary>
+    /// <summary>Runs the command of the action whose shortcut the router matched.</summary>
     [JSInvokable]
     public Task HandleInputActionAsync(string action, InputInfo input)
     {
@@ -164,7 +163,7 @@ public sealed partial class FormaToolbar : FormaElementBase
         return command is null ? Task.CompletedTask : HandleCommandAsync(command);
     }
 
-    /// <summary>Runs a command, unless the toolbar or the action carrying it is disabled.</summary>
+    /// <summary>Runs a command one of the toolbar's available actions carries.</summary>
     public async Task HandleCommandAsync(string command)
     {
         if (Disabled)
@@ -195,7 +194,7 @@ public sealed partial class FormaToolbar : FormaElementBase
         await base.DisposeAsyncCore();
     }
 
-    /// <summary>Makes the root one Tab stop whose arrow keys move among the controls, again whenever another element becomes the root.</summary>
+    /// <summary>Makes the root one Tab stop whose arrow keys move among the controls.</summary>
     private async Task RoveAsync()
     {
         var root = RootElement;
@@ -205,7 +204,7 @@ public sealed partial class FormaToolbar : FormaElementBase
             return;
         }
 
-        // The roving keys are routes the script declares itself, so the host's policy reaches the router before they do.
+        // The host's policy reaches the router before the roving keys the script declares as routes.
         await InputRouter.ConfigureAsync();
 
         if (await _focus.AttachAsync(root, roving: FocusOrientation.Horizontal))
@@ -214,7 +213,7 @@ public sealed partial class FormaToolbar : FormaElementBase
         }
     }
 
-    /// <summary>Releases the current scope, so a cleared target leaves no routes behind on the element it named.</summary>
+    /// <summary>Releases the current input scope and the shortcuts registered on it.</summary>
     private async Task ReleaseAsync()
     {
         _registeredShortcuts = [];
@@ -227,21 +226,22 @@ public sealed partial class FormaToolbar : FormaElementBase
         }
     }
 
-    /// <summary>Every item a top-level entry contributes, so a group is checked through its own contents.</summary>
+    /// <summary>The items a top-level item contributes: a group's own items, or the item itself.</summary>
     private static IEnumerable<ToolbarItem> GetLeaves(ToolbarItem item)
         => item is ToolbarGroup group ? group.Items : [item];
 
     private static string GetAction(string command)
         => InputRoute.Qualify(ActionOwner, command);
 
-    /// <summary>One route per shortcut-bearing action, its command qualified as the action and its shortcut parsed into the binding.</summary>
+    /// <summary>The input routes that bind each shortcut to its qualified action.</summary>
     private static IReadOnlyList<InputRoute> ToRoutes(IReadOnlyList<(string Command, string Shortcut)> shortcuts)
         => [.. shortcuts
             .Select(entry => (Action: GetAction(entry.Command), Binding: ParseShortcut(entry.Shortcut)))
             .Where(entry => entry.Binding is not null)
             .Select(entry => new InputRoute(entry.Action, entry.Binding!))];
 
-    /// <summary>Parses a shortcut written as aria-keyshortcuts, such as "Control+Shift+B", into a binding, or null when it names no key; Control and Meta both stand for the platform's shortcut key.</summary>
+    /// <summary>Parses a shortcut written as aria-keyshortcuts, such as "Control+Shift+B", into a key binding.</summary>
+    /// <remarks>Control and Meta both stand for the platform's shortcut key.</remarks>
     private static KeyBinding? ParseShortcut(string shortcut)
     {
         var parts = shortcut.Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -269,11 +269,12 @@ public sealed partial class FormaToolbar : FormaElementBase
             ? new Row(group.Id, group, group.Items)
             : new Row(item.Id, null, [item]));
 
-    /// <summary>The option the menu shows as chosen, or null when none is, so a menu never passes its first option off as the value in force.</summary>
+    /// <summary>The option the menu shows as chosen.</summary>
     private ToolbarOption? GetActiveOption(ToolbarMenu menu)
         => menu.Options.FirstOrDefault(IsOptionActive);
 
-    /// <summary>Whether the menu chooses among swatches, which its icon alone stands for while none is chosen; a swatch menu with no icon shows its name like any other.</summary>
+    /// <summary>Whether the menu chooses among swatches.</summary>
+    /// <remarks>A swatch menu with an icon shows the icon alone while no swatch is chosen.</remarks>
     private static bool OffersSwatches(ToolbarMenu menu)
         => menu.Options.Any(option => option.Swatch is not null);
 
@@ -281,7 +282,7 @@ public sealed partial class FormaToolbar : FormaElementBase
     private bool IsToggleActive(ToolbarAction action)
         => action is ToolbarToggle toggle && (toggle.IsActive || ActiveStates.Contains(toggle.Id));
 
-    /// <summary>Whether a menu option is the chosen one, by its own say-so or because the host reports its id active.</summary>
+    /// <summary>Whether a menu option is the chosen one, because it says so itself or because the host reports its id active.</summary>
     private bool IsOptionActive(ToolbarOption option)
         => option.IsActive || ActiveStates.Contains(option.Id);
 
@@ -306,7 +307,7 @@ public sealed partial class FormaToolbar : FormaElementBase
     private Icon? GetEffectiveIcon(ToolbarAction action)
         => action is ToolbarToggle { AlternateIcon: { } alternateIcon } && IsToggleActive(action) ? alternateIcon : action.Icon;
 
-    /// <summary>The hover text for an action, or null when its visible label already says the same thing.</summary>
+    /// <summary>The hover text for an action, where null means its visible label already says it.</summary>
     private string? GetActionTitle(ToolbarAction action, bool showsLabel)
     {
         var tooltip = GetTooltip(action);

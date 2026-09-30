@@ -2,7 +2,7 @@
    FormaSortableList — CSS isolation
    A reorderable list: a drag handle per item, a full-width drop
    position indicator, and a visually hidden live region for the
-   keyboard path — all styled from the shared design tokens.
+   keyboard path.
    ============================================================ */
 
 .forma-sortable-list {
@@ -34,10 +34,8 @@
     cursor: grabbing;
 }
 
-/* Dragging from the row makes the row itself the affordance, so it carries the cursor the
-   handle otherwise would, and its text stops being selectable — a press that is about to
-   drag must not start a selection instead. touch-action stays default here: the row has to
-   keep scrolling by swipe, which is what the press-and-hold in the script buys back. */
+/* A row that drags carries the grab cursor and selects no text; touch-action stays default so a
+   swipe still scrolls, and the script's press-and-hold starts the drag. */
 .forma-sortable-list-row-drag .forma-sortable-list-item {
     cursor: grab;
     user-select: none;
@@ -78,8 +76,7 @@
     cursor: grabbing;
 }
 
-/* Announces a keyboard move to a screen reader without a visible element, since the
-   handle's own label already states the position sighted users read off the row order. */
+/* A visually hidden live region that announces a move. */
 .forma-sortable-list-announcement {
     position: absolute;
     inline-size: 1px;

@@ -12,7 +12,7 @@ public sealed record InputLayer
     /// <summary>Whether it is a modal barrier.</summary>
     public bool Modal { get; init; }
 
-    /// <summary>The element of the scope it stands inside, or <see langword="null"/>.</summary>
+    /// <summary>The element of the scope it stands inside, where null is the top level.</summary>
     public string? Parent { get; init; }
 
     /// <summary>The order in which it was activated.</summary>

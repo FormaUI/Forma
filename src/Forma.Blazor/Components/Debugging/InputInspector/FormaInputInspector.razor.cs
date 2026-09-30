@@ -14,7 +14,7 @@ using Microsoft.JSInterop;
 
 using Inspector = Framework.Input.Interop.InputInspector;
 
-/// <summary>A panel showing the input router's latest decision, the active ordering behind it, and the decisions before it, as each key, press, or wheel turn on the page is resolved.</summary>
+/// <summary>A panel showing the input router's latest decision, the active ordering behind it, and the decisions before it.</summary>
 public sealed partial class FormaInputInspector : FormaElementBase
 {
     private const int HistoryLength = 8;
@@ -27,15 +27,15 @@ public sealed partial class FormaInputInspector : FormaElementBase
     private IReadOnlyList<ToolbarItem> _tools = [];
     private bool _paused;
 
-    /// <summary>The latest decision, or <see langword="null"/> before any input has been resolved.</summary>
+    /// <summary>The latest decision.</summary>
     public InputDecision? Decision
         => _history.Count > 0 ? _history[0] : null;
 
-    /// <summary>Whether reported decisions are being dropped rather than shown.</summary>
+    /// <summary>Whether the inspector is paused, dropping the decisions reported to it.</summary>
     public bool IsPaused
         => _paused;
 
-    /// <summary>Takes the decision the script reports and shows it, unless the inspector is paused.</summary>
+    /// <summary>Shows a decision the script reports.</summary>
     [JSInvokable]
     public Task ReportAsync(InputDecision decision)
     {

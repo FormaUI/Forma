@@ -11,8 +11,7 @@
             <span class="forma-selection-toolbar-caption" role="status" aria-live="polite">@CaptionText</span>
             @if (Items.Count > 0 || OnClear.HasDelegate)
             {
-                @* Only the buttons go inert, so the caption's live region stays in the
-                   accessibility tree and is present before the count first changes. *@
+                @* Only the buttons go inert, keeping the caption's live region in the accessibility tree before the count first changes. *@
                 <div class="forma-selection-toolbar-trailing" inert="@(Count == 0)">
                     @if (Items.Count > 0)
                     {

@@ -3,9 +3,9 @@ namespace Forma.Blazor.Components.Buttons;
 /// <summary>The amount of padding and text size a button is drawn at.</summary>
 public enum ButtonSize
 {
-    /// <summary>Standard sizing for buttons that stand on their own.</summary>
+    /// <summary>Standard padding and text size.</summary>
     Normal,
 
-    /// <summary>Condensed sizing for buttons packed into a toolbar or a table row.</summary>
+    /// <summary>Condensed padding and text size.</summary>
     Mini
 }

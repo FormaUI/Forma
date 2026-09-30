@@ -49,8 +49,7 @@
     margin-inline-start: auto;
 }
 
-/* forma-selection-toolbar-items lands on FormaToolbar's own FormaCommandBar output, not this component's;
-   left free to shrink, its arrows take over once the actions outgrow the row. */
+/* forma-selection-toolbar-items lands on the root FormaToolbar renders; free to shrink, it shows its arrows once the items outgrow the row. */
 ::deep .forma-selection-toolbar-items {
     flex: 0 1 auto;
     min-inline-size: 0;

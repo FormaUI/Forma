@@ -1,7 +1,6 @@
-/* FormaToolbar — Command groups and buttons inside one toolbar */
+/* FormaToolbar — a toolbar of items and groups of items */
 
-/* Only present when the toolbar renders without a command bar, and so has to lay its own
-   items out; wrapping is what stands in for the track's scrolling. */
+/* The root of a toolbar whose items wrap, which lays its own items out. */
 .forma-toolbar {
     display: flex;
     align-items: center;
@@ -22,18 +21,17 @@
     gap: var(--space-1);
 }
 
-/* Without a track, a group wider than the row breaks. */
+/* In a wrapping toolbar, a group wider than the row breaks. */
 .forma-toolbar .forma-toolbar-group {
     flex-wrap: wrap;
 }
 
-/* An ungrouped item takes no wrapper of its own in layout, so it sits directly in the row without a separator. */
+/* An ungrouped item sits directly in the row. */
 .forma-toolbar-loose {
     display: contents;
 }
 
-/* Laid out as the row's own items, so they keep their width the way a group does; a row that
-   cannot fit them scrolls or wraps rather than squashing a label into its glyph. */
+/* Ungrouped items keep their width the way a group does, so a full row scrolls or wraps them. */
 .forma-toolbar-loose > * {
     flex-shrink: 0;
 }

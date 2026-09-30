@@ -2,8 +2,7 @@
 @namespace Forma.Blazor.Components.Collections
 @inherits FormaElementBase
 <div class="forma-sortable-list-container">
-    @* Safari drops list semantics from a list whose markers are removed, so the role is
-       restated rather than left to the ul alone. *@
+    @* Safari drops list semantics from a list whose markers are removed, so role="list" restates them. *@
     <ul id="@Id"
         data-rid="@Context.RuntimeId"
         class="@RootClass"

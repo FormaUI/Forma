@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Components.Web;
 /// <summary>A ghost icon button drawing the dismiss glyph.</summary>
 public sealed partial class FormaCloseButton : FormaElementBase
 {
-    /// <summary>Accessible name for the button; what it closes decides the wording.</summary>
+    /// <summary>The accessible name of the button.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
     /// <summary>Size of the square the glyph is drawn in.</summary>
     [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Normal;
 
-    /// <summary>Blocks interaction and dims the button.</summary>
+    /// <summary>Whether the button is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>Raised when the button is clicked.</summary>

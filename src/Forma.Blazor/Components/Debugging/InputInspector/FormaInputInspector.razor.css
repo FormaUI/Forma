@@ -3,7 +3,6 @@
    A panel in three parts: the latest decision with its input
    drawn as keycaps and its precedence as a badge, the active
    ordering foremost first, and the decisions before it.
-   Logical properties throughout for RTL/LTR parity.
    ============================================================ */
 
 .forma-input-inspector {
@@ -34,7 +33,7 @@
     font-weight: 600;
 }
 
-/* The latest decision sits on a tinted slab, so it reads apart from the lists below. */
+/* The latest decision sits on a tinted slab. */
 .forma-input-inspector-latest {
     padding: var(--space-3);
     border-radius: var(--radius-sm);

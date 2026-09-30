@@ -5,25 +5,25 @@ using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A toolbar for actions that apply to the current selection; it appears while one or more items are selected and can clear the selection when the work is done.</summary>
+/// <summary>A toolbar of items that act on the current selection, which it captions and can clear.</summary>
 public sealed partial class FormaSelectionToolbar : FormaElementBase
 {
-    /// <summary>Number of items currently selected.</summary>
+    /// <summary>The number of items currently selected.</summary>
     [Parameter, EditorRequired] public int Count { get; set; }
 
-    /// <summary>Text describing the active context; the selected-item count when omitted.</summary>
+    /// <summary>The caption, where null shows the number of selected items.</summary>
     [Parameter] public string? Caption { get; set; }
 
-    /// <summary>The accessible name of the action toolbar; required only when Items is not empty.</summary>
+    /// <summary>The accessible name of the toolbar.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>Items shown while the toolbar is active.</summary>
+    /// <summary>The items the toolbar renders.</summary>
     [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
-    /// <summary>Callback invoked with the command an action raised.</summary>
+    /// <summary>The callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>Raised when the clear-selection button is pressed.</summary>
+    /// <summary>The callback invoked when the clear-selection button is pressed.</summary>
     [Parameter] public EventCallback OnClear { get; set; }
 
     private string CaptionText

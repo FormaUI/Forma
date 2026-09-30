@@ -12,7 +12,6 @@
              @ref="RootElement">
             @if (Items.Count > 0)
             {
-                @* The strip's own visibility already collapses the toolbar, so Hidden and Animated stop here rather than nesting a second collapse over the same content. *@
                 <FormaToolbar Class="forma-status-strip-items" Label="@Label" Items="Items" Disabled="Disabled" OnCommand="OnCommand" />
             }
         </div>

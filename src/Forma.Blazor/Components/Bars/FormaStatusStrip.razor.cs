@@ -5,28 +5,28 @@ using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A quiet strip of status readouts and occasional commands, meant to sit beneath a canvas or at the foot of a panel.</summary>
+/// <summary>A quiet strip of toolbar items, such as status readouts and commands.</summary>
 public sealed partial class FormaStatusStrip : FormaElementBase
 {
-    /// <summary>The accessible name of the strip; required only when Items is not empty.</summary>
+    /// <summary>The accessible name of the strip.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>The readouts and commands the strip shows.</summary>
+    /// <summary>The items the strip renders.</summary>
     [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
-    /// <summary>Callback invoked with the command an item raised.</summary>
+    /// <summary>The callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>Blocks interaction and dims the strip's items.</summary>
+    /// <summary>Whether the strip's items are disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    /// <summary>Whether the strip renders an empty bar or nothing at all while it has no items.</summary>
+    /// <summary>What the strip renders while it has no items.</summary>
     [Parameter] public StatusStripEmptyMode EmptyMode { get; set; }
 
-    /// <summary>Hides the strip while keeping it mounted, independently of <see cref="EmptyMode"/> — which only ever concerns having no items.</summary>
+    /// <summary>Whether the strip is hidden while it stays mounted.</summary>
     [Parameter] public bool Hidden { get; set; }
 
-    /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
+    /// <summary>Whether the strip animates between hidden and shown.</summary>
     [Parameter] public bool Animated { get; set; }
 
     /// <inheritdoc />

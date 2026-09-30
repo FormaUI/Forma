@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Buttons;
 /// <summary>The behavior a button has when it sits inside a form.</summary>
 public enum ButtonType
 {
-    /// <summary>Does nothing on its own; only raises its click callback.</summary>
+    /// <summary>Raises its click callback.</summary>
     Button,
 
     /// <summary>Submits the surrounding form.</summary>

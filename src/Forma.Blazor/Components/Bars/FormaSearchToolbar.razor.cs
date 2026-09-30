@@ -6,22 +6,22 @@ using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A search field and a row of toolbar items, for the top of a list page.</summary>
+/// <summary>A search field and a row of toolbar items.</summary>
 public sealed partial class FormaSearchToolbar : FormaElementBase
 {
-    /// <summary>The accessible name of the action toolbar; required only when Items is not empty.</summary>
+    /// <summary>The accessible name of the toolbar.</summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>The items shown beside the search field.</summary>
     [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
-    /// <summary>Callback invoked with the command an action raised.</summary>
+    /// <summary>The callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>Raised with the search text once typing settles.</summary>
+    /// <summary>The callback invoked with the search text once typing settles.</summary>
     [Parameter, EditorRequired] public EventCallback<string> OnSearch { get; set; }
 
-    /// <summary>The search field's configuration. Its placeholder is required and is the field's accessible name.</summary>
+    /// <summary>The options of the search field.</summary>
     [Parameter, EditorRequired] public SearchBoxOptions Search { get; set; } = default!;
 
     /// <inheritdoc />

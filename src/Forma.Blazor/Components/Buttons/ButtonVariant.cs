@@ -3,18 +3,18 @@ namespace Forma.Blazor.Components.Buttons;
 /// <summary>The visual weight a button carries relative to the others around it.</summary>
 public enum ButtonVariant
 {
-    /// <summary>A neutral fill with a light border — the everyday button.</summary>
+    /// <summary>A neutral fill with a light border.</summary>
     Secondary,
 
-    /// <summary>Solid accent fill for the one action a screen exists to perform.</summary>
+    /// <summary>A solid accent fill.</summary>
     Primary,
 
-    /// <summary>Small and lightly bordered over a transparent fill, for repeated inline actions such as table row commands.</summary>
+    /// <summary>Small and lightly bordered over a transparent fill.</summary>
     Tertiary,
 
-    /// <summary>Solid red fill for destructive actions.</summary>
+    /// <summary>A solid red fill for a destructive action.</summary>
     Danger,
 
-    /// <summary>Borderless and transparent until hovered, for low-emphasis actions.</summary>
+    /// <summary>Borderless and transparent until hovered.</summary>
     Ghost
 }
