@@ -11,10 +11,10 @@
 @code {
     private sealed class StubInsertionDialog : ComponentBase, IComposerInsertionDialog
     {
-        /// <summary>Set to make confirming refuse with this message instead of answering an insertion.</summary>
+        /// <summary>The message confirming refuses with, where null means confirming answers an insertion.</summary>
         [Parameter] public string? Refusal { get; set; }
 
-        /// <summary>Set to report that the body can do nothing, the way an unregistered provider does.</summary>
+        /// <summary>The notice that the body can do nothing, where null means the body is available.</summary>
         [Parameter] public string? Unavailable { get; set; }
 
         public string Title => "Stub Dialog";
@@ -49,7 +49,7 @@
         }
     }
 
-    /// <summary>Counts how many times a plugin was built, which is once per composer.</summary>
+    /// <summary>The count of how many times a plugin was built.</summary>
     public sealed class Tally
     {
         public int Built { get; set; }
@@ -110,7 +110,7 @@
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
-        // Proves a plugin-declared group's own title is localized, not only the items inside it.
+        // Declares a group with a title of its own.
         private sealed class GroupedCommandPlugin : IComposerFeaturePlugin
         {
             public string Id => "grouped";
@@ -160,8 +160,7 @@
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
-        // Leads with a menu, so part of the inline limit is spent on a leaf that is not an action
-        // and the overflow index has to account for it.
+        // Leads with a menu, so part of the inline limit is spent on a leaf that is not an action.
         private sealed class MenuThenCommandsPlugin(int count) : IComposerFeaturePlugin
         {
             public string Id => "menu-then-commands";
@@ -203,8 +202,7 @@
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
-        // Pushes a status item on command, proving the region registry is a composer-level capability
-        // rather than something an editor plugin has to implement for itself.
+        // Pushes a status item on command.
         private sealed class StatusPushingPlugin : IComposerFeaturePlugin
         {
             private IComposerStatusItem? _item;
@@ -232,7 +230,7 @@
             }
         }
 
-        // Pushes a status item that opts into being announced, unlike the frequently updating readout above.
+        // Pushes a status item that opts into being announced.
         private sealed class AnnouncingStatusPlugin : IComposerFeaturePlugin
         {
             public string Id => "announcing";
@@ -1112,7 +1110,6 @@
             cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-status-strip").TextContent.Trim()));
         }
 
-        // A readout is plugin-supplied text of unknown direction, so it resolves and isolates its own.
         [Fact]
         public void Should_isolate_the_direction_of_a_status_item()
         {
@@ -1397,8 +1394,7 @@
             Assert.Empty(cut.FindAll("button[aria-label='Undo']"));
         }
 
-        // A plugin may place a group of one name on two rows; a composition small enough to fold those rows into
-        // one bar must join the groups rather than render two siblings under one key, which the renderer refuses.
+        // The paragraph plugin places a group of one name on two rows, which a composition this small folds into one bar.
         [Fact]
         public void Should_join_a_group_two_folded_rows_both_carry()
         {
@@ -1439,7 +1435,6 @@
             Assert.NotNull(cut.Find("button[aria-label='Selection Bar']"));
         }
 
-        // The reference names each shortcut as its button does, so what a reader hears is what they see.
         [Fact]
         public void Should_list_every_shortcut_in_play_under_its_command_name()
         {
@@ -1468,7 +1463,6 @@
                 () => Assert.Equal(["Ctrl", "/"], rows["Keyboard Shortcuts"]));
         }
 
-        // A shortcut the host answers before the composer would not do what the reference says, so it is not listed.
         [Fact]
         public void Should_leave_a_shortcut_the_host_preempts_out_of_the_reference()
         {
@@ -1579,7 +1573,7 @@
         }
     }
 
-    /// <summary>A host that declares routes and performs none of them.</summary>
+    /// <summary>An input action handler that performs no action.</summary>
     private sealed class IgnoringInputActions : IInputActionHandler
     {
         public Task HandleAsync(string action, InputInfo input)

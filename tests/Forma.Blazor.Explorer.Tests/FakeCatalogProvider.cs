@@ -6,7 +6,7 @@ using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Resources;
 
-/// <summary>An in-memory provider that records the queries it was asked, for tests about what an explorer fetches.</summary>
+/// <summary>An in-memory catalog provider that records the queries it was asked.</summary>
 public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) : ICatalogProvider
 {
     private readonly List<ResourceInfo> _resources = [.. resources];
@@ -14,16 +14,16 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
     /// <summary>Every query the provider was asked, in order.</summary>
     public List<CatalogQuery> Queries { get; } = [];
 
-    /// <summary>Held until released when set, so a test can observe the explorer mid-fetch.</summary>
+    /// <summary>The gate each fetch waits on until it is released, where null means a fetch answers at once.</summary>
     public TaskCompletionSource? Gate { get; set; }
 
-    /// <summary>Reported instead of a count when set, standing in for a store that cannot total its contents.</summary>
+    /// <summary>Whether the provider reports the total count of the resources that match.</summary>
     public bool ReportsTotal { get; set; } = true;
 
     /// <summary>The sources of the resources the provider returns as hidden items.</summary>
     public ISet<string> HiddenSources { get; } = new HashSet<string>(StringComparer.Ordinal);
 
-    /// <summary>The slice the query names, filtered by search and ordered by name alone.</summary>
+    /// <inheritdoc />
     public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
         Queries.Add(query);

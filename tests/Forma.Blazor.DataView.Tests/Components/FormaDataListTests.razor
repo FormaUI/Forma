@@ -68,7 +68,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
 
-            // Assert — the marker carries the row's key and selection semantics without taking any room
+            // Assert
             var rows = cut.FindAll("[role=listitem]");
             Assert.Multiple(
                 () => Assert.Contains("forma-data-list-item-selected", rows[1].ClassName, StringComparison.Ordinal),
@@ -117,7 +117,7 @@
             boxes.WaitForState(() => boxes.FindAll("[role=listitem]").Count == 3);
             markers.WaitForState(() => markers.FindAll("[role=listitem]").Count == 3);
 
-            // Assert — the collapsed marker takes no target, so nothing beside the item claims a press for it
+            // Assert
             Assert.Multiple(
                 () => Assert.All(boxes.FindAll("input[type=checkbox]"), box => Assert.Equal("forma-data-view-box-target", box.ParentElement!.ClassName)),
                 () => Assert.Empty(markers.FindAll(".forma-data-view-box-target")));
@@ -179,7 +179,7 @@
             // Act
             cut.Find(".forma-data-list-group button").Click();
 
-            // Assert — the books fold away; the tools stay
+            // Assert
             var groups = cut.FindAll(".forma-data-list-group");
             Assert.Multiple(
                 () => Assert.Equal("Books", groups[0].QuerySelector(".forma-data-group-name")!.TextContent),
@@ -264,7 +264,7 @@
             cut.Find(".forma-data-group-heading").Click();
             cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 2);
 
-            // Assert — the folded group keeps its heading and its count
+            // Assert
             Assert.Multiple(
                 () => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-group-name").Select(name => name.TextContent)),
                 () => Assert.Equal(["1", "2"], cut.FindAll(".forma-data-group-count").Select(count => count.TextContent)),

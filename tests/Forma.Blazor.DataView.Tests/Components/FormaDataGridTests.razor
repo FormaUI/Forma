@@ -50,7 +50,7 @@
             var box = cut.FindAll("tbody input[data-row-key]")[1];
             var token = int.Parse(box.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
 
-            // Act — the selection behavior attaches under checked selection too, and reports Enter on the box
+            // Act — Enter on the box, as the selection behavior reports it
             await cut.InvokeAsync(() => cut.FindComponent<FormaDataView<GridItem>>().Instance.HandleActivateAsync(token));
 
             // Assert
@@ -118,7 +118,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
 
-            // Assert — the groups come smallest key first, each heading a row-group header over its rows
+            // Assert — the groups come smallest key first
             var groups = cut.FindAll("tbody.forma-data-grid-group");
             Assert.Multiple(
                 () => Assert.Equal("Books", groups[0].QuerySelector(".forma-data-grid-group-name")!.TextContent),
@@ -148,7 +148,7 @@
             cut.Find("thead button").Click();
             cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
 
-            // Assert — the groups hold their order; the rows sort inside them
+            // Assert
             var titles = cut.FindAll("tbody.forma-data-grid-group tr.forma-data-grid-row td:last-child").Select(cell => cell.TextContent).ToList();
             Assert.Equal(["Atlas", "Primer", "Reader", "Hammer", "Saw", "Wrench"], titles);
         }
@@ -177,7 +177,7 @@
             Assert.Empty(folded.QuerySelectorAll("tr.forma-data-grid-row"));
             Assert.Equal(3, cut.FindAll("tbody.forma-data-grid-group")[1].QuerySelectorAll("tr.forma-data-grid-row").Length);
 
-            // Act — pressed again, the group opens
+            // Act — pressed again
             cut.Find("tbody.forma-data-grid-group button").Click();
 
             // Assert
@@ -302,7 +302,7 @@
             cut.Find("thead button").Click();
             cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
 
-            // Assert — the provider sorted by the group first, so the groups came largest key first with the rows sorted inside them
+            // Assert
             Assert.Collection(properties!,
                 property => Assert.Equal(("Category", DataViewSortDirection.Descending), (property.PropertyName, property.Direction)),
                 property => Assert.Equal(("Title", DataViewSortDirection.Ascending), (property.PropertyName, property.Direction)));
@@ -326,7 +326,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-group-row").Count == 2);
 
-            // Assert — each heading counts its whole group, and its items follow it
+            // Assert
             Assert.Multiple(
                 () => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent)),
                 () => Assert.Equal(["3", "3"], cut.FindAll(".forma-data-grid-group-count").Select(count => count.TextContent)),
@@ -352,7 +352,7 @@
             cut.Find(".forma-data-grid-group-heading").Click();
             cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 3);
 
-            // Assert — the folded group keeps its heading and its count
+            // Assert
             Assert.Multiple(
                 () => Assert.Equal("false", cut.Find(".forma-data-grid-group-heading").GetAttribute("aria-expanded")),
                 () => Assert.Equal(["Hammer", "Wrench", "Saw"], cut.FindAll("tr.forma-data-grid-row td:not(.forma-data-grid-select-column)").Select(cell => cell.TextContent.Trim())));
@@ -386,7 +386,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 6);
 
-            // Assert — the groups come largest key first, as the grouping orders them
+            // Assert
             Assert.Multiple(
                 () => Assert.True(asked),
                 () => Assert.Equal(["Tools", "Books"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent)));
@@ -501,7 +501,7 @@
             // Act
             cut.Find("thead input[type=checkbox]").Click();
 
-            // Assert — the visible page, not the whole set
+            // Assert
             Assert.Equal(10, changedTo!.Count);
         }
 
@@ -522,7 +522,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
-            // Assert — a press on the target reaches the box it holds
+            // Assert
             Assert.All(cut.FindAll("input[type=checkbox]"), box => Assert.Equal("forma-data-view-box-target", box.ParentElement!.ClassName));
         }
 
@@ -1120,7 +1120,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
 
-            // Assert — each row says which row of the set it is, since only a portion of the rows is drawn
+            // Assert — each row says which row of the set it is
             Assert.Contains("Item 1", cut.Markup, StringComparison.Ordinal);
             Assert.Equal("1", cut.Find("tbody tr").GetAttribute("aria-rowindex"));
         }
@@ -1142,7 +1142,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
 
-            // Assert — the grid virtualizes its rows, one item each here, so the initial item opens the row that holds it
+            // Assert — each row holds one item, so the initial item opens the row that holds it
             var virtualization = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(Virtualize<>)).Instance;
             object? Read(string property) => virtualization.GetType().GetProperty(property)!.GetValue(virtualization);
             Assert.Multiple(
@@ -1580,7 +1580,7 @@
             // Arrange
             using var ctx = new FormaDataGridTests();
 
-            // Act — a property that is no path of members has no name for its sort, so the column draws no sort button
+            // Act — a property that is no path of members has no name for its sort
             var cut = ctx.Render(
                 @<FormaDataView Items="CreateItems(3)" PageSize="10">
                     <FormaDataGrid>
@@ -1592,7 +1592,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
 
-            // Assert — the one given a name sorts
+            // Assert
             Assert.Equal(["Double"], cut.FindAll("thead button").Select(button => button.TextContent.Trim()).Where(text => text.Length > 0).ToList());
         }
 
@@ -2168,7 +2168,7 @@
             // Act
             cut.Find(".forma-data-grid-columns-menu").Click();
 
-            // Assert — the highest priority is never listed; the title is shown and marked, the note dropped and unmarked
+            // Assert — the highest priority is never listed
             var items = cut.FindAll(".forma-dropdown-menu [role^=menuitem]");
             Assert.Collection(items,
                 item => Assert.Multiple(
@@ -2354,7 +2354,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
 
-            // Assert — the row is there to measure from; the stylesheet collapses it to no height
+            // Assert
             var table = cut.Find("table");
             Assert.Multiple(
                 () => Assert.Contains("forma-data-grid-headerless", table.ClassName, StringComparison.Ordinal),
@@ -2464,7 +2464,7 @@
             cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
             var editors = cut.FindAll("tbody input");
 
-            // Assert — the text is the library's text box named by its column; the number wears the text box's look
+            // Assert
             Assert.Multiple(
                 () => Assert.Contains("forma-text-box", editors[0].ClassName, StringComparison.Ordinal),
                 () => Assert.Contains("forma-data-grid-editor", editors[0].ClassName, StringComparison.Ordinal),
@@ -2497,7 +2497,7 @@
             // Act
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
-            // Assert — a date and a nullable date each open the date picker, and a flag draws the checkbox
+            // Assert
             var row = cut.FindAll("tbody tr")[0];
             Assert.Multiple(
                 () => Assert.Equal(2, row.QuerySelectorAll(".forma-date-picker").Length),
@@ -2729,7 +2729,7 @@
             // Arrange
             using var ctx = new FormaDataGridTests();
 
-            // Act & Assert — a struct draft is copied on every read, so edits would vanish
+            // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => ctx.Render(
                 @<FormaDataView Items="new[] { new Point(1) }.AsQueryable()" PageSize="10">
                     <FormaDataGrid TItem="Point" EnableInlineEditing="true" CloneForEdit="@(point => point)">

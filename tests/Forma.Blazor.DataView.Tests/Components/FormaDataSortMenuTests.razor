@@ -19,7 +19,7 @@
             new("price", "Price", DataViewSort<Product>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
         ];
 
-        // The menu inside the data view, where the cascade reaches it, over a list that sorts nothing itself.
+        // The sort menu inside the data view, over a list that sorts nothing itself.
         private static RenderFragment CreateList(DataViewAddressOptions? address = null) =>
             @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" AddressOptions="address">
                 <FormaDataSortMenu TItem="Product" Sorts="Sorts" />
@@ -49,7 +49,7 @@
             // Act
             cut.Find(".forma-data-sort-menu").Click();
 
-            // Assert — the trigger says Sort; the directions wait for a sort
+            // Assert
             var sorts = cut.FindAll("[data-sort]");
             var directions = cut.FindAll("[data-sort-direction]");
             Assert.Multiple(
@@ -91,7 +91,7 @@
             FindItem(cut, "[data-sort-direction=Descending]").Click();
             cut.WaitForState(() => GetNames(cut)[0] == "Wrench");
 
-            // Assert — the sort chosen keeps its name, turned; choosing it again keeps the turn
+            // Assert — choosing the sort again keeps the turn
             Assert.Equal(["Wrench", "Hammer", "Atlas"], GetNames(cut));
             FindItem(cut, "[data-sort=name]").Click();
             Assert.Equal(["Wrench", "Hammer", "Atlas"], GetNames(cut));

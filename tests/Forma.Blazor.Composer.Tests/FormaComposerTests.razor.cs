@@ -8,6 +8,6 @@ public sealed partial class FormaComposerTests
         Router = JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
     }
 
-    /// <summary>The input router module, set up before any render so the composer's registrations on it are recorded.</summary>
+    /// <summary>The input router module that records the composer's registrations.</summary>
     internal BunitJSModuleInterop Router { get; }
 }

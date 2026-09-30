@@ -225,7 +225,7 @@
             held.SetResult(new DataViewPage<Product>([CreateProducts().Last()], 4));
             await move;
 
-            // Assert — nothing selected and no focus taken, and the behavior told to let the move go
+            // Assert — the behavior is told to let the move go
             Assert.Multiple(
                 () => Assert.Equal(0, changes),
                 () => Assert.Null(LastFocus(ctx)),
@@ -235,7 +235,7 @@
         [Fact]
         public async Task Should_let_go_of_a_move_whose_read_failed()
         {
-            // Arrange — the read the move needs throws, so the behavior must still hear that the move is over
+            // Arrange — the read the move needs throws
             using var ctx = new FormaDataViewTests();
             var failing = false;
             DataViewItemsProvider<Product> provider = request => failing && request.Count == 1

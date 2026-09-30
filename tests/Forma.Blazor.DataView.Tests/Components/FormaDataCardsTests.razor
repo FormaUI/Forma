@@ -205,7 +205,7 @@
             await cards.InvokeAsync(() => cards.Instance.HandleGridColumnsAsync(2));
             cut.WaitForState(() => cut.FindAll(".forma-data-card").Count == 3);
 
-            // Assert — two across then one, each card saying where it stands in the set
+            // Assert
             Assert.Multiple(
                 () => Assert.Equal([2, 1], cut.FindAll(".forma-data-cards-row").Select(row => row.QuerySelectorAll(".forma-data-card").Length)),
                 () => Assert.Equal(["1", "2", "3"], cut.FindAll(".forma-data-card").Select(card => card.GetAttribute("aria-posinset"))),

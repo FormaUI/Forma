@@ -11,7 +11,7 @@
             new Product(2, "Atlas", "Books"),
         }.AsQueryable();
 
-        // The three views over one set, with the switch composed inside the data view where the cascade reaches it.
+        // The three views over one set, with the view switch inside the data view.
         private RenderFragment CreateThreeViews(string? view = null, DataViewAddressOptions? address = null, EventCallback<string?> viewChanged = default) =>
             @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" View="@view" ViewChanged="viewChanged" AddressOptions="address">
                 <FormaDataViewSwitch />
@@ -34,7 +34,7 @@
             var cut = ctx.Render(CreateThreeViews());
             cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
 
-            // Assert — the grid shows and is pressed; the list and the cards stand ready, unpressed and undrawn
+            // Assert
             var buttons = cut.FindAll(".forma-data-view-switch button");
             Assert.Multiple(
                 () => Assert.Equal(["Grid", "List", "Cards"], buttons.Select(button => button.TextContent.Trim()).ToList()),
@@ -92,10 +92,10 @@
             // Act
             cut.FindAll(".forma-data-view-switch button")[1].Click();
 
-            // Assert — the list is in the address; the first view would not be
+            // Assert
             Assert.Contains("shop-view=list", navigation.Uri, StringComparison.Ordinal);
 
-            // Act — a fresh data view opened on that address shows the list
+            // Act — a fresh data view opened on that address
             var reopened = ctx.Render(CreateThreeViews(address: new DataViewAddressOptions("shop")));
             reopened.WaitForState(() => reopened.FindAll(".forma-data-list [role=listitem]").Count == 2);
 
@@ -133,7 +133,7 @@
             var outside = ctx.Render(@<FormaDataViewSwitch DataView="engine" />);
             outside.FindAll("button")[2].Click();
 
-            // Assert — the switch outside drives the same data view, and follows it
+            // Assert
             Assert.Single(dataView.FindAll(".forma-data-cards"));
             Assert.Equal("true", outside.FindAll("button")[2].GetAttribute("aria-pressed"));
         }

@@ -275,7 +275,7 @@
 
             // Assert
             var breadcrumbs = cut.FindAll(".forma-explorer-header-wide .forma-breadcrumb-item");
-            Assert.Equal(3, breadcrumbs.Count); // "All Media" > "Races" > "2026"
+            Assert.Equal(3, breadcrumbs.Count);
             Assert.Equal("All Media", breadcrumbs[0].TextContent.Trim());
             Assert.Equal("Races", breadcrumbs[1].TextContent.Trim());
             Assert.Equal("2026", breadcrumbs[2].TextContent.Trim());
@@ -330,12 +330,12 @@
                                                 CurrentFolder="child"
                                                 OnFolderChanged="@(f => { activeFolder = f; return Task.CompletedTask; })" />);
 
-            // Assert Up button is enabled for child folder
+            // Assert
             var upBtn = cut.FindAll(".forma-explorer-nav-button")[2];
             Assert.False(upBtn.HasAttribute("disabled"));
             upBtn.Click();
 
-            // Assert folder changed to parent
+            // Assert
             Assert.NotNull(activeFolder);
             Assert.Equal("races", activeFolder.Key);
         }
@@ -359,7 +359,7 @@
             Assert.Equal("b.jpg", items[1].TextContent);
             Assert.Equal("c.jpg", items[2].TextContent);
 
-            // Act - Sort by Size
+            // Act
             await SortByAsync(cut, CatalogSortField.Size);
             items = cut.FindAll(".forma-explorer-item-name");
             Assert.Equal("c.jpg", items[0].TextContent);
@@ -719,31 +719,31 @@
                                                 OnFolderRename="@(req => { renameReq = req; return Task.CompletedTask; })"
                                                 OnFolderDelete="@(req => { deleteReq = req; return Task.CompletedTask; })" />);
 
-            // Act - Create Folder
+            // Act
             cut.Find(".forma-explorer-new-folder-tool").Click();
             cut.Find("#forma-explorer-folder-input").Input("New Album");
             cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
-            // Assert create
+            // Assert
             Assert.NotNull(createReq);
             Assert.Equal("New Album", createReq.Name);
 
-            // Act - Rename Folder
+            // Act
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-rename']").Click();
             cut.Find("#forma-explorer-rename-input").Input("Updated Races");
             cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
-            // Assert rename
+            // Assert
             Assert.NotNull(renameReq);
             Assert.Equal("Updated Races", renameReq.NewName);
 
-            // Act - Delete Folder
+            // Act
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-delete']").Click();
             cut.Find(".forma-dialog-footer .forma-button-danger").Click();
 
-            // Assert delete
+            // Assert
             Assert.NotNull(deleteReq);
             Assert.Equal("races", deleteReq.Folder.Key);
         }
@@ -991,7 +991,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="items"
                                                 SelectedChanged="@(selected => { reports.Add(selected); return Task.CompletedTask; })" />);
 
-            // Assert - drawn as disabled, with no operation offered
+            // Assert
             var tile = cut.Find(".forma-explorer-item");
             Assert.Multiple(
                 () => Assert.Equal("false", tile.GetAttribute("draggable")),
@@ -999,7 +999,7 @@
                 () => Assert.True(cut.Find(".forma-explorer-item-open").HasAttribute("disabled")),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-action-bar")));
 
-            // Act - activation neither previews nor selects it
+            // Act
             cut.Find(".forma-explorer-item-open").Click();
             cut.Find(".forma-explorer-select-mode-button").Click();
             cut.Find(".forma-explorer-item-open").Click();
@@ -1234,7 +1234,7 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
 
-            // Assert - not in select mode
+            // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-item-select"));
             Assert.Equal("false", cut.Find(".forma-explorer-select-mode-button").GetAttribute("aria-pressed"));
             Assert.Equal("Preview cover.jpg", cut.Find(".forma-explorer-item-open").GetAttribute("aria-label"));
@@ -1242,7 +1242,7 @@
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
-            // Assert - in select mode
+            // Assert
             Assert.Single(cut.FindAll(".forma-explorer-item-select"));
             Assert.Equal("true", cut.Find(".forma-explorer-select-mode-button").GetAttribute("aria-pressed"));
             Assert.Equal("Select cover.jpg", cut.Find(".forma-explorer-item-open").GetAttribute("aria-label"));
@@ -1259,13 +1259,13 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="viewMode" />);
 
-            // Assert - the trigger stands alone before select mode
+            // Assert
             Assert.Single(cut.FindAll(".forma-explorer-action-bar"));
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
-            // Assert - the checkbox replaces it rather than joining it
+            // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-action-bar"));
         }
 
@@ -1277,14 +1277,14 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(CatalogItem.ForAll([folder]))" />);
 
-            // Assert - the trigger stands alone before select mode
+            // Assert
             Assert.Single(cut.FindAll(".forma-explorer-folder-actions"));
             Assert.Empty(cut.FindAll(".forma-explorer-folder-select"));
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
-            // Assert - the checkbox replaces it rather than joining it
+            // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-folder-actions"));
             Assert.Single(cut.FindAll(".forma-explorer-folder-select"));
         }
@@ -1297,7 +1297,7 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
 
-            // Assert - browsing puts the trigger in the leading cell
+            // Assert
             var lead = cut.Find(".forma-explorer-details-row td");
             Assert.NotNull(lead.QuerySelector(".forma-explorer-action-bar"));
             Assert.Null(lead.QuerySelector(".forma-explorer-table-select"));
@@ -1305,7 +1305,7 @@
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
-            // Assert - selecting puts the checkbox in that same cell
+            // Assert
             lead = cut.Find(".forma-explorer-details-row td");
             Assert.NotNull(lead.QuerySelector(".forma-explorer-table-select"));
             Assert.Null(lead.QuerySelector(".forma-explorer-action-bar"));
@@ -1408,7 +1408,7 @@
             // Act
             await cut.InvokeAsync(() => area.HandleBreakpointAsync("medium"));
 
-            // Assert - the two rows stay, the search box gives way to its glyph
+            // Assert
             Assert.Multiple(
                 () => Assert.NotNull(cut.Find(".forma-explorer-header-wide .forma-explorer-toolbar")),
                 () => Assert.NotNull(cut.Find(".forma-explorer-address-bar .forma-explorer-search-button")),
@@ -1417,7 +1417,7 @@
             // Act
             cut.Find(".forma-explorer-address-bar .forma-explorer-search-button").Click();
 
-            // Assert - pressing the glyph opens the box in its place
+            // Assert
             Assert.Multiple(
                 () => Assert.NotNull(cut.Find(".forma-explorer-address-bar .forma-search-box")),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-address-bar .forma-explorer-search-button")));
@@ -1505,7 +1505,7 @@
             cut.Find(".forma-explorer-columns-trigger").Click();
             cut.Find(".forma-explorer-toolbar [data-column='header']").Click();
 
-            // Assert - the header row stays for its widths and its names, collapsed rather than removed
+            // Assert
             Assert.Multiple(
                 () => Assert.Contains("is-headerless", cut.Find(".forma-explorer-details-table").ClassList),
                 () => Assert.NotNull(cut.Find("th.forma-explorer-column-name")),
@@ -1558,7 +1558,7 @@
             var reported = new List<ExplorerGroupField>();
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" GroupFieldChanged="@(field => reported.Add(field))" />);
 
-            // Act - choose a grouping from the sort menu
+            // Act
             cut.Find(".forma-explorer-sort-trigger").Click();
             cut.Find(".forma-explorer-toolbar [data-group-field='Kind']").Click();
 
@@ -1570,7 +1570,7 @@
                 () => Assert.Equal(3, cut.FindAll(".forma-explorer-details-row").Count),
                 () => Assert.Equal([ExplorerGroupField.Kind], reported));
 
-            // Act - fold the first group away
+            // Act
             headings[0].Click();
 
             // Assert
@@ -1613,7 +1613,7 @@
                 () => Assert.Equal("false", cut.FindAll(".forma-explorer-group-heading")[0].GetAttribute("aria-expanded")),
                 () => Assert.Single(cut.FindAll(".forma-explorer-details-row")));
 
-            // Act - a new grouping starts with every group open
+            // Act
             cut.Find(".forma-explorer-sort-trigger").Click();
             cut.Find(".forma-explorer-toolbar [data-group-field='Name']").Click();
 
@@ -1648,7 +1648,7 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
 
-            // Assert - browsing
+            // Assert
             Assert.Equal(
                 cut.FindAll(".forma-explorer-details-table thead th").Count,
                 cut.Find(".forma-explorer-details-row").QuerySelectorAll("td").Length);
@@ -1656,7 +1656,7 @@
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
-            // Assert - selecting
+            // Assert
             Assert.Equal(
                 cut.FindAll(".forma-explorer-details-table thead th").Count,
                 cut.Find(".forma-explorer-details-row").QuerySelectorAll("td").Length);
@@ -2416,7 +2416,7 @@
             Assert.Empty(cut.FindAll(".forma-explorer-scroll .forma-explorer-pagination"));
         }
 
-        // The trigger's handler is awaited before the menu is read, and the field's handler queries the provider, so the task completes once the new slice is fetched.
+        // Chooses a sort field from the sort menu, completing once the new slice is fetched.
         private static async Task SortByAsync<TComponent>(IRenderedComponent<TComponent> cut, CatalogSortField field)
             where TComponent : IComponent
         {
@@ -2425,8 +2425,7 @@
         }
     }
 
-    // Every path that changes the selection has to report it, and the one path that adopts what the
-    // host already holds has to stay quiet, or a bound caller drifts out of step with what is on screen.
+    // Every path that changes the selection reports it, and adopting the selection the host already holds stays quiet.
     public sealed class SelectionReporting
     {
         private static readonly IReadOnlyList<ResourceInfo> Two =
@@ -2464,7 +2463,6 @@
             cut.FindAll(".forma-explorer-item-open")[0].Click();
 
             // Act
-            // Once anything is selected the toolbar gives way to the selection bar, which carries the exit.
             cut.Find(".forma-explorer-exit-select-button").Click();
 
             // Assert

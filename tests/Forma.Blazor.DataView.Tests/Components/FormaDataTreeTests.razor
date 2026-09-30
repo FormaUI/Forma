@@ -75,7 +75,7 @@
             cut.Find("button.forma-data-tree-disclosure-button").Click();
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
-            // Assert — the folder's children stand in a group it owns, one level deeper, and a file has no disclosure
+            // Assert
             var documents = cut.FindAll("[role=treeitem]")[0];
             var group = cut.Find("[role=group]");
             var children = group.QuerySelectorAll("[role=treeitem]");
@@ -87,7 +87,7 @@
                 () => Assert.Null(children[1].GetAttribute("aria-expanded")),
                 () => Assert.Null(children[1].QuerySelector("button.forma-data-tree-disclosure-button")));
 
-            // Act — pressed again, the node closes
+            // Act — pressed again
             cut.Find("button.forma-data-tree-disclosure-button").Click();
 
             // Assert
@@ -160,7 +160,7 @@
             cut.FindComponent<FormaDataView<Entry>>().Render(parameters => parameters.Add(view => view.Items, CreateEntries().Append(new Entry(7, 1, "Budget.xlsx", false)).AsQueryable()));
             cut.WaitForState(() => cut.Markup.Contains("Budget.xlsx", StringComparison.Ordinal));
 
-            // Assert — the folder stayed open, and shows what the new source holds under it
+            // Assert
             Assert.Multiple(
                 () => Assert.Equal(["Documents", "Reports", "Notes.txt", "Pictures"], names),
                 () => Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded")),
@@ -203,7 +203,7 @@
             cut.Find("button.forma-data-tree-disclosure-button").Click();
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
 
-            // Assert — the folder under Documents shows; its file does not
+            // Assert
             Assert.Equal(["Documents", "Reports", "Pictures"], cut.FindAll(".forma-data-tree-node-name").Select(name => name.TextContent).ToList());
         }
 
@@ -303,7 +303,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2 && cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
 
-            // Assert — both draw at once, the region lays them out across, and the switch offers the grid alone
+            // Assert
             Assert.Multiple(
                 () => Assert.Contains("forma-data-view-region-companions", cut.Find(".forma-data-view-region").ClassName, StringComparison.Ordinal),
                 () => Assert.Contains("forma-data-tree-companion", cut.Find(".forma-data-tree").ClassName, StringComparison.Ordinal),
@@ -333,7 +333,7 @@
             await router.ClickAsync("tree.choose");
             cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
 
-            // Assert — the grid shows what Documents holds, and the node is marked current, the selected node of a single-select tree and its tab stop
+            // Assert — the current node is the selected node of a single-select tree and its tab stop
             Assert.Multiple(
                 () => Assert.Equal("Documents", current!.Name),
                 () => Assert.Equal(["Reports", "Notes.txt"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList()),
@@ -420,7 +420,7 @@
             await PressRowAsync(cut, 0);
             cut.WaitForState(() => cut.FindAll(".forma-data-tree-node-current").Count == 1);
 
-            // Assert — Documents opened to show Reports as the current node
+            // Assert
             Assert.Multiple(
                 () => Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded")),
                 () => Assert.Equal("Reports", cut.Find(".forma-data-tree-node-current .forma-data-tree-node-name").TextContent));
@@ -448,7 +448,7 @@
             cut.Find("button.forma-data-tree-disclosure-button").Click();
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
-            // Assert — the roots were asked for with no parent, then Documents' children with it
+            // Assert
             Assert.Contains(asked, parent => parent is null);
             Assert.Contains(asked, parent => parent?.Name == "Documents");
         }
@@ -567,7 +567,7 @@
 
     private sealed record Entry(int Id, int? ParentId, string Name, bool IsFolder);
 
-    // A press on a row reaches the data view through the selection behavior, which tells it the token the row carries.
+    // Presses a row the way the selection behavior reports it, by the token the row carries.
     private static Task PressRowAsync(IRenderedComponent<IComponent> cut, int index)
     {
         var token = int.Parse(cut.FindAll("tbody tr.forma-data-grid-row")[index].GetAttribute("data-item")!, CultureInfo.InvariantCulture);
