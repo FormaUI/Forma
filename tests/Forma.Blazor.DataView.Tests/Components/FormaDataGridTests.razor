@@ -236,13 +236,21 @@
         [Fact]
         public async Task Should_keep_the_rows_on_screen_until_a_grouping_s_items_arrive()
         {
-            // Arrange — the first slice answers at once; the one the grouping asks for is held
+            // Arrange — the first slice answers at once; the one the grouping asks for is held, and the test is told once it is asked for
             using var ctx = new FormaDataGridTests();
             var held = new TaskCompletionSource<DataViewPage<Product>>();
+            var asked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requests = 0;
-            DataViewItemsProvider<Product> provider = request => ++requests == 1
-                ? ValueTask.FromResult(new DataViewPage<Product>(CreateProducts().ToArray(), 6))
-                : new ValueTask<DataViewPage<Product>>(held.Task);
+            DataViewItemsProvider<Product> provider = request =>
+            {
+                if (++requests == 1)
+                {
+                    return ValueTask.FromResult(new DataViewPage<Product>(CreateProducts().ToArray(), 6));
+                }
+
+                asked.TrySetResult();
+                return new ValueTask<DataViewPage<Product>>(held.Task);
+            };
             var cut = ctx.Render(
                 @<FormaDataView ItemsProvider="provider" EnablePagination="false">
                     <FormaDataGrid>
@@ -256,6 +264,7 @@
             // Act
             var dataView = cut.FindComponent<FormaDataView<Product>>();
             dataView.Render(parameters => parameters.Add(p => p.GroupBy, DataViewGrouping<Product>.By(product => product.Category)));
+            await asked.Task.WaitAsync(TestContext.Current.CancellationToken);
 
             // Assert — the rows stand ungrouped until the grouped slice lands
             Assert.Equal(6, cut.FindAll("tr.forma-data-grid-row").Count);
@@ -265,7 +274,7 @@
             await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>(CreateProducts().OrderBy(product => product.Category).ToArray(), 6)));
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent)));
+            Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent));
         }
 
         [Fact]
