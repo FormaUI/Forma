@@ -4,7 +4,7 @@ using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 
-/// <summary>An <see cref="IComposerInteraction"/> that records everything a plugin invoked.</summary>
+/// <summary>An <see cref="IComposerInteraction"/> that records every call made on it.</summary>
 public sealed class RecordingComposerInteraction : IComposerInteraction
 {
     /// <summary>The documents reported through <see cref="ChangeDocumentAsync"/>, in order.</summary>
@@ -22,42 +22,48 @@ public sealed class RecordingComposerInteraction : IComposerInteraction
     /// <summary>The insertions handed to the active editor through <see cref="TryInsertAsync"/>, in order.</summary>
     public List<ComposerInsertion> Insertions { get; } = [];
 
-    /// <summary>What <see cref="TryInsertAsync"/> reports, standing for an editor that takes the insertion.</summary>
+    /// <summary>Whether the active editor takes an insertion, as <see cref="TryInsertAsync"/> reports.</summary>
     public bool TakesInsertions { get; set; } = true;
 
     /// <summary>How many re-renders were requested.</summary>
     public int RenderRequests { get; private set; }
 
+    /// <inheritdoc />
     public Task ChangeDocumentAsync(ComposerDocument document)
     {
         ChangedDocuments.Add(document);
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task RequestRenderAsync()
     {
         RenderRequests++;
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task ReportSelectionAsync(ComposerSelection selection)
     {
         ReportedSelections.Add(selection);
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task ExecuteCommandAsync(string command)
     {
         ExecutedCommands.Add(command);
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task OpenDialogAsync(ComposerInsertionRequest request)
     {
         OpenedDialogs.Add(request);
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public ValueTask<bool> TryInsertAsync(ComposerInsertion insertion)
     {
         Insertions.Add(insertion);

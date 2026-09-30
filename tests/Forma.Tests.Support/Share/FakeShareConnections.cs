@@ -3,7 +3,7 @@ namespace Forma.Tests.Share;
 using Forma.Framework.Events;
 using Forma.Framework.Share;
 
-/// <summary>Connection state a test sets by hand, recording every connection the menu asks it to start.</summary>
+/// <summary>Share connections whose state a test sets directly, recording every connection started.</summary>
 public sealed class FakeShareConnections : IShareConnections
 {
     private readonly StateNotifier _notifier = new();
@@ -26,7 +26,7 @@ public sealed class FakeShareConnections : IShareConnections
         return Task.CompletedTask;
     }
 
-    /// <summary>Marks the target connected and tells the subscribers, as a host does once its sign-in completes.</summary>
+    /// <summary>Marks the target connected and notifies the subscribers.</summary>
     public Task MarkConnectedAsync(string targetId)
     {
         Connected.Add(targetId);

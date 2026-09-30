@@ -247,7 +247,6 @@ public sealed class JsonStringLocaleTests
         Assert.Equal("הועבר למיקום 2 מתוך 7.", localized.Value);
     }
 
-    // Only the key decides which value is which, so a translation is free to read in another order.
     [Fact]
     public void Should_keep_positional_values_with_their_holes_when_a_translation_reorders_them()
     {
@@ -444,7 +443,6 @@ public sealed class JsonStringLocaleTests
         });
     }
 
-    // A bracketed name carries no braces, so formatting cannot mistake it for a hole and rewrite it.
     [Theory]
     [InlineData("[$ plural; one: # file; other: # files $]")]
     [InlineData("[$ select; male: his; female: her; $]")]

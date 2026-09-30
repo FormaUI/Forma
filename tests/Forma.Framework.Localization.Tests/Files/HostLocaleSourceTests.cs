@@ -13,7 +13,7 @@ public sealed class HostLocaleSourceTests
     private static IReadOnlyList<LocaleSourceEntry> Read(TempDirectory folder, FakeLocaleFileFormat format, Func<string, string?> rootNamespaces)
         => new HostLocaleSource(folder.Root, format, rootNamespaces).Read(Assembly, Toolbar, "he");
 
-    // The format hands a file back by the full path the source names it by.
+    // Registers the file under the full path the source names it by.
     private static string WriteFile(TempDirectory folder, FakeLocaleFileFormat format, string name, LocaleSection root)
     {
         var fullPath = Path.GetFullPath(folder.Write(name, string.Empty));
@@ -30,7 +30,7 @@ public sealed class HostLocaleSourceTests
         [Fact]
         public void Should_read_a_file_named_for_a_segment_directly_in_its_folder()
         {
-            // Arrange — the type's own file, in the host's form.
+            // Arrange
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/Toolbar.he.fake", CreateEntries(("Bold", "the type's own file")));
@@ -45,7 +45,7 @@ public sealed class HostLocaleSourceTests
         [Fact]
         public void Should_read_a_folders_file_from_the_folder_itself()
         {
-            // Arrange — the host's folder is itself a folder of locale files, so a folder's file may sit directly in it.
+            // Arrange
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the file in the folder itself"));
@@ -60,7 +60,7 @@ public sealed class HostLocaleSourceTests
         [Fact]
         public void Should_read_a_folders_file_from_the_folders_own_locales_folder()
         {
-            // Arrange — the path every source reads is the host's too.
+            // Arrange
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the file in the folder's own .locales"));
@@ -75,7 +75,7 @@ public sealed class HostLocaleSourceTests
         [Fact]
         public void Should_read_a_file_in_both_places_as_a_duplicate()
         {
-            // Arrange — the two forms stand for one anchor, so both files are read as its entries and neither is an override of the other.
+            // Arrange
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
             var folderFile = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the file in the folder itself"));
@@ -119,7 +119,7 @@ public sealed class HostLocaleSourceTests
         [Fact]
         public void Should_count_anchors_from_the_root_namespace_the_assembly_declares()
         {
-            // Arrange — the assembly's own config names Contoso.Widgets.Bars, so its folder is laid out from there and the type's own folder sits right beneath it.
+            // Arrange — the declared root is Contoso.Widgets.Bars, so the type's own folder sits directly beneath the assembly's.
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Toolbar/.locales/he.fake", CreateEntries(("Bold", "declared root")));
@@ -149,7 +149,7 @@ public sealed class HostLocaleSourceTests
         [Fact]
         public void Should_leave_a_config_file_in_the_hosts_folder_unread()
         {
-            // Arrange — a config file is the assembly's own, embedded at its root; one a host lays in its folder, above or inside an assembly's, configures nothing.
+            // Arrange
             using var folder = new TempDirectory();
             folder.Write(".locale.json", """{ "paths": ["$RootDir/strings/$AnchorName.$Culture$Extension"] }""");
             folder.Write("Contoso.Widgets/.locale.json", """{ "paths": ["$RootDir/strings/$AnchorName.$Culture$Extension"] }""");

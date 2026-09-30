@@ -4,9 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.JSInterop;
 
-/// <summary>A JS object reference that answers every call through one function, faulting the call with whatever the function throws, for tests about how a wrapper treats what a call returns or throws.</summary>
-/// <param name="respond">Answers a call from its identifier and arguments, or throws in its place.</param>
-/// <param name="releaseException">The exception the first release faults with, or <see langword="null"/> to release cleanly.</param>
+/// <summary>A JS object reference that answers every call through one function and faults the call with whatever the function throws.</summary>
+/// <param name="respond">The function that answers a call from its identifier and arguments.</param>
+/// <param name="releaseException">The exception the first release faults with, where <see langword="null"/> is a clean release.</param>
 public sealed class FakeJSObjectReference(Func<string, object?[]?, object?> respond, Exception? releaseException = null) : IJSObjectReference
 {
     /// <summary>Whether <see cref="DisposeAsync"/> has run.</summary>

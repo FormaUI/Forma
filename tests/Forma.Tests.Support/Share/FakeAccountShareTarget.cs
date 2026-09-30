@@ -3,8 +3,8 @@ namespace Forma.Tests.Share;
 using Forma.Framework.Icons;
 using Forma.Framework.Share;
 
-/// <summary>A stand-in vault taking any item, sharing only under a token the source answers.</summary>
-/// <param name="tokens">Answers the user's token for the vault.</param>
+/// <summary>A vault share target that supports every item and shares it under the token the source answers.</summary>
+/// <param name="tokens">The source of the user's token for the vault.</param>
 public sealed class FakeAccountShareTarget(IShareTokenSource tokens) : IShareTarget
 {
     /// <summary>The item last shared here.</summary>

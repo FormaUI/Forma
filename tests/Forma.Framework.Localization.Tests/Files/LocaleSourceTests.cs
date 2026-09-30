@@ -7,7 +7,7 @@ public sealed class LocaleSourceTests
     private const string Assembly = "Contoso.Widgets";
     private const string Toolbar = "Contoso.Widgets.Bars.Toolbar";
 
-    // A form other than the default, which a config file names to read files beside the folder they complete.
+    // A form other than the default, reading files beside the folder they complete.
     private static readonly LocalePath Beside = LocalePath.Parse("$RootDir/$AnchorName.$Culture$Extension");
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class LocaleSourceTests
     [Fact]
     public void Should_read_a_file_named_for_the_type_in_its_folders_locales_folder()
     {
-        // Arrange — the folder's own file and the type's own file beside it, both in the folder's .locales, the type's read last.
+        // Arrange — the folder's file and the type's own file, both in the folder's .locales.
         var source = new FakeLocaleSource
         {
             Files =
@@ -68,7 +68,7 @@ public sealed class LocaleSourceTests
     [Fact]
     public void Should_read_a_rooted_section_from_the_assemblys_root_wherever_the_file_sits()
     {
-        // Arrange — a file in another folder names the type from the root, and is read at the type's own anchor after the folder's file.
+        // Arrange — a file in another folder names the type from the root.
         var source = new FakeLocaleSource
         {
             Files =
@@ -94,7 +94,7 @@ public sealed class LocaleSourceTests
     [Fact]
     public void Should_read_a_rooted_section_naming_a_namespace_for_every_type_beneath_it()
     {
-        // Arrange — a rooted section completes the name from the root, and the sections beneath it from there.
+        // Arrange
         var source = new FakeLocaleSource
         {
             Files =
@@ -132,7 +132,7 @@ public sealed class LocaleSourceTests
     [Fact]
     public void Should_leave_a_rooted_section_beneath_the_top_level_unread()
     {
-        // Arrange — the prefix means the root only at the file's top level, so a nested one names nothing.
+        // Arrange
         var source = new FakeLocaleSource
         {
             Files =
@@ -261,7 +261,7 @@ public sealed class LocaleSourceTests
     [Fact]
     public void Should_share_a_folders_entries_with_every_type_beneath_it()
     {
-        // Arrange — the folder's file shares one entry, and a type with a section of its own overrides it.
+        // Arrange
         var source = new FakeLocaleSource
         {
             Files =
@@ -318,7 +318,7 @@ public sealed class LocaleSourceTests
     [Fact]
     public void Should_not_share_a_section_merely_named_like_the_shared_one()
     {
-        // Arrange — a section under the reserved name, which an escaped key produces, is a section like any other.
+        // Arrange — a section under the reserved name, as an escaped key produces.
         var source = new FakeLocaleSource
         {
             Files =
@@ -441,7 +441,7 @@ public sealed class LocaleSourceTests
     [Fact]
     public void Should_name_the_full_name_a_type_outside_the_root_namespace_reads_a_file_by()
     {
-        // Arrange — beneath a declared root, the folders name either a namespace completing the root or a full name of their own.
+        // Arrange
         const string Name = "Contoso.Widgets/Fabrikam/Gadgets/.locales/he.fake";
         var source = new FakeLocaleSource
         {

@@ -2,7 +2,7 @@ namespace Forma.Tests.Composer;
 
 using Forma.Framework.Composer.Assets;
 
-/// <summary>An asset loader that reports nothing loaded and performs no loading.</summary>
+/// <summary>An asset loader whose every load completes at once and whose every asset reads as unloaded.</summary>
 public sealed class NullAssetLoader : IComposerAssetLoader
 {
     /// <inheritdoc />

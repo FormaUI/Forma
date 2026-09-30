@@ -6,13 +6,13 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Sanitization;
 
-/// <summary>Builds a <see cref="ComposerContext"/> over a fixed document, for exercising a plugin without a composer.</summary>
+/// <summary>Builds a <see cref="ComposerContext"/> over a fixed document.</summary>
 public static class ComposerContexts
 {
-    /// <summary>A state over the given markup, defaulting every service to the shipped implementation.</summary>
+    /// <summary>A composer context over the given markup, with the shipped implementation of every service.</summary>
     /// <param name="html">The markup the document holds.</param>
-    /// <param name="selection">The caret and range the browser last reported.</param>
-    /// <param name="activeEditor">The editor said to be rendering, defaulting to a stub standing in for one.</param>
+    /// <param name="selection">The selection the browser last reported.</param>
+    /// <param name="activeEditor">The active editor, where null stands for a <see cref="StubEditorPlugin"/>.</param>
     public static ComposerContext Create(
         string html = "<p>Test</p>",
         ComposerSelection? selection = null,

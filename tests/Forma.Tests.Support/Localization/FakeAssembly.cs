@@ -9,7 +9,7 @@ public sealed class FakeAssembly : Assembly
 {
     private readonly string _name;
 
-    /// <summary>Creates an assembly with the given name and no resources.</summary>
+    /// <summary>Creates an assembly with the given name.</summary>
     /// <param name="name">The assembly's simple name.</param>
     public FakeAssembly(string name)
     {
@@ -24,7 +24,7 @@ public sealed class FakeAssembly : Assembly
     /// <summary>The satellite assemblies, each keyed by the culture it is for.</summary>
     public Dictionary<string, FakeAssembly> Satellites { get; } = new(StringComparer.Ordinal);
 
-    /// <summary>The attributes the assembly carries, in the order a build would have written them.</summary>
+    /// <summary>The attributes the assembly carries, in order.</summary>
     public List<Attribute> Attributes { get; } = [];
 
     /// <inheritdoc />
@@ -51,7 +51,7 @@ public sealed class FakeAssembly : Assembly
     public override object[] GetCustomAttributes(bool inherit)
         => GetCustomAttributes(typeof(Attribute), inherit);
 
-    // The runtime hands back an array of the attribute type asked for, which a typed enumeration over the result relies on.
+    // An array of the attribute type asked for, as the runtime returns and a typed enumeration relies on.
     /// <inheritdoc />
     public override object[] GetCustomAttributes(Type attributeType, bool inherit)
     {

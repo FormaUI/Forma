@@ -11,13 +11,13 @@ using Forma.Framework.Input.Pointer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Stands in for the input router's script under a bUnit context: records what components register, and presses a key the way the router would, on the registration that declares the action.</summary>
+/// <summary>A stand-in for the input router's script under a bUnit context that records the registrations components make and routes input to them on the renderer.</summary>
 public sealed class InputRouterProbe
 {
     private readonly BunitContext _context;
     private readonly BunitJSModuleInterop _module;
 
-    /// <summary>Sets the router's module up on the context's interop, before anything renders.</summary>
+    /// <summary>Sets the router's module up on the context's interop.</summary>
     public InputRouterProbe(BunitContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -26,7 +26,7 @@ public sealed class InputRouterProbe
         _module = context.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
     }
 
-    /// <summary>The router's module, for a test that answers one of its calls itself.</summary>
+    /// <summary>The router's module on the context's interop.</summary>
     public BunitJSModuleInterop Module
         => _module;
 

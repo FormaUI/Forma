@@ -168,7 +168,7 @@ public sealed class EmbeddedLocaleSourceTests
 
     }
 
-    // A file named for its culture alone never reaches a satellite, so these read a form the build moves there.
+    // These read files named for the anchor and the culture, a form the build moves into a satellite.
     public sealed class Satellites
     {
         private static FakeAssembly CreateAssemblyReadingBeside()

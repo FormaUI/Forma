@@ -28,7 +28,7 @@ public sealed class CommonPluralRuleSetTests
     [InlineData("fr", "2", PluralCategory.Other)]
     [InlineData("fr", "1000000", PluralCategory.Many)]
 
-    // Hebrew has a dual form, and no longer has a category for multiples of ten.
+    // Hebrew has a dual form, and counts multiples of ten as other.
     [InlineData("he", "0", PluralCategory.Other)]
     [InlineData("he", "1", PluralCategory.One)]
     [InlineData("he", "2", PluralCategory.Two)]

@@ -12,7 +12,6 @@ public sealed class LocalizedFormatTests
         Assert.Equal([new LocalizedArgument("stored", 3), new LocalizedArgument("total", 9)], arguments);
     }
 
-    // A name written twice stands for one value, so it takes one.
     [Fact]
     public void Should_count_a_repeated_hole_once()
     {

@@ -4,8 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.JSInterop;
 
-/// <summary>A JS runtime that answers every call through one function, faulting the call with whatever the function throws, for tests about how a wrapper treats what a call returns or throws.</summary>
-/// <param name="respond">Answers a call from its identifier and arguments, or throws in its place.</param>
+/// <summary>A JS runtime that answers every call through one function and faults the call with whatever the function throws.</summary>
+/// <param name="respond">The function that answers a call from its identifier and arguments.</param>
 public sealed class FakeJSRuntime(Func<string, object?[]?, object?> respond) : IJSRuntime
 {
     /// <summary>Creates a runtime whose module import yields <paramref name="moduleReference"/>.</summary>

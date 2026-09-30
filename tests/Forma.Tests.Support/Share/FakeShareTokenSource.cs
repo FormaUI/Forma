@@ -5,7 +5,7 @@ using Forma.Framework.Share;
 /// <summary>A token source answering from a table of tokens by target id, keeping every id it was asked for.</summary>
 public sealed class FakeShareTokenSource : IShareTokenSource
 {
-    /// <summary>The token answered for each target id; a target not listed has none.</summary>
+    /// <summary>The token answered for each target id.</summary>
     public Dictionary<string, string> Tokens { get; } = new(StringComparer.Ordinal);
 
     /// <summary>Every target id asked for, in order.</summary>

@@ -67,7 +67,7 @@ public sealed class LocalePackTests
         [Fact]
         public void Should_yield_to_the_hosts_file()
         {
-            // Arrange — the host's root file overrides Save; nothing of the host's names Open, so the pack's Open stands.
+            // Arrange — the host's root file overrides Save and leaves Open to the pack.
             using var culture = new CultureScope("he");
             var pack = CreatePack("Contoso.Pack", """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "HostOverridden": { "Open": "pack", "Save": "pack" } }""");
             var strings = CreateLocale<HostOverridden>(pack);
@@ -103,7 +103,7 @@ public sealed class LocalePackTests
         [Fact]
         public void Should_not_read_a_pack_laid_out_for_another_assembly()
         {
-            // Arrange — the same file under another assembly's name completes none of this assembly's.
+            // Arrange
             using var culture = new CultureScope("he");
             var pack = new FakeAssembly("Contoso.Pack") { Resources = { ["Contoso.Widgets.Fixtures.he.json"] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Open": "pack" } }""" } };
             var strings = CreateLocale<Unlocalized>(pack);
@@ -135,7 +135,7 @@ public sealed class LocalePackTests
         [Fact]
         public void Should_name_each_pack_the_assembly_was_built_against_once_in_order()
         {
-            // Arrange — a build that recorded one pack twice and one blank.
+            // Arrange
             var assembly = new FakeAssembly("Contoso.App")
             {
                 Attributes = { new LocalePackAttribute("Contoso.Hebrew"), new LocalePackAttribute("Contoso.Spanish"), new LocalePackAttribute("Contoso.Hebrew"), new LocalePackAttribute(" ") },
@@ -151,7 +151,7 @@ public sealed class LocalePackTests
         [Fact]
         public void Should_load_a_pack_by_the_name_recorded()
         {
-            // Arrange — the localization library stands in for a pack, being an assembly the runtime can load by name.
+            // Arrange — the localization library stands in for a pack the runtime can load by name.
             using var loggerFactory = new FakeLoggerFactory();
             var assembly = new FakeAssembly("Contoso.App") { Attributes = { new LocalePackAttribute("Forma.Framework.Localization") } };
 
@@ -165,7 +165,7 @@ public sealed class LocalePackTests
         [Fact]
         public void Should_report_a_pack_that_cannot_be_loaded_and_leave_it_out()
         {
-            // Arrange — a deployment that lost the pack's file, which still renders in the language its keys are written in.
+            // Arrange — a recorded pack whose assembly is missing, beside one that loads.
             using var loggerFactory = new FakeLoggerFactory();
             var assembly = new FakeAssembly("Contoso.App") { Attributes = { new LocalePackAttribute("Contoso.Missing"), new LocalePackAttribute("Forma.Framework.Localization") } };
 

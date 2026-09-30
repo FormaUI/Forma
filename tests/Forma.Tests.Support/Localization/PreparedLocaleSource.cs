@@ -2,7 +2,7 @@ namespace Forma.Tests.Localization;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>A locale source over files already read, each named by its folders joined with slashes and rooted at a folder named for the assembly, which opens nothing.</summary>
+/// <summary>A locale source over files already read, each named by its folders joined with slashes and rooted at a folder named for the assembly.</summary>
 public sealed class PreparedLocaleSource() : LocaleSource(new FakeLocaleFileFormat())
 {
     /// <summary>The files, each keyed by its name.</summary>

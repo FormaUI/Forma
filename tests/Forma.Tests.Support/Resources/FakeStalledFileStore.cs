@@ -2,12 +2,12 @@ namespace Forma.Tests.Resources;
 
 using Forma.Framework.Resources;
 
-/// <summary>A file store whose saves never finish on their own, so a save is still in flight until it is canceled.</summary>
+/// <summary>A file store whose saves stay in flight until they are canceled.</summary>
 public sealed class FakeStalledFileStore : IFileStore
 {
     private readonly TaskCompletionSource _saving = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    /// <summary>Completes once a save has begun and stalled.</summary>
+    /// <summary>Completes once a save has begun.</summary>
     public Task Saving
         => _saving.Task;
 

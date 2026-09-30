@@ -25,7 +25,6 @@ public sealed class LocaleFieldParserTests
         });
     }
 
-    // A file is hand-edited, so it must not fail on a character its author cannot see.
     [Theory]
     [InlineData("SchemaVersion: 1.0.0; Culture: he; ")]
     [InlineData("SchemaVersion: 1.0.0; Culture: he;\n")]
@@ -62,7 +61,6 @@ public sealed class LocaleFieldParserTests
         });
     }
 
-    // Nothing constrains a standalone list's names, so an unknown one is carried rather than reported.
     [Fact]
     public void Should_accept_a_name_it_does_not_know()
     {

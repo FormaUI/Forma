@@ -1,6 +1,6 @@
 namespace Forma.Tests.Shared;
 
-/// <summary>A directory that exists for one test and is removed with it.</summary>
+/// <summary>A temporary directory, removed with everything written into it on disposal.</summary>
 public sealed class TempDirectory : IDisposable
 {
     /// <summary>Creates the directory under the system temporary path.</summary>
@@ -10,10 +10,10 @@ public sealed class TempDirectory : IDisposable
         Directory.CreateDirectory(Root);
     }
 
-    /// <summary>Where the directory sits.</summary>
+    /// <summary>The directory's full path.</summary>
     public string Root { get; }
 
-    /// <summary>Removes the directory and everything written into it.</summary>
+    /// <inheritdoc />
     public void Dispose()
     {
         try
@@ -26,8 +26,8 @@ public sealed class TempDirectory : IDisposable
     }
 
     /// <summary>Writes a file into the directory and returns its full path.</summary>
-    /// <param name="name">The file's name, which may name folders to create.</param>
-    /// <param name="content">What to write.</param>
+    /// <param name="name">The file's path relative to the directory.</param>
+    /// <param name="content">The file's text.</param>
     public string Write(string name, string content)
     {
         var file = Path.Combine(Root, name);

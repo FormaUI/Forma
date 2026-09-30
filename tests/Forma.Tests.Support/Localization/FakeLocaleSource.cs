@@ -2,11 +2,12 @@ namespace Forma.Tests.Localization;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>A locale source over files held in memory, each named by its folders joined with slashes and rooted at a folder named for the assembly, read through a format that hands each back as it is.</summary>
+/// <summary>A locale source over files and configs held in memory, each named by its folders joined with slashes and rooted at a folder named for the assembly.</summary>
 public sealed class FakeLocaleSource : LocaleSource
 {
     private readonly FakeLocaleFileFormat _format;
 
+    /// <summary>Creates an empty locale source.</summary>
     public FakeLocaleSource()
         : this(new FakeLocaleFileFormat())
     {

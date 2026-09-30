@@ -3,5 +3,5 @@
 namespace Contoso.Widgets;
 #pragma warning restore IDE0130
 
-/// <summary>Stands in for a type in an assembly whose name is not its namespace root.</summary>
+/// <summary>A type whose namespace root, <c>Contoso.Widgets</c>, differs from its assembly's name.</summary>
 public sealed class ForeignRoot;

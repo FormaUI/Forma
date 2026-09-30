@@ -62,7 +62,6 @@ public sealed class JsonStringLocaleFactoryTests
         Assert.Equal("היום", localized.Value);
     }
 
-    // A project whose assembly name is not its root namespace embeds under the root, which the type carries.
     [Fact]
     public void Should_read_a_file_embedded_under_a_root_the_assembly_name_does_not_lead()
     {
@@ -77,7 +76,6 @@ public sealed class JsonStringLocaleFactoryTests
         Assert.Equal("היום", localized.Value);
     }
 
-    // A type outside any namespace carries no root, so the assembly name has to supply one.
     [Fact]
     public void Should_read_a_file_for_a_type_declared_without_a_namespace()
     {

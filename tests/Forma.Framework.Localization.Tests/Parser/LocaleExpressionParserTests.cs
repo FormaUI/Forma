@@ -7,7 +7,6 @@ public sealed class LocaleExpressionParserTests
 {
     private const string Files = "[$ [count] plural; one: # file; other: # files; $]";
 
-    // Spelled out here rather than borrowed from an evaluator, since the parser knows no keyword of its own.
     private static readonly LocaleKeywords Keywords =
         new(new LocaleKeyword("plural", "zero", "one", "two", "few", "many", "other"));
 
@@ -111,7 +110,7 @@ public sealed class LocaleExpressionParserTests
         Assert.Equal("[$ [count] plural; one: # place; other: # places; $]", GetText(expression.Span, Prose));
     }
 
-    // A semicolon only ends a field when a category follows, so prose keeps its own punctuation.
+    // A semicolon ends a field only where a category follows it.
     [Fact]
     public void Should_keep_a_semicolon_that_no_category_follows_inside_the_field()
     {
@@ -218,7 +217,6 @@ public sealed class LocaleExpressionParserTests
         });
     }
 
-    // An unrecognised keyword brings no categories with it, so its field names go unchecked.
     [Fact]
     public void Should_not_check_field_names_against_categories_for_an_unknown_keyword()
     {
@@ -336,7 +334,7 @@ public sealed class LocaleExpressionParserTests
         Assert.Equal(LocaleDiagnosticKind.MissingNameSeparator, Assert.Single(result.Diagnostics).Kind);
     }
 
-    // A category following the semicolon marks a separator the author meant, so the field is recovered rather than lost.
+    // A category after the semicolon marks it as a separator.
     [Theory]
     [InlineData("[$ [count] plural;one: # file; other: # files; $]")]
     [InlineData("[$ [count] plural; one: # file;other: # files; $]")]
@@ -376,7 +374,6 @@ public sealed class LocaleExpressionParserTests
         });
     }
 
-    // Spacing cannot make an absent value present, so the shape of the separator is not what gets reported.
     [Theory]
     [InlineData("[$ [count] plural; one: ; other: # files; $]")]
     [InlineData("[$ [count] plural; one:; other: # files; $]")]
@@ -407,7 +404,6 @@ public sealed class LocaleExpressionParserTests
         Assert.Equal(LocaleDiagnosticKind.EmptyFieldValue, Assert.Single(result.Diagnostics).Kind);
     }
 
-    // Without categories to check a name against, a typo cannot be told from prose, so the exact separator stays required.
     [Fact]
     public void Should_not_recover_a_separator_for_a_keyword_that_brings_no_names()
     {
@@ -445,7 +441,7 @@ public sealed class LocaleExpressionParserTests
         });
     }
 
-    // Only an expression's own header is rewritten, so a hole the caller means to fill survives.
+    // Only an expression's own header is rewritten.
     [Theory]
     [InlineData("See [{count}] for details")]
     [InlineData("[$ [{count} plural; one: # file; other: # files; $]")]
@@ -476,7 +472,6 @@ public sealed class LocaleExpressionParserTests
         Assert.Equal("See [{files}] and [$ [count] plural; one: a; other: b; $] now", normalized);
     }
 
-    // Canonical text needs no rewriting, so nothing is allocated for it.
     [Theory]
     [InlineData("[$ [count] plural; one: a; other: b; $]")]
     [InlineData("Stored {stored} of {total}.")]

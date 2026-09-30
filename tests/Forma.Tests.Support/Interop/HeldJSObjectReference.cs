@@ -4,12 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.JSInterop;
 
-/// <summary>A JS object reference that holds one call open until the test answers it, answering every other call through a function, for tests about what a wrapper does while a call is still in flight.</summary>
+/// <summary>A JS object reference that holds one call open until the test answers it and answers every other call through a function.</summary>
 /// <param name="heldIdentifier">The identifier of the call held open.</param>
-/// <param name="respond">Answers every other call from its identifier and arguments, or throws in its place.</param>
+/// <param name="respond">The function that answers every other call from its identifier and arguments.</param>
 public sealed class HeldJSObjectReference(string heldIdentifier, Func<string, object?[]?, object?> respond) : IJSObjectReference
 {
-    // Plain, so the wrapper's continuation runs where the test answers rather than being queued past its assertion.
+    // Plain, so the wrapper's continuation runs inline where Answer completes it.
     private readonly TaskCompletionSource<object?> _held = new();
 
     /// <summary>Whether the held call has been made and not yet answered.</summary>

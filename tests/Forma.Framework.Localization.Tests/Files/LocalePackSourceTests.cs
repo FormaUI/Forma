@@ -14,7 +14,7 @@ public sealed class LocalePackSourceTests
     private static IReadOnlyList<LocaleSourceEntry> Read(FakeAssembly pack, FakeLocaleFileFormat format, Func<string, string?> rootNamespaces, string assemblyName = Assembly, string typeName = Toolbar, string cultureName = "he")
         => new LocalePackSource(pack, format, rootNamespaces).Read(assemblyName, typeName, cultureName);
 
-    // The format hands a file back by the name the source reports it under, which leads with the pack.
+    // Registers the file under the name the source reports it by, which leads with the pack.
     private static string AddFile(FakeAssembly pack, FakeLocaleFileFormat format, string name, LocaleSection root)
     {
         pack.Resources[name] = string.Empty;
@@ -32,7 +32,7 @@ public sealed class LocalePackSourceTests
         [Fact]
         public void Should_read_a_folders_file_and_a_types_own_file_as_a_hosts_folder_does()
         {
-            // Arrange — the folder's file directly in the folder, and the type's own file in the folder's locales folder, read in that order.
+            // Arrange — the folder's file directly in the folder, and the type's own file in the folder's .locales.
             var pack = new FakeAssembly(Pack);
             var format = new FakeLocaleFileFormat();
             var folderFile = AddFile(pack, format, "Contoso.Widgets.Bars.he.fake", CreateToolbarSection("folder file"));
@@ -53,7 +53,7 @@ public sealed class LocalePackSourceTests
         [Fact]
         public void Should_read_a_file_only_under_the_name_of_the_assembly_it_localizes()
         {
-            // Arrange — a file laid out under the pack's own name completes no assembly's names.
+            // Arrange
             var pack = new FakeAssembly(Pack);
             var format = new FakeLocaleFileFormat();
             AddFile(pack, format, "Contoso.Pack.Bars.he.fake", CreateToolbarSection("under the pack's name"));
@@ -86,7 +86,7 @@ public sealed class LocalePackSourceTests
         [Fact]
         public void Should_lay_an_assemblys_folder_out_by_the_root_namespace_it_declares()
         {
-            // Arrange — the assembly is named apart from its root namespace, which the pack learns from the assembly rather than from a config of its own.
+            // Arrange — the assembly Contoso.Gadgets declares the root namespace Contoso.Things.
             var pack = new FakeAssembly(Pack);
             var format = new FakeLocaleFileFormat();
             var file = AddFile(pack, format, "Contoso.Gadgets.Knobs.he.fake", CreateSections(("Dial", CreateEntries(("Turn", "declared root")))));
@@ -101,7 +101,7 @@ public sealed class LocalePackSourceTests
         [Fact]
         public void Should_not_read_a_config_file_a_pack_carries()
         {
-            // Arrange — a config inside the pack would move the assembly's root; the pack lays the folder out by what the assembly declares and reads none.
+            // Arrange
             var pack = new FakeAssembly(Pack) { Resources = { ["Contoso.Widgets..locale.json"] = """{ "rootNamespace": "Elsewhere" }""" } };
             var format = new FakeLocaleFileFormat();
             var file = AddFile(pack, format, "Contoso.Widgets.Bars.he.fake", CreateToolbarSection("folder file"));
@@ -119,7 +119,7 @@ public sealed class LocalePackSourceTests
         [Fact]
         public void Should_yield_nothing_for_a_culture_the_pack_holds_no_file_for()
         {
-            // Arrange — a Hebrew pack read for Spanish, which is how a pack of one language costs a host nothing in another.
+            // Arrange
             var pack = new FakeAssembly(Pack);
             var format = new FakeLocaleFileFormat();
             AddFile(pack, format, "Contoso.Widgets.Bars.he.fake", CreateToolbarSection("folder file"));

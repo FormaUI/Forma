@@ -2,7 +2,7 @@ namespace Forma.Tests.Resources;
 
 using Forma.Framework.Resources;
 
-/// <summary>A resource provider that claims one extension, standing in for a converting package.</summary>
+/// <summary>A resource provider that claims one extension.</summary>
 public sealed class FakeResourceProvider(string extension, Func<string, ResourceInfo> resolve) : IResourceProvider
 {
     /// <summary>How many times the provider was asked to resolve an address.</summary>

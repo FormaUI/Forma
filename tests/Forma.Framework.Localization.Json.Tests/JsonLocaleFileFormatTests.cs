@@ -66,7 +66,7 @@ public sealed class JsonLocaleFileFormatTests
     [Fact]
     public void Should_read_an_escaped_reserved_name_as_an_ordinary_translation()
     {
-        // Arrange — the names are interpreted as written, so once escaped they are text like any other.
+        // Arrange
         var file = Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$$localization": "a", "$$shared": "b", "$$tools": "c" }""");
 
         // Assert
@@ -92,7 +92,7 @@ public sealed class JsonLocaleFileFormatTests
     [InlineData("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$shared": { "$shared": { "Bold": "x" } } }""", "'$shared'")]
     public void Should_reject_a_section_nested_inside_the_shared_one(string content, string nested)
     {
-        // Act — the shared section holds translations alone, so a section inside it would otherwise vanish without a word.
+        // Act
         var thrown = Assert.Throws<LocaleFileException>(() => Read(content));
 
         // Assert
@@ -127,7 +127,7 @@ public sealed class JsonLocaleFileFormatTests
     [Fact]
     public void Should_unescape_a_doubled_dollar_in_a_key()
     {
-        // Arrange — at the top level and inside a section alike.
+        // Arrange
         var file = Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$$price": "מחיר", "Toolbar": { "$$price": "מחיר" } }""");
 
         // Assert

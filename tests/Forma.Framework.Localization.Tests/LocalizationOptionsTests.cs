@@ -7,7 +7,7 @@ public sealed class LocalizationOptionsTests
         [Fact]
         public void Should_lay_the_recorded_packs_before_the_named_ones_each_once()
         {
-            // Arrange — the application's build recorded the localization library, which the options also name, after a pack of their own.
+            // Arrange — the recorded pack is also among the named ones, after a pack of their own.
             using var loggerFactory = new FakeLoggerFactory();
             var recorded = typeof(LocalizationOptions).Assembly;
             var named = new FakeAssembly("Contoso.Pack");

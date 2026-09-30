@@ -2,7 +2,7 @@ namespace Forma.Tests.Localization;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>A format that hands back the file registered under a name, ignoring the stream.</summary>
+/// <summary>A locale file format that hands back the file registered under the name it is read under.</summary>
 public sealed class FakeLocaleFileFormat : ILocaleFileFormat
 {
     /// <summary>The files, each keyed by the name it is read under.</summary>

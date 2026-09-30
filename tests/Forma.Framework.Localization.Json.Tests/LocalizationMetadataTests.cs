@@ -30,7 +30,6 @@ public sealed class LocalizationMetadataTests
         Assert.Throws<LocalizationMetadataException>(() => strings["Save"]);
     }
 
-    // The major part is the whole compatibility decision, so it names both versions to be actionable.
     [Fact]
     public void Should_reject_a_schema_major_this_build_does_not_read()
     {
@@ -49,7 +48,6 @@ public sealed class LocalizationMetadataTests
         });
     }
 
-    // A minor bump is additive by definition, so a file from a newer toolchain still reads here.
     [Fact]
     public void Should_read_a_later_minor_schema_and_ignore_what_it_adds()
     {
@@ -106,7 +104,6 @@ public sealed class LocalizationMetadataTests
         Assert.DoesNotContain(all, localized => localized.Name == "$localization");
     }
 
-    // Every file names its own culture, so what a host calls primary never enters the check.
     [Fact]
     public void Should_read_a_file_whatever_the_host_calls_its_primary_culture()
     {

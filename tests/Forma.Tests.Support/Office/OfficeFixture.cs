@@ -4,7 +4,7 @@ using OfficeIMO.Excel;
 using OfficeIMO.PowerPoint;
 using OfficeIMO.Word;
 
-/// <summary>Builds real Office documents in memory, so conversion is exercised against the actual formats.</summary>
+/// <summary>Builds real Office documents as bytes.</summary>
 public static class OfficeFixture
 {
     /// <summary>The bytes of a Word document composed by <paramref name="compose"/>.</summary>

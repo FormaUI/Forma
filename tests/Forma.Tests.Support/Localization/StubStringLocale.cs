@@ -4,20 +4,20 @@ using System.Globalization;
 
 using Forma.Framework.Localization;
 
-/// <summary>An in-memory locale for exercising code that consumes the contract.</summary>
+/// <summary>A string locale over translations held in memory.</summary>
 /// <param name="translations">The translations to serve, keyed by the English source text.</param>
-/// <param name="searchedLocation">The location to report on every result.</param>
+/// <param name="searchedLocation">The searched location every result reports.</param>
 public sealed class StubStringLocale(IReadOnlyDictionary<string, string> translations, string? searchedLocation = null) : IStringLocale
 {
-    /// <summary>The translation for a key, falling back to the key itself.</summary>
+    /// <inheritdoc />
     public LocalizedText this[string name]
         => GetText(name, []);
 
-    /// <summary>The translation for a key, formatted with values paired to the key's holes by position.</summary>
+    /// <inheritdoc />
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
         => GetText(name, LocalizedFormat.Bind(name, values));
 
-    /// <summary>The localized format for a key, with every hole left open.</summary>
+    /// <inheritdoc />
     public LocalizedPattern Resolve(string name)
     {
         LocalizedArgument[] arguments = [];
@@ -25,11 +25,11 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
         return Resolve(name, arguments);
     }
 
-    /// <summary>The localized format for a key, with values paired to its holes by position.</summary>
+    /// <inheritdoc />
     public LocalizedPattern Resolve(string name, params object?[] values)
         => Resolve(name, LocalizedFormat.Bind(name, values));
 
-    /// <summary>Every translation the stub was given.</summary>
+    /// <inheritdoc />
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
     {
         foreach (var entry in translations)

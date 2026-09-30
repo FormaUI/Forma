@@ -244,7 +244,6 @@ public sealed class PluralExpressionEvaluatorTests
         Assert.Equal(format, evaluated);
     }
 
-    // Only a plural expression belongs to this evaluator, and dropping the rest would destroy them.
     [Fact]
     public void Should_leave_a_expression_named_for_something_else_alone()
     {

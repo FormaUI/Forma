@@ -2,7 +2,7 @@ namespace Forma.Tests.Blazor.Emojis;
 
 using Forma.Blazor.Features.Emojis;
 
-/// <summary>A sprite loader whose loads finish only when the test says so, each completed on the renderer so the surface awaiting it continues there.</summary>
+/// <summary>An emoji sprite loader whose loads stay pending until the test finishes them.</summary>
 public sealed class FakeEmojiSpriteLoader : IEmojiSpriteLoader
 {
     private readonly Dictionary<string, TaskCompletionSource<bool>> _pending = new(StringComparer.Ordinal);
@@ -27,7 +27,7 @@ public sealed class FakeEmojiSpriteLoader : IEmojiSpriteLoader
 
         if (!_pending.TryGetValue(sheet, out var completion))
         {
-            // A plain source runs the surface's continuation where the load is finished, so finishing it on the renderer has the surface act at once.
+            // Plain, so the awaiting continuation runs inline where the load is finished.
             completion = new TaskCompletionSource<bool>();
             _pending[sheet] = completion;
         }

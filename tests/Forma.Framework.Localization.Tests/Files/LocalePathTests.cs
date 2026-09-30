@@ -13,7 +13,7 @@ public sealed class LocalePathTests
     private const string CultureInHostDir = "$RootDir/$AnchorName/$Culture$Extension";
     private const string NamedInHostDir = "$RootDir/$ParentName/$CurrentName.$Culture$Extension";
 
-    // Every form a config file might name, the defaults among them, so the binder and matcher agree on each.
+    // The forms the binder and the matcher must agree on, the defaults among them.
     private static readonly string[] Forms = [Beside, Inside, NamedForAssembly, InParentsDir, NamedInOwnDir, CultureInOwnDir, CultureInHostDir, NamedInHostDir];
 
     private static readonly LocalePathValues Embedded = new("Contoso.Widgets", "Contoso.Widgets", "Contoso.Widgets", ".locales", "he", ".json");
@@ -211,7 +211,7 @@ public sealed class LocalePathTests
         [InlineData("i18n/strings", "Contoso.Widgets/Bars/i18n/strings/he.json", '/')]
         public void Should_not_read_the_locales_dir_as_a_segment_whatever_it_is_named(string localesDir, string name, char separator)
         {
-            // Arrange — a project may name its folder of locale files as a namespace segment could be named, and the folder still completes no name.
+            // Arrange
             var values = Embedded with { LocalesDir = localesDir };
 
             // Act

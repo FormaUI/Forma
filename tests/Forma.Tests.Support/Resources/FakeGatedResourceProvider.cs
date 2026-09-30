@@ -7,7 +7,7 @@ public sealed class FakeGatedResourceProvider : IResourceProvider
 {
     private readonly Dictionary<string, TaskCompletionSource<ResourceInfo?>> _pending = new(StringComparer.Ordinal);
 
-    /// <summary>Finishes the pending resolution for an address with the given resource, running the awaiting surface's continuation where it is finished.</summary>
+    /// <summary>Finishes the pending resolution of <paramref name="source"/> with <paramref name="resource"/>, running the awaiting continuation inline.</summary>
     public void Complete(string source, ResourceInfo resource)
         => _pending[source].SetResult(resource);
 

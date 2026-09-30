@@ -4,7 +4,7 @@ using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 
-/// <summary>An editor plugin standing in for a real one, for exercising a plugin or a context without a composer.</summary>
+/// <summary>A stub editor plugin that is always available.</summary>
 public sealed class StubEditorPlugin(string id = "rich-text", ComposerDocumentFormat? format = null) : IComposerEditorPlugin
 {
     /// <inheritdoc />

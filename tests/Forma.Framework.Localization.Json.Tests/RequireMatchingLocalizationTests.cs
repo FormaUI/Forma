@@ -79,7 +79,7 @@ public sealed class RequireMatchingLocalizationTests
     [Fact]
     public void Should_list_every_string_without_throwing()
     {
-        // Arrange — a survey reports what is there rather than demanding what is not.
+        // Arrange
         using var culture = new CultureScope("he");
         var strings = CreateLocale<Colocated>(require: true);
 

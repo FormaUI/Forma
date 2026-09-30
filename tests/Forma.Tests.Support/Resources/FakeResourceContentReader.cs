@@ -5,7 +5,7 @@ using System.Text;
 
 using Forma.Framework.Resources;
 
-/// <summary>Serves content held in memory, keyed by the address a test asks for.</summary>
+/// <summary>A resource content reader over content held in memory, keyed by address.</summary>
 public sealed class FakeResourceContentReader : IResourceContentReader
 {
     private readonly Dictionary<string, byte[]> _content = new(StringComparer.OrdinalIgnoreCase);
@@ -13,7 +13,7 @@ public sealed class FakeResourceContentReader : IResourceContentReader
     /// <summary>Whether a stream this reader handed out is still open.</summary>
     public bool HasOpenStream { get; private set; }
 
-    /// <summary>Whether streams this reader hands out refuse to seek, as a network response would.</summary>
+    /// <summary>Whether the streams this reader hands out can seek.</summary>
     public bool Seekable { get; init; } = true;
 
     /// <summary>Holds <paramref name="text"/> as UTF-8 bytes behind <paramref name="source"/>.</summary>

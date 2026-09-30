@@ -4,7 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.Resources;
 
-/// <summary>A file store that records what it was given, optionally failing a named file or refusing to delete.</summary>
+/// <summary>A file store that records the files it saves and deletes, and can fail one named file or refuse every delete.</summary>
 public sealed class FakeFileStore(string? failOn = null, bool deletes = true) : IFileStore
 {
     private readonly List<string> _deleted = [];
@@ -14,7 +14,7 @@ public sealed class FakeFileStore(string? failOn = null, bool deletes = true) : 
     /// <summary>The content read back from every file the store accepted, keyed by name.</summary>
     public Dictionary<string, string> Contents { get; } = [];
 
-    /// <summary>The sources the store actually removed, in the order it removed them.</summary>
+    /// <summary>The sources the store deleted, in the order it deleted them.</summary>
     public IReadOnlyList<string> Deleted
         => _deleted;
 

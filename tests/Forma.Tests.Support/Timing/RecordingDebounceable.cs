@@ -2,13 +2,13 @@ namespace Forma.Tests.Timing;
 
 using Forma.Framework.Timing;
 
-/// <summary>A debouncer that runs every action at once and records what it was asked, for tests about how a component debounces.</summary>
+/// <summary>A debouncer that runs every action at once and records what it was asked.</summary>
 public sealed class RecordingDebounceable : IDebounceable
 {
     /// <summary>The delay of every request, in order.</summary>
     public List<TimeSpan> Delays { get; } = [];
 
-    /// <summary>How many times a pending request was abandoned.</summary>
+    /// <summary>How many times the pending request was canceled.</summary>
     public int Cancellations { get; private set; }
 
     /// <inheritdoc />
