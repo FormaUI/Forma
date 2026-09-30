@@ -8,13 +8,13 @@ using Forma.Framework.Icons;
 using Forma.Framework.Plugins;
 using Forma.Framework.Toolbar;
 
-/// <summary>Contributes browsing the host's stored files, and inserting whichever one is chosen.</summary>
+/// <summary>The composer plugin that browses the host's stored files and inserts the one chosen.</summary>
 public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<ExplorerPluginOptions>
 {
     /// <summary>The command opening the stored files dialog.</summary>
     public const string BrowseCommand = "explorer.browse";
 
-    /// <summary>Options configuring what is browsed, taken in, and inserted.</summary>
+    /// <summary>The options configuring what the plugin browses, takes in, and inserts.</summary>
     public ExplorerPluginOptions Options { get; } = options ?? ExplorerPluginOptions.Default;
 
     /// <inheritdoc />

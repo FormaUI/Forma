@@ -8,7 +8,7 @@ using Forma.Framework.Resources.Office.Converters;
 
 using Ganss.Xss;
 
-/// <summary>Converts a Word, Excel or PowerPoint document into sanitized markup, so a viewer can render one it could not otherwise show.</summary>
+/// <summary>Converts a Word, Excel or PowerPoint document into sanitized markup a viewer can render.</summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
 public sealed class OfficeResourceProvider : IResourceProvider
 {
@@ -24,7 +24,6 @@ public sealed class OfficeResourceProvider : IResourceProvider
 
         _reader = reader;
 
-        // Every Office format is a ZIP underneath, so only the extension distinguishes them without opening the package.
         _convertersByExtension = new IOfficeConverter[]
         {
             new WordConverter(),
@@ -57,7 +56,7 @@ public sealed class OfficeResourceProvider : IResourceProvider
 
         await using (content.ConfigureAwait(false))
         {
-            // Open XML reads the package by seeking, which a reader seeing a network response cannot offer.
+            // Open XML reads the package by seeking.
             var buffered = content.CanSeek ? null : await BufferAsync(content, cancellationToken).ConfigureAwait(false);
             var seekable = buffered ?? content;
 
@@ -96,7 +95,7 @@ public sealed class OfficeResourceProvider : IResourceProvider
 
         sanitizer.AllowedSchemes.Add("data");
 
-        // Neither scheme can carry script, and a document routinely addresses a mailbox or a telephone.
+        // mailto and tel carry no script.
         sanitizer.AllowedSchemes.Add("mailto");
         sanitizer.AllowedSchemes.Add("tel");
 
@@ -105,7 +104,7 @@ public sealed class OfficeResourceProvider : IResourceProvider
         return sanitizer;
     }
 
-    // Conversion embeds images as data URLs, which is the only place one is ever legitimate here.
+    // A data URL is legitimate only as a converted image.
     private static void RejectDataUrlOutsideAnImage(object? sender, FilterUrlEventArgs args)
     {
         if (args.SanitizedUrl is not { } url || !url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))

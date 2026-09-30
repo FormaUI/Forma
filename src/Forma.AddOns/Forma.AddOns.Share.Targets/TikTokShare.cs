@@ -5,14 +5,14 @@ using System.Net.Http.Json;
 
 using Forma.Framework.Icons;
 
-/// <summary>Starts publishing a share item's video on the TikTok account the user connected; TikTok pulls the video from the resource's address.</summary>
-/// <param name="tokens">Answers the user's TikTok token.</param>
+/// <summary>Starts publishing a share item's video on the TikTok account the user connected.</summary>
+/// <param name="tokens">The source of the user's TikTok token.</param>
 /// <param name="http">The connection to post over, or null for one of the target's own.</param>
 public sealed class TikTokShare(IShareTokenSource tokens, HttpClient? http = null) : AccountShare("tiktok", "TikTok", Brand.TikTok, tokens, http)
 {
     private static readonly Uri PublishEndpoint = new("https://open.tiktokapis.com/v2/post/publish/video/init/");
 
-    /// <summary>TikTok pulls the video itself, so the item needs a resource living at a public address.</summary>
+    /// <inheritdoc />
     public override bool Supports(ShareItem item)
         => GetReachableSource(item) is not null;
 

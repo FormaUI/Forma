@@ -4,12 +4,12 @@ using System.Net.Http.Headers;
 
 using Forma.Framework.Icons;
 
-/// <summary>Uploads a share item's resource into the OneDrive of the account the user connected, through Microsoft Graph.</summary>
-/// <param name="tokens">Answers the user's Microsoft Graph token.</param>
+/// <summary>Uploads a share item's resource into the OneDrive of the account the user connected.</summary>
+/// <param name="tokens">The source of the user's Microsoft Graph token.</param>
 /// <param name="http">The connection to post over, or null for one of the target's own.</param>
 public sealed class OneDriveShare(IShareTokenSource tokens, HttpClient? http = null) : AccountShare("onedrive", "OneDrive", Glyph.CloudUpload, tokens, http)
 {
-    /// <summary>The upload carries the bytes, so the item needs a resource living at a public address to fetch them from.</summary>
+    /// <inheritdoc />
     public override bool Supports(ShareItem item)
         => GetReachableSource(item) is not null;
 

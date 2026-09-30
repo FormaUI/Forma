@@ -33,7 +33,6 @@ public sealed class TwemojiEmojiProviderTests
         var qualified = provider.GetArtwork("⚠\uFE0F");
 
         // Assert
-        // Both spellings name one emoji, so a pasted bare character still draws the shipped artwork.
         Assert.Multiple(
             () => Assert.IsType<EmojiSprite>(unqualified),
             () => Assert.Equal(qualified, unqualified));
@@ -46,7 +45,7 @@ public sealed class TwemojiEmojiProviderTests
         var provider = new TwemojiEmojiProvider();
 
         // Act
-        // The rainbow flag's selector sits inside the sequence, where appending one could never reach.
+        // The rainbow flag, whose presentation selector sits inside the sequence.
         var unqualified = provider.GetArtwork("\U0001F3F3\u200D\U0001F308");
         var qualified = provider.GetArtwork("\U0001F3F3\uFE0F\u200D\U0001F308");
 
@@ -63,7 +62,7 @@ public sealed class TwemojiEmojiProviderTests
         var provider = new TwemojiEmojiProvider();
 
         // Act
-        // One character, but a joining Unicode never defined, so no set holds it.
+        // A joined sequence Unicode never defined.
         var artwork = provider.GetArtwork("👨‍🥑");
 
         // Assert

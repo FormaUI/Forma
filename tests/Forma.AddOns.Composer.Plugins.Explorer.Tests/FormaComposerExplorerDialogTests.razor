@@ -200,8 +200,7 @@
         }
     }
 
-    // The whole seam with nothing stubbed: the plugin's command, the composer's shell, the explorer
-    // inside it, and the insertion arriving at the rich text editor as a canvas command.
+    // The plugin's command, the composer's shell, the explorer inside it and the insertion reaching the rich text editor, unstubbed.
     public sealed class ThroughTheComposer
     {
         private sealed class StubLibrary(params ResourceInfo[] resources) : ICatalogProvider
@@ -287,9 +286,6 @@
             Assert.Equal("/media/podium.png", insertion.Source);
             Assert.Empty(cut.FindAll(".forma-composer-dialog-form"));
         }
-
-        // Dismissal is not covered here: FormaDialog closes only when its own open state is set, and that
-        // is set by the JS call that shows the native dialog, which bUnit never runs. It needs a browser.
 
         [Fact]
         public void Should_say_there_is_nothing_to_browse_when_no_provider_is_registered()

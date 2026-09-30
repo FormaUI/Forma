@@ -94,7 +94,7 @@ public sealed class TwemojiEmojiCatalogTests
         var catalog = new TwemojiEmojiCatalog();
 
         // Act
-        // One character, but a joining Unicode never defined, so no catalog holds it.
+        // A joined sequence Unicode never defined.
         var found = catalog.TryGetByEmoji("👨‍🥑", out var info);
 
         // Assert

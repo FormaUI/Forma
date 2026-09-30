@@ -8,13 +8,13 @@ using Ganss.Xss;
 
 using Markdig;
 
-/// <summary>Converts a Markdown document into sanitized markup, so a viewer can render it rather than offer it for download.</summary>
+/// <summary>Converts a Markdown document into sanitized markup a viewer can render.</summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
 public sealed class MarkdownResourceProvider : IResourceProvider
 {
     private static readonly string[] Extensions = [".md", ".markdown"];
 
-    // Raw HTML is dropped at the parser as well as at the sanitizer, so an embedded tag never reaches either.
+    // Raw HTML is dropped at the parser as well as at the sanitizer.
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .DisableHtml()
@@ -79,7 +79,7 @@ public sealed class MarkdownResourceProvider : IResourceProvider
     {
         var sanitizer = new HtmlSanitizer();
 
-        // Neither scheme can carry script, and a document routinely addresses a mailbox or a telephone.
+        // mailto and tel carry no script.
         sanitizer.AllowedSchemes.Add("mailto");
         sanitizer.AllowedSchemes.Add("tel");
 

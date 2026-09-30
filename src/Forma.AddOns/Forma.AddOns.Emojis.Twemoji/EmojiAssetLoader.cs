@@ -7,13 +7,13 @@ using System.Text.Json.Serialization;
 
 using Forma.Framework.Emojis;
 
-/// <summary>Reads the emoji catalog this library embeds, shared by the default catalog and provider.</summary>
+/// <summary>Reads the emoji catalog this package embeds.</summary>
 internal static class EmojiAssetLoader
 {
-    /// <summary>The path each category's sprite sheet is served from.</summary>
+    /// <summary>The base path the groups' sprite sheets are served from.</summary>
     public const string SpriteBasePath = "_content/Forma.AddOns.Emojis.Twemoji/assets";
 
-    /// <summary>The categories, in the order the picker presents them.</summary>
+    /// <summary>The emoji groups, in presentation order.</summary>
     public static IReadOnlyList<EmojiGroup> Groups { get; } =
     [
         new() { Id = "smileys", Title = "Smileys & Emotion" },
@@ -35,11 +35,11 @@ internal static class EmojiAssetLoader
     public static bool IsKnownGroup(string groupId)
         => Groups.Any(group => string.Equals(group.Id, groupId, StringComparison.Ordinal));
 
-    /// <summary>Returns the emoji belonging to the named category, reading it on first use.</summary>
+    /// <summary>Returns the emoji of the group with this identifier.</summary>
     public static IReadOnlyList<EmojiAsset> LoadGroup(string groupId)
         => IsKnownGroup(groupId) ? Loaded.GetOrAdd(groupId, LoadGroupCore) : [];
 
-    /// <summary>Every emoji in the catalog, which reads every category.</summary>
+    /// <summary>Returns every emoji in the catalog.</summary>
     public static IReadOnlyList<EmojiAsset> LoadAll()
         => [.. Groups.SelectMany(group => LoadGroup(group.Id))];
 
@@ -68,14 +68,14 @@ internal static class EmojiAssetLoader
     }
 }
 
-/// <summary>One category's catalog as scripts/Get-TwemojiPack.ps1 writes it.</summary>
+/// <summary>One group's catalog as its embedded resource holds it.</summary>
 internal sealed record RawCatalog(
     [property: JsonPropertyName("version")] string Version,
     [property: JsonPropertyName("group")] string Group,
     [property: JsonPropertyName("chunkSize")] int ChunkSize,
     [property: JsonPropertyName("emoji")] IReadOnlyList<RawEmoji> Emoji);
 
-/// <summary>One catalog entry as scripts/Get-TwemojiPack.ps1 writes it.</summary>
+/// <summary>One catalog entry as the embedded resource holds it.</summary>
 internal sealed record RawEmoji(
     [property: JsonPropertyName("c")] string C,
     [property: JsonPropertyName("s")] string S,

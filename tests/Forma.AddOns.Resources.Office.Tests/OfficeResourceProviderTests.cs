@@ -117,7 +117,6 @@ public sealed class OfficeResourceProviderTests
         });
     }
 
-    // A heading is taken from the slide when it has one, so a titled slide never shows a generated name.
     [Fact]
     public async Task Should_prefer_the_slide_title_over_a_generated_heading()
     {
@@ -140,7 +139,6 @@ public sealed class OfficeResourceProviderTests
         });
     }
 
-    // A layout inserts a title placeholder whether or not the author fills it, so an empty one still needs naming.
     [Fact]
     public async Task Should_name_a_slide_whose_title_placeholder_is_empty()
     {
@@ -168,7 +166,6 @@ public sealed class OfficeResourceProviderTests
         });
     }
 
-    // Cell text is caller data, so it must reach the viewer as text rather than as markup.
     [Fact]
     public async Task Should_escape_markup_a_workbook_cell_contains()
     {
@@ -211,7 +208,6 @@ public sealed class OfficeResourceProviderTests
         });
     }
 
-    // Truncation is announced through this package's own resources so it follows the reader's culture.
     [Fact]
     public async Task Should_announce_a_truncated_sheet()
     {
@@ -254,7 +250,6 @@ public sealed class OfficeResourceProviderTests
             provider.ClaimedExtensions.Order(StringComparer.Ordinal));
     }
 
-    // A host with no reader registered for the address must degrade to the viewer's download link.
     [Fact]
     public async Task Should_return_nothing_when_the_reader_does_not_have_the_content()
     {
@@ -283,7 +278,6 @@ public sealed class OfficeResourceProviderTests
         Assert.Equal(content.Length, resource?.Size);
     }
 
-    // A reader backed by a network response cannot seek, which Open XML requires.
     [Fact]
     public async Task Should_convert_a_document_a_reader_could_not_seek()
     {
@@ -320,7 +314,6 @@ public sealed class OfficeResourceProviderTests
         Assert.False(reader.HasOpenStream);
     }
 
-    // The viewer renders this markup as trusted HTML, so a scripted link must not survive conversion.
     [Fact]
     public async Task Should_strip_a_link_carrying_a_script_scheme()
     {
@@ -361,7 +354,6 @@ public sealed class OfficeResourceProviderTests
         Assert.Contains("https://example.com/report", markup.Html, StringComparison.Ordinal);
     }
 
-    // A document routinely addresses a mailbox, and that scheme cannot carry script.
     [Fact]
     public async Task Should_keep_a_link_to_a_mailbox()
     {
@@ -414,7 +406,6 @@ public sealed class OfficeResourceProviderTests
         Assert.IsType<ArgumentNullException>(thrown);
     }
 
-    // The heading a slide cannot supply comes from this package's own resources, not a fixed language.
     [Theory]
     [InlineData("he", "\u05e9\u05e7\u05d5\u05e4\u05d9\u05ea 1")]
     [InlineData("es", "Diapositiva 1")]

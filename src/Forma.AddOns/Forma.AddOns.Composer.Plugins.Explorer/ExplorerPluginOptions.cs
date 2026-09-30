@@ -5,16 +5,16 @@ using Forma.Framework.Composer.Editing;
 /// <summary>Options configuring what the explorer plugin browses, takes in, and inserts.</summary>
 public sealed record ExplorerPluginOptions
 {
-    /// <summary>Which resources are listed, as <c>globs:*.jpg;*.pdf</c> or <c>contentType:image;video</c>; everything when null.</summary>
+    /// <summary>The kinds of resource listed, as <c>globs:*.jpg;*.pdf</c> or <c>contentType:image;video</c>, where null lists every resource.</summary>
     public string? AcceptedResourceKinds { get; set; }
 
-    /// <summary>Which resources may be added, in the same syntax, falling back to what is listed when null.</summary>
+    /// <summary>The kinds of resource that may be uploaded, in the same syntax, where null accepts the listed kinds.</summary>
     public string? AcceptedUploadKinds { get; set; }
 
-    /// <summary>Whether new files may be added to the library from the dialog.</summary>
+    /// <summary>Whether the dialog allows uploading new files.</summary>
     public bool AllowUpload { get; set; } = true;
 
-    /// <summary>How a chosen file the browser can render is put into the document.</summary>
+    /// <summary>The mode a chosen file the browser can render is inserted in.</summary>
     public MediaInsertMode InsertMode { get; set; } = MediaInsertMode.Embed;
 
     /// <summary>Default options for the explorer plugin.</summary>

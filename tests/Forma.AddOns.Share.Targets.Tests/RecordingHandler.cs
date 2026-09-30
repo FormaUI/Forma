@@ -2,7 +2,7 @@ namespace Forma.AddOns.Share.Targets.Tests;
 
 using System.Net;
 
-/// <summary>A message handler answering a fixed status while keeping the request and its body for assertions.</summary>
+/// <summary>A message handler that answers a fixed status and records the last request and its body.</summary>
 public sealed class RecordingHandler(HttpStatusCode status = HttpStatusCode.OK) : HttpMessageHandler
 {
     /// <summary>The request last sent through the handler.</summary>
@@ -11,7 +11,7 @@ public sealed class RecordingHandler(HttpStatusCode status = HttpStatusCode.OK) 
     /// <summary>The last request's body as text.</summary>
     public string? Body { get; private set; }
 
-    /// <summary>Addresses answered with content rather than the fixed status, keyed by absolute address.</summary>
+    /// <summary>The content answered to a GET of each absolute address.</summary>
     public Dictionary<string, byte[]> Downloads { get; } = [];
 
     /// <inheritdoc />

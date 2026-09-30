@@ -69,7 +69,7 @@ public sealed class LinkedInShare() : LinkShare("linkedin", "LinkedIn", Brand.Li
 /// <summary>Opens Pinterest's pin composer on a picture, pointed at its media.</summary>
 public sealed class PinterestShare() : LinkShare("pinterest", "Pinterest", Brand.Pinterest)
 {
-    /// <summary>A board pins media, so only a picture opens here.</summary>
+    /// <inheritdoc />
     public override string? GetAddress(ShareItem item)
     {
         ArgumentNullException.ThrowIfNull(item);

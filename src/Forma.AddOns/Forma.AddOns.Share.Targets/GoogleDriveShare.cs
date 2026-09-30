@@ -7,13 +7,13 @@ using System.Text.Json;
 using Forma.Framework.Icons;
 
 /// <summary>Uploads a share item's resource into the Google Drive of the account the user connected.</summary>
-/// <param name="tokens">Answers the user's Google Drive token.</param>
+/// <param name="tokens">The source of the user's Google Drive token.</param>
 /// <param name="http">The connection to post over, or null for one of the target's own.</param>
 public sealed class GoogleDriveShare(IShareTokenSource tokens, HttpClient? http = null) : AccountShare("google-drive", "Google Drive", Brand.GoogleDrive, tokens, http)
 {
     private static readonly Uri UploadEndpoint = new("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart");
 
-    /// <summary>The upload carries the bytes, so the item needs a resource living at a public address to fetch them from.</summary>
+    /// <inheritdoc />
     public override bool Supports(ShareItem item)
         => GetReachableSource(item) is not null;
 

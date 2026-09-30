@@ -7,10 +7,10 @@ using Forma.Framework.Localization;
 
 using OfficeIMO.Excel;
 
-/// <summary>Projects a workbook's used range into one table per sheet, since OfficeIMO ships no HTML converter for it.</summary>
+/// <summary>Converts an Excel workbook into markup, one table per sheet over its used range.</summary>
 internal sealed class WorkbookConverter(IStringLocale locale) : IOfficeConverter
 {
-    // A sheet addresses a million rows, so a runaway used range would otherwise produce unrenderable markup.
+    // The limits hold a runaway used range to markup a viewer can render.
     private const int MaxColumns = 50;
     private const int MaxRows = 500;
 
@@ -68,7 +68,6 @@ internal sealed class WorkbookConverter(IStringLocale locale) : IOfficeConverter
         var rowLimit = Math.Min(lastRow, firstRow + MaxRows - 1);
         var columnLimit = Math.Min(lastColumn, firstColumn + MaxColumns - 1);
 
-        // The used range's first row heads the table, which is what a sheet's own layout almost always means.
         markup.Append("<table><thead>");
         AppendRow(markup, sheet, firstRow, firstColumn, columnLimit, heading: true);
         markup.Append("</thead><tbody>");

@@ -1,6 +1,6 @@
 /* FormaComposerExplorerDialog — Stored files browser modal */
 
-/* The explorer fills whatever the modal gives it and scrolls inside, so the notice below it stays reachable. */
+/* A bounded height, so the explorer scrolls inside it and the notice below it stays reachable. */
 .forma-composer-explorer-library {
     block-size: min(55vh, 26rem);
     display: flex;

@@ -3,10 +3,10 @@ namespace Forma.Framework.Resources.Office.Converters;
 using OfficeIMO.Word;
 using OfficeIMO.Word.Html;
 
-/// <summary>Converts a Word document through the converter OfficeIMO ships for it.</summary>
+/// <summary>Converts a Word document into markup.</summary>
 internal sealed class WordConverter : IOfficeConverter
 {
-    // A style block would not survive sanitizing, so emitting one only inflates the markup.
+    // A style block would not survive sanitizing.
     private static readonly WordToHtmlOptions ConversionOptions = new()
     {
         EmbedImagesAsBase64 = true,

@@ -1,11 +1,11 @@
 namespace Forma.Framework.Resources.Office;
 
-/// <summary>Turns one Office format into markup a viewer can render.</summary>
+/// <summary>A converter from one Office format into markup.</summary>
 internal interface IOfficeConverter
 {
     /// <summary>The file extension this converter reads, including the dot.</summary>
     string Extension { get; }
 
-    /// <summary>The document's content as markup, which the caller sanitizes before rendering.</summary>
+    /// <summary>Converts the document's content into raw markup, ahead of sanitizing.</summary>
     ValueTask<string> ConvertAsync(Stream content, CancellationToken cancellationToken);
 }

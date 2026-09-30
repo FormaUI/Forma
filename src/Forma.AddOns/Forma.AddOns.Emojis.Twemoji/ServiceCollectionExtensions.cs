@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// <summary>Registers the emoji artwork and catalog this package ships.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers the emoji this package ships, unless a host has already registered its own.</summary>
+    /// <summary>Registers the emoji provider and catalog this package ships.</summary>
     /// <param name="services">The collection to register into.</param>
-    /// <returns>The same collection, for chaining.</returns>
+    /// <returns>The same collection.</returns>
     public static IServiceCollection AddFormaTwemojiPack(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Emojis;
 
-/// <summary>Reads the emoji this package ships, grouped by category and searchable by name and keyword.</summary>
+/// <summary>The catalog of the emoji this package ships, grouped by category and searchable by name and keyword.</summary>
 public sealed class TwemojiEmojiCatalog : IEmojiCatalog
 {
     private readonly Lazy<IReadOnlyDictionary<string, EmojiInfo>> _bySequence = new(BuildIndex);
@@ -44,7 +44,7 @@ public sealed class TwemojiEmojiCatalog : IEmojiCatalog
     private static bool Matches(EmojiInfo info, string term)
         => StartsAWord(info.Name, term) || info.Keywords.Any(keyword => StartsAWord(keyword, term));
 
-    // Matching the start of a word rather than any substring keeps "cat" off "intoxicated".
+    // Whether any space-separated word of the text starts with the term.
     private static bool StartsAWord(string text, string term)
     {
         var index = 0;

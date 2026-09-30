@@ -47,7 +47,6 @@ public sealed class MarkdownResourceProviderTests
         });
     }
 
-    // Tables come from the advanced extensions, which is what a reader expects of a Markdown file.
     [Fact]
     public async Task Should_convert_a_pipe_table()
     {
@@ -70,7 +69,6 @@ public sealed class MarkdownResourceProviderTests
         });
     }
 
-    // The viewer renders this markup as trusted HTML, so an embedded tag must never survive as one.
     [Theory]
     [InlineData("<script>alert(1)</script>", "<script")]
     [InlineData("<img src=x onerror=alert(1)>", "<img")]
@@ -130,7 +128,6 @@ public sealed class MarkdownResourceProviderTests
         Assert.Contains("https://example.com/docs", markup.Html, StringComparison.Ordinal);
     }
 
-    // A document routinely addresses a mailbox or a sibling file, neither of which is a scripting risk.
     [Theory]
     [InlineData("[Mail](mailto:team@example.com)", "mailto:team@example.com")]
     [InlineData("[Sibling](./other.md)", "./other.md")]
@@ -150,7 +147,6 @@ public sealed class MarkdownResourceProviderTests
         Assert.Contains(expected, markup.Html, StringComparison.Ordinal);
     }
 
-    // A host with no reader for the address must degrade to the viewer's download link.
     [Fact]
     public async Task Should_return_nothing_when_the_reader_does_not_have_the_content()
     {
@@ -179,7 +175,6 @@ public sealed class MarkdownResourceProviderTests
         Assert.Equal(System.Text.Encoding.UTF8.GetByteCount(Markdown), resource?.Size);
     }
 
-    // A file saved from an editor carries a byte order mark, which must not survive into the heading.
     [Fact]
     public async Task Should_read_a_document_that_begins_with_a_byte_order_mark()
     {

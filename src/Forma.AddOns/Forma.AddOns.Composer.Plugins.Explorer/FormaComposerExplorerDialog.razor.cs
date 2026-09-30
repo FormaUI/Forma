@@ -12,15 +12,15 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Dialog body for choosing one of the host's stored files and inserting it.</summary>
-/// <param name="itemsProvider">The host's registered provider, or null to offer no browsing.</param>
-/// <param name="store">The host's registered store, or null to offer no upload.</param>
+/// <summary>The dialog body for choosing one of the host's stored files to insert.</summary>
+/// <param name="itemsProvider">The host's registered items provider, where null means there is nothing to browse.</param>
+/// <param name="store">The host's registered file store, where null means there is nowhere to upload.</param>
 public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsProvider = null, IFileStore? store = null)
     : FormaComponentBase, IComposerInsertionDialog
 {
     private static readonly ExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true, MaxSelection = 1 };
 
-    /// <summary>What the dialog browses, takes in, and inserts.</summary>
+    /// <summary>The options configuring what the dialog browses, takes in, and inserts.</summary>
     [Parameter] public ExplorerPluginOptions Options { get; set; } = ExplorerPluginOptions.Default;
 
     private readonly ICatalogProvider? _registeredItemsProvider = itemsProvider;
@@ -59,8 +59,7 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
 
         ArgumentNullException.ThrowIfNull(Options);
 
-        // The explorer reloads whenever the provider it was handed is a different object, so everything
-        // passed to it is built once per distinct set of options rather than fresh on every render.
+        // The explorer reloads when handed a different provider object, so these are rebuilt only when the options change.
         if (!_optionsParameter.Update(Options))
         {
             return;
@@ -74,7 +73,6 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
 
         _itemOptions = ExplorerItemOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
 
-        // What may be added falls back to what is listed, so a caller naming one kind is not asked to name it twice.
         _constraints = new() { AcceptedResourceKinds = Options.AcceptedUploadKinds ?? Options.AcceptedResourceKinds };
     }
 
@@ -96,7 +94,6 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
 
         var kind = GetKind(chosen);
 
-        // Only what the browser can render answers to the embed modes; everything else is a link whatever the mode says.
         var renderable = kind is not "file";
         var embed = renderable && Options.InsertMode is MediaInsertMode.Embed or MediaInsertMode.Both;
         var link = !renderable || Options.InsertMode is MediaInsertMode.Link or MediaInsertMode.Both;
@@ -123,7 +120,7 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
         }
     }
 
-    // The explorer lists whatever its provider answers, so limiting what may be browsed means limiting the answer.
+    // The inner provider's items narrowed to the resources the filter accepts.
     private sealed class FilteredItems(ICatalogProvider inner, CatalogResourceFilter filter) : ICatalogProvider
     {
         public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
@@ -131,7 +128,7 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
             var page = await inner.GetItemsAsync(query, cancellationToken).ConfigureAwait(false);
             var accepted = page.Items.Where(item => item.Resource is { } resource && filter.Accepts(resource)).ToList();
 
-            // A count taken before filtering would page past the end, so it is dropped rather than reported wrongly.
+            // The inner total counts rejected items too, so it is kept only when the filter rejected none.
             return new CatalogPage(accepted, accepted.Count == page.Items.Count ? page.TotalCount : null);
         }
     }
