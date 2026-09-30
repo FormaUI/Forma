@@ -12,12 +12,12 @@ public record VideoResourceInfo : FileResourceInfo, IVisualResource, ITimedResou
     {
     }
 
-    /// <summary>How wide the video is in pixels.</summary>
+    /// <inheritdoc />
     public int? Width { get; init; }
 
-    /// <summary>How tall the video is in pixels.</summary>
+    /// <inheritdoc />
     public int? Height { get; init; }
 
-    /// <summary>How long the video runs for.</summary>
+    /// <inheritdoc />
     public TimeSpan? Duration { get; init; }
 }

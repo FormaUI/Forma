@@ -3,32 +3,30 @@ namespace Forma.Framework.Sanitization;
 using System.Buffers;
 using System.Text;
 
-/// <summary>
-/// Allowlist sanitizer covering the markup the built-in plugins produce, with no external dependency.
-/// Scans the document as spans in a single pass: an element, attribute or CSS declaration the
-/// <see cref="IMarkupPolicy"/> refuses is dropped, an element such as <c>script</c> or <c>style</c> is
-/// removed together with its content, an event handler attribute and an unsafe URL scheme are rejected
-/// outright, and every kept attribute value is re-escaped rather than passed through verbatim.
-/// </summary>
+/// <summary>An allowlist HTML sanitizer that applies an <see cref="IMarkupPolicy"/>.</summary>
+/// <remarks>
+/// Scans the document as spans in a single pass: an element, attribute or CSS declaration the policy
+/// refuses is dropped, an element whose content the policy refuses, such as <c>script</c> or <c>style</c>,
+/// is removed together with its content, an event handler attribute is always dropped, an address keeps
+/// only a URL the policy permits, and every kept attribute value is re-escaped.
+/// </remarks>
 public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
 {
-    // These are facts about HTML rather than choices a policy makes, so no host redefines them.
-
-    /// <summary>Elements that carry no closing tag.</summary>
+    /// <summary>The HTML void elements.</summary>
     private static readonly HashSet<string> VoidTags =
     [
         with(StringComparer.OrdinalIgnoreCase),
         "img", "hr", "br", "source", "col", "wbr"
     ];
 
-    /// <summary>Attributes whose value is an address, checked before the attribute is kept.</summary>
+    /// <summary>Attributes whose value is an address.</summary>
     private static readonly HashSet<string> UrlAttributes =
     [
         with(StringComparer.OrdinalIgnoreCase),
         "href", "src", "poster"
     ];
 
-    /// <summary>The characters an attribute value may not carry unescaped.</summary>
+    /// <summary>The characters escaped in an attribute value.</summary>
     private static readonly SearchValues<char> EscapeTargets = SearchValues.Create("&\"<>");
 
     private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> VoidTagLookup = VoidTags.GetAlternateLookup<ReadOnlySpan<char>>();
@@ -37,7 +35,7 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
     /// <inheritdoc />
     public IMarkupPolicy MarkupPolicy { get; }
 
-    /// <summary>Creates a sanitizer applying the markup policy the built-in plugins produce.</summary>
+    /// <summary>Creates a sanitizer applying <see cref="RichContentMarkupPolicy.Default"/>.</summary>
     public AllowlistHtmlSanitizer()
         : this(RichContentMarkupPolicy.Default)
     {
@@ -106,7 +104,6 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
 
         var name = source[tag.Name];
 
-        // Dropping only the tag would leave a script body or a style block behind as text.
         if (!tag.IsClosing && !MarkupPolicy.Allows(HtmlSubject.ElementContent, name, default, out _))
         {
             return SkipElementContent(source, afterTag, name);
@@ -151,7 +148,7 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
         var attributesStart = position;
         var quote = '\0';
 
-        // A '>' inside a quoted value does not end the tag, so the scan tracks the quote it is in.
+        // A '>' inside a quoted value belongs to the value.
         while (position < source.Length)
         {
             var current = source[position];
@@ -232,7 +229,6 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
             return;
         }
 
-        // A policy that normalizes nothing leaves the element written the way the document spelled it.
         var name = canonical is null ? raw : canonical.AsSpan();
         var isVoid = VoidTagLookup.Contains(name);
 
@@ -338,7 +334,7 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
         ReadOnlySpan<char> name,
         ReadOnlySpan<char> value)
     {
-        // An event handler is script by definition, whatever the element and whatever a policy would say.
+        // An event handler attribute is dropped whatever the policy permits.
         if (name.StartsWith("on", StringComparison.OrdinalIgnoreCase))
         {
             return;
@@ -381,7 +377,7 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
         output.Append('"');
     }
 
-    // A policy that normalizes nothing leaves the name written the way the document spelled it.
+    // A null canonical name keeps the document's spelling.
     private static void AppendName(StringBuilder output, ReadOnlySpan<char> name, string? canonical)
     {
         if (canonical is null)

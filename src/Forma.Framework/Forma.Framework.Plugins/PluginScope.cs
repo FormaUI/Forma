@@ -3,8 +3,8 @@ namespace Forma.Framework.Plugins;
 /// <summary>One owner's constructed plugins, and the disposal of whichever of them it created.</summary>
 /// <typeparam name="TPlugin">The plugin family this holds.</typeparam>
 /// <remarks>
-/// Being a plugin's owner says nothing about disposing it: the tree and the disposal are separate questions,
-/// so a plugin registered under another may still govern its own lifetime, and one at the root may not.
+/// Disposing the scope disposes each plugin whose <see cref="PluginInstance{TPlugin}.IsAutonomous"/> is false,
+/// at every depth of the registration tree.
 /// </remarks>
 public sealed class PluginScope<TPlugin> : IAsyncDisposable
     where TPlugin : class, IPlugin
@@ -17,7 +17,7 @@ public sealed class PluginScope<TPlugin> : IAsyncDisposable
         Plugins = [.. instances.Select(instance => instance.Plugin)];
     }
 
-    /// <summary>A scope holding nothing, fresh each time, since disposing one must not mark another disposed.</summary>
+    /// <summary>A new scope holding nothing.</summary>
     public static PluginScope<TPlugin> Empty => new([]);
 
     /// <summary>The plugins with what each was registered under and who governs its lifetime, in registration order.</summary>

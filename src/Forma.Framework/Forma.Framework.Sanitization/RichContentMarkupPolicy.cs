@@ -1,9 +1,9 @@
 namespace Forma.Framework.Sanitization;
 
-/// <summary>The markup the built-in plugins produce, and nothing else.</summary>
+/// <summary>A markup policy permitting rich content: formatted text, lists, links, media, tables and disclosures.</summary>
 public sealed class RichContentMarkupPolicy : IMarkupPolicy
 {
-    /// <summary>The policy a sanitizer applies when a host names none.</summary>
+    /// <summary>The shared instance of the policy.</summary>
     public static RichContentMarkupPolicy Default { get; } = new();
 
     private static readonly HashSet<string> Tags =
@@ -75,8 +75,7 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         "data:image/gif", "data:image/webp", "data:image/avif"
     ];
 
-    // The alternate lookups match a sliced name without copying it to a string first, and hand back the
-    // allowlist's own spelling, so the output is normalized without a ToLowerInvariant per name.
+    // Each lookup hands back the allowlist's own spelling as the canonical name.
     private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> TagLookup = Tags.GetAlternateLookup<ReadOnlySpan<char>>();
     private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> DiscardedLookup = DiscardedWithContent.GetAlternateLookup<ReadOnlySpan<char>>();
     private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> GlobalAttributeLookup = GlobalAttributes.GetAlternateLookup<ReadOnlySpan<char>>();
@@ -114,7 +113,7 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
             return true;
         }
 
-        // A data attribute carries authoring state rather than behavior, and keeps the spelling it was written with.
+        // Any data attribute is permitted in the spelling it was written with.
         canonical = null;
 
         return name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
@@ -127,7 +126,7 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
             return true;
         }
 
-        // A Forma custom property is the theme's own, and keeps the spelling it was written with.
+        // Any Forma custom property is permitted in the spelling it was written with.
         canonical = null;
 
         return property.StartsWith("--forma-", StringComparison.OrdinalIgnoreCase);
@@ -155,13 +154,12 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
             return false;
         }
 
-        // A bare '#' names no fragment, so it addresses nothing.
         if (trimmed[0] == '#')
         {
             return trimmed.Length > 1;
         }
 
-        // A path resolves against whatever origin the document is served from, so it names no scheme to judge.
+        // A relative path takes the document's own scheme.
         if (trimmed[0] == '/'
             || trimmed.StartsWith("./", StringComparison.Ordinal)
             || trimmed.StartsWith("../", StringComparison.Ordinal))
@@ -173,7 +171,6 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         {
             if (trimmed.StartsWith(scheme, StringComparison.OrdinalIgnoreCase))
             {
-                // A scheme with nothing behind it points nowhere, so "http://" is refused as firmly as "http".
                 return trimmed.Length > scheme.Length;
             }
         }
@@ -182,7 +179,7 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         {
             if (trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                // The bytes follow a comma; without one the URL declares a type and carries no picture.
+                // A data URL's bytes follow its comma.
                 return trimmed.IndexOf(',') > 0;
             }
         }

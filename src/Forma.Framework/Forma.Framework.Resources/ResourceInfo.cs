@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 [SuppressMessage("Design", "CA1056:URI properties should not be strings")]
 public record ResourceInfo
 {
-    /// <summary>Creates a resource nothing is known about beyond where it lives.</summary>
+    /// <summary>Creates a resource for the source address.</summary>
     public ResourceInfo(string source)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
@@ -19,10 +19,10 @@ public record ResourceInfo
     /// <summary>Where the resource lives, as the provider was given it.</summary>
     public string Source { get; }
 
-    /// <summary>The resource's own name, defaulting to the source's last segment.</summary>
+    /// <summary>The resource's own name.</summary>
     public string Name { get; init; }
 
-    /// <summary>How large the resource is in bytes; a folder counts what it holds.</summary>
+    /// <summary>How large the resource is in bytes, which for a folder is what it holds.</summary>
     public long? Size { get; init; }
 
     /// <summary>When the resource came into being.</summary>
@@ -31,7 +31,7 @@ public record ResourceInfo
     /// <summary>When the resource last changed.</summary>
     public DateTimeOffset? ModifiedAt { get; init; }
 
-    // A source is as likely to be a URL as a path, so the query and fragment are dropped before the last segment.
+    // A source can be a URL, so its query and fragment are dropped before the last segment is taken.
     private static string ResolveName(string source)
     {
         var path = source.Split('?', '#')[0].TrimEnd('/', '\\');

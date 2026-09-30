@@ -3,7 +3,7 @@ namespace Forma.Framework.Css;
 /// <summary>The unit a <see cref="CssLength"/> is measured in.</summary>
 public enum CssLengthUnit
 {
-    /// <summary>The width of the font's zero glyph, which sizes a field by the characters it holds.</summary>
+    /// <summary>The width of the font's zero glyph.</summary>
     Ch,
 
     /// <summary>Relative to the element's own font size.</summary>

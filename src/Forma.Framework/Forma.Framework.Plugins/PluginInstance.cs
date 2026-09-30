@@ -11,6 +11,6 @@ public sealed class PluginInstance<TPlugin>
     /// <summary>What this plugin was registered under, or null at the root.</summary>
     public PluginInstance<TPlugin>? Owner { get; init; }
 
-    /// <summary>Whether the plugin's lifetime is managed independently of the scope, so the scope leaves it undisposed.</summary>
+    /// <summary>Whether the plugin's lifetime is managed outside the scope.</summary>
     public bool IsAutonomous { get; init; }
 }

@@ -9,11 +9,11 @@ public sealed class UploadBatch
     private long _startTimestamp;
     private TimeSpan? _duration;
 
-    /// <summary>The files in the set, in the order they upload.</summary>
+    /// <summary>The files in the batch, in the order they upload.</summary>
     public IReadOnlyList<UploadFile> Files
         => _files;
 
-    /// <summary>How many files the set holds.</summary>
+    /// <summary>How many files the batch holds.</summary>
     public int Count
         => _files.Count;
 
@@ -25,7 +25,7 @@ public sealed class UploadBatch
     public bool HasPending
         => _files.Exists(file => file.State == UploadState.Pending);
 
-    /// <summary>How many files have begun, wherever they ended up.</summary>
+    /// <summary>How many files have started.</summary>
     public int StartedCount
         => _files.Count(file => file.State > UploadState.Pending);
 
@@ -33,11 +33,11 @@ public sealed class UploadBatch
     public int CompletedCount
         => _files.Count(file => file.State == UploadState.Completed);
 
-    /// <summary>How many bytes the whole set holds.</summary>
+    /// <summary>How many bytes the whole batch holds.</summary>
     public long TotalBytes
         => _files.Sum(file => file.TotalBytes);
 
-    /// <summary>How many of the set's bytes have reached the store.</summary>
+    /// <summary>How many of the batch's bytes have reached the store.</summary>
     public long BytesTransferred
         => _files.Sum(file => file.BytesTransferred);
 
@@ -45,15 +45,15 @@ public sealed class UploadBatch
     public TimeSpan Elapsed
         => _duration ?? (_startTimestamp == 0 ? TimeSpan.Zero : Stopwatch.GetElapsedTime(_startTimestamp));
 
-    /// <summary>How fast the set's bytes are moving, in bytes per second.</summary>
+    /// <summary>How fast the batch's bytes are moving, in bytes per second.</summary>
     public double BytesPerSecond
         => Elapsed.TotalSeconds > 0 ? BytesTransferred / Elapsed.TotalSeconds : 0;
 
-    /// <summary>How long the rest of the set needs at the current rate, or null while that cannot be said.</summary>
+    /// <summary>How long the rest of the batch needs at the current rate.</summary>
     public TimeSpan? EstimatedTimeRemaining
         => TransferTimeEstimator.EstimateRemainingTime(BytesTransferred, TotalBytes, Elapsed);
 
-    /// <summary>Empties the set and stops its clock, ready for the next run.</summary>
+    /// <summary>Empties the batch and resets its clock.</summary>
     public void Clear()
     {
         _files.Clear();
@@ -72,7 +72,7 @@ public sealed class UploadBatch
         _duration = null;
     }
 
-    /// <summary>Stops the run's clock, freezing what it read.</summary>
+    /// <summary>Stops the run's clock.</summary>
     public void EndUpload()
         => _duration = _startTimestamp == 0 ? TimeSpan.Zero : Stopwatch.GetElapsedTime(_startTimestamp);
 
@@ -80,7 +80,8 @@ public sealed class UploadBatch
     public void UpdateFileProgress(int index, int percent, long transferred)
         => _files[index] = _files[index] with { ProgressPercentage = percent, BytesTransferred = transferred };
 
-    /// <summary>Moves one file to a state, starting its clock on entry to uploading and freezing it on leaving.</summary>
+    /// <summary>Moves one file to a state.</summary>
+    /// <remarks>Entering <see cref="UploadState.Uploading"/> starts the file's clock, and a later state stops it.</remarks>
     public void SetFileState(int index, UploadState state, int? percent = null)
     {
         var file = _files[index];

@@ -1,6 +1,6 @@
 namespace Forma.Framework.Resources.Extensions;
 
-/// <summary>Writes a resource's measurements for a reader, which the resource itself does not carry.</summary>
+/// <summary>Writes a resource's measurements for a reader.</summary>
 public static class ResourceInfoExtensions
 {
     extension(ResourceInfo resource)

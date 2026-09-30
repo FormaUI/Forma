@@ -12,9 +12,9 @@ public record ImageResourceInfo : FileResourceInfo, IVisualResource
     {
     }
 
-    /// <summary>How wide the image is in pixels.</summary>
+    /// <inheritdoc />
     public int? Width { get; init; }
 
-    /// <summary>How tall the image is in pixels.</summary>
+    /// <inheritdoc />
     public int? Height { get; init; }
 }

@@ -2,7 +2,7 @@ namespace Forma.Framework.Resources;
 
 using System.Diagnostics.CodeAnalysis;
 
-/// <summary>A resource that holds content, of a type nothing has narrowed further.</summary>
+/// <summary>A resource that holds content.</summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
 public record FileResourceInfo : ResourceInfo
 {
@@ -15,7 +15,7 @@ public record FileResourceInfo : ResourceInfo
     /// <summary>The resource's media type, as a browser would be told it.</summary>
     public string? ContentType { get; init; }
 
-    /// <summary>The name's extension, including the dot, or empty when it has none; compare it case-insensitively.</summary>
+    /// <summary>The name's extension, including the dot.</summary>
     public string Extension
         => Path.GetExtension(Name);
 }

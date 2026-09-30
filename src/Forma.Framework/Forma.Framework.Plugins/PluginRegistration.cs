@@ -8,13 +8,13 @@ internal sealed class PluginRegistration<TPlugin>
     /// <summary>The plugin to create.</summary>
     public required Type PluginType { get; init; }
 
-    /// <summary>The options record the plugin takes, or null when it takes none.</summary>
+    /// <summary>The options record the plugin takes.</summary>
     public Type? OptionsType { get; init; }
 
-    /// <summary>Fills a freshly created options record, or null when the registration configured none.</summary>
+    /// <summary>Fills a freshly created options record.</summary>
     public Action<object>? Configure { get; init; }
 
-    /// <summary>Creates the plugin itself, or null to build it from its constructor.</summary>
+    /// <summary>Creates the plugin itself, where null builds it from its constructor.</summary>
     public Func<IServiceProvider, TPlugin>? Factory { get; init; }
 
     /// <summary>The registration this one sits under, or null at the root.</summary>

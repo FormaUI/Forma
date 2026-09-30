@@ -3,9 +3,11 @@ namespace Forma.Framework.Files;
 using System.Diagnostics;
 
 /// <summary>One file moving into a store, with how far its transfer has come.</summary>
+/// <param name="Name">The file's name.</param>
+/// <param name="TotalBytes">How many bytes the file holds.</param>
 public sealed record UploadFile(string Name, long TotalBytes)
 {
-    /// <summary>How long the transfer ran, once it is no longer running.</summary>
+    /// <summary>How long the finished transfer ran.</summary>
     public TimeSpan? Duration { get; init; }
 
     /// <summary>How much of the file has reached the store, as a whole percentage.</summary>
@@ -28,7 +30,7 @@ public sealed record UploadFile(string Name, long TotalBytes)
     public double BytesPerSecond
         => Elapsed.TotalSeconds > 0 ? BytesTransferred / Elapsed.TotalSeconds : 0;
 
-    /// <summary>How long the rest of the file needs at the current rate, or null while that cannot be said.</summary>
+    /// <summary>How long the rest of the file needs at the current rate.</summary>
     public TimeSpan? EstimatedTimeRemaining
         => TransferTimeEstimator.EstimateRemainingTime(BytesTransferred, TotalBytes, Elapsed);
 }

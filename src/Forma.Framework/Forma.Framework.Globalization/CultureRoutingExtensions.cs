@@ -6,11 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 /// <summary>Registers culture routing and adds it to the request pipeline.</summary>
 public static class CultureRoutingExtensions
 {
-    /// <summary>Validates <paramref name="options"/> and registers the culture registry.</summary>
+    /// <summary>Registers the culture router over <paramref name="options"/>.</summary>
     public static IServiceCollection AddCultureRouting(this IServiceCollection services, CultureRouterOptions options)
         => services.AddSingleton(new CultureRouter(options));
 
-    /// <summary>Adds culture routing to the pipeline, before routing.</summary>
+    /// <summary>Adds the culture routing middleware to the request pipeline.</summary>
     public static IApplicationBuilder UseCultureRouting(this IApplicationBuilder app)
         => app.UseMiddleware<CultureRoutingMiddleware>();
 }

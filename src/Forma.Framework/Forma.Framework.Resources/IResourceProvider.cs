@@ -2,7 +2,7 @@ namespace Forma.Framework.Resources;
 
 using System.Diagnostics.CodeAnalysis;
 
-/// <summary>Resolves a source address into the resource it names, or null when the address is not its own.</summary>
+/// <summary>Resolves a source address into the resource it names.</summary>
 public interface IResourceProvider
 {
     /// <summary>The resource this address names, or null when another provider owns it.</summary>

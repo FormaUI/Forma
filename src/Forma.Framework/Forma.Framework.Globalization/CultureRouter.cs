@@ -6,13 +6,13 @@ using System.Text.RegularExpressions;
 
 using Microsoft.AspNetCore.Http;
 
-/// <summary>The validated cultures an application serves, and the URLs addressing them.</summary>
+/// <summary>The cultures an application serves, and the URLs addressing them.</summary>
 public sealed partial class CultureRouter
 {
     private readonly Dictionary<string, CultureRoute> _routesByToken = [with(StringComparer.OrdinalIgnoreCase)];
     private readonly CulturePrefix _prefix;
 
-    /// <summary>Validates <paramref name="options"/> and builds the token lookup.</summary>
+    /// <summary>Creates a router over the cultures <paramref name="options"/> registers.</summary>
     public CultureRouter(CultureRouterOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -41,7 +41,7 @@ public sealed partial class CultureRouter
             ?? throw new ArgumentException($"DefaultCulture '{options.DefaultCulture}' is not the token of any registered culture.", nameof(options));
     }
 
-    /// <summary>The route whose culture is currently in effect, falling back to <see cref="DefaultRoute"/>.</summary>
+    /// <summary>The route whose culture is currently in effect.</summary>
     public CultureRoute CurrentRoute
     {
         get
@@ -58,12 +58,11 @@ public sealed partial class CultureRouter
     /// <summary>Every culture the application serves, in registration order.</summary>
     public IReadOnlyList<CultureRoute> Routes { get; }
 
-    // Google supports only ISO 639-1 languages with an optional ISO 15924 script and ISO 3166-1
-    // alpha-2 region, so a UN M.49 tag such as es-419 needs an explicit hreflang standing in for it.
+    // Google reads an ISO 639-1 language with an optional ISO 15924 script and ISO 3166-1 alpha-2 region.
     [GeneratedRegex("^[a-z]{2}(-[a-z]{4})?(-[a-z]{2})?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex HrefLangPattern { get; }
 
-    /// <summary>The path addressing <paramref name="route"/>, stripping any culture segment already in <paramref name="path"/>.</summary>
+    /// <summary>The path <paramref name="path"/> in the culture of <paramref name="route"/>.</summary>
     public PathString GetPath(CultureRoute route, PathString path)
     {
         ArgumentNullException.ThrowIfNull(route);
@@ -72,7 +71,7 @@ public sealed partial class CultureRouter
         return Prefix(route, StripToken(path));
     }
 
-    /// <summary>The relative URL addressing <paramref name="route"/> for <paramref name="relativeUrl"/>, query included.</summary>
+    /// <summary>The relative URL <paramref name="relativeUrl"/> in the culture of <paramref name="route"/>, query included.</summary>
     [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
     [SuppressMessage("Design", "CA1055:URI return values should not be strings")]
     public string GetUrl(CultureRoute route, string relativeUrl)

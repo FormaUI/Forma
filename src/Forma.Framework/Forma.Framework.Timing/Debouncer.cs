@@ -1,7 +1,7 @@
 namespace Forma.Framework.Timing;
 
-/// <summary>A debouncer measuring its delays on a clock, the system's unless another is given.</summary>
-/// <remarks>The action runs where the delay elapsed, not where it was requested. A canceled action's <see cref="OperationCanceledException"/> completes the request quietly.</remarks>
+/// <summary>A debouncer that measures its delays on a clock.</summary>
+/// <remarks>The action runs on the thread the delay elapses on, and an <see cref="OperationCanceledException"/> it throws completes the request.</remarks>
 public sealed class Debouncer : IDebounceable
 {
     private CancellationTokenSource? _pending;
@@ -25,7 +25,7 @@ public sealed class Debouncer : IDebounceable
         {
             await Task.Delay(delay, Clock, token).ConfigureAwait(false);
 
-            // A request canceled or superseded while its delay elapsed does not run.
+            // Only a request still pending once its delay elapses runs.
             if (!ReferenceEquals(_pending, pending))
             {
                 return;

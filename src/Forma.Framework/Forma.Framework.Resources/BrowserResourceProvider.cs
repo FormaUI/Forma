@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
 public sealed class BrowserResourceProvider : IResourceProvider
 {
-    // Only what a browser renders on its own; anything else is left to a converting provider.
+    // The media types a browser renders on its own.
     private static readonly Dictionary<string, string> ContentTypesByExtension = new(StringComparer.OrdinalIgnoreCase)
     {
         [".apng"] = "image/apng",

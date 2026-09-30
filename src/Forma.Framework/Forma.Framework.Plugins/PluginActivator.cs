@@ -10,8 +10,7 @@ internal static class PluginActivator
         IServiceProvider services)
         where TPlugin : class, IPlugin
     {
-        // Keyed by registration rather than by type, because the same plugin registered in two places is
-        // two plugins: one per place, each with its own options.
+        // The same plugin registered in two places is two plugins, each with its own options.
         var built = new Dictionary<PluginRegistration<TPlugin>, PluginInstance<TPlugin>>();
         var underway = new HashSet<PluginRegistration<TPlugin>>();
 
@@ -20,7 +19,6 @@ internal static class PluginActivator
             Build(registration, registrations, services, built, underway);
         }
 
-        // Registration order is the order an owner lays its plugins out in, so the scope keeps it.
         return new PluginScope<TPlugin>([.. registrations.Select(registration => built[registration])]);
     }
 
@@ -84,7 +82,7 @@ internal static class PluginActivator
         HashSet<PluginRegistration<TPlugin>> underway)
         where TPlugin : class, IPlugin
     {
-        // A plugin registered beside this one, so everything naming the same one is handed the single instance of it.
+        // A plugin registered beside this one is one instance, shared by everything that takes it.
         if (GetSupplier(parameter.ParameterType, registration, registrations) is { } supplier)
         {
             return Build(supplier, registrations, services, built, underway).Plugin;
@@ -119,8 +117,7 @@ internal static class PluginActivator
         IReadOnlyList<PluginRegistration<TPlugin>> registrations)
         where TPlugin : class, IPlugin
     {
-        // What this one sits under answers first, so a plugin taking a contract two owners implement
-        // is handed the owner it belongs to rather than whichever of them was registered first.
+        // The nearest owner implementing the contract answers before the first registration that does.
         for (var owner = registration.Owner; owner is not null; owner = owner.Owner)
         {
             if (parameterType.IsAssignableFrom(owner.PluginType))

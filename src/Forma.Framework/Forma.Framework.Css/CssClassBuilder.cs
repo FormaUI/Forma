@@ -9,7 +9,7 @@ public sealed class CssClassBuilder
     public bool IsEmpty
         => _classes.Count == 0;
 
-    /// <summary>Adds a class; a blank one adds nothing.</summary>
+    /// <summary>Adds a class.</summary>
     public CssClassBuilder Add(string? className)
     {
         if (!string.IsNullOrWhiteSpace(className))
@@ -28,7 +28,7 @@ public sealed class CssClassBuilder
     public void Clear()
         => _classes.Clear();
 
-    /// <summary>The classes as one attribute value, separated by spaces; empty when none was added.</summary>
+    /// <inheritdoc />
     public override string ToString()
         => string.Join(' ', _classes);
 

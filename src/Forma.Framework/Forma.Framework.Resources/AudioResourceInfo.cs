@@ -12,6 +12,6 @@ public record AudioResourceInfo : FileResourceInfo, ITimedResource
     {
     }
 
-    /// <summary>How long the audio runs for.</summary>
+    /// <inheritdoc />
     public TimeSpan? Duration { get; init; }
 }

@@ -13,7 +13,7 @@ public sealed record CultureRoute
     /// <summary>The culture applied to a request that selects this route.</summary>
     public required CultureInfo Culture { get; init; }
 
-    /// <summary>The value emitted in hreflang annotations; defaults to <see cref="Token"/>.</summary>
+    /// <summary>The value emitted in hreflang annotations.</summary>
     public string HrefLang
     {
         get => _hrefLang ?? Token;

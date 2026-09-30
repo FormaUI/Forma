@@ -6,6 +6,6 @@ public enum CulturePrefix
     /// <summary>Every culture is addressed by a token, the default included.</summary>
     Always,
 
-    /// <summary>The default culture is addressed without a token; every other culture carries one.</summary>
+    /// <summary>Every culture except the default is addressed by a token.</summary>
     ExceptDefault
 }

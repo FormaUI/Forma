@@ -3,8 +3,7 @@ namespace Forma.Framework.Plugins;
 /// <summary>What one owner registers: its plugins in order, the defaults it falls back on, and what each of them registers in turn.</summary>
 /// <typeparam name="TPlugin">The plugin family this registers.</typeparam>
 /// <remarks>
-/// A registry records what to create rather than what was created, so one description serves every owner that
-/// activates it and no two of them share a plugin.
+/// A registry holds registrations, and each <see cref="Activate"/> builds its own plugins from them.
 /// </remarks>
 public sealed class PluginRegistry<TPlugin>
     where TPlugin : class, IPlugin
@@ -18,7 +17,7 @@ public sealed class PluginRegistry<TPlugin>
     private readonly List<PluginRegistration<TPlugin>> _defaults = [];
     private readonly PluginRegistration<TPlugin>? _owner;
 
-    /// <summary>Creates a registry for plugins registered under nothing.</summary>
+    /// <summary>Creates a root registry.</summary>
     public PluginRegistry()
     {
     }
@@ -51,11 +50,11 @@ public sealed class PluginRegistry<TPlugin>
         return Record(typeof(TImplementation), typeof(TOptions), options => configure((TOptions)options), factory: null, children);
     }
 
-    /// <summary>Registers a plugin the given factory creates rather than one built from its constructor.</summary>
+    /// <summary>Registers a plugin the given factory creates.</summary>
     /// <typeparam name="TImplementation">The plugin the factory creates.</typeparam>
     /// <param name="factory">Creates the plugin for one owner, from the host's services.</param>
     /// <param name="children">Registers the plugins that sit under this one.</param>
-    /// <remarks>What a factory creates is left undisposed, because a factory answering one instance to every owner is the host's to govern.</remarks>
+    /// <remarks>What a factory creates is autonomous, and the host disposes it.</remarks>
     public PluginRegistry<TPlugin> Add<TImplementation>(
         Func<IServiceProvider, TImplementation> factory,
         Action<PluginRegistry<TPlugin>>? children = null)
@@ -66,7 +65,7 @@ public sealed class PluginRegistry<TPlugin>
         return Record(typeof(TImplementation), optionsType: null, configure: null, services => factory(services), children);
     }
 
-    /// <summary>Registers a plugin unless this owner registers one of its own.</summary>
+    /// <summary>Registers a plugin to fall back on.</summary>
     /// <typeparam name="TImplementation">The plugin to fall back on.</typeparam>
     public PluginRegistry<TPlugin> TryAdd<TImplementation>()
         where TImplementation : class, TPlugin
@@ -79,8 +78,8 @@ public sealed class PluginRegistry<TPlugin>
         return this;
     }
 
-    /// <summary>Builds this registry's plugins for one owner, which disposes the scope when it is done with them.</summary>
-    /// <param name="services">The host's services, which stand in for whatever a constructor asks for and no registered plugin supplies.</param>
+    /// <summary>Builds this registry's plugins for one owner.</summary>
+    /// <param name="services">The host's services the plugins' constructors resolve from.</param>
     /// <exception cref="InvalidOperationException">A plugin takes something nothing can supply, or takes a plugin that takes it back.</exception>
     public PluginScope<TPlugin> Activate(IServiceProvider services)
     {
@@ -127,7 +126,7 @@ public sealed class PluginRegistry<TPlugin>
 
         var standing = _registered.FindIndex(held => held.Registration.PluginType == pluginType);
 
-        // Replaced where it stood rather than moved to the end, so re-registering one plugin leaves the rest in place.
+        // Re-registering a plugin replaces it in place.
         if (standing >= 0)
         {
             _registered[standing] = entry;

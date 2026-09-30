@@ -9,7 +9,7 @@ public sealed class CssStyleBuilder
     public bool IsEmpty
         => _declarations.Count == 0;
 
-    /// <summary>Adds a declaration for a property; a blank value adds nothing.</summary>
+    /// <summary>Adds a declaration for a property.</summary>
     public CssStyleBuilder Add(string property, string? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(property);
@@ -26,11 +26,11 @@ public sealed class CssStyleBuilder
     public CssStyleBuilder Add(string property, string? value, bool condition)
         => condition ? Add(property, value) : this;
 
-    /// <summary>Adds a declaration for a property measured as a length; no length adds nothing.</summary>
+    /// <summary>Adds a declaration for a property measured as a length.</summary>
     public CssStyleBuilder Add(string property, CssLength? length)
         => Add(property, length?.ToString());
 
-    /// <summary>Adds declarations written as CSS text, each terminated; blank text adds nothing.</summary>
+    /// <summary>Adds declarations written as CSS text.</summary>
     public CssStyleBuilder Add(string? declarations)
     {
         if (string.IsNullOrWhiteSpace(declarations))
@@ -52,7 +52,7 @@ public sealed class CssStyleBuilder
     public void Clear()
         => _declarations.Clear();
 
-    /// <summary>The declarations as one attribute value, each terminated and separated by spaces; empty when none was added.</summary>
+    /// <inheritdoc />
     public override string ToString()
         => string.Join(' ', _declarations);
 

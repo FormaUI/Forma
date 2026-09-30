@@ -48,7 +48,7 @@ public readonly record struct CssLength
     public static CssLength FromRem(double value)
         => Create(value, CssLengthUnit.Rem);
 
-    /// <summary>Renders the length as a CSS value such as <c>20rem</c> or <c>50%</c>.</summary>
+    /// <inheritdoc />
     public override string ToString()
         => string.Create(CultureInfo.InvariantCulture, $"{Value.ToString("0.####", CultureInfo.InvariantCulture)}{Suffix}");
 

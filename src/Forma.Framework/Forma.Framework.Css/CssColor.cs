@@ -73,7 +73,7 @@ public readonly record struct CssColor
             CultureInfo.InvariantCulture,
             $"rgba({Red}, {Green}, {Blue}, {Alpha.ToString("0.####", CultureInfo.InvariantCulture)})");
 
-    /// <summary>Renders the color as the shortest CSS value that preserves it.</summary>
+    /// <inheritdoc />
     public override string ToString()
         => IsOpaque ? ToHexString() : ToRgbaString();
 }

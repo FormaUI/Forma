@@ -6,6 +6,6 @@ public interface INotifyStateChanged
     /// <summary>Registers a callback invoked on each state change.</summary>
     void Subscribe(Func<Task> callback);
 
-    /// <summary>Removes a previously registered callback.</summary>
+    /// <summary>Removes a registered callback.</summary>
     void Unsubscribe(Func<Task> callback);
 }

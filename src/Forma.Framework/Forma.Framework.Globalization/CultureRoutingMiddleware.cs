@@ -28,7 +28,7 @@ public sealed class CultureRoutingMiddleware
         _router = router;
     }
 
-    /// <summary>Applies the request culture, canonicalises the URL, and forwards a culture-free path.</summary>
+    /// <summary>Applies the request culture, canonicalizes the URL, and forwards a culture-free path.</summary>
     public Task InvokeAsync(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -45,8 +45,7 @@ public sealed class CultureRoutingMiddleware
         var match = _router.Match(requested);
         var isDocument = IsDocument(requested);
 
-        // A framework endpoint such as /_blazor carries no culture segment, and the interactive
-        // circuit it opens inherits this request's culture, so the stored one stands in for it.
+        // A framework endpoint such as /_blazor takes the stored culture, which its interactive circuit inherits.
         var route = isDocument ? match.Route : GetStoredRoute(context) ?? match.Route;
 
         ApplyCulture(context, route);
@@ -74,12 +73,11 @@ public sealed class CultureRoutingMiddleware
 
         context.Response.Headers.ContentLanguage = route.Culture.Name;
 
-        // Blazor resolves the interactive circuit's culture from this feature, not from CultureInfo.Current*.
+        // Blazor resolves the interactive circuit's culture from this feature.
         context.Features.Set<IRequestCultureFeature>(
             new RequestCultureFeature(new RequestCulture(route.Culture, route.Culture), provider: null));
     }
 
-    // Framework endpoints and files carrying an extension are neither canonicalised nor given a cookie.
     private static bool IsDocument(PathString path)
     {
         var value = path.Value;

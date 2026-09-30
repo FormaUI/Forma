@@ -1,6 +1,6 @@
 namespace Forma.Framework.Events;
 
-/// <summary>Maintains a list of async callbacks and invokes them when notified.</summary>
+/// <summary>The subscribed callbacks of an object whose state changes, invoked on each notification.</summary>
 public sealed class StateNotifier : INotifyStateChanged
 {
     private readonly List<Func<Task>> _subscribers = [];
@@ -15,11 +15,11 @@ public sealed class StateNotifier : INotifyStateChanged
         }
     }
 
-    /// <summary>Registers a callback invoked on each notification.</summary>
+    /// <inheritdoc />
     public void Subscribe(Func<Task> callback)
         => _subscribers.Add(callback);
 
-    /// <summary>Removes a previously registered callback.</summary>
+    /// <inheritdoc />
     public void Unsubscribe(Func<Task> callback)
         => _subscribers.Remove(callback);
 }
