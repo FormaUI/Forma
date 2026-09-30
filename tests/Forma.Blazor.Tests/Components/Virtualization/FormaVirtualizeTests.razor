@@ -1,0 +1,483 @@
+@inherits FormaBunitContext
+@using AngleSharp.Dom
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+@code {
+    public sealed class Component
+    {
+        // A hundred rows of twenty pixels, two drawn beyond each edge of the viewport.
+        private static IReadOnlyList<Row> CreateRows(int count = 100) => [.. Enumerable.Range(0, count).Select(id => new Row(id, $"Row {id}"))];
+
+        private static IRenderedComponent<FormaVirtualize<Row>> Virtualizer(IRenderedComponent<IComponent> cut)
+            => cut.FindComponent<FormaVirtualize<Row>>();
+
+        private static IReadOnlyList<string> Drawn(IRenderedComponent<IComponent> cut)
+            => [.. cut.FindAll(".row").Select(row => row.TextContent)];
+
+        private static IReadOnlyList<string> Spacers(IRenderedComponent<IComponent> cut)
+            => [.. cut.FindAll("[data-virtualize-spacer]").Select(spacer => $"{spacer.GetAttribute("data-virtualize-spacer")} {spacer.GetAttribute("style")!.Split(';')[0].Replace("block-size: ", string.Empty, StringComparison.Ordinal)}")];
+
+        [Fact]
+        public void Should_draw_the_first_items_before_it_knows_the_viewport()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+
+            // Assert — five rows, the rest stood for by the closing spacer
+            Assert.Multiple(
+                () => Assert.Equal(["Row 0", "Row 1", "Row 2", "Row 3", "Row 4"], Drawn(cut)),
+                () => Assert.Equal(["start 0px", "end 1900px"], Spacers(cut)));
+        }
+
+        [Fact]
+        public async Task Should_draw_the_window_around_the_viewport_with_spacers_for_the_rest()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act — scrolled a thousand pixels in, two hundred tall
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Assert — rows 48 to 61: the fifty from 50 to 59 in view and two beyond each edge
+            Assert.Multiple(
+                () => Assert.Equal([.. Enumerable.Range(48, 14).Select(id => $"Row {id}")], Drawn(cut)),
+                () => Assert.Equal(["start 960px", "end 760px"], Spacers(cut)));
+        }
+
+        [Fact]
+        public async Task Should_size_the_spacers_by_the_average_room_a_drawn_item_takes()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="0">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act — the items drawn measure forty pixels, twice the estimate
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(400, 80, 40));
+
+            // Assert — rows 10 and 11 stand in view, the ten before them forty pixels each
+            Assert.Multiple(
+                () => Assert.Equal(["Row 10", "Row 11"], Drawn(cut)),
+                () => Assert.Equal(["start 400px", "end 3520px"], Spacers(cut)));
+        }
+
+        [Fact]
+        public async Task Should_keep_a_pinned_item_drawn_outside_the_window_between_spacers_split_around_it()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            object[] pins = [5];
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="pins">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Assert — the pinned row first, then the window, each run between them stood for by a spacer
+            Assert.Multiple(
+                () => Assert.Equal(["Row 5", .. Enumerable.Range(48, 14).Select(id => $"Row {id}")], Drawn(cut)),
+                () => Assert.Equal(["start 100px", "gap 840px", "end 760px"], Spacers(cut)));
+        }
+
+        [Fact]
+        public async Task Should_draw_a_pinned_item_in_the_window_once()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            object[] pins = [50];
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="pins">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Assert
+            Assert.Equal(14, Drawn(cut).Count);
+        }
+
+        [Fact]
+        public async Task Should_draw_nothing_for_a_pinned_key_that_names_no_item()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            object[] pins = [999];
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="pins">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(14, Drawn(cut).Count),
+                () => Assert.Equal(["start 960px", "end 760px"], Spacers(cut)));
+        }
+
+        [Fact]
+        public async Task Should_keep_a_pinned_item_the_same_item_while_the_window_moves_away_and_back()
+        {
+            // Arrange — every row records when it is made
+            using var ctx = new FormaVirtualizeTests();
+            object[] pins = [5];
+            List<int> made = [];
+            RenderFragment<Row> content = row => builder =>
+            {
+                builder.OpenComponent<Stamp>(0);
+                builder.AddAttribute(1, nameof(Stamp.Id), row.Id);
+                builder.AddAttribute(2, nameof(Stamp.Made), made);
+                builder.CloseComponent();
+            };
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="pins" ItemContent="content" />
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act — away from the start and back to it
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(0, 200, 20));
+
+            // Assert — the pinned row was made once, and a row the window let go was made again
+            Assert.Multiple(
+                () => Assert.Single(made, id => id == 5),
+                () => Assert.Equal(2, made.Count(id => id == 0)));
+        }
+
+        [Fact]
+        public void Should_stand_table_rows_for_the_items_it_does_not_draw_among_rows()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<table><tbody>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" SpacerElement="tr">
+                        <ItemContent Context="row"><tr class="row"><td>@row.Name</td></tr></ItemContent>
+                    </FormaVirtualize>
+                </tbody></table>);
+
+            // Assert
+            Assert.All(cut.FindAll("[data-virtualize-spacer]"), spacer => Assert.Equal("TR", spacer.TagName));
+        }
+
+        [Fact]
+        public async Task Should_draw_placeholders_until_a_provider_answers_and_then_its_items()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            var held = new TaskCompletionSource<ItemsProviderResult<Row>>();
+            ItemsProviderDelegate<Row> provider = _ => new ValueTask<ItemsProviderResult<Row>>(held.Task);
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                        <Placeholder><div class="placeholder">…</div></Placeholder>
+                    </FormaVirtualize>
+                </div>);
+            var before = cut.FindAll(".row").Count;
+
+            // Act
+            await cut.ReleaseAsync(() => held.SetResult(new ItemsProviderResult<Row>(CreateRows().Take(5), 100)));
+
+            // Assert — the provider's count sizes the closing spacer
+            Assert.Multiple(
+                () => Assert.Equal(0, before),
+                () => Assert.Equal(5, Drawn(cut).Count),
+                () => Assert.Equal(100, Virtualizer(cut).Instance.Count),
+                () => Assert.Equal(["start 0px", "end 1900px"], Spacers(cut)));
+        }
+
+        [Fact]
+        public async Task Should_cancel_a_window_asked_for_once_the_viewport_moved_on()
+        {
+            // Arrange — the first window answers at once; the next is held
+            using var ctx = new FormaVirtualizeTests();
+            List<ItemsProviderRequest> requests = [];
+            var held = new TaskCompletionSource<ItemsProviderResult<Row>>();
+            ItemsProviderDelegate<Row> provider = request =>
+            {
+                requests.Add(request);
+
+                return requests.Count == 1
+                    ? ValueTask.FromResult(new ItemsProviderResult<Row>(CreateRows().Skip(request.StartIndex).Take(request.Count), 100))
+                    : new ValueTask<ItemsProviderResult<Row>>(held.Task);
+            };
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act — the viewport moves twice before the first of the two answers
+            var moving = virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+            _ = virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1600, 200, 20));
+
+            // Assert
+            Assert.True(requests[1].CancellationToken.IsCancellationRequested);
+            held.SetCanceled(TestContext.Current.CancellationToken);
+            await moving;
+        }
+
+        [Fact]
+        public async Task Should_keep_a_pinned_item_a_provider_answered_once_the_window_moves_away()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            object[] pins = [3];
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(CreateRows().Skip(request.StartIndex).Take(request.Count), 100));
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="pins">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Assert
+            Assert.Equal("Row 3", Drawn(cut)[0]);
+        }
+
+        [Fact]
+        public async Task Should_let_a_pinned_item_go_once_its_position_no_longer_holds_it_after_the_items_are_read_again()
+        {
+            // Arrange — after the first read, the provider answers position 3 with another row
+            using var ctx = new FormaVirtualizeTests();
+            object[] pins = [3];
+            var shifted = false;
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(
+                CreateRows().Select(row => shifted ? row with { Id = row.Id + 1000 } : row).Skip(request.StartIndex).Take(request.Count), 100));
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="pins">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Act
+            shifted = true;
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+
+            // Assert — the window alone is drawn
+            Assert.Equal(14, Drawn(cut).Count);
+        }
+
+        [Fact]
+        public async Task Should_read_the_items_again_when_the_viewport_moves_before_a_refresh_is_answered()
+        {
+            // Arrange — once the items change, the first read of them is held until it is superseded
+            using var ctx = new FormaVirtualizeTests();
+            var changed = false;
+            var held = new TaskCompletionSource<ItemsProviderResult<Row>>();
+            var heldOnce = false;
+            ItemsProviderDelegate<Row> provider = request =>
+            {
+                var rows = CreateRows().Select(row => changed ? new Row(row.Id + 1000, $"New {row.Id}") : row);
+                var result = new ItemsProviderResult<Row>(rows.Skip(request.StartIndex).Take(request.Count), 100);
+
+                if (changed && !heldOnce)
+                {
+                    heldOnce = true;
+                    return new ValueTask<ItemsProviderResult<Row>>(held.Task.WaitAsync(request.CancellationToken));
+                }
+
+                return ValueTask.FromResult(result);
+            };
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Act — the items change, and the viewport shrinks inside the window read before they did
+            changed = true;
+            _ = virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 100, 20));
+
+            // Assert
+            Assert.Equal("New 48", Drawn(cut)[0]);
+        }
+
+        [Fact]
+        public async Task Should_let_a_pinned_item_go_when_its_pin_is_let_go_while_its_position_is_read_again()
+        {
+            // Arrange — two pinned items; after the items are read again, the read of the first one's position is held
+            using var ctx = new FormaVirtualizeTests();
+            object[] pins = [3, 4];
+            var refreshing = false;
+            var held = new TaskCompletionSource<ItemsProviderResult<Row>>();
+            ItemsProviderDelegate<Row> provider = request => refreshing && request.StartIndex == 3 && request.Count == 1
+                ? new ValueTask<ItemsProviderResult<Row>>(held.Task)
+                : ValueTask.FromResult(new ItemsProviderResult<Row>(CreateRows().Skip(request.StartIndex).Take(request.Count), 100));
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="pins">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+            refreshing = true;
+            var refresh = virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+
+            // Act — the first pin is let go, and then its position answers with the same item
+            virtualizer.Render(parameters => parameters.Add(p => p.PinnedKeys, new object[] { 4 }));
+            await cut.ReleaseAsync(() => held.SetResult(new ItemsProviderResult<Row>(CreateRows().Skip(3).Take(1), 100)));
+            await refresh;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.DoesNotContain("Row 3", Drawn(cut)),
+                () => Assert.Contains("Row 4", Drawn(cut)));
+        }
+
+        [Fact]
+        public async Task Should_reach_an_item_asked_for_before_it_knows_the_viewport()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act
+            var reached = await virtualizer.InvokeAsync(() => virtualizer.Instance.ScrollToIndexAsync(50));
+
+            // Assert — the window opens at the item, so it is the first drawn
+            Assert.Multiple(
+                () => Assert.True(reached),
+                () => Assert.Equal("Row 50", Drawn(cut)[0]));
+        }
+
+        [Fact]
+        public async Task Should_answer_false_for_a_scroll_to_a_position_past_the_end()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act
+            var reached = await virtualizer.InvokeAsync(() => virtualizer.Instance.ScrollToIndexAsync(100));
+
+            // Assert
+            Assert.False(reached);
+        }
+
+        [Fact]
+        public async Task Should_bring_a_drawn_item_into_view_by_its_place_among_the_items_drawn()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Act
+            var reached = await virtualizer.InvokeAsync(() => virtualizer.Instance.ScrollToIndexAsync(50, ScrollAlignment.Start));
+
+            // Assert — row 50 is the third drawn, after 48 and 49
+            var reveal = ctx.JSInterop.Invocations.Last(invocation => invocation.Identifier == "reveal");
+            Assert.Multiple(
+                () => Assert.True(reached),
+                () => Assert.Equal([2, "start"], reveal.Arguments));
+        }
+
+        [Fact]
+        public void Should_refuse_both_sources_and_neither()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>([], 0));
+
+            // Act
+            var both = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaVirtualize TItem="Row" Items="CreateRows()" ItemsProvider="provider" ItemKey="@(row => row.Id)">
+                    <ItemContent Context="row"><div>@row.Name</div></ItemContent>
+                </FormaVirtualize>));
+            var neither = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaVirtualize TItem="Row" ItemKey="@(row => row.Id)">
+                    <ItemContent Context="row"><div>@row.Name</div></ItemContent>
+                </FormaVirtualize>));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("one of the two", both.Message, StringComparison.Ordinal),
+                () => Assert.Contains("one of the two", neither.Message, StringComparison.Ordinal));
+        }
+
+        private sealed record Row(int Id, string Name);
+    }
+
+    // A row's content that records each time it is made, so a test can tell an item kept from an item drawn again.
+    public sealed class Stamp : ComponentBase
+    {
+        [Parameter] public int Id { get; set; }
+
+        [Parameter] public List<int> Made { get; set; } = [];
+
+        protected override void OnInitialized()
+            => Made.Add(Id);
+    }
+}

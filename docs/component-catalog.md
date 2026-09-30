@@ -13,7 +13,7 @@
 >
 > The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**60 components implemented, 2 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**60 components implemented, 3 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -89,6 +89,8 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaEmoji
 │   ├── ✅ FormaEmojiPicker
 │   └── ✅ FormaIcon
+├── (0 / 1) Virtualization/
+│   └── ◐ FormaVirtualize
 └── (2 / 2) Windows/
     ├── ✅ FormaRestArea
     └── ✅ FormaWindow

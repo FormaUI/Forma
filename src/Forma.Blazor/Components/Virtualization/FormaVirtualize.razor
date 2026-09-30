@@ -1,0 +1,6 @@
+@namespace Forma.Blazor.Components.Virtualization
+@inherits FormaComponentBase
+@typeparam TItem
+
+@* One fragment draws the spacers and the items side by side, each keyed, so an item that stays drawn keeps its element while the ranges around it change. *@
+@RenderList()
