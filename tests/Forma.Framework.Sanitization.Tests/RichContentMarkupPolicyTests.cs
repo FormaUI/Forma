@@ -194,7 +194,7 @@ public sealed class RichContentMarkupPolicyTests
 
     public sealed class AgainstTheSanitizer
     {
-        // A host widens or narrows the rules by wrapping the default rather than restating it.
+        // A policy that answers for one element or attribute itself and defers every other question to the policy it wraps.
         private sealed class WrappingPolicy(IMarkupPolicy inner, HtmlSubject about, string name, bool answer) : IMarkupPolicy
         {
             public bool Allows(HtmlSubject subject, ReadOnlySpan<char> value, ReadOnlySpan<char> owner, out string? canonical)
@@ -255,7 +255,7 @@ public sealed class RichContentMarkupPolicyTests
         [Fact]
         public void Should_refuse_a_sanitizer_built_without_a_policy()
         {
-            // Act and assert
+            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new AllowlistHtmlSanitizer(null!));
         }
     }

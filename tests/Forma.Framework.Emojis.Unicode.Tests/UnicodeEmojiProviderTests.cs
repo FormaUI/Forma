@@ -21,7 +21,6 @@ public sealed class UnicodeEmojiProviderTests
         var artwork = new UnicodeEmojiProvider().GetArtwork("🫠");
 
         // Assert
-        // The reader's own font decides what it can draw, so the provider never has to know the character.
         Assert.Same(EmojiArtwork.Unicode, artwork);
     }
 }

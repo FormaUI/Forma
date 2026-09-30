@@ -61,7 +61,7 @@ public sealed class GlyphIconProviderTests
         var artwork = Assert.IsType<IconVector>(Provider.GetArtwork(Glyph.CircleInfo, IconSize.Inline));
 
         // Assert
-        // The stem is stroked; the dot above it is a solid shape a stroke cannot draw.
+        // The stem is a stroke and the dot above it a filled shape.
         Assert.Multiple(
             () => Assert.Contains(artwork.Paths, path => path.StrokeWidth > 0),
             () => Assert.Contains(artwork.Paths, path => path.StrokeWidth == 0));
@@ -132,7 +132,7 @@ public sealed class GlyphIconProviderTests
     public void Should_answer_no_artwork_for_a_brand_with_no_mark_compiled()
     {
         // Arrange
-        // A member the enum will never define, standing in for a brand whose mark has not been compiled.
+        // Stands in for a brand whose mark has not been compiled.
         var unknown = (Brand)int.MaxValue;
 
         // Act

@@ -65,7 +65,6 @@ public sealed class EmojiTests
         var emoji = default(Emoji);
 
         // Assert
-        // A default emoji names nothing rather than failing, the way an absent glyph does.
         Assert.Null(emoji.Sequence);
     }
 

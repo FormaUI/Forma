@@ -55,7 +55,7 @@ public sealed class ComposerToolbarLayoutTests
             Rows = [new() { Id = "preview.page", Label = "Page" }],
             Items = [CreateRow("preview.page", CreateCommand("paper"))],
         };
-        // A view is handed what is registered on it or at the composer root, so what reaches the layout is already the scope in play.
+        // The plugins stand for what is registered on the view or at the composer root, the scope a view is handed.
         var plugins = new IComposerPlugin[]
         {
             new Plugin { Id = "chrome", Items = [CreateRow(ComposerRows.BuiltIn, CreateCommand("maximize"))] },

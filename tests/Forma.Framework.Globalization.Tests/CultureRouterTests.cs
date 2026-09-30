@@ -21,7 +21,6 @@ public sealed class CultureRouterTests
         Assert.IsType<ArgumentException>(thrown);
     }
 
-    // A default that merely resolves is not enough: the bare URL must name exactly one culture.
     [Fact]
     public void Should_reject_a_default_culture_that_only_matches_an_alias()
     {
@@ -121,7 +120,6 @@ public sealed class CultureRouterTests
         Assert.Equal(token, router.DefaultRoute.Token);
     }
 
-    // An explicit hreflang is what lets a token Google would reject still be used as a URL segment.
     [Fact]
     public void Should_accept_an_unusable_token_carrying_an_explicit_hreflang()
     {
@@ -300,7 +298,7 @@ public sealed class CultureRouterTests
         Assert.IsType<ArgumentException>(thrown);
     }
 
-    // A culture may still appear further along, where it is an ordinary segment rather than a prefix.
+    // A culture further along the path is an ordinary segment.
     [Theory]
     [InlineData("/he")]
     [InlineData("/he/file-viewer")]

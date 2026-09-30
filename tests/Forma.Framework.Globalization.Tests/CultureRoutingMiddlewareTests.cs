@@ -68,8 +68,6 @@ public sealed class CultureRoutingMiddlewareTests
         });
     }
 
-    // An unknown first segment is left in place so the router can fail to match it, which is what
-    // turns a bogus culture into a 404 rather than silently serving some other page.
     [Theory]
     [InlineData("/xx/file-viewer")]
     [InlineData("/en-GB/file-viewer")]
@@ -244,7 +242,6 @@ public sealed class CultureRoutingMiddlewareTests
         Assert.Equal(string.Empty, context.Response.Headers.SetCookie.ToString());
     }
 
-    // Language must come from the URL alone, so a stored preference never changes what an address serves.
     [Fact]
     public async Task Should_ignore_the_culture_cookie_when_choosing_the_culture()
     {
@@ -265,8 +262,6 @@ public sealed class CultureRoutingMiddlewareTests
         });
     }
 
-    // A framework endpoint has no culture segment, so the circuit it opens would otherwise be served
-    // the default culture while the document that started it was not.
     [Theory]
     [InlineData("/_blazor")]
     [InlineData("/_blazor/negotiate")]

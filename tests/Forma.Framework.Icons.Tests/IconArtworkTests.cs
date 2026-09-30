@@ -52,6 +52,6 @@ public sealed class IconArtworkTests
 
     [Fact]
     public void Should_refuse_half_a_character()
-        // A lone surrogate is not a character, and Rune refuses it before any artwork can hold it.
+        // Rune refuses a lone surrogate before any artwork can hold it.
         => Assert.Throws<ArgumentOutOfRangeException>(() => new Rune('\uD835'));
 }
