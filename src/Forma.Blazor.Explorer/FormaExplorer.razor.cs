@@ -48,7 +48,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>The items to display, held in full. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
     [Parameter] public IReadOnlyList<ICatalogItem>? Items { get; set; }
 
-    /// <summary>Answers for one window of items at a time, for collections too large to hold. Supply this or <see cref="Items"/>, not both.</summary>
+    /// <summary>Answers for one slice of items at a time, for collections too large to hold. Supply this or <see cref="Items"/>, not both.</summary>
     [Parameter] public ICatalogProvider? ItemsProvider { get; set; }
 
     /// <summary>The folders the sidebar's tree shows and items are moved between.</summary>
@@ -185,7 +185,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private CatalogCollectionView _collection = default!;
 
-    private readonly CatalogProviderWindow _providerWindow = new();
+    private readonly CatalogProviderItems _providerItems = new();
 
     private readonly ExplorerQueryParameters _queryParameters = new();
 
@@ -285,7 +285,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     /// <summary>
     /// How many items match the current search and sort, or null when the provider cannot say. Pages are cut in the
-    /// provider's own count, so paging reads the reported total; an appended window counts what it lists.
+    /// provider's own count, so paging reads the reported total; appended slices count what they list.
     /// </summary>
     private int? MatchingCount
     {
@@ -296,7 +296,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 return _collection.MatchingCount;
             }
 
-            return IsInfiniteScrolling ? _providerWindow.ListedTotal : _providerWindow.Total;
+            return IsInfiniteScrolling ? _providerItems.ListedTotal : _providerItems.Total;
         }
     }
 
@@ -317,17 +317,17 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 return _collection.HasMorePages;
             }
 
-            // The window's own fill decides, counted in the provider's items rather than the listed ones.
-            return _providerWindow.WasFull && (_providerWindow.Total is not { } total || _providerWindow.FetchedCount < total);
+            // The last slice's own fill decides, counted in the provider's items rather than the listed ones.
+            return _providerItems.WasFull && (_providerItems.Total is not { } total || _providerItems.FetchedCount < total);
         }
     }
 
     private bool IsInfiniteScrolling
         => Options.InfiniteScroll != ExplorerInfiniteScrollMode.Off;
 
-    /// <summary>The items on screen; a provider supplies its own window, and a held collection is sliced into one.</summary>
+    /// <summary>The items on screen; a provider supplies its own slices, and a held collection is sliced into one.</summary>
     private IReadOnlyList<ICatalogItem> VisibleItems
-        => IsProviderMode ? _providerWindow.Items : _collection.VisibleItems;
+        => IsProviderMode ? _providerItems.Items : _collection.VisibleItems;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -408,7 +408,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return;
         }
 
-        // The folder is the host's to know, so it is watched for change rather than sent, and a move invalidates the window.
+        // The folder is the host's to know, so it is watched for change rather than sent, and a move invalidates the items shown.
         var moved = _queryParameters.Update(ItemsProvider, CurrentFolder?.Key, PageSize);
 
         if (!moved)
@@ -421,7 +421,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await QueryAsync(append: false);
     }
 
-    /// <summary>Fetches a window from the provider, replacing what is shown or extending it while infinite scrolling.</summary>
+    /// <summary>Fetches a slice from the provider, replacing what is shown or extending it while infinite scrolling.</summary>
     private Task QueryAsync(bool append, CancellationToken cancellationToken = default)
     {
         if (ItemsProvider is not { } provider)
@@ -430,7 +430,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         var query = new CatalogQuery(
-            append ? _providerWindow.FetchedCount : (EffectivePage - 1) * PageSize,
+            append ? _providerItems.FetchedCount : (EffectivePage - 1) * PageSize,
             PageSize,
             string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery,
             _collection.SortField,
@@ -438,10 +438,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         // FetchAsync lives in a library that must ConfigureAwait(false), so its continuation is not
         // guaranteed to land back on the render thread; StateHasChanged needs InvokeAsync to get there.
-        return _providerWindow.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, appendToWindow: append, cancellationToken);
+        return _providerItems.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, append, cancellationToken);
     }
 
-    /// <summary>Re-reads the current window, after something the explorer does not own has changed the collection.</summary>
+    /// <summary>Re-reads the items shown, after something the explorer does not own has changed the collection.</summary>
     private Task RefreshProviderAsync()
     {
         if (!IsProviderMode)
@@ -449,7 +449,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return Task.CompletedTask;
         }
 
-        // An append would stack a second copy of what is already shown, so a refresh always starts the window again.
+        // An append would stack a second copy of what is already shown, so a refresh always starts the items again.
         if (IsInfiniteScrolling)
         {
             _collection.PageNumber = 1;
@@ -634,7 +634,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     IReadOnlyList<ICatalogItem> IExplorerContentView.VisibleItems => VisibleItems;
 
-    bool IExplorerContentView.IsFetching => _providerWindow.IsFetching;
+    bool IExplorerContentView.IsFetching => _providerItems.IsFetching;
 
     int? IExplorerContentView.MatchingCount => MatchingCount;
 
@@ -895,7 +895,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         await OnDrop.InvokeAsync(new CatalogDropRequest(items, targetFolder));
 
-        // A move takes the resources out of the window they were dragged from, which only a re-read will show.
+        // A move takes the resources out of the items they were dragged from, which only a re-read will show.
         await ClearSelectionAsync();
         await RefreshProviderAsync();
     }
@@ -1149,7 +1149,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <inheritdoc />
     protected override ValueTask DisposeAsyncCore()
     {
-        _providerWindow.Dispose();
+        _providerItems.Dispose();
         SearchDebouncer.Cancel();
 
         return base.DisposeAsyncCore();

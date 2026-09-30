@@ -110,7 +110,7 @@ public sealed class CatalogCollectionView
     /// <summary>How many items one page holds.</summary>
     public int PageSize { get; set; } = 1;
 
-    /// <summary>Whether the visible window grows from the first page instead of moving, as infinite scrolling needs.</summary>
+    /// <summary>Whether the visible slice grows from the first page instead of moving, as infinite scrolling needs.</summary>
     public bool IsAppending { get; set; }
 
     /// <summary>The items that are not hidden and pass the filter and the search, in sort order.</summary>
@@ -129,11 +129,11 @@ public sealed class CatalogCollectionView
     public int EffectivePageNumber
         => Math.Clamp(PageNumber, 1, PageCount);
 
-    /// <summary>Whether pages remain beyond the visible window.</summary>
+    /// <summary>Whether pages remain beyond the visible slice.</summary>
     public bool HasMorePages
         => IsAppending ? VisibleItems.Count < MatchingCount : EffectivePageNumber < PageCount;
 
-    /// <summary>The matching items cut to the visible window.</summary>
+    /// <summary>The matching items cut to the visible slice.</summary>
     public IReadOnlyList<ICatalogItem> VisibleItems
     {
         get
@@ -142,7 +142,7 @@ public sealed class CatalogCollectionView
             var take = IsAppending ? EffectivePageNumber * PageSize : PageSize;
             var skip = IsAppending ? 0 : (EffectivePageNumber - 1) * PageSize;
 
-            // Appending grows this window to thousands, and rendering reads it several times, so it is rebuilt only when it moves.
+            // Appending grows this slice to thousands, and rendering reads it several times, so it is rebuilt only when it moves.
             if (_visibleItems is not null && ReferenceEquals(_visibleItemsSource, source) && _visibleItemsSkip == skip && _visibleItemsTake == take)
             {
                 return _visibleItems;

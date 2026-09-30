@@ -591,7 +591,7 @@
         }
 
         [Fact]
-        public async Task Should_re_read_the_window_after_a_resource_is_dropped_on_a_folder()
+        public async Task Should_re_read_the_items_after_a_resource_is_dropped_on_a_folder()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2195,7 +2195,7 @@
         }
 
         [Fact]
-        public void Should_fetch_only_the_window_it_shows_from_a_provider()
+        public void Should_fetch_only_the_slice_it_shows_from_a_provider()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2212,7 +2212,7 @@
         }
 
         [Fact]
-        public void Should_ask_the_provider_for_the_next_window_when_the_page_changes()
+        public void Should_ask_the_provider_for_the_next_slice_when_the_page_changes()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2229,7 +2229,7 @@
         }
 
         [Fact]
-        public async Task Should_pass_the_sort_to_the_provider_rather_than_reordering_the_window()
+        public async Task Should_pass_the_sort_to_the_provider_rather_than_reordering_the_slice()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2246,7 +2246,7 @@
         }
 
         [Fact]
-        public void Should_accumulate_provider_windows_while_infinite_scrolling()
+        public void Should_accumulate_provider_slices_while_infinite_scrolling()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2267,7 +2267,7 @@
         }
 
         [Fact]
-        public void Should_ask_the_provider_for_the_next_window_past_the_items_it_hid()
+        public void Should_ask_the_provider_for_the_next_slice_past_the_items_it_hid()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2286,7 +2286,7 @@
             // Act
             cut.Find(".forma-explorer-load-more-button").Click();
 
-            // Assert - the next window starts where the provider's last one ended, and nothing more is offered
+            // Assert - the next slice starts where the provider's last one ended, and nothing more is offered
             Assert.Multiple(
                 () => Assert.Equal(2, provider.Queries[^1].Skip),
                 () => Assert.Equal(["0002.jpg", "0003.jpg", "0004.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
@@ -2295,7 +2295,7 @@
         }
 
         [Fact]
-        public void Should_keep_a_selection_made_on_a_window_the_provider_no_longer_returns()
+        public void Should_keep_a_selection_made_on_a_slice_the_provider_no_longer_returns()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2309,7 +2309,7 @@
             cut.Find(".forma-explorer-item-open").Click();
             Assert.Single(selected);
 
-            // Act - page away from the window holding the selected resource
+            // Act - page away from the slice holding the selected resource
             cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
             cut.Find(".forma-explorer-item-open").Click();
 
@@ -2346,7 +2346,7 @@
         }
 
         [Fact]
-        public async Task Should_show_the_newest_window_when_a_slower_query_is_superseded()
+        public async Task Should_show_the_newest_slice_when_a_slower_query_is_superseded()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2357,7 +2357,7 @@
             };
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" PageSize="5" />);
 
-            // Act - a second window is asked for while the first is still held, then both are let go
+            // Act - a second slice is asked for while the first is still held, then both are let go
             var sorting = SortByAsync(cut, CatalogSortField.Name);
             provider.Gate.SetResult();
             await sorting;
@@ -2416,7 +2416,7 @@
             Assert.Empty(cut.FindAll(".forma-explorer-scroll .forma-explorer-pagination"));
         }
 
-        // The trigger's handler is awaited before the menu is read, and the field's handler queries the provider, so the task completes once the new window is fetched.
+        // The trigger's handler is awaited before the menu is read, and the field's handler queries the provider, so the task completes once the new slice is fetched.
         private static async Task SortByAsync<TComponent>(IRenderedComponent<TComponent> cut, CatalogSortField field)
             where TComponent : IComponent
         {

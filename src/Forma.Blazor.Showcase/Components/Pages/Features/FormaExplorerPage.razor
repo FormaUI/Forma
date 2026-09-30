@@ -204,7 +204,7 @@
 
 <div class="demo-section">
     <h2>@L["A Library Too Large to Hold"]</h2>
-    <p class="description">@L["Twenty thousand items behind a provider. The explorer keeps only the window it is showing, and the folder never appears in the query because the page already knows it."]</p>
+    <p class="description">@L["Twenty thousand items behind a provider. The explorer keeps only the items it is showing, and the folder never appears in the query because the page already knows it."]</p>
     <div class="demo-box">
         <FormaExplorer ItemsProvider="@(GetProvider("library"))"
                       Folders="_sampleFolderItems"
@@ -212,7 +212,7 @@
                       PageSize="12"
                       TotalCount="_libraryCount"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("library", folder))" />
-        <p class="demo-note">@L["Windows fetched: {Count}", _libraryStore.QueryCount] — @LibraryQueryDescription</p>
+        <p class="demo-note">@L["Slices fetched: {Count}", _libraryStore.QueryCount] — @LibraryQueryDescription</p>
     </div>
 </div>
 

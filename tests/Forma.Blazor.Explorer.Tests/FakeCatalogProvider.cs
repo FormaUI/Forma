@@ -23,7 +23,7 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
     /// <summary>The sources of the resources the provider returns as hidden items.</summary>
     public ISet<string> HiddenSources { get; } = new HashSet<string>(StringComparer.Ordinal);
 
-    /// <summary>The window the query names, filtered by search and ordered by name alone.</summary>
+    /// <summary>The slice the query names, filtered by search and ordered by name alone.</summary>
     public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
         Queries.Add(query);

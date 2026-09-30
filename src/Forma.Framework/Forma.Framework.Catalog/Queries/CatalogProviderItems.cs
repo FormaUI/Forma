@@ -1,8 +1,8 @@
 namespace Forma.Framework.Catalog.Queries;
 
 
-/// <summary>The window of items fetched from a provider one page at a time, with the fetch itself in flight.</summary>
-public sealed class CatalogProviderWindow : IDisposable
+/// <summary>The items fetched from a provider, one slice replacing the last or slices appended while infinite scrolling, with the fetch itself in flight.</summary>
+public sealed class CatalogProviderItems : IDisposable
 {
     private List<ICatalogItem> _items = [];
     private int _fetchedCount;
@@ -13,14 +13,14 @@ public sealed class CatalogProviderWindow : IDisposable
     public IReadOnlyList<ICatalogItem> Items
         => _items;
 
-    /// <summary>How many items the provider has returned into the window, the ones left out of it included.</summary>
+    /// <summary>How many items the provider has returned, the hidden and stray ones left out of the items included.</summary>
     public int FetchedCount
         => _fetchedCount;
 
     /// <summary>How many items the provider reports in total, or null when it cannot say without counting them.</summary>
     public int? Total { get; private set; }
 
-    /// <summary>The reported total less the items the provider returned that the window left out, or null when the total is unknown.</summary>
+    /// <summary>The reported total less the items the provider returned that were left out, or null when the total is unknown.</summary>
     public int? ListedTotal
         => Total is { } total ? Math.Max(total - _unlistedCount, _items.Count) : null;
 
@@ -31,7 +31,7 @@ public sealed class CatalogProviderWindow : IDisposable
     public bool IsFetching { get; private set; }
 
     /// <summary>
-    /// Runs the query against the provider, replacing the window or extending it, leaving out hidden items and
+    /// Runs the query against the provider, replacing the items or extending them, leaving out hidden items and
     /// a stray item the provider let through. A fetch still running when a newer one starts, or when the given token
     /// is canceled, is abandoned rather than raced.
     /// </summary>
@@ -40,13 +40,13 @@ public sealed class CatalogProviderWindow : IDisposable
         Action onStateChanged,
         CatalogQuery query,
         CatalogResourceFilter? filter,
-        bool appendToWindow,
+        bool append,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentNullException.ThrowIfNull(onStateChanged);
 
-        // A newer window makes an older one irrelevant rather than merely late, so the earlier request is abandoned.
+        // A newer slice makes an older one irrelevant rather than merely late, so the earlier request is abandoned.
         await CancelAsync().ConfigureAwait(false);
         var own = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _fetchCancellation = own;
@@ -72,18 +72,18 @@ public sealed class CatalogProviderWindow : IDisposable
                 listed = listed.Where(item => item.Resource is not { } resource || accepted.Accepts(resource));
             }
 
-            List<ICatalogItem> window = [.. listed];
-            var unlisted = page.Items.Count - window.Count;
+            List<ICatalogItem> kept = [.. listed];
+            var unlisted = page.Items.Count - kept.Count;
 
-            if (appendToWindow)
+            if (append)
             {
-                _items = [.. _items, .. window];
+                _items = [.. _items, .. kept];
                 _fetchedCount += page.Items.Count;
                 _unlistedCount += unlisted;
             }
             else
             {
-                _items = window;
+                _items = kept;
                 _fetchedCount = page.Items.Count;
                 _unlistedCount = unlisted;
             }

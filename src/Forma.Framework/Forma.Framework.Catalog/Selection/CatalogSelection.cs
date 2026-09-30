@@ -4,7 +4,7 @@ namespace Forma.Framework.Catalog.Selection;
 /// <summary>The items a surface has selected, and the rules deciding what a further choice does to them.</summary>
 public sealed class CatalogSelection : ICatalogSelectionView
 {
-    // The selection outlives the window a provider-backed surface holds, so it keeps the items rather than keys into a list it may no longer have.
+    // The selection outlives the items a provider-backed surface holds, so it keeps the items rather than keys into a list it may no longer have.
     private readonly Dictionary<string, ICatalogItem> _items = [with(StringComparer.Ordinal)];
 
     private readonly Dictionary<string, ICatalogItem> _folderItems = [with(StringComparer.Ordinal)];

@@ -1,9 +1,9 @@
 # Forma.Framework.Catalog
 
 The items a browsing surface lists: what an item and a folder are, the provider that answers a
-surface one window of them at a time, the requests a surface hands back to its host, the ceilings
+surface one slice of them at a time, the requests a surface hands back to its host, the ceilings
 a host's collection keeps, and the bookkeeping every such surface repeats — the view over a held
-collection, the window over a provider, the folder tree, the history and the selection. A host
+collection, the items fetched from a provider, the folder tree, the history and the selection. A host
 writes its own items and its own provider on these contracts once, and every surface that
 browses them reads the same ones.
 
@@ -27,7 +27,7 @@ plain class library, and it registers nothing.
 | Namespace | What it holds |
 | --- | --- |
 | `Forma.Framework.Catalog` | The item model: `ICatalogItem` and `ICatalogFolderItem`, the ready `CatalogItem` and `CatalogFolderItem`, the capabilities and visibility of an item, and `CatalogConstraints`, the ceilings a collection keeps. |
-| `.Queries` | `ICatalogProvider` and the query and page it exchanges, the sort field and direction, the resource filter, the view over a held collection and the window fetched from a provider. |
+| `.Queries` | `ICatalogProvider` and the query and page it exchanges, the sort field and direction, the resource filter, the view over a held collection and the items fetched from a provider. |
 | `.Requests` | The records every change a reader asks for comes back to the host as, and the rejection a ceiling reports. |
 | `.Navigation` | The folder tree indexed by key and by parent, and the history of folders visited. |
 | `.Selection` | The selected items, one kind at a time, and what a surface's parts read of them. |
@@ -53,9 +53,9 @@ kind supports.
 
 ### The provider
 
-`ICatalogProvider.GetItemsAsync(CatalogQuery, CancellationToken)` answers one window.
+`ICatalogProvider.GetItemsAsync(CatalogQuery, CancellationToken)` answers one slice.
 `CatalogQuery` carries the state a surface owns — `Skip`, `Take`, `Search`, `SortBy` and
-`Direction` — and `CatalogPage` carries the `Items` of the window and a `TotalCount`.
+`Direction` — and `CatalogPage` carries the `Items` of the slice and a `TotalCount`.
 Whatever the query does not carry belongs to the implementation:
 
 - The folder being browsed is the host's; the query never names it.
@@ -63,8 +63,8 @@ Whatever the query does not carry belongs to the implementation:
   reads an accepted-kinds pattern, `globs:*.jpg;*.pdf` or `contentType:image;video`, and
   `Accepts(resource)` answers for one resource.
 - `TotalCount` counts every item that matches, hidden ones included, or is null when the store
-  cannot say without counting; a window shorter than `Take` ends the collection.
-- `CatalogPage.Empty` is a window of nothing with a total of zero.
+  cannot say without counting; a slice shorter than `Take` ends the collection.
+- `CatalogPage.Empty` is a slice of nothing with a total of zero.
 
 ## What a caller constructs
 
@@ -87,7 +87,7 @@ README.
 | Type | What it is |
 | --- | --- |
 | `CatalogCollectionView` | The view over a held collection: filtered by kind, searched by name, sorted, and cut to the visible page. |
-| `CatalogProviderWindow` | The window fetched from a provider one page at a time, with the fetch itself in flight; a superseded fetch is abandoned rather than raced. |
+| `CatalogProviderItems` | The items fetched from a provider, one slice replacing the last or slices appended while infinite scrolling, with the fetch itself in flight; a superseded fetch is abandoned rather than raced. |
 | `CatalogFolderTree` | The folder items indexed by key and by parent. |
 | `CatalogHistory` | The trail of folders visited, with a cursor moving back and forward along it. |
 | `CatalogSelection` | The selected items, one kind at a time, capped by a limit; `ICatalogSelectionView` is what a surface's parts read of it. |
@@ -133,8 +133,8 @@ public sealed class PhotoItem(Photo photo) : ICatalogItem
 }
 ```
 
-A provider answering windows of those items from a catalog that lists without counting, so the
-total is null and a surface keeps asking while windows come back full:
+A provider answering slices of those items from a catalog that lists without counting, so the
+total is null and a surface keeps asking while slices come back full:
 
 ```csharp
 using Forma.Framework.Catalog.Queries;

@@ -139,7 +139,7 @@ public sealed class CatalogCollectionViewTests
     }
 
     [Fact]
-    public void Should_grow_the_window_from_the_start_while_appending()
+    public void Should_grow_the_slice_from_the_start_while_appending()
     {
         // Arrange
         var resources = Enumerable.Range(1, 25).Select(i => CreateFile($"file-{i:D2}.txt")).ToArray();

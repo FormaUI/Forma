@@ -36,16 +36,16 @@ callback, and an upload goes into the host's `IFileStore`.
 - **Two ways in, exactly one supplied.** `Items` hands over a collection the explorer
   holds and filters, sorts and pages itself, right for a few hundred items.
   `ItemsProvider` answers one `CatalogQuery` at a time and the explorer holds only
-  the window it is showing, so a collection far too large to enumerate stays browsable.
+  the items it is showing, so a collection far too large to enumerate stays browsable.
   The split follows `FormaDataGrid`'s.
-- **The query carries only what the explorer owns.** The window, the search box and the
+- **The query carries only what the explorer owns.** The slice, the search box and the
   sort. The folder is the host's own `CurrentFolder` parameter and its implementation
   already has it, and the same closure supplies any other filter the explorer never needs
   to learn about. `CatalogPage.TotalCount` is optional, so a store that cannot count
   cheaply returns null and the explorer drops its pager rather than demanding a number.
 - **Hidden items count in the store's total.** A store that returns hidden items counts
-  them; the explorer pages and asks for the next window in the store's own count, and
-  reports an appended window's progress against the total less the items it left out.
+  them; the explorer pages and asks for the next slice in the store's own count, and
+  reports the appended slices' progress against the total less the items it left out.
 - **Two options records, split by what they govern.** `ExplorerItemOptions` gates every
   mutating capability per caller: the item and folder capabilities the explorer permits,
   intersected with what each item itself supports, plus `AllowUpload`. `ExplorerOptions`
@@ -64,7 +64,7 @@ callback, and an upload goes into the host's `IFileStore`.
   explorer permits for its kind, and none while the item is disabled. Every entry point
   enforces them and the views draw from them. Read, write and execute are reserved and
   not supported; open is supported for folders only.
-- **Item state.** A hidden item leaves the listing, the provider window, the tree, the
+- **Item state.** A hidden item leaves the listing, the provider's items, the tree, the
   breadcrumb menus and every count of what is listed; an invisible one keeps its place
   undrawn; a disabled
   one is drawn muted, its controls disabled, and cannot be selected.
@@ -106,7 +106,7 @@ Three surfaces stay on `FormaExplorer` rather than on the region they appear ove
 each is reached from more than one of them: the preview lightbox, which activation, the
 action menu and `FormaFileViewer`'s sibling stepping all drive through the explorer; the
 confirmation modals, since one rename dialog serves items and folders alike; and the upload
-panel, whose completion re-reads the provider window and raises `OnUploaded`.
+panel, whose completion re-reads the provider's items and raises `OnUploaded`.
 
 The details view keeps every column it is configured with, its headers sorting, its name
 column resized by dragging the frozen edge, and lets its pane scroll sideways when they do
@@ -117,7 +117,7 @@ grouping.
 
 Typing in the search box filters a held collection at once and is debounced through
 `Options.SearchDebounceDelay` before a provider is asked; a superseded query is canceled
-rather than merely ignored, and a mutation of the items re-reads the window. The items
+rather than merely ignored, and a mutation of the items re-reads the items shown. The items
 scroll inside their own panel so the toolbar, folder tree and pager stay put.
 
 ## File layout
@@ -127,7 +127,7 @@ Two assemblies, foldered by concern with the namespace following the folder.
 **`Forma.Framework.Catalog` is the model every browsing surface shares**, packable, rooted in
 its own namespace: the items and folders, the provider with its query and page, the sort, the resource
 filter, the requests and the rejection, the constraints, and the bookkeeping a surface repeats — the
-view over a held collection, the window over a provider, the folder tree, the history and the
+view over a held collection, the items fetched from a provider, the folder tree, the history and the
 selection with what parts read of it. A host writes its items and its provider against this package
 alone, and a second surface such as the gallery builds on it without reaching the explorer.
 

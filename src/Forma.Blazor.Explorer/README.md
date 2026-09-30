@@ -93,23 +93,23 @@ Exactly one of two parameters supplies the items:
 | Parameter | What it takes | Right for |
 | --- | --- | --- |
 | `Items` | The whole collection, which the explorer searches, sorts and pages itself. | A few hundred items. |
-| `ItemsProvider` | An `ICatalogProvider` answering one window at a time; the explorer holds only what it shows. | A library too large to enumerate. |
+| `ItemsProvider` | An `ICatalogProvider` answering one slice at a time; the explorer holds only what it shows. | A library too large to enumerate. |
 
 A provider's `GetItemsAsync(CatalogQuery, CancellationToken)` receives what the explorer
 owns — `Skip`, `Take`, `Search`, `SortBy` and `Direction` — and returns an `CatalogPage` of
 the items and a `TotalCount`. The folder is not in the query, because the host already has it. A
 store that cannot count cheaply returns a null total, which leaves the explorer without a page
-count; infinite scrolling keeps asking for as long as windows come back full.
+count; infinite scrolling keeps asking for as long as slices come back full.
 
 With a provider, `TotalCount` and `TotalBytes` tell the explorer how much the whole library holds,
-so the ceilings below are measured against the library rather than the window; with `Items`, the
+so the ceilings below are measured against the library rather than the items shown; with `Items`, the
 supplied items are counted and measured.
 
 ### What the explorer reports
 
 Every callback hands back the items the host supplied. The explorer changes nothing itself: the
 host carries a request out and supplies the items again, or, behind a provider, the explorer
-re-reads its window on its own once a rename, deletion, drop or upload is reported.
+re-reads the items it shows on its own once a rename, deletion, drop or upload is reported.
 
 | Callback | Carries | Raised when |
 | --- | --- | --- |
@@ -279,7 +279,7 @@ and carrying out what the reader asks:
 }
 ```
 
-The same page over a library too large to hold, answering one window at a time from the folder
+The same page over a library too large to hold, answering one slice at a time from the folder
 the page knows:
 
 ```csharp
