@@ -4,7 +4,7 @@ using System.IO.Enumeration;
 
 using Forma.Framework.Resources;
 
-/// <summary>Which resources a catalog accepts, read from a pattern.</summary>
+/// <summary>A filter of the resources a catalog accepts, parsed from a pattern.</summary>
 /// <remarks>
 /// Written either as <c>globs:*.jpg;*.pdf</c> or as <c>contentType:image;video</c>. A content type
 /// matches a resource's own media type, and failing that the kind its type stands for.
@@ -25,10 +25,10 @@ public sealed class CatalogResourceFilter
         _contentTypes = contentTypes;
     }
 
-    /// <summary>The pattern as written, for a message naming what is accepted.</summary>
+    /// <summary>The pattern the filter was parsed from.</summary>
     public string Pattern { get; private init; } = string.Empty;
 
-    /// <summary>Reads a pattern, or null when none was given.</summary>
+    /// <summary>Parses the pattern into a filter.</summary>
     /// <exception cref="ArgumentException">The pattern names neither globs nor content types.</exception>
     public static CatalogResourceFilter? Parse(string? pattern)
     {
@@ -60,14 +60,13 @@ public sealed class CatalogResourceFilter
         return Accepts(resource.Name, (resource as FileResourceInfo)?.ContentType, resource);
     }
 
-    /// <summary>Whether a file the reader chose is one the catalog accepts.</summary>
+    /// <summary>Whether a file with the name and content type is one the catalog accepts.</summary>
     public bool Accepts(string name, string? contentType)
         => Accepts(name, contentType, resource: null);
 
     private static string[] Split(string values)
         => [.. values.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
 
-    // A resource whose type says what it is answers even when nothing recorded its media type.
     private static string? GetKind(ResourceInfo? resource)
         => resource switch
         {

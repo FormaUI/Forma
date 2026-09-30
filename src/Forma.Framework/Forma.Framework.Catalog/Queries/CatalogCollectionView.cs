@@ -5,7 +5,7 @@ using System.Globalization;
 using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Resources;
 
-/// <summary>The shaped view over a held item collection: filtered by kind, searched by name, sorted, and cut to the visible page.</summary>
+/// <summary>A view over a collection of catalog items, filtered by kind, searched by name, sorted, and paged.</summary>
 public sealed class CatalogCollectionView
 {
     private readonly Func<ICatalogItem, string> _kindLabel;
@@ -22,7 +22,7 @@ public sealed class CatalogCollectionView
     private int _visibleItemsSkip;
     private int _visibleItemsTake;
 
-    /// <summary>Creates a view over no items, ordering by kind through the given label of an item's kind.</summary>
+    /// <summary>Creates an empty view with the kind label that orders items by kind.</summary>
     public CatalogCollectionView(Func<ICatalogItem, string> kindLabel)
     {
         ArgumentNullException.ThrowIfNull(kindLabel);
@@ -46,7 +46,7 @@ public sealed class CatalogCollectionView
         }
     }
 
-    /// <summary>The kind filter an item must pass to be listed, or null to list everything.</summary>
+    /// <summary>The filter an item must pass, where null passes every item.</summary>
     public CatalogResourceFilter? Filter
     {
         get => _filter;
@@ -60,7 +60,7 @@ public sealed class CatalogCollectionView
         }
     }
 
-    /// <summary>The name fragment an item must contain, compared case-insensitively.</summary>
+    /// <summary>The search query an item's name must contain, ignoring case.</summary>
     public string SearchQuery
     {
         get => _searchQuery;
@@ -104,7 +104,7 @@ public sealed class CatalogCollectionView
         }
     }
 
-    /// <summary>The requested one-based page; reads clamp it through <see cref="EffectivePageNumber"/>.</summary>
+    /// <summary>The requested one-based page number.</summary>
     public int PageNumber { get; set; } = 1;
 
     /// <summary>How many items one page holds.</summary>
@@ -121,7 +121,7 @@ public sealed class CatalogCollectionView
     public int MatchingCount
         => MatchingList.Count;
 
-    /// <summary>How many pages the matching items fill, never less than one.</summary>
+    /// <summary>How many pages the matching items fill.</summary>
     public int PageCount
         => Math.Max(1, (int)Math.Ceiling(MatchingCount / (double)PageSize));
 
@@ -133,7 +133,7 @@ public sealed class CatalogCollectionView
     public bool HasMorePages
         => IsAppending ? VisibleItems.Count < MatchingCount : EffectivePageNumber < PageCount;
 
-    /// <summary>The matching items cut to the visible slice.</summary>
+    /// <summary>The matching items in the visible slice.</summary>
     public IReadOnlyList<ICatalogItem> VisibleItems
     {
         get
@@ -142,7 +142,6 @@ public sealed class CatalogCollectionView
             var take = IsAppending ? EffectivePageNumber * PageSize : PageSize;
             var skip = IsAppending ? 0 : (EffectivePageNumber - 1) * PageSize;
 
-            // Appending grows this slice to thousands, and rendering reads it several times, so it is rebuilt only when it moves.
             if (_visibleItems is not null && ReferenceEquals(_visibleItemsSource, source) && _visibleItemsSkip == skip && _visibleItemsTake == take)
             {
                 return _visibleItems;
@@ -157,7 +156,7 @@ public sealed class CatalogCollectionView
         }
     }
 
-    /// <summary>Drops the memoized shape, for a source list mutated in place.</summary>
+    /// <summary>Invalidates the cached matching items.</summary>
     public void Invalidate()
         => _matchingItems = null;
 

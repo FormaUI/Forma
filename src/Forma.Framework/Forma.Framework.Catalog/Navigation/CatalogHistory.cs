@@ -1,6 +1,6 @@
 namespace Forma.Framework.Catalog.Navigation;
 
-/// <summary>The trail of folders one surface has visited, with a cursor moving back and forward along it.</summary>
+/// <summary>The history of the folders a surface has visited, with a cursor that moves back and forward along it.</summary>
 public sealed class CatalogHistory
 {
     private readonly List<string?> _trail = [null];
@@ -14,11 +14,11 @@ public sealed class CatalogHistory
     public bool CanGoForward
         => _index < _trail.Count - 1;
 
-    /// <summary>The source of the folder the cursor stands on, or null for all media.</summary>
+    /// <summary>The source of the folder at the cursor, where null is the top level.</summary>
     public string? Current
         => _trail[_index];
 
-    /// <summary>Records a newly opened folder, dropping whatever lay ahead of the cursor.</summary>
+    /// <summary>Records a visit to the folder, dropping whatever lay ahead of the cursor.</summary>
     public void Visit(string? folderSource)
     {
         if (CanGoForward)
@@ -30,7 +30,7 @@ public sealed class CatalogHistory
         _index = _trail.Count - 1;
     }
 
-    /// <summary>Moves the cursor one step back, staying put when nothing lies behind it.</summary>
+    /// <summary>Moves the cursor one step back.</summary>
     public void GoBack()
     {
         if (CanGoBack)
@@ -39,7 +39,7 @@ public sealed class CatalogHistory
         }
     }
 
-    /// <summary>Moves the cursor one step forward, staying put when nothing lies ahead of it.</summary>
+    /// <summary>Moves the cursor one step forward.</summary>
     public void GoForward()
     {
         if (CanGoForward)

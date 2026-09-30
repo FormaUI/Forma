@@ -1,12 +1,12 @@
 namespace Forma.Framework.Catalog.Requests;
 
-/// <summary>Why a catalog refused to accept an item.</summary>
+/// <summary>The reason a catalog rejects an item.</summary>
 public enum CatalogRejectionReason
 {
-    /// <summary>The kind is not one the catalog accepts.</summary>
+    /// <summary>The item's resource kind falls outside the kinds the catalog accepts.</summary>
     ResourceKind,
 
-    /// <summary>Adding the folder would exceed the maximum nesting depth.</summary>
+    /// <summary>The folder exceeds the maximum folder depth.</summary>
     FolderDepth,
 
     /// <summary>The catalog already holds the maximum number of root folders.</summary>

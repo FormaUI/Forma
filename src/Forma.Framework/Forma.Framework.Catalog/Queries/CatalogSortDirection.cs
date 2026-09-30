@@ -1,6 +1,6 @@
 namespace Forma.Framework.Catalog.Queries;
 
-/// <summary>Specifies the sort direction for catalog items.</summary>
+/// <summary>The direction catalog items are sorted in.</summary>
 public enum CatalogSortDirection
 {
     /// <summary>Ascending order (A-Z, oldest first, smallest first).</summary>

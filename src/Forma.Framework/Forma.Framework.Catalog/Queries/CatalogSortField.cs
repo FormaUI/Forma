@@ -1,20 +1,20 @@
 namespace Forma.Framework.Catalog.Queries;
 
-/// <summary>Specifies the field by which catalog items are ordered.</summary>
+/// <summary>The field catalog items are sorted by.</summary>
 public enum CatalogSortField
 {
-    /// <summary>Sort by file name.</summary>
+    /// <summary>The item's name.</summary>
     Name,
 
-    /// <summary>Sort by byte size.</summary>
+    /// <summary>The item's size in bytes.</summary>
     Size,
 
-    /// <summary>Sort by kind.</summary>
+    /// <summary>The item's kind.</summary>
     Kind,
 
-    /// <summary>Sort by when the item was taken in.</summary>
+    /// <summary>When the item was added.</summary>
     DateAdded,
 
-    /// <summary>Sort by when the item last changed.</summary>
+    /// <summary>When the item was last modified.</summary>
     DateModified
 }

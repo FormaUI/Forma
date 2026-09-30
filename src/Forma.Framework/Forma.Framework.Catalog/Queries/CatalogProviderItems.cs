@@ -9,7 +9,7 @@ public sealed class CatalogProviderItems : IDisposable
     private int _unlistedCount;
     private CancellationTokenSource? _fetchCancellation;
 
-    /// <summary>The items the last fetch returned, replaced or extended as asked.</summary>
+    /// <summary>The items fetched from the provider.</summary>
     public IReadOnlyList<ICatalogItem> Items
         => _items;
 
@@ -20,17 +20,17 @@ public sealed class CatalogProviderItems : IDisposable
     /// <summary>How many items the provider reports in total.</summary>
     public int? Total { get; private set; }
 
-    /// <summary>The reported total less the items left out.</summary>
+    /// <summary>The reported total less the unlisted items.</summary>
     public int? ListedTotal
         => Total is { } total ? Math.Max(total - _unlistedCount, _items.Count) : null;
 
     /// <summary>Whether the last page came back full.</summary>
     public bool WasFull { get; private set; }
 
-    /// <summary>Whether a fetch is currently running.</summary>
+    /// <summary>Whether a fetch is running.</summary>
     public bool IsFetching { get; private set; }
 
-    /// <summary>Runs the query against the provider.</summary>
+    /// <summary>Fetches the items the query asks for from the provider.</summary>
     public async Task FetchAsync(
         ICatalogProvider provider,
         Action onStateChanged,
@@ -42,7 +42,6 @@ public sealed class CatalogProviderItems : IDisposable
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentNullException.ThrowIfNull(onStateChanged);
 
-        // A newer slice makes an older one irrelevant rather than merely late, so the earlier request is abandoned.
         await CancelAsync().ConfigureAwait(false);
         var own = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _fetchCancellation = own;
@@ -62,7 +61,6 @@ public sealed class CatalogProviderItems : IDisposable
 
             var listed = page.Items.Where(item => item.Visibility != CatalogItemVisibility.Hidden);
 
-            // A provider is expected to apply the same filter itself; this only keeps a stray item off the screen.
             if (filter is { } accepted)
             {
                 listed = listed.Where(item => item.Resource is not { } resource || accepted.Accepts(resource));
@@ -93,7 +91,7 @@ public sealed class CatalogProviderItems : IDisposable
         }
         finally
         {
-            // A superseded fetch leaves the flag to the one that replaced it; anything else, including a failure, clears it.
+            // Only the latest fetch clears the flag.
             if (ReferenceEquals(_fetchCancellation, own))
             {
                 IsFetching = false;

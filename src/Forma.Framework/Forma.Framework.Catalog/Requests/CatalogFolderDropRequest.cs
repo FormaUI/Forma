@@ -1,7 +1,7 @@
 namespace Forma.Framework.Catalog.Requests;
 
 
-/// <summary>Request to move a folder into another parent folder via drag-and-drop.</summary>
-/// <param name="SourceFolder">The folder being moved.</param>
-/// <param name="TargetFolder">The destination parent folder, or null for the top level.</param>
+/// <summary>A request to drop a folder into a target folder.</summary>
+/// <param name="SourceFolder">The folder being dropped.</param>
+/// <param name="TargetFolder">The target folder, where null is the top level.</param>
 public sealed record CatalogFolderDropRequest(ICatalogFolderItem SourceFolder, ICatalogFolderItem? TargetFolder);

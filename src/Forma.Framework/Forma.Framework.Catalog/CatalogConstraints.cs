@@ -2,30 +2,30 @@ namespace Forma.Framework.Catalog;
 
 using Forma.Framework.Catalog.Requests;
 
-/// <summary>What a catalog refuses, each ceiling unlimited when left at zero. Every member pairs with a <see cref="CatalogRejectionReason"/>.</summary>
+/// <summary>The limits on what a catalog accepts, where a ceiling of zero is unlimited.</summary>
 public sealed record CatalogConstraints
 {
-    /// <summary>Nothing refused.</summary>
+    /// <summary>The constraints with no limits.</summary>
     public static CatalogConstraints None { get; } = new();
 
-    /// <summary>Which resources may be added, as <c>globs:*.jpg;*.pdf</c> or <c>contentType:image;video</c>; anything when null.</summary>
+    /// <summary>The resource kinds the catalog accepts, as <c>globs:*.jpg;*.pdf</c> or <c>contentType:image;video</c>; null accepts any.</summary>
     public string? AcceptedResourceKinds { get; init; }
 
-    /// <summary>How deep folders may nest, counting a top-level folder as one.</summary>
+    /// <summary>The maximum folder depth, where a top-level folder is at depth one.</summary>
     public int MaxFolderDepth { get; init; }
 
-    /// <summary>How many folders may sit at the top level.</summary>
+    /// <summary>The maximum number of top-level folders.</summary>
     public int MaxFolderRootCount { get; init; }
 
-    /// <summary>How many items one folder may hold.</summary>
+    /// <summary>The maximum number of items in one folder.</summary>
     public int MaxFolderItemCount { get; init; }
 
-    /// <summary>How many folders may sit directly inside another.</summary>
+    /// <summary>The maximum number of subfolders directly inside one folder.</summary>
     public int MaxSubfolderCount { get; init; }
 
-    /// <summary>How many items the catalog may hold in all.</summary>
+    /// <summary>The maximum number of items in the catalog.</summary>
     public int MaxItemCount { get; init; }
 
-    /// <summary>How many bytes the catalog may hold in all.</summary>
+    /// <summary>The maximum total bytes of the catalog.</summary>
     public long MaxTotalBytes { get; init; }
 }

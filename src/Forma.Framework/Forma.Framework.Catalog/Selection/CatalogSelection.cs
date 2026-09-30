@@ -1,10 +1,9 @@
 namespace Forma.Framework.Catalog.Selection;
 
 
-/// <summary>The items a surface has selected, and the rules deciding what a further choice does to them.</summary>
+/// <summary>The items a surface has selected, with the operations that change them.</summary>
 public sealed class CatalogSelection : ICatalogSelectionView
 {
-    // The selection outlives the items a provider-backed surface holds, so it keeps the items rather than keys into a list it may no longer have.
     private readonly Dictionary<string, ICatalogItem> _items = [with(StringComparer.Ordinal)];
 
     private readonly Dictionary<string, ICatalogItem> _folderItems = [with(StringComparer.Ordinal)];
@@ -14,7 +13,7 @@ public sealed class CatalogSelection : ICatalogSelectionView
     /// <inheritdoc />
     public bool IsSelectionModeActive { get; set; }
 
-    /// <summary>How many items may be selected at once; zero for unlimited.</summary>
+    /// <summary>The maximum number of selected items, where zero is unlimited.</summary>
     public int SelectionLimit { get; set; }
 
     /// <inheritdoc />
@@ -57,7 +56,7 @@ public sealed class CatalogSelection : ICatalogSelectionView
             return;
         }
 
-        // Media and folders are deleted through different contracts, so only one kind is ever selected at a time.
+        // A selection holds folders or other items, one kind at a time.
         _folderItems.Clear();
 
         if (_items.Remove(item.Key))
@@ -93,7 +92,7 @@ public sealed class CatalogSelection : ICatalogSelectionView
         _folderItems.Clear();
     }
 
-    /// <summary>Replaces the selection with the given items.</summary>
+    /// <summary>Replaces the selection with the items.</summary>
     public void Replace(IEnumerable<ICatalogItem> items)
     {
         ArgumentNullException.ThrowIfNull(items);

@@ -2,37 +2,33 @@ namespace Forma.Framework.Catalog;
 
 using Forma.Framework.Resources;
 
-/// <summary>One item a surface lists from a catalog.</summary>
+/// <summary>An item in a catalog.</summary>
 public interface ICatalogItem
 {
-    /// <summary>The stable identifier that distinguishes the item within the catalog.</summary>
-    /// <remarks>
-    /// The key must be unique among the catalog's items and remain unchanged when an
-    /// item is reconstructed during refreshing, filtering, sorting, or paging.
-    /// </remarks>
+    /// <summary>The item's key, a stable identifier unique within the catalog.</summary>
     string Key { get; }
 
-    /// <summary>The item's displayed name.</summary>
+    /// <summary>The item's display name.</summary>
     string Name { get; }
 
-    /// <summary>The operations the item supports.</summary>
+    /// <summary>The capabilities the item supports.</summary>
     CatalogItemCapabilities Capabilities { get; }
 
     /// <summary>How the item participates in presentation and layout.</summary>
     CatalogItemVisibility Visibility { get; }
 
-    /// <summary>Whether the item is shown but cannot be operated on.</summary>
+    /// <summary>Whether the item is disabled, listed with its operations unavailable.</summary>
     bool IsDisabled { get; }
 
-    /// <summary>When the item was created, or null when unknown.</summary>
+    /// <summary>When the item was created.</summary>
     DateTimeOffset? CreatedAt { get; }
 
-    /// <summary>When the item was last changed, or null when unknown.</summary>
+    /// <summary>When the item was last modified.</summary>
     DateTimeOffset? ModifiedAt { get; }
 
-    /// <summary>The address of the item's thumbnail, or null when it has none.</summary>
+    /// <summary>The source of the item's thumbnail.</summary>
     string? ThumbnailSource { get; }
 
-    /// <summary>The underlying resource, or null when the item does not represent one.</summary>
+    /// <summary>The resource the item wraps.</summary>
     ResourceInfo? Resource { get; }
 }

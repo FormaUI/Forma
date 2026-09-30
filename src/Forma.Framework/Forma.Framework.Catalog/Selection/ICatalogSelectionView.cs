@@ -1,13 +1,13 @@
 namespace Forma.Framework.Catalog.Selection;
 
 
-/// <summary>What a surface has selected, as its parts read it.</summary>
+/// <summary>The read-only view of a surface's selection.</summary>
 public interface ICatalogSelectionView
 {
-    /// <summary>Whether the surface shows selection controls instead of activating previews.</summary>
+    /// <summary>Whether selection mode is active, with the surface showing selection controls.</summary>
     bool IsSelectionModeActive { get; }
 
-    /// <summary>How many items are selected together.</summary>
+    /// <summary>The number of selected items.</summary>
     int Count { get; }
 
     /// <summary>The selected items.</summary>

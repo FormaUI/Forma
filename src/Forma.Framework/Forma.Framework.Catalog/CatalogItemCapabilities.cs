@@ -1,12 +1,9 @@
 namespace Forma.Framework.Catalog;
 
-/// <summary>Capabilities a catalog item supports.</summary>
+/// <summary>The capabilities a catalog item supports.</summary>
 /// <remarks>
-/// A surface's own options determine what it permits,
-/// while this value determines what the individual item supports. An operation is
-/// available only when both permit it. <see cref="Read"/>, <see cref="Write"/>, and
-/// <see cref="Execute"/> are not supported by any surface yet and are reserved for
-/// future use; <see cref="Open"/> is supported for folders only.
+/// An operation is available on an item when both the item's capabilities and the
+/// surface's own options permit it.
 /// </remarks>
 [Flags]
 public enum CatalogItemCapabilities
@@ -29,7 +26,7 @@ public enum CatalogItemCapabilities
     /// <summary>The item can be opened in its primary destination, or entered when it is a container.</summary>
     Open = 1 << 4,
 
-    /// <summary>The item's contents can be presented without opening or executing it.</summary>
+    /// <summary>The item's contents can be presented in a preview.</summary>
     View = 1 << 5,
 
     /// <summary>New items can be created within the item.</summary>
@@ -44,6 +41,6 @@ public enum CatalogItemCapabilities
     /// <summary>The item's name can be changed.</summary>
     Rename = 1 << 9,
 
-    /// <summary>The behavior represented by the item can be run.</summary>
+    /// <summary>The item can be executed.</summary>
     Execute = 1 << 10
 }

@@ -1,11 +1,11 @@
 namespace Forma.Framework.Catalog.Queries;
 
-/// <summary>The slice of items a surface asks for.</summary>
-/// <param name="Skip">How many matching items to pass over before the slice begins.</param>
+/// <summary>The query for a slice of catalog items.</summary>
+/// <param name="Skip">How many matching items precede the slice.</param>
 /// <param name="Take">How many items the slice holds.</param>
-/// <param name="Search">What the reader typed into the surface's search box, or null when it is empty.</param>
-/// <param name="SortBy">Which field the reader is ordering by.</param>
-/// <param name="Direction">Which way that order runs.</param>
+/// <param name="Search">The search text.</param>
+/// <param name="SortBy">The field the items are sorted by.</param>
+/// <param name="Direction">The direction the items are sorted in.</param>
 public readonly record struct CatalogQuery(
     int Skip,
     int Take,

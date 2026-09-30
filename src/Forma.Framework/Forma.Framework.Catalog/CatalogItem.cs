@@ -2,7 +2,7 @@ namespace Forma.Framework.Catalog;
 
 using Forma.Framework.Resources;
 
-/// <summary>A catalog item wrapped over a resource.</summary>
+/// <summary>A catalog item, which can wrap a resource.</summary>
 public class CatalogItem : ICatalogItem
 {
     private const CatalogItemCapabilities ResourceCapabilities =
@@ -49,7 +49,7 @@ public class CatalogItem : ICatalogItem
     /// <inheritdoc />
     public ResourceInfo? Resource { get; init; }
 
-    /// <summary>Wraps every resource in the list, in order.</summary>
+    /// <summary>Creates a catalog item for each of the resources, in order.</summary>
     public static IReadOnlyList<ICatalogItem> ForAll(IEnumerable<ResourceInfo> resources)
     {
         ArgumentNullException.ThrowIfNull(resources);
@@ -57,7 +57,7 @@ public class CatalogItem : ICatalogItem
         return [.. resources.Select(ICatalogItem (resource) => For(resource))];
     }
 
-    /// <summary>Wraps the resource or folder, deriving the capabilities its kind supports.</summary>
+    /// <summary>Creates the catalog item for the resource, with the capabilities of its kind.</summary>
     public static CatalogItem For(ResourceInfo resource)
     {
         ArgumentNullException.ThrowIfNull(resource);
@@ -78,7 +78,7 @@ public class CatalogItem : ICatalogItem
         };
     }
 
-    /// <summary>Wraps the folder, deriving the capabilities its kind supports.</summary>
+    /// <summary>Creates the catalog folder item for the folder, with the capabilities of a folder.</summary>
     public static CatalogFolderItem ForFolder(FolderResourceInfo folder)
     {
         ArgumentNullException.ThrowIfNull(folder);

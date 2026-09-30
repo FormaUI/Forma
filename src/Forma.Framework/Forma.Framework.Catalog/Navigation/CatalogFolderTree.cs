@@ -1,7 +1,7 @@
 namespace Forma.Framework.Catalog.Navigation;
 
 
-/// <summary>The folder items indexed for lookup, so browsing does not rescan them for every node it draws.</summary>
+/// <summary>The folder items of a catalog, indexed by key and by parent.</summary>
 public sealed class CatalogFolderTree
 {
     private static readonly List<ICatalogFolderItem> NoChildren = [];
@@ -16,10 +16,10 @@ public sealed class CatalogFolderTree
 
     private readonly List<ICatalogFolderItem> _listedRoots = [];
 
-    /// <summary>A tree over no folders at all.</summary>
+    /// <summary>The tree with no folders.</summary>
     public static CatalogFolderTree Empty { get; } = new(null);
 
-    /// <summary>Indexes the folders among the given items, or nothing when they are null.</summary>
+    /// <summary>Creates the tree over the folder items among the items.</summary>
     public CatalogFolderTree(IReadOnlyList<ICatalogItem>? items)
     {
         if (items is null)
@@ -36,7 +36,7 @@ public sealed class CatalogFolderTree
                 continue;
             }
 
-            // A host can repeat a key; the first folder claiming it wins, matching what the breadcrumb walk would find.
+            // The first folder with a repeated key wins.
             _foldersByKey.TryAdd(folderItem.Key, folderItem);
 
             var isListed = folderItem.Visibility != CatalogItemVisibility.Hidden;
@@ -62,7 +62,7 @@ public sealed class CatalogFolderTree
         }
     }
 
-    /// <summary>The folders directly inside the parent, or the top-level folders when none is named.</summary>
+    /// <summary>The folders directly inside the parent, where a null parent is the top level.</summary>
     public IReadOnlyList<ICatalogFolderItem> GetChildren(string? parent)
     {
         if (parent is null)
@@ -73,7 +73,7 @@ public sealed class CatalogFolderTree
         return _childrenByParent.TryGetValue(parent, out var children) ? children : NoChildren;
     }
 
-    /// <summary>The folders directly inside the parent that are not hidden, or the top-level ones when none is named.</summary>
+    /// <summary>The listed folders directly inside the parent, where a null parent is the top level.</summary>
     public IReadOnlyList<ICatalogFolderItem> GetListedChildren(string? parent)
     {
         if (parent is null)
@@ -84,11 +84,11 @@ public sealed class CatalogFolderTree
         return _listedChildrenByParent.TryGetValue(parent, out var children) ? children : NoChildren;
     }
 
-    /// <summary>The folder at the key, or null when the tree has none.</summary>
+    /// <summary>The folder with the key.</summary>
     public ICatalogFolderItem? Find(string? key)
         => key is not null && _foldersByKey.TryGetValue(key, out var item) ? item : null;
 
-    /// <summary>The folder the item sits inside, or null when it is top-level or the tree has none.</summary>
+    /// <summary>The parent folder of the item.</summary>
     public ICatalogFolderItem? GetParent(ICatalogFolderItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -96,11 +96,11 @@ public sealed class CatalogFolderTree
         return Find(item.ParentKey);
     }
 
-    /// <summary>Whether anything sits inside the folder.</summary>
+    /// <summary>Whether the folder with the key has child folders.</summary>
     public bool HasChildren(string key)
         => _childrenByParent.ContainsKey(key);
 
-    /// <summary>Every listed folder holding at least one listed folder, which are the only ones a tree can collapse.</summary>
+    /// <summary>The expandable folders, each a listed folder holding at least one listed folder.</summary>
     public IEnumerable<ICatalogFolderItem> GetExpandableFolders()
     {
         foreach (var (key, item) in _foldersByKey)
