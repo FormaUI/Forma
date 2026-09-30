@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-/// <summary>The circuit's input router: carries the host's policy and routes to the script once, and registers the scopes components own.</summary>
+/// <summary>The circuit's input router, which carries the host's policy and routes to the script and registers the scopes components own.</summary>
 public sealed class InputRouter : IAsyncDisposable, IDisposable
 {
     private readonly JSEnvironment _environment;
@@ -28,7 +28,7 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
         _hostHandler = hostHandler;
     }
 
-    /// <summary>Registers <paramref name="element"/> as a scope, or adds to the scope it already is, yielding <see langword="null"/> when the circuit cannot register it; the <paramref name="owner"/> receives actions through <c>HandleInputActionAsync</c> and dismissals through <c>HandleDismissAsync</c>, the scope stands inside <paramref name="parent"/> for active ordering, and the <paramref name="within"/> elements count as inside it.</summary>
+    /// <summary>Registers <paramref name="profile"/> on <paramref name="element"/>'s scope, inside <paramref name="parent"/> and with the <paramref name="within"/> elements counted as inside it, for <paramref name="owner"/> to receive actions through <c>HandleInputActionAsync</c> and dismissals through <c>HandleDismissAsync</c>.</summary>
     public async ValueTask<InputScope?> RegisterAsync<TOwner>(ElementReference element, InputProfile profile, DotNetObjectReference<TOwner>? owner = null, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
         where TOwner : class
     {
@@ -44,13 +44,13 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
         return handle is null ? null : new InputScope(handle, _environment);
     }
 
-    /// <summary>Carries the host's policy and routes to the script, once per circuit, yielding whether the script has them; a behavior that registers with the router from script calls this before attaching, since only a registration made from here pushes them otherwise.</summary>
+    /// <summary>Carries the host's policy and routes to the script, returning whether the script has them.</summary>
+    /// <remarks>One push is held for the circuit, so concurrent callers share it; a push that failed is dropped and made again by the next call.</remarks>
     public async Task<bool> ConfigureAsync()
     {
         var configuration = _configuration ??= PushAsync();
         var configured = await configuration;
 
-        // A push that failed is retried by the next call.
         if (!configured && ReferenceEquals(_configuration, configuration))
         {
             _configuration = null;
@@ -82,7 +82,7 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
         }
     }
 
-    /// <summary>Releases the managed state alone; a scope disposing synchronously has no JS runtime left to talk to.</summary>
+    /// <summary>Releases the managed state alone.</summary>
     public void Dispose()
         => _selfReference?.Dispose();
 

@@ -9,7 +9,7 @@ public sealed record WheelBinding : InputBinding
     /// <summary>The axis the turn must mostly move along; <see langword="null"/> matches either.</summary>
     public WheelAxis? Axis { get; init; }
 
-    /// <summary>The modifiers the turn must be made with; only those stated are checked.</summary>
+    /// <summary>The modifiers the turn must be made with.</summary>
     public ModifierRequirement Modifiers { get; init; } = ModifierRequirement.None;
 
     /// <inheritdoc />

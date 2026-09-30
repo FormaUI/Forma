@@ -3,7 +3,7 @@ namespace Forma.Framework.Input.Keyboard;
 /// <summary>A key binding: Control, Alt, and Meta must be absent unless stated, and Shift matches either way unless stated.</summary>
 public sealed record KeyBinding : InputBinding
 {
-    /// <summary>Binds <paramref name="key"/>, compared without regard to case.</summary>
+    /// <summary>Creates a binding for <paramref name="key"/>.</summary>
     public KeyBinding(string key)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -16,7 +16,7 @@ public sealed record KeyBinding : InputBinding
     /// <summary>The modifiers the key must be pressed with.</summary>
     public ModifierRequirement Modifiers { get; init; } = ModifierRequirement.None;
 
-    /// <summary>Whether the binding matches the key's release rather than its press.</summary>
+    /// <summary>Whether the binding matches the key's release.</summary>
     public bool Released { get; init; }
 
     /// <inheritdoc />

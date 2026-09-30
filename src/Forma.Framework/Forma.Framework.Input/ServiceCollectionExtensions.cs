@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// <summary>Registers the input policy this package ships.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers the application-wide input policy, unless a host has already registered its own.</summary>
+    /// <summary>Registers the application-wide input policy.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <param name="options">The policy; <see langword="null"/> takes <see cref="InputRouterOptions.Default"/>.</param>
     /// <returns>The same collection, for chaining.</returns>

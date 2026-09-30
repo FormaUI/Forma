@@ -53,7 +53,7 @@ const BindingFields = ['key', 'axis', 'button', 'buttons', 'pointerType', 'data'
 /** The modifier keys a binding's `modifiers` can state. */
 const ModifierFields = ['control', 'meta', 'alt', 'shift'];
 
-/** How long a click can follow the release of a press whose click was claimed and still be its click. */
+/** How long, in milliseconds, a click can follow the release of a press whose click was claimed and still be its click. */
 const ClickSuppressionPeriod = 1000;
 
 /** An action identifier: a component or application name, a dot, and the action, so host overrides key one thing. */
@@ -234,7 +234,7 @@ export function owns(element, event) {
     return resolve(event).owner === element;
 }
 
-/** The element whose scope owns the event, or null. */
+/** The element whose scope owns the event. */
 export function ownerOf(event) {
     return resolve(event).owner;
 }

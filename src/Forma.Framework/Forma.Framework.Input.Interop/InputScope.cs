@@ -4,7 +4,7 @@ using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.JSInterop;
 
-/// <summary>An input scope registered with the router, held active while its surface is open and disposed when its owner goes.</summary>
+/// <summary>An input scope registered with the router.</summary>
 public sealed class InputScope(IJSObjectReference handle, IJSEnvironment environment) : IAsyncDisposable
 {
     private IJSObjectReference? _handle = handle;

@@ -3,7 +3,7 @@ namespace Forma.Framework.Input.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A registration a component holds on one of its elements for as long as it wants one: made, kept in step with the profile and the hold the component gives it after each render, and released with the component.</summary>
+/// <summary>An input registration a component holds on one of its elements, in step with the profile and the hold the component last gave it.</summary>
 /// <remarks>Each sync records what the component wants; one settle runs at a time and carries on until what is registered matches the latest sync, so a profile or an element that changed while a registration was in flight is applied once it lands, and a registration that lands unwanted is released at once. The parent and the elements counted as inside are given only when a registration is made, so a change to either releases the registration and makes it again. A registration the router refused is asked for again on the next sync. Disposal waits for a settle underway before the reference the router calls back through goes.</remarks>
 public sealed class InputRegistration : IAsyncDisposable
 {
@@ -38,14 +38,13 @@ public sealed class InputRegistration : IAsyncDisposable
     public bool IsActive
         => _scope is { IsActive: true };
 
-    /// <summary>Brings the registration in step with what its owner wants: <paramref name="element"/> registered with <paramref name="profile"/> while <paramref name="wanted"/>, held active while <paramref name="active"/>, the profile pushed again when it changed, and everything released once no longer wanted; called after every render.</summary>
+    /// <summary>Brings the registration in step with what its owner wants: <paramref name="element"/> registered with <paramref name="profile"/> while <paramref name="wanted"/>, inside <paramref name="parent"/> with the <paramref name="within"/> elements counted as inside it, and held active while <paramref name="active"/>.</summary>
     public async Task SyncAsync(ElementReference element, InputProfile profile, bool wanted = true, bool active = false, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
 
         _request = new Request(element, profile, wanted && !_isDisposed, active, parent, within);
 
-        // The settle underway reads the latest request before it finishes.
         if (_settle is { IsCompleted: false })
         {
             return;
@@ -60,7 +59,7 @@ public sealed class InputRegistration : IAsyncDisposable
     public Task HandleInputActionAsync(string action, InputInfo input)
         => _onAction?.Invoke(action, input) ?? Task.CompletedTask;
 
-    /// <summary>Takes a dismissal the router delivered to the element while it was foremost.</summary>
+    /// <summary>Performs a dismissal the router delivered to the element.</summary>
     [JSInvokable]
     public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
         => _onDismiss?.Invoke(action, reason) ?? Task.CompletedTask;
@@ -82,7 +81,6 @@ public sealed class InputRegistration : IAsyncDisposable
 
         try
         {
-            // A settle still underway finishes before the reference it carries goes.
             if (_settle is { } settle)
             {
                 await Task.WhenAny(settle);
@@ -96,7 +94,6 @@ public sealed class InputRegistration : IAsyncDisposable
         }
     }
 
-    // Carries on until what is registered matches the latest request, which a sync arriving meanwhile replaces.
     private async Task SettleAsync()
     {
         while (_request is { } request)
@@ -112,7 +109,6 @@ public sealed class InputRegistration : IAsyncDisposable
             }
             else
             {
-                // Another element, or another placement, starts afresh.
                 await ReleaseAsync();
                 await RegisterAsync(request);
             }
@@ -144,7 +140,6 @@ public sealed class InputRegistration : IAsyncDisposable
         }
     }
 
-    // The profile and the hold can both change after the registration was made.
     private async Task KeepInStepAsync(InputScope scope, Request request)
     {
         if (!ReferenceEquals(_registeredProfile, request.Profile) && await scope.UpdateAsync(request.Profile))
@@ -178,7 +173,7 @@ public sealed class InputRegistration : IAsyncDisposable
     /// <summary>What the owner asked for last.</summary>
     private sealed record Request(ElementReference Element, InputProfile Profile, bool Wanted, bool Active, ElementReference? Parent, IReadOnlyList<ElementReference>? Within);
 
-    /// <summary>Where a registration stands, by the ids of the elements named, so two requests naming the same elements through different references compare equal.</summary>
+    /// <summary>A registration's parent and the elements counted as inside it, by their ids.</summary>
     private sealed record Placement(string? ParentId, string WithinIds)
     {
         public static Placement Of(Request request)

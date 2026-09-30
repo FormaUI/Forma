@@ -20,7 +20,6 @@ public static class ServiceCollectionExtensions
 
         services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
 
-        // Scoped, because the policy it pushes lands in this circuit's own document.
         services.TryAddScoped<InputRouter>();
 
         return services;

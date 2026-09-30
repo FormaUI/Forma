@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 /// <summary>What a registration contributes to an input scope: routes, boundaries, and how the scope treats ambient input while foremost.</summary>
 public sealed record InputProfile
 {
-    /// <summary>A registration with no routes that inherits the host's ambient defaults.</summary>
+    /// <summary>A profile with no routes that inherits the host's ambient defaults.</summary>
     public static InputProfile Default { get; } = new();
 
     /// <summary>Whether the scope is a barrier that nothing activated beneath it can answer through.</summary>
@@ -23,7 +23,7 @@ public sealed record InputProfile
     /// <summary>The event types the scope stops from reaching the scopes around it when no route of its own matches.</summary>
     public IReadOnlyList<string> Boundary { get; init; } = [];
 
-    /// <summary>The inputs the registration answers; the most specific matching route wins.</summary>
+    /// <summary>The routes the registration contributes.</summary>
     [JsonPropertyName("routes")]
     public IReadOnlyList<InputRoute> InputRoutes { get; init; } = [];
 }

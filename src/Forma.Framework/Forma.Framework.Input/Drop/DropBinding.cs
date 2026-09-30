@@ -12,7 +12,7 @@ public sealed record DropBinding : InputBinding
     /// <summary>The data kinds of which the drag must carry at least one, as the drag's data transfer names them; <see langword="null"/> matches any.</summary>
     public IReadOnlyList<string>? Data { get; init; }
 
-    /// <summary>Whether the binding matches the drag passing over rather than the drop.</summary>
+    /// <summary>Whether the binding matches the drag passing over.</summary>
     public bool Over { get; init; }
 
     /// <inheritdoc />

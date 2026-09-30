@@ -18,7 +18,7 @@ public sealed record PointerBinding : InputBinding
     /// <summary>The device the input must come from; <see langword="null"/> matches any.</summary>
     public PointerType? PointerType { get; init; }
 
-    /// <summary>The modifiers the input must be made with; only those stated are checked.</summary>
+    /// <summary>The modifiers the input must be made with.</summary>
     public ModifierRequirement Modifiers { get; init; } = ModifierRequirement.None;
 
     /// <summary>Which part of the pointer's contact the binding matches.</summary>

@@ -1,10 +1,6 @@
 /**
- * InputInspector — the input router's decisions, reported as they are made
- *
- * Every key, press, and wheel turn on the page is resolved again, without dispatching it,
- * and the decision and the active ordering are described to the .NET owner in words a
- * panel can show. Wheel turns are reported at most once per interval, so the panel stays
- * readable through a scroll.
+ * InputInspector — the input router's decision for every key, press, and wheel turn on the
+ * page, with the active ordering, reported to a .NET owner
  */
 
 import { resolve, stack } from './InputRouter.js';
@@ -77,7 +73,7 @@ function describeDecision(decision) {
     };
 }
 
-/** An element as a short selector: its tag and its runtime id, else its tag and its id, else its tag and up to two of its classes. */
+/** An element as a short selector. */
 function describeElement(element) {
     if (!(element instanceof Element)) {
         return null;
