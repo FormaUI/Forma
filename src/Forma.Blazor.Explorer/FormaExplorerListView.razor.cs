@@ -7,10 +7,10 @@ using Forma.Framework.Explorer.Items;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>List presentation view for explorer items: names alone, flowing down the height and on into further columns that scroll sideways.</summary>
+/// <summary>The explorer's list view: item names flowing down the height and on into further columns that scroll sideways.</summary>
 public sealed partial class FormaExplorerListView : FormaComponentBase
 {
-    /// <summary>The collection of items to display.</summary>
+    /// <summary>The items to display.</summary>
     [Parameter] public IReadOnlyList<ICatalogItem> Items { get; set; } = [];
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;

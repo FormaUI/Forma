@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>The explorer's address bar: navigation buttons, the folder path, and a search box that takes the row over while it is in use.</summary>
 public sealed partial class FormaExplorerAddressBar : FormaComponentBase
 {
-    /// <summary>Whether the search stands as a glyph until pressed, where the row has no room for the box.</summary>
+    /// <summary>Whether the search stands as a glyph until pressed.</summary>
     [Parameter] public bool CollapsesSearch { get; set; }
 
     [CascadingParameter] private IExplorerContentInteraction Interaction { get; set; } = default!;

@@ -1,4 +1,4 @@
-/* Media depiction shared by every explorer view; an image renders directly and any other kind falls back to a glyph. */
+/* The thumbnail every explorer view shows: the image itself, or a glyph for any other kind. */
 
 .forma-explorer-thumbnail {
     flex-shrink: 0;

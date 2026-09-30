@@ -9,13 +9,13 @@ using Forma.Framework.Localization;
 /// <summary>Creates localized presentation contexts for explorer items.</summary>
 internal static class ExplorerItemLocalizationExtensions
 {
-    /// <summary>Combines the item with the context needed to produce its localized labels.</summary>
+    /// <summary>The localized labels of the item.</summary>
     internal static ExplorerItemLocalization GetLocalizedLabels(
         this ICatalogItem item,
         IStringLocale locale)
         => new(item, locale);
 
-    /// <summary>Combines the item with the context needed to produce its localized labels.</summary>
+    /// <summary>The localized selection labels of the item.</summary>
     internal static ExplorerItemSelectionLocalization GetLocalizedLabels(
         this ICatalogItem item,
         IStringLocale locale,

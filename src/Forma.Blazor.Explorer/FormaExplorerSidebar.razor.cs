@@ -14,16 +14,16 @@ using Forma.Framework.Input.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Folders tree navigation sidebar for the explorer, every folder row a drop target for the items and folders dragged onto it.</summary>
+/// <summary>The explorer's folder tree sidebar, every folder row a drop target for the items and folders dragged onto it.</summary>
 public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorerSidebarView, IExplorerSidebarInteraction
 {
     /// <summary>The currently active folder, or null for every item.</summary>
     [Parameter] public ICatalogFolderItem? CurrentFolder { get; set; }
 
-    /// <summary>List of available explorer folders.</summary>
+    /// <summary>The folders the tree shows.</summary>
     [Parameter] public IReadOnlyList<ICatalogItem> Folders { get; set; } = [];
 
-    /// <summary>Every known folder indexed, so a node does not rescan the list to find its children.</summary>
+    /// <summary>The folders indexed as a tree.</summary>
     [Parameter] public CatalogFolderTree FolderTree { get; set; } = CatalogFolderTree.Empty;
 
     [CascadingParameter] private IExplorerView Explorer { get; set; } = default!;
@@ -38,7 +38,7 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
     /// <summary>Raised when a folder is selected.</summary>
     [Parameter] public EventCallback<ICatalogFolderItem?> OnFolderSelected { get; set; }
 
-    /// <summary>Raised when a folder is to be created, under the folder given or at the root when none is.</summary>
+    /// <summary>Raised when a folder is to be created under the folder given, where null is the top level.</summary>
     [Parameter] public EventCallback<ICatalogFolderItem?> OnFolderCreate { get; set; }
 
     /// <summary>Which folder operations the sidebar offers.</summary>
@@ -113,7 +113,7 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
             ? new CssStyleBuilder().Add("block-size", CssLength.FromRem(height)).ToString()
             : null;
 
-    // Every row is the same height, so the rendered tree can be sized from the folder count without measuring the DOM.
+    // Every row is the same height, so the tree is sized from the folder count.
     private double MeasuredTreeHeight
         => Math.Clamp((Folders.Count + 1) * 2, MinTreeHeight, MaxTreeHeight);
 
@@ -136,7 +136,7 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
         _isDropZoneAttached = await _dropZone.AttachAsync(_tree, DropAction, _selfReference, TreeDropZoneOptions);
     }
 
-    /// <summary>Takes a drop on the row the key names, or on the root's row when it names none; a key naming no folder is a row that has since gone, and the drag ends with nothing dropped.</summary>
+    /// <summary>Takes a drop on the row the key names, where null is the root's row.</summary>
     [JSInvokable]
     public Task HandleDropAsync(string? key)
     {
@@ -180,7 +180,7 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
     bool IExplorerSidebarView.IsCurrent(ICatalogFolderItem item)
         => CurrentFolder?.Key == item.Key;
 
-    // Folders start expanded so a nested tree is discoverable without a first click.
+    // Folders start expanded.
     bool IExplorerSidebarView.IsExpanded(string folderKey)
         => !_collapsedFolderKeys.Contains(folderKey);
 

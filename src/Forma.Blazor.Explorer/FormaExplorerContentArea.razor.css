@@ -14,7 +14,7 @@
     overflow: hidden;
 }
 
-/* The media scrolls inside the panel, so the toolbar, folder tree and pager stay put; a table that outgrows the width scrolls sideways inside its own freeze pane. */
+/* The media scrolls inside the panel, so the toolbar, folder tree and pager stay put. */
 .forma-explorer-scroll {
     flex: 1;
     min-block-size: 0;
@@ -52,7 +52,7 @@
 }
 
 /* --- Pagination --- */
-/* The pager sits inside the card's inset; the views above it decide their own. */
+/* The pager sits inside the card's inset. */
 .forma-explorer-pagination {
     display: flex;
     margin-block-start: var(--space-2);
@@ -72,7 +72,7 @@
     color: var(--text-secondary-color);
 }
 
-/* The button is the path to the next page in the manual mode. */
+/* The sentinel, holding the automatic mode's spinner or the manual mode's button. */
 .forma-explorer-scroll-sentinel {
     display: flex;
     align-items: center;

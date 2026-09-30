@@ -14,10 +14,10 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Tabular details view for explorer items with sortable column headers, its actions and name columns staying put while the columns the reader has chosen scroll sideways.</summary>
+/// <summary>The explorer's details view: a table of items with sortable column headers, its actions and name columns frozen while the other columns scroll sideways.</summary>
 public sealed partial class FormaExplorerDetailsView : FormaComponentBase
 {
-    /// <summary>The collection of items to display.</summary>
+    /// <summary>The items to display.</summary>
     [Parameter] public IReadOnlyList<ICatalogItem> Items { get; set; } = [];
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
@@ -49,7 +49,7 @@ public sealed partial class FormaExplorerDetailsView : FormaComponentBase
             FrozenEdgeLabel = L["Resize Name Column"],
         };
 
-    // The frozen region the reader asked for; the name column is what gives way to honor it.
+    // The frozen extent the reader set, which the name column is sized from.
     private string? FrozenStyle
         => _frozenExtent is { } extent
             ? new CssStyleBuilder().Add("--forma-explorer-frozen-extent", CssLength.FromPx(extent)).ToString()

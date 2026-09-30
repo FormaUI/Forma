@@ -1,10 +1,9 @@
 /* ============================================================
    FormaExplorerAddressBar — CSS isolation
-   Explorer-style navigation buttons, breadcrumb bar, and search
+   The explorer's navigation buttons, breadcrumb bar and search
    ============================================================ */
 
-/* One row that never wraps; the breadcrumb and the search share the room beside the navigation buttons. No divider
-   or trailing space of its own: the header region around it owns both. */
+/* One row, the breadcrumb and the search sharing the room beside the navigation buttons. */
 .forma-explorer-address-bar {
     display: flex;
     align-items: center;
@@ -42,8 +41,7 @@
     flex: 0 0 auto;
 }
 
-/* Searching expands the search box across the bar; only focus inside the box itself counts, so neither navigating nor
-   pressing the search glyph collapses the breadcrumb. */
+/* Searching expands the search box across the bar; only focus inside the box itself counts as searching. */
 .forma-explorer-search-wrapper:has(.forma-search-box-wrapper:focus-within),
 .forma-explorer-address-bar.has-search-query .forma-explorer-search-wrapper {
     flex: 1 1 0;

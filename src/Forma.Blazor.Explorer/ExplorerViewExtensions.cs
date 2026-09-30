@@ -7,11 +7,11 @@ using Forma.Framework.Explorer.Items;
 /// <summary>What the explorer's controls read off the view to decide which actions to offer.</summary>
 internal static class ExplorerViewExtensions
 {
-    /// <summary>Whether the reader can enter and leave selection mode, rather than the explorer opening in it.</summary>
+    /// <summary>Whether the reader can enter and leave selection mode.</summary>
     public static bool CanLeaveSelectMode(this IExplorerView view)
         => !view.Options.SelectOnOpen;
 
-    /// <summary>Whether the controls offer a new folder: only without the sidebar, and only where the current folder permits one.</summary>
+    /// <summary>Whether the controls offer a new folder.</summary>
     public static bool ShowsNewFolderAction(this IExplorerView view)
         => !view.ShowsSidebar
             && (view.CurrentFolder is { } folder

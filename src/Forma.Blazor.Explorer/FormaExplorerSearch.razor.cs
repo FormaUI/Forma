@@ -7,17 +7,17 @@ using Forma.Framework.Explorer.Content.Queries;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>The explorer's search: the box itself, or a glyph standing in for it until pressed where the row has no room for the box.</summary>
+/// <summary>The explorer's search: the box itself, or a glyph standing in for it until pressed.</summary>
 public sealed partial class FormaExplorerSearch : FormaComponentBase
 {
     private FormaExplorerSearchBox? SearchBox { get; set; }
     private bool _isSearching;
     private bool _isFocusPending;
 
-    /// <summary>Whether the search stands as a glyph until pressed, opening the box only while it is in use or holds a query.</summary>
+    /// <summary>Whether the search stands as a glyph until pressed.</summary>
     [Parameter] public bool Collapsible { get; set; }
 
-    /// <summary>Raised as a collapsible search opens its box and gives it up again.</summary>
+    /// <summary>Raised when a collapsible search opens or closes its box.</summary>
     [Parameter] public EventCallback<bool> SearchingChanged { get; set; }
 
     [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;

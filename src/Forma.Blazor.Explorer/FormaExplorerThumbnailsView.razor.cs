@@ -7,10 +7,10 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Thumbnail grid view for explorer items.</summary>
+/// <summary>The explorer's thumbnails view: a grid of item tiles.</summary>
 public sealed partial class FormaExplorerThumbnailsView : FormaComponentBase
 {
-    /// <summary>The collection of items to display.</summary>
+    /// <summary>The items to display.</summary>
     [Parameter] public IReadOnlyList<ICatalogItem> Items { get; set; } = [];
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;

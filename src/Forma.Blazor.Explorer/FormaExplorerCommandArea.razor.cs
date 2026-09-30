@@ -26,7 +26,7 @@ public sealed partial class FormaExplorerCommandArea : FormaComponentBase
     private string SelectionAnnouncement
         => View.Selection.Count > 0 ? L["{SelectedCount} selected", View.Selection.Count].Value : string.Empty;
 
-    /// <summary>Takes the layout the stylesheet names for the header's width; called from the script when it changes.</summary>
+    /// <summary>Takes the layout the stylesheet names for the header's width.</summary>
     [JSInvokable]
     public Task HandleBreakpointAsync(string layout)
     {

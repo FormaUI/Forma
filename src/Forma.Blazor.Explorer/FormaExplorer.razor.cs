@@ -45,10 +45,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>The active page, 1-based.</summary>
     [Parameter] public int CurrentPage { get; set; } = 1;
 
-    /// <summary>The items to display, held in full. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
+    /// <summary>The items to display, held in full.</summary>
     [Parameter] public IReadOnlyList<ICatalogItem>? Items { get; set; }
 
-    /// <summary>The provider the items are read from, a slice at a time. Supply this or <see cref="Items"/>, not both.</summary>
+    /// <summary>The provider the items are read from, a slice at a time.</summary>
     [Parameter] public ICatalogProvider? ItemsProvider { get; set; }
 
     /// <summary>The folders the sidebar's tree shows and items are moved between.</summary>
@@ -57,16 +57,16 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private bool ShowsSidebar
         => Options.ShowSidebar && Folders is { Count: > 0 };
 
-    /// <summary>How many items the whole library holds, for hosts that supply one folder at a time; the supplied items are counted when null.</summary>
+    /// <summary>The total count of items the whole library holds, where null counts the supplied items.</summary>
     [Parameter] public int? TotalCount { get; set; }
 
-    /// <summary>How many bytes the whole library holds, for hosts that supply one folder at a time; the supplied items are measured when null.</summary>
+    /// <summary>The total bytes the whole library holds, where null measures the supplied items.</summary>
     [Parameter] public long? TotalBytes { get; set; }
 
-    /// <summary>The ceilings the explorer keeps, refusing anything that would cross one.</summary>
+    /// <summary>The constraints the explorer keeps.</summary>
     [Parameter] public CatalogConstraints Constraints { get; set; } = CatalogConstraints.None;
 
-    /// <summary>Raised when a ceiling stopped an operation, with the reason already written for a reader.</summary>
+    /// <summary>Raised when a constraint stops an operation.</summary>
     [Parameter] public EventCallback<CatalogRejection> OnRejected { get; set; }
 
     /// <summary>How the explorer presents itself and moves through the collection.</summary>
@@ -111,7 +111,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>The number of items shown per page.</summary>
     [Parameter] public int PageSize { get; set; } = DefaultPageSize;
 
-    /// <summary>Custom search placeholder text.</summary>
+    /// <summary>The search box's placeholder text.</summary>
     [Parameter] public string? SearchPlaceholder { get; set; }
 
     /// <summary>The currently selected items.</summary>
@@ -135,7 +135,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Raised when the view mode changes.</summary>
     [Parameter] public EventCallback<ExplorerViewMode> ViewModeChanged { get; set; }
 
-    /// <summary>The field the shown items are gathered into groups by, or none.</summary>
+    /// <summary>The field the shown items are grouped by.</summary>
     [Parameter] public ExplorerGroupField GroupField { get; set; }
 
     /// <summary>Raised when the reader changes what the items are grouped by.</summary>
@@ -195,7 +195,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private IReadOnlyList<ICatalogFolderItem>? _breadcrumbs;
 
-    /// <summary>The folder list indexed, rebuilt once per parameter set because a host may mutate the list it passed.</summary>
+    /// <summary>The folder list indexed as a tree.</summary>
     private CatalogFolderTree FolderTree
         => _folderTree ??= new CatalogFolderTree(Folders);
 
@@ -283,10 +283,11 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private bool IsProviderMode
         => ItemsProvider is not null;
 
-    /// <summary>
-    /// How many items match the current search and sort, or null when the provider cannot say. Pages are cut in the
-    /// provider's own count, so paging reads the reported total; appended slices count what they list.
-    /// </summary>
+    /// <summary>How many items match the current search and sort, where null means the provider cannot say.</summary>
+    /// <remarks>
+    /// Pages are cut in the provider's own count, so paging reads the provider's reported total; appended slices
+    /// count the items they list.
+    /// </remarks>
     private int? MatchingCount
     {
         get
@@ -408,7 +409,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return;
         }
 
-        // The folder is the host's to know, so it is watched for change rather than sent, and a move invalidates the items shown.
+        // The folder is watched for change rather than sent to the provider, and a move invalidates the items shown.
         var moved = _queryParameters.Update(ItemsProvider, CurrentFolder?.Key, PageSize);
 
         if (!moved)
@@ -436,8 +437,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             _collection.SortField,
             _collection.SortDirection);
 
-        // FetchAsync lives in a library that must ConfigureAwait(false), so its continuation is not
-        // guaranteed to land back on the render thread; StateHasChanged needs InvokeAsync to get there.
+        // FetchAsync can resume off the renderer, so its state change is dispatched back onto it.
         return _providerItems.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, append, cancellationToken);
     }
 
@@ -486,7 +486,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return depth;
     }
 
-    // How many levels the folder's own subtree spans, so moving it can be measured before it lands.
+    // How many levels the folder's own subtree spans, the folder itself counting as one.
     private int GetHeight(ICatalogFolderItem folder)
     {
         var tallest = 0;
@@ -644,10 +644,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     string? IExplorerSearchView.SearchPlaceholder => SearchPlaceholder;
 
-    // A cascaded interaction call is received by whichever descendant's own markup wired it, so its
-    // implicit render trigger lands there rather than here; the render this component needs is requested
-    // explicitly, through the renderer rather than inline, since some callers are still mid-dispatch of
-    // their own event (a dropdown menu closing itself, for one) when the call reaches this component.
+    // A cascaded call's implicit render lands on the descendant that wired it, so this component's render is
+    // requested explicitly, through the renderer, since a caller can still be dispatching its own event.
     private void Run(Action action)
     {
         action();
@@ -766,7 +764,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             }
         ];
 
-    /// <summary>Changes the selection and reports it, so no caller can do the one without the other.</summary>
+    /// <summary>Changes the selection and reports it.</summary>
     private async Task ChangeSelectionAsync(Action<CatalogSelection> change)
     {
         change(_selection);
@@ -776,7 +774,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         StateHasChanged();
     }
 
-    // Adopting what the host already supplied must not report it straight back at them.
+    // The host's own selection is adopted without being reported back.
     private void AdoptSelection(IReadOnlyList<ICatalogItem> selected)
         => _selection.Replace(selected);
 
@@ -1092,7 +1090,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await DetailsHeaderVisibleChanged.InvokeAsync(isVisible);
     }
 
-    // Every caller names the parent it means, so no folder here is the root rather than wherever the reader happens to be.
+    // A null parent is the top level.
     private async Task OpenFolderDialogAsync(ICatalogFolderItem? parent)
     {
         _rejectionMessage = null;

@@ -33,7 +33,7 @@ public sealed partial class FormaExplorerThumbnail : FormaComponentBase
             ArchiveResourceInfo => Glyph.FileArchive,
             DocumentResourceInfo => Glyph.FileText,
 
-            // Anything the library does not recognize says so, rather than passing itself off as a document.
+            // An unrecognized kind takes the generic file glyph.
             _ => Glyph.File
         };
 

@@ -1,6 +1,7 @@
 /* ============================================================
    FormaExplorerDetailsView — CSS isolation
-   Tabular data grid with sortable columns and item operations
+   The details table: sortable columns, the frozen actions and
+   name, and the row states
    ============================================================ */
 
 /* The frozen region is the actions column and the name column; dragging its edge sets the extent, and the name
@@ -26,8 +27,8 @@
     white-space: nowrap;
 }
 
-/* A header starts where its column's cells start; the browser would center it on its own. The header row is a strip
-   set back into the backdrop, opaque so a frozen header covers the headers sliding beneath it. */
+/* A header starts where its column's cells start. The header row is a strip set back into the backdrop, opaque so a
+   frozen header covers the headers sliding beneath it. */
 .forma-explorer-details-table th {
     font-weight: 600;
     color: var(--text-primary-color);
@@ -61,7 +62,7 @@
     max-inline-size: 0;
 }
 
-/* A frozen cell lays its row's tint over the backdrop's fill, so the cells sliding beneath it do not show through. */
+/* A frozen cell lays its row's tint over the backdrop's fill, so it covers the cells sliding beneath it. */
 .forma-explorer-details-table td.forma-freeze-pane-frozen {
     background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--backdrop-flat-bg-color);
 }
@@ -153,7 +154,7 @@
     }
 }
 
-/* A row the explorer does not let the reader drag. */
+/* A row the reader cannot drag. */
 .forma-explorer-details-row[draggable="false"],
 .forma-explorer-details-row[draggable="false"]:active {
     cursor: default;
@@ -199,7 +200,7 @@
     touch-action: manipulation;
 }
 
-/* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
+/* Isolated in the reading direction: a direction derived from the name would align a Latin one against it. */
 .forma-explorer-details-name-text {
     font-weight: 500;
     color: var(--text-primary-color);

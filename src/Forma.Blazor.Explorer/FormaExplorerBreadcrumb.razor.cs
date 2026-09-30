@@ -9,7 +9,7 @@ using Forma.Framework.Explorer.Navigation;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The explorer's folder path as a breadcrumb, from the root through the current folder, each crumb opening a menu of its subfolders where the options allow.</summary>
+/// <summary>The explorer's folder path as a breadcrumb, from the root through the current folder, each crumb able to open a menu of its subfolders.</summary>
 public sealed partial class FormaExplorerBreadcrumb : FormaComponentBase
 {
     [CascadingParameter] private IExplorerConfigurationView Configuration { get; set; } = default!;

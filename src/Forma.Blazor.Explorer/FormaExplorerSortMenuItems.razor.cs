@@ -6,7 +6,7 @@ using Forma.Framework.Explorer.Content.Queries;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The items of a sort menu: every field with the current one checked, both directions with the current one checked, and every grouping with the current one checked.</summary>
+/// <summary>The items of a sort menu: the sort fields, the sort directions and the groupings, each with the current one checked.</summary>
 public sealed partial class FormaExplorerSortMenuItems : FormaComponentBase
 {
     private static readonly CatalogSortField[] SortFields = Enum.GetValues<CatalogSortField>();

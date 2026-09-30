@@ -3,7 +3,7 @@
    The bordered bar the folder path sits in
    ============================================================ */
 
-/* A path longer than the bar is clipped at its edge, so it never runs under what stands beside it. */
+/* A path longer than the bar is clipped at its edge. */
 .forma-explorer-breadcrumb-bar {
     min-inline-size: 0;
     overflow: hidden;

@@ -6,7 +6,7 @@ using Forma.Framework.Explorer.Items;
 /// <summary>Reads an explorer item's state as the CSS classes that draw it.</summary>
 internal static class ExplorerItemStateExtensions
 {
-    /// <summary>The state classes the item's element carries: disabled, invisible, both, or none.</summary>
+    /// <summary>The state classes the item's element carries.</summary>
     internal static string GetStateClasses(this ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);

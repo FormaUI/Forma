@@ -58,7 +58,7 @@
     }
 }
 
-/* An item the explorer does not let the reader drag. */
+/* An item the reader cannot drag. */
 .forma-explorer-list-item[draggable="false"],
 .forma-explorer-list-item[draggable="false"]:active {
     cursor: default;
@@ -114,7 +114,7 @@
     cursor: not-allowed;
 }
 
-/* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
+/* Isolated in the reading direction: a direction derived from the name would align a Latin one against it. */
 .forma-explorer-list-item-name {
     font-weight: 500;
     color: var(--text-primary-color);

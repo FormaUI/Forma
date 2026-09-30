@@ -56,13 +56,13 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
 
     private Task SyncSentinelAsync()
     {
-        // Only automatic scrolling watches the sentinel; the manual mode waits for the button to be pressed.
+        // Only automatic infinite scroll watches the sentinel; the manual mode loads on the button.
         var wantsSentinel = Configuration.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic && View.Paging.HasMorePages;
 
         return _sentinel.SyncAsync(this, wantsSentinel, _sentinelElement, _scrollElement);
     }
 
-    /// <summary>Appends the next page of items, as the reader scrolls toward the end of the current one.</summary>
+    /// <summary>Appends the next page of items.</summary>
     [JSInvokable]
     public async Task HandleReachedAsync()
     {
@@ -71,7 +71,7 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
             return;
         }
 
-        // An observer reports crossings, not a standing state, so it is re-armed to keep filling a viewport the new page did not.
+        // The observer reports crossings alone, so it is re-armed to keep filling a viewport the new page leaves short.
         _sentinel.Invalidate();
         _isLoadingPage = true;
 

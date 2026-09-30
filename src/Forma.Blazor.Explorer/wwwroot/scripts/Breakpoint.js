@@ -3,8 +3,7 @@
  *
  * A container query decides a tier in CSS and records it in a custom property. The target's
  * computed value of that property is read back each time the target is laid out again and
- * reported to the owner only when it changes, so the arithmetic behind a tier lives once, in
- * the stylesheet, and the component renders what the tier names.
+ * reported to the owner only when it changes.
  */
 
 import { tell } from '../../forma/core/scripts/Owner.js';
@@ -41,7 +40,7 @@ class Breakpoint {
     }
 
     #report() {
-        // A target taken out of the document has no tier, and its owner is on its way out with it.
+        // A target taken out of the document has no tier.
         if (!this.#target.isConnected) {
             return;
         }

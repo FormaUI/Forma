@@ -8,7 +8,7 @@ internal sealed class ExplorerUploadPanel
     /// <summary>Whether the panel is shown.</summary>
     public bool IsOpen { get; private set; }
 
-    /// <summary>The files picked for upload, or null until a selection is made.</summary>
+    /// <summary>The files picked for upload.</summary>
     public IReadOnlyList<IBrowserFile>? PickedFiles { get; private set; }
 
     /// <summary>Shows or hides the panel.</summary>

@@ -1,7 +1,6 @@
 /* ============================================================
    FormaExplorerCommandArea — CSS isolation
-   The header's two layouts, chosen here by the explorer's width
-   and read back by the component
+   The header's layouts, chosen here by the explorer's width
    ============================================================ */
 
 /* The stylesheet names the layout in --forma-explorer-header-layout and the component renders the one named.

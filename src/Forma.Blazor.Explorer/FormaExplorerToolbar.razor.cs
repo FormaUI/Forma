@@ -8,7 +8,7 @@ using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Action toolbar for explorer operations, view switching, and sorting.</summary>
+/// <summary>The explorer's toolbar: its operations, view modes, columns and sorting, or the selection bar while items are selected.</summary>
 public sealed partial class FormaExplorerToolbar : FormaComponentBase
 {
     [CascadingParameter] private IExplorerView View { get; set; } = default!;

@@ -13,7 +13,7 @@ public sealed partial class FormaExplorerFolderNode : FormaComponentBase
     /// <summary>The folder item this node represents.</summary>
     [Parameter, EditorRequired] public ICatalogFolderItem Item { get; set; } = default!;
 
-    /// <summary>How many levels below the root this node sits, driving its indent.</summary>
+    /// <summary>How many levels below the root the node sits.</summary>
     [Parameter] public int Depth { get; set; }
 
     [CascadingParameter] private IExplorerSidebarView Sidebar { get; set; } = default!;

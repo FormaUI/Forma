@@ -8,7 +8,7 @@ using Forma.Framework.Localization;
 /// <summary>The glyphs and labels the explorer's sort controls draw a field and a direction with.</summary>
 internal static class ExplorerSortPresentation
 {
-    /// <summary>The glyph marking <paramref name="direction"/> on <paramref name="field"/>: names and kinds sort alphabetically, sizes and dates numerically.</summary>
+    /// <summary>The glyph marking <paramref name="direction"/> on <paramref name="field"/>.</summary>
     public static Glyph GetGlyph(CatalogSortField field, CatalogSortDirection direction)
         => (field is CatalogSortField.Name or CatalogSortField.Kind, direction is CatalogSortDirection.Ascending) switch
         {

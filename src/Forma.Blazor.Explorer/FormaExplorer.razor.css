@@ -1,7 +1,7 @@
 /* ============================================================
    FormaExplorer — CSS isolation
-   Explorer-style responsive media manager with multi-view layout,
-   folder tree, dynamic paging, and modal dialogs
+   The explorer's frame: its canvas, refusal notice, upload panel,
+   preview, body layout and dialogs
    ============================================================ */
 
 .forma-explorer {
@@ -112,7 +112,7 @@
     min-block-size: min(66vh, 32rem);
 }
 
-/* A sound file or document has no artwork to fill the frame, so its player or page is centered on the media surface instead of floating in empty space. */
+/* A sound file's player is centered on the media surface, which fills the frame. */
 .forma-explorer ::deep .forma-dialog .forma-file-viewer-audio {
     display: flex;
     align-items: center;
@@ -142,8 +142,7 @@
 }
 
 /* --- Body Layout --- */
-/* The sidebar and the content are two backdrops in a row; the layout lays the seam between them and the splitter
-   stands in it. The body keeps its own height so the media scrolls inside it. */
+/* The body keeps its own height so the media scrolls inside it. */
 .forma-explorer ::deep .forma-explorer-body {
     overflow: hidden;
 }

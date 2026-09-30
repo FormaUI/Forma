@@ -8,7 +8,7 @@ using Forma.Framework.Explorer.Navigation;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The menu holding everything the compact header has no row for: navigation, actions, view mode and sorting.</summary>
+/// <summary>The compact header's menu: navigation, actions, view mode, sorting and columns.</summary>
 public sealed partial class FormaExplorerOverflowMenu : FormaComponentBase
 {
     [CascadingParameter] private IExplorerView View { get; set; } = default!;

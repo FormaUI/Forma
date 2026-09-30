@@ -180,7 +180,7 @@
     flex-shrink: 0;
 }
 
-/* Isolated but not self-directed: deriving direction from the name would align a Latin one to the edge the splitter moves. */
+/* Isolated in the reading direction: a direction derived from the name would align a Latin one to the edge the splitter moves. */
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-name {
     flex: 1;
     unicode-bidi: isolate;
@@ -242,7 +242,7 @@
     white-space: nowrap;
 }
 
-/* The tools stay hidden until the panel is worked with, matching how the folder row actions behave. */
+/* The tools stay hidden until the panel is hovered or holds focus. */
 .forma-explorer-sidebar-tools {
     display: flex;
     align-items: center;
