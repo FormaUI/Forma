@@ -265,7 +265,7 @@
             await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>(CreateProducts().OrderBy(product => product.Category).ToArray(), 6)));
 
             // Assert
-            Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent));
+            cut.WaitForAssertion(() => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-grid-group-name").Select(name => name.TextContent)));
         }
 
         [Fact]
@@ -1538,12 +1538,11 @@
                         </Columns>
                     </FormaDataGrid>
                 </FormaDataView>);
-            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
 
-            // Assert
-            Assert.Multiple(
+            // Assert — the rows draw once before the columns name the sort, and sorted once they have
+            cut.WaitForAssertion(() => Assert.Multiple(
                 () => Assert.Equal(["Item 3", "Item 2", "Item 1"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList()),
-                () => Assert.Equal("descending", cut.Find("thead th").GetAttribute("aria-sort")));
+                () => Assert.Equal("descending", cut.Find("thead th").GetAttribute("aria-sort"))));
         }
 
         [Fact]
