@@ -824,6 +824,26 @@ body {
     overflow: auto;
 }
 
+/* A virtualized list's scrolling box, tall enough to show a window of items with more above and below. */
+.demo-virtualize-box {
+    box-sizing: border-box;
+    block-size: 20rem;
+    overflow-y: auto;
+}
+
+/* One item of a virtualized list, as tall as a target so its checkbox meets the floor. */
+.demo-virtualize-item {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-block-size: var(--target-size-md);
+    padding-inline: var(--space-3);
+}
+
+.demo-virtualize-placeholder {
+    color: var(--text-secondary-color);
+}
+
 /* Room above and below a field in a scroll box, so scrolling carries the field out of view and back. */
 .demo-scroll-filler {
     display: flex;

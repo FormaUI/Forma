@@ -1,0 +1,152 @@
+@page "/virtualize"
+@attribute [ShowcasePage("FormaVirtualize")]
+@rendermode InteractiveServer
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaVirtualizePage> L
+
+<h1>FormaVirtualize</h1>
+<p class="description">@L["Renders the items of a long collection near the viewport, with spacers standing for the rest, and keeps rendered the items its owner pins wherever they lie."]</p>
+
+<div class="demo-section">
+    <h2>@L["A Long List"]</h2>
+    <p class="description">@L["Ten thousand items, each with a checkbox, pinning the last item to take the focus. Focus one, scroll it out of view and back with the wheel, and it still holds the focus: Space toggles it and Tab carries on from it."]</p>
+    <div class="demo-box demo-virtualize-box">
+        <FormaVirtualize TItem="Todo" Items="_todos" ItemKey="@(todo => todo.Id)" ItemSize="44" PinnedKeys="Pin(_focusedTodo)">
+            <ItemContent Context="todo">
+                <div class="demo-virtualize-item" @onfocusin="() => _focusedTodo = todo.Id">
+                    <FormaCheckBox @bind-Value="todo.Done">@todo.Name</FormaCheckBox>
+                </div>
+            </ItemContent>
+        </FormaVirtualize>
+    </div>
+    <p class="demo-note">@(_focusedTodo is { } focused ? L["{Name} is pinned and stays rendered wherever the list scrolls.", _todos[focused].Name] : L["Nothing is pinned until an item takes the focus."])</p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Rows of a Table"]</h2>
+    <p class="description">@L["A list drawn as the rows of a table body, with a table row standing for each run of rows outside the window, pinning the last row to take the focus."]</p>
+    <div class="demo-box demo-virtualize-box">
+        <table class="demo-table">
+            <thead>
+                <tr>
+                    <th scope="col">@L["Stage"]</th>
+                    <th scope="col">@L["Distance"]</th>
+                    <th scope="col">@L["Done"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                <FormaVirtualize TItem="Stage" Items="_stages" ItemKey="@(stage => stage.Id)" ItemSize="36" SpacerElement="tr" PinnedKeys="Pin(_focusedStage)">
+                    <ItemContent Context="stage">
+                        <tr @onfocusin="() => _focusedStage = stage.Id">
+                            <td>@stage.Name</td>
+                            <td>@L["{Distance} km", stage.Distance.ToString("N1", CultureInfo.CurrentCulture)]</td>
+                            <td><FormaCheckBox aria-label="@L["{Name} done", stage.Name]" @bind-Value="stage.Done" /></td>
+                        </tr>
+                    </ItemContent>
+                </FormaVirtualize>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Scrolling to an Item"]</h2>
+    <p class="description">@L["A scroll completes once the item is in view, by the least scroll that shows it or aligned to the top, and answers false for a position with no item."]</p>
+    <div class="demo-row">
+        <FormaButton OnClick="() => ScrollToAsync(4999, ScrollAlignment.Nearest)">@L["Show {Name}", _targets[4999].Name]</FormaButton>
+        <FormaButton OnClick="() => ScrollToAsync(4999, ScrollAlignment.Start)">@L["{Name} at the Top", _targets[4999].Name]</FormaButton>
+        <FormaButton OnClick="() => ScrollToAsync(_targets.Count - 1, ScrollAlignment.Nearest)">@L["Show the Last"]</FormaButton>
+        <FormaButton OnClick="() => ScrollToAsync(_targets.Count, ScrollAlignment.Nearest)">@L["Show One Past the Last"]</FormaButton>
+    </div>
+    <div class="demo-box demo-virtualize-box">
+        <FormaVirtualize @ref="_targetList" TItem="Todo" Items="_targets" ItemKey="@(todo => todo.Id)" ItemSize="44">
+            <ItemContent Context="todo">
+                <div class="demo-virtualize-item">@todo.Name</div>
+            </ItemContent>
+        </FormaVirtualize>
+    </div>
+    <p class="demo-note" role="status">@_scrollResult</p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Items from a Provider"]</h2>
+    <p class="description">@L["A hundred thousand items read a window at a time from a source that takes a moment to answer, with a placeholder standing for each item until it arrives. A window the reader scrolled past before it arrived is canceled."]</p>
+    <div class="demo-box demo-virtualize-box">
+        <FormaVirtualize TItem="Todo" ItemsProvider="ProvideAsync" ItemKey="@(todo => todo.Id)" ItemSize="44">
+            <ItemContent Context="todo">
+                <div class="demo-virtualize-item">@todo.Name</div>
+            </ItemContent>
+            <Placeholder>
+                <div class="demo-virtualize-item demo-virtualize-placeholder">@L["Loading…"]</div>
+            </Placeholder>
+        </FormaVirtualize>
+    </div>
+</div>
+
+@code {
+    private const int ProvidedCount = 100_000;
+
+    private List<Todo> _todos = [];
+    private List<Stage> _stages = [];
+    private List<Todo> _targets = [];
+
+    private FormaVirtualize<Todo> _targetList = default!;
+
+    private int? _focusedTodo;
+    private int? _focusedStage;
+    private string? _scrollResult;
+
+    protected override void OnInitialized()
+    {
+        _todos = [.. Enumerable.Range(0, 10_000).Select(CreateTodo)];
+        _targets = [.. Enumerable.Range(0, 10_000).Select(CreateTodo)];
+        _stages = [.. Enumerable.Range(0, 5_000).Select(id => new Stage(id, L["Stage {Number}", (id + 1).ToString("N0", CultureInfo.CurrentCulture)], 40 + (id * 7 % 180)))];
+    }
+
+    private Todo CreateTodo(int id)
+        => new(id, L["Task {Number}", (id + 1).ToString("N0", CultureInfo.CurrentCulture)]);
+
+    private static IReadOnlyCollection<object> Pin(int? key)
+        => key is { } pinned ? [pinned] : [];
+
+    private async Task ScrollToAsync(int index, ScrollAlignment alignment)
+    {
+        var reached = await _targetList.ScrollToIndexAsync(index, alignment);
+
+        _scrollResult = reached
+            ? L["{Name} is in view.", _targets[index].Name]
+            : L["There is no item at position {Position}.", (index + 1).ToString("N0", CultureInfo.CurrentCulture)];
+    }
+
+    private async ValueTask<ItemsProviderResult<Todo>> ProvideAsync(ItemsProviderRequest request)
+    {
+        await Task.Delay(400, request.CancellationToken);
+
+        var end = Math.Min(request.StartIndex + request.Count, ProvidedCount);
+
+        return new ItemsProviderResult<Todo>(Enumerable.Range(request.StartIndex, end - request.StartIndex).Select(CreateTodo), ProvidedCount);
+    }
+
+    private sealed class Todo(int id, string name)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; } = name;
+
+        public bool Done { get; set; }
+    }
+
+    private sealed class Stage(int id, string name, double distance)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; } = name;
+
+        public double Distance { get; } = distance;
+
+        public bool Done { get; set; }
+    }
+}

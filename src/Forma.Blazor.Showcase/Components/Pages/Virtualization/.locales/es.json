@@ -1,0 +1,30 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaVirtualizePage": {
+    "Renders the items of a long collection near the viewport, with spacers standing for the rest, and keeps rendered the items its owner pins wherever they lie.": "Muestra los elementos de una colección larga cercanos a la zona visible, con espaciadores en lugar del resto, y mantiene mostrados los elementos que su propietario fija, estén donde estén.",
+    "A Long List": "Una lista larga",
+    "Ten thousand items, each with a checkbox, pinning the last item to take the focus. Focus one, scroll it out of view and back with the wheel, and it still holds the focus: Space toggles it and Tab carries on from it.": "Diez mil elementos, cada uno con una casilla, fijando el último elemento que recibió el foco. Enfoque uno, desplácelo fuera de la vista y de vuelta con la rueda, y seguirá teniendo el foco: Espacio lo alterna y Tab continúa desde él.",
+    "{Name} is pinned and stays rendered wherever the list scrolls.": "{Name} está fijado y sigue mostrado adondequiera que se desplace la lista.",
+    "Nothing is pinned until an item takes the focus.": "Nada está fijado hasta que un elemento recibe el foco.",
+    "Task {Number}": "Tarea {Number}",
+    "Rows of a Table": "Filas de una tabla",
+    "A list drawn as the rows of a table body, with a table row standing for each run of rows outside the window, pinning the last row to take the focus.": "Una lista mostrada como las filas del cuerpo de una tabla, con una fila de tabla en lugar de cada tramo de filas fuera de la ventana, fijando la última fila que recibió el foco.",
+    "Stage": "Etapa",
+    "Distance": "Distancia",
+    "Done": "Hecha",
+    "Stage {Number}": "Etapa {Number}",
+    "{Distance} km": "{Distance} km",
+    "{Name} done": "{Name} hecha",
+    "Scrolling to an Item": "Desplazarse a un elemento",
+    "A scroll completes once the item is in view, by the least scroll that shows it or aligned to the top, and answers false for a position with no item.": "Un desplazamiento termina cuando el elemento está a la vista, con el menor desplazamiento que lo muestra o alineado arriba, y responde false para una posición sin elemento.",
+    "Show {Name}": "Mostrar {Name}",
+    "{Name} at the Top": "{Name} arriba",
+    "Show the Last": "Mostrar el último",
+    "Show One Past the Last": "Mostrar el siguiente al último",
+    "{Name} is in view.": "{Name} está a la vista.",
+    "There is no item at position {Position}.": "No hay ningún elemento en la posición {Position}.",
+    "Items from a Provider": "Elementos de un proveedor",
+    "A hundred thousand items read a window at a time from a source that takes a moment to answer, with a placeholder standing for each item until it arrives. A window the reader scrolled past before it arrived is canceled.": "Cien mil elementos leídos una ventana a la vez de un origen que tarda un momento en responder, con un marcador en lugar de cada elemento hasta que llega. Una ventana que el lector pasó antes de que llegara se cancela.",
+    "Loading…": "Cargando…"
+  }
+}
