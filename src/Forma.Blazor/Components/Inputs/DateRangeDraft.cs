@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Inputs;
 /// <summary>A range being picked: the anchored first day, the day under the pointer, and the ordered span between them.</summary>
 internal sealed class DateRangeDraft
 {
-    /// <summary>The first day picked, or null while no range is being drawn.</summary>
+    /// <summary>The first day picked.</summary>
     public DateOnly? Anchor { get; private set; }
 
     /// <summary>The day the pointer last crossed while the range was being drawn.</summary>
@@ -13,7 +13,7 @@ internal sealed class DateRangeDraft
     public bool IsAnchored
         => Anchor is not null;
 
-    /// <summary>The anchored day and the hovered day in date order, or null while no range is being drawn.</summary>
+    /// <summary>The anchored day and the hovered day in date order.</summary>
     public (DateOnly From, DateOnly To)? Span
     {
         get
@@ -36,7 +36,7 @@ internal sealed class DateRangeDraft
         Hover = date;
     }
 
-    /// <summary>Moves the hovered day, meaning nothing while no range is being drawn.</summary>
+    /// <summary>Moves the hovered day of a range being drawn.</summary>
     public void HoverAt(DateOnly date)
     {
         if (IsAnchored)
@@ -45,7 +45,7 @@ internal sealed class DateRangeDraft
         }
     }
 
-    /// <summary>Ends the range at the given day, answering it in date order and clearing the draft.</summary>
+    /// <summary>Ends the range at the given day, returning it in date order and clearing the draft.</summary>
     public (DateOnly Start, DateOnly End) CompleteAt(DateOnly date)
     {
         var anchor = Anchor!.Value;

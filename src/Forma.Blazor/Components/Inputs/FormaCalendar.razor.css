@@ -170,7 +170,7 @@
     border-radius: var(--radius-sm);
 }
 
-/* A phone shows one month; the second would only sit beneath the first, further from the field. */
+/* A phone width shows the first month alone. */
 @media (max-width: 30rem) {
     .forma-calendar-month:nth-child(n + 2) {
         display: none;

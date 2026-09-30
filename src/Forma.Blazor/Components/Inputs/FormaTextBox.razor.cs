@@ -7,22 +7,22 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A single-line text input, bare by default and wearing the shared field chrome once it is given a label.</summary>
+/// <summary>A single-line text input, bare or inside a labeled field.</summary>
 public sealed partial class FormaTextBox : FormaInputBase<string?>
 {
     private AutofillTracker _autofill = default!;
     private bool _isWatchingAutofill;
 
-    /// <summary>The placeholder text shown when the input is empty. Ignored once a label names the field.</summary>
+    /// <summary>The placeholder text shown when the input is empty.</summary>
     [Parameter] public string? Placeholder { get; set; }
 
-    /// <summary>The floating label. Supplying one dresses the box in the shared field chrome.</summary>
+    /// <summary>The floating label of the field the box sits in.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>Marks the field as required, showing the marker beside a label and setting aria-required.</summary>
+    /// <summary>Whether the field is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
-    /// <summary>Whether the text box is disabled and ignores user input.</summary>
+    /// <summary>Whether the text box is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>Whether the text box is read-only.</summary>
@@ -31,13 +31,13 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     /// <summary>What kind of text the box holds and how an agent assists typing it.</summary>
     [Parameter] public TextBoxOptions Options { get; set; } = TextBoxOptions.Default;
 
-    /// <summary>How wide the box stands. Absent, it fills the space it is given.</summary>
+    /// <summary>How wide the box stands, where null fills the space it is given.</summary>
     [Parameter] public CssLength? Width { get; set; }
 
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
 
-    // The floating label sits over the box, so it takes the placeholder's place rather than sharing it.
+    // The floating label takes the placeholder's place over a labeled box.
     private string? EffectivePlaceholder
         => HasLabel ? " " : Placeholder;
 
@@ -90,7 +90,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     private string? SpellCheckValue
         => Options.SpellCheck is { } spellCheck ? (spellCheck ? "true" : "false") : null;
 
-    // The wrapper is what occupies the row, so narrowing the input alone would leave the field full width.
+    // A labeled box's width sizes the field wrapper, which is what occupies the row.
     private string? FieldStyle
         => HasLabel ? WidthDeclaration : null;
 
@@ -122,9 +122,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     protected override void OnInitialized()
         => _autofill = new AutofillTracker(Context.JS);
 
-    // Only the floating label needs it, since detection exists to keep that label floated
-    // over a value the browser filled without ever raising an input event. A label can
-    // arrive after the first render, so the flag rather than firstRender guards it.
+    // Autofill is watched once labeled, keeping the label floated over a browser-filled value; a label can arrive after the first render.
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -143,7 +141,6 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
             .Add("forma-field-input", HasLabel)
             .Add("forma-text-box", !HasLabel);
 
-    // The width is the box's own style only when bare; labeled, it sizes the field wrapper instead.
     /// <inheritdoc />
     protected override void BuildRootStyle(CssStyleBuilder builder)
     {

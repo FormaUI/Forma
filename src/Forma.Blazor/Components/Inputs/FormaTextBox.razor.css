@@ -1,9 +1,7 @@
 /* ============================================================
    FormaTextBox — CSS isolation
-   The bare box. Once labeled the element wears FormaField's
-   .forma-field-input instead. The box both share, and its size,
-   is drawn in forma-input.css; only the states this component
-   adds are set here.
+   The text box's disabled, read-only and validation states; its
+   box comes from forma-input.css.
    ============================================================ */
 
 .forma-text-box:disabled {
@@ -18,8 +16,8 @@
     background-color: var(--forma-text-box-readonly-bg-color, var(--hover-bg-color));
 }
 
-/* Valid waits for an edit so an untouched form is not all green; invalid does not, since
-   submitting an untouched required field marks it invalid without ever marking it modified. */
+/* Valid shows once the value is modified; invalid shows at once, since a submitted untouched
+   field is invalid without being modified. */
 .forma-text-box.modified.valid {
     border-color: var(--forma-valid-color, var(--success-color));
 }

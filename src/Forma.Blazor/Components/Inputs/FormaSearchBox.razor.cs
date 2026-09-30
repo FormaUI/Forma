@@ -9,12 +9,12 @@ using Forma.Framework.Timing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A search field with a leading glyph, a clear button once populated, and an optional debounce before it reports a search.</summary>
+/// <summary>A search field with a leading glyph and a clear button that reports a search as the user types.</summary>
 public sealed partial class FormaSearchBox : FormaElementBase
 {
     private const string SearchAction = "search-box.search";
 
-    // Enter runs the search at once, a route on the field itself so it wins over the field's own claim on the key and the form around it never takes it as a submission.
+    // Enter runs the search at once through a route on the field itself, which takes the key ahead of the field's own claim and of the form's submission.
     private static readonly InputProfile SearchProfile = new()
     {
         InputRoutes = [new InputRoute(SearchAction, new KeyBinding("Enter"))],
@@ -25,10 +25,11 @@ public sealed partial class FormaSearchBox : FormaElementBase
     /// <summary>The current text.</summary>
     [Parameter] public string Value { get; set; } = string.Empty;
 
-    /// <summary>Raised on every keystroke, so a caller can keep a bound value in step as the user types.</summary>
+    /// <summary>Raised with the text on every keystroke.</summary>
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
-    /// <summary>Raised with the committed search term: instantly, or after the configured debounce delay once typing pauses. Pressing Enter or clearing the field bypasses the wait.</summary>
+    /// <summary>Raised with the committed search term.</summary>
+    /// <remarks>Typing reports the term once it pauses for the debounce delay, or at every keystroke where the delay is zero; Enter and clearing the field report it at once.</remarks>
     [Parameter] public EventCallback<string> OnSearch { get; set; }
 
     /// <summary>How the field presents itself and when it reports a search.</summary>

@@ -8,7 +8,7 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>A password field with a toggle that reveals the typed value.</summary>
+/// <summary>A password field with a toggle that reveals the typed value, and a strength meter and advice it can show.</summary>
 public sealed partial class FormaPasswordBox : FormaInputBase<string?>
 {
     // The lengths the built-in rating scores a point at; the longer one is also what the advice asks for.
@@ -24,10 +24,10 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>Marks the field as required, showing a visual indicator and setting aria-required.</summary>
+    /// <summary>Whether the field is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
-    /// <summary>Shows the button that reveals the typed value.</summary>
+    /// <summary>Whether the field shows the button that reveals the typed value.</summary>
     [Parameter] public bool ShowToggle { get; set; } = true;
 
     /// <summary>The autocomplete token passed to the input, such as "current-password" or "new-password".</summary>
@@ -36,10 +36,10 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     /// <summary>How the typed value's strength is judged and shown.</summary>
     [Parameter] public PasswordStrengthOptions StrengthOptions { get; set; } = PasswordStrengthOptions.Default;
 
-    // Shorter runs than this match too much ordinary language to be worth forbidding.
+    // The shortest part of a forbidden term that is matched on its own.
     private const int MinimumFragmentLength = 4;
 
-    // One segment per rating, so the meter cannot fall out of step with the scale.
+    // One meter segment per rating.
     private static readonly int SegmentCount = Enum.GetValues<PasswordStrength>().Length;
 
     private PasswordStrength? Strength
@@ -47,8 +47,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
             : _hasForbiddenTerm ? PasswordStrength.Weak
             : (StrengthOptions.Evaluator ?? Rate)(CurrentValue);
 
-    // Length first, then how many character classes are drawn on; a host with a real policy
-    // supplies its own evaluator rather than bending this one.
+    // A point for each scored length and each character class drawn on, less one for low variety.
     private static PasswordStrength Rate(string value)
     {
         var score = 0;
@@ -136,8 +135,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     private string AdviceId
         => $"{ElementId}-advice";
 
-    // An explicit attribute overwrites one of the same name from AdditionalAttributes, so a
-    // caller's own description has to be carried through rather than dropped.
+    // The caller's own aria-describedby joined with the advice, since the explicit attribute overwrites the caller's.
     private string? DescribedBy
     {
         get
@@ -151,7 +149,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
         }
     }
 
-    // Every criterion the built-in rating still withholds, so the list empties as the value earns them.
+    // Every criterion the built-in rating still withholds.
     private IEnumerable<string> Advise(string value)
     {
         var effectiveLength = GetRepeatingUnitLength(value);
@@ -192,8 +190,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
             _ => "strength-weak",
         };
 
-    // Each rating is a whole phrase rather than an interpolated word, so a translator sees
-    // the sentence it has to make read naturally.
+    // Each rating is a whole phrase, so localization sees the sentence it has to make read naturally.
     private string GetStrengthText(PasswordStrength strength)
         => strength switch
         {
@@ -226,7 +223,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
         Reassess();
     }
 
-    // Advice reads the forbidden-term outcome, so the value has to be validated first.
+    // Forbidden terms are validated first, since the advice reads their outcome.
     private void Reassess()
     {
         ValidateForbiddenTerms();
@@ -272,8 +269,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
             .Any(fragment => CurrentValue.Contains(fragment, StringComparison.OrdinalIgnoreCase));
     }
 
-    // A term is matched by its parts as well as whole, so a password may not reuse the local
-    // part of an email or any one group of a phone number.
+    // The term's runs of letters and digits long enough to match, such as an email's local part or one group of a phone number.
     private static IEnumerable<string> GetFragments(string term)
     {
         var start = 0;
@@ -294,8 +290,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
         }
     }
 
-    // Focus stays on the toggle so it can be pressed again to hide, which returning focus
-    // to the input would prevent for a keyboard user.
+    // Focus stays on the toggle, so a keyboard user can press it again to hide the value.
     private void ToggleReveal()
         => _isRevealed = !_isRevealed;
 

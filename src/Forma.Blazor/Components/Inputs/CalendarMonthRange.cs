@@ -27,7 +27,7 @@ internal sealed class CalendarMonthRange
         MaxMonth = GetMonthStart(GetYear(maxReference), GetMonth(maxReference));
     }
 
-    /// <summary>Builds the view for a culture, preferring its non-Gregorian calendar when asked to.</summary>
+    /// <summary>Creates the month range on a culture's calendar, or on its non-Gregorian calendar where one is asked for.</summary>
     public static CalendarMonthRange Create(CultureInfo culture, bool useNonGregorianMonths, DateOnly? minDate, DateOnly? maxDate)
     {
         var calendar = useNonGregorianMonths
@@ -86,10 +86,12 @@ internal sealed class CalendarMonthRange
     public int GetMonthsInYear(int calendarYear)
         => _calendar.GetMonthsInYear(calendarYear);
 
-    // Named from a real date in the month rather than by index: the month-name table is the
-    // 13-month leap-year one, so on a calendar whose common year is shorter (Hebrew drops
-    // Adar II) indexing it directly mislabels every month past the missing slot.
     /// <summary>The month's name in the culture's own words.</summary>
+    /// <remarks>
+    /// The name is formatted from the month's first day: the culture's month-name table is the 13-month
+    /// leap-year one, so on a calendar whose common year is shorter, as the Hebrew calendar's is without
+    /// Adar II, indexing the table by month number would name every month past the missing slot wrongly.
+    /// </remarks>
     public string GetMonthName(int calendarYear, int calendarMonth)
         => GetMonthStart(calendarYear, calendarMonth).ToDateTime(TimeOnly.MinValue).ToString("MMMM", _dateFormat);
 
@@ -97,7 +99,7 @@ internal sealed class CalendarMonthRange
     public string GetDayAbbreviation(int columnOffset)
         => _dateFormat.AbbreviatedDayNames[((int)FirstDayOfWeek + columnOffset) % 7];
 
-    /// <summary>The date spelled out whole, for a day cell's accessible name.</summary>
+    /// <summary>The date spelled out in full.</summary>
     public string GetDayLabel(DateOnly date)
         => date.ToDateTime(TimeOnly.MinValue).ToString("D", _dateFormat);
 

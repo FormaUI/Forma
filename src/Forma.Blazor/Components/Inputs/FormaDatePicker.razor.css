@@ -17,7 +17,7 @@
     display: block;
 }
 
-/* Inherits its box from .forma-field-input; only the button-specific parts are set here. */
+/* The box comes from .forma-field-input. */
 .forma-date-picker-trigger {
     display: flex;
     align-items: center;
@@ -63,7 +63,7 @@
 }
 
 /* ---------- popover ---------- */
-/* The calendar inside the FormaPopover, which owns the top-layer placement and dismissal. */
+/* The calendar's surface inside the FormaPopover. */
 .forma-date-picker-popover {
     display: flex;
     overflow: visible;

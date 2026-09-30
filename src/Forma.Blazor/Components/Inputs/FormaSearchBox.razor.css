@@ -1,7 +1,6 @@
 /* ============================================================
    FormaSearchBox — CSS isolation
-   Leading glyph, a box matching FormaTextBox's normal size, and
-   a clear button that appears once the field is populated.
+   A leading glyph, the search box, and its clear button.
    ============================================================ */
 
 .forma-search-box-wrapper {
@@ -19,16 +18,16 @@
     pointer-events: none;
 }
 
-/* The box is drawn in forma-input.css; the padding here is the room the glyph and clear button need. */
+/* The box comes from forma-input.css; the padding is room for the glyph and clear button. */
 .forma-search-box {
-    /* An input is sized from its size attribute unless told otherwise, which is wider than a phone. */
+    /* Replaces the width an input takes from its size attribute, which is wider than a phone. */
     inline-size: 100%;
     min-inline-size: 0;
     padding-inline: calc(var(--space-3) + var(--icon-size-sm) + var(--space-1));
 }
 
-/* The placeholder is UI text, so an empty field follows the page rather than the value typed into it.
-   unicode-bidi is reset too because dir="auto" maps to plaintext, which would otherwise keep deriving direction from content. */
+/* An empty field takes the page's direction for its placeholder; unicode-bidi is reset because
+   dir="auto" maps to plaintext, which derives direction from content. */
 .forma-search-box:placeholder-shown {
     direction: inherit;
     unicode-bidi: normal;
@@ -40,7 +39,7 @@
     cursor: not-allowed;
 }
 
-/* WebKit draws its own clear button for type="search", which would sit beside the one this component owns. */
+/* Hides the clear button WebKit draws for type="search". */
 .forma-search-box::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }

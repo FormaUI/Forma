@@ -1,7 +1,6 @@
 /* ============================================================
-   FormaColorPicker — the swatch and hex input only; the label,
-   box, focus ring and validation chrome belong to FormaField.
-   Uses logical CSS properties for RTL/LTR support.
+   FormaColorPicker — the swatch, the hex input and the alpha
+   row inside a FormaField.
    ============================================================ */
 
 /* ---------- wrapper ---------- */
@@ -10,8 +9,7 @@
 }
 
 /* ---------- swatch wrapper (holds visual swatch + invisible native input) ---------- */
-/* Sits over the field box beside the hex text, the way FormaPasswordBox places its toggle.
-   Offset from the top rather than the bottom, so the optional alpha row below cannot move it. */
+/* Sits over the field box beside the hex text, offset from the top so the alpha row below cannot move it. */
 .forma-color-picker-swatch-wrapper {
     position: absolute;
     inset-block-start: var(--forma-field-padding-block-start);
@@ -57,8 +55,7 @@
 }
 
 /* ---------- hex text input ---------- */
-/* Inherits its box from .forma-field-input; the descendant selector outweighs that rule's
-   padding-inline shorthand so the inline-start gutter clears the swatch. */
+/* The descendant selector outweighs .forma-field-input's padding-inline, so the gutter clears the swatch. */
 .forma-color-picker .forma-color-picker-hex-input {
     /* The field's gutter, the swatch, and a gap. */
     padding-inline-start: calc(var(--space-3) + 1.25rem + var(--space-1));

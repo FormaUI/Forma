@@ -7,22 +7,22 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A multi-line text field wearing the shared field chrome.</summary>
+/// <summary>A multi-line text field, with a running character count it can show.</summary>
 public sealed partial class FormaTextArea : FormaInputBase<string?>
 {
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>Marks the field as required, showing a visual indicator and setting aria-required.</summary>
+    /// <summary>Whether the field is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
-    /// <summary>Visible line count before the field scrolls or is resized.</summary>
+    /// <summary>The number of visible lines.</summary>
     [Parameter] public int Rows { get; set; } = 3;
 
-    /// <summary>Maximum number of characters accepted.</summary>
+    /// <summary>The greatest number of characters the field accepts.</summary>
     [Parameter] public int? MaxLength { get; set; }
 
-    /// <summary>Shows a running character count in the field's end corner, against MaxLength when one is set.</summary>
+    /// <summary>Whether the field shows a running character count in its end corner.</summary>
     [Parameter] public bool ShowCharacterCount { get; set; }
 
     private string CountId
@@ -37,7 +37,7 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
             ? $"{CharacterCount.ToString(CultureInfo.CurrentCulture)} / {maxLength.ToString(CultureInfo.CurrentCulture)}"
             : CharacterCount.ToString(CultureInfo.CurrentCulture);
 
-    // The glyphs read poorly aloud, so the hidden label spells the count out instead.
+    // The count spelled out for assistive technology.
     private string CountLabel
     {
         get
@@ -50,8 +50,7 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
         }
     }
 
-    // An explicit attribute overwrites one of the same name from AdditionalAttributes, so a
-    // caller's own description has to be carried through rather than dropped.
+    // The caller's own aria-describedby joined with the count, since the explicit attribute overwrites the caller's.
     private string? DescribedBy
     {
         get

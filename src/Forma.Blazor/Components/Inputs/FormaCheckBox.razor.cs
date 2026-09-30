@@ -8,29 +8,28 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A styled checkbox bound to a Boolean, with an indeterminate state, optionally leaving the checked state to the caller.</summary>
+/// <summary>A checkbox bound to a Boolean, with an indeterminate state and a checked state the caller can take over.</summary>
 public sealed partial class FormaCheckBox : FormaInputBase<bool>
 {
-    /// <summary>Shows the "some but not all" visual.</summary>
-    /// <remarks>The state has no content attribute, so it is set on the element through script, and only once a checkbox becomes indeterminate.</remarks>
+    /// <summary>Whether the checkbox shows the "some but not all" state.</summary>
+    /// <remarks>The state has no content attribute, so it is set on the element through script after render; a checkbox that never becomes indeterminate never calls the script.</remarks>
     [Parameter] public bool Indeterminate { get; set; }
 
-    /// <summary>Blocks interaction and dims the checkbox.</summary>
+    /// <summary>Whether the checkbox is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>Raised when the checkbox is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-    /// <summary>Suppresses the native toggle, leaving the checked state entirely to the caller.</summary>
+    /// <summary>Whether the native toggle is suppressed, leaving the checked state to the caller.</summary>
     [Parameter] public bool PreventDefault { get; set; }
 
-    /// <summary>Label rendered next to the checkbox. Wraps both in a label element, so clicking the text toggles the checkbox too.</summary>
+    /// <summary>The label rendered next to the checkbox, wrapped together with it in a label element.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     private CheckBox _checkBox = default!;
 
-    // Seeded to the element's own default, so a checkbox that is never indeterminate
-    // — every row and option checkbox — never imports the module or calls into it.
+    // Starts at the element's own default, so a checkbox never made indeterminate never calls the script.
     private bool _isIndeterminateApplied;
 
     /// <inheritdoc />
@@ -43,8 +42,6 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
     private Task HandleClickAsync(MouseEventArgs args)
         => OnClick.InvokeAsync(args);
 
-    // "Some but not all" is an IDL-only property with no content attribute, so it can
-    // only be set from script, and only once the element exists to set it on.
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

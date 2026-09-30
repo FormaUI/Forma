@@ -1,8 +1,6 @@
 /* ============================================================
    FormaCheckBox — CSS isolation
-   Native checkbox, sized and tinted to the design tokens. The
-   single source for the checkbox visual shared by every
-   consumer instead of each one restating its own copy.
+   A native checkbox, sized and tinted to the design tokens.
    ============================================================ */
 
 .forma-checkbox {
@@ -19,8 +17,7 @@
     cursor: not-allowed;
 }
 
-/* A checkbox left in normal inline flow sits on the text baseline rather than on the
-   text's center line, so the pair is centered against each other in a flex box instead. */
+/* A flex box centers the checkbox on its text, which inline flow would set on the baseline. */
 .forma-checkbox-label {
     display: inline-flex;
     align-items: center;

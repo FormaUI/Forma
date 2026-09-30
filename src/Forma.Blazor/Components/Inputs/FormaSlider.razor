@@ -4,7 +4,7 @@
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" LabelMode="FieldLabelMode.Above">
     <ChildContent>
-        @* Sits on the label's row, so the reading stays beside the name it belongs to. *@
+        @* The reading sits on the label's row. *@
         <span class="forma-slider-value" aria-hidden="true"><bdi dir="ltr">@DisplayValue</bdi></span>
         <input id="@ElementId"
                data-rid="@Context.RuntimeId"

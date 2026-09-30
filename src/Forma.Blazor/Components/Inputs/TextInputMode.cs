@@ -3,13 +3,13 @@ namespace Forma.Blazor.Components.Inputs;
 /// <summary>The virtual keyboard a text box asks a touch device for.</summary>
 public enum TextInputMode
 {
-    /// <summary>No virtual keyboard, for a box that gathers its input some other way.</summary>
+    /// <summary>No virtual keyboard.</summary>
     None,
 
     /// <summary>The standard text keyboard.</summary>
     Text,
 
-    /// <summary>A digits-only keypad, for a code or a quantity.</summary>
+    /// <summary>A digits-only keypad.</summary>
     Numeric,
 
     /// <summary>A numeric keypad carrying a decimal separator, rendered as <c>decimal</c>.</summary>

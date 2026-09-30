@@ -9,16 +9,16 @@ using Microsoft.AspNetCore.Components;
 /// <summary>An iOS-style switch for a boolean value.</summary>
 public sealed partial class FormaToggleSwitch : FormaInputBase<bool>
 {
-    /// <summary>Name shown before the switch. Without one the caller must give the input an accessible name of its own.</summary>
+    /// <summary>The name shown before the switch.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>Label shown when the toggle is in the off state.</summary>
+    /// <summary>The label shown on the switch's off side.</summary>
     [Parameter] public string? OffLabel { get; set; }
 
-    /// <summary>Label shown when the toggle is in the on state.</summary>
+    /// <summary>The label shown on the switch's on side.</summary>
     [Parameter] public string? OnLabel { get; set; }
 
-    /// <summary>Disables user interaction.</summary>
+    /// <summary>Whether the switch is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     private void HandleChange(ChangeEventArgs args) => CurrentValue = args.Value is true;

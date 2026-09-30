@@ -9,7 +9,8 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A field for picking a range of dates from two months side by side, with presets for the usual spans; the range is one value, committed once both ends are picked.</summary>
+/// <summary>A field for picking a range of dates from two months side by side, with presets for the usual spans.</summary>
+/// <remarks>The range is one value, committed once both ends are picked.</remarks>
 public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
 {
     // The rolling spans the Last7Days and Last30Days presets cover, ending today.

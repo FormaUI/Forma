@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Inputs;
 
-/// <summary>How resistant a password is judged to be, as shown by <see cref="FormaPasswordBox"/>.</summary>
+/// <summary>How resistant a password is judged to be.</summary>
 public enum PasswordStrength
 {
     /// <summary>Short, or drawn from a single character class.</summary>

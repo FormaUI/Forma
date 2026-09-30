@@ -13,7 +13,7 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
     /// <summary>The field's label.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>When true, shows an alpha (opacity) slider and accepts 8-digit hex values.</summary>
+    /// <summary>Whether the picker shows an alpha (opacity) slider and accepts 8-digit hex values.</summary>
     [Parameter] public bool ShowAlpha { get; set; }
 
     private string RgbHex => CurrentValueAsString?.Length >= 7

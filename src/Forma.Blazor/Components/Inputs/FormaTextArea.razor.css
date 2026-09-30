@@ -1,8 +1,7 @@
 /* ============================================================
    FormaTextArea — CSS isolation
-   The multi-line deltas and the character counter that floats
-   over the field's end corner; the field chrome lives in
-   FormaField.
+   The multi-line field and the character counter over its end
+   corner.
    ============================================================ */
 
 .forma-textarea {
@@ -14,8 +13,7 @@
     min-block-size: calc(var(--line-height-prose) * 1em + var(--forma-field-padding-block-start) + var(--forma-field-padding-block-end) + var(--space-4));
 }
 
-/* Keeps typed text from ending underneath the counter, without spending the lines the
-   field was sized to show: the minimum grows by the strip, less the padding it replaces. */
+/* Reserves the counter strip below the text; the minimum grows by the strip, less the padding it replaces. */
 .forma-textarea-counting {
     padding-block-end: var(--forma-textarea-count-strip);
     min-block-size: calc(var(--line-height-prose) * 1em + var(--forma-field-padding-block-start) + var(--space-4) + var(--forma-textarea-count-strip));
@@ -44,7 +42,7 @@
     color: var(--forma-textarea-count-color, var(--text-primary-color));
 }
 
-/* The glyphs read poorly aloud, so a screen reader is given this sentence instead. */
+/* Visually hidden; the count spelled out for a screen reader. */
 .forma-textarea-count-label {
     position: absolute;
     inline-size: 1px;

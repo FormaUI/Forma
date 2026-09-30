@@ -1,6 +1,5 @@
 /* ============================================================
-   FormaSelect — the trigger and option list only; the label,
-   box, focus ring and validation chrome belong to FormaField.
+   FormaSelect — the trigger and option list inside a FormaField.
    ============================================================ */
 
 /* ---------- trigger ---------- */
@@ -9,7 +8,7 @@
     display: block;
 }
 
-/* Inherits its box from .forma-field-input; only the button-specific parts are set here. */
+/* The box comes from .forma-field-input. */
 .forma-select-trigger {
     display: flex;
     align-items: center;
@@ -47,7 +46,7 @@
 }
 
 /* ---------- popover ---------- */
-/* The list inside the FormaPopover, which owns the top-layer placement and dismissal. */
+/* The list inside the FormaPopover. */
 .forma-select-popover {
     padding: var(--space-2);
     display: flex;
@@ -96,8 +95,7 @@
     box-shadow: var(--focus-ring-inset);
 }
 
-/* Bold weight plus the check mark below are the state's second channel — the tinted
-   background alone would fail on a desaturated or forced-colors display. */
+/* The bold weight and the check mark show the selection apart from its tint. */
 .forma-select-option.selected {
     background: var(--hover-bg-color);
     font-weight: 600;

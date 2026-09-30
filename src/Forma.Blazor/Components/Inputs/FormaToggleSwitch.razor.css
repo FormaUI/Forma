@@ -1,7 +1,6 @@
 /* ============================================================
    FormaToggleSwitch — CSS isolation
-   Pure CSS iOS-style toggle. No JavaScript needed.
-   Uses logical CSS properties for RTL/LTR support.
+   An iOS-style switch drawn over a hidden checkbox.
    ============================================================ */
 
 /* ---------- wrapper ---------- */
@@ -100,7 +99,7 @@
     user-select: none;
 }
 
-/* Padding rather than a taller track, so the knob geometry is untouched. */
+/* The touch target grows by padding around the track, keeping the knob geometry. */
 @media (pointer: coarse) {
     .forma-toggle-switch {
         padding-block: calc((var(--target-size-touch) - var(--target-size-sm)) / 2);

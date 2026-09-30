@@ -3,13 +3,13 @@ namespace Forma.Blazor.Components.Inputs;
 /// <summary>What kind of text a box holds and how an agent assists typing it: validation bounds, keyboard, capitalization, spelling, and autofill.</summary>
 public sealed record TextBoxOptions
 {
-    /// <summary>The kind of text the box holds, which decides how a browser validates and assists it.</summary>
+    /// <summary>The kind of text the box holds.</summary>
     public TextInputType Type { get; init; } = TextInputType.Text;
 
-    /// <summary>The fewest characters the box accepts before it counts as valid.</summary>
+    /// <summary>The fewest characters a valid value holds.</summary>
     public int? MinLength { get; init; }
 
-    /// <summary>The greatest number of characters the box will accept.</summary>
+    /// <summary>The greatest number of characters the box accepts.</summary>
     public int? MaxLength { get; init; }
 
     /// <summary>A regular expression the value must match for the box to be valid.</summary>
@@ -30,7 +30,7 @@ public sealed record TextBoxOptions
     /// <summary>The autofill hint given to the browser, such as <c>email</c> or <c>new-password</c>.</summary>
     public string? AutoComplete { get; init; }
 
-    /// <summary>Plain text with no bounds, letting the browser assist as it sees fit.</summary>
+    /// <summary>Plain text with no bounds or typing hints.</summary>
     public static TextBoxOptions Default { get; } = new();
 
     /// <summary>An email address: validated as one, with the email keyboard and autofill, uncapitalized and unchecked for spelling.</summary>

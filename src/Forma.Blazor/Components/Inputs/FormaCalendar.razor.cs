@@ -7,13 +7,13 @@ using Forma.Blazor.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>One or two months side by side, moved by their arrows and selectors within the dates allowed, drawing the dates it is told to highlight and reporting the day a reader picks or hovers.</summary>
+/// <summary>A calendar of one or two months side by side that highlights a date range and reports the day a reader picks or hovers.</summary>
 public sealed partial class FormaCalendar : FormaComponentBase
 {
-    /// <summary>How many months stand side by side: one, or two for a range.</summary>
+    /// <summary>How many months stand side by side, one or two.</summary>
     [Parameter] public int Months { get; set; } = 1;
 
-    /// <summary>The dates drawn as chosen: a single day, or a span whose first and last days are its ends.</summary>
+    /// <summary>The dates drawn as chosen, a single day or a span.</summary>
     [Parameter] public DateRange? Highlight { get; set; }
 
     /// <summary>The earliest selectable date.</summary>
@@ -133,7 +133,7 @@ public sealed partial class FormaCalendar : FormaComponentBase
         {
             var current = GetPanelMonth(panelIndex);
             var calendarMonth = _calendarMonthRange.GetMonth(current);
-            // Find a Gregorian date in the target year, then build from calendar coordinates
+            // The year selector holds Gregorian years; the calendar year is the one in force at mid-year.
             var midYear = new DateOnly(gregorianYear, 6, 1);
             var targetCalendarYear = _calendarMonthRange.GetYear(midYear);
             var maxMonth = _calendarMonthRange.GetMonthsInYear(targetCalendarYear);
@@ -180,7 +180,6 @@ public sealed partial class FormaCalendar : FormaComponentBase
     private Task SelectDayAsync(DateOnly date)
         => IsDayDisabled(date) ? Task.CompletedTask : OnDaySelected.InvokeAsync(date);
 
-    // A day listens for the pointer only while someone wants to hear where it is.
     private EventCallback<MouseEventArgs> GetHoverHandler(DateOnly date)
         => OnDayHovered.HasDelegate ? EventCallback.Factory.Create<MouseEventArgs>(this, () => OnDayHovered.InvokeAsync(date)) : default;
 

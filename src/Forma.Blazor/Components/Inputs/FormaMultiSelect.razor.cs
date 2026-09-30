@@ -8,7 +8,7 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A multi-select component whose chosen values render as removable tags above a searchable checkbox-list popover.</summary>
+/// <summary>A field for picking several values from a searchable checkbox list, showing the chosen values as removable tags under it.</summary>
 public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValue>>
     where TValue : notnull
 {
@@ -18,27 +18,26 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     /// <summary>The field's label.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>Shows the required marker beside the label.</summary>
+    /// <summary>Whether the field is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
     /// <summary>Text shown in the trigger when nothing is selected.</summary>
     [Parameter] public string? Placeholder { get; set; }
 
-    /// <summary>Shows an "add new" action in the dropdown, for an option not yet in the list.</summary>
+    /// <summary>Whether the dropdown offers an "add new" action for search text no option matches.</summary>
     [Parameter] public bool AllowAdd { get; set; }
 
     /// <summary>Raised with the current search text when the "add new" action is used.</summary>
     [Parameter] public EventCallback<string> OnAddNew { get; set; }
 
-    /// <summary>Disables user interaction.</summary>
+    /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     private string _searchText = "";
     private ElementReference _anchorElement;
 
-    // The field an option checkbox names to the input base; an option is not a form field and nothing binds it.
+    // The field an option checkbox names to the input base, bound to nothing.
     private bool OptionSelection { get; }
-    // The popover's search box; the reference focuses it.
     private FormaSearchBox SearchBox { get; set; } = default!;
     private FormaPopover Popover { get; set; } = default!;
 

@@ -1,12 +1,10 @@
 /* ============================================================
    FormaSlider — CSS isolation
-   Tints the native track and thumb with accent-color rather than
-   hand-painting a filled track, so the browser's own RTL mirroring
-   stays correct without a second direction-aware calculation to
-   keep in step with it.
+   A native range input, its track and thumb tinted with
+   accent-color.
    ============================================================ */
 
-/* Pulled onto the label's row, which FormaField lays out above the slider. */
+/* Pulled onto the label's row above the slider. */
 .forma-slider-value {
     position: absolute;
     inset-block-start: 0;
@@ -28,8 +26,7 @@
     cursor: not-allowed;
 }
 
-/* Only the track grows: a native-appearance range ignores author thumb styling, so the
-   touch target is the input's own height rather than a larger drawn thumb. */
+/* The touch target is the input's own height, since a native range ignores author thumb styling. */
 @media (pointer: coarse) {
     .forma-slider {
         block-size: var(--target-size-touch);

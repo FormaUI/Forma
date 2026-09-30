@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A bounded numeric input rendered as a native range slider, with its current value shown beside the label.</summary>
 public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where TValue : struct, INumber<TValue>
 {
-    /// <summary>The label identifying the slider.</summary>
+    /// <summary>The slider's label.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
     /// <summary>The lowest value the slider can reach.</summary>
@@ -26,17 +26,16 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
     /// <summary>A short suffix shown after the value, such as "px", "%" or "s".</summary>
     [Parameter] public string? Unit { get; set; }
 
-    /// <summary>Disables user interaction.</summary>
+    /// <summary>Whether the slider is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    // The sighted display; a screen reader hears AriaValueText from the input itself instead,
-    // so this is aria-hidden rather than a second announcement of the same text.
+    // The visible reading, hidden from assistive technology, which hears the input's own value text.
     private string DisplayValue
         => Unit is null
             ? CurrentValue.ToString(null, CultureInfo.CurrentCulture)
             : $"{CurrentValue.ToString(null, CultureInfo.CurrentCulture)}{Unit}";
 
-    // Only set when there is a unit to add: without one, the native valuenow already says the number.
+    // The reading with its unit, where null leaves the input's native value to be announced.
     private string? AriaValueText
         => Unit is null ? null : DisplayValue;
 
@@ -48,7 +47,7 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(Step, TValue.Zero);
     }
 
-    // The html min/max/step attributes need an invariant, unlocalized number.
+    // The HTML min, max and step attributes take an invariant number.
     private static string FormatInvariant(TValue value)
         => value.ToString(null, CultureInfo.InvariantCulture);
 
@@ -60,7 +59,7 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder.Add("forma-slider");
 
-    // A range input is native and OS-constrained to a valid number, so parsing cannot fail in practice.
+    // A range input always holds a valid number.
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
     {

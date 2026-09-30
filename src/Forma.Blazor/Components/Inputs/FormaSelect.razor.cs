@@ -12,8 +12,8 @@ using Forma.Framework.Input.Keyboard;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A themed single-select: a trigger button opening an anchored, keyboard-navigable option list.</summary>
-/// <remarks>Bind <typeparamref name="TValue"/> to a nullable type (<c>int?</c>, <c>string</c>, <c>MyEnum?</c>) to allow no selection.</remarks>
+/// <summary>A single-select field: a trigger button opening an anchored, keyboard-navigable option list.</summary>
+/// <typeparam name="TValue">The type of the selected value, where a nullable type holds null for no selection.</typeparam>
 public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 {
     private const string OpenAction = "select.open";
@@ -45,13 +45,13 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     /// <summary>The field's label.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>Shows the required marker beside the label.</summary>
+    /// <summary>Whether the field is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
     /// <summary>Text shown in the trigger when nothing is selected.</summary>
     [Parameter] public string? Placeholder { get; set; }
 
-    /// <summary>Disables user interaction.</summary>
+    /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -87,12 +87,11 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         }
     }
 
-    // The trigger's keys are routes on the trigger, which is in the document whether or not the list is; the list's ride on the popover.
+    // The trigger's keys route on the trigger, which is always in the document; the list's keys route on the popover.
     /// <inheritdoc />
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _trigger.SyncAsync(RootElement, TriggerProfile);
 
-    // Opens the list, or moves through it, as the router matched the key.
     private Task HandleActionAsync(string action, InputInfo input)
     {
         if (Disabled)
@@ -141,8 +140,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         }
     }
 
-    // Opens focused on the current selection, the way a native <select> does, rather than
-    // always at the first option.
+    // Opens focused on the current selection, or on the first option.
     private async Task OpenAsync()
     {
         var selectedIndex = -1;
@@ -205,9 +203,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         out TValue result,
         [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        // Never actually invoked — CurrentValue is set directly in SelectAsync rather than
-        // round-tripped through a string, but the framework's contract requires a non-null
-        // result whenever this returns true, which the current selection may not be.
+        // Selection sets CurrentValue directly; the current value, which may be null, stands in for the result.
         result = Value!;
         validationErrorMessage = null;
         return true;
