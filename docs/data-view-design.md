@@ -11,33 +11,10 @@ selection, the sort, the page, the address, virtualization, grouping and the sta
 owns its presentation and the settings only that presentation has, so the grid carries
 columns and nothing else does.
 
-The data view is a component big enough to be its own project, as the explorer and the
-composer are: the engine and its four views ship from `Forma.Blazor.DataView`, one package
-beside the product, and borrow the product's namespace as those do, so their types live in
-`Forma.Blazor.Components.DataView`. The records, options and contracts they share live
-there too, since it is the feature they belong to.
-
 ## Vocabulary
 
-One word describes one presentation throughout the library:
-
-- A **grid** is rows with aligned columns and headers, `FormaDataGrid`.
-- A **list** is items arranged down the height, `FormaDataList`.
-- **Cards** are items with an image, a title and other information, `FormaDataCards`.
-  At the cards view's compact density a card is the image and its name alone, which is
-  what a consumer that shows thumbnails composes; it is a setting of the cards view and
-  not a fourth view.
-- A **tree** is items as nodes under their parents, `FormaDataTree`, opened a node at a
-  time.
-- A **thumbnail** is an item's depiction, the picture a card or a list row draws, never a
-  presentation.
-- A **view** is one of those presentations over a data view, and the **active view** is
-  the one showing.
-
-These are the library's names for its components. A consumer names its own modes for its
-readers, so the explorer keeps calling its cards view thumbnails and its grid view
-details; the vocabulary binds what a component is, not what a surface calls the mode it
-composes it in.
+The data view speaks the repository vocabulary: a data view, its views and the active view,
+a grid, a list, cards, a tree and a thumbnail.
 
 ## Purpose
 
@@ -51,50 +28,15 @@ is empty or still loading. Built three times, those drift three ways; the data v
 that engine built once, with the presentation left to a view that draws items and nothing
 else.
 
-It is the library's own engine rather than a wrapper over the framework's grid. A wrapper
-can style what it wraps and add columns beside it, but it cannot change how items are laid
-out, which are on screen, how a column gives way when the width runs out, what a
-select-all names, or present the same set as cards; the framework's grid owned all of
-those, and the library's rules for tokens, direction and fit stopped at its edge.
+It is the library's own engine, so how items are laid out, which are on screen, how a
+column gives way when the width runs out, what a select-all names and the presentation of
+one set as cards all follow the library's rules for tokens, direction and fit.
 
 ## Coi parity and what changes
 
 Coi is the floor, not the specification. Its list pages say what the grid must be able to
 do, because every one of them is a table its administrators used daily; they do not say
 how, and they are not a visual target.
-
-### What Coi shipped
-
-Every tenant admin list is one `GridView` under a card: pages, products, orders,
-abandoned orders, leads, comments, coupons, users, invoices and design sets, and a
-product picker in a modal. Each binds to a repository data source that sorts and pages on
-the server, twenty rows to a page, and each is laid out the same way: a spacer column at
-either edge, a checkbox column where rows can be acted on together, the record's name as
-a link to its editor, a few bound cells, and a run of icon-only action cells at the end,
-view, edit, duplicate, approve, delete. The cells that recur across pages are a
-thumbnail, a date in a short format, a currency amount, a stock count drawn red at zero,
-a status badge built as a tinted pill in code-behind, and a lock or a home glyph for a
-row's state.
-
-A row is clickable anywhere: a click on any cell runs the row's main trigger, which
-navigates to the editor, opens a modal, or toggles the row's checkbox. Checking a row
-tints it and swaps the toolbar above the grid for the bulk actions; the header checkbox
-checks the rows on the page. Two row tints mark state on their own, a green bold row for a
-new order or lead and a red row for an expired coupon, and a row's editor button appears
-on hover beside its name. Sorting is a postback on a few columns, marked in the header by
-one neutral glyph that never shows the direction or which column is active. Paging is
-the framework's numeric pager, page numbers alone, and the page a reader was on travels
-back in the query string when they return from an editor. The header is not sticky, the
-table scrolls sideways on a phone with no column ever hidden, the empty state is one
-sentence, and loading is a spinner in the toolbar or a bar across the top on a phone.
-Actions carry no text and no accessible name; their labels are tooltips drawn on hover.
-
-The picker in the modal is the same grid with its header off, its rows dense and its
-click-through disabled. The image library lists every upload as a tile with its name, the
-cards presentation with nothing to sort or group it by. The news ticker's list is a grid
-whose rows are reordered by dragging, which is a different component's job. The
-super-admin lists are an older pattern, an edit form above a grid with move-up and
-move-down buttons.
 
 ### Full parity, nothing dropped
 
@@ -133,42 +75,6 @@ list.
 - **Logical properties throughout**, so the same stylesheet serves both directions rather
   than one mirrored by hand.
 
-## Parity with the framework's grid
-
-The grid view over the engine replaces the framework's grid, so everything a caller could
-do with that grid they can do with these two, under the library's names. What follows is
-that inventory, feature by feature, so nothing is dropped by omission; the engine's
-members are the data view's, the column's are the grid's.
-
-| The framework's grid | The data view and its grid |
-|---|---|
-| `Items` and `ItemsProvider`, one or the other | The same two ways in, one supplied |
-| `IAsyncQueryExecutor`, so a queryable backed by a store is counted and read asynchronously | `IDataViewQueryExecutor`, a service the host registers for its store, with an in-memory default the library carries |
-| `GridItemsProviderRequest`: start, count, sort column, direction, cancellation, `ApplySorting` and `GetSortByProperties` | `DataViewRequest` with the same members, so a provider applies the sort to its own queryable or reads the sorted properties for a query it writes itself |
-| `GridItemsProviderResult`: items and total | `DataViewPage`: items and an optional total, a slice shorter than asked for ending a set it cannot count |
-| `PaginationState` and `Paginator`, with a summary template | `PageSize`, a bindable `Page`, the reported total, and `FormaPagination` with its options |
-| `Virtualize`, `ItemSize`, `OverscanCount` | `Virtualize`, `ItemHeight`, `OverscanCount` |
-| `AnchorMode`, `InitialItemIndex`, `ItemComparer`, `ScrollToItemAsync` | The same anchoring set: where the viewport holds when items arrive during virtualization, the item to open on, the comparer that tells a prepend from an append, and scrolling to an item on request |
-| `ItemKey` | `ItemKey` |
-| `RowClass`, `OnRowClick` | `ItemClass`, `OnItemClick` on the engine, which the grid draws on its rows |
-| `Class`, `AdditionalAttributes` | The host surface every component has |
-| `Theme` | The design tokens; a theme restyles the views by redefining them |
-| `QueryParameterNameOptions`: the page, sort and direction parameter names | `AddressOptions`: the prefix and the names, with the active view beside them |
-| `RefreshDataAsync`, `SortByColumnAsync`, `ShowColumnOptionsAsync`, `HideColumnOptionsAsync` | `RefreshDataAsync` and `SortByAsync` on the engine; `SortByColumnAsync`, `ShowColumnOptionsAsync` and `HideColumnOptionsAsync` on the grid |
-| `ColumnBase`, public and derivable, with `CellContent`, `HeaderContent` and `IsSortableByDefault` | `FormaColumnBase`, public and derivable, with the same overrides |
-| `Title`, `Class`, `Align` | `Title`, `Class`, `Align`, logical |
-| `Sortable`, `SortBy`, `InitialSortDirection`, `IsDefaultSortColumn` | The same four, and a `SortName` apart from the title that the address carries |
-| `GridSort` with `ByAscending`, `ByDescending`, `ThenAscending`, `ThenDescending` | `DataViewSort` with the same compound keys, which every view sorts by |
-| `HeaderTemplate` | `HeaderTemplate` |
-| `ColumnOptions`, an options surface a header button opens | `ColumnOptions`, opened from the header as the library's popover |
-| `PlaceholderTemplate` for a virtualized cell not yet loaded | `PlaceholderTemplate` |
-| `PropertyColumn` with `Property`, `Format`, `SortBy` | `FormaPropertyColumn` with the same, plus its editor |
-| `TemplateColumn` with `ChildContent`, `SortBy` | `FormaTemplateColumn` with the same |
-
-What the framework's grid could not do and this design adds is the rest of it: the views
-beside the grid, selection, editing, priority, frozen columns, grouping, the empty and busy
-states, and the fit.
-
 ## Decision summary
 
 - **One engine, several views.** `FormaDataView` browses; a view presents. The engine
@@ -190,15 +96,13 @@ states, and the fit.
 - **The active view is state the engine keeps**, bindable by a page and written to the
   address beside the sort and the page, so a reader who switched to cards comes back to
   cards. A data view with one view has nothing to switch; one with several pairs with the
-  view button the page composes.
-- **Everything the framework's grid did, the grid does**, under the library's names,
-  which the inventory above checks feature by feature.
+  view switch the page composes.
+- **Everything the framework's grid did, the grid does**, under the library's names.
 - **Two ways in, exactly one supplied.** `Items` hands over a queryable set the engine
   sorts, counts and pages itself, through a query executor the host can replace for its
   store. `ItemsProvider` answers one request at a time and returns the items with the
-  total where the store can count; the engine then holds only the slice it shows. The
-  split is the explorer's, and its request and page records take the same shape as the
-  catalog's.
+  total where the store can count; the engine then holds only the slice it shows. Its
+  request and page records take the same shape as the catalog's.
 - **Sort, page and view live in the address** under a prefix the caller names, so two data
   views on one page keep apart and a link reproduces what a reader saw.
 - **Selection is the engine's and keyed.** Checked selection and pointer selection are
@@ -210,12 +114,12 @@ states, and the fit.
   press, or nothing because the page selects through the engine's methods. The menu is the
   default.
 - **Grouping is the engine's.** A group key folds the items under headings a view draws,
-  a folded group staying folded across views and opening on a new grouping, as the
-  explorer already does.
+  a folded group staying folded across views and opening on a new grouping.
 - **The engine draws the states and the footer**; a view draws items. Empty, busy and
   the loading placeholder belong to the engine, as do the paginator and the status region.
-- **Virtualization is the framework's list virtualization**, driven by the engine and
-  measured by the view, since a row and a row of cards are different heights.
+- **Virtualization is the library's own, `FormaVirtualize`**, driven by the engine and
+  measured by the view, since a row and a row of cards are different heights, and keeping
+  the item that holds the focus rendered wherever it lies.
 - **The grid fits its width before it scrolls**, by column priority, with what left
   reachable through a columns menu, and frozen columns held through the freeze pane. The
   cards view packs before it stacks, keeping several cards across a narrow column.
@@ -223,7 +127,7 @@ states, and the fit.
   row's actions are templates over the library's icon buttons.
 - **The data view is not a page.** A search box, filters, a bulk-action bar, a view switch
   and a "new" button stand above it and belong to the page, composed from the toolbar, the
-  selection toolbar, the sort menu and the view button.
+  selection toolbar, and the data view's sort menu and view switch.
 - **The explorer and the gallery are consumers.** The explorer's content area and its
   folder-tree sidebar become one data view with its item template, its three flat
   presentations and the tree, and the gallery browses
@@ -287,7 +191,8 @@ Pointer selection, `EnableItemSelection`, is explorer-style selection over the i
 themselves: a plain click replaces the selection with the item, Ctrl or Cmd toggles it,
 Shift selects the range from the anchor, and Alt does nothing; the arrow keys, Home and End
 move focus among the items, Shift extending the range and Ctrl or Cmd moving focus alone.
-The view says what the arrows mean, up and down alone among rows, all four among cards.
+The arrows move by where the items stand, to the item above, below or beside the focused
+one, so a table's rows, a list's columns and packed cards follow the same keys.
 The keys are routes the selection behavior declares, so the host's input policy reaches
 the router before them. Both kinds combine.
 
@@ -369,7 +274,7 @@ parts and the footer stay put. A paged data view holds its region at the height 
 page, so a short last page does not shrink it.
 
 `Virtualize` is for the bounded case with paging off: the engine renders only the items
-near the viewport through the framework's list virtualization, in units the view names,
+near the viewport through `FormaVirtualize`, in units the view names,
 a row for the grid and the list, a row of cards for the cards, with `ItemHeight` the
 height of that unit and `OverscanCount` the units drawn beyond each edge. A row of cards
 holds as many as the pack lays out at the width, a count the browser resolves from the
@@ -467,8 +372,9 @@ choosing a shown one drops it. A choice a reader makes wins over the priority un
 grid is given a different width, and a column of the highest priority is never dropped and
 never listed. Frozen columns are written first and stay at the start of the pane as it
 scrolls, through the freeze pane the grid composes; the pane's arrows and its draggable
-frozen edge come with it. The grid never sizes against the viewport; a container query
-decides its layout, and the only media queries are for the reader.
+frozen edge come with it. The grid never sizes against the viewport; its fit is measured by
+script, since a stylesheet cannot tell what a column wants, and the only media queries are
+for the reader.
 
 **Header and rows.** The header row sticks to the top of the scroll region and paints over
 the rows in the header tone, its cells on the same gutters as the cells beneath them; the
@@ -501,12 +407,11 @@ input for a number; anything else needs an edit template.
 `FormaDataList` draws the items down the height, each row the item's thumbnail where the
 caller templates one, its name, and the secondary text the caller's `ItemTemplate` adds,
 flowing on into
-further columns when the height runs out and the width allows, as the explorer's list
-does. It has no header; its sort comes from the sort menu the page composes. Its rows
+further columns when the height runs out and the width allows. It has no header; its sort comes from the sort menu the page composes. Its rows
 stand on the small target step, with `Dense` tightening them further for names alone. A
 selected row takes the selected tint and its check mark; the arrow keys move up and down
 the flow, and Home and End reach its ends. Virtualizing, the list draws one item to a row
-down the height, the unit the framework's virtualization scrolls, in place of the flow.
+down the height, the unit the virtualizer scrolls, in place of the flow.
 
 ### The cards
 
@@ -552,37 +457,7 @@ interaction, and tells the engine how tall its virtualization unit is. Everythin
 engine does, the source, the selection, the address, the states and the footer, comes with
 it.
 
-## The public surface
-
-The data view is read and driven by a host, and extended by one, so its surface is written
-to be read: a parameter names the thing it sets, a method starts with the verb it performs,
-and what belongs together travels together.
-
-The engine's parameters fall into a few groups. The source: `Items` or `ItemsProvider`,
-`ItemKey`, `ItemComparer`. The presentation: the views as content, `View` with
-`ViewChanged`, `ItemName`, `ParentKey`, `HasChildren`, `CurrentItem` with
-`CurrentItemChanged`, `GroupBy`, `ItemClass`, `EmptyContent`, `LoadingContent`, `Status`. Paging
-and the address: `EnablePagination`, `PageSize`, `Page` with `PageChanged`,
-`PaginationOptions`, `AddressOptions`. Virtualization: `Virtualize`, `ItemHeight`,
-`OverscanCount`, `AnchorMode`, `InitialItemIndex`. Selection: `EnableCheckedSelection`,
-`EnableItemSelection`, `SelectedItems` with `SelectedItemsChanged`,
-`CheckedSelectionOptions` carrying the bounds, the caption and `SelectAllMode`, and
-`OnSelectionRejected`. Items: `OnItemClick`. A setting a page normally passes through
-unchanged sits in an options record; one it binds or derives from itself is a parameter.
-The grid's own are `Columns`, `ShowHeader`, `Dense`, `EnableInlineEditing`, `CloneForEdit`,
-`OnRowSave` and `OnRowCancel`; the list's, the cards' and the tree's are
-`ThumbnailTemplate`, `ItemTemplate` and
-`Dense`, with the cards' `CardSize` and the tree's `SelectsCurrent` and `NodeFilter`.
-
-The engine's methods are the verbs a page needs: `RefreshDataAsync`, `SortByAsync`,
-`ScrollToItemAsync`, `SelectAllAsync`, `SelectPageAsync`, `ClearSelectionAsync`,
-`ClearPageAsync`, `SelectAsync` and `DeselectAsync` for given items, `FoldGroupAsync` and
-`UnfoldGroupAsync`, `OpenNodeAsync` and `CloseNodeAsync`, with `TotalItemCount` read
-beside them. The grid adds
-`SortByColumnAsync`, `ShowColumnOptionsAsync`, `HideColumnOptionsAsync`, `BeginEdit`,
-`SaveEditAsync` and `CancelEditAsync`, with `EditingItem` and `IsEditing`. The selection
-methods are what `SelectAllMode.None` hands a page: the same operations the menu performs,
-from whatever control the page draws.
+## Extending the data view
 
 The data view is extended in three ways. A view of the host's own registers with the
 engine and reads the contract pair, and a column of the host's own derives from
@@ -594,7 +469,7 @@ records grow without a new parameter each time a concern gains a setting.
 ## Efficiency
 
 A browsing surface is the component a reader waits on most, so what it costs is part of
-its design, and every phase is held to these rules.
+its design.
 
 - **Only what is on screen is rendered.** A page renders its page, a virtualized view its
   rendered range, and a tree its open nodes; nothing renders an item the reader cannot see.

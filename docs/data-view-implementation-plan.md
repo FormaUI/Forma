@@ -1,184 +1,131 @@
 # Forma Data View Implementation Plan
 
-The plan for building the data view that [the data view design](data-view-design.md) states, and the record of what has landed. Section names refer to the design.
+The plan for building the data view that [the data view design](data-view-design.md) states: the surveys it rests on, the phases it lands through, their state, and where the build departed from the design. Section names refer to the design.
 
-## Status
+## What the plan rests on
 
-Phase 1 has landed: the `Forma.Blazor.DataView` project and its test project, the engine with its contract pair, the query executor, the provider records, the address, the footer, the scroll region, and the grid as its first view with the derivable column base, the property and template columns, the header with its sort buttons and options surfaces, and the rows it renders itself. The framework's grid is gone from the product, the showcase and every test project. The selection, the row tokens, the height reservation and inline editing moved over with it as they were, so every scenario the grid's showcase page shows renders as before, under the engine's name for the selection and the address.
+### What Coi shipped
 
-Three things landed differently from the plan's sketch. The table is a part of the grid, `FormaDataGridTable`, declared after the columns so that it renders once they have registered, rather than a deferral helper of its own; the same part pattern gives the grid its row and its column header, and the three parts share one stylesheet scope through the project file, since the grid's rules reach markup its parts render. Basic virtualization landed with the grid rather than waiting for phase 3, because the showcase's virtualized scenario needed it to keep rendering as it did; the anchoring set, the placeholder template and the announced count remain phase 3's. And the views are the data view's content, so a data view that also sets `Status` wraps its view in `ChildContent`, as Razor requires once a second fragment is named.
+Every tenant admin list is one `GridView` under a card: pages, products, orders,
+abandoned orders, leads, comments, coupons, users, invoices and design sets, and a
+product picker in a modal. Each binds to a repository data source that sorts and pages on
+the server, twenty rows to a page, and each is laid out the same way: a spacer column at
+either edge, a checkbox column where rows can be acted on together, the record's name as
+a link to its editor, a few bound cells, and a run of icon-only action cells at the end,
+view, edit, duplicate, approve, delete. The cells that recur across pages are a
+thumbnail, a date in a short format, a currency amount, a stock count drawn red at zero,
+a status badge built as a tinted pill in code-behind, and a lock or a home glyph for a
+row's state.
 
-The files sit flat in the project under one namespace, as the explorer's do, rather than in the per-view folders first sketched, and the showcase pages sit in the `Features` category beside the explorer's and the composer's.
+A row is clickable anywhere: a click on any cell runs the row's main trigger, which
+navigates to the editor, opens a modal, or toggles the row's checkbox. Checking a row
+tints it and swaps the toolbar above the grid for the bulk actions; the header checkbox
+checks the rows on the page. Two row tints mark state on their own, a green bold row for a
+new order or lead and a red row for an expired coupon, and a row's editor button appears
+on hover beside its name. Sorting is a postback on a few columns, marked in the header by
+one neutral glyph that never shows the direction or which column is active. Paging is
+the framework's numeric pager, page numbers alone, and the page a reader was on travels
+back in the query string when they return from an editor. The header is not sticky, the
+table scrolls sideways on a phone with no column ever hidden, the empty state is one
+sentence, and loading is a spinner in the toolbar or a bar across the top on a phone.
+Actions carry no text and no accessible name; their labels are tooltips drawn on hover.
 
-Phase 2 has landed: the four select-all modes with the menu as the default, drawn by the grid's header from the engine's mode; the selection methods on the engine and the interaction contract; selection over a provider, which reaches the page in every mode and never offers the set; and the selection kept by the item key, so a page re-fetched as fresh copies still shows what was selected. The master control reaches the page in the menu and pager modes, so clearing it clears the page alone, a reset the selection floor does not bind, which the engine exposes as `ClearPageAsync` beside the methods the design names. The design's `IsSelected` and `SelectedItems` answer by key, and a change of `ItemKey` rebuilds the selection under the new key.
+The picker in the modal is the same grid with its header off, its rows dense and its
+click-through disabled. The image library lists every upload as a tile with its name, the
+cards presentation with nothing to sort or group it by. The news ticker's list is a grid
+whose rows are reordered by dragging, which is a different component's job. The
+super-admin lists are an older pattern, an edit form above a grid with move-up and
+move-down buttons.
 
-Phase 3 has landed: the anchoring set on the engine and handed to the framework's list virtualization, the column's placeholder template drawn in a placeholder row, every row a virtualizing grid draws carrying its place in the set, scrolling to an item, and the master control where nothing pages, which reaches the whole set the data view holds and is not drawn over a provider. A view registers with the viewport it keeps, a contract the design did not name, through which the engine scrolls and asks a virtualizing view to fetch its slices again after a reload, which a sort or a refresh over a virtualizing view needed. The anchor mode and the placeholder's context are the framework's own types, since the virtualization is the framework's.
+### Parity with the framework's grid
 
-Phase 4 has landed: a grouping the items fold under, naming the key, the order the groups come in and the name a heading shows, carried in the request so a provider sorts its slice by the group before the sort; the groups read from the slice as runs of one key; the headings the grid draws as row-group headers, each the library's button that folds its group and opens it again; and the fold kept on the engine, so it survives a reload and a change of view, and opens again under a new grouping. Grouping a virtualizing data view is refused, since its slices are flat rows with no place for a heading; see the open decisions.
+The grid over the engine replaces the framework's grid, so everything a caller could do with
+that grid they can do with these two, under the library's names. The inventory, feature by
+feature, so nothing is dropped by omission; the engine's members are the data view's, the
+column's are the grid's.
 
-Phase 5 has landed: a column's priority, frozen flag, visibility and declared width; the fit, measured by a column-fit behavior in the browser interop that watches the width the grid is given and the width each header cell wants, laid out at the table's own content width for one unpainted read; the columns menu at the header's inline end; the frozen region through the freeze pane the grid composes, with the selection column frozen beside the frozen columns, each placed by the widths before it, the pane's arrows stepping between the other columns and its edge resizing the last frozen column; and the dense rows and the headerless grid as before. Three things landed differently from the design's sketch. The pane is the one box the rows scroll in, both ways, since a sticky header inside a pane that scrolls sideways alone would stick to nothing; the freeze pane gained the option, and the grid wraps its pane in a shell that takes the region's height. The header row always renders, collapsed to no height when the header is off, because the widths are measured from its cells. And the fit is measured by script rather than decided by a container query, since a query cannot tell what a column wants.
+| The framework's grid | The data view and its grid |
+|---|---|
+| `Items` and `ItemsProvider`, one or the other | The same two ways in, one supplied |
+| `IAsyncQueryExecutor`, so a queryable backed by a store is counted and read asynchronously | `IDataViewQueryExecutor`, a service the host registers for its store, with an in-memory default the library carries |
+| `GridItemsProviderRequest`: start, count, sort column, direction, cancellation, `ApplySorting` and `GetSortByProperties` | `DataViewRequest` with the same members, so a provider applies the sort to its own queryable or reads the sorted properties for a query it writes itself |
+| `GridItemsProviderResult`: items and total | `DataViewPage`: items and an optional total, a slice shorter than asked for ending a set it cannot count |
+| `PaginationState` and `Paginator`, with a summary template | `PageSize`, a bindable `Page`, the reported total, and `FormaPagination` with its options |
+| `Virtualize`, `ItemSize`, `OverscanCount` | `Virtualize`, `ItemHeight`, `OverscanCount` |
+| `AnchorMode`, `InitialItemIndex`, `ItemComparer`, `ScrollToItemAsync` | The same anchoring set: where the viewport holds when items arrive during virtualization, the item to open on, the comparer that tells a prepend from an append, and scrolling to an item on request |
+| `ItemKey` | `ItemKey` |
+| `RowClass`, `OnRowClick` | `ItemClass`, `OnItemClick` on the engine, which the grid draws on its rows |
+| `Class`, `AdditionalAttributes` | The host surface every component has |
+| `Theme` | The design tokens; a theme restyles the views by redefining them |
+| `QueryParameterNameOptions`: the page, sort and direction parameter names | `AddressOptions`: the prefix and the names, with the active view beside them |
+| `RefreshDataAsync`, `SortByColumnAsync`, `ShowColumnOptionsAsync`, `HideColumnOptionsAsync` | `RefreshDataAsync` and `SortByAsync` on the engine; `SortByColumnAsync`, `ShowColumnOptionsAsync` and `HideColumnOptionsAsync` on the grid |
+| `ColumnBase`, public and derivable, with `CellContent`, `HeaderContent` and `IsSortableByDefault` | `FormaColumnBase`, public and derivable, with the same overrides |
+| `Title`, `Class`, `Align` | `Title`, `Class`, `Align`, logical |
+| `Sortable`, `SortBy`, `InitialSortDirection`, `IsDefaultSortColumn` | The same four, and a `SortName` apart from the title that the address carries |
+| `GridSort` with `ByAscending`, `ByDescending`, `ThenAscending`, `ThenDescending` | `DataViewSort` with the same compound keys, which every view sorts by |
+| `HeaderTemplate` | `HeaderTemplate` |
+| `ColumnOptions`, an options surface a header button opens | `ColumnOptions`, opened from the header as the library's popover |
+| `PlaceholderTemplate` for a virtualized cell not yet loaded | `PlaceholderTemplate` |
+| `PropertyColumn` with `Property`, `Format`, `SortBy` | `FormaPropertyColumn` with the same, plus its editor |
+| `TemplateColumn` with `ChildContent`, `SortBy` | `FormaTemplateColumn` with the same |
 
-Phase 6 has landed: the property column draws the library's inputs where the library has one for the member's type, the text box, the checkbox and the date picker, each named by its column since a cell carries no label; a number, a date with a time and a time keep the framework's inputs in the text box's look until the library has inputs of its own for them, which the roadmap's number input begins. The date picker binds a nullable date; a date member is bound through a conversion each way and identifies its field through a stand-in of the picker's own type, so the picker shows no validation state of its own for such a member, though the row's save still validates it; see the open decisions.
-
-Phase 7 has landed: the list and the cards as the second and third views, each with its item and thumbnail templates and its density, the cards with their action bar and card size, both drawing the engine's groups under a shared heading part and the engine's selection through the same markers the grid draws; the engine's active view, bindable and written to the address, with a view registering its key, the name and glyph the switch shows, and its viewport in one record; the item name the engine hands a view without columns; and the view switch, a component a page composes beside the data view or inside it, one toggle button per registered view. Two things landed differently from the design's sketch. The arrows move by where the items stand rather than by directions a view declares, one behavior finding the item above, below or beside the focused one, so a table's rows, a list's columns and packed cards need no layout of their own. And the list and the cards refuse a virtualizing data view rather than showing an empty list; see the open decisions.
-
-Phase 8 has landed: the engine's hierarchy, a parent key over a set or a provider asked for a node's children through the request, whether a node has children, and the current node whose children the views without a tree show, bindable and reached by activating a node with children in any of them; the children the tree asks for kept by node until the source or the sort changes; and the tree, drawing the roots and each opened node's children a level deeper, with its disclosure, its busy state, its keyboard pattern and type-ahead, its filter, and its choice of the current node. Several things landed differently from the design's sketch. A tree that chooses the current node registers as a companion, a view drawn beside the active view and left out of the switch, since a sidebar and the view it drives show at once; the region lays a companion out across from the view beside it. The roots have members of their own on the contracts rather than standing for a null node, so no caller passes null for an item whose type may be a value. A sidebar's choice is the current node alone, not the data view's selection as well: its rows carry no selection marker, the current node is the selected node of a single-select tree, and the rows carry the focus themselves with the current node as the tab stop, so choosing a folder in the sidebar leaves the selection of the view beside it untouched; and when a view beside it moves into a node the sidebar does not show, the sidebar opens the node's ancestors to reveal it, which the data view makes possible by remembering the parent every item was answered under. The tree's keys are routes on the input router, the inline arrows bound by the reading direction; a tree whose rows carry a marker declares the inline arrows alone and leaves the vertical keys to the selection behavior, and one whose rows carry the focus declares the vertical keys and Enter as well, with type-ahead the one key it reads itself. In a view with a selection a press is the selection's, so a double press, or Enter on the item's marker, activates the item, which is how a folder opens from a selecting grid; the selection behavior also leaves a key pressed in a control of the view outside its items, a header's button or a sidebar's row, to that control. And the tree draws every visible node rather than virtualizing over them; see the open decisions.
-
-Phase 9 has landed: the sort menu, a drop-down a page composes beside a data view or inside it, offering the sorts it is given, each a name the address carries, a label, the keys and the direction it opens in, with the sort applied checked and the two directions turning it, so the list and the cards sort as the grid's headers do. It reaches the data view through a sorter contract of its own, as the view switch does through the switcher's, and a sort the address names opens the data view sorted when the menu offers it. The grid now opens by its default sort column only when the address asked for no sort, since a sort named in the address that no column carries may be the menu's; a name neither carries leaves the data view unsorted, where before the grid's default took over. A menu option sharing a column's sort name marks that column's header when chosen.
-
-Phase 10's first step has landed: a column's sort goes by its sort name rather than its title, a property column's being its property's path, so a link opened in another culture keeps its sort and its direction; a property column over a computed property sorts only once its sort is named, and a column asked to sort with no name, or two sortable columns of one sort name, are refused as the grid collects its columns.
-
-Phase 10's second step has landed: the engine's page gained a States tab for what no page showed, and every state the design names is now on a page:
-
-| State | Page and section |
-| --- | --- |
-| Nothing to show, in the library's sentence and in the caller's content, over a grid, a list and a tree | The data view's States tab, Nothing to Show |
-| Loading before a source's first answer, and busy over the items while it answers again | States, A Slow Source; the data grid's Virtualized Over a Provider |
-| The page giving way when its items go, and the paginator hiding once everything fits | States, The Page Giving Way |
-| A selection refused at its maximum and at its minimum, reported to the page | States, A Bounded Selection |
-| The captions in place of the master box | The data grid's Selection Limits and Captions |
-| The four select-all modes | The data grid's Select-All Modes |
-| Item selection over rows, list items and cards | The data grid's Row Selection; the data view's List and Cards tabs |
-| Grouped rows, list items and cards | The data grid's Grouped Rows; the List and Cards tabs |
-| Frozen columns, fitting a width, the headerless dense picker and inline editing | The data grid's Frozen Columns, Fitting a Width, A Picker and Inline Editing Inside a Form |
-| Virtualized over a set and over a provider, opening on an item, and items arriving at the top | The data grid's Virtualized, Virtualized Over a Provider, Opening on a Row and Rows Arriving at the Top |
-| The densities of the list and the cards | The List tab's A Dense List; the Cards tab's Thumbnails |
-| The hierarchy, and a node busy while its children load | The Tree tab; States, A Tree Asking for Its Children |
-| The view switch and the sort menu | The data view's main tab, One Set, Three Views |
-
-The bounded selection showed a box the reader pressed past a bound toggling its own look while the selection stayed as it was; the item boxes now take the master box's pattern, the press deciding and the box never toggling itself, so a refused press leaves the box as it was. The fixtures also showed a new source, a queryable built afresh on a page's render, collapsing a tree: the engine now keeps the nodes the reader opened and shows their children until the new source answers for them.
-
-Phase 10's third step has landed, with its screen reader check deferred. A browser pass over every view in English, Hebrew and Spanish, under a fine pointer and a coarse one, found every control named and every collection's role and state exposed, and three shortfalls of the data view's own: its boxes stood at 16 pixels under a fine pointer and 24 under a coarse one, a short column title's sort button was narrower than a finger, and neither the item count nor the busy state was announced. Each box now stands in a target of the floor, and the engine announces as the design's footer and states describe, with its region `aria-busy` while a source answers. The pass also found shortfalls in the library's own components, fixed apart from the data view: a page step of the paginator stood 32 pixels tall under a coarse pointer, a button whose label is a short word, a short column title's sort button among them, was narrower than 44 pixels under one, the splitter stood 12 pixels thick under a fine pointer and the explorer's tree sash under 10, and a grid row's rule stopped short of its selection and menu cells. Every button now keeps the touch floor's width, every step the touch floor's height, and every splitter the floor's thickness, and a row's rule runs its whole width. The screen reader check of the count and busy transitions is the one part of the gate still open. It is run with NVDA's speech viewer over the States tab, in English and in Hebrew: the slow source's first load, a move to its second page and a refresh should each say loading and then the count, the tree's first load the same, taking away the last page's only item and putting everything back should each say the new count, and a fourth box pressed in the bounded selection should say the refusal.
-
-Phase 10's fourth step has landed. Its decision: the tree, the list and the cards each virtualize, and grouping with them, all required now. Each view was measured without virtualization over a held set with checked selection, on the Showcase served locally in Chrome, timing the first render and a box pressed until its item painted selected, against the engine's scale of a hundred thousand items:
-
-| Items | List: first render, press | Cards: first render, press | Tree: first render, press | Grid: first render, press |
-| --- | --- | --- | --- | --- |
-| 500 | 243 ms, 46 ms | 244 ms, 35 ms | 293 ms, 55 ms | 152 ms, 16 ms |
-| 1,000 | 388 ms, 66 ms | 328 ms, 71 ms | 453 ms, 81 ms | 216 ms, 28 ms |
-| 2,000 | 824 ms, 135 ms | 621 ms, 140 ms | 797 ms, 160 ms | 267 ms, 52 ms |
-| 5,000 | 2,183 ms, 446 ms | 1,932 ms, 381 ms | 1,978 ms, 433 ms | 568 ms, 132 ms |
-| 10,000 | 6,450 ms, 911 ms | 5,067 ms, 723 ms | 4,278 ms, 836 ms | 1,203 ms, 291 ms |
-
-Every view crosses the threshold between two and five thousand items, the grid unvirtualized between five and ten thousand, so none of them reaches the engine's scale without virtualizing. The press grows with the set because a selection redraws every item, which the efficiency pass takes up, but the first render alone passes two seconds at five thousand items and four at ten, which no efficiency change removes; a network between the reader and the server only adds to both. A grouped set costs the same per item, and the gallery shows its items grouped by date, so grouping under virtualization is required with the views rather than left to paging.
-
-The build has landed: the list virtualizes one item to a row, the cards in rows of as many as the pack lays out at the width, which a behavior counts from the grid the browser resolves, and the tree over its visible nodes, each saying its level and its place among its siblings, with a key that reaches a node scrolled out of the rendered range scrolling it back to focus it. Grouping virtualizes in every view, the grid's included, a heading a row of its own before its group's rows: the engine learns each group's size with the set's count, from a held queryable through the store or from a provider that answers the request asking for them, and a folded group's rows are never read. At a hundred thousand items, a press on a box paints in 7 to 20 milliseconds in the list and the cards, where it took close to a second unvirtualized at ten thousand, and a page holds a couple of hundred elements whatever the set; the tree over twenty thousand visible nodes reaches its last and its first from the keyboard. The Showcase shows each at that scale, in the list, the cards and the tree tabs and the data grid's Grouped and Virtualized.
-
-Home and End now reach the ends of a virtualizing view, as settled after the step: a move names the end it wants, the engine resolves the first or the last item the active view reaches, across the open groups and among the tree's visible nodes, selects by the move's rules, and has the view scroll the item into range; the selection behavior lands the focus once the item is drawn, joins a repeated End still pending, and lets a move go when the reader moves on or the order or the view changes. A range extends by position, so an anchor scrolled out of the page still counts. In the cards, Ctrl+Home and Ctrl+End reach the collection's ends, moving the focus alone, and Ctrl+Shift with them extends the range. The same moves over a list virtualized and one drawn whole leave the same focus, selection and anchor. Two things the fix brought to light landed with it: a source that cannot count was read no further than its first slice under virtualization, and now reads one slice further as the reader scrolls or presses End, until a slice comes back short, which the page contract now names as the set's end; and a render that draws the focused item afresh dropped the focus to nothing, which the selection behavior now takes back onto the item. Checked selection alone still routes no moves, which stays a decision of its own.
-
-The tree was then found to lose its focus under the framework's list virtualization, which keeps no item rendered outside its range: its tab stop leaves the page once it scrolls past the overscan, so Tab passes the tree by, and a focused row or checkbox scrolled away drops the focus to the page. The views move onto `FormaVirtualize`, Forma's virtualization, which keeps rendered the items its owner pins wherever they lie; [the virtualization plan](virtualization-implementation-plan.md) carries the steps, the tree first and then the grid, the list and the cards.
-
-## What the rewrite starts from
-
-The wrapper carries a good deal the design keeps: the two kinds of selection with their bounds, captions and rejection reports, the item token table the selection behavior reads, the height reservation that holds a paged view at a full page, the footer with the library's paginator and the status region, inline editing with its edit session, and the property column with its editor choice, title resolution and draft-targeted validation. Those move rather than start over, the selection and the footer into the engine and the editing into the grid. The explorer carries the other half: its three views over one content area, the group headings that fold, the sort menu and the view switch, the frozen name column through the freeze pane, and the selection behavior over items. Those are the pattern the engine generalizes, and the explorer adopts the engine once it exists. What has to be built new is the engine's contract pair and view registration, the table the grid renders itself, the query executor, the provider contract, virtualization with its anchoring, the address with the active view, and the list and cards views.
-
-The grid's tests cover selection, bounds, paging, the footer, the scroll region, the provider, refresh, item tokens and inline editing, and they stay as the contract each step has to keep passing, rewritten only where the markup they find changes. The explorer's tests do the same for its adoption. The tests that pin the framework grid's markup, which the stylesheet reached through, go with the stylesheet rules that needed them.
-
-## File layout
-
-The layout as built; an entry marked planned is one the design still calls for and no phase has landed yet.
-
-```text
-src/Forma.Blazor.DataView/                     # namespace Forma.Blazor.Components.DataView
-├── FormaDataView.razor                        # the engine
-├── FormaDataView.razor.cs
-├── FormaDataView.razor.css
-├── IDataView.cs                               # what a view reads
-├── IDataViewInteraction.cs                    # what a view invokes
-├── DataViewRequest.cs                         # what a provider is asked
-├── DataViewPage.cs                            # what a provider answers
-├── DataViewSort.cs                            # the sort, with its compound keys
-├── DataViewItemsProvider.cs                   # the provider delegate
-├── DataViewAddressOptions.cs
-├── IDataViewQueryExecutor.cs                  # with the in-memory default beside it
-├── CheckedSelectionOptions.cs                 # moved from the collections category
-├── CheckedSelectionCaption.cs
-├── SelectAllMode.cs                           # what the master control reaches
-├── SelectionBoundary.cs
-├── SelectionBounds.cs
-├── SelectionRejected.cs
-├── FormaDataGrid.razor                        # the grid view
-├── FormaDataGrid.razor.cs
-├── FormaDataGridTable.razor                   # the table the grid draws, a part; the three parts share one stylesheet scope
-├── FormaDataGridTable.razor.css
-├── FormaDataGridRow.razor                     # one row, a part
-├── FormaDataGridRow.razor.css
-├── FormaDataGridColumnHeader.razor            # a header cell's content, a part
-├── FormaDataGridColumnHeader.razor.css
-├── FormaColumnBase.cs                         # the derivable column base
-├── FormaPropertyColumn.cs
-├── FormaTemplateColumn.cs
-├── ColumnAlign.cs
-├── RowEditSession.cs
-├── ItemKeyComparer.cs
-├── ItemTokenTable.cs
-├── FormaDataList.razor                        # planned (phase 5)
-├── FormaDataCards.razor                       # planned (phase 5)
-├── FormaDataTree.razor                        # planned (phase 5)
-├── .locale.json                               # the root namespace, for a host laying the assembly's files out by it
-└── README.md
-src/Forma.Locales/Forma.Blazor.Locales.{Language}/Forma.Blazor.DataView/
-└── {culture}.json                             # the engine's and the views' strings
-tests/Forma.Blazor.DataView.Tests/             # mirrors the source tree
-src/Forma.Blazor.Showcase/Components/Pages/Features/
-├── FormaDataGridPage.razor                    # moved from the collections pages
-├── FormaDataViewPage.razor                    # planned (phase 5): the engine with a view switch over every view
-├── FormaDataListPage.razor                    # planned (phase 5)
-├── FormaDataCardsPage.razor                   # planned (phase 5)
-└── FormaDataTreePage.razor                    # planned (phase 5)
-```
-
-The project is laid out as the explorer and the composer are: a Razor class library referencing the product, the interop assemblies its behaviors need, and the Framework assemblies it compiles against, packed as `FormaUI.NET-Blazor.DataView` with the product's package as its dependency. The sortable list stays in the product's collections category; only the grid and what belongs to it move. The explorer's project and, later, the gallery's take a dependency on the data view's package as consumers of it; the data view references neither.
+What the framework's grid could not do and this design adds is the rest of it: the views
+beside the grid, selection, editing, priority, frozen columns, grouping, the empty and busy
+states, and the fit.
 
 ## Phases
 
 Each phase ends buildable, tested and reviewable, with a showcase page showing every state the phase adds.
 
-1. **The project, the engine and the grid.** ✅ The `Forma.Blazor.DataView` project and its test project; the engine with its contract pair and view registration, the source with its query executor, the request and page records, the provider delegate, cancellation, the busy and empty states, refresh and the page giving way; the sort and page with the bindable page and the reported total; the address with the active view; the footer; the scroll region with the height reservation; and the grid as the first view, with the derivable column base, the property and template columns, the header with its sort buttons and options surfaces, the rows the grid renders itself, sorting by header with compound keys and the default sort column, and the grid's tests moved over. The framework's grid leaves the product, the showcase and the test projects with this phase, the catalog's structure lists the project, and the grid's stylesheet reaches nothing through `::deep` that is not a library component. Gate: every scenario the grid's showcase page shows today renders as it did, and every existing test passes against the owned markup.
-2. **Selection.** ✅ Checked and pointer selection as the engine's, drawn by the grid, with the four select-all modes and the menu as the default, the selection methods, selection over a provider, and the selection remembered by key across paging and sorting. Gate: the selection scenarios in each mode, a provider with checked selection, and a selection kept across a page change.
-3. **Virtualization.** ✅ The framework's list virtualization over a set and over a provider in the view's units, with the placeholder, the anchoring set, the initial item, scrolling to an item and the item count announced, and what the master control reaches where nothing pages, since a virtualizing data view holds no page for the menu and pager modes to select. Gate: a hundred thousand rows scroll in a bounded box, open on a given row and hold their viewport when rows are prepended.
+1. **The project, the engine and the grid.** ✅ The engine with its contract pair and view registration, the source with its query executor, the request and page records, the busy and empty states, refresh and the page giving way, the sort and the page, the address, the footer, the scroll region with the height reservation, and the grid as the first view with its columns, header and rows; the framework's grid left the product, the Showcase and the test projects. Departures: the table is a part of the grid, `FormaDataGridTable`, declared after the columns so it renders once they have registered, as are its row and column header, the three sharing one stylesheet scope; and a data view that also sets `Status` wraps its view in `ChildContent`, as Razor requires once a second fragment is named. Gate: every scenario the grid's Showcase page showed renders as it did, and every existing test passes against the owned markup.
+2. **Selection.** ✅ Checked and pointer selection as the engine's, the four select-all modes with the menu as the default, the selection methods, selection over a provider, and the selection kept by key across paging, sorting and fresh copies of the items. Departure: the master control reaches the page in the menu and pager modes, so clearing it clears the page alone, which the engine exposes as `ClearPageAsync` beside the methods the design names. Gate: the selection scenarios in each mode, a provider with checked selection, and a selection kept across a page change.
+3. **Virtualization.** ✅ Virtualization over a set and over a provider in the view's units, with the placeholder, the anchoring set, the initial item, scrolling to an item, the item count announced, and what the master control reaches where nothing pages. Departure: a view registers with the viewport it keeps, a contract the design did not name, through which the engine scrolls and asks a virtualizing view to fetch its slices again. Gate: a hundred thousand rows scroll in a bounded box, open on a given row and hold their viewport when rows are prepended.
 4. **Grouping.** ✅ Grouping with its headings, folding and the fold kept across views. Gate: a grouped grid folds and unfolds from the keyboard.
-5. **Fitting a width.** ✅ Column priority, the width measurement, the columns menu, frozen columns through the freeze pane, the dense rows and the headerless grid. Gate: a narrow scenario drops its lowest columns and lists them, a frozen scenario holds its name column while scrolling, and the picker scenario shows the headerless dense grid.
-6. **Inline editing.** ✅ The edit session and the property column's editors moved over, swapped for the library's inputs. Gate: the editing scenario runs inside a form.
-7. **The list and the cards, with the view switch.** ✅ The two views with their item templates and densities, the cards' packing and four-direction arrows, and the view switch bound to the active view and written to the address. Gate: one set shown three ways on the engine's showcase page, switched from the view button and reproduced from a link.
-8. **The hierarchy and the tree.** ✅ The engine's hierarchy with its current node and children loaded on demand, and the tree with its disclosure and keyboard pattern. Gate: a folder hierarchy opened in the tree while the grid shows the current node's children.
-9. **The sort menu.** ✅ The sort menu over the engine's sort. Gate: the sort chosen from the menu reproduced from a link.
+5. **Fitting a width.** ✅ Column priority, the width measurement, the columns menu, frozen columns through the freeze pane, the dense rows and the headerless grid. Departures: the pane is the one box the rows scroll in both ways, since a sticky header inside a pane that scrolls sideways alone would stick to nothing, so the freeze pane gained the option; and the header row always renders, collapsed when the header is off, since the widths are measured from its cells. Gate: a narrow scenario drops its lowest columns and lists them, a frozen scenario holds its name column while scrolling, and the picker scenario shows the headerless dense grid.
+6. **Inline editing.** ✅ The edit session and the property column's editors, the library's text box, checkbox and date picker where it has one for the member's type. Departure: a number, a date with a time and a time keep the framework's inputs in the text box's look; see the open decisions. Gate: the editing scenario runs inside a form.
+7. **The list and the cards, with the view switch.** ✅ The two views with their item templates and densities, the cards' packing, and the view switch bound to the active view and written to the address. Gate: one set shown three ways on the engine's Showcase page, switched from the view switch and reproduced from a link.
+8. **The hierarchy and the tree.** ✅ The engine's hierarchy with its current node and children loaded on demand, and the tree with its disclosure, keyboard pattern and type-ahead. Departures: a tree that chooses the current node registers as a companion, drawn beside the active view and left out of the switch; the roots have members of their own on the contracts rather than standing for a null node; a sidebar's choice is the current node alone, so it leaves the selection of the view beside it untouched, and it opens a node's ancestors to reveal a node the view beside it moved into; and in a view with a selection a double press, or Enter on the item's marker, activates the item. Gate: a folder hierarchy opened in the tree while the grid shows the current node's children.
+9. **The sort menu.** ✅ The sort menu over the engine's sort. Departures: the menu reaches the data view through a sorter contract of its own, as the view switch does through the switcher's; and the grid opens by its default sort column only when the address named no sort. Gate: the sort chosen from the menu reproduced from a link.
 10. **Accessibility, touch, direction, efficiency, tests and showcase.** Five steps in this order, each a commit of its own:
-    1. **A stable sort identity.** ✅ A column's sort goes by a name apart from its title, which a property column takes from its property's path when none is given and a sortable column with no property to take it from must be given; the title is the label shown and nothing else. The engine resolves a sort and writes the address by that name, a sort menu's option refers to a column's sort by the same name, and two sortable columns of one grid, or two options of one menu, naming one sort are refused, while a column and a menu option sharing a name are the same sort. Gate: a sorted link opened in another culture opens with the same sort in the same direction.
-    2. **The Showcase scenarios.** ✅ Every state the design names shown on a page — empty, loading, busy, a rejected selection, grouped, frozen, virtualized, the hierarchy — so the passes after it have their fixtures. Gate: a state-by-state list against the design, each state shown on a page.
-    3. **Accessibility, touch and direction.** ✅ A browser pass over the grid, the list, the cards, the tree, the switch and the sort menu in every culture the library ships, fixing what it finds. Names, roles and exposed states are read from the accessibility tree; that the item count and the busy state are announced as they change is checked with a screen reader, since the tree shows what is exposed rather than what is spoken. Every target is measured at the floor of the pointer it serves: the box the press lands on, its border box or the hit area around it, at least 24 by 24 CSS pixels under a fine pointer and 44 by 44 under a coarse one. Gate: no target under its floor, every view's names, roles and states exposed, and the count and busy transitions announced.
-    4. **Virtualization.** ✅ The scale is the engine's, the same for every host: a data view hands one set to whichever view is active, and the grid already carries a hundred thousand rows. Each of the tree, the list and the cards is measured without virtualization at growing sizes against the web's responsiveness threshold, an interaction painting within 200 milliseconds, and its virtualization, with grouping under it, is recorded as required now or deferred, with the measurement behind the decision. What is required is built in a commit of its own, before the efficiency pass. Gate: the decision recorded for every view, and every view required to virtualize doing so at the engine's scale.
-    5. **Efficiency.** A browser profile of the many-rows and virtualized scenarios, measuring the first render apart from the interactions after it. Gate: no work nothing needs — each kind of observer the data view uses, the column fit's, the height reservation's and the virtualization's, attached once per data view and never per item; no interop call per item; and a selection change updating the item views it affects and the selection UI that depends on it, a count, a master control or a selection toolbar, while unaffected item views do not re-render.
-11. **The explorer.** The explorer's content area becomes a data view with its item template and its three views, its view modes keeping their names, its own views, group headings and selection behavior retired, and its folder-tree sidebar the same data view's tree over the folders, so the explorer draws no browsing surface of its own; its tests kept passing. Gate: the explorer's tests and its browser checks pass unchanged in behavior.
-12. **The gallery.** The gallery's browsing becomes a data view in the cards view at its compact density, grouped by date, and its design keeps for itself what is about media. This phase lands with the gallery itself, whenever the roadmap reaches it.
+    1. **A stable sort identity.** ✅ A column's sort goes by a sort name apart from its title. Gate: a sorted link opened in another culture opens with the same sort in the same direction.
+    2. **The Showcase scenarios.** ✅ Every state the design names is shown on a page. Gate: a state-by-state list against the design, each state shown on a page:
 
-## Renames the rewrite carries
+       | State | Page and section |
+       | --- | --- |
+       | Nothing to show, in the library's sentence and in the caller's content, over a grid, a list and a tree | The data view's States tab, Nothing to Show |
+       | Loading before a source's first answer, and busy over the items while it answers again | States, A Slow Source; the data grid's Virtualized Over a Provider |
+       | The page giving way when its items go, and the paginator hiding once everything fits | States, The Page Giving Way |
+       | A selection refused at its maximum and at its minimum, reported to the page | States, A Bounded Selection |
+       | The captions in place of the master box | The data grid's Selection Limits and Captions |
+       | The four select-all modes | The data grid's Select-All Modes |
+       | Item selection over rows, list items and cards | The data grid's Row Selection; the data view's List and Cards tabs |
+       | Grouped rows, list items and cards | The data grid's Grouped Rows; the List and Cards tabs |
+       | Frozen columns, fitting a width, the headerless dense picker and inline editing | The data grid's Frozen Columns, Fitting a Width, A Picker and Inline Editing Inside a Form |
+       | Virtualized over a set and over a provider, opening on an item, and items arriving at the top | The data grid's Virtualized, Virtualized Over a Provider, Opening on a Row and Rows Arriving at the Top |
+       | The densities of the list and the cards | The List tab's A Dense List; the Cards tab's Thumbnails |
+       | The hierarchy, and a node busy while its children load | The Tree tab; States, A Tree Asking for Its Children |
+       | The view switch and the sort menu | The data view's main tab, One Set, Three Views |
 
-The grid's public names came from the framework's grid, and owning it is the moment to name them for the library. The explorer's own names, its view modes among them, are the explorer's and stay. Each line is `current -> proposed`, with what the member is, for review; only what the review accepts is applied, and a member left unlisted keeps its name.
+       The fixtures found two faults, both fixed: a box pressed past a selection bound toggled its own look while the selection stayed as it was, and a new source collapsed a tree's opened nodes.
+    3. **Accessibility, touch and direction.** ✅, with its screen reader check open. A browser pass over every view in English, Hebrew and Spanish, under a fine pointer and a coarse one, fixing what it found, in the data view and in the library's own components. Gate: no target under its floor, every view's names, roles and states exposed, and the count and busy transitions announced. The last part is open: with NVDA's speech viewer over the States tab, in English and in Hebrew, the slow source's first load, a move to its second page and a refresh should each say loading and then the count, the tree's first load the same, taking away the last page's only item and putting everything back should each say the new count, and a fourth box pressed in the bounded selection should say the refusal.
+    4. **Virtualization.** ✅ Each of the tree, the list and the cards was measured without virtualization over a held set with checked selection, timing the first render and a box pressed until its item painted selected:
 
-| Current | Proposed | What it is |
-|---|---|---|
-| `Forma.Blazor.Components.Collections` (the grid's part) | `Forma.Blazor.Components.DataView` | The namespace of the grid and everything that belongs to it |
-| `TGridItem` | `TItem` | The item type parameter, as every other collection component names it |
-| `ColumnBase<TGridItem>` | `FormaColumnBase<TItem>` | The derivable column base, now the library's |
-| `PropertyColumn`, `TemplateColumn` | `FormaPropertyColumn`, `FormaTemplateColumn` | The two columns a caller writes, now the library's |
-| `FormaPropertyColumn<TGridItem, TProp>` | `FormaPropertyColumn<TItem, TValue>` | The bound column's type parameters, the value named as the inputs name theirs |
-| `GridItemsProvider<TGridItem>` | `DataViewItemsProvider<TItem>` | The provider delegate |
-| `GridItemsProviderRequest<TGridItem>` | `DataViewRequest<TItem>` | The slice and sort a provider is asked for |
-| `GridItemsProviderResult<TGridItem>` | `DataViewPage<TItem>` | The items and total a provider answers with, shaped as the catalog's page |
-| `GridSort<TGridItem>` | `DataViewSort<TItem>` | The sort every view sorts by |
-| `SortedProperty` | `DataViewSortedProperty` | One key of an applied sort, by name and direction |
-| `IAsyncQueryExecutor` | `IDataViewQueryExecutor` | The service that counts and reads a queryable asynchronously |
-| `EnableRowSelection` | `EnableItemSelection` | Pointer selection, which is over items whatever the view |
-| `RowClass`, `OnRowClick` | `ItemClass`, `OnItemClick` | The caller's class and click per item, which the grid draws on a row |
-| `ItemSize` | `ItemHeight` | The height of the view's virtualization unit |
-| `QueryParameterNamePrefix` | `AddressOptions` | The prefix and the parameter names the sort, page and view are written to the address under |
+       | Items | List: first render, press | Cards: first render, press | Tree: first render, press | Grid: first render, press |
+       | --- | --- | --- | --- | --- |
+       | 500 | 243 ms, 46 ms | 244 ms, 35 ms | 293 ms, 55 ms | 152 ms, 16 ms |
+       | 1,000 | 388 ms, 66 ms | 328 ms, 71 ms | 453 ms, 81 ms | 216 ms, 28 ms |
+       | 2,000 | 824 ms, 135 ms | 621 ms, 140 ms | 797 ms, 160 ms | 267 ms, 52 ms |
+       | 5,000 | 2,183 ms, 446 ms | 1,932 ms, 381 ms | 1,978 ms, 433 ms | 568 ms, 132 ms |
+       | 10,000 | 6,450 ms, 911 ms | 5,067 ms, 723 ms | 4,278 ms, 836 ms | 1,203 ms, 291 ms |
+
+       The list, the cards and the tree cross the web's 200-millisecond threshold for an interaction between two and five thousand items, and the grid between five and ten thousand, so every view virtualizes, with grouping under it. Landed: the list one item to a row, the cards in rows of as many as the pack lays out, the tree over its visible nodes, grouping in every view, and Home and End reaching a virtualizing view's ends. The views then move onto `FormaVirtualize`, so the item holding the focus stays rendered; [the virtualization plan](virtualization-implementation-plan.md) carries those steps. Gate: every view virtualizing at the engine's scale of a hundred thousand items.
+    5. **Efficiency.** Open. A browser profile of the many-rows and virtualized scenarios, measuring the first render apart from the interactions after it. Gate: each kind of observer attached once per data view and never per item; no interop call per item; and a selection change re-rendering only the item views it affects and the selection controls that depend on it.
+11. **The explorer.** Open. The explorer's content area becomes a data view with its item template and its three views, its view modes keeping their names and its own views, group headings and selection retired, and its folder-tree sidebar the same data view's tree over the folders. Gate: the explorer's tests and its browser checks pass unchanged in behavior.
+12. **The gallery.** Open. The gallery's browsing becomes a data view in the cards view at its compact density, grouped by date, landing with the gallery itself whenever the roadmap reaches it.
 
 ## Open decisions
 
 - **A date picker over a date that cannot be empty.** The picker's value is a nullable date, and the framework identifies a field only through a member of the input's own type, so a date member that cannot be empty is identified through a stand-in and the picker draws no validation state for it. The way through is the library's to decide: a picker bound to a date that cannot be empty, or one generic over both.
 - **Moving among the items under checked selection alone.** With boxes and no item selection, the selection behavior routes no moves, so each box is a Tab stop and a virtualizing view gives the keys no way past the boxes drawn. Whether the boxes take the arrows, Home and End, as the markers do under item selection, is a design decision of its own.
 - **Inputs the library lacks.** A number, a date with a time and a time are edited through the framework's inputs in the text box's look. The roadmap's number input replaces the first when it lands; the other two wait for a decision on whether the library wants them.
-
 - **Asking again for an equal query.** A new queryable is a new source, asked again, so a query to a store built in a page's markup asks the store on every render of the page. Skipping the question for a query equal to the last would take comparing expression trees with their captured values evaluated, as a store's query cache keys them, and a comparison that missed a real change would show stale items; nothing the data view serves needs it yet.
-- **The gallery's timing.** Phase 12 is the gallery's own build, so it waits on the roadmap rather than on this plan.
