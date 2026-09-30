@@ -11,67 +11,21 @@ linter's.
 
 Out of scope: a source reads its folder once and watches it for no change; a path names
 `$Culture` and nothing chooses a path by it; and a misplaced file is the linter's to report,
-since the build embeds files as it always has.
+since the build embeds files the ordinary way.
 
 ## Purpose
 
 A locale file stands for part of a type's name, and its sections complete the rest. Which part a
-file stands for has so far been read from its name alone, in a fixed set of forms: a file beside
-a folder, inside it under the folder's own name, named for the type, or named for the assembly.
-Those forms are good defaults and poor limits. A project may want every folder's files gathered in
-one place, a project that borrows another assembly's namespace cannot name a file for its own
-assembly and be found, and a host laying its own files over a library's has to guess which of the
-forms the library used.
+file stands for is stated rather than guessed from a fixed set of names: a project may want every
+folder's files gathered in one place, a project that borrows another assembly's namespace has to
+be able to name a file for its own assembly and be found, and a host laying its own files over a library's
+must not have to guess which form the library used.
 
 Forma answers this with one mechanism: an ordered list of **paths** written in tokens,
 which every source reads its files by, and one canonical form as the default: every folder keeps
 its files in a `.locales` folder of its own, one per culture for the folder and one per culture
 for a type or namespace beneath it. A project that wants another form states it; a host never
 needs to.
-
-## Decision summary
-
-- A locale file stands for an **anchor**: the part of a type's name its top level completes from.
-  A file's anchor is read from its name against the paths in force, and from nothing else.
-- Embedded and host files are read by paths in the same tokens. A source knows every
-  file it holds, read once, so finding a type's files never guesses at names.
-- The default is two paths into one folder: `$RootDir/$AnchorName/$LocalesDir/$Culture$Extension`,
-  the folder's own file named for the culture alone, whose sections complete the rest of the
-  name, and `$RootDir/$ParentName/$LocalesDir/$CurrentName.$Culture$Extension`, a file named
-  for a type or namespace beneath the folder, whose entries are that name's own. A folder is a
-  namespace, never a type. A host's folder is itself a folder of locale files, so inside it both
-  files may as well sit directly in the folder; the two forms resolve equally, at one anchor.
-- A section completes a type's name from where the file sits, or from the assembly's root when
-  its name starts with `@.` at the file's top level, so a file anywhere can name any type of its
-  assembly outright; nothing is guessed, and no pattern is matched.
-- The runtime's configuration lives in `.locale.json`, one optional file per assembly, embedded
-  at the assembly's root. It applies to every file of that assembly and to nothing else: it is a
-  runtime file the assembly ships, not a compile-time file a tree cascades. A host's folder holds
-  none; each assembly's folder inside it follows what the assembly's own file declares. The
-  linter's own configuration is `.locali.json`, which the runtime never reads. A locale file holds
-  translations alone: its `$localization` entry carries facts about the file, and nothing in it
-  steers the loader or a tool.
-- An assembly's `.locale.json` marks where its files begin. An assembly with none is rooted where
-  its names begin and read by the defaults, so a project laid out by the default needs no config
-  file.
-- A folder of locale files is `.locales` by default and configurable. The leading dot keeps it
-  apart from a folder a project already names `Locales`, on disk and in embedded resource names.
-- A **locale pack** is a third source beside the two: an assembly carrying locale files for other
-  assemblies' types, shipped as its own package. It is a host's folder that ships as an assembly, a
-  folder per assembly it localizes, laid out by the root namespace that assembly declares, read by
-  the paths a host's folder is read by and holding no config file of its own. It takes nothing from
-  the other two: embedding an assembly's own locale files stays an ordinary arrangement.
-- A pack's name means nothing to the runtime, which finds it by name and reads its resources
-  without parsing either. Forma's own packs are `Forma.Blazor.Locales.{Language}`, which is this
-  repository's convention and not a rule the library enforces.
-- A pack is found through an assembly attribute its own targets file stamps the referencing project
-  with, since nothing a host writes names a type in a pack and nothing at runtime could otherwise
-  tell it was referenced. The application names its packs; a library it installs cannot.
-- A project embeds its locale files as it always has. What the build does beyond that ships with
-  the library, as a targets file every project referencing it imports: it embeds an assembly's
-  `.locale.json` whenever one sits at the project root, and it makes a project that declares
-  itself a pack into one.
-- Entries are applied in one order: an assembly's own files, then the packs, then the host's.
 
 ## Anchors
 
@@ -175,8 +129,7 @@ just before the extension, as in `Bars.he.json`. A source lists a satellite's fi
 names they would carry in the assembly itself, so every path reads them as it reads any other. A
 file whose culture is the whole of its name, as `.locales/he.json`'s is, stays in the assembly.
 
-A project embeds its files with its own item, as it always has. Nothing about a path asks the
-build for more.
+A project embeds its files with its own item. Nothing about a path asks the build for more.
 
 ### Host files
 
@@ -227,17 +180,14 @@ inferred.
 
 ## Locale packs
 
-An assembly embedding its own locale files stays what it has always been, and a host's folder stays
-where a host writes its own. A **locale pack** is a third source beside them: an assembly carrying
-locale files for the types of *other* assemblies, shipped as its own package. It takes nothing away
-from either of the other two, and a project embedding its own files is no more a legacy arrangement
-for having a pack available, as the Showcase shows by keeping every locale file it has.
+An assembly may embed its own locale files, and a host writes its own in its folder. A **locale
+pack** is a third source beside them: an assembly carrying locale files for the types of *other*
+assemblies, shipped as its own package. It takes nothing from either of the other two.
 
 What a pack is for is a language that need not be in the assembly it localizes. Forma's own
-localizations, the ones the library ships, move into packs — `Forma.Blazor.Locales.Hebrew` and
-`Forma.Blazor.Locales.Spanish` — so a host installs the languages it wants and the assemblies it
-installs carry the language their keys are written in. A host that would rather embed its own
-strings, or lay them in its folder, does exactly what it did before.
+localizations ship in packs, one per language, so a host installs the languages it wants and the
+assemblies it installs carry the language their keys are written in. A host that would rather
+embed its own strings, or lay them in its folder, does so as with any library.
 
 ### A pack is a host's folder that ships as an assembly
 
@@ -277,17 +227,16 @@ assembly named `Forma.AddOns.Resources.Office.Locale.Chinese`, one named
 identically, and a pack for Forma's assemblies can be published by someone Forma has never heard
 of. Which assemblies a pack localizes is said by the folders inside it and nowhere else.
 
-Forma's own packs are named `Forma.Blazor.Locales.{Language}`, for the product family they carry,
-and live in `src/Forma.Locales/`, which is a convention of this repository rather than a rule the
-library enforces. Forma owns every assembly it localizes, so one package per language is one thing
-for a host to install: a pack carries as many assemblies' folders as it has files for.
+Forma's own packs are named `Forma.Blazor.Locales.{Language}`, for the product family they carry.
+Forma owns every assembly it localizes, so one package per language is one thing for a host to
+install: a pack carries as many assemblies' folders as it has files for.
 
 ### An application names its packs, not a library
 
 The attribute that records a pack is written into the project holding the reference, and the packs
 that are read are the ones the entry assembly names. Which languages ship is therefore the
-application's decision and cannot be made for it by a library it installs: `Forma.Blazor` never
-references a pack, and the Showcase references both of Forma's own.
+application's decision and cannot be made for it by a library it installs, so a library never
+references a pack.
 
 A class library that references a pack is stamped itself rather than stamping the application, so
 its pack is not found from the entry assembly. A host arranged that way names its packs through
@@ -304,29 +253,12 @@ down.
 A project is a pack because it says `<IsLocalePack>true</IsLocalePack>`, which ships with the
 library and makes a project of nothing but locale files into one, whoever writes it. A pack's
 package then carries a targets file, which MSBuild imports into the project referencing it. It
-stamps that project with an assembly attribute naming the pack, and roots the pack for the trimmer:
-
-```xml
-<ItemGroup>
-    <AssemblyAttribute Include="Forma.Framework.Localization.LocalePackAttribute">
-        <_Parameter1>Forma.Blazor.Locales.Hebrew</_Parameter1>
-    </AssemblyAttribute>
-    <TrimmerRootAssembly Include="Forma.Blazor.Locales.Hebrew" />
-</ItemGroup>
-```
-
+stamps that project with an assembly attribute naming the pack, and roots the pack for the trimmer.
 The application's own assembly then says which packs it was built against, in its own metadata, and
 `AddJsonLocalization` reads those attributes and loads each pack named. A host writes one
 `PackageReference` and no code: there is no registrar to call and no language to name twice. A pack
 named in an attribute but missing from the output is reported and left out, so a deployment that
 lost a language still renders in the language its keys are written in.
-
-### Precedence
-
-A pack sits between an assembly's own files and the host's folder: the assembly's embedded files,
-then each pack in the order the entry assembly's attributes name them, then the host's folder. A
-pack a host installed is a deliberate choice, so it completes or corrects what the assembly ships;
-the host's own folder is nearer still and overrides both without either being touched.
 
 ## Configuration
 
@@ -382,24 +314,14 @@ of its own, whichever form either chose. A pack in turn overrides what the assem
 host installing a pack asked for it. Two files of one source standing for one anchor through
 different paths are both read, and the linter reports the pair.
 
-## What goes
-
-`ResourcesPath` retires: a path names any folder a project gathers its files under. The fixed
-walk over file names retires with it, and so do the forms it read as defaults: a file beside its
-folder, inside it under the folder's own name, named for the type, or named for the assembly. A
-project keeping one of them states it as a path.
-`RootNamespace` leaves a file's metadata for `.locale.json`, and with it the walk over every
-namespace prefix a host file might have declared. `$tools` leaves the locale files: a locale file
-holds translations alone, and what a tool keeps per file belongs in the tool's own file.
-
 ## Decisions
 
 | # | Question | Decision |
 |---|---|---|
-| L1 | Is a file's placement a build setting or a library feature? | A library feature. A project embeds its files as it always has, and the paths are read at runtime, so every consumer gets it by referencing the package. |
+| L1 | Is a file's placement a build setting or a library feature? | A library feature. A project embeds its files the ordinary way, and the paths are read at runtime, so every consumer gets it by referencing the package. |
 | L2 | One canonical form or many? | One canonical form with two files: a folder's own `.locales` folder holding the folder's file per culture and, beside it, a file per culture named for a type or namespace beneath the folder, as every source's default, and one mechanism for any other form a project states. A host's folder is itself a folder of locale files, so inside it both may sit directly in the folder; the two forms resolve equally, at one anchor, with no precedence between them, and a file in both places is a duplicate. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
-| L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds translations alone, so neither carries the other's keys and `$tools` is gone. |
+| L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds translations alone, so neither carries the other's keys. |
 | L5 | What marks an assembly's root? | Its `.locale.json`, which sits at the assembly's root and nowhere else; an assembly with none is rooted where its names begin and read by the defaults. |
 | L6 | Do a host's paths have to match the library's? | No. A host's folder is always the canonical form, a folder per anchor with its files in the folder's own `.locales` or directly in it, whatever paths the assembly states for its own files; the anchor is the one currency both sides trade in, so an override or a contribution is written the same way for every assembly, and host entries are applied after every embedded entry. |
 | L7 | Can a file be named for an assembly whose root namespace is not its name? | Yes. A path names `$AssemblyName` outright, which a project keeping such a file states in its config. |
@@ -408,7 +330,7 @@ holds translations alone, and what a tool keeps per file belongs in the tool's o
 | L10 | Does a host configure an assembly's folder? | No. A host's folder holds no `.locale.json`; each assembly's folder is laid out by the root namespace the assembly's own file declares, which the runtime carries over. The root namespace is the assembly's fact, stated once, and a host repeating it would give one fact two places to drift apart. |
 | L11 | Can a file name a type it does not sit under? | Yes, with a top-level section whose name starts with `@.`, counted from the root namespace as the folders are; a type outside the root namespace is spelled in full. It names one type or namespace exactly, never a pattern, so the linter can prove it exists and two types sharing a short name never share a file by accident. |
 | L12 | Is a folder ever a type? | No. A folder is a namespace; a type's own file is named for the type among its namespace folder's locale files, so a file always says what it localizes by its name or its sections, and never by a folder a reader has to know is a type. The runtime reads a type-named folder all the same, and the linter reports it. |
-| L13 | Where do an assembly's locale files ship? | In the assembly, in a **locale pack** of its own, or both. A pack is an addition rather than a replacement: an assembly embedding its own files is an ordinary arrangement, and the Showcase keeps every file it has. Forma's own `he` and `es` move into `Forma.Blazor.Locales.Hebrew` and `Forma.Blazor.Locales.Spanish`, so the assemblies a host installs carry the language their keys are written in and a host installs the languages it wants. |
+| L13 | Where do an assembly's locale files ship? | In the assembly, in a **locale pack** of its own, or both. A pack is an addition rather than a replacement: an assembly embedding its own files is an ordinary arrangement. Forma's own `he` and `es` ship in `Forma.Blazor.Locales.Hebrew` and `Forma.Blazor.Locales.Spanish`, so the assemblies a host installs carry the language their keys are written in and a host installs the languages it wants. |
 | L14 | Is a pack a source of its own kind? | It is a source of its own, reading what a host's folder reads: the same paths, one folder per assembly laid out by that assembly's declared root namespace, no config file of its own. The arrangement a host already writes is the one a pack ships. |
 | L15 | How is a pack found? | By an assembly attribute the pack's own targets file stamps the referencing project with, which also roots the pack for the trimmer. A pack declares no type, so a reference to it survives nowhere else: the compiler records none, and a trimmed publish deletes the assembly. A host writes a `PackageReference` and no code. |
 | L16 | Does the runtime read anything out of a pack's name? | No. A pack is loaded by name and read by its resources, neither of which is parsed, so any assembly can be a pack whatever it is called, for whichever assemblies it holds folders for, published by anyone. `Forma.Blazor.Locales.{Language}` is this repository's convention for its own. |
