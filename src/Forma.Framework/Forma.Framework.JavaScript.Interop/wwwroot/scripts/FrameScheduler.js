@@ -1,8 +1,5 @@
 /**
  * FrameScheduler — one piece of work held to the next animation frame
- *
- * Events arrive faster than frames are painted; work requested any number of times before the
- * frame runs once, in that frame.
  */
 
 export class FrameScheduler {
@@ -25,7 +22,7 @@ export class FrameScheduler {
         });
     }
 
-    /** Drops the work waiting for the next frame, if any. */
+    /** Drops the work waiting for the next frame. */
     cancel() {
         if (this.#handle === null) {
             return;

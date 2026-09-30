@@ -2,7 +2,7 @@ namespace Forma.Framework.JavaScript.Interop;
 
 using Microsoft.JSInterop;
 
-/// <summary>A JS module attached to an element, whose disposal is its teardown.</summary>
+/// <summary>A JS module attached to an element.</summary>
 public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposable
 {
     private readonly JSModule _module = new(js, path);
@@ -12,7 +12,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
     public bool IsAttached
         => _handle is not null;
 
-    /// <summary>Attaches the module, releasing any previous attachment first, and reports whether it attached.</summary>
+    /// <summary>Attaches the module and reports whether it attached.</summary>
     protected async ValueTask<bool> AttachCoreAsync(params object?[] args)
     {
         await DetachAsync();
@@ -21,7 +21,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         return _handle is not null;
     }
 
-    /// <summary>Releases the current attachment, if any, leaving the wrapper ready to attach again.</summary>
+    /// <summary>Releases the current attachment.</summary>
     public async ValueTask DetachAsync()
     {
         var handle = _handle;
@@ -43,11 +43,11 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         }
     }
 
-    /// <summary>Invokes a function the module exports beside <c>attach</c>, reporting whether the call ran.</summary>
+    /// <summary>Invokes a function the module exports and reports whether the call ran.</summary>
     protected ValueTask<bool> InvokeModuleAsync(string identifier, params object?[] args)
         => _module.TryInvokeVoidAsync(identifier, args);
 
-    /// <summary>Invokes a void-returning method on the attached instance, reporting whether the call ran.</summary>
+    /// <summary>Invokes a void-returning method on the attached instance and reports whether the call ran.</summary>
     protected async ValueTask<bool> InvokeAsync(string identifier, params object?[] args)
     {
         if (_handle is null)
@@ -67,7 +67,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         }
     }
 
-    /// <summary>Invokes a method on the attached instance, yielding <see langword="default"/> when nothing is attached or the call fails.</summary>
+    /// <summary>Invokes a method on the attached instance and returns its result, where <see langword="default"/> means the call did not run.</summary>
     protected async ValueTask<TValue?> InvokeAsync<TValue>(string identifier, params object?[] args)
     {
         if (_handle is null)

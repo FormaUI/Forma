@@ -2,14 +2,14 @@ namespace Forma.Framework.JavaScript.Interop;
 
 using Microsoft.JSInterop;
 
-/// <summary>The runtime a component gets where none is registered: every call throws.</summary>
+/// <summary>A JS runtime whose every call throws <see cref="JSRuntimeUnavailableException"/>.</summary>
 public sealed class UnavailableJSRuntime : IJSRuntime
 {
     private UnavailableJSRuntime()
     {
     }
 
-    /// <summary>The one instance, since the runtime holds nothing.</summary>
+    /// <summary>The single instance.</summary>
     public static UnavailableJSRuntime Instance { get; } = new();
 
     /// <inheritdoc />

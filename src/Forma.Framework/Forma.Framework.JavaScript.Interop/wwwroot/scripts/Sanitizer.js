@@ -1,8 +1,5 @@
 /**
- * Sanitizer — untrusted markup reduced to what a document may carry
- *
- * Strips the elements, attributes and URL schemes a document may not carry, and the artefacts a
- * word processor leaves behind, before the markup reaches a live DOM.
+ * Sanitizer — untrusted markup reduced to what a document may carry, free of a word processor's artifacts
  */
 
 const AllowedTags = new Set([
@@ -41,7 +38,6 @@ const SafeSchemes = new Set(['http:', 'https:', 'mailto:', 'tel:', 'data:']);
 function isSafeUrl(value) {
     const trimmed = value.trim();
 
-    // A fragment or a relative path carries no scheme to vet.
     if (trimmed === '' || trimmed.startsWith('#') || trimmed.startsWith('/')) {
         return true;
     }
@@ -100,7 +96,6 @@ export function sanitize(html) {
     const template = document.createElement('template');
     template.innerHTML = html ?? '';
 
-    // Comments carry a word processor's conditional markup, which no reader needs.
     const comments = document.createTreeWalker(template.content, NodeFilter.SHOW_COMMENT);
     const stale = [];
     while (comments.nextNode()) {
@@ -111,7 +106,7 @@ export function sanitize(html) {
     }
 
     for (const element of Array.from(template.content.querySelectorAll('*'))) {
-        // A previous iteration may already have discarded an ancestor.
+        // An ancestor removed earlier in the loop takes this element with it.
         if (!template.content.contains(element)) {
             continue;
         }

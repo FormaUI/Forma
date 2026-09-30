@@ -4,12 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.JSInterop;
 
-/// <summary>A lazily-imported JS module, importing it once even under concurrent callers.</summary>
+/// <summary>A lazily imported JS module.</summary>
+/// <remarks>The import task is held rather than its result, so concurrent callers share one import.</remarks>
 public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
 {
     private Task<IJSObjectReference>? _import;
 
-    /// <summary>Imports the module if needed, then invokes a void-returning export.</summary>
+    /// <summary>Invokes a void-returning export of the module.</summary>
     public async ValueTask InvokeVoidAsync(string identifier, params object?[] args)
     {
         var module = await ImportAsync();
@@ -24,7 +25,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
-    /// <summary>Imports the module if needed, then invokes an export returning <typeparamref name="TValue"/>.</summary>
+    /// <summary>Invokes an export of the module returning <typeparamref name="TValue"/>.</summary>
     public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object?[] args)
     {
         var module = await ImportAsync();
@@ -40,7 +41,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
-    /// <summary>Invokes a void-returning export, reporting whether the call succeeded.</summary>
+    /// <summary>Tries to invoke a void-returning export and reports whether the call succeeded.</summary>
     public async ValueTask<bool> TryInvokeVoidAsync(string identifier, params object?[] args)
     {
         var module = await TryImportAsync();
@@ -62,7 +63,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
-    /// <summary>Invokes an export, yielding <see langword="default"/> when the call does not succeed.</summary>
+    /// <summary>Tries to invoke an export and returns its result, where <see langword="default"/> means the call did not succeed.</summary>
     public async ValueTask<TValue?> TryInvokeAsync<TValue>(string identifier, params object?[] args)
     {
         var module = await TryImportAsync();
@@ -89,7 +90,6 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         var import = _import;
         _import = null;
 
-        // A module that never arrived leaves nothing to release.
         if (import is null || import.IsFaulted)
         {
             return;
@@ -113,7 +113,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
     private Task<IJSObjectReference> ImportAsync()
         => _import ??= js.InvokeAsync<IJSObjectReference>("import", path).AsTask();
 
-    /// <summary>The module, or <see langword="null"/> when it could not be imported.</summary>
+    /// <summary>Tries to import the module.</summary>
     private async ValueTask<IJSObjectReference?> TryImportAsync()
     {
         try
@@ -132,8 +132,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
-    // JSDisconnectedException derives from Exception rather than JSException, so a dropped
-    // circuit and a failed call have to be named separately.
+    // JSDisconnectedException derives from Exception, so it is named beside JSException.
     private static bool IsInteropFailure(Exception ex)
         => ex is JSDisconnectedException or JSException;
 
@@ -149,8 +148,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
-    // JSDisconnectedException exposes only a message-only constructor, so the original
-    // cannot be chained as an InnerException — the module path is folded into the message instead.
+    // JSDisconnectedException takes only a message, so the module path is folded into it.
     [DoesNotReturn]
     private void ThrowEnriched(JSDisconnectedException ex)
         => throw new JSDisconnectedException($"{ex.Message} (module: {path})");

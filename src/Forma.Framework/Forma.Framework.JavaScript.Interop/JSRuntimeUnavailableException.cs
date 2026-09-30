@@ -1,6 +1,6 @@
 namespace Forma.Framework.JavaScript.Interop;
 
-/// <summary>Thrown when JavaScript is invoked where no runtime is available.</summary>
+/// <summary>The exception for invoking JavaScript where no runtime is available.</summary>
 public sealed class JSRuntimeUnavailableException : InvalidOperationException
 {
     /// <summary>Creates the exception with its default message.</summary>

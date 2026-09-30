@@ -2,7 +2,7 @@ namespace Forma.Framework.JavaScript.Interop;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>The messages an interop wrapper writes for the failures it absorbs at each stage: import, call and release.</summary>
+/// <summary>The log messages for interop failures at import, call and release.</summary>
 internal static partial class InteropLog
 {
     [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while importing {Module} for {RuntimeId}.")]

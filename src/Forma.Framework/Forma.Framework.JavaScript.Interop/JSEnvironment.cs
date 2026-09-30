@@ -3,12 +3,12 @@ namespace Forma.Framework.JavaScript.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-/// <summary>A JS environment over any runtime, forwarding its asynchronous calls.</summary>
+/// <summary>A JS environment over a JS runtime.</summary>
 public sealed class JSEnvironment : IJSEnvironment
 {
     private readonly IJSRuntime _runtime;
 
-    /// <summary>Creates an environment over <paramref name="runtime"/> for the owner with the given identity and log.</summary>
+    /// <summary>Creates an environment over <paramref name="runtime"/> for the owner with the given logger and runtime identity.</summary>
     public JSEnvironment(IJSRuntime runtime, ILogger logger, Guid runtimeId)
     {
         ArgumentNullException.ThrowIfNull(runtime);

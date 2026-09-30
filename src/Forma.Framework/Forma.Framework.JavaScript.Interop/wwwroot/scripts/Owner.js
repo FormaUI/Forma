@@ -1,17 +1,14 @@
 /**
- * Owner — telling the .NET owner of a behavior what happened
- *
- * An owner is a DotNetObjectReference, and a report can land after the owner was disposed, in
- * which case the call rejects.
+ * Owner — reports from a behavior to its .NET owner
  */
 
 /** @typedef {{ invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }} Owner */
 
 /**
- * Reports to the owner, letting go of the rejection a disposed owner answers with.
+ * Reports to the owner, discarding the call's rejection.
  * @param {Owner | null | undefined} owner
- * @param {string} method The JSInvokable method's name.
- * @param {...unknown} args What the method is told.
+ * @param {string} method The name of the owner's JSInvokable method.
+ * @param {...unknown} args The method's arguments.
  */
 export function tell(owner, method, ...args) {
     owner?.invokeMethodAsync(method, ...args).catch(() => {});

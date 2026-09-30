@@ -3,12 +3,12 @@ namespace Forma.Framework.JavaScript.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-/// <summary>The runtime a wrapper calls, carrying the identity and log of the owner whose interop it runs.</summary>
+/// <summary>A JS runtime carrying the identity and logger of the owner whose interop it runs.</summary>
 public interface IJSEnvironment : IJSRuntime
 {
-    /// <summary>The owner's identity for its lifetime.</summary>
+    /// <summary>The runtime identity of the owner.</summary>
     Guid RuntimeId { get; }
 
-    /// <summary>The owner's log.</summary>
+    /// <summary>The owner's logger.</summary>
     ILogger Logger { get; }
 }

@@ -11,7 +11,7 @@ export class Scrolling {
     /**
      * Whether the element scrolls vertically on its own: its overflow lets it, and its content asks for it.
      * @param {Element} element
-     * @param {CSSStyleDeclaration} style The element's computed style, when the caller already holds it.
+     * @param {CSSStyleDeclaration} style The element's computed style.
      */
     static isScroller(element, style = getComputedStyle(element)) {
         const { overflowY } = style;
@@ -20,8 +20,7 @@ export class Scrolling {
     }
 
     /**
-     * The nearest of the element and its ancestors that scrolls vertically, or null when none does before the walk
-     * reaches `until`, which is not itself considered.
+     * The nearest of `from` and its ancestors below `until` that scrolls vertically.
      * @param {Element | null} from
      * @param {Element | null} until
      */
