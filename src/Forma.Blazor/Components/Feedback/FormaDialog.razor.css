@@ -1,6 +1,6 @@
 /*
     FormaDialog — scoped styles
-    Uses the native <dialog> element for scrim and focus trap; Escape belongs to the input router.
+    A modal dialog on the native <dialog> element.
 */
 
 /* ── Dialog reset ── */

@@ -9,10 +9,11 @@ using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and scrim dismissal, registered with the input router as a modal scope while open so Escape and a platform close request are decided there.</summary>
+/// <summary>A modal dialog in the browser's top layer, with a header, a body and footer actions.</summary>
+/// <remarks>While open, the dialog is an active modal scope of the input router, which decides Escape and a platform close request and dismisses the dialog through it.</remarks>
 public sealed partial class FormaDialog : FormaElementBase
 {
-    /// <summary>The part whose first control takes focus as the dialog opens, so a form opens on its first field rather than on the header's close button.</summary>
+    /// <summary>The selector of the part whose first control takes focus as the dialog opens.</summary>
     private const string BodySelector = ".forma-dialog-body";
 
     private static readonly InputProfile ModalProfile = new()
@@ -30,37 +31,37 @@ public sealed partial class FormaDialog : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    /// <summary>Whether the dialog is currently open.</summary>
+    /// <summary>Whether the dialog is open.</summary>
     [Parameter, EditorRequired] public bool Opened { get; set; }
 
-    /// <summary>Fired when the dialog is closed (by Escape, scrim click, or close button).</summary>
+    /// <summary>The callback invoked when the dialog closes.</summary>
     [Parameter, EditorRequired] public EventCallback OnClose { get; set; }
 
-    /// <summary>Title shown in the header. If null, the header is hidden.</summary>
+    /// <summary>The title shown in the header, where null hides the header.</summary>
     [Parameter] public string? Title { get; set; }
 
-    /// <summary>Size variant controlling the dialog width.</summary>
+    /// <summary>The size of the dialog.</summary>
     [Parameter] public DialogSize Size { get; set; } = DialogSize.Medium;
 
-    /// <summary>Default close and footer-action behavior.</summary>
+    /// <summary>The close and footer-action options of the dialog.</summary>
     [Parameter] public DialogOptions Options { get; set; } = DialogOptions.Default;
 
-    /// <summary>Main content of the dialog.</summary>
+    /// <summary>The content of the dialog's body.</summary>
     [Parameter] public RenderFragment? Body { get; set; }
 
-    /// <summary>Optional footer content (typically action buttons).</summary>
+    /// <summary>The content of the dialog's footer.</summary>
     [Parameter] public RenderFragment? Footer { get; set; }
 
-    /// <summary>Optional override text for the default confirm action.</summary>
+    /// <summary>The text of the default confirm action.</summary>
     [Parameter] public string? ConfirmText { get; set; }
 
-    /// <summary>Optional override text for the default cancel action.</summary>
+    /// <summary>The text of the default cancel action.</summary>
     [Parameter] public string? CancelText { get; set; }
 
-    /// <summary>Optional callback invoked when the default confirm action is clicked.</summary>
+    /// <summary>The callback invoked by the default confirm action.</summary>
     [Parameter] public EventCallback OnConfirm { get; set; }
 
-    /// <summary>Optional callback invoked when the default cancel action is clicked.</summary>
+    /// <summary>The callback invoked by the default cancel action.</summary>
     [Parameter] public EventCallback OnCancel { get; set; }
 
     private bool ShowHeader => Title is not null;
@@ -101,9 +102,7 @@ public sealed partial class FormaDialog : FormaElementBase
         // An Opened request is honored once; a dialog the user closed stays closed until the parent asks again.
         if (Opened && !_isOpen && !_hasOpened)
         {
-            // Content that renders again while the attach round-trip is still in flight brings a
-            // second pass through here, and a call made before the module answered never ran. Only
-            // a call that did run counts as open, so the pass that follows it opens the dialog.
+            // Only a call that ran counts as open; one made before the module answered is retried on the next render.
             _isOpen = await _dialog.OpenAsync(Options.CloseOnScrimClick, BodySelector);
 
             if (_isOpen)
@@ -117,11 +116,10 @@ public sealed partial class FormaDialog : FormaElementBase
             await _dialog.CloseAsync();
         }
 
-        // The dialog is a scope only while open, active the whole time so it stands as the modal barrier.
+        // The dialog is an active scope exactly while open, standing as the modal barrier.
         await _inputRegistration.SyncAsync(RootElement, ModalProfile, wanted: _isOpen, active: _isOpen);
     }
 
-    // Closes the dialog as the router dismissed it, or runs the default cancel action when told to cancel.
     [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The router hands every owner the action and the reason.")]
     private Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
         => action switch
@@ -131,10 +129,7 @@ public sealed partial class FormaDialog : FormaElementBase
             _ => Task.CompletedTask,
         };
 
-    /// <summary>
-    /// Called when the native dialog fires its <c>close</c> event (Escape key or <c>.close()</c>).
-    /// Notifies the parent to update <see cref="Opened"/>.
-    /// </summary>
+    /// <summary>Handles the native dialog's <c>close</c> event.</summary>
     private async Task HandleDialogClose()
     {
         if (_isOpen)
@@ -151,8 +146,7 @@ public sealed partial class FormaDialog : FormaElementBase
             return;
         }
 
-        // The dialog's own close event cannot fire when the call never ran, so the state
-        // is closed here instead.
+        // A close call that never ran fires no close event, so the state closes here.
         if (_isOpen)
         {
             await SetClosedAsync();

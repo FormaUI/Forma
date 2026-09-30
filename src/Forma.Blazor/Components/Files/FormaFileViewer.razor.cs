@@ -14,7 +14,11 @@ using Forma.Framework.Resources.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Renders whatever resource a source address resolves to, through the first provider that claims it.</summary>
+/// <summary>A viewer that previews the resource a source address resolves to.</summary>
+/// <remarks>
+/// The providers the host registered are tried in order, and the first to claim the address resolves it; the browser's
+/// own provider, which claims what a browser renders unaided, is tried last.
+/// </remarks>
 public sealed partial class FormaFileViewer : FormaElementBase
 {
     private const string ZoomedClass = "zoomed";
@@ -29,28 +33,27 @@ public sealed partial class FormaFileViewer : FormaElementBase
     private static readonly InputProfile LeftToRightProfile = CreateProfile(next: "ArrowRight", previous: "ArrowLeft");
     private static readonly InputProfile RightToLeftProfile = CreateProfile(next: "ArrowLeft", previous: "ArrowRight");
 
-    // Last in the chain: it claims only what a browser renders unaided, leaving richer formats to a registered provider.
     private static readonly BrowserResourceProvider BrowserProvider = new();
 
-    /// <summary>Address of the resource to preview.</summary>
+    /// <summary>The address of the resource to preview.</summary>
     [Parameter, EditorRequired] public string Source { get; set; } = default!;
 
-    /// <summary>The addresses <see cref="Source"/> sits among, enabling previous/next navigation.</summary>
+    /// <summary>The addresses <see cref="Source"/> sits among, which the reader steps through.</summary>
     [Parameter] public IReadOnlyList<string>? Siblings { get; set; }
 
-    /// <summary>Raised when the reader steps to another address in <see cref="Siblings"/>; the host owns switching <see cref="Source"/>.</summary>
+    /// <summary>The callback invoked with the address in <see cref="Siblings"/> the reader steps to.</summary>
     [Parameter] public EventCallback<string> OnNavigate { get; set; }
 
-    /// <summary>Shows the resource's name and size alongside its preview.</summary>
+    /// <summary>Whether the resource's name and size show beside its preview.</summary>
     [Parameter] public bool ShowMetadata { get; set; }
 
-    /// <summary>Zooms the image with a Ctrl-held wheel turn over it.</summary>
+    /// <summary>Whether a wheel turn with Ctrl held over the image zooms it.</summary>
     [Parameter] public bool ZoomOnWheelGesture { get; set; } = true;
 
-    /// <summary>Replaces the built-in fallback shown when no provider claims the address.</summary>
+    /// <summary>The template for an unsupported resource, given its address.</summary>
     [Parameter] public RenderFragment<string>? UnsupportedTemplate { get; set; }
 
-    /// <summary>Providers the host registered, tried before the browser's own handling.</summary>
+    /// <summary>The providers the host registered.</summary>
     [Inject] private IEnumerable<IResourceProvider> RegisteredProviders { get; set; } = default!;
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -123,7 +126,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
         _isWheelAttached = false;
         _resolvedSource = requested;
 
-        // The name and extension come free from the address, so an unclaimed or still-resolving source still reads properly.
+        // The address alone gives the name and extension while the source resolves or when no provider claims it.
         Resource = new ResourceInfo(requested);
 
         var token = StartResolving();
@@ -169,8 +172,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // The viewer owns the arrows only while they have somewhere to go, so a lone image keeps them for scrolling its frame;
-        // the registration and the image's behaviors are independent, so they are made side by side.
+        // The arrows belong to the viewer only while it can navigate; the registration runs beside the image's behaviors.
         var navigation = _navigation.SyncAsync(RootElement, CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile, wanted: IsNavigable);
 
         if (Resource is ImageResourceInfo)
@@ -183,7 +185,6 @@ public sealed partial class FormaFileViewer : FormaElementBase
                 _isDragAttached = await _pan.AttachAsync(_imageFrameElement, PanAction, ZoomedClass);
             }
 
-            // Ctrl with the wheel zooms the image.
             if (ZoomOnWheelGesture && !_isWheelAttached)
             {
                 _selfReference ??= DotNetObjectReference.Create(this);
@@ -214,7 +215,6 @@ public sealed partial class FormaFileViewer : FormaElementBase
             StateHasChanged();
         });
 
-    // Steps to the sibling the action names.
     private Task HandleNavigationActionAsync(string action, InputInfo input)
         => action switch
         {

@@ -1,9 +1,7 @@
 /* ============================================================
    FormaPopover — CSS isolation
-   The popover stands in the top layer, so no scrolling or
-   clipping ancestor can cut it off. The top layer keeps no layout
-   tie to the anchor, so the script sets left/top; the UA's own
-   inset, margin and box are cleared so the content decides its look.
+   The popover in the top layer, placed by the script through
+   left/top, with the UA's own inset, margin and box cleared.
    ============================================================ */
 
 .forma-popover {

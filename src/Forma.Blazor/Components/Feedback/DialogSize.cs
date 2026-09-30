@@ -15,6 +15,6 @@ public enum DialogSize
     /// <summary>1000px.</summary>
     ExtraLarge,
 
-    /// <summary>95vw, filling the viewport.</summary>
+    /// <summary>95vw.</summary>
     Full,
 }

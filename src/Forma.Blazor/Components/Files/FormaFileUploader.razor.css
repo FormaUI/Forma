@@ -1,9 +1,7 @@
 /* ============================================================
    FormaFileUploader — CSS isolation
-   One line per file: name and size, then rate, progress, time and
-   state in fixed columns so they align down the list and the totals
-   line up beneath them. Every state carries a glyph and a word
-   beside its color, so none of them depends on hue.
+   The list of files, one line each: name and size, then rate,
+   progress, time and state in fixed columns the totals share.
    ============================================================ */
 
 .forma-file-uploader {
@@ -65,8 +63,7 @@
     color: var(--text-secondary-color);
 }
 
-/* Each wraps a <bdi>, which takes its direction from its own content; the layout has to sit on the
-   wrapper, which inherits the page's, or a logical property resolves against the wrong direction. */
+/* Each wraps a <bdi> that takes its content's direction, so the layout sits on the wrapper, which keeps the page's. */
 .forma-file-uploader-size {
     margin-inline-start: var(--space-1);
 }

@@ -11,28 +11,29 @@ using Forma.Framework.Resources;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>Moves picked files into an <see cref="IFileStore"/>, reporting progress for each.</summary>
-/// <param name="registeredStore">The host's registered store, or null when it registered none.</param>
+/// <summary>An uploader that stores picked files in an <see cref="IFileStore"/>, showing the progress of each.</summary>
+/// <remarks>A <see cref="Files"/> list that is another instance than the last cancels the set in flight and replaces it.</remarks>
+/// <param name="registeredStore">The store the host registered.</param>
 public sealed partial class FormaFileUploader(IFileStore? registeredStore = null) : FormaElementBase
 {
-    // A percentage alone would move a byte counter in steps of one percent, which is ten megabytes in a gigabyte.
+    // How often the byte count moves between one whole percent and the next.
     private static readonly TimeSpan ProgressInterval = TimeSpan.FromMilliseconds(200);
 
     private static readonly TimeSpan TickInterval = TimeSpan.FromMilliseconds(500);
 
-    /// <summary>The files to store; assigning a different list starts a new upload.</summary>
+    /// <summary>The files to store.</summary>
     [Parameter] public IReadOnlyList<IBrowserFile>? Files { get; set; }
 
-    /// <summary>Raised once the set finishes, with the resources every stored file became.</summary>
+    /// <summary>The callback invoked once the set finishes, with the resources of the stored files.</summary>
     [Parameter] public EventCallback<IReadOnlyList<ResourceInfo>> OnCompleted { get; set; }
 
-    /// <summary>Raised per file that could not be stored, leaving the rest of the set to continue.</summary>
+    /// <summary>The callback invoked with each file that failed to store.</summary>
     [Parameter] public EventCallback<UploadFailure> OnFailed { get; set; }
 
     /// <summary>How the set runs and which transfer measurements are shown beside each file.</summary>
     [Parameter] public FileUploaderOptions Options { get; set; } = FileUploaderOptions.Default;
 
-    /// <summary>Where the bytes are written; defaults to the store the host registered.</summary>
+    /// <summary>The store the files are written to, where null uses the store the host registered.</summary>
     [Parameter] public IFileStore? Store { get; set; }
 
     private readonly IFileStore? _registeredStore = registeredStore;
@@ -49,7 +50,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
 
     private Task _uploadTask = Task.CompletedTask;
 
-    /// <summary>Whether a set is in flight right now.</summary>
+    /// <summary>Whether a set is in flight.</summary>
     public bool IsUploading
         => _cancellation is not null;
 
@@ -141,11 +142,11 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         }
     }
 
-    /// <summary>Abandons the set in flight, leaving whatever already stored in place.</summary>
+    /// <summary>Cancels the set in flight.</summary>
     public void Cancel()
         => _cancellation?.Cancel();
 
-    /// <summary>Stores every pending file in turn; does nothing while a set is already in flight.</summary>
+    /// <summary>Stores every pending file in turn.</summary>
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
         if (IsUploading || Files is null || _batch.Count == 0)
@@ -199,7 +200,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             ? ResourceFormatter.FromByteCount(upload.TotalBytes)
             : GetByteCount(upload.BytesTransferred, upload.TotalBytes);
 
-    /// <summary>How fast one file is reaching the store, or nothing while it waits its turn.</summary>
+    /// <summary>How fast one file is reaching the store.</summary>
     private static string FormatFileRate(UploadFile upload)
         => upload.State == UploadState.Pending
             ? string.Empty
@@ -225,7 +226,6 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         return Options.ShowElapsed ? ResourceFormatter.FromDuration(upload.Elapsed) : string.Empty;
     }
 
-    // A transfer that reached its total is just that size; repeating it as "3 MB of 3 MB" says nothing.
     private string GetByteCount(long transferred, long total)
     {
         if (transferred >= total)
@@ -329,7 +329,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         }
     }
 
-    // Rollback deliberately ignores the set's token: a half-undone set is worse than one that takes a moment longer.
+    // Rollback runs to the end whatever the set's token, so no set is left half undone.
     [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     private async Task RollbackAsync(List<(int Index, ResourceInfo Resource)> stored, List<UploadFailure> failures)
     {
@@ -398,7 +398,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
 
         try
         {
-            // The file's own size is the ceiling, so no caller has to supply one and none can be too small.
+            // The file's own size is the read ceiling.
             await using var content = new UploadFileStream(file.OpenReadStream(file.Size, cancellationToken), read => ReportProgress(index, read));
 
             stored.Add((index, await _activeStore.SaveAsync(new FileContent(file.Name, file.ContentType, file.Size, content), cancellationToken)));

@@ -1,4 +1,4 @@
-/* FormaSpinner — an indeterminate ring built from a bordered circle animated by CSS alone. */
+/* FormaSpinner — an indeterminate loading ring. */
 
 .forma-spinner {
     display: inline-flex;
@@ -51,7 +51,6 @@
     }
 }
 
-/* The role="status" label already announces the busy state without relying on the motion itself. */
 @media (prefers-reduced-motion: reduce) {
     .forma-spinner-ring {
         animation: none;

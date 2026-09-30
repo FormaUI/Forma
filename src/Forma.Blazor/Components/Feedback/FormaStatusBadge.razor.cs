@@ -9,19 +9,19 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A pill-shaped label showing the status of a record.</summary>
 public sealed partial class FormaStatusBadge : FormaElementBase
 {
-    /// <summary>Text shown inside the badge.</summary>
+    /// <summary>The text shown inside the badge.</summary>
     [Parameter, EditorRequired] public string Text { get; set; } = "";
 
-    /// <summary>Name of a status registered in the catalog, whose colors the badge adopts.</summary>
+    /// <summary>The name of a status registered in the catalog, whose colors and marker the badge adopts.</summary>
     [Parameter] public string? Status { get; set; }
 
-    /// <summary>Background color override.</summary>
+    /// <summary>The background color of the badge.</summary>
     [Parameter] public CssColor? Background { get; set; }
 
-    /// <summary>Text color override.</summary>
+    /// <summary>The text color of the badge.</summary>
     [Parameter] public CssColor? Foreground { get; set; }
 
-    /// <summary>Glyph shown before the text, so the status reads without color.</summary>
+    /// <summary>The glyph shown before the text.</summary>
     [Parameter] public Icon? Marker { get; set; }
 
     [Inject] private IStatusBadgeCatalog Catalog { get; set; } = default!;

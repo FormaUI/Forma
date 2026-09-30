@@ -7,21 +7,22 @@ using Forma.Framework.Files;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>A file picker restricted to images, showing a thumbnail preview of each one accepted.</summary>
+/// <summary>A file picker for images, showing a thumbnail of each one accepted.</summary>
+/// <remarks>The picker passes its options on with <see cref="FilePickerOptions.Accept"/> set to every image type.</remarks>
 public sealed partial class FormaImagePicker : FormaElementBase
 {
     private const string ImageAccept = "image/*";
 
-    /// <summary>The images the picker accepts; its `Accept` is pinned to image types.</summary>
+    /// <summary>The images the picker accepts.</summary>
     [Parameter] public FilePickerOptions Options { get; set; } = FilePickerOptions.Default;
 
-    /// <summary>Raised with the files a selection declined, alongside why.</summary>
+    /// <summary>The callback invoked with the files a selection rejected, each with its reason.</summary>
     [Parameter] public EventCallback<IReadOnlyList<RejectedFile>> OnFilesRejected { get; set; }
 
-    /// <summary>Raised with the images that passed validation.</summary>
+    /// <summary>The callback invoked with the images that passed validation.</summary>
     [Parameter, EditorRequired] public EventCallback<IReadOnlyList<IBrowserFile>> OnFilesSelected { get; set; }
 
-    /// <summary>Replaces the default drop zone text, which also serves as the input's accessible name.</summary>
+    /// <summary>The text of the drop zone, which is also the input's accessible name.</summary>
     [Parameter] public string? Prompt { get; set; }
 
     private FilePreview _preview = default!;

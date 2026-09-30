@@ -1,6 +1,6 @@
 /* ============================================================
    FormaFileViewer — CSS isolation
-   One frame per resource kind, laid out by the viewer itself.
+   A preview frame for each kind of resource.
    ============================================================ */
 
 .forma-file-viewer {
@@ -29,7 +29,7 @@
     overflow: auto;
     background-color: var(--forma-file-viewer-bg-color, var(--media-bg-color));
     border-radius: var(--radius-sm);
-    /* Native touch scrolling already pans; this only adds the platform's own pinch-zoom. */
+    /* Touch scrolling pans, and the platform's own pinch-zoom stays. */
     touch-action: pan-x pan-y pinch-zoom;
 }
 

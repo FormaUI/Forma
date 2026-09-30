@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Files;
 
-/// <summary>Counts the bytes read through an inner stream, reporting the running total.</summary>
+/// <summary>A read-only stream over an inner stream that reports the running count of bytes read.</summary>
 internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : Stream
 {
     private long _bytesRead;
@@ -41,7 +41,7 @@ internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : 
         => throw new NotSupportedException();
 
     /// <inheritdoc />
-    // The browser's own stream is async-only, so a synchronous read was never available to forward.
+    // The browser's stream is async-only.
     public override int Read(byte[] buffer, int offset, int count)
         => throw new NotSupportedException();
 

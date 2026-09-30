@@ -1,8 +1,6 @@
 /* ============================================================
    FormaFilePicker — CSS isolation
-   A native file input styled as a drop zone. Drag-and-drop is
-   attached in JS; the click-to-browse path is plain HTML via the
-   implicit label/input association.
+   A native file input styled as a drop zone.
    ============================================================ */
 
 .forma-file-picker {
@@ -39,7 +37,7 @@
     box-shadow: var(--focus-ring);
 }
 
-/* The second, colour-independent channel for the drag state: the border changes shape, not only color. */
+/* The drag state also changes the border's style, a channel beside its color. */
 .forma-file-picker-drop-zone.forma-file-picker-dragging {
     border-style: solid;
     border-color: var(--primary-color);
@@ -52,7 +50,7 @@
     cursor: not-allowed;
 }
 
-/* InputFile is a genuine child component, so its rendered <input> never carries this file's scope attribute. */
+/* InputFile is a child component, so its <input> is reached with ::deep. */
 ::deep .forma-file-picker-input {
     position: absolute;
     inset: 0;

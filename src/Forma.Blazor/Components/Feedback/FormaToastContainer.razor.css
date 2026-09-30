@@ -43,8 +43,7 @@
 
 /* ── Close button ── */
 
-/* Custom properties cascade into the nested button's own scope, which plain
-   selectors cannot reach. */
+/* Custom properties reach into the nested button's scope, where plain selectors cannot. */
 .forma-toast {
     --forma-button-ghost-color: color-mix(in srgb, currentColor 75%, transparent);
     --forma-button-ghost-hover-color: currentColor;

@@ -17,13 +17,13 @@ public sealed partial class FormaFilePicker : FormaElementBase
     /// <summary>The files the picker accepts.</summary>
     [Parameter] public FilePickerOptions Options { get; set; } = FilePickerOptions.Default;
 
-    /// <summary>Raised with the files a selection declined, alongside why.</summary>
+    /// <summary>The callback invoked with the files a selection rejected, each with its reason.</summary>
     [Parameter] public EventCallback<IReadOnlyList<RejectedFile>> OnFilesRejected { get; set; }
 
-    /// <summary>Raised with the files that passed validation.</summary>
+    /// <summary>The callback invoked with the files that passed validation.</summary>
     [Parameter, EditorRequired] public EventCallback<IReadOnlyList<IBrowserFile>> OnFilesSelected { get; set; }
 
-    /// <summary>Replaces the default drop zone text, which also serves as the input's accessible name.</summary>
+    /// <summary>The text of the drop zone, which is also the input's accessible name.</summary>
     [Parameter] public string? Prompt { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -72,7 +72,7 @@ public sealed partial class FormaFilePicker : FormaElementBase
         }
     }
 
-    // The dialog filters by Accept on its own, but a drop never consults it, so every file is checked here whichever way it arrived.
+    // A drop bypasses the browse dialog's own Accept filter, so every file is matched here.
     private static bool MatchesAccept(string accept, IBrowserFile file)
     {
         foreach (var pattern in accept.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))

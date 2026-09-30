@@ -1,7 +1,7 @@
 @namespace Forma.Blazor.Components.Feedback
 @inherits FormaElementBase
 
-@* Manual rather than auto: dismissal belongs to the input router, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
+@* Manual, since dismissal belongs to the input router. *@
 <div id="@Id"
      data-rid="@Context.RuntimeId"
      class="@RootClass"

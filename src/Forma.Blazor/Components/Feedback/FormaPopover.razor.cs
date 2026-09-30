@@ -8,7 +8,12 @@ using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>An anchored popover shown in the browser's top layer, registered with the input router while open so Escape and a press away dismiss it and its content's routes are answered, and returning focus to its trigger after keyboard dismissal.</summary>
+/// <summary>An anchored popover in the browser's top layer.</summary>
+/// <remarks>
+/// While open, the popover is an active scope of the input router, which dismisses it on Escape and on a press away and
+/// answers its content's routes. The trigger counts as inside the scope, so a press on it toggles the popover. A press away
+/// passes through to what was pressed and leaves focus where it is; any other dismissal returns focus to the trigger.
+/// </remarks>
 public sealed partial class FormaPopover : FormaElementBase
 {
     /// <summary>The element the popover hangs from.</summary>
@@ -20,25 +25,25 @@ public sealed partial class FormaPopover : FormaElementBase
     /// <summary>The inline edge of the anchor the popover lines up with.</summary>
     [Parameter] public PopoverAlignment Alignment { get; set; }
 
-    /// <summary>Whether closing returns focus to the trigger when focus is inside the popover at the time. A press away never moves focus.</summary>
+    /// <summary>Whether closing returns focus to the trigger when focus is inside the popover.</summary>
     [Parameter] public bool ReturnsFocus { get; set; } = true;
 
-    /// <summary>Whether a press away from the popover and its trigger dismisses it; the press then belongs to whatever was pressed, so one press closes the popover and acts.</summary>
+    /// <summary>Whether a press away from the popover and its trigger dismisses it.</summary>
     [Parameter] public bool PressAway { get; set; } = true;
 
-    /// <summary>The popover's content, rendered only while it is open.</summary>
+    /// <summary>The popover's content.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Raised whenever the popover opens or closes, so a component drawing the trigger's expanded state redraws it.</summary>
+    /// <summary>The callback invoked with the open state whenever the popover opens or closes.</summary>
     [Parameter] public EventCallback<bool> OnOpenChanged { get; set; }
 
-    /// <summary>Raised once the popover is open and positioned, for content that takes focus or attaches a behavior of its own.</summary>
+    /// <summary>The callback invoked once the popover is open and positioned.</summary>
     [Parameter] public EventCallback OnOpened { get; set; }
 
     /// <summary>The routes the popover's content answers while it is open.</summary>
     [Parameter] public IReadOnlyList<InputRoute> InputRoutes { get; set; } = [];
 
-    /// <summary>Raised with each action the router resolves to the popover.</summary>
+    /// <summary>The callback invoked with each action the router resolves to the popover.</summary>
     [Parameter] public EventCallback<InputAction> OnInputAction { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -75,7 +80,7 @@ public sealed partial class FormaPopover : FormaElementBase
         }
     }
 
-    /// <summary>Opens the popover, remembering the trigger as where focus returns when it closes.</summary>
+    /// <summary>Opens the popover from the trigger.</summary>
     public async Task OpenAsync(ElementReference trigger)
     {
         if (IsOpen)
@@ -87,7 +92,7 @@ public sealed partial class FormaPopover : FormaElementBase
         await SetOpenAsync(true);
     }
 
-    /// <summary>Closes the popover, returning focus to the trigger when <see cref="ReturnsFocus"/> and focus is inside it.</summary>
+    /// <summary>Closes the popover.</summary>
     public Task CloseAsync()
         => CloseAsync(ReturnsFocus);
 
@@ -95,11 +100,9 @@ public sealed partial class FormaPopover : FormaElementBase
     public Task ToggleAsync(ElementReference trigger)
         => IsOpen ? CloseAsync() : OpenAsync(trigger);
 
-    // Performs an action the router resolved to the popover's content.
     private Task HandleInputActionAsync(string action, InputInfo input)
         => OnInputAction.InvokeAsync(new InputAction(action, input));
 
-    // Closes the popover as the router dismissed it: a press away leaves focus where it is, and anything else returns it to the trigger.
     private Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
         => action is DismissBehavior.Ignore
             ? Task.CompletedTask
@@ -127,7 +130,6 @@ public sealed partial class FormaPopover : FormaElementBase
         await OnOpenChanged.InvokeAsync(isOpen);
     }
 
-    // The popover is an active scope only while open, with its trigger counted as inside it so a press there toggles rather than dismisses.
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

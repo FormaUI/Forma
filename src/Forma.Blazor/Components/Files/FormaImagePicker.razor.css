@@ -1,7 +1,6 @@
 /* ============================================================
    FormaImagePicker — CSS isolation
-   A thumbnail strip under FormaFilePicker's own drop zone; the
-   picker owns validation and drop handling, this owns preview.
+   A thumbnail strip under FormaFilePicker's drop zone.
    ============================================================ */
 
 .forma-image-picker {
@@ -49,7 +48,7 @@
     object-fit: cover;
 }
 
-/* The object URL arrives from script after render, so there is nothing to paint until then. */
+/* The script sets the object URL after render, so the thumbnail hides until then. */
 .forma-image-picker-thumbnail:not([src]) {
     display: none;
 }
