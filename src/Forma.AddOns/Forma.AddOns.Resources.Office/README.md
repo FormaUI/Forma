@@ -1,11 +1,8 @@
 # Forma.AddOns.Resources.Office
 
-A resource provider for `Forma.Framework.Resources` that converts a Word, Excel or PowerPoint
-document into sanitized markup, so `FormaFileViewer` renders it as a page rather than offering it
-for download. `OfficeResourceProvider` is an `IResourceProvider` that claims `.docx`, `.xlsx` and
-`.pptx` addresses, reads the document through the host's `IResourceContentReader`, and returns a
-`MarkupResourceInfo`. The conversion is built on [OfficeIMO](https://github.com/EvotecIT/OfficeIMO),
-which reads the Open XML packages.
+A resource provider that converts Word, Excel and PowerPoint documents into sanitized HTML, so
+`FormaFileViewer` renders a `.docx`, `.xlsx` or `.pptx` file as a page. The conversion is built on
+[OfficeIMO](https://github.com/EvotecIT/OfficeIMO).
 
 ## Install and register
 
@@ -23,60 +20,55 @@ builder.Services.AddScoped<IResourceContentReader, UploadFolderReader>();
 builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();
 ```
 
-The provider takes two services from the host. `IResourceContentReader` is the contract
-`Forma.Framework.Resources` defines for opening the bytes behind an address; that package's README
-shows a reader over an upload folder, and the stream it returns need not be seekable.
-`IStringLocale<OfficeResourceProvider>` comes from a `Forma.Framework.Localization` backend, and
-`AddJsonLocalization()` from `Forma.Framework.Localization.Json` registers the one Forma
-ships.
-
-`FormaFileViewer` asks each registered `IResourceProvider` in registration order, so once the
-provider is registered a viewer pointed at an Office address renders the converted page:
+`OfficeResourceProvider` reads the document through the host's `IResourceContentReader`;
+[`Forma.Framework.Resources`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Resources/README.md)
+shows a reader over an upload folder. Its own strings come through `AddJsonLocalization()`. A viewer
+pointed at an Office file then renders the page:
 
 ```razor
 <FormaFileViewer Source="/uploads/report.docx" />
 ```
 
-## What it converts
+## What it produces
 
-An address is claimed by its extension, matched without regard to case; `ClaimedExtensions` lists
-the three. Each comes back as a `MarkupResourceInfo` whose `Html` is the sanitized markup and whose
-`Size` is the document's byte count:
+The provider claims an address by its extension, in any case, and returns a `MarkupResourceInfo`
+whose `Html` is the page and whose `Size` is the document's byte count.
 
-| Document | Becomes |
+| Document | Page |
 |---|---|
-| `.docx` | The document's own HTML, with its images embedded as data URLs |
-| `.xlsx` | One section per sheet, headed by the sheet's name, holding a table whose header row is the first row of the sheet's used range |
-| `.pptx` | One section per slide, headed by the slide's title, holding its text as paragraphs and its speaker notes as a block quote |
+| `.docx` | The document, with its images embedded |
+| `.xlsx` | A section per sheet, headed by its name, holding a table of the sheet's used range, its first row as the header; at most 500 rows and 50 columns |
+| `.pptx` | A section per slide, headed by its title or `Slide {Number}`, holding its text and its speaker notes as a quote; at most 200 slides |
 
-A sheet shows at most its first 500 rows and 50 columns, and a deck its first 200 slides; a sheet or
-deck cut short says so in a closing row or paragraph. A slide with no title is headed `Slide {Number}`.
-Those three strings are the provider's own and are read through its locale, so they follow the
-reader's culture: the package carries Spanish and Hebrew translations, and a host rewords them or
-adds a language through its `.locales` folder, laid out as `Forma.Framework.Localization`'s README
-describes for an assembly whose root namespace is not its name.
+A sheet or deck past those limits ends with a line saying how much it shows.
 
-The markup is safe to render as trusted. Text a cell or a slide holds is rendered as text, a link
-carrying a script scheme loses its address, links to `https:`, `mailto:` and `tel:` addresses stay
-as written, and a data URL survives only as an image's source.
+The HTML is safe to render as trusted: the text of a cell or a slide renders as text, links keep
+`http:`, `https:`, `mailto:` and `tel:` addresses, and a data URL is kept only as an image's source.
 
-For an address whose extension it does not claim, and for a claimed address the reader does not
-have, the provider returns null and the viewer moves on to the next provider.
+## Localization
+
+The slide heading and the two limit lines ship in English, Spanish and Hebrew, and follow the
+reader's culture. A host rewords them or adds a language in its own `.locales` folder, under the
+section `OfficeResourceProvider`:
+
+```text
+.locales/Forma.AddOns.Resources.Office/fr.json    { "OfficeResourceProvider": { "Slide {Number}": "Diapositive {Number}" } }
+```
+
+[`Forma.Framework.Localization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Localization/README.md)
+describes the file layout.
 
 ## Using it directly
 
-The provider is an ordinary class, so a host can convert a document outside a viewer:
+A host can convert a document outside a viewer, given a reader and an
+`IStringLocale<OfficeResourceProvider>`:
 
 ```csharp
-using Forma.Framework.Resources;
-using Forma.Framework.Resources.Office;
-
 var provider = new OfficeResourceProvider(reader, locale);
-var resource = await provider.GetResourceAsync("/uploads/report.docx", cancellationToken);
 
-if (resource is MarkupResourceInfo markup)
+if (await provider.GetResourceAsync("/uploads/report.docx", cancellationToken) is MarkupResourceInfo page)
 {
-    // markup.Html holds the sanitized page; markup.Size the bytes read.
+    Console.WriteLine(page.Html);
 }
 ```
 
