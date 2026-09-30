@@ -252,7 +252,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         }
     }
 
-    private async Task RestartChunkLoadingAsync()
+    private async Task RestartSheetLoadingAsync()
     {
         // A sheet that failed is asked for again the next time its group is shown.
         _sheetLoadTracker.ClearFailures();
@@ -272,7 +272,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
             ? L["{Count} emoji found.", MatchingEmojis.Count]
             : string.Empty;
 
-        await RestartChunkLoadingAsync();
+        await RestartSheetLoadingAsync();
     }
 
     // Shows the group the strip's action names, counted from the active one, and focuses its tab.
@@ -297,7 +297,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         _activeGroupId = groupId;
         _searchQuery = string.Empty;
         InvalidateView();
-        await RestartChunkLoadingAsync();
+        await RestartSheetLoadingAsync();
     }
 
     private async Task SelectAsync(EmojiInfo info)
