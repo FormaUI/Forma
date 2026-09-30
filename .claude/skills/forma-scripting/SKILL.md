@@ -71,10 +71,10 @@ root, a service's script beside the wrapper that owns it.
 - Do lift a capability another component could want out into a behavior or an operation in the browser interop assembly, however it arrived; a component script is for what only its own component wants.
 - Do compose behaviors in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
 - Do leave a behavior no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
-- Do read the browser interop assembly's `wwwroot/scripts/behaviors/` before writing a new behavior; capability names make the folder its own inventory.
+- Do read the existing behaviors before writing a new one; capability names make their folder its own inventory.
 - Don't name a behavior after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
 - Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `Playback.js` and `Geometry.js` divide by what the calls are for.
-- Don't name a shared behavior or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each come to be written twice.
+- Don't name a shared behavior or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, so the next component that needs one writes it again.
 - Don't place a script beside the component that uses it; a component's own interop belongs in an interop assembly, not in the component's folder.
 - Don't group unrelated capabilities in one file because one component happens to use both.
 

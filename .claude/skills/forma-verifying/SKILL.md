@@ -35,7 +35,7 @@ the narrower loops live under `scripts/build/`.
 - Do narrow a test run with `test.ps1 -Project`, `-Filter` and `-NoBuild`, and hunt a test that fails
   sometimes with `-Times`, which continues past a failure so the failure shows as a rate.
 - Do reach for `clean.ps1 -All` when the disk is filling: a program run from a single .cs file is built
-  into the system temp directory and left there on every edit and rename, which reached 1.7 GB here.
+  into the system temp directory and left there on every edit and rename.
 - Do name a build script for its action in lowercase, since it is a command someone types; the functions
   in the module take `Verb-Noun` with an approved verb, as PowerShell requires of anything a module
   exports.
@@ -47,8 +47,8 @@ the narrower loops live under `scripts/build/`.
   `scripts/Test-TaskScript.ps1` for a task script; a step that quietly ran nothing looks exactly like a
   step that passed, and the gate reads every script in `scripts/`, so one nothing covers fails there.
 - Do run a step for real against a tree made for the purpose where its body can be wrong, rather than
-  only describing it: `-WhatIf` shows which steps run, never what they do, and the one bug the clean
-  step has had was inside its body while every described run passed.
+  only describing it: `-WhatIf` shows which steps run, never what they do, so a bug inside a step's body
+  passes every described run.
 - Do decide, for a script nothing can reasonably cover, that it is nobody's to maintain and move it
   under `.local/` rather than leaving it in `scripts/` to rot unnoticed.
 - Don't let an argument one action reads be ignored by another; refuse it instead.

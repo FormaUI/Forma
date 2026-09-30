@@ -1,6 +1,6 @@
 ---
 name: forma-documenting
-description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, the README the host's view, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, design document, implementation plan, catalog or roadmap entry, and when deciding whether a code change should touch any prose at all.
+description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, a README what its project is and how to use it, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, design document, implementation plan, catalog or roadmap entry, and when deciding whether a code change should touch any prose at all.
 ---
 
 # Documentation
@@ -9,13 +9,13 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 
 | Prose | Says | Never says |
 |---|---|---|
-| A summary or comment | What the thing is or does | How it does it, why it was chosen, what came before, what it does not do |
+| A summary or comment | What the thing is or does | How it does it, why it was chosen, what came before, what it does not do, what may or might happen, how it is to be used |
 | A `<remarks>` block | How a non-trivial thing works | Why it was designed that way, what was tried |
 | A design document | The design | The state of the code, what has been built, what changed since |
 | An implementation plan | The steps, their gates, what landed and where it departed from the design, what is still open | The design itself, restated |
 | The component catalog | Which components exist or are in progress, one line saying what each is, and the structure they live in | Parameters, options, approach, technical design, anything not yet started |
 | The component roadmap | Which components are still to build, in what order, one line saying what each will be | Technical design, anything already built |
-| The README | How a host consumes the library | How the library works inside |
+| A README | What its project is, what it is useful for, and how to use it | Who consumes it, how it works inside, what may or might happen |
 | An instruction, a skill or the repository's working rules | How to work | Project structure, project names, the change that prompted the rule |
 
 ## Summaries and comments
@@ -23,6 +23,7 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 - Do state what a thing is or does in an XML `<summary>`, a stylesheet banner, an inline comment or a README sentence, in US English throughout, identifiers and paths included; a platform's own name keeps the platform's spelling, as `aria-labelledby` does.
 - Do give every public type and public member a one-line `<summary>`, and put `/// <inheritdoc />` on every override and interface implementation rather than restating what the base member documents.
 - Do write an inline comment only where the code cannot express an important constraint — a necessary `!important`, a non-obvious vendor-prefixed property, an off-by-one invariant — and keep it to one line.
+- Do describe a member in its own name: a parameter named `Items` is described as items, never renamed to the concept it stands for.
 - Do describe a member at the full breadth of its type: a parameter typed as a list of toolbar items is "the items the toolbar renders", never "the action buttons", when the item type also covers groups, menus, toggles and readouts.
 - Do say what a thing can do where the code allows either, never the general case for the optional one: a surface whose items may or may not be resources "can list" a resource, it does not "list" resources.
 - Do name a component by its component name wherever the surrounding text has not already established which component is meant; a bare noun such as "the explorer" belongs only inside that component's own document, where a reader arriving at the sentence alone can still tell which component it is.
@@ -30,8 +31,17 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 - Don't write how a thing does its work in a summary or comment; a reader who needs the mechanism reads the code, and a mechanism the code cannot show goes in `<remarks>`.
 - Don't write history, rejected alternatives, decision arguments, roadmap position, call sites, mirrors or other cross-references; a comment that ties a type to its first consumer narrows it falsely.
 - Don't write what a thing might do, does not do, or would otherwise have done; a sentence about code that is not there sends the reader looking for it.
+- Don't add a clause about conditions, edge cases, defaults or usage: no "or null when…", no "fewer than asked for where…", no "Supply this or X, not both". Null is described only where it is a value with a meaning of its own, as "null matches any" is.
 - Don't mark or track progress in a comment — no "step 3", "for now", "later", "temporary", "TODO" — and don't narrate the situation the code runs in to set a scene for the reader.
 - Don't restate the code or pad a file with prose; delete a comment that carries nothing rather than rewording it.
+
+## READMEs
+
+Every project has a README, a package and an internal assembly alike, and it answers what its reader opened it to find.
+
+- Do say what the project is, what it is useful for, and how to use it: for a package, how a host installs, registers and uses it; for an internal assembly, how the library's own code uses it.
+- Do order it by what the reader needs first, and cut every sentence that does not serve that reader.
+- Don't list who consumes the project, narrate what may or may not happen, or explain internals the reader did not come for.
 
 ## Remarks
 
@@ -66,7 +76,7 @@ The catalog lists the components that exist and the roadmap the components still
 
 An instruction — a skill, or the repository's working rules — describes how to work, so it stays true when the project around it changes.
 
-- Do state a practice or a decision rule, with an example only where the rule is unclear without one, and keep the example generic enough to survive a rename.
+- Do state a practice or a decision rule, with an example only where the rule is unclear without one: generic but meaningful to the reader, drawn from the repository's own code or from well-known real-world code, and phrased so it stays true when names change. A record of a past rename or incident is not an example.
 - Do refer to a document by its role, "the repository's component documentation", never by its file name or path, and never by a path that assumes how repositories are checked out side by side.
 - Don't put project structure, component names, directory layouts or another project's name in an instruction; those are facts about a project and belong in its documentation.
 - Don't tell the reader to consult another project; state the principle that project would have taught, directly.

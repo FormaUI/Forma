@@ -47,9 +47,8 @@ recalling them, not by inventing.
 ### Fields, parameters, arguments and locals
 
 The same rule governs every variable: it is named for the noun it holds, in
-full words, never for a qualifier alone. `registered` becomes
-`registeredWindow`, `_order` becomes `_stackedWindows`, and the type reads
-better for it.
+full words, never for a qualifier alone: `registeredWindow` rather than
+`registered`, `_stackedWindows` rather than `_order`.
 
 - Do name a variable with the noun it holds and qualify it where the qualifier tells the variables apart: `registeredWindow`, `registeredParent`, `affectedWindows`, `movingIds`.
 - Don't name a variable with a bare adjective or participle — `registered`, `affected`, `declining`, `selected`, `rest`, `next` — because an adjective describes a noun the reader then has to guess.

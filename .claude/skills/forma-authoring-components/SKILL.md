@@ -7,14 +7,13 @@ description: The component authoring standard — the file set a component is an
 
 ## Component file layout
 
-A component lives in the components assembly under a category, where a category names a UI role such as bars, feedback, inputs or navigation, and is a file set: `FormaX.razor` for markup only, with `@namespace` first; `FormaX.razor.cs` for all component logic; `FormaX.razor.css` for isolated CSS with a banner; and a section in each of the category's locale files, one per culture in the `.locales` folder inside the category's folder, `.locales/he.json`, when the component invents user-facing text.
+A component lives in the components assembly under a category, where a category names a UI role such as bars, feedback, inputs or navigation, and is a file set: `FormaX.razor` for markup only, with `@namespace` first; `FormaX.razor.cs` for all component logic; `FormaX.razor.css` for isolated CSS with a banner; and a section in its category's locale file in each language pack, when the component invents user-facing text.
 
 - Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
 - Do give a component a category of its own, as an explorer or an editor has, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.
-- Do keep a component that ships in the Pro assembly under the same `Components/{Category}/` layout and the same namespace there, since that assembly borrows the components assembly's root namespace the way an AddOn borrows the one it extends; nothing in the components assembly may reference it.
 - Do place supporting types such as a size enum or an item record beside the component that owns them.
 - Do put a supporting type in the feature assembly instead once the concern has one, because a type a host names in a callback or an options parameter is the feature's vocabulary rather than one component's detail; what stays beside the component is what no caller ever names, such as a stream wrapper driving a progress bar.
-- Do put script a component needs in the `wwwroot/scripts/` of the interop assembly that ships it, never beside the component.
+- Do put script a component needs in the interop assembly that ships it, never beside the component.
 - Do add the locale sections only when the component invents user-facing text.
 - Don't use `@code` blocks in library components.
 - Don't file such a component under a category naming its subject matter instead, the way a category named for files would swallow an explorer.
@@ -82,8 +81,8 @@ Every component derives from one of three bases, and never from `ComponentBase` 
 - Do keep focus consistent across every surface: a transient surface — a menu, a popover, an editor's selection bar — holds Tab inside itself, wrapping at either end, and Escape hands focus back to what opened it, so the keyboard never falls through a floating surface into the page behind it; compose the shared focus behavior rather than handling Tab per component. A composite component whose commands sit above its working surface arranges its own Tab order — the surface first, its commands next, then out of the component — by composing the same focus behavior, so Tab from the surface reaches that component's commands rather than the next component on the page.
 - Do specialize by composition, not by widening a general component: a context that needs its own kind of control gets a component that composes the base and exposes only what that context means (a toggle button over the button, carrying a toggle's pressed state and the toolbar's look), and the base takes a new parameter only when its meaning is general to every use of the base.
 - Don't place component logic in markup.
-- Don't use `.ConfigureAwait(false)` in components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. The components assembly's `.editorconfig` sets `CA2007` to `none`, so nothing will flag it for you.
-- Don't omit `.ConfigureAwait(false)` from awaited service code in a framework project, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`; an interop assembly relaxes that rule as the components assembly does, because its wrappers marshal back through the renderer.
+- Don't use `.ConfigureAwait(false)` in components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. `CA2007`, the analyzer that asks for it, is off for components, so nothing will flag it for you.
+- Don't omit `.ConfigureAwait(false)` from awaited service code in a framework project, which runs off the renderer and where `CA2007` requires it; an interop assembly relaxes that rule as the components assembly does, because its wrappers marshal back through the renderer.
 
 ## Options records
 
