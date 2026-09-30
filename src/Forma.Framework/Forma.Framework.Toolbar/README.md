@@ -1,131 +1,21 @@
 # Forma.Framework.Toolbar
 
-The item model `FormaToolbar` renders: a row of controls described as a list of records, each
-a command, a toggle, a menu of options, a readout or a component of the caller's own, grouped
-or standing alone. A caller adds a control by adding an item, and every item names the command
-the toolbar raises when the control is used, so the caller handles one callback and dispatches
-on the command.
+The item model Forma's toolbars render: a toolbar described as a list of records, each a command,
+a toggle, a menu of options, a readout or a component of the caller's own, grouped or standing
+alone. Every item that acts names a command, so the caller handles one callback and dispatches on
+the command string.
 
-The same list feeds the toolbars composed over `FormaToolbar` — `FormaSearchToolbar`,
-`FormaSelectionToolbar` and `FormaStatusStrip` — and the `Commands` a host places on the title
-bar of `FormaWindow` and `FormaChrome`.
+## Use it
 
-The assembly ships inside `Forma.Blazor`; nothing is installed or registered for it. Its
-types live in the `Forma.Framework.Toolbar` namespace.
+The assembly ships inside the `FormaUI.NET-Blazor` package, and its types live in the
+`Forma.Framework.Toolbar` namespace. A list of `ToolbarItem`s is what `FormaToolbar`,
+`FormaSearchToolbar`, `FormaSelectionToolbar` and `FormaStatusStrip` take as `Items`, and what
+`FormaWindow` and `FormaChrome` take as `Commands` for their title bars. Each raises the chosen
+item's command through `OnCommand`.
 
-## The items
-
-| Type | What it is |
-| --- | --- |
-| `ToolbarItem` | The base of every item: its identity, its title, its icon, and whether it alone is disabled. |
-| `ToolbarGroup` | A named cluster of items, drawn as one `role="group"` and parted from its neighbors by a rule. |
-| `ToolbarAction` | The base of an item that raises a command: a command, an optional shortcut, and an optional state it needs. |
-| `ToolbarCommand` | An action that fires once when activated. |
-| `ToolbarToggle` | An action that reflects an on/off state, with an alternate title and icon while on. |
-| `ToolbarMenu` | An item presenting a menu of `ToolbarOption`s, each raising its own command. |
-| `ToolbarOption` | One choice inside a menu; not an item itself, so it stands only inside a `ToolbarMenu`. |
-| `ToolbarReadout` | A non-interactive value, optionally announced to a screen reader as it changes. |
-| `ToolbarCustomItem` | An item rendered by a component the caller names, in place of a standard control. |
-
-A toolbar's `Items` list mixes bare items and groups; a group holds items and never another
-group, and a menu offers at least one option. The toolbar rejects a list that breaks either.
-
-### `ToolbarItem`
-
-| Member | What it is |
-| --- | --- |
-| `Id` | The item's unique identifier within its group, and the key the toolbar renders it under. |
-| `Title` | The item's label and accessible name, rendered as given, so the caller localizes it. |
-| `Tooltip` | The hover text, or `null` to show `Title` on hover as well. |
-| `Icon` | The icon shown for the item, or `null` when its title stands alone. |
-| `IsDisabled` | Whether this item alone is disabled, whatever the toolbar's own `Disabled` says. |
-
-### `ToolbarGroup`
-
-| Member | What it is |
-| --- | --- |
-| `Items` | The items the group contains. |
-
-### `ToolbarAction`
-
-| Member | What it is |
-| --- | --- |
-| `Command` | The command raised when the action is activated. |
-| `ShortcutDisplay` | The shortcut shown in the tooltip, such as `Ctrl+B`, or `null`. |
-| `ShortcutAriaKeys` | The shortcut in `aria-keyshortcuts` notation, such as `Control+B`, or `null`. |
-| `RequiresState` | The state the host must report before the action can run, or `null` when it is always available. |
-
-`ToolbarCommand` adds nothing. `ToolbarToggle` adds:
-
-| Member | What it is |
-| --- | --- |
-| `IsActive` | Whether the toggle is on. |
-| `AlternateTitle` | The title shown while on, or `null` to keep `Title`. |
-| `AlternateIcon` | The icon shown while on, or `null` to keep `Icon`. |
-
-### `ToolbarMenu` and `ToolbarOption`
-
-A menu carries `Options`, the choices it presents. Each option is:
-
-| Member | What it is |
-| --- | --- |
-| `Id` | The option's unique identifier within its menu. |
-| `Title` | The option's label and accessible name, rendered as given. |
-| `Icon` | The icon shown beside the option, or `null`. |
-| `Command` | The command raised when the option is picked. |
-| `IsActive` | Whether this is the option the menu's current state matches. |
-| `PreviewStyle` | Inline CSS applied to the option's own label, previewing its effect, or `null`. |
-| `Swatch` | A CSS color drawn as a swatch beside the label, or `null`. |
-
-The menu's trigger shows the active option's title, or its swatch when it has one; while no
-option is active the first stands in.
-
-### `ToolbarReadout`
-
-| Member | What it is |
-| --- | --- |
-| `Value` | The value displayed, formatted and localized by the caller. |
-| `IsAnnounced` | Whether a screen reader announces the value as it changes. |
-
-### `ToolbarCustomItem`
-
-| Member | What it is |
-| --- | --- |
-| `Component` | The component type rendered in the item's place. |
-| `Parameters` | The parameters passed to the component, or `null` when it takes none. |
-
-Parameter values are handed to the component as given, with no conversion, so each is already
-of the parameter's own type.
-
-## What the toolbar does with them
-
-**Commands.** Every action and every option carries a `Command` string. Clicking the control,
-picking the option, or pressing a bound shortcut raises that string through the toolbar's
-`OnCommand`, and the caller dispatches on it. A command is refused while the toolbar is
-`Disabled`, while the item's `IsDisabled` is set, or while the state the action requires is
-absent.
-
-**State.** The toolbar's `ActiveStates` is the set of identifiers the host currently reports.
-A toggle is drawn on when its `IsActive` is set or its `Id` is reported; an option is the
-active one on the same terms; an action whose `RequiresState` names a state is held back until
-that state is reported. A caller either sets `IsActive` on the records it builds each render or
-keeps one set of identifiers and hands it over, whichever its state lives closer to.
-
-**Shortcuts.** An action with `ShortcutAriaKeys` is bound once the toolbar's `Target` names an
-element, and answers while that element or a descendant has focus; `Control` and `Meta` both
-stand for the platform's shortcut key. `ShortcutDisplay` is appended to the action's tooltip,
-as `Bold (Ctrl+B)`.
-
-**Labels.** An item with an icon is drawn icon-only, carrying its title as its accessible name,
-unless the toolbar's `ShowLabels` puts the label beside the icon; an item without an icon shows
-its title regardless. A menu's trigger shows its icon and the active option; a readout shows its
-value. A toggle that is on shows its `AlternateTitle` and `AlternateIcon` where they are set.
-
-## Example
-
-A formatting toolbar over an editable area: a group of inline styles with shortcuts, one command
-that needs a link to act on, a heading menu, and an announced word count. One set of identifiers
-reports which toggle is on, which heading is chosen, and whether the link command is available.
+A formatting toolbar over an editable area: inline styles with shortcuts, a command that needs a
+link to act on, a heading menu, and an announced word count. One set of identifiers reports which
+toggle is on, which heading is chosen, and whether the link command is available.
 
 ```razor
 @using Forma.Blazor.Components.Bars
@@ -177,7 +67,7 @@ reports which toggle is on, which heading is chosen, and whether the link comman
         new ToolbarReadout { Id = "words", Title = "Word count", Value = $"{WordCount} words", IsAnnounced = true },
     ];
 
-    // The element reference is captured after the first render, so the toolbar is rendered once more to receive it.
+    // The element reference is captured after the first render, so the toolbar renders once more to receive it.
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
@@ -216,13 +106,9 @@ reports which toggle is on, which heading is chosen, and whether the link comman
 }
 ```
 
-A status strip of readouts and one command, the same records on a different bar:
+The same records on a status strip:
 
 ```razor
-@using Forma.Blazor.Components.Bars
-@using Forma.Framework.Icons
-@using Forma.Framework.Toolbar
-
 <FormaStatusStrip Label="Document Status" Items="Status" OnCommand="HandleCommand" />
 
 @code {
@@ -240,6 +126,62 @@ A status strip of readouts and one command, the same records on a different bar:
         => _isSaved = command == "document.save";
 }
 ```
+
+## The items
+
+| Type | What it is |
+| --- | --- |
+| `ToolbarCommand` | An action that fires once when activated. |
+| `ToolbarToggle` | An action with an on/off state, and an alternate title and icon while on. |
+| `ToolbarMenu` | A menu of `ToolbarOption`s, each raising its own command. |
+| `ToolbarReadout` | A value on display, optionally announced to a screen reader as it changes. |
+| `ToolbarCustomItem` | A component the caller names, rendered in the item's place. |
+| `ToolbarGroup` | A named cluster of items, drawn as one group and set apart from its neighbors by a rule. |
+
+A list mixes bare items and groups; a group holds items only, and a menu offers at least one
+option.
+
+Every item, through `ToolbarItem`:
+
+| Member | What it is |
+| --- | --- |
+| `Id` | The item's unique identifier within its group. |
+| `Title` | The item's label and accessible name, localized by the caller. |
+| `Tooltip` | The hover text, or `null` to show `Title`. |
+| `Icon` | The icon shown for the item, or `null` to show `Title` alone. |
+| `IsDisabled` | Whether this item is disabled. |
+
+`ToolbarCommand` and `ToolbarToggle`, through `ToolbarAction`:
+
+| Member | What it is |
+| --- | --- |
+| `Command` | The command raised when the action is activated. |
+| `ShortcutDisplay` | The shortcut shown in the tooltip, such as `Ctrl+B`. |
+| `ShortcutAriaKeys` | The shortcut in `aria-keyshortcuts` notation, such as `Control+B`, which binds it. |
+| `RequiresState` | The state the host must report before the action can run. |
+
+`ToolbarToggle` adds `IsActive`, `AlternateTitle` and `AlternateIcon`. `ToolbarMenu` has
+`Options`, each a `ToolbarOption` with its own `Id`, `Title`, `Icon` and `Command`, plus
+`IsActive` for the option matching the current state, `PreviewStyle`, inline CSS previewing the
+option on its own label, and `Swatch`, a CSS color drawn beside it. `ToolbarReadout` has `Value`
+and `IsAnnounced`. `ToolbarCustomItem` has `Component`, the component type, and `Parameters`,
+handed to it as given. `ToolbarGroup` has `Items`.
+
+## What the toolbar does with them
+
+- **Commands.** Clicking a control, picking an option or pressing a bound shortcut raises its
+  `Command` through `OnCommand`. The toolbar holds a command back while it is `Disabled`, while
+  the item is `IsDisabled`, or while the state it requires is unreported.
+- **State.** `ActiveStates` is the set of identifiers the host reports. A toggle is on, and an
+  option active, when its `IsActive` is set or its `Id` is reported, and an action runs once its
+  `RequiresState` is reported. A caller sets `IsActive` on the records it builds, or keeps one set
+  of identifiers and hands it over.
+- **Shortcuts.** An action's `ShortcutAriaKeys` is bound once `Target` names an element, and
+  answers while focus is within it; `Control` and `Meta` both mean the platform's shortcut key.
+  `ShortcutDisplay` is appended to the tooltip, as `Bold (Ctrl+B)`.
+- **Labels.** An item with an icon is drawn icon-only, with its title as its accessible name,
+  until `ShowLabels` puts the label beside it. A menu's trigger shows the active option, or the
+  first while none is active.
 
 ## License
 

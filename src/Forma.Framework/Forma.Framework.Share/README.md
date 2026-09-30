@@ -1,13 +1,9 @@
 # Forma.Framework.Share
 
-The share contracts `FormaShareMenu` reads: the item a menu acts on, a target an item can be
-shared to, the actions a consumer adds beside the baseline, and the sources a host answers a
-user's credentials through. A host writes its own targets on these contracts, a cloud drive, a
-chat channel, an internal vault, and each joins the menu for the items it accepts.
-
-`Forma.AddOns.Share.Targets` ships ready-made targets on the same contracts, the social networks
-and the account-backed destinations, each with its own registrar. A host that wants those
-installs that package beside this one.
+The share contracts: the item a share menu acts on, the targets an item can be shared to, and the
+sources a host answers a user's credentials through. A host builds its own targets on them, a
+cloud drive, a chat channel, an internal vault, and each appears in `FormaShareMenu` for the items
+it accepts.
 
 ## Install
 
@@ -15,94 +11,16 @@ installs that package beside this one.
 dotnet add package FormaUI.NET-Framework.Share
 ```
 
-The package has no registrar of its own. A host registers each `IShareTarget` it wants offered,
-and the credential contracts its account-backed targets read.
+`FormaUI.NET-Blazor` depends on this package, so a host with Forma installed already has it.
+Ready-made targets for the social networks and account-backed destinations ship in
+`FormaUI.NET-AddOns.Share.Targets`.
 
-## The contract
+## Use it
 
-| Type | What it is |
-| --- | --- |
-| `IShareTarget` | A target an item can be shared to, such as a social network, a cloud drive, or a messaging service. |
-| `ShareItem` | What a share menu acts on: what kind of thing it is, how it is named, where it lives, and the resource it downloads as. |
-| `ShareItemKind` | The kinds an item can be: `Link`, `File`, `Image`, `Contact`. |
-| `ShareAction` | One command a consumer adds to a share menu beside the baseline. |
+Write a target on one of the shells, register it as an `IShareTarget`, and every
+`FormaShareMenu` offers it for the items it supports.
 
-### `IShareTarget`
-
-| Member | What it does |
-| --- | --- |
-| `Id` | The target's unique identifier, which the credential contracts are asked by. |
-| `Title` | The displayed title. |
-| `Icon` | The icon drawn with the title. |
-| `RequiresAccount` | Whether sharing goes through an account the user has connected. Defaults to `false`. |
-| `Supports(item)` | Whether the target shares this item. |
-| `GetAddress(item)` | The address the item is shared to through navigation, or `null` when sharing takes a call. Defaults to `null`. |
-| `ShareAsync(item, cancellationToken)` | Shares the item when the target takes a call, reporting whether it did. A target that requires an account reports `false` when the user has none connected. |
-
-A target answering an address is opened in a new tab; one answering `null` is called when chosen.
-
-### `ShareItem`
-
-| Member | What it is |
-| --- | --- |
-| `Kind` | One of `ShareItemKind`, deciding which baseline actions apply. Defaults to `ShareItemKind.Link`. |
-| `Name` | The item's name, shown in the menu's header and carried into shares. |
-| `Meta` | A short line beneath the name, such as a type and size. |
-| `Icon` | The icon drawn beside the name. |
-| `Address` | The address the item is shared and copied as; without one, no network or link action shows. |
-| `Resource` | The `ResourceInfo` the item downloads as; without one, no download action shows. |
-
-### `ShareAction`
-
-| Member | What it is |
-| --- | --- |
-| `Id` | The action's unique identifier. |
-| `Title` | The title, rendered as given, so the caller localizes it. |
-| `Command` | The command `FormaShareMenu` raises through its `OnCommand` callback when the action is chosen. |
-| `Icon` | The icon drawn with the title. |
-| `IsDisabled` | Whether the action shows but cannot be chosen. |
-
-## Shells to build a target on
-
-Each shell takes the target's `id`, `title` and `icon` through its constructor and leaves one or
-two members to the derived class.
-
-| Type | What it is | What a derived class writes |
-| --- | --- | --- |
-| `LinkShare` | A target reached by navigation: a network whose composer opens at an address carrying the item. | `GetAddress`. `Supports` is true wherever an address is answered. |
-| `ApiShare` | A target that posts over an `HttpClient`, its own or one the host passes. | `Supports` and `ShareAsync`. |
-| `WebhookShare` | An `ApiShare` that posts the JSON payload it makes of an item to the address the host configured. | `GetPayload`, answering `null` for an item it cannot post. |
-| `AccountShare` | An `ApiShare` that shares under the current user's token and shares nothing without one. | `Supports` and the protected `ShareAsync(item, accessToken, cancellationToken)`. |
-
-`LinkShare` gives a derived class `EscapeAddress`, `EscapeName` and `EscapeText`, the item's address,
-its name, and the two as one message, percent-encoded for a query string. `EscapeAddress` answers
-`null` for any kind but a link or a picture, so a file or a contact reaches no link target.
-
-`ApiShare` exposes the connection as `Http` and gives a derived class `GetReachableSource`, the
-public `http` or `https` address the item's resource can be fetched from, for a destination that
-fetches the file itself. It disposes the connection it created; one the host passed is the host's.
-
-`AccountShare` sets `RequiresAccount` to `true`, asks the `IShareTokenSource` for a token under
-the target's `Id` only for an item it supports, and reports `false` from `ShareAsync` when none
-comes back.
-
-## What the host answers
-
-| Type | What it does |
-| --- | --- |
-| `IShareTokenSource` | `GetTokenAsync(targetId, cancellationToken)` answers the current user's access token for a target, or `null` when the user has connected none. |
-| `IShareServerSource` | `GetServer(targetId)` answers the server the current user's account for a federated target lives on, or `null` when the user has named none. |
-| `IShareConnections` | `IsConnected(targetId)` says whether the user has connected an account for a target, `ConnectAsync(targetId, cancellationToken)` starts connecting one, and its `INotifyStateChanged` half notifies subscribers when that changes. |
-
-A token or a server is the user's, so the host implements these in the user's context and
-registers them scoped, with the targets that read them. `IShareConnections` is optional:
-`FormaShareMenu` takes it when registered, draws an account target the user has not connected
-as a Connect entry, and redraws when it notifies. A connected status is advisory; the share
-itself reports whether it happened.
-
-## Example
-
-A link target: the derived class answers the address, and the shell does the rest.
+A link target, which answers the address a network's composer opens at:
 
 ```csharp
 using Forma.Framework.Icons;
@@ -115,7 +33,7 @@ public sealed class TeamChatShare() : LinkShare("team-chat", "Team Chat", Glyph.
 }
 ```
 
-An account target, saving a file into the user's own storage:
+An account target, saving a file into the user's own storage under the user's token:
 
 ```csharp
 using System.Net.Http.Headers;
@@ -134,8 +52,6 @@ public sealed class VaultShare(IShareTokenSource tokens, HttpClient? http = null
 
     protected override async Task ShareAsync(ShareItem item, string accessToken, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(item);
-
         using var request = new HttpRequestMessage(HttpMethod.Post, SaveEndpoint);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         request.Content = JsonContent.Create(new { name = item.Resource!.Name, url = GetReachableSource(item) });
@@ -146,7 +62,7 @@ public sealed class VaultShare(IShareTokenSource tokens, HttpClient? http = null
 }
 ```
 
-The token source the vault reads, answering from wherever the host keeps the signed-in user's
+The token source it reads, answering from wherever the host keeps the signed-in user's
 credentials:
 
 ```csharp
@@ -170,10 +86,14 @@ builder.Services.AddScoped<IShareTokenSource, UserShareTokens>();
 builder.Services.AddScoped<IShareTarget, VaultShare>();
 ```
 
-The menu over a file, which the vault accepts and the link target does not:
+The menu over a file, which the vault accepts:
 
 ```razor
-<FormaShareMenu Item="@_kit" />
+@using Forma.Blazor.Components.Menus
+@using Forma.Framework.Resources
+@using Forma.Framework.Share
+
+<FormaShareMenu Item="_kit" />
 
 @code {
     private readonly ShareItem _kit = new()
@@ -185,6 +105,60 @@ The menu over a file, which the vault accepts and the link target does not:
     };
 }
 ```
+
+## The item
+
+`ShareItem` is what a menu acts on.
+
+| Member | What it is |
+| --- | --- |
+| `Kind` | A `ShareItemKind`, `Link`, `File`, `Image` or `Contact`, deciding which baseline actions apply. Defaults to `Link`. |
+| `Name` | The item's name, shown in the menu's header and carried into shares. |
+| `Meta` | A short line beneath the name, such as a type and size. |
+| `Icon` | The icon drawn beside the name. |
+| `Address` | The address the item is shared and copied as; the network and link actions need one. |
+| `Resource` | The `ResourceInfo` the item downloads as; the download action needs one. |
+
+`ShareAction` is a command added to the menu beside the baseline through its `Actions`: an `Id`,
+a localized `Title`, the `Command` the menu raises through `OnCommand`, an optional `Icon`, and
+`IsDisabled`.
+
+## Targets
+
+`IShareTarget` is one destination.
+
+| Member | What it does |
+| --- | --- |
+| `Id` | The target's unique identifier, which the credential sources are asked by. |
+| `Title` | The displayed title. |
+| `Icon` | The icon drawn with the title. |
+| `RequiresAccount` | Whether sharing goes through an account the user has connected. Defaults to `false`. |
+| `Supports(item)` | Whether the target shares this item. |
+| `GetAddress(item)` | The address that shares the item by navigation, opened in a new tab; `null` for a target that shares by a call. |
+| `ShareAsync(item, cancellationToken)` | Shares the item by a call, reporting whether it did. |
+
+Each shell takes the target's `id`, `title` and `icon` through its constructor:
+
+| Shell | What it is | What a derived class writes |
+| --- | --- | --- |
+| `LinkShare` | A target reached by navigation, supporting every item it answers an address for. | `GetAddress`, with `EscapeAddress`, `EscapeName` and `EscapeText` to percent-encode the item for a query string. |
+| `ApiShare` | A target that posts over `Http`, an `HttpClient` the host passes or one it creates and disposes. | `Supports` and `ShareAsync`, with `GetReachableSource` for the public `http` or `https` address of the item's resource. |
+| `WebhookShare` | An `ApiShare` that posts a JSON payload to the webhook address the host configured. | `GetPayload`, answering `null` for an item it cannot post. |
+| `AccountShare` | An `ApiShare` that shares under the current user's token from `IShareTokenSource`, reporting `false` without one. | `Supports` and the protected `ShareAsync(item, accessToken, cancellationToken)`. |
+
+## What the host answers
+
+A token or a server belongs to the current user, so the host implements these in the user's
+context and registers them scoped.
+
+| Type | What it answers |
+| --- | --- |
+| `IShareTokenSource` | `GetTokenAsync(targetId, cancellationToken)`: the user's access token for a target, or `null`. |
+| `IShareServerSource` | `GetServer(targetId)`: the server the user's account for a federated target lives on, or `null`. |
+| `IShareConnections` | `IsConnected(targetId)` and `ConnectAsync(targetId, cancellationToken)`, with change notification through `INotifyStateChanged`. |
+
+`IShareConnections` is optional. When it is registered, `FormaShareMenu` draws an account target
+the user has not connected as a Connect entry, and redraws when it notifies.
 
 ## License
 
