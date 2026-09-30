@@ -24,27 +24,28 @@ exclusions, listener-registration order, or incidental event propagation.
 
 ## Decision summary
 
-- `InputRouter.js` owns every routing decision. It does not own every browser listener.
+- `InputRouter.js` owns every routing decision, whichever listener carries the event to
+  it.
 - Components declare **routes** — a semantic action qualified by its owner, the bindings
   that raise it by default, and the handler — on a registered **scope**. Components
-  implement actions; they do not arbitrate ownership. The host remaps bindings by action.
+  implement actions and the router arbitrates ownership. The host remaps bindings by action.
 - Targeted input is routed to the innermost scope on the event's composed path that claims
   that input, never past an active scope. Ambient input is routed to the foremost active
   scope only.
-- Precedence among active scopes is topological: modal barrier, then parentage, then
-  activation order, then registration order. No named priority takes part.
+- Precedence among active scopes is topological alone: modal barrier, then parentage,
+  then activation order, then registration order.
 - Several behaviors register on one element and share one scope; each registration is
   disposed on its own, and the scope stays active while any registration holds it.
 - Native editing controls carry an implicit profile defined per element and per input.
-- `defaultPrevented` coordinates behaviors inside one scope; it does not decide ownership
-  between scopes.
+- `defaultPrevented` coordinates behaviors inside one scope; ownership between scopes is
+  the router's.
 - `FormaDialog` registers a modal scope and keeps native dialog semantics.
 - Host policy and the host's own routes reach the script through a scoped .NET bridge
-  configured in `AddFormaUI`; there is no router component to mount. A host route is
-  answered only once every component scope on the path has declined.
+  configured in `AddFormaUI`, where the host registers the library. A host route is
+  answered once every component scope on the path has declined.
 - The router stamps each active registration's element with its place in the ordering,
-  `data-forma-layer`, for a surface outside the top layer to draw from. The router
-  promises nothing about the visual order of arbitrary DOM.
+  `data-forma-layer`, for a surface outside the top layer to draw from; the visual order
+  of the rest of the page is the page's.
 - Every resolution is queryable: `resolve(event)` is the single result, and `owns`,
   `ownerOf`, `describe`, and `stack` are views over it.
 
@@ -187,12 +188,10 @@ invokes the .NET owner with the resolved action: `HandleInputActionAsync(action,
 where the input is described by its family so the owner reads it as the matching record.
 The record carries the input, never the element it landed on, so a route whose action
 depends on which element was pressed — which item of a list — is handled in script, which
-tells its owner which one.
-That is one round trip, the same count as Blazor's own event delegation. The
-handler runs from whichever listener resolved the event — the document's for a key, an
-outer scope's for a press that an inner scope owns — so it takes the owning element from
-the routing it is given, never from `event.currentTarget`; a gesture that captures the
-pointer captures it on `owner`.
+tells its owner which one. The handler runs from whichever listener resolved the event —
+the document's for a key, an outer scope's for a press that an inner scope owns — so it
+takes the owning element from the routing it is given, never from `event.currentTarget`; a
+gesture that captures the pointer captures it on `owner`.
 
 A consumed input prevents its default and stops at the scope by class default — a key or a
 wheel turn does both, a key release stops without preventing, a press and a click do neither,
@@ -401,16 +400,6 @@ Three roles, not an override chain:
 The resolver combines them into one decision. A host cannot casually override an invariant;
 a component default does not silently defeat explicit host policy.
 
-### Public surface
-
-A type in `Forma.Framework.Input` is public only because a host or a component author reaches
-it from one of three doors: `InputRouterOptions` and `IInputActionHandler` for the host,
-`FormaInputScope` for the author, and the inspector's `InputDecision` for anyone debugging.
-The router service, the registration handle and the registration a component keeps,
-`InputRouter`, `InputScope` and `InputRegistration` in `Forma.Framework.Input.Interop`, are
-public because a library component that registers its own root reaches them directly; a type
-nothing outside the library reaches goes internal.
-
 ### Preemptive routes are absolute
 
 A preemptive route takes the input from every local claim: component routes, native
@@ -488,12 +477,3 @@ The router does not implement what an action does inside a component, replace `F
 `DragGesture`, `PanGesture`, or selection behavior, turn every DOM event into a .NET
 callback, reimplement native dialog modality or focus trapping, or promise visual order
 for DOM it does not manage.
-
-## Final model
-
-Input is routed before component behavior is allowed to act. DOM ancestry establishes the
-owner of targeted input within the active boundary; the active ordering establishes the
-owner of ambient input; components declare their routes and actions and implement only the
-doing; `defaultPrevented` coordinates behaviors inside the selected scope; native platform
-behavior is retained and connected to the same precedence; and every decision can be asked
-for.
