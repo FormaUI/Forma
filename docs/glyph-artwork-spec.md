@@ -20,8 +20,8 @@ assets/Glyphs/24/AddColumnLeft.svg
 …
 ```
 
-The 32 grid draws every glyph. Another grid may draw a subset while it is being filled in; a glyph
-it lacks falls back to the 32 drawing.
+The 32 grid draws every glyph. Another grid may draw a subset; a glyph it lacks falls back to the 32
+drawing.
 
 A file holds a single `<svg>` element and nothing else — no XML prolog, no comments, no `<defs>`,
 no `<g>`, no `id`, `class` or `style` attributes, no transforms. The whole file is:
@@ -36,11 +36,11 @@ no `<g>`, no `id`, `class` or `style` attributes, no transforms. The whole file 
 Only `<path>` elements are allowed inside. No `<circle>`, `<rect>`, `<line>` or `<polyline>` —
 write each one as path data, so the compile step and the renderer deal with one thing.
 
-Two attributes may appear on an individual `<path>` and nothing else:
+These attributes may appear on an individual `<path>`, and no others:
 
 | Attribute | When |
 |---|---|
-| `fill-rule="evenodd"` on such a solid path | A solid silhouette whose traced outline carries holes, as the `Hand…` family's do. |
+| `fill-rule="evenodd"` on a solid path | A solid silhouette whose traced outline carries holes, as the `Hand…` family's do. |
 | `fill="currentColor"` together with `stroke="none"` on a stroke file | A solid dot or wedge that a stroke cannot draw — the bullet in `ListBullet`, the dots in `More`, the triangle of `TriangleRight`. Use sparingly. |
 | `opacity="0.4"` | A secondary element that must recede — the back frame in `Images`, the second figure in `Users`. |
 
@@ -539,7 +539,7 @@ glyph with no parts named is drawn from scratch on the grid.
 
 ## Review
 
-The Showcase's glyph page renders both variants of every glyph at 16, 20, 24 and 48 screen pixels.
-A glyph is done when both variants read correctly at 16px,
+The Showcase's glyph page renders both variants of every glyph at 16, 20, 24 and 48 screen pixels. A
+glyph is done when both variants read correctly at 16px, the size it takes inline with body text,
 sit on the same optical center as their neighbors, share their parts with the rest of the set, and
 swap between each other without moving.
