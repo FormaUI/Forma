@@ -1,9 +1,9 @@
 namespace Forma.Framework.Composer.Editing;
 
-/// <summary>The text operations every editor needs against a document's raw content.</summary>
+/// <summary>Text operations on a document's raw content.</summary>
 public static class ComposerText
 {
-    /// <summary>Returns the run of word characters touching <paramref name="offset"/>, or an empty span when none surrounds it.</summary>
+    /// <summary>Returns the run of word characters touching <paramref name="offset"/>.</summary>
     public static ComposerTextSpan GetWordAt(string content, int offset)
     {
         ArgumentNullException.ThrowIfNull(content);
@@ -25,7 +25,7 @@ public static class ComposerText
         return new ComposerTextSpan(start, end, content[start..end]);
     }
 
-    /// <summary>Returns the text a selection covers, ordered regardless of which end is the anchor.</summary>
+    /// <summary>Returns the text a selection covers.</summary>
     public static ComposerTextSpan GetSelected(string content, ComposerSelection selection)
     {
         ArgumentNullException.ThrowIfNull(content);
@@ -36,7 +36,7 @@ public static class ComposerText
         return new ComposerTextSpan(start, end, content[start..end]);
     }
 
-    /// <summary>Returns the span of every line a selection touches, including the line a collapsed caret sits on.</summary>
+    /// <summary>Returns the span of every line a selection touches.</summary>
     public static IReadOnlyList<ComposerTextSpan> GetLines(string content, ComposerSelection selection)
     {
         ArgumentNullException.ThrowIfNull(content);

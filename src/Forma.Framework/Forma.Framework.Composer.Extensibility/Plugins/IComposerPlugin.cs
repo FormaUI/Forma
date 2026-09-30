@@ -7,25 +7,22 @@ using Forma.Framework.Plugins;
 /// <summary>A capability contributed to the composer, whatever it is implemented in.</summary>
 public interface IComposerPlugin : IPlugin, IComposerKeyBindingSource
 {
-    /// <summary>The type whose translation files hold this plugin's titles and labels, or null to read them from the composer's own.</summary>
+    /// <summary>The type whose locale files hold this plugin's titles and labels, or null for the composer's own.</summary>
     Type? LocalizationSourceType => null;
 
     /// <summary>The items this plugin contributes, each naming the row it lands on.</summary>
     IReadOnlyList<ComposerToolbarItem> Items => [];
 
-    /// <summary>Command rows this plugin declares of its own, laid out after the rows the composer provides.</summary>
+    /// <summary>The command rows this plugin declares.</summary>
     IReadOnlyList<ComposerToolbarRow> Rows => [];
 
-    /// <summary>Typed-input triggers contributed by this plugin.</summary>
+    /// <summary>The input triggers this plugin contributes.</summary>
     IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
 
-    /// <summary>
-    /// Prefixes of commands this plugin owns whose full form is not enumerable ahead of time — such as one
-    /// per catalog entry a picker offers — so the engine can route them without a per-value registration.
-    /// </summary>
+    /// <summary>The prefixes of the commands this plugin owns, such as the one shared by every entry a picker offers.</summary>
     IReadOnlyList<string> CommandPrefixes => [];
 
-    /// <summary>Browser assets the plugin needs before it can run.</summary>
+    /// <summary>The browser assets the plugin needs.</summary>
     IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <summary>The identifiers of this plugin's toggles and options that are currently active.</summary>
@@ -34,7 +31,7 @@ public interface IComposerPlugin : IPlugin, IComposerKeyBindingSource
     /// <summary>Whether every dependency the plugin needs is present.</summary>
     ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>Runs one of the commands this plugin named, doing nothing when it names none.</summary>
+    /// <summary>Runs one of the commands this plugin named.</summary>
     ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
         => ValueTask.CompletedTask;
 }

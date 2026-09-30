@@ -22,11 +22,11 @@ public sealed record ComposerKeyBinding
     public string Display
         => string.Join('+', Write("Ctrl"));
 
-    /// <summary>The combination as the keys it is pressed on, in the order a tooltip writes them, such as Ctrl, Shift and Z.</summary>
+    /// <summary>The keys of the combination, in the order a tooltip writes them, such as Ctrl, Shift and Z.</summary>
     public IReadOnlyList<string> DisplayKeys
         => [.. Write("Ctrl")];
 
-    /// <summary>The combination written for aria-keyshortcuts, whose modifier names the specification fixes.</summary>
+    /// <summary>The combination written for aria-keyshortcuts, such as Control+Shift+Z.</summary>
     public string AriaKeyShortcuts
         => string.Join('+', Write("Control"));
 

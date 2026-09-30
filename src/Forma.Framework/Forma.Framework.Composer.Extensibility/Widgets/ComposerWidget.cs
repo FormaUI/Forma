@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Icons;
 
-/// <summary>Describes a widget available to a designer.</summary>
+/// <summary>A widget available to a designer.</summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "The page designer this belongs to is not built yet, so nothing constructs it.")]
 internal sealed record ComposerWidget
 {
@@ -23,10 +23,10 @@ internal sealed record ComposerWidget
     /// <summary>The component rendering the widget on the canvas.</summary>
     public required Type Component { get; init; }
 
-    /// <summary>The component editing the widget's settings, or null when it has none.</summary>
+    /// <summary>The component editing the widget's settings.</summary>
     public Type? SettingsComponent { get; init; }
 
-    /// <summary>The record the widget's settings deserialize to, or null when it has none.</summary>
+    /// <summary>The record the widget's settings deserialize to.</summary>
     public Type? SettingsType { get; init; }
 
     /// <summary>Whether the widget may contain other widgets.</summary>

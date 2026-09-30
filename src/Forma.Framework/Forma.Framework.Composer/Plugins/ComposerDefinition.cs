@@ -12,10 +12,10 @@ public sealed class ComposerDefinition
         _registry = registry;
     }
 
-    /// <summary>A description registering nothing, which leaves a composer with the editor it falls back on.</summary>
+    /// <summary>A definition registering no plugins.</summary>
     public static ComposerDefinition Empty { get; } = new(new PluginRegistry<IComposerPlugin>());
 
-    /// <summary>Describes a composer's plugins.</summary>
+    /// <summary>Creates the definition of a composer's plugins.</summary>
     /// <param name="configure">Registers the editors, views and capabilities the composer has.</param>
     public static ComposerDefinition Create(Action<ComposerPluginBuilder> configure)
     {
@@ -28,8 +28,9 @@ public sealed class ComposerDefinition
         return builder.Build();
     }
 
-    /// <summary>Builds this description's plugins for one composer, which disposes the scope when it is done with them.</summary>
-    /// <param name="services">The host's services, which stand in for whatever a plugin's constructor asks for and no plugin supplies.</param>
+    /// <summary>Builds this definition's plugins for one composer.</summary>
+    /// <param name="services">The host's services.</param>
+    /// <remarks>A plugin's constructor takes the other plugins of the scope, and the host's services for whatever no plugin supplies.</remarks>
     /// <exception cref="InvalidOperationException">A plugin takes something nothing can supply, or takes a plugin that takes it back.</exception>
     public PluginScope<IComposerPlugin> Activate(IServiceProvider services)
         => _registry.Activate(services);

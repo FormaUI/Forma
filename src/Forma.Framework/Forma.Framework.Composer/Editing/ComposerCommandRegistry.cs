@@ -93,7 +93,7 @@ public sealed class ComposerCommandRegistry
         return ComposerCommandResult.Unhandled;
     }
 
-    /// <summary>Walks an item (and, for a group, its children) claiming whatever command each names.</summary>
+    /// <summary>Claims for the plugin every command the item and its children name.</summary>
     private void RegisterCommands(ToolbarItem item, IComposerPlugin plugin)
     {
         switch (item)

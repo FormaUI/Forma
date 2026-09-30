@@ -35,7 +35,7 @@ public sealed class ComposerViewBuilder
         return this;
     }
 
-    /// <summary>Registers a capability this view creates through the given factory rather than from its constructor.</summary>
+    /// <summary>Registers a capability on this view, created through the given factory.</summary>
     /// <typeparam name="TPlugin">The plugin the factory creates.</typeparam>
     /// <param name="factory">Creates the plugin for one composer, from the host's services.</param>
     public ComposerViewBuilder AddFeaturePlugin<TPlugin>(Func<IServiceProvider, TPlugin> factory)

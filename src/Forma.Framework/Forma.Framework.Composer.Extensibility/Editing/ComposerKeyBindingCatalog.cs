@@ -8,7 +8,8 @@ public sealed class ComposerKeyBindingCatalog
     private readonly Dictionary<string, ComposerKeyBinding> _bindingsByCommand = [with(StringComparer.Ordinal)];
     private readonly List<ComposerKeyBinding> _bindings = [];
 
-    /// <summary>Merges the bindings of the given sources, letting the earliest source win a contested command.</summary>
+    /// <summary>Creates a catalog merging the bindings of the given sources.</summary>
+    /// <remarks>A command bound by more than one source answers to the binding of the earliest source.</remarks>
     public ComposerKeyBindingCatalog(IEnumerable<IComposerKeyBindingSource> sources)
     {
         ArgumentNullException.ThrowIfNull(sources);
@@ -23,14 +24,14 @@ public sealed class ComposerKeyBindingCatalog
         }
     }
 
-    /// <summary>A key map contributing nothing.</summary>
+    /// <summary>A catalog holding no bindings.</summary>
     public static ComposerKeyBindingCatalog Empty { get; } = new([]);
 
     /// <summary>Every merged binding, in the order its sources were given.</summary>
     public IReadOnlyList<ComposerKeyBinding> Bindings
         => _bindings;
 
-    /// <summary>The binding a command answers to, or null when nothing bound it.</summary>
+    /// <summary>Finds the binding a command answers to.</summary>
     public ComposerKeyBinding? FindByCommand(string command)
         => _bindingsByCommand.GetValueOrDefault(command);
 }

@@ -13,17 +13,16 @@ public sealed record ComposerSelection
     public bool IsCollapsed
         => Start == End;
 
-    /// <summary>The block the caret sits in, such as "p", "h1" or "pre", or null when unknown.</summary>
+    /// <summary>The block the caret sits in, such as "p", "h1" or "pre".</summary>
     public string? BlockType { get; init; }
 
     /// <summary>The inline formatting active across the range, such as "bold" or "italic".</summary>
     public IReadOnlySet<string> ActiveStyles { get; init; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>A selection standing for no caret at all.</summary>
+    /// <summary>The empty selection.</summary>
     public static ComposerSelection Empty { get; } = new();
 
-    // The compiler-generated equality would compare ActiveStyles by reference, since HashSet<T> does not
-    // override Equals; two selections with the same styles by content would then never compare equal.
+    // Compares ActiveStyles by content, which the compiler-generated equality compares by reference.
     /// <inheritdoc />
     public bool Equals(ComposerSelection? other)
         => other is not null

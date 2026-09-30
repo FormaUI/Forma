@@ -5,7 +5,7 @@ using Forma.Framework.Toolbar;
 
 /// <summary>One resolved command row: its identity and the items placed on it.</summary>
 /// <param name="Id">The row's identifier.</param>
-/// <param name="Label">The row's accessible name, localized when the layout was given a way to localize it.</param>
+/// <param name="Label">The row's accessible name.</param>
 /// <param name="IsBuiltIn">Whether this is the shared row the composer's own commands occupy.</param>
 /// <param name="Items">The items placed on this row, in the order their contributors were merged.</param>
 public sealed record ComposerToolbarRowLayout(
@@ -15,6 +15,11 @@ public sealed record ComposerToolbarRowLayout(
     IReadOnlyList<ToolbarItem> Items);
 
 /// <summary>The ordered command rows one surface's toolbar renders.</summary>
+/// <remarks>
+/// The built-in row comes first, then the rows the surface declares, then the composer's standard rows, then, on an
+/// editor's surface, the rows its feature plugins declare. A row holding no items is left out, the built-in row excepted,
+/// and an item naming a row the layout does not hold lands on the plugins row where the layout has one.
+/// </remarks>
 public sealed class ComposerToolbarLayout
 {
     private ComposerToolbarLayout(IReadOnlyList<ComposerToolbarRowLayout> rows)
@@ -22,15 +27,14 @@ public sealed class ComposerToolbarLayout
         Rows = rows;
     }
 
-    /// <summary>The rows to render, the shared built-in row first and each declared row after the one that defaults to it.</summary>
+    /// <summary>The rows to render, in order.</summary>
     public IReadOnlyList<ComposerToolbarRowLayout> Rows { get; }
 
     /// <summary>Lays out the editor's own commands and those of the plugins it is handed.</summary>
     /// <param name="editor">The editor whose toolbar this is.</param>
     /// <param name="plugins">The capabilities in play on the editor's surface.</param>
     /// <param name="localize">
-    /// Reads an English title in the reader's language, for the plugin that declared it or for the composer when the plugin is null;
-    /// omitted, every title is laid out as declared.
+    /// Reads an English title in the reader's language, for the plugin that declared it, or for the composer when the plugin is null.
     /// </param>
     public static ComposerToolbarLayout Create(
         IComposerEditorPlugin editor,
@@ -43,12 +47,11 @@ public sealed class ComposerToolbarLayout
         return Create(editor, plugins, StandardRows, localize ?? KeepTitle);
     }
 
-    /// <summary>Lays out the view's own commands and those of the plugins it is handed; an item naming a row the view never declared is left out.</summary>
+    /// <summary>Lays out the view's own commands and those of the plugins it is handed.</summary>
     /// <param name="view">The view whose bar this is.</param>
     /// <param name="plugins">The capabilities in play on the view.</param>
     /// <param name="localize">
-    /// Reads an English title in the reader's language, for the plugin that declared it or for the composer when the plugin is null;
-    /// omitted, every title is laid out as declared.
+    /// Reads an English title in the reader's language, for the plugin that declared it, or for the composer when the plugin is null.
     /// </param>
     public static ComposerToolbarLayout CreateForView(
         IComposerViewPlugin view,
@@ -110,7 +113,6 @@ public sealed class ComposerToolbarLayout
                 }
                 else if (catchesStrays)
                 {
-                    // An entry naming a row nobody declared keeps its items reachable on the plugins row instead.
                     items[ComposerRows.Plugins].AddRange(localized);
                 }
             }
@@ -134,7 +136,7 @@ public sealed class ComposerToolbarLayout
             _ => item with { Title = localize(item.Title) },
         };
 
-    /// <summary>Folds groups sharing an identifier into the first of them, so one named cluster holds every contribution to it.</summary>
+    /// <summary>Folds groups sharing an identifier into the first of them.</summary>
     /// <param name="placed">The items in the order they were placed, groups included.</param>
     public static List<ToolbarItem> Coalesce(IReadOnlyList<ToolbarItem> placed)
     {
@@ -184,7 +186,7 @@ public sealed class ComposerToolbarLayout
         AddDeclared(owner);
         order.AddRange(standardRows.Select(row => LocalizeRow(row, contributor: null)));
 
-        // Only the editor's own surface takes rows a feature plugin declares; a view lays out what it declared itself.
+        // Only an editor's surface has standard rows, and only it takes the rows feature plugins declare.
         if (standardRows.Count > 0)
         {
             foreach (var plugin in external)

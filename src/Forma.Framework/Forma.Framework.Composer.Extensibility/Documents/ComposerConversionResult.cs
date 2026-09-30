@@ -6,10 +6,10 @@ public sealed record ComposerConversionResult
     /// <summary>Whether the conversion carried the whole document.</summary>
     public required bool Succeeded { get; init; }
 
-    /// <summary>The converted content, or null when the conversion was refused.</summary>
+    /// <summary>The converted content.</summary>
     public string? Content { get; init; }
 
-    /// <summary>What the target format cannot represent, empty on success.</summary>
+    /// <summary>The features the target format cannot represent.</summary>
     public IReadOnlyList<string> UnsupportedFeatures { get; init; } = [];
 
     /// <summary>A result carrying the whole document.</summary>

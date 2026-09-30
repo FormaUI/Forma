@@ -1,6 +1,6 @@
 namespace Forma.Framework.Composer.Editing;
 
-/// <summary>The command rows the composer always provides, which an item lands in when it names no row of its own.</summary>
+/// <summary>The identifiers of the command rows the composer provides.</summary>
 public static class ComposerRows
 {
     /// <summary>The shared row carrying the composer's own commands and the active editor's unrouted ones.</summary>

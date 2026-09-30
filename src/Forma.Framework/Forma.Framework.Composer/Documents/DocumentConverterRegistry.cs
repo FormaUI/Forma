@@ -30,7 +30,7 @@ public sealed class DocumentConverterRegistry
         _converters[(converter.Source, converter.Target)] = converter;
     }
 
-    /// <summary>The converter between the two formats, or null when none is registered.</summary>
+    /// <summary>Finds the converter between the two formats.</summary>
     public IComposerDocumentConverter? Find(ComposerDocumentFormat source, ComposerDocumentFormat target)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -43,7 +43,7 @@ public sealed class DocumentConverterRegistry
     public bool CanConvert(ComposerDocumentFormat source, ComposerDocumentFormat target)
         => source == target || Find(source, target) is not null;
 
-    /// <summary>Converts the document, refusing when no converter is registered.</summary>
+    /// <summary>Converts the document to the target format.</summary>
     public ComposerConversionResult Convert(ComposerDocument document, ComposerDocumentFormat targetFormat)
     {
         ArgumentNullException.ThrowIfNull(document);

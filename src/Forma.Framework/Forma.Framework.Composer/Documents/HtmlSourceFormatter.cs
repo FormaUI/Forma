@@ -2,7 +2,7 @@ namespace Forma.Framework.Composer.Documents;
 
 using System.Text;
 
-/// <summary>Lays HTML out one block per line, indented by nesting, for reading rather than rendering.</summary>
+/// <summary>Lays HTML out one block per line, indented by nesting.</summary>
 public static class HtmlSourceFormatter
 {
     private static readonly HashSet<string> BlockTags =
@@ -18,7 +18,8 @@ public static class HtmlSourceFormatter
 
     private const string Indent = "  ";
 
-    /// <summary>Formats the markup, putting each block-level tag on a line of its own and indenting nested blocks; inline content stays on its block's line.</summary>
+    /// <summary>Formats the markup one block per line, indented by nesting.</summary>
+    /// <remarks>Inline content stays on its block's line, and the content of a literal tag such as <c>pre</c> is kept as written.</remarks>
     public static string Format(string html)
     {
         ArgumentNullException.ThrowIfNull(html);

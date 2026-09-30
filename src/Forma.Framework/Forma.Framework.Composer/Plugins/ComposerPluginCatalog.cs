@@ -16,17 +16,21 @@ public sealed class ComposerPluginCatalog
         Editors = editors;
     }
 
-    /// <summary>The editors available, never empty.</summary>
+    /// <summary>The available editors.</summary>
     public IReadOnlyList<IComposerEditorPlugin> Editors { get; }
 
     /// <summary>Every available plugin, in the order it was registered.</summary>
     public IEnumerable<IComposerPlugin> Plugins
         => _available.Select(instance => instance.Plugin);
 
-    /// <summary>Keeps the first plugin of each identifier its owner registers that reports itself available, falling back when no editor does.</summary>
+    /// <summary>Creates the catalog of the available plugins among the given instances.</summary>
     /// <param name="instances">The plugins one composer built, each naming what it was registered under.</param>
     /// <param name="fallbackEditor">The editor to offer when no registered editor is available.</param>
     /// <param name="cancellationToken">Cancels waiting on the plugins' availability.</param>
+    /// <remarks>
+    /// The catalog keeps, under each owner, the first plugin of each identifier that reports itself available, and offers
+    /// the fallback editor when no registered editor is available.
+    /// </remarks>
     public static async ValueTask<ComposerPluginCatalog> CreateAsync(
         IReadOnlyList<PluginInstance<IComposerPlugin>> instances,
         IComposerEditorPlugin fallbackEditor,
@@ -37,12 +41,10 @@ public sealed class ComposerPluginCatalog
 
         var available = new List<PluginInstance<IComposerPlugin>>();
 
-        // An identifier is unique within its owner rather than across the composer, so two editors may each own a link plugin.
         var seen = new HashSet<(PluginInstance<IComposerPlugin>? Owner, string Id)>();
 
         foreach (var instance in instances)
         {
-            // Availability is asked first, so a plugin that cannot run leaves its identifier to the next one that can.
             if (!await instance.Plugin.IsAvailableAsync(cancellationToken).ConfigureAwait(false)
                 || !seen.Add((instance.Owner, instance.Plugin.Id)))
             {
@@ -62,7 +64,8 @@ public sealed class ComposerPluginCatalog
         return new ComposerPluginCatalog(available, editors);
     }
 
-    /// <summary>Picks the editor to activate, preferring an explicit request, then a configured default, then the document's format.</summary>
+    /// <summary>Picks the editor to activate.</summary>
+    /// <remarks>The requested editor comes first, then the default one, then the first editor for the document's format, then the first editor.</remarks>
     public IComposerEditorPlugin ResolveEditor(string? requestedId, string? defaultId, ComposerDocumentFormat format)
         => Find(requestedId)
             ?? Find(defaultId)
@@ -85,7 +88,11 @@ public sealed class ComposerPluginCatalog
 
     /// <summary>The capabilities in play on one surface: those the composer registered, and those the surface itself did.</summary>
     /// <param name="editor">The editor whose document is showing.</param>
-    /// <param name="view">The view showing over that document, which is then the surface in the editor's place, or null while the editor itself is.</param>
+    /// <param name="view">The view showing over that document, which is then the surface in the editor's place.</param>
+    /// <remarks>
+    /// A capability registered at the root reaches every surface, and one registered under an editor or a view reaches that
+    /// surface alone; the surface's own registration answers in place of the composer's for an identifier both carry.
+    /// </remarks>
     public IReadOnlyList<IComposerPlugin> GetFeaturePlugins(IComposerEditorPlugin editor, IComposerViewPlugin? view = null)
     {
         ArgumentNullException.ThrowIfNull(editor);
@@ -95,7 +102,6 @@ public sealed class ComposerPluginCatalog
             .Where(instance => instance.Plugin is not IComposerEditorPlugin and not IComposerViewPlugin && IsInScope(instance, surface))
             .ToList();
 
-        // The surface's own registration answers in place of the composer's for an identifier both carry.
         var ownIds = inScope
             .Where(instance => instance.Owner is not null)
             .Select(instance => instance.Plugin.Id)
@@ -111,7 +117,7 @@ public sealed class ComposerPluginCatalog
 
     /// <summary>Every plugin in play on one surface: the surface itself, then the capabilities in play on it.</summary>
     /// <param name="editor">The editor whose document is showing.</param>
-    /// <param name="view">The view showing over that document, which is then the surface in the editor's place, or null while the editor itself is.</param>
+    /// <param name="view">The view showing over that document, which is then the surface in the editor's place.</param>
     public IReadOnlyList<IComposerPlugin> GetSurfacePlugins(IComposerEditorPlugin editor, IComposerViewPlugin? view = null)
     {
         ArgumentNullException.ThrowIfNull(editor);
@@ -119,8 +125,6 @@ public sealed class ComposerPluginCatalog
         return [(IComposerPlugin?)view ?? editor, .. GetFeaturePlugins(editor, view)];
     }
 
-    // What sits at the root reaches every surface; what sits under an editor or a view reaches that surface alone,
-    // so a view showing over an editor's document takes none of what the editor registered.
     private static bool IsInScope(PluginInstance<IComposerPlugin> instance, IComposerPlugin surface)
         => instance.Owner is not { } owner || ReferenceEquals(owner.Plugin, surface);
 

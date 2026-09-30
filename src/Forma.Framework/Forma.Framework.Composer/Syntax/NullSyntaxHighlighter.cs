@@ -1,9 +1,9 @@
 namespace Forma.Framework.Composer.Syntax;
 
-/// <summary>A highlighter classifying nothing, standing in where a host registered none.</summary>
+/// <summary>A syntax highlighter that classifies nothing.</summary>
 public sealed class NullSyntaxHighlighter : IComposerSyntaxHighlighter
 {
-    /// <summary>The one instance, since a highlighter that classifies nothing has no state to vary.</summary>
+    /// <summary>The shared instance.</summary>
     public static NullSyntaxHighlighter Instance { get; } = new();
 
     private NullSyntaxHighlighter()

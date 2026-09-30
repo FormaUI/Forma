@@ -1,6 +1,6 @@
 namespace Forma.Framework.Composer.Editing;
 
-/// <summary>The command names the composer engine handles itself, rather than routing to a plugin.</summary>
+/// <summary>The command names the composer engine handles itself.</summary>
 public static class ComposerCommands
 {
     /// <summary>Steps the document back to the preceding recorded state.</summary>

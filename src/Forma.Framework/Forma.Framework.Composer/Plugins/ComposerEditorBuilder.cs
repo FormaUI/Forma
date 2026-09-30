@@ -3,7 +3,7 @@ namespace Forma.Framework.Composer.Plugins;
 using Forma.Framework.Plugins;
 
 /// <summary>Registers the plugins and views that belong to one editor.</summary>
-/// <typeparam name="TEditor">The editor being described, which decides the defaults it offers.</typeparam>
+/// <typeparam name="TEditor">The editor being described.</typeparam>
 public sealed class ComposerEditorBuilder<TEditor>
     where TEditor : class, IComposerEditorPlugin
 {
@@ -37,7 +37,7 @@ public sealed class ComposerEditorBuilder<TEditor>
         return this;
     }
 
-    /// <summary>Registers a capability this editor creates through the given factory rather than from its constructor.</summary>
+    /// <summary>Registers a capability on this editor, created through the given factory.</summary>
     /// <typeparam name="TPlugin">The plugin the factory creates.</typeparam>
     /// <param name="factory">Creates the plugin for one composer, from the host's services.</param>
     public ComposerEditorBuilder<TEditor> AddFeaturePlugin<TPlugin>(Func<IServiceProvider, TPlugin> factory)

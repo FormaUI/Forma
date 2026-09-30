@@ -12,7 +12,7 @@ public sealed record ComposerContext
     /// <summary>The editor plugin currently rendering.</summary>
     public required IComposerEditorPlugin ActiveEditor { get; init; }
 
-    /// <summary>The view over that editor's document currently showing, or null while the editor itself is.</summary>
+    /// <summary>The view currently showing over the active editor's document, where null is the editor itself.</summary>
     public IComposerViewPlugin? ActiveView { get; init; }
 
     /// <summary>The document as the composer currently holds it.</summary>
@@ -21,10 +21,10 @@ public sealed record ComposerContext
     /// <summary>The caret and range as the browser last reported them.</summary>
     public required ComposerSelection Selection { get; init; }
 
-    /// <summary>Whether the composer takes no interaction at all, which an editor renders as a disabled control.</summary>
+    /// <summary>Whether the composer is disabled.</summary>
     public bool IsDisabled { get; init; }
 
-    /// <summary>Whether the document may be read but not edited.</summary>
+    /// <summary>Whether the document is read-only.</summary>
     public bool IsReadOnly { get; init; }
 
     /// <summary>Whether the composer currently fills the viewport.</summary>
@@ -45,9 +45,9 @@ public sealed record ComposerContext
     /// <summary>The status items and gutter markers plugins have pushed, shared by every editor.</summary>
     public required IComposerRegionRegistry Regions { get; init; }
 
-    /// <summary>The highlighter code classification runs through.</summary>
+    /// <summary>The syntax highlighter that classifies code.</summary>
     public required IComposerSyntaxHighlighter SyntaxHighlighter { get; init; }
 
-    /// <summary>The shortcuts the composer and its plugins answer, which an editor registers on its own editable element.</summary>
+    /// <summary>The key bindings the composer and its plugins answer.</summary>
     public ComposerKeyBindingCatalog KeyBindings { get; init; } = ComposerKeyBindingCatalog.Empty;
 }
