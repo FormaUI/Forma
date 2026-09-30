@@ -1,79 +1,26 @@
 # Forma.Framework.Files
 
-What `Forma.Blazor`'s file components report and track: the file a picker declined and why,
-the file an uploader could not store and what stopped it, and the state of each file in an
-upload run — how far it is, how fast it moves, how long it has left. `FormaFilePicker` and
-`FormaImagePicker` hand a host the `IBrowserFile`s they accepted and a `RejectedFile` for each
-they declined; `FormaFileUploader` moves accepted files into the host's `IFileStore`, tracking
-them in an `UploadBatch`, and reports the `ResourceInfo` each one became or an `UploadFailure`
-for each it could not store. The store and the resource are the contracts of
-[`Forma.Framework.Resources`](../Forma.Framework.Resources/README.md).
+The types `Forma.Blazor`'s file components report and track: a file a picker declined and why, a
+file an uploader could not store and the error that stopped it, and the progress of each file in
+an upload. A host names them in the handlers it gives `FormaFilePicker`, `FormaImagePicker` and
+`FormaFileUploader`.
 
-The assembly ships inside `Forma.Blazor`; nothing is installed or registered for it. Its
-types live in the `Forma.Framework.Files` namespace.
+The assembly ships inside the `Forma.Blazor` package, and its types are in the
+`Forma.Framework.Files` namespace. The store an uploader writes to and the resource each file
+becomes are the contracts of
+[`Forma.Framework.Resources`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Resources/README.md).
 
-## Rejections
+## What the components report
 
 | Type | What it is |
 | --- | --- |
-| `RejectedFile` | The `Name` of a file the picker declined and the `Reason` it was. |
-| `FileRejectionReason` | `DisallowedType`, a type not among those the picker accepts; `TooLarge`, larger than its size limit; `TooManyFiles`, a selection carrying more files than it allows at once. |
+| `RejectedFile` | The `Name` of a file a picker declined and the `Reason` it declined it. |
+| `FileRejectionReason` | `DisallowedType`, a type outside the picker's `Accept`; `TooLarge`, over its `MaxFileSize`; `TooManyFiles`, beyond its `MaxFiles`. |
+| `UploadFailure` | The `Name` of a file whose upload failed and the `Error` that stopped it, thrown by the store while saving it, or while removing it again in a rollback. |
 
-A picker's own `FilePickerOptions` — `Accept`, `MaxFileSize`, `MaxFiles` and `AllowMultipleFiles`
-— set those limits. The picker lists each rejection beneath its drop zone and raises
-`OnFilesRejected` with them; the files that passed arrive through `OnFilesSelected`.
-
-## Failures
-
-`UploadFailure` carries the `Name` of a file whose upload did not complete and the `Error` that
-stopped it: what the store threw while saving it, or, when the uploader rolls back, what went
-wrong removing a file already stored. `FormaFileUploader` raises `OnFailed` once per failure and
-`OnCompleted` once with the resources every stored file became; its own `FileUploaderOptions` say
-whether a failure stops the rest of the set (`StopOnFailure`) and whether it undoes what was
-stored before it (`RollbackOnFailure`).
-
-## An upload run
-
-`UploadBatch` is the set of files of one upload run, in the order they upload, with the run's
-clock and its aggregates:
-
-| Member | What it is |
-| --- | --- |
-| `Files`, `Count`, the indexer | The `UploadFile`s in the set. |
-| `HasPending`, `StartedCount`, `CompletedCount` | Whether any file still waits its turn; how many have begun; how many reached the store. |
-| `TotalBytes`, `BytesTransferred` | How many bytes the set holds and how many have reached the store. |
-| `Elapsed`, `BytesPerSecond`, `EstimatedTimeRemaining` | How long the run has been going or ran; its rate; how long the rest needs at that rate, or null while that cannot be said. |
-| `Add(name, size)`, `Clear()` | Adds a file waiting to upload; empties the set and stops its clock. |
-| `BeginUpload()`, `EndUpload()` | Starts the run's clock; stops it, freezing what it read. |
-| `UpdateFileProgress(index, percent, transferred)` | Records how far one file's transfer has come. |
-| `SetFileState(index, state, percent)` | Moves one file to a state, starting its clock on entering `Uploading` and freezing it on leaving. |
-| `TransitionPendingFiles(startIndex, state)` | Moves every file still pending, from a position on, to a state. |
-
-Each `UploadFile` is a record of `Name` and `TotalBytes` carrying its `State`,
-`ProgressPercentage`, `BytesTransferred`, `StartTimestamp` as a stopwatch timestamp, its
-`Duration` once it stopped, and its own `Elapsed`, `BytesPerSecond` and
-`EstimatedTimeRemaining`.
-
-`UploadState` is where one file has reached:
-
-| State | What it means |
-| --- | --- |
-| `Pending` | Queued, with nothing sent yet. |
-| `Uploading` | Crossing to the store. |
-| `Completed` | Stored. |
-| `Failed` | Stopped by an error, leaving the rest of the set to continue. |
-| `Skipped` | Never attempted, because an earlier file failed and the set stops on failure. |
-| `RolledBack` | Stored, then removed again because another file in the set failed. |
-| `Canceled` | Abandoned because the upload was canceled. |
-
-`FormaFileUploader` keeps one batch per run and draws it as a row per file — state, progress
-bar, and whichever measurements its `FileUploaderOptions` turn on — with totals beneath the
-list and a summary in a live region.
-
-## Example
-
-A picker feeding an uploader, with every outcome handled. The uploader writes through the
-`IFileStore` the host registered, or the one its `Store` parameter names.
+A picker raises `OnFilesRejected` with its rejections and `OnFilesSelected` with the files it
+accepted. `FormaFileUploader` raises `OnFailed` once for each failure and `OnCompleted` with the
+`ResourceInfo` every stored file became.
 
 ```razor
 @using Forma.Blazor.Components.Files
@@ -86,7 +33,6 @@ A picker feeding an uploader, with every outcome handled. The uploader writes th
                  OnFilesRejected="HandleRejected" />
 
 <FormaFileUploader Files="_files"
-                   Options="FileUploaderOptions.Detailed"
                    OnCompleted="HandleCompleted"
                    OnFailed="HandleFailed" />
 
@@ -139,6 +85,34 @@ A picker feeding an uploader, with every outcome handled. The uploader writes th
         => _notes.Add($"{failure.Name} could not be stored: {failure.Error.Message}");
 }
 ```
+
+## Upload progress
+
+`FormaFileUploader` tracks each run in an `UploadBatch`, the files of one upload in the order they
+upload, and draws a row for each `UploadFile` in it.
+
+| Member | What it is |
+| --- | --- |
+| `UploadBatch.Files`, `Count`, the indexer | The files in the run. |
+| `UploadBatch.HasPending`, `StartedCount`, `CompletedCount` | Whether any file still waits; how many have started; how many were stored. |
+| `UploadBatch.TotalBytes`, `BytesTransferred` | The bytes in the run and the bytes stored so far. |
+| `UploadBatch.Elapsed`, `BytesPerSecond`, `EstimatedTimeRemaining` | The run's duration so far, its rate, and the time the rest needs at that rate, or `null` while unknown. |
+| `UploadBatch.Add(name, size)`, `Clear()` | Adds a waiting file; empties the run and resets its clock. |
+| `UploadBatch.BeginUpload()`, `EndUpload()` | Starts and stops the run's clock. |
+| `UploadBatch.SetFileState(index, state, percent)` | Moves one file to a state; entering `Uploading` starts its clock and a later state stops it. |
+| `UploadBatch.UpdateFileProgress(index, percent, transferred)` | Records how far one file's transfer has come. |
+| `UploadBatch.TransitionPendingFiles(startIndex, state)` | Moves every waiting file from a position on to a state. |
+| `UploadFile` | One file's `Name`, `TotalBytes`, `State`, `ProgressPercentage`, `BytesTransferred`, `Elapsed`, `BytesPerSecond` and `EstimatedTimeRemaining`. |
+
+| `UploadState` | What it means |
+| --- | --- |
+| `Pending` | Waiting its turn. |
+| `Uploading` | Moving to the store. |
+| `Completed` | Stored. |
+| `Failed` | Stopped by an error. |
+| `Skipped` | Passed over because an earlier file failed under `FileUploaderOptions.StopOnFailure`. |
+| `RolledBack` | Stored, then removed because another file failed under `FileUploaderOptions.RollbackOnFailure`. |
+| `Canceled` | Abandoned when the upload was canceled. |
 
 ## License
 

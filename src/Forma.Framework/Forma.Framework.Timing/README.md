@@ -1,8 +1,8 @@
 # Forma.Framework.Timing
 
-A debouncer behind a contract, so a surface that reacts to rapid input — a search box, a resize, a
-scroll — runs its work once the input goes quiet, and a test drives the delay on a fake clock
-instead of waiting.
+A debouncer for input that arrives in bursts, such as a search box, a resize or a scroll: the work
+runs once the input has been quiet for a delay, and a later request cancels the one before it.
+The delay is measured on a `TimeProvider`, so a test advances a fake clock to trigger it.
 
 ## Install and register
 
@@ -16,25 +16,24 @@ using Forma.Framework.Timing;
 builder.Services.AddFormaTimingServices();
 ```
 
-That registers `IDebounceable` as a transient `Debouncer`, so every surface that injects one waits
-on its own pending request, and `TimeProvider.System` as a singleton `TimeProvider`. Registration
-uses `TryAdd`, so a host that registered either contract first keeps its own.
-
-## The contract
+`AddFormaTimingServices` registers `IDebounceable` as a transient `Debouncer`, so each consumer
+holds its own pending request, and `TimeProvider.System` as the singleton `TimeProvider`. It
+registers with `TryAdd`, so a service the host registered first is kept.
 
 | Member | What it does |
 | --- | --- |
 | `IDebounceable.DebounceAsync(action, delay, cancellationToken)` | Runs the action once the delay passes with no further request. |
-| `IDebounceable.Cancel()` | Abandons the request still waiting or still running, if any. |
-| `Debouncer.Clock` | The `TimeProvider` the delays are measured on; the system clock unless another is given. |
+| `IDebounceable.Cancel()` | Abandons the request still waiting or running. |
+| `Debouncer.Clock` | The `TimeProvider` the delay is measured on; `TimeProvider.System` by default. |
 
-A later `DebounceAsync` supersedes the one still waiting, and also the one already running: the
-token handed to the action is signaled by a later request, by `Cancel`, and by the caller's own
-token. A request superseded or canceled before it runs completes without running, and a canceled
-action's `OperationCanceledException` completes the request quietly. A zero delay runs the action at
-once.
+The token handed to the action is canceled by a later `DebounceAsync`, by `Cancel` or by the
+caller's token, including while the action runs. A superseded or canceled request completes
+without throwing, and a zero delay runs the action at once.
 
 ## Debouncing a search
+
+The action runs on the thread the delay elapsed on, so a component dispatches its work back to
+the renderer with `InvokeAsync`:
 
 ```csharp
 using Forma.Framework.Timing;
@@ -53,13 +52,10 @@ public sealed partial class ProductSearch : ComponentBase, IDisposable
 }
 ```
 
-The action runs where the delay elapsed rather than where it was requested, so a Blazor component
-dispatches it back onto the renderer with `InvokeAsync`, as above.
+## Testing
 
-## Driving the delay in a test
-
-`Debouncer` measures its delays on `Clock`, so a test hands it a `FakeTimeProvider` from
-`Microsoft.Extensions.TimeProvider.Testing` and advances time instead of waiting for it:
+A test gives the debouncer a `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing`
+and advances it:
 
 ```csharp
 var clock = new FakeTimeProvider();

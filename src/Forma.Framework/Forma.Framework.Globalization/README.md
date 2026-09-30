@@ -1,8 +1,9 @@
 # Forma.Framework.Globalization
 
-Culture routing for an ASP.NET Core application: the request culture comes from the first URL path
-segment, every page has one canonical address per culture, and a `CultureRouter` builds the link
-that addresses any page in any culture. The package references the shared ASP.NET Core framework.
+Culture routing for ASP.NET Core: the first segment of the URL path selects the request culture,
+as in `/he/about`, every page has one canonical address per culture, and `CultureRouter` builds
+the link to any page in any culture. It suits a localized site whose addresses are shared,
+bookmarked and indexed per language.
 
 ## Install and register
 
@@ -31,63 +32,64 @@ app.UseCultureRouting();
 app.UseRouting();
 ```
 
-`AddCultureRouting` validates the options and registers a singleton `CultureRouter`;
-`UseCultureRouting` adds the middleware, which belongs before routing so that endpoints see a path
-with the culture segment already removed. With the options above, `/about` serves English,
-`/he/about` Hebrew and `/es/about` Latin American Spanish.
+`AddCultureRouting` validates the options and registers `CultureRouter` as a singleton.
+`UseCultureRouting` goes before routing, so endpoints see the path with the culture segment
+removed. With these options `/about` serves English, `/he/about` Hebrew and `/es/about` Latin
+American Spanish.
 
-## The options
-
-| Member | What it is |
+| Option | What it is |
 | --- | --- |
-| `CultureRouterOptions.Routes` | Every culture the application serves, in the order they are listed. |
+| `CultureRouterOptions.Routes` | Every culture the application serves, in order. |
 | `CultureRouterOptions.DefaultCulture` | The `Token` of the culture serving a request that names none. |
-| `CultureRouterOptions.Prefix` | `CulturePrefix.Always` (the default) addresses every culture by a token; `CulturePrefix.ExceptDefault` addresses the default culture without one. |
+| `CultureRouterOptions.Prefix` | `CulturePrefix.Always`, the default, puts a token on every culture; `CulturePrefix.ExceptDefault` leaves the default culture without one. |
 | `CultureRoute.Token` | The canonical first path segment selecting the culture. |
-| `CultureRoute.Culture` | The `CultureInfo` applied to a request that selects the route. |
-| `CultureRoute.Aliases` | Tokens that also select the route and redirect to `Token`. |
-| `CultureRoute.HrefLang` | The value emitted in `hreflang` annotations; defaults to `Token`. |
+| `CultureRoute.Culture` | The `CultureInfo` a request that selects the route runs in. |
+| `CultureRoute.Aliases` | Further tokens that select the route and redirect to `Token`. |
+| `CultureRoute.HrefLang` | The value written in `hreflang` annotations; `Token` by default. |
 
-`CultureRouter` throws `ArgumentException` when no route is registered, when `DefaultCulture` is not
-the `Token` of a route (an alias is not enough), when a token contains `/` or is claimed by more than
-one route, or when a route's `HrefLang` is not a language with an optional script and region, such
-as `en`, `en-GB`, `zh-Hant` or `zh-Hant-TW`. A token that is not itself a usable `hreflang` sets
-one explicitly: `new() { Token = "latam", Culture = new("es-419"), HrefLang = "es" }`.
+`CultureRouter` throws `ArgumentException` for options with no route, a `DefaultCulture` that is
+not a route's `Token`, a token containing `/` or claimed by two routes, or an `HrefLang` that is
+not a language with an optional script and region, such as `en`, `en-GB` or `zh-Hant-TW`. A
+token that is not a valid `hreflang` value sets one:
 
-## What the middleware does
+```csharp
+new CultureRoute { Token = "latam", Culture = new("es-419"), HrefLang = "es" }
+```
 
-For a document request, `CultureRoutingMiddleware` matches the first segment against every token
-and alias, applies that route's culture — `CultureInfo.CurrentCulture`,
-`CultureInfo.CurrentUICulture`, the `Content-Language` response header and the
-`IRequestCultureFeature` Blazor reads for an interactive circuit — and forwards the request with the
-culture segment removed. A request whose address is not canonical for the culture it names — an
-alias, a token in the wrong case, a token on the default culture under `ExceptDefault`, or no token
-under `Always` — is redirected with `302 Found` to the canonical address, query string and path base
-included. A first segment that matches no token is left in place, so an unknown culture reaches
-routing as an ordinary path. A path naming a culture in two consecutive segments, such as `/he/en`,
-is answered with `400 Bad Request`.
+## Requests
 
-A served document also receives a `forma-culture` cookie holding the route's token. A request that
-is not a document — one under `/_`, such as the `/_blazor` endpoint, or one whose last segment has
-an extension — takes its culture from that cookie, since its own path carries no segment, and is
-neither redirected nor given a cookie. The cookie never chooses the culture of a document: the URL
-alone does.
+For a page request, the middleware:
+
+- sets `CultureInfo.CurrentCulture`, `CultureInfo.CurrentUICulture`, the `Content-Language`
+  header and the `IRequestCultureFeature` a Blazor interactive circuit reads, from the route the
+  first segment names or the default route;
+- removes the culture segment from the path before routing;
+- redirects with `302 Found` to the canonical address, keeping the path base and query, when the
+  address used an alias, a token in another case, a token on the default culture under
+  `ExceptDefault`, or no token under `Always`;
+- stores the route's token in a `forma-culture` cookie.
+
+A request for a static file, one whose last segment has an extension, or for a framework endpoint
+under `/_`, such as `/_blazor`, takes its culture from that cookie, or from its path when there
+is none, and goes straight on to routing. A first segment that is no token stays in the path, and a path naming cultures in two consecutive segments, such as
+`/he/en`, is answered with `400 Bad Request`.
 
 ## Building links
 
-`CultureRouter` is the registered service a component or page injects to address a culture.
+A page or component injects `CultureRouter` to address a culture:
 
 | Member | What it does |
 | --- | --- |
 | `Routes` | Every route, in registration order. |
 | `DefaultRoute` | The route serving a request that names none. |
-| `CurrentRoute` | The route whose culture is `CultureInfo.CurrentUICulture`, or `DefaultRoute` when none matches. |
-| `GetPath(route, path)` | The `PathString` addressing `route` for a path, stripping any culture segment the path already carries. |
-| `GetUrl(route, relativeUrl)` | The relative URL addressing `route` for a base-relative URL, query string included. |
-| `Match(path)` | The `CultureMatch` for a path: the route it names or the default, the path with the segment removed, the canonical path, and whether the path already is canonical. |
-| `HasConsecutiveCultures(path)` | Whether a path names a culture in two consecutive segments. |
+| `CurrentRoute` | The route of `CultureInfo.CurrentUICulture`, or `DefaultRoute`. |
+| `GetPath(route, path)` | The `PathString` of a path in a route's culture, replacing any culture segment it carries. |
+| `GetUrl(route, relativeUrl)` | A base-relative URL in a route's culture, query string included. |
+| `Match(path)` | The `CultureMatch` of a path: its `Route`, its `Path` without the culture segment, its `CanonicalPath` and whether it `IsCanonical`. |
+| `HasConsecutiveCultures(path)` | Whether a path names cultures in two consecutive segments. |
 
 ```razor
+@using Forma.Framework.Globalization
 @inject CultureRouter Router
 @inject NavigationManager Navigation
 
@@ -100,9 +102,8 @@ alone does.
 }
 ```
 
-`GetPath` keeps a link on the reader's current culture, and `GetUrl` over the current address moves
-the reader to another culture on the same page. `GetPath`, `GetUrl` and `Match` throw
-`ArgumentException` for a path naming consecutive cultures.
+`GetPath` keeps a link in the reader's culture, and `GetUrl` over the current address links the
+same page in another culture.
 
 ## License
 

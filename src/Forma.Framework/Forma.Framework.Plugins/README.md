@@ -1,12 +1,9 @@
 # Forma.Framework.Plugins
 
-A registry for one feature's extensions: what to create, how to configure it, what it sits
-under, and who disposes it. A feature declares its own plugin contract, hands the registry that
-contract as its type argument, and gets registration, construction, ordering and disposal from
-this package rather than writing them again.
-
-Everything here is free of Blazor and of any container, so a feature's registrations and its
-tests need no renderer and no service collection beyond an `IServiceProvider`.
+A plugin registry for a feature that others extend. The feature declares its plugin contract,
+and the registry supplies the rest: registering plugins in order and under one another,
+configuring each through an options record, building every owner its own instances with their
+constructor arguments resolved, and disposing what it built.
 
 ## Install
 
@@ -14,79 +11,89 @@ tests need no renderer and no service collection beyond an `IServiceProvider`.
 dotnet add package FormaUI.NET-Framework.Plugins
 ```
 
-## The contracts
-
 | Type | What it is |
 | --- | --- |
-| `IPlugin` | An extension identified within its owning registry. A feature's own contract derives from it. |
-| `IPluginConfigurable<TOptions>` | Declares the options record a plugin's constructor takes, so a registration naming the wrong pair does not compile. |
-| `PluginRegistry<TPlugin>` | What one owner registers, in order, with whatever each plugin registers in turn. |
-| `PluginScope<TPlugin>` | One owner's constructed plugins, and the disposal of whichever of them it created. |
-| `PluginInstance<TPlugin>` | One constructed plugin, what it was registered under, and who governs how long it lives. |
+| `IPlugin` | An extension with an `Id`, unique among the plugins registered beside it; a feature's contract derives from it. |
+| `IPluginConfigurable<TOptions>` | Declares the options record a plugin's constructor takes. |
+| `PluginRegistry<TPlugin>` | What one owner registers, in order, with whatever each plugin registers under it. |
+| `PluginScope<TPlugin>` | One owner's built plugins, which it disposes. |
+| `PluginInstance<TPlugin>` | One built plugin, its `Owner` in the tree, and whether it `IsAutonomous`, governing its own lifetime. |
+
+## Declaring plugins
+
+A plugin has one public constructor. It takes its options record, other plugins in the same
+registry and the host's services:
+
+```csharp
+using Forma.Framework.Plugins;
+
+public interface IChartPlugin : IPlugin
+{
+    void Draw(Chart chart);
+}
+
+public sealed class GridOptions
+{
+    public int Step { get; set; } = 5;
+}
+
+public sealed class GridPlugin(GridOptions options, LinePlugin line) : IChartPlugin, IPluginConfigurable<GridOptions>
+{
+    public string Id => "grid";
+
+    public void Draw(Chart chart) => chart.DrawGrid(line.Bounds, options.Step);
+}
+```
 
 ## Registering
-
-A registry records what to create rather than what was created, so one description serves every
-owner that activates it and no two owners share a plugin.
 
 ```csharp
 var registry = new PluginRegistry<IChartPlugin>()
     .Add<LinePlugin>(line => line
         .Add<LegendPlugin>()
         .Add<GridPlugin, GridOptions>(options => options.Step = 10))
-    .Add<ExportPlugin>(_ => new ExportPlugin(endpoint))
+    .Add<ExportPlugin>(_ => sharedExporter)
     .TryAdd<TooltipPlugin>();
 ```
 
-- `Add<TImplementation>` registers a plugin built from its constructor, optionally with whatever
-  is registered under it.
-- `Add<TImplementation, TOptions>` registers one that takes options, and fills a fresh options
-  record for every owner that activates the registry.
-- `Add<TImplementation>(factory)` registers one the host creates itself.
-- `TryAdd<TImplementation>` registers a fallback, which is left out when the same owner registers
-  a plugin of that type itself — however early or late the fallback was asked for.
+| Call | What it registers |
+| --- | --- |
+| `Add<TImplementation>(children)` | A plugin built from its constructor, with the plugins `children` registers under it. |
+| `Add<TImplementation, TOptions>(configure, children)` | A plugin that takes options; `configure` fills a new options record each time the registry is activated. |
+| `Add<TImplementation>(factory, children)` | A plugin the host creates from its `IServiceProvider`. |
+| `TryAdd<TImplementation>()` | A fallback, used only when the same registry has no `Add` of that type. |
 
-Registering a type a second time replaces the first registration **where it stood**, dropping
-whatever the replaced one had registered under it, so re-registering one plugin leaves the rest
-in place.
+Registering a type again replaces the earlier registration in its place, together with whatever
+was registered under it.
 
 ## Activating
+
+`Activate` builds the registry's plugins for one owner, in registration order with each plugin
+followed by those under it:
 
 ```csharp
 await using var scope = registry.Activate(services);
 
 foreach (var plugin in scope.Plugins)
 {
-    // …
+    plugin.Draw(chart);
 }
 ```
 
-Activation lays the plugins out in registration order, each followed by whatever sits under it,
-and resolves every constructor parameter in turn from:
+Each constructor parameter is taken from the first of these that supplies it:
 
-1. a plugin registered beside it — so everything naming the same plugin is handed the single
-   instance of it,
-2. the registration's own options record,
-3. the host's services,
+1. a plugin in the same registry, the nearest owner first, as one instance shared by everything
+   that takes it;
+2. the registration's options record;
+3. the host's services;
 4. the parameter's default value.
 
-A parameter none of those can supply, a plugin with more than one public constructor, and a
-cycle between two plugins each throw an `InvalidOperationException` naming the plugin and the
-parameter.
+A parameter none of them supplies, more than one public constructor, or two plugins taking each
+other throws an `InvalidOperationException` that names the plugin. The same type registered in
+two places is two plugins, each with its own options.
 
-The same plugin type registered in two places is two plugins, one per place, each with its own
-options.
-
-## Lifetime
-
-Disposing the scope disposes every plugin it constructed, `IAsyncDisposable` first and
-`IDisposable` otherwise. What a factory supplied is left alone, because a factory answering one
-instance to every owner is the host's to govern; `PluginInstance.IsAutonomous` says which is
-which.
-
-Being a plugin's owner says nothing about disposing it: the tree and the disposal are separate
-questions, so a plugin registered under another may still govern its own lifetime, and one at
-the root may not.
+Disposing the scope disposes every plugin it built, through `IAsyncDisposable` or `IDisposable`.
+A plugin a factory created is autonomous and stays with the host to dispose.
 
 ## License
 

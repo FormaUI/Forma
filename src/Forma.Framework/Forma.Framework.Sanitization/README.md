@@ -1,8 +1,8 @@
 # Forma.Framework.Sanitization
 
-An HTML sanitizer for rich content a reader authored, with no external dependency. The sanitizer
-keeps what a markup policy allows and removes everything else, so a document from an editor or a
-paste can be rendered as raw markup.
+An allowlist HTML sanitizer for content people author, such as a rich text editor's output or a
+pasted document, so the application can render it as markup. It keeps what a markup policy
+permits and removes the rest, and it depends on nothing beyond .NET itself.
 
 ## Install and register
 
@@ -16,25 +16,21 @@ using Forma.Framework.Sanitization;
 builder.Services.AddFormaSanitizationServices();
 ```
 
-That registers `IMarkupPolicy` as `RichContentMarkupPolicy.Default` and `IHtmlSanitizer` as
-`AllowlistHtmlSanitizer`, both singletons. Registration uses `TryAdd`, and the two register
-separately, so a host narrowing what its documents may carry registers its own `IMarkupPolicy`
-first and keeps the sanitizer.
-
-## The contracts
+`AddFormaSanitizationServices` registers `IMarkupPolicy` as `RichContentMarkupPolicy.Default` and
+`IHtmlSanitizer` as `AllowlistHtmlSanitizer`, both singletons, each with `TryAdd`, so a policy the
+host registered first is the one the sanitizer applies.
 
 | Member | What it is |
 | --- | --- |
-| `IHtmlSanitizer.Sanitize(html)` | Returns the content with disallowed markup removed; blank input returns an empty string. |
-| `IHtmlSanitizer.MarkupPolicy` | The policy a document sanitized by this instance is judged by. |
-| `IMarkupPolicy.Allows(subject, value, owner, out canonical)` | Whether a subject is permitted, and the spelling to write it with, or `null` to keep the one given. |
-| `HtmlSubject` | What a policy is asked about: `Element`, `ElementContent`, `Attribute`, `StyleProperty`, `StyleDeclaration`, `Url`. |
+| `IHtmlSanitizer.Sanitize(html)` | The HTML with everything its policy refuses removed; an empty string for blank input. |
+| `IHtmlSanitizer.MarkupPolicy` | The policy the sanitizer applies. |
+| `IMarkupPolicy.Allows(subject, value, owner, out canonical)` | Whether a subject is permitted, and the spelling to write it in, or `null` to keep the one given. |
+| `HtmlSubject` | What a policy is asked about: `Element`, `ElementContent`, `Attribute`, `StyleProperty`, `StyleDeclaration` or `Url`. |
 
-`AllowlistHtmlSanitizer` implements `IHtmlSanitizer` over any policy; its parameterless constructor
-applies `RichContentMarkupPolicy.Default`, and `AllowlistHtmlSanitizer(IMarkupPolicy)` applies the
-one given.
+`AllowlistHtmlSanitizer` can also be created directly: with no argument it applies
+`RichContentMarkupPolicy.Default`, and with an `IMarkupPolicy` it applies that one.
 
-## Sanitizing a document
+## Sanitizing
 
 ```csharp
 using Forma.Framework.Sanitization;
@@ -59,40 +55,37 @@ sanitizer.Sanitize("<P CLASS=\"lead\">Text<br></br></P>");
 // "<p class=\"lead\">Text<br /></p>"
 ```
 
-## What every policy gets
-
-Whatever the policy says, the sanitizer removes an attribute whose name starts with `on`, drops
-comments, doctypes and processing instructions, removes an element the policy refuses the content
-of together with everything inside it, leaves a lone `<` that opens no tag as text, writes a void
-element such as `br` or `img` self-closed and drops its closing tag, and re-escapes every kept
-attribute value rather than passing it through. A `style` attribute is kept only while at least one
-of its declarations is allowed.
+Under any policy, the sanitizer drops event handler attributes, those whose name starts with
+`on`, along with comments, doctypes and processing instructions; removes an element whose content
+the policy refuses together with that content; writes void elements such as `br` and `img`
+self-closed; and re-escapes every attribute value it keeps. A `style` attribute is kept while at
+least one of its declarations is permitted.
 
 ## The default policy
 
-`RichContentMarkupPolicy` allows the markup a rich text editor produces and nothing else:
+`RichContentMarkupPolicy` permits the markup a rich text editor produces:
 
-- **Elements** — text structure and inline formatting, lists, links, images, video and audio,
-  tables, and the grouping elements a document is laid out with. An element that scripts, styles
-  or embeds — `script`, `style`, `iframe`, `object`, `svg` among them — is removed with its content.
-- **Attributes** — on those elements, the attributes that describe content rather than behavior:
-  identity and language on any element, the address and target of a link, the source and
-  dimensions of media, the shape of a table cell, and any `data-` attribute.
-- **Inline styles** — color, typography, alignment, spacing, borders and size, plus any custom
-  property named `--forma-`. A declaration that could load or run anything — `url(`,
-  `javascript:`, `expression(`, `@import`, `behavior:` — is dropped.
-- **URLs** — `http`, `https`, `mailto` and `tel`, a path relative to the document, a fragment, and
-  a `data:` URL carrying a raster image. Everything else, an SVG data URL included, is refused.
+- **Elements**: headings, paragraphs, quotes and code; inline formatting; line breaks and rules;
+  lists; links; images, video and audio; tables; `span`, `div`, `details`, `summary`, `figure` and
+  `figcaption`.
+  `script`, `style`, `iframe`, `object`, `svg`, `math`, `noscript`, `template`, `applet` and
+  `frameset` are removed with their content.
+- **Attributes**: `class`, `id`, `style`, `dir`, `title` and `lang` on any element; the address,
+  target and relation of a link; the source and dimensions of media; the span and scope of a table
+  cell; a list's numbering; and any `data-` attribute.
+- **Inline styles**: color, font, text alignment and decoration, line height, margin, padding,
+  border and size, and any custom property starting with `--forma-`. A declaration containing
+  `url(`, `javascript:`, `expression(`, `@import` or `behavior:` is dropped.
+- **URLs**: `http`, `https`, `mailto` and `tel`; a path starting with `/`, `./` or `../`; a
+  fragment; and a `data:` URL carrying a PNG, JPEG, GIF, WebP or AVIF image.
 
-`RichContentMarkupPolicy` itself is the authority on each list. A kept element, attribute and
-style property is written in the policy's lowercase spelling; a `data-` attribute and a
-`--forma-` property keep the spelling they were written with.
+Elements, attributes and style properties are written in lowercase; a `data-` attribute and a
+`--forma-` property keep the spelling they were written in.
 
 ## Writing a policy
 
-A host whose documents may carry less, or different, markup implements `IMarkupPolicy` and answers
-per subject. This policy keeps the default rules for everything but elements, and permits only the
-inline ones:
+A host whose documents carry different markup implements `IMarkupPolicy`. This one permits only
+inline elements and defers everything else to the default policy:
 
 ```csharp
 using Forma.Framework.Sanitization;
