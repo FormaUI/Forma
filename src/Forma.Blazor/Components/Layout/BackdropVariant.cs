@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Layout;
 
-/// <summary>The look a <see cref="FormaBackdrop"/> takes. Every backdrop has exactly one, and none draws a line.</summary>
+/// <summary>The look a <see cref="FormaBackdrop"/> takes.</summary>
 public enum BackdropVariant
 {
     /// <summary>A backdrop lying in its parent, told apart from the backdrop beside it by tone alone.</summary>

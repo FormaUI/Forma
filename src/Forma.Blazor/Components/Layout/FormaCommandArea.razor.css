@@ -1,7 +1,7 @@
 /* ============================================================
    FormaCommandArea — CSS isolation
-   The region alone: a strip set back into its backdrop, and the
-   stack its bars sit in. What fills a bar is the caller's.
+   A strip set back into its backdrop, holding a stack of
+   command bars.
    ============================================================ */
 
 .forma-command-area {

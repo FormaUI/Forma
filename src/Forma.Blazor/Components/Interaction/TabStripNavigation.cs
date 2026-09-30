@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Interaction;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
 
-/// <summary>The keys a strip of tabs is walked by, under one owner: the arrow along the reading direction to the next tab, the one against it to the previous, and Home and End to either end, wrapping around.</summary>
+/// <summary>The keys a strip of tabs is walked by under one owner: the arrows along and against the reading direction, and Home and End.</summary>
 /// <param name="owner">The owner the strip's actions are qualified under.</param>
 internal sealed class TabStripNavigation(string owner)
 {
@@ -25,7 +25,7 @@ internal sealed class TabStripNavigation(string owner)
             ],
         };
 
-    /// <summary>The index <paramref name="action"/> moves to from <paramref name="current"/> among <paramref name="count"/> tabs, or <see langword="null"/> when the strip is empty or the action is not one of the strip's.</summary>
+    /// <summary>The index <paramref name="action"/> moves to from <paramref name="current"/> among <paramref name="count"/> tabs.</summary>
     public int? FindTarget(string action, int current, int count)
     {
         ArgumentNullException.ThrowIfNull(action);

@@ -9,7 +9,8 @@ using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A tabbed panel showing one <see cref="FormaTab"/> at a time, its tabs walked by the arrow keys, Home and End and selected by Enter or Space.</summary>
+/// <summary>A tabbed panel showing one <see cref="FormaTab"/> at a time.</summary>
+/// <remarks>The arrow keys, Home and End move focus along the strip, wrapping at either end, and Enter or Space selects the focused tab.</remarks>
 public sealed partial class FormaTabs : FormaElementBase
 {
     private static readonly TabStripNavigation Navigation = new("tabs");
@@ -30,10 +31,10 @@ public sealed partial class FormaTabs : FormaElementBase
     /// <summary>The <see cref="FormaTab"/> children this panel switches between.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    /// <summary>The identifier of the selected tab, which hands the caller control of which tab is active. Every tab must carry a <see cref="FormaTab.TabId"/> once this or <see cref="ActiveTabIdChanged"/> is set.</summary>
+    /// <summary>The identifier of the active tab, where <see langword="null"/> leaves the panel to track the active tab itself.</summary>
     [Parameter] public string? ActiveTabId { get; set; }
 
-    /// <summary>Callback invoked with the identifier of the tab the user picked.</summary>
+    /// <summary>Raised with the identifier of the tab the reader selects.</summary>
     [Parameter] public EventCallback<string> ActiveTabIdChanged { get; set; }
 
     /// <summary>The accessible name of the tab strip.</summary>
@@ -74,7 +75,7 @@ public sealed partial class FormaTabs : FormaElementBase
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(_tabList, CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile);
 
-    // Moves focus to the tab the strip's action names, counted from the focused one and wrapping at either end, without selecting it.
+    // Moves focus to the tab the action names, counted from the focused one, without selecting it.
     private async Task HandleStripActionAsync(string action, InputInfo input)
     {
         if (FocusableTab is not { } focusable || Navigation.FindTarget(action, _tabs.IndexOf(focusable), _tabs.Count) is not { } target)
@@ -111,8 +112,6 @@ public sealed partial class FormaTabs : FormaElementBase
     internal bool IsActive(FormaTab tab)
         => ActiveTabId is null ? tab == ActiveTab : tab.EffectiveTabId == ActiveTabId;
 
-    // The identifier a tab generates for itself belongs to that one component instance, so a caller
-    // selecting by identifier could neither name the tab it wants nor recognize the one handed back.
     private void RequireTabId(FormaTab tab)
     {
         if (tab.TabId is null && (ActiveTabId is not null || ActiveTabIdChanged.HasDelegate))
@@ -126,7 +125,7 @@ public sealed partial class FormaTabs : FormaElementBase
 
     internal static string GetPanelElementId(FormaTab tab) => tab.Id ?? $"panel-{tab.EffectiveTabId}";
 
-    // A controlled caller owns the selection, so it may reject the change rather than apply it.
+    // A controlled caller applies the selection itself through ActiveTabId.
     private async Task SelectTabAsync(FormaTab tab)
     {
         _focusedTab = tab;

@@ -8,22 +8,22 @@ public sealed record FreezePaneOptions
     /// <summary>The axis the content scrolls along.</summary>
     public ScrollAxis Axis { get; init; } = ScrollAxis.Inline;
 
-    /// <summary>What moves the content: the browser's scrollbar, or arrows shown only where there is somewhere to go.</summary>
+    /// <summary>What moves the content.</summary>
     public ScrollNavigation Navigation { get; init; } = ScrollNavigation.Scrollbar;
 
-    /// <summary>Scrolls inline content with a wheel turned anywhere over the pane, keeping the turn from the page while the pointer stays there.</summary>
+    /// <summary>Whether a wheel turned over the pane scrolls its inline content, holding the turn from the page.</summary>
     public bool PageOnWheelGesture { get; init; } = true;
 
-    /// <summary>Lets the viewport scroll along the other axis too, for content that outgrows the pane both ways; off, panning along that axis stays with the page.</summary>
+    /// <summary>Whether the viewport scrolls along the other axis too.</summary>
     public bool ScrollsCrossAxis { get; init; }
 
-    /// <summary>Accessible name for the arrow scrolling toward the start, replacing the pane's own.</summary>
+    /// <summary>The accessible name of the arrow scrolling toward the start, where <see langword="null"/> is the pane's own.</summary>
     public string? ScrollBackLabel { get; init; }
 
-    /// <summary>Accessible name for the arrow scrolling toward the end, replacing the pane's own.</summary>
+    /// <summary>The accessible name of the arrow scrolling toward the end, where <see langword="null"/> is the pane's own.</summary>
     public string? ScrollForwardLabel { get; init; }
 
-    /// <summary>Accessible name for the draggable edge of the frozen region, replacing the pane's own.</summary>
+    /// <summary>The accessible name of the draggable edge of the frozen region, where <see langword="null"/> is the pane's own.</summary>
     public string? FrozenEdgeLabel { get; init; }
 
     /// <summary>Inline scrolling by the scrollbar, with the pane's own arrow names.</summary>

@@ -1,8 +1,6 @@
 /* ============================================================
    FormaStackLayout — CSS isolation
-   Backdrops along one axis, one seam apart. The seam is one
-   spacing step of the parent showing between them; a splitter
-   placed between two backdrops is told the seam so it stands in it.
+   Backdrops along one axis, one seam apart.
    ============================================================ */
 
 .forma-stack-layout {

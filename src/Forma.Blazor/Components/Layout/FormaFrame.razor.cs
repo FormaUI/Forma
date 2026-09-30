@@ -6,7 +6,12 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A raised backdrop with a box of its own. It stands in its layout until it is given a placement or maximized; then it stands in the viewport within its bounds, moved by its drag region and the arrow keys, resized at its edges and with Shift, and maximized to fill its bounds. Presented by a parent that says so, it drives that parent's box instead. It can be hidden with its content kept, or disabled.</summary>
+/// <summary>A raised backdrop with a box of its own that the reader can move, resize and maximize within its bounds.</summary>
+/// <remarks>
+/// The frame stands in its layout until it is given a placement or maximized; then it stands in the viewport within its
+/// bounds, moved by its drag region and the arrow keys and resized at its edges and with Shift and the arrow keys. Under a
+/// cascaded <see cref="FrameBox.Parent"/>, it drives the box of the parent that presents it.
+/// </remarks>
 public sealed partial class FormaFrame : FormaElementBase
 {
     /// <summary>The class the resize handles carry, one per edge and corner.</summary>
@@ -24,16 +29,16 @@ public sealed partial class FormaFrame : FormaElementBase
     private DotNetObjectReference<FormaFrame> _selfReference = default!;
     private FrameAttachment? _attachment;
 
-    /// <summary>The name the drag region announces the frame by; unset, it is announced as the frame.</summary>
+    /// <summary>The name the drag region announces the frame by, where <see langword="null"/> is "the frame".</summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>The region a drag moves the frame by, which takes the arrow keys while focused.</summary>
     [Parameter] public RenderFragment? DragRegion { get; set; }
 
-    /// <summary>What the frame holds.</summary>
+    /// <summary>The content the frame holds.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Where the frame stands and how large it is; unset, it stands in its layout.</summary>
+    /// <summary>Where the frame stands and how large it is, where <see langword="null"/> stands it in its layout.</summary>
     [Parameter] public FramePlacement? Placement { get; set; }
 
     /// <summary>Raised when the reader moves or resizes the frame, and once when it is first measured.</summary>
@@ -42,7 +47,7 @@ public sealed partial class FormaFrame : FormaElementBase
     /// <summary>Whether the frame fills its bounds.</summary>
     [Parameter] public bool Maximized { get; set; }
 
-    /// <summary>Whether the frame is held where it is: neither moved, resized nor maximized.</summary>
+    /// <summary>Whether the frame is held at its placement and size.</summary>
     [Parameter] public bool Locked { get; set; }
 
     // The parent that presents the frame cascades Parent; the frame cascades Self to what it holds.
@@ -51,10 +56,10 @@ public sealed partial class FormaFrame : FormaElementBase
     /// <summary>What the reader may do to the frame, how far, and where it is held.</summary>
     [Parameter] public FrameOptions Options { get; set; } = FrameOptions.Default;
 
-    /// <summary>Whether the frame is out of its presentation, its content kept.</summary>
+    /// <summary>Whether the frame is hidden.</summary>
     [Parameter] public bool Hidden { get; set; }
 
-    /// <summary>Whether the frame is disabled: it takes no input and reads as inactive.</summary>
+    /// <summary>Whether the frame is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     // The frame has a box to move once it stands in the viewport, or while it drives the parent that presents it.
@@ -79,7 +84,6 @@ public sealed partial class FormaFrame : FormaElementBase
     private string Name
         => Label ?? L["the frame"];
 
-    // The drag region takes the arrow keys while the frame can move or resize, and says so.
     private Dictionary<string, object>? DragRegionAttributes
     {
         get
@@ -153,7 +157,7 @@ public sealed partial class FormaFrame : FormaElementBase
         }
     }
 
-    /// <summary>Takes the box's placement as the browser reports it, after a drag, a keyboard step, or the first measurement.</summary>
+    /// <summary>Takes the box's placement as the browser reports it.</summary>
     [JSInvokable]
     public Task ReportPlacementAsync(double left, double top, double width, double height)
         => InvokeAsync(async () =>
@@ -184,8 +188,7 @@ public sealed partial class FormaFrame : FormaElementBase
             .Add("is-movable", IsMovable)
             .Add("is-disabled", Disabled);
 
-    // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
-    // as logical insets.
+    // The placement is written as physical left and top, as the pointer's viewport coordinates are.
     /// <inheritdoc />
     protected override void BuildRootStyle(CssStyleBuilder builder)
     {

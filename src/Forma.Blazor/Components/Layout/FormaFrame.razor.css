@@ -1,8 +1,7 @@
 /* ============================================================
    FormaFrame — CSS isolation
-   A raised backdrop with a box of its own: it takes the room its
-   layout gives it, or stands in the viewport once placed or
-   maximized, moved by its drag region and resized at its handles.
+   A raised backdrop with a box of its own, moved by its drag
+   region and resized at its handles.
    ============================================================ */
 
 .forma-frame {
@@ -22,9 +21,8 @@
     opacity: var(--inactive-opacity);
 }
 
-/* Placed or maximized, the frame leaves its layout and stands in the viewport, the margin its layout gave it reset so
-   the box is where the placement says. Its sides are physical, as the placement the script writes is, so the box is
-   the same in either reading direction. */
+/* Placed or maximized, the frame stands in the viewport with its margin reset, at the physical sides the placement
+   the script writes gives it in either reading direction. */
 .forma-frame.has-placement,
 .forma-frame.is-maximized {
     position: fixed;
@@ -77,9 +75,8 @@
     box-shadow: var(--focus-ring-inset);
 }
 
-/* The handles are invisible strips over the edges and squares over the corners. Their sides are physical — left is
-   the screen's left in either reading direction — because the pointer's travel that drives them is physical too,
-   and the edge each handle names is the one its drag pulls. */
+/* The handles are invisible strips over the edges and squares over the corners, on physical sides in either reading
+   direction, as the pointer travel that drives them is; the edge each handle names is the one its drag pulls. */
 .forma-frame-handle {
     position: absolute;
     touch-action: none;

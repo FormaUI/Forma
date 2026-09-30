@@ -13,7 +13,7 @@ public sealed record FrameBounds
     /// <summary>The browser's visible content area.</summary>
     public static FrameBounds Viewport { get; } = new(element: null);
 
-    /// <summary>The element the frame is held within, or <see langword="null"/> for the viewport.</summary>
+    /// <summary>The element the frame is held within, where <see langword="null"/> is the viewport.</summary>
     public ElementReference? Element { get; }
 
     /// <summary>The region of one element of the page.</summary>

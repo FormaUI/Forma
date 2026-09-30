@@ -1,8 +1,7 @@
 /* ============================================================
    FormaFreezePane — CSS isolation
-   A scroll box along one axis; its frozen parts stay at the
-   start, and in the arrow form an arrow floats at each end
-   only while the content can still move that way.
+   A scroll box along one axis whose frozen parts stay at its
+   start, moved by its scrollbar or by an arrow at each end.
    ============================================================ */
 
 .forma-freeze-pane {
@@ -56,7 +55,7 @@
     scroll-snap-align: start;
 }
 
-/* The arrows drive the content, so a scrollbar would be a second control for the same thing. */
+/* The arrow form hides the scrollbar. */
 .forma-freeze-pane-arrows > .forma-freeze-pane-viewport {
     scrollbar-width: none;
 }
@@ -80,10 +79,8 @@
     inset-block-start: var(--forma-freeze-pane-frozen-offset);
 }
 
-/* The arrows sit in the flow at either end of the viewport as a strip across it: the full
-   width along the block axis, the full height along the inline one. With frozen columns both inline arrows stand
-   in the band of the frozen corner instead, as tall as it is, and the back arrow floats at the end of the frozen
-   region over the frozen part that ends there. */
+/* The arrows are strips across the viewport at either end of it. With frozen columns both inline arrows stand in the
+   band of the frozen corner, as tall as it is, and the back arrow floats at the end of the frozen region. */
 ::deep .forma-freeze-pane-arrow {
     flex-shrink: 0;
     align-self: stretch;
@@ -114,8 +111,7 @@
     inset-inline-start: calc(var(--forma-freeze-pane-frozen-extent) - var(--target-size-sm));
 }
 
-/* Once content has slid beneath the frozen region, the region casts a shadow onto it: a fade from its edge, the full
-   extent of the pane across the axis, and nothing while the content is at its start. */
+/* Once content has slid beneath the frozen region, the region casts a shadow fading from its edge onto it. */
 .forma-freeze-pane.has-frozen.is-scrolled::after {
     content: "";
     position: absolute;
@@ -141,8 +137,8 @@
     background: linear-gradient(to bottom, var(--shadow-color), transparent);
 }
 
-/* The frozen region's edge is a splitter standing over the seam between the frozen parts and the scrolling content,
-   the full height of the viewport; the splitter centers itself on the seam it is given. */
+/* The frozen region's edge is a splitter over the seam between the frozen parts and the scrolling content, the full
+   height of the viewport. */
 .forma-freeze-pane-inline.has-frozen > ::deep .forma-freeze-pane-edge {
     position: absolute;
     z-index: 2;

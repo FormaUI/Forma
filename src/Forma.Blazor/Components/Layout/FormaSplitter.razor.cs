@@ -26,7 +26,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     private static readonly InputProfile VerticalRightToLeftProfile = CreateProfile(grow: "ArrowLeft", shrink: "ArrowRight");
     private static readonly InputProfile HorizontalProfile = CreateProfile(grow: "ArrowDown", shrink: "ArrowUp");
 
-    /// <summary>The size of the pane the splitter governs, in whatever unit the caller works in.</summary>
+    /// <summary>The size of the pane the splitter governs, in the caller's unit.</summary>
     [Parameter] public double Value { get; set; }
 
     /// <summary>Raised as the splitter is dragged or keyed, with the clamped size.</summary>
@@ -41,16 +41,16 @@ public sealed partial class FormaSplitter : FormaElementBase
     /// <summary>How much one arrow key moves the divider.</summary>
     [Parameter] public double Step { get; set; } = 1;
 
-    /// <summary>How many pixels one unit of Value spans. Defaults to 16, so a caller sizing in rem needs no conversion.</summary>
+    /// <summary>The pixels one unit of <see cref="Value"/> spans.</summary>
     [Parameter] public double PixelsPerUnit { get; set; } = 16;
 
     /// <summary>Which way the bar runs, and so which axis it is dragged along.</summary>
     [Parameter] public SplitterOrientation Orientation { get; set; } = SplitterOrientation.Vertical;
 
-    /// <summary>Accessible name for the divider; what it resizes decides the wording.</summary>
+    /// <summary>The accessible name of the divider.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>Raised when a drag starts and again when it ends, so a host can suppress selection while it runs.</summary>
+    /// <summary>Raised with whether a drag is resizing the pane, when the drag starts and when it ends.</summary>
     [Parameter] public EventCallback<bool> OnResizingChanged { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -95,7 +95,6 @@ public sealed partial class FormaSplitter : FormaElementBase
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(RootElement, Profile);
 
-    // Moves the divider as the action says: a step either way, or to either bound; a press on the bar begins a resize.
     private async Task HandleBarActionAsync(string action, InputInfo input)
     {
         if (action == ResizeAction && input is InputPointerInfo press)
@@ -120,7 +119,7 @@ public sealed partial class FormaSplitter : FormaElementBase
         }
     }
 
-    // The rest of the resize rides the pointer captured here, as a drag's does.
+    // The pointer captured here delivers the rest of the resize.
     private async Task BeginResizeAsync(InputPointerInfo press)
     {
         _isResizing = true;

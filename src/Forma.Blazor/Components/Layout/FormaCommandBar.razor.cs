@@ -5,22 +5,22 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>One bar of commands on a scrollable track, with an arrow at whichever end the commands still continue past.</summary>
+/// <summary>One bar of commands on a scrollable track, with an arrow at each end the commands continue past.</summary>
 public sealed partial class FormaCommandBar : FormaElementBase
 {
     /// <summary>The bar's commands.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Content pinned past the end of the track, staying put while the commands scroll.</summary>
+    /// <summary>The content pinned past the end of the track.</summary>
     [Parameter] public RenderFragment? TrailingContent { get; set; }
 
-    /// <summary>How the bar's track scrolls; the track is always inline and always moved by arrows.</summary>
+    /// <summary>How the bar's inline, arrow-driven track scrolls.</summary>
     [Parameter] public FreezePaneOptions Options { get; set; } = FreezePaneOptions.Arrows;
 
-    /// <summary>Hides the bar while keeping it mounted, so its track keeps its position and its attached behaviors across toggles.</summary>
+    /// <summary>Whether the bar is hidden, kept mounted with its track's position and behaviors.</summary>
     [Parameter] public bool Hidden { get; set; }
 
-    /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
+    /// <summary>Whether the bar animates between hidden and shown.</summary>
     [Parameter] public bool Animated { get; set; }
 
     private FreezePaneOptions TrackOptions

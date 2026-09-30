@@ -4,13 +4,13 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A region of the page. Its <see cref="Variant"/> decides its look: flat, raised, inset or canvas. It draws no line.</summary>
+/// <summary>A region of the page in the look its <see cref="Variant"/> names.</summary>
 public sealed partial class FormaBackdrop : FormaElementBase
 {
     /// <summary>The look the backdrop takes: flat, raised, inset or canvas.</summary>
     [Parameter] public BackdropVariant Variant { get; set; } = BackdropVariant.Flat;
 
-    /// <summary>What the backdrop holds.</summary>
+    /// <summary>The content the backdrop holds.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <inheritdoc />

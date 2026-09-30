@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Layout;
 
-/// <summary>The element a <see cref="FormaFrame"/> writes its position and size to, cascaded to the frame by the parent that presents it; the frame cascades <see cref="Self"/> on to what it holds.</summary>
+/// <summary>The element a <see cref="FormaFrame"/> writes its position and size to.</summary>
+/// <remarks>The parent that presents a frame cascades its box to the frame, and the frame cascades <see cref="Self"/> on to what it holds.</remarks>
 public enum FrameBox
 {
     /// <summary>The frame's own element, which stands in the viewport once it has a placement or is maximized.</summary>

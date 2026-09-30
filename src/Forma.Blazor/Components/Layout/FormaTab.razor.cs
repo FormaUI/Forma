@@ -10,13 +10,13 @@ public sealed partial class FormaTab : FormaElementBase
 {
     [CascadingParameter] private FormaTabs Parent { get; set; } = default!;
 
-    /// <summary>The tab header's text.</summary>
+    /// <summary>The tab's title, shown in its header.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = "";
 
-    /// <summary>A glyph shown before the title.</summary>
+    /// <summary>The icon shown before the title.</summary>
     [Parameter] public Icon? Icon { get; set; }
 
-    /// <summary>The identifier a controlled parent selects this tab by, required once the parent selects by identifier. A generated one stands in otherwise.</summary>
+    /// <summary>The identifier the parent selects this tab by, where <see langword="null"/> is one generated for the tab.</summary>
     [Parameter] public string? TabId { get; set; }
 
     /// <summary>Whether the tab's header sits at the far end of the strip, after every leading tab.</summary>
@@ -25,7 +25,7 @@ public sealed partial class FormaTab : FormaElementBase
     /// <summary>The tab's panel content.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    /// <summary>The identifier actually in force, whether the caller supplied it or not.</summary>
+    /// <summary>The identifier the tab is selected by.</summary>
     internal string EffectiveTabId => TabId ?? Context.RuntimeId.ToString("N");
 
     /// <inheritdoc />

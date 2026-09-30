@@ -1,8 +1,7 @@
 /* ============================================================
    FormaChrome — CSS isolation
-   The chrome inside a frame: a title bar, an optional header
-   band, the body, an optional footer band; the body scrolls on
-   its own.
+   The chrome inside a frame: a title bar, a header band, the
+   body and a footer band.
    ============================================================ */
 
 .forma-chrome-titlebar {

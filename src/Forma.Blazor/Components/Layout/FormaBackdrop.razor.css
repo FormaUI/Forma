@@ -1,7 +1,7 @@
 /* ============================================================
    FormaBackdrop — CSS isolation
    A region of the page in one of the BackdropVariant looks: flat,
-   raised, inset or canvas. What it holds fills it.
+   raised, inset or canvas.
    ============================================================ */
 
 .forma-backdrop {
@@ -33,7 +33,7 @@
     background: var(--backdrop-inset-bg-color);
 }
 
-/* One spacing step of canvas shows around what stands on it, the same step a stack layout shows between them. */
+/* One spacing step of canvas shows around what stands on it. */
 .forma-backdrop-canvas {
     padding: var(--space-1);
     background: var(--backdrop-canvas-bg-color);

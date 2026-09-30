@@ -5,7 +5,7 @@ using Forma.Blazor.Models;
 /// <summary>What the reader may do to a <see cref="FormaFrame"/> from its drag region and edges, how far, and where it is held.</summary>
 public sealed record FrameOptions
 {
-    /// <summary>The defaults: movable and resizable, held within the viewport, with no limits of its own.</summary>
+    /// <summary>The default options: movable and resizable within the viewport.</summary>
     public static FrameOptions Default { get; } = new();
 
     /// <summary>Whether the frame can be moved by its drag region and the arrow keys.</summary>
@@ -14,10 +14,10 @@ public sealed record FrameOptions
     /// <summary>Whether the frame can be resized at its edges and corners, and with Shift and the arrow keys.</summary>
     public bool Resizable { get; init; } = true;
 
-    /// <summary>The smallest the frame can be resized to; unset, the stylesheet's minimum holds.</summary>
+    /// <summary>The smallest size the frame can be resized to, where <see langword="null"/> is the stylesheet's minimum.</summary>
     public Size? MinResizeSize { get; init; }
 
-    /// <summary>The largest the frame can be resized to; unset, its bounds are the limit.</summary>
+    /// <summary>The largest size the frame can be resized to, where <see langword="null"/> is the size of its bounds.</summary>
     public Size? MaxResizeSize { get; init; }
 
     /// <summary>The region the frame is moved, resized, restored and maximized within.</summary>

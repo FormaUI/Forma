@@ -1,9 +1,7 @@
 /* ============================================================
    FormaSplitter — CSS isolation
-   An invisible hit area standing over the seam the layout
-   draws, taking no room of its own, that reveals an accent
-   grip on that seam on hover, focus, or while dragging, in
-   either orientation.
+   An invisible hit area over the seam the layout draws, with an
+   accent grip on that seam shown on hover, focus and drag.
    ============================================================ */
 
 .forma-splitter {
@@ -15,7 +13,7 @@
     justify-content: center;
     background: transparent;
     border: none;
-    /* The divider owns its axis outright; without this a touch drag scrolls the page instead. */
+    /* A touch drag on the divider resizes the pane, holding the drag from the page's scroll. */
     touch-action: none;
 }
 
@@ -50,7 +48,7 @@
     block-size: var(--forma-splitter-grip-thickness, 3px);
 }
 
-/* A deliberate pause before the accent appears, so sweeping across the divider does not flash it. */
+/* The accent appears on hover after a pause. */
 @media (hover: hover) {
     .forma-splitter:hover .forma-splitter-grip {
         background: var(--forma-splitter-color, var(--primary-color));
@@ -64,7 +62,7 @@
     transition-delay: 0s;
 }
 
-/* Focus thickens the grip instead: an outline on something this thin draws as stray parallel lines rather than a ring. */
+/* Focus thickens the grip in place of an outline. */
 .forma-splitter:focus-visible {
     outline: none;
 }
@@ -77,7 +75,7 @@
     block-size: calc(var(--forma-splitter-grip-thickness, 3px) + 2px);
 }
 
-/* Forced colors drop the fill, so the ring comes back where it is the only thing left to see. */
+/* In forced colors, which drop the grip's fill, focus draws a ring. */
 @media (forced-colors: active) {
     .forma-splitter:focus-visible {
         outline: 2px solid Highlight;

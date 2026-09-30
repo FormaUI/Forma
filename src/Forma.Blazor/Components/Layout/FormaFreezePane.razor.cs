@@ -8,13 +8,18 @@ using Forma.Framework.Input.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A scroll box whose content moves along one axis while the parts marked <see cref="FrozenClass"/> stay at its start, moved by the scrollbar or by an arrow at each end shown only while there is somewhere to go; parts marked <see cref="StopClass"/> are where the content comes to rest.</summary>
+/// <summary>A scroll box whose content moves along one axis while the parts marked <see cref="FrozenClass"/> stay at its start.</summary>
+/// <remarks>
+/// The content is moved by the scrollbar, or by an arrow at each end shown while the content can still move that way.
+/// Parts marked <see cref="StopClass"/> are where the content comes to rest.
+/// </remarks>
 public sealed partial class FormaFreezePane : FormaElementBase
 {
-    /// <summary>The class a part of the content carries to stay put at the pane's start while the rest scrolls.</summary>
+    /// <summary>The class that holds a part of the content at the pane's start while the rest scrolls.</summary>
     public const string FrozenClass = "forma-freeze-pane-frozen";
 
-    /// <summary>The class a part of the content carries to be a stop: scrolling comes to rest with it drawn up to the frozen parts, and each arrow press moves to the next one.</summary>
+    /// <summary>The class that makes a part of the content a stop.</summary>
+    /// <remarks>Scrolling comes to rest with a stop drawn up to the frozen parts, and each arrow press moves to the next stop.</remarks>
     public const string StopClass = "forma-freeze-pane-stop";
 
     /// <summary>The content that scrolls.</summary>
@@ -23,7 +28,8 @@ public sealed partial class FormaFreezePane : FormaElementBase
     /// <summary>How the content moves.</summary>
     [Parameter] public FreezePaneOptions Options { get; set; } = FreezePaneOptions.Default;
 
-    /// <summary>Raised as the reader drags or keys the frozen region's edge, with the extent asked for in pixels; the content decides what to resize to honor it, and the edge is drawn only while this is set.</summary>
+    /// <summary>Raised with the frozen region's extent in pixels as the reader drags or keys its edge.</summary>
+    /// <remarks>The frozen region's edge is drawn while this callback is set.</remarks>
     [Parameter] public EventCallback<double> FrozenExtentChanged { get; set; }
 
     // One small spacing step, the distance an arrow key moves the frozen edge.
@@ -87,7 +93,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
     private bool WantsWheel
         => !IsBlockAxis && Options.PageOnWheelGesture;
 
-    /// <summary>Takes how far the content can still move each way, how far its frozen parts reach and how much of the viewport is in view; called from the script when that changes.</summary>
+    /// <summary>Takes how far the content can still move each way, how far its frozen parts reach and how much of the viewport is in view.</summary>
     [JSInvokable]
     public Task HandleOverflowAsync(ScrollBoundaryReport report)
     {

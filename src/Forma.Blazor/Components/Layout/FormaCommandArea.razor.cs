@@ -4,10 +4,10 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A region holding as many command bars as a caller stacks into it.</summary>
+/// <summary>A region holding a stack of command bars.</summary>
 public sealed partial class FormaCommandArea : FormaElementBase
 {
-    /// <summary>The area's bars, usually FormaCommandBar.</summary>
+    /// <summary>The content the area stacks, its command bars.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <inheritdoc />

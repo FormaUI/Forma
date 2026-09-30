@@ -4,13 +4,14 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Lays backdrops along one axis, one seam apart. The seam is one spacing step of the parent showing between them; a <see cref="FormaSplitter"/> placed between two backdrops stands in it.</summary>
+/// <summary>A layout of backdrops along one axis, one seam apart.</summary>
+/// <remarks>The seam is one spacing step of the parent showing between two backdrops; a <see cref="FormaSplitter"/> placed between them stands in it.</remarks>
 public sealed partial class FormaStackLayout : FormaElementBase
 {
     /// <summary>The axis the backdrops are stacked along.</summary>
     [Parameter] public StackOrientation Orientation { get; set; } = StackOrientation.Vertical;
 
-    /// <summary>The backdrops, with a <see cref="FormaSplitter"/> between two that resize.</summary>
+    /// <summary>The backdrops the layout stacks, and the splitters between them.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <inheritdoc />
