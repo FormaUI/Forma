@@ -1,13 +1,9 @@
 /**
  * ReorderInteraction — dragging or keying an item into a new position in its list
  *
- * The press-move-release gesture, its pointer capture and the edge auto-scroll all belong
- * to DragGesture; what remains here is what a reorder means — which item a pointer is
- * over, which side of it, and the keyboard equivalent, declared as routes on the input
- * router so a key on a handle is the list's and a key anywhere else in an item is not.
- * Only the resulting position crosses to .NET, once per completed move, since a
- * pointermove fires many times a second and round-tripping each one through Blazor
- * Server would lag badly.
+ * Built on DragGesture: a pointer drag finds the item under the pointer and the side of it
+ * the dragged item lands on, and the keys on a handle are routes on the input router. The
+ * owner is told the resulting position once per completed move.
  */
 
 import { attach as attachDragGesture } from './DragGesture.js';
@@ -23,7 +19,7 @@ const Moves = [
     { action: 'sortable-list.move-last', key: 'End', target: (index, count) => count - 1, insertAfter: true },
 ];
 
-/** How long a touch rests on an item before it lifts, leaving shorter swipes to scroll. */
+/** How long a touch rests on an item before it lifts, in milliseconds. */
 const TouchHold = 400;
 
 /**
@@ -58,7 +54,7 @@ class ReorderInteraction {
     #registration;
     #sourceIndex = -1;
 
-    /** The item currently marked as the drop target, or null. */
+    /** The item currently marked as the drop target. */
     #indicated = null;
 
     constructor(list, {
@@ -83,8 +79,7 @@ class ReorderInteraction {
         this.#afterClass = afterClass;
 
         this.#gesture = attachDragGesture(list, {
-            // Only whole-item dragging needs the hold: a handle carries touch-action: none,
-            // so it never competes with a scroll in the first place.
+            // A handle carries touch-action: none, so only whole-item dragging needs the hold.
             holdDelay: dragFromItem ? TouchHold : 0,
             findSubject: event => this.#findSubject(event),
             onStart: ({ subject }) => this.#handleStart(subject),
@@ -93,8 +88,7 @@ class ReorderInteraction {
             onCancel: ({ subject }) => this.#endDrag(subject),
         });
 
-        // A key on a handle that has somewhere to move is the list's; one at the edge it was asked to move
-        // toward matches nothing, so it keeps its default and the page still scrolls rather than swallowing the press.
+        // A key at the edge it would move toward matches no route and keeps its default.
         this.#registration = register(list, {
             routes: Moves.map(move => ({
                 action: move.action,
@@ -113,8 +107,7 @@ class ReorderInteraction {
         return [...this.#list.querySelectorAll(this.#ownItemSelector)];
     }
 
-    // The item an event belongs to, walking outward past any nested sortable list so a
-    // list only ever answers for its own items.
+    /** The list's own item holding a node, past any nested sortable list. */
     #ownItemOf(node) {
         for (let item = node?.closest(this.#itemSelector); item; item = item.parentElement?.closest(this.#itemSelector)) {
             if (item.parentElement === this.#list) {
@@ -149,9 +142,7 @@ class ReorderInteraction {
         this.#indicated?.classList.add(target.insertAfter ? this.#afterClass : this.#beforeClass);
     }
 
-    // Which item the pointer rests on and which side of its midpoint. Below the last item
-    // it still resolves to "after the last", so releasing in the empty space under the list
-    // sends the item to the end instead of doing nothing.
+    /** The item the pointer rests on and which side of its midpoint, after the last item below the list. */
     #dropTargetAt(clientY, items) {
         if (items.length === 0) {
             return null;
@@ -171,8 +162,7 @@ class ReorderInteraction {
     #handleStart(subject) {
         this.#sourceIndex = this.#items().indexOf(subject);
         subject.classList.add(this.#draggingClass);
-        // The cursor otherwise reverts to whatever sits under the pointer once it leaves
-        // the handle, which is most of the drag.
+        // The active class holds the drag cursor once the pointer leaves the handle.
         this.#list.classList.add(this.#activeClass);
     }
 
@@ -198,14 +188,14 @@ class ReorderInteraction {
         this.#list.classList.remove(this.#activeClass);
     }
 
-    /** The list's own item whose enabled handle the event was raised on, or null. */
+    /** The list's own item whose enabled handle the event was raised on. */
     #handleItemOf(event) {
         const handle = event.target.closest(this.#handleSelector);
 
         return handle && !handle.disabled ? this.#ownItemOf(handle) : null;
     }
 
-    /** Where the move would take the item the event's handle belongs to, or null when it has nowhere to go. */
+    /** Where the move would take the item the event's handle belongs to. */
     #planMove(event, { target }) {
         const item = this.#handleItemOf(event);
 

@@ -1,26 +1,22 @@
 /**
  * Focus — where Tab and the arrow keys go inside one surface
  *
- * A surface decides its own Tab order. A wrapping surface, such as a menu or a selection
- * bar, keeps Tab and Shift+Tab among its own controls and wraps at either end, so the page
- * behind it is never tabbed into by accident. An arranged surface, such as a composer,
- * visits the regions named first in the order given and the rest of itself in document
- * order, then leaves for whatever follows or precedes it in the page. A roving surface,
- * such as a toolbar, is one Tab stop: the arrow keys along its axis move among its
- * controls and wrap at either end, Home and End reach the ends, and the control focused
- * last keeps the stop while the rest are parked at tabindex -1, so Tab leaves the surface
- * on its own and a surface around it counts the stop alone.
+ * A wrapping surface keeps Tab and Shift+Tab among its own controls and wraps at either
+ * end. An arranged surface visits the regions named first in the order given and the rest
+ * of itself in document order, then leaves for whatever follows or precedes it in the page.
+ * A roving surface is one Tab stop: the arrow keys along its axis move among its controls
+ * and wrap at either end, Home and End reach the ends, and the control focused last keeps
+ * the stop while the rest are parked at tabindex -1.
  *
- * The keys are routes on the input router, declared on the surface, so a key inside a
- * nested surface that routes it is that surface's and never reaches this one, and a key
- * this surface has nowhere to send matches nothing and keeps its default.
+ * The keys are routes on the input router, declared on the surface; a key this surface has
+ * nowhere to send matches no route and keeps its default.
  */
 
 import { Controls } from '../../../core/scripts/Controls.js';
 import { Direction } from '../../../core/scripts/Direction.js';
 import { register } from '../../../input/scripts/InputRouter.js';
 
-/** Where each key sends focus within the surface, by action; a tabbing surface binds Tab either way, a roving one the keys along its axis. */
+/** The actions the surface's keys are routed as. */
 const Actions = {
     next: 'focus.next',
     previous: 'focus.previous',
@@ -40,7 +36,7 @@ export function attach(target, options = {}) {
 }
 
 /**
- * The controls inside a root that Tab can reach, in document order, leaving out any that are not displayed.
+ * The displayed controls inside a root that Tab can reach, in document order.
  * @param {ParentNode} root
  * @returns {HTMLElement[]}
  */
@@ -100,8 +96,7 @@ export class Focus {
         }
     }
 
-    // A handler checks again what its binding's predicate checked, since a host's remap of the action
-    // replaces the binding and the predicate with it.
+    // Each handler checks its binding's predicate again, since a host's remap of the action replaces the binding.
     /** Tab and Shift+Tab as the surface's next and previous, matching only where the surface has a control to send focus to. */
     #tabbingRoutes() {
         const route = (action, shift) => ({
@@ -133,7 +128,7 @@ export class Focus {
         ];
     }
 
-    /** The control Tab sends focus to, a step either way from the focused one: wrapping at the ends, or leaving for the page's neighbor; null where there is none. */
+    /** The control Tab sends focus to, a step either way from the focused one: wrapping at the ends, or leaving for the page's neighbor. */
     #destination(step) {
         const controls = this.#sequence();
 
@@ -150,7 +145,7 @@ export class Focus {
         return index < 0 ? null : this.#within(controls, index + step);
     }
 
-    /** The roved controls and the place of the one holding focus, or null while none of them does. */
+    /** The roved controls and the place of the one holding focus. */
     #stop() {
         const controls = this.#sequence();
         const index = controls.indexOf(document.activeElement);
@@ -158,7 +153,7 @@ export class Focus {
         return index < 0 ? null : { controls, index };
     }
 
-    /** Moves the stop to the place the key names among the roved controls, while one of them holds focus. */
+    /** Moves the stop to the place the key names among the roved controls. */
     #rove(place) {
         const stop = this.#stop();
 

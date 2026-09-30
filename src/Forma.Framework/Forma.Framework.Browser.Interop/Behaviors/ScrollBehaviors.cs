@@ -1,11 +1,11 @@
 namespace Forma.Framework.Browser.Interop.Behaviors;
 
-/// <summary>What a <see cref="Scroll"/> attachment does for its target; each part is off until given.</summary>
+/// <summary>What a <see cref="Scroll"/> attachment does for its target.</summary>
 public sealed record ScrollBehaviors
 {
-    /// <summary>Watches how far the target can still scroll and how far its frozen parts reach, reported to the owner.</summary>
+    /// <summary>The watch on how far the target can still scroll and how far its frozen parts reach.</summary>
     public ScrollBoundary? Boundary { get; init; }
 
-    /// <summary>Treats the target as a sentinel, telling the owner as it comes into view.</summary>
+    /// <summary>The watch on the target as a sentinel coming into view.</summary>
     public ScrollSentinel? Sentinel { get; init; }
 }

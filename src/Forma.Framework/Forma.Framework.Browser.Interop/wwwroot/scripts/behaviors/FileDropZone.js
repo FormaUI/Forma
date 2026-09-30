@@ -1,8 +1,8 @@
 /**
  * FileDropZone — a drop zone that hands dropped files to a file input
  *
- * Assigning the files to the input and firing change sends a dropped selection down the
- * same path a click-picked one takes, so Blazor needs no separate handling for it.
+ * A drop assigns the files to the input and fires change, the path a click-picked selection
+ * takes.
  */
 
 import { attach as attachDropZone } from './DropZone.js';
@@ -22,7 +22,6 @@ class FileDropZone {
     constructor(target, { action, activeClass }) {
         this.#target = target;
 
-        // Only a drag carrying files is the zone's; anything else keeps its default.
         this.#zone = attachDropZone(target, {
             action,
             accepts: ['Files'],
@@ -36,7 +35,6 @@ class FileDropZone {
     }
 
     #handleDrop(transfer) {
-        // The target's file input as it stands at the drop.
         const input = this.#target.querySelector('input[type="file"]');
 
         if (!input || input.disabled || transfer.files.length === 0) {

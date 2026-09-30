@@ -5,7 +5,7 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A drop zone that hands dropped files to the file input inside an element, the drop a route on the input router under the action the caller names.</summary>
+/// <summary>A drop zone that hands dropped files to the file input inside an element, the drop a route on the input router.</summary>
 public sealed class FileDropZone(IJSEnvironment js)
     : JSInterop(js, "./_content/forma/browser/scripts/behaviors/FileDropZone.js")
 {

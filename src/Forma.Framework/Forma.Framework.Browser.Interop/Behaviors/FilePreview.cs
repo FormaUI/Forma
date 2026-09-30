@@ -5,7 +5,7 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Thumbnails rendered from the browser's own File objects, held for a container of image elements.</summary>
+/// <summary>Thumbnails rendered from a file input's selected files into a container's image elements.</summary>
 public sealed class FilePreview(IJSEnvironment js)
     : JSInterop(js, "./_content/forma/browser/scripts/behaviors/FilePreview.js")
 {

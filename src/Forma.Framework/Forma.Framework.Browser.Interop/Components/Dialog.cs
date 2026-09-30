@@ -13,13 +13,13 @@ public sealed class Dialog(IJSEnvironment js)
     public ValueTask<bool> AttachAsync(ElementReference dialog)
         => AttachCoreAsync(dialog);
 
-    /// <summary>Opens the dialog as a modal, closing it on a scrim click when requested, with focus on the first control inside the selected part.</summary>
+    /// <summary>Opens the dialog as a modal.</summary>
     /// <param name="closeOnScrimClick">Whether a click landing beside the dialog's content closes it.</param>
-    /// <param name="focusWithin">A selector for the part whose first control takes focus, or null to leave focus where the browser puts it.</param>
+    /// <param name="focusWithin">The selector of the part whose first control takes focus, or null for the browser's own placement.</param>
     public ValueTask<bool> OpenAsync(bool closeOnScrimClick, string? focusWithin = null)
         => InvokeAsync("open", new { closeOnScrimClick, focusWithin });
 
-    /// <summary>Closes the dialog if it is open.</summary>
+    /// <summary>Closes the dialog.</summary>
     public ValueTask<bool> CloseAsync()
         => InvokeAsync("close");
 }

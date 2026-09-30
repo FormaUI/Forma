@@ -18,6 +18,5 @@ export function save(name, content, type) {
     link.download = name;
     link.click();
 
-    // A click only queues the download; the browser reads the address when it starts it.
     setTimeout(() => URL.revokeObjectURL(url), RevokeDelay);
 }

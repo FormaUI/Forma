@@ -98,7 +98,7 @@ class Virtualize {
     }
 
     #report() {
-        // A list taken out of the document stands nowhere, and its owner is on its way out with it.
+        // A list out of the document stands nowhere.
         if (!this.#start.isConnected) {
             return;
         }
@@ -117,7 +117,7 @@ class Virtualize {
         tell(this.#owner, 'HandleViewportAsync', offset, viewport, measured);
     }
 
-    // The average room an item takes: from its top to the next item's where two drawn items stand together, so a gap or a margin between them counts, and an item's own height where none do.
+    /** The average room an item takes: from its top to the next drawn item's top, or its own height where no two drawn items stand together. */
     #itemSize() {
         const items = this.#items();
         const steps = items

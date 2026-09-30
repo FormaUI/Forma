@@ -1,11 +1,8 @@
 /**
  * AutofillTracker — marking a field the browser filled without the user typing
  *
- * A browser filling a field automatically applies :-webkit-autofill, and never fires an
- * input event for it. The field stylesheet hangs a zero-duration animation off that
- * pseudo-class, so the fill surfaces as an 'animationstart' event that can be listened
- * for. The class it toggles is what keeps a floating label floated over a value the user
- * never typed.
+ * The field stylesheet runs a zero-duration animation while :-webkit-autofill applies, and
+ * its 'animationstart' event toggles the filled class.
  */
 
 /**

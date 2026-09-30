@@ -12,11 +12,17 @@ public sealed class AnchoredPopover(IJSEnvironment js)
     private bool _isOpen;
     private Task? _transition;
 
-    /// <summary>Brings the popover into line with whether it is open, running <paramref name="onOpened"/> once it is positioned; a popover that <paramref name="keepsFocus"/> moves Tab between its own controls, the <paramref name="trigger"/> is where focus returns on close, and <paramref name="alignment"/> names the anchor's inline edge it lines up with, by default the one away from the nearer side of the viewport.</summary>
+    /// <summary>Opens or closes the popover to match <paramref name="isOpen"/>.</summary>
+    /// <param name="isOpen">Whether the popover is open.</param>
+    /// <param name="popover">The popover element.</param>
+    /// <param name="anchor">The element the popover is positioned against.</param>
+    /// <param name="trigger">The element focus returns to on close.</param>
+    /// <param name="onOpened">The callback run once the popover is positioned.</param>
+    /// <param name="keepsFocus">Whether Tab moves between the popover's own controls.</param>
+    /// <param name="alignment">The inline edge of the anchor the popover lines up with.</param>
     public async ValueTask SyncAsync(bool isOpen, ElementReference popover, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened = null, bool keepsFocus = false, PopoverAlignment alignment = PopoverAlignment.Auto)
     {
-        // A sync that arrives while an earlier one is still attaching waits for it, so one open
-        // cannot attach twice and strand the first attachment's listeners.
+        // Waiting for a sync still attaching keeps one open from attaching twice.
         if (_transition is { } transition)
         {
             await transition;
@@ -41,13 +47,14 @@ public sealed class AnchoredPopover(IJSEnvironment js)
         }
     }
 
-    /// <summary>Hides the popover while its content is still in the document, returning focus to the trigger when asked and focus is inside it.</summary>
+    /// <summary>Hides the popover.</summary>
+    /// <param name="returnsFocus">Whether focus inside the popover returns to the trigger.</param>
     public ValueTask<bool> CloseAsync(bool returnsFocus)
         => InvokeAsync("close", returnsFocus);
 
     private async Task OpenAsync(ElementReference popover, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened, bool keepsFocus, PopoverAlignment alignment)
     {
-        // Each open gets its own attachment, so a failed attach is retried on the next sync.
+        // A failed attach leaves the popover closed, so the next sync attaches again.
         _isOpen = await AttachCoreAsync(popover, new { anchor, keepsFocus, align = alignment switch { PopoverAlignment.Start => "start", PopoverAlignment.End => "end", _ => "auto" } });
 
         if (!_isOpen)

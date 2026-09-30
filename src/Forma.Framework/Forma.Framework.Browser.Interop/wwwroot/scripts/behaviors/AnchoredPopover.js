@@ -1,9 +1,7 @@
 /**
- * AnchoredPopover — keeping a popover positioned against the element that opened it
+ * AnchoredPopover — a popover in the top layer kept positioned against its anchor
  *
- * A popover in the top layer (via the popover attribute) is immune to every clipping and
- * scrolling ancestor, but the top layer keeps no layout relationship to whatever opened
- * it. The handle measures the anchor, applies the popover's position, and keeps the two
+ * The handle measures the anchor, applies the popover's position, and keeps the two
  * together for as long as the popover is open.
  */
 
@@ -21,9 +19,9 @@ const Gap = 4;
  *   keepsFocus?: boolean,
  *   align?: 'auto' | 'start' | 'end'
  * }} options
- *   The element the popover hangs from, whether Tab moves between the popover's own controls instead of
- *   leaving it, and which inline edge of the anchor the popover lines up with: its reading-start edge,
- *   its reading-end edge, or by default the edge away from the nearer side of the viewport.
+ *   The element the popover hangs from, whether Tab moves between the popover's own controls, and which
+ *   inline edge of the anchor the popover lines up with: its reading-start edge, its reading-end edge, or
+ *   the edge away from the nearer side of the viewport.
  */
 export function attach(target, options) {
     return new AnchoredPopover(target, options);
@@ -47,7 +45,7 @@ class AnchoredPopover {
         this.#align = align;
     }
 
-    /** Shows the popover and keeps it positioned against its anchor until closed; focus returns to the trigger on a close that asks for it. */
+    /** Shows the popover and keeps it positioned against its anchor until closed, holding the trigger focus returns to. */
     open(trigger = null) {
         this.close();
         this.#trigger = trigger;
@@ -63,13 +61,10 @@ class AnchoredPopover {
         // The anchor's direction holds for as long as the popover is open.
         this.#isRightToLeft = Direction.isRightToLeft(this.#anchor);
 
-        // Captured because the anchor may sit in any scrolling ancestor, and scroll events
-        // from those do not bubble.
+        // Captured, since scroll events from the anchor's scrolling ancestors do not bubble.
         addEventListener('scroll', place, { capture: true, passive: true, signal });
         addEventListener('resize', place, { passive: true, signal });
 
-        // The popover's own content can grow after it opens — a progressively loaded picker, a
-        // search result count, a category switch — so its size alone must trigger repositioning.
         this.#resizeObserver = new ResizeObserver(place);
         this.#resizeObserver.observe(this.#popover);
 
@@ -80,10 +75,9 @@ class AnchoredPopover {
         this.#position();
     }
 
-    /** Hides the popover and releases the listeners held for it, first returning focus to the trigger when asked and focus is inside the popover. Safe to call when none are held. */
+    /** Hides the popover and releases the listeners held for it, first returning focus inside it to the trigger when asked. */
     close(returnsFocus = false) {
-        // A trigger standing in a sticky part is focused where it stands; scrolling it into view would
-        // move its scroller back to the part's unstuck position.
+        // Focused where it stands, so a trigger in a sticky part leaves its scroller in place.
         if (returnsFocus && this.#trigger && this.#popover.contains(document.activeElement)) {
             this.#trigger.focus({ preventScroll: true });
         }
@@ -103,7 +97,6 @@ class AnchoredPopover {
         this.close();
     }
 
-    // Scroll and resize events arrive faster than frames are painted, so repositions are coalesced to one a frame.
     #schedule() {
         this.#scheduler.request(() => this.#position());
     }
@@ -124,10 +117,12 @@ class AnchoredPopover {
         this.#popover.style.top = `${Math.round(blockStart)}px`;
     }
 
-    // Whether the popover's left edge meets the anchor's left edge, extending rightward; otherwise its right edge
-    // meets the anchor's right edge, extending leftward. The reading-start and reading-end edges are mirrored in
-    // right-to-left text; the automatic choice extends toward the wider side of the viewport, and from dead
-    // center toward the reading start.
+    /**
+     * Whether the popover's left edge meets the anchor's left edge, extending rightward, or its right edge meets
+     * the anchor's right edge, extending leftward. The reading-start and reading-end edges mirror in right-to-left
+     * text; the automatic choice extends toward the wider side of the viewport, and from dead center toward the
+     * reading start.
+     */
     #hangsFromLeftEdge(anchorBounds) {
         switch (this.#align) {
             case 'start':

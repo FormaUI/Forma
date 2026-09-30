@@ -2,12 +2,10 @@
  * DropZone — a drag-and-drop target
  *
  * The drag passing over and the drop are one route on the input router, declared on the zone
- * under the action the caller names and matching only the data kinds it accepts, so a drop a
- * nested scope routes is that scope's and the host remaps the zone by its action. The zone may
- * hold several targets, each marked by an attribute and named by a key, in which case the drop
- * belongs to the target under the pointer and nothing else in the zone takes one. Nested
- * children fire dragenter and dragleave as the pointer crosses them, so the active state is
- * depth-counted rather than toggled per event.
+ * under the action the caller names and matching the data kinds it accepts. A zone holding
+ * several targets, each marked by an attribute and named by a key, gives the drop to the target
+ * under the pointer. The active state is depth-counted across the dragenter and dragleave of
+ * nested children.
  */
 
 import { tell } from '../../../core/scripts/Owner.js';
@@ -105,8 +103,7 @@ class DropZone {
         }
     }
 
-    // The drag model selects a drop target as the drag enters it, so an entry left uncancelled sends the drag on
-    // to the body and the drag passing over never reaches the route; whether the drop is taken is still the route's.
+    // An uncancelled dragenter sends the drag on to the body, and the drag passing over never reaches the route.
     #handleEnter(event) {
         event.preventDefault();
         this.#depth += 1;

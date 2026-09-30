@@ -11,7 +11,7 @@ export async function activate(scriptUrl) {
         return false;
     }
 
-    // Each service scans on load; markup rendered afterwards needs a second pass it only exposes this way.
+    // Each service scans on load; these calls scan again for markup rendered since.
     globalThis.instgrm?.Embeds?.process();
     globalThis.FB?.XFBML?.parse();
     globalThis.twttr?.widgets?.load();

@@ -9,7 +9,14 @@ using Microsoft.JSInterop;
 public sealed class Frame(IJSEnvironment js)
     : JSInterop(js, "./_content/forma/browser/scripts/components/Frame.js")
 {
-    /// <summary>Attaches to the frame. Its box is the frame itself when <paramref name="box"/> is <c>self</c> and its parent when <c>parent</c>. The box is dragged by the element carrying <paramref name="dragRegionClass"/>, which also takes the arrow keys while focused and steps the box by <paramref name="stepPixels"/>, resized by the elements carrying <paramref name="handleClass"/>, and held within <paramref name="bounds"/> or the viewport. <paramref name="owner"/> is told where the box came to rest.</summary>
+    /// <summary>Attaches to the frame.</summary>
+    /// <param name="frame">The frame element.</param>
+    /// <param name="owner">The owner told where the box came to rest.</param>
+    /// <param name="box">Which element is the box: <c>self</c> for the frame itself, <c>parent</c> for its parent.</param>
+    /// <param name="dragRegionClass">The class of the element that drags the box and, while focused, steps it with the arrow keys.</param>
+    /// <param name="handleClass">The class of the elements that resize the box.</param>
+    /// <param name="stepPixels">The distance one arrow key steps the box, in pixels.</param>
+    /// <param name="bounds">The element the box is held within; <see langword="null"/> is the viewport.</param>
     public ValueTask<bool> AttachAsync<TOwner>(
         ElementReference frame,
         DotNetObjectReference<TOwner> owner,

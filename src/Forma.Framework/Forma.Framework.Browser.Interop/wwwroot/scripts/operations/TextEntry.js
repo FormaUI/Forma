@@ -1,5 +1,5 @@
 /**
- * Text — the value and selected range of a text entry
+ * TextEntry — the value and selected range of a text entry
  */
 
 /**

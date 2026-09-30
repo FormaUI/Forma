@@ -1,8 +1,5 @@
 /**
- * CheckBox — state a checkbox exposes only as a property
- *
- * "Some but not all" is an IDL-only property with no content attribute Blazor could
- * render, so it has to be set from script.
+ * CheckBox — state a checkbox holds as a DOM property
  */
 
 /** @param {HTMLInputElement} checkbox */

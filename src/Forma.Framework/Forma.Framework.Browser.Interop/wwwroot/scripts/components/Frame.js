@@ -1,12 +1,11 @@
 /**
  * Frame — a frame's browser side: a box moved by the frame's drag region, resized at its edges,
  * stepped by the arrow keys on the focused drag region, and held within its bounds. The box is
- * the frame's own element, or the parent that presents it, which the frame then drives.
+ * the frame's own element, or the parent that presents it.
  *
- * The press-move-release is DragGesture's; what remains here is what the drag means for a
- * frame: which of its edges the press took hold of, the box that results, and the region and
- * size limits it is held within. The box is applied as the pointer moves, so the frame follows
- * without a round trip, and where it came to rest is reported once.
+ * Built on DragGesture: a press takes hold of the drag region or an edge, the resulting box is
+ * applied as the pointer moves, held within its region and size limits, and where it came to
+ * rest is reported once.
  */
 
 import { attach as attachDragGesture } from '../behaviors/DragGesture.js';
@@ -39,10 +38,10 @@ class Frame {
     /** The class the frame carries while its drag region moves it. */
     static #MovableClass = 'is-movable';
 
-    /** The class the frame carries while it fills its bounds, when it neither moves nor resizes. */
+    /** The class the frame carries while it fills its bounds. */
     static #MaximizedClass = 'is-maximized';
 
-    /** The class the frame carries while it is held where it is, when it neither moves nor resizes either. */
+    /** The class the frame carries while it is held where it is. */
     static #LockedClass = 'is-locked';
 
     /** The arrow keys and the direction each one moves or grows the box. */
@@ -91,7 +90,6 @@ class Frame {
         frame.addEventListener('keydown', event => this.#handleKeyDown(event), { signal });
         globalThis.addEventListener('resize', () => this.fit(), { passive: true, signal });
 
-        // The frame is laid out again when it is shown, maximized or restored, and when its bounds change; each is a box to hold within its region.
         if (typeof ResizeObserver === 'function') {
             this.#observer = new ResizeObserver(() => this.fit());
             this.#observer.observe(frame);
@@ -119,7 +117,6 @@ class Frame {
     fit() {
         const rect = this.#box.getBoundingClientRect();
 
-        // A box not laid out yet has nothing to hold within anything.
         if (rect.width === 0 && rect.height === 0) {
             return;
         }
@@ -134,7 +131,7 @@ class Frame {
             return;
         }
 
-        // A box bound to an element opens at that element's center rather than the viewport's, and takes its box from there on.
+        // An unplaced box bound to an element opens at that element's center.
         if (!this.#isPlaced) {
             if (this.#bounds) {
                 this.#apply({
@@ -166,8 +163,8 @@ class Frame {
     }
 
     /**
-     * Moves the box by a distance, or grows it from its bottom-right corner by that distance, as a keyboard
-     * step does, held within the same bounds as a drag.
+     * Moves the box by a distance, or grows it from its bottom-right corner by that distance, held within
+     * its region.
      * @param {number} dx
      * @param {number} dy
      * @param {boolean} resize
@@ -197,12 +194,12 @@ class Frame {
         return !this.#isHeld && this.#frame.classList.contains(Frame.#MovableClass);
     }
 
-    /** Whether the frame carries resize handles, which it does only while it may be resized. */
+    /** Whether the box can be resized: unheld, with resize handles. */
     get #isResizable() {
         return !this.#isHeld && this.#frame.querySelector(`.${this.#handleClass}`) !== null;
     }
 
-    /** Whether the box has been given a position of its own, as opposed to the one its layout or stylesheet gives it. */
+    /** Whether the box has been given a position of its own. */
     get #isPlaced() {
         return this.#box.style.left !== '';
     }
@@ -217,7 +214,7 @@ class Frame {
         return { left: 0, top: 0, width: globalThis.innerWidth, height: globalThis.innerHeight, right: globalThis.innerWidth, bottom: globalThis.innerHeight };
     }
 
-    /** An arrow pressed on the focused drag region steps the box, or resizes it with Shift, and never scrolls the page. */
+    /** Steps the box by an arrow pressed on the focused drag region, or resizes it with Shift. */
     #handleKeyDown(event) {
         const step = Frame.#Steps.get(event.key);
 
@@ -231,7 +228,7 @@ class Frame {
         this.nudge(dx * this.#stepPixels, dy * this.#stepPixels, event.shiftKey);
     }
 
-    /** The drag region or the handle the press landed on; nothing while held, nothing for a press on a control inside the drag region, and nothing for the drag region while the frame cannot move. */
+    /** The drag region or the handle the press landed on. */
     #findSubject(event) {
         if (this.#isHeld) {
             return null;
@@ -318,7 +315,7 @@ class Frame {
         return box;
     }
 
-    /** The smallest and largest size the frame's and the box's styles allow, so a drag cannot take the box past either. */
+    /** The smallest and largest size the frame's and the box's styles allow. */
     #limits() {
         const styles = this.#box === this.#frame ? [getComputedStyle(this.#frame)] : [getComputedStyle(this.#frame), getComputedStyle(this.#box)];
         const smallest = name => Math.max(...styles.map(style => parseFloat(style[name]) || 0));

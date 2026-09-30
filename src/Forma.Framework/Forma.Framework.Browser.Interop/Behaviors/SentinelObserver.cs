@@ -5,10 +5,7 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>
-/// Watches a sentinel element only while it is wanted, so a caller states what it currently wants watched rather
-/// than tracking whether that is already the case.
-/// </summary>
+/// <summary>Watches a sentinel element while it is wanted.</summary>
 public sealed class SentinelObserver<TOwner>(IJSEnvironment js) : IAsyncDisposable
     where TOwner : class
 {
@@ -16,7 +13,7 @@ public sealed class SentinelObserver<TOwner>(IJSEnvironment js) : IAsyncDisposab
     private DotNetObjectReference<TOwner>? _ownerReference;
     private bool _isStale;
 
-    /// <summary>Attaches or detaches the sentinel to match whether it is currently wanted, and re-attaches it when stale.</summary>
+    /// <summary>Attaches or detaches the sentinel to match <paramref name="shouldObserve"/>, re-attaching it when stale.</summary>
     public async Task SyncAsync(TOwner owner, bool shouldObserve, ElementReference sentinel, ElementReference? root = null)
     {
         ArgumentNullException.ThrowIfNull(owner);
@@ -39,7 +36,7 @@ public sealed class SentinelObserver<TOwner>(IJSEnvironment js) : IAsyncDisposab
         _isStale = false;
     }
 
-    /// <summary>Marks the current watch stale, so the next sync re-attaches even though nothing else about it changed.</summary>
+    /// <summary>Marks the current watch stale, so the next sync re-attaches it.</summary>
     public void Invalidate()
         => _isStale = true;
 

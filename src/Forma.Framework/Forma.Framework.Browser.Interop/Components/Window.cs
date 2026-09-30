@@ -13,7 +13,8 @@ public sealed class Window(IJSEnvironment js)
     public ValueTask<bool> AttachAsync(ElementReference window, bool presented, bool modal, ElementReference? scrim)
         => AttachCoreAsync(window, new { presented, modal, scrim });
 
-    /// <summary>Moves focus into the window unless a control inside it already holds it: to the element last focused inside it, else its first control, else the window itself.</summary>
+    /// <summary>Moves focus into the window.</summary>
+    /// <remarks>Focus already on a control inside the window stays there; otherwise it goes to the element last focused inside the window, else its first control, else the window itself.</remarks>
     public ValueTask<bool> FocusAsync()
         => InvokeAsync("focus");
 
@@ -21,7 +22,7 @@ public sealed class Window(IJSEnvironment js)
     public ValueTask<bool> RaiseAsync()
         => InvokeAsync("raise");
 
-    /// <summary>Shows the window in the top layer, or takes it out while it is minimized or hidden.</summary>
+    /// <summary>Shows the window in the top layer or takes it out, to match <paramref name="presented"/>.</summary>
     public ValueTask<bool> PresentAsync(bool presented)
         => InvokeAsync("present", presented);
 }

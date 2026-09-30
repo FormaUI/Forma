@@ -1,11 +1,8 @@
 /**
  * Dialog — opening and closing a native dialog as a modal
  *
- * showModal and close are imperative DOM calls with no HTML-attribute equivalent, and the
- * scrim is part of the dialog element itself, so a click landing on the dialog rather
- * than on its content is a scrim click. showModal puts focus on the first control in the
- * dialog, which is the header's close button, so the body's first control takes it instead
- * where the body has one: a form opens on its first field, not on the way out of it.
+ * The scrim is part of the dialog element itself, so a click landing on the dialog rather
+ * than on its content is a scrim click.
  */
 
 import { focusablesIn } from '../behaviors/Focus.js';
@@ -28,12 +25,10 @@ class Dialog {
     /**
      * @param {{ closeOnScrimClick?: boolean, focusWithin?: string }} options
      * closeOnScrimClick closes the dialog on a click landing beside its content; focusWithin selects the
-     * part whose first control takes focus as the dialog opens, and a part with no control leaves focus
-     * where showModal put it.
+     * part whose first control takes focus as the dialog opens.
      */
     open({ closeOnScrimClick = false, focusWithin = null } = {}) {
-        // A dialog can close without close() being called, through Escape or a method="dialog"
-        // form, leaving the previous listener attached.
+        // Escape or a method="dialog" form closes the dialog past close(), leaving the previous listener attached.
         this.#release();
 
         if (this.#dialog.open) {

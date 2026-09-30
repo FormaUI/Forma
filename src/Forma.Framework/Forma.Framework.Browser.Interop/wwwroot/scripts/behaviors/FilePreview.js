@@ -1,9 +1,8 @@
 /**
  * FilePreview — thumbnails rendered from the browser's own File objects
  *
- * An object URL lets a thumbnail render without the image bytes crossing the circuit, and
- * leaves the file unread by the host. Each URL is revoked once its image has settled, and
- * the handle revokes whatever is still outstanding when it is disposed.
+ * Each thumbnail is an object URL for its file, revoked once its image has settled or the
+ * handle is disposed.
  */
 
 /**

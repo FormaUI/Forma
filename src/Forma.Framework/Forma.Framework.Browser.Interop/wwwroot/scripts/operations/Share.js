@@ -8,7 +8,7 @@ export function isAvailable() {
 }
 
 /**
- * Offers the subject to the platform's share surface; declining it there is not a failure.
+ * Offers the subject to the platform's share surface, resolving to whether it was shared.
  * @param {string} title
  * @param {string} url
  */

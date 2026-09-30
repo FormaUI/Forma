@@ -3,10 +3,10 @@
  *
  * One handle covers whichever of these a surface asks for: watching how far its content can
  * still move along an axis, how far its frozen parts reach in from the start and how far the
- * frozen corner reaches across it; and asking for the next page as a sentinel comes into view.
- * Moving a container to a position it cannot express declaratively, to its center or one step
- * along an axis, is exported beside it. Inline offsets are read through Math.abs where a
- * right-to-left container counts scrollLeft downwards from zero.
+ * frozen corner reaches across it; and telling its owner as a sentinel comes into view. Moving
+ * a container to its center or one step along an axis is exported beside it. A right-to-left
+ * container counts scrollLeft downward from zero, so inline offsets are read through Math.abs
+ * and inline positions are mirrored.
  */
 
 import { Direction } from '../../../core/scripts/Direction.js';
@@ -21,7 +21,7 @@ import { tell } from '../../../core/scripts/Owner.js';
  *   boundary?: { owner: Owner, axis?: 'inline' | 'block', frozen?: string | null },
  *   sentinel?: { owner: Owner, root?: HTMLElement | null, rootMargin?: string }
  * }} options
- *   What the handle does for the target: report through HandleOverflowAsync, in one object, how far it can still
+ *   What the handle does for the target: report through HandleOverflowAsync how far it can still
  *   scroll along the axis, how far the parts matching the frozen selector reach in from its
  *   start, how far across the axis the frozen corner reaches and how much of it is in view; and treat the
  *   target as a sentinel and tell the owner through HandleReachedAsync as it comes into view of
@@ -35,22 +35,19 @@ export function attach(target, options = {}) {
 export function toCenter(container) {
     const middle = (container.scrollWidth - container.clientWidth) / 2;
 
-    // A right-to-left container counts scrollLeft downwards from zero, so a positive middle would be clamped to its start.
     container.scrollLeft = Direction.isRightToLeft(container) ? -middle : middle;
     container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
 }
 
 /**
- * Moves the container one step along the axis: to the next of the stops its content marks, drawn up to the
- * inset from the container's start, or by most of a page when the content marks none.
+ * Moves the container one step along the axis.
  * @param {HTMLElement} container
  * @param {number} direction -1 toward the start of the container, 1 toward its end.
  * @param {'inline' | 'block'} axis The axis to move along.
- * @param {{ selector: string, inset?: number } | null} stops The parts the content marks as stops, and how far in from the start a stop comes to rest.
+ * @param {{ selector: string, inset?: number } | null} stops The parts the content marks as stops, and how far in from the start a stop comes to rest; null steps by most of a page.
  */
 export function step(container, direction, axis = 'inline', stops = null) {
     const isBlock = axis === 'block';
-    // A right-to-left container counts scrollLeft downwards from zero, so every inline position mirrors with it.
     const isRightToLeft = !isBlock && Direction.isRightToLeft(container);
     const positions = stops ? stopPositions(container, isBlock, isRightToLeft, stops.selector) : [];
 
@@ -62,8 +59,7 @@ export function step(container, direction, axis = 'inline', stops = null) {
     const offset = isBlock ? container.scrollTop : Math.abs(container.scrollLeft);
     const inset = stops.inset ?? 0;
 
-    // The stop in place stands at the inset; the step goes to the nearest stop past it, and past the last stop to
-    // the container's end, so the rest of the last stop can still be brought into view.
+    // Past the last stop the step goes to the container's end, bringing the rest of the last stop into view.
     const target = direction > 0
         ? positions.find(position => position - inset > offset + 1)
         : positions.findLast(position => position - inset < offset - 1);
@@ -84,7 +80,7 @@ export function step(container, direction, axis = 'inline', stops = null) {
     container.scrollTo({ left: isRightToLeft ? -destination : destination, behavior: 'smooth' });
 }
 
-// The distinct starts of the stops, measured along the axis from the content's start and sorted.
+/** The distinct starts of the stops, measured along the axis from the content's start, sorted. */
 function stopPositions(container, isBlock, isRightToLeft, selector) {
     const box = container.getBoundingClientRect();
     const offset = isBlock ? container.scrollTop : Math.abs(container.scrollLeft);
@@ -159,7 +155,6 @@ class BoundaryWatch {
         this.#resize.observe(track);
         this.#watchChildren();
 
-        // Children can be added or removed without the track's own box changing, which no ResizeObserver reports.
         this.#mutations = new MutationObserver(() => {
             this.#watchChildren();
             this.#schedule();
@@ -177,7 +172,6 @@ class BoundaryWatch {
         this.#mutations.disconnect();
     }
 
-    // A child resizing changes what fits, so each is watched alongside the track.
     #watchChildren() {
         for (const child of this.#watched) {
             this.#resize.unobserve(child);
@@ -190,7 +184,6 @@ class BoundaryWatch {
         }
     }
 
-    // Scrolling fires far faster than the circuit can answer, so reports are coalesced to one a frame.
     #schedule() {
         if (!this.#isDisposed) {
             this.#scheduler.request(() => this.#report());
@@ -198,7 +191,7 @@ class BoundaryWatch {
     }
 
     #report() {
-        // A track taken out of the document collapses to nothing, and its owner is on its way out with it.
+        // A track out of the document measures as nothing.
         if (this.#isDisposed || !this.#track.isConnected) {
             return;
         }
@@ -225,7 +218,7 @@ class BoundaryWatch {
 
         const frozen = this.#frozen ? this.#frozenRegion() : { extent: 0, corner: 0 };
 
-        // A sub-pixel track size leaves a fractional remainder that would otherwise read as scrollable.
+        // A sub-pixel track size leaves a fractional remainder below one pixel.
         return {
             canScrollBack: slack > 1 && offset > 1,
             canScrollForward: slack > 1 && offset < slack - 1,
@@ -235,8 +228,11 @@ class BoundaryWatch {
         };
     }
 
-    // The extent is the far edge along the axis of the frozen part reaching furthest in from the track's start; the
-    // corner is the near far edge across the axis, where the frozen part in the track's start corner ends.
+    /**
+     * How far the frozen parts reach: the extent is the far edge along the axis of the frozen part reaching
+     * furthest in from the track's start; the corner is the nearest far edge across the axis, where the frozen
+     * part in the track's start corner ends.
+     */
     #frozenRegion() {
         const box = this.#track.getBoundingClientRect();
         const isBlock = this.#axis === 'block';
@@ -258,15 +254,14 @@ class BoundaryWatch {
     }
 }
 
-/** Asks for the next page as the target comes into view; the handle keeps the observer, so the target can be released before it leaves the DOM. */
+/** Tells the owner as the target comes into view. */
 class Sentinel {
     #observer;
     #isDisposed = false;
 
     constructor(target, { owner, root = null, rootMargin = '200px' }) {
-        // A panel that scrolls rather than the page is the root, so intersection is measured against it and not the viewport.
         this.#observer = new IntersectionObserver(observations => {
-            // Observations already queued still run after disconnect, and the owner may be gone by then.
+            // Observations queued before disconnect still run.
             if (!this.#isDisposed && observations.some(observation => observation.isIntersecting)) {
                 tell(owner, 'HandleReachedAsync');
             }

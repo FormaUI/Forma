@@ -11,7 +11,7 @@ export function page() {
  * Prints markup by itself, dressed in the page's own stylesheets.
  * @param {string} html The document's markup.
  * @param {string} title The printed document's title.
- * @param {string} className The class the document's container carries, so the page's prose styles apply to it.
+ * @param {string} className The class the document's container carries.
  */
 export function print(html, title, className) {
     const frame = document.createElement('iframe');
@@ -33,7 +33,6 @@ export function print(html, title, className) {
     printed.body.firstElementChild.className = className;
     printed.body.firstElementChild.innerHTML = html;
 
-    // The page's inline style blocks travel as copies; its linked sheets are loaded again and waited for.
     for (const style of document.querySelectorAll('style')) {
         printed.head.appendChild(printed.importNode(style, true));
     }

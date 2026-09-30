@@ -1,29 +1,22 @@
 /**
  * Wheel — what a surface does with a wheel turned over it
  *
- * A wheel that reports vertically is turned into movement along a track, or an owner is told
- * which way it turned. Either is a route on the input router, declared on the surface under the
- * action the surface names, so a turn over a popover opened from the surface, or over a panel
- * inside it that scrolls on its own, is theirs and never reaches the surface, and the host remaps
- * the turn by that action. Inline offsets are read through Math.abs where a right-to-left
- * container counts scrollLeft downwards from zero.
+ * A vertical turn moves a track along its inline axis, or a turn tells an owner which way it
+ * turned. Either is a route on the input router, declared on the surface under the action the
+ * surface names.
  */
 
 import { Direction } from '../../../core/scripts/Direction.js';
 import { tell } from '../../../core/scripts/Owner.js';
 import { register } from '../../../input/scripts/InputRouter.js';
 
-/** Pixels a line is taken to be, for the wheels that report in lines rather than pixels. */
+/** Pixels a line is taken to be, for a wheel that reports in lines. */
 const LineHeight = 16;
 
 /** Milliseconds between events that still belong to one gesture. */
 const GestureGap = 150;
 
-/**
- * Pixels below which a delta is a trackpad's rather than a wheel notch's. A notch reports whole
- * lines, or in pixels no fewer than the 48 of three lines, while a trackpad reports the pointer's
- * own movement, a few pixels at a time.
- */
+/** Pixels below which a delta is a trackpad's rather than a wheel notch's. */
 const NotchDistance = 40;
 
 /** The router's name for each key a turn can be gated on. */
@@ -34,15 +27,15 @@ const Modifiers = { ctrl: 'control', alt: 'alt', shift: 'shift' };
 /**
  * @param {HTMLElement} target The surface the wheel is turned over.
  * @param {{ action: string, track?: HTMLElement, owner?: Owner, modifier?: 'ctrl' | 'alt' | 'shift' }} options
- *   The action the turn is routed as; answer a wheel over the target by moving the track, the
- *   target when none is named, or by telling the owner the direction through HandleWheelAsync,
- *   only with the modifier key held when one is named.
+ *   The action the turn is routed as; the track the wheel moves, the target when none is named;
+ *   the owner told the direction through HandleWheelAsync; and the modifier key held for the turn
+ *   to be answered.
  */
 export function attach(target, options) {
     return new Wheel(target, options);
 }
 
-/** Answers a wheel turned over the target, which reports vertically alone: a track moves by it, or an owner is told its direction. */
+/** Answers a wheel turned over the target: a track moves by it, or an owner is told its direction. */
 class Wheel {
     #registration;
 
@@ -68,7 +61,7 @@ class TrackSink {
         this.#track = track;
     }
 
-    /** A vertical turn, while the track has somewhere to scroll; the turn is consumed at either end too, so the page stays put. */
+    /** A vertical turn while the track can scroll, consumed at either end too. */
     describeBinding(modifiers) {
         return { type: 'wheel', axis: 'vertical', modifiers, when: () => this.#slack() > 1 };
     }
@@ -85,11 +78,10 @@ class TrackSink {
             return;
         }
 
-        // Each notch lands at once.
         this.#track.scrollTo({ left: next, behavior: 'instant' });
     }
 
-    /** How far the track can scroll; a sub-pixel track width leaves a fractional remainder, so a pixel is the smallest real slack. */
+    /** How far the track can scroll; a sub-pixel track width leaves a fractional remainder below one pixel. */
     #slack() {
         return this.#track.scrollWidth - this.#track.clientWidth;
     }

@@ -5,7 +5,7 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>State a checkbox exposes only as a property.</summary>
+/// <summary>State a checkbox holds as a DOM property.</summary>
 public sealed class CheckBox(IJSEnvironment js) : IAsyncDisposable
 {
     private readonly JSModule _module = new(js, "./_content/forma/browser/scripts/operations/CheckBox.js");

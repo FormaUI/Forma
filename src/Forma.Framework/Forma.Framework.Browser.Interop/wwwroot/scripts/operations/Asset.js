@@ -1,5 +1,5 @@
 /**
- * Loads document-wide assets once, sharing concurrent requests and allowing retries after failure.
+ * Asset — scripts, modules, stylesheets and sprites loaded once per document
  */
 
 const SpriteTimeout = 15_000;
@@ -116,8 +116,8 @@ function fetchSheet(url, timeoutMs) {
 /**
  * Adopts a sprite's symbols into the current document.
  *
- * The sheet is fetched and parsed once, while adoption is repeated whenever necessary
- * because navigation may replace the document-owned sprite host.
+ * The sheet is fetched and parsed once; its symbols are adopted into whichever sprite host
+ * the document holds now.
  */
 export function loadSprite(url, timeoutMs = SpriteTimeout) {
     return attempt(async () => {

@@ -1,18 +1,14 @@
 /**
- * DragGesture — the press-move-release half of a drag, with none of what a drag means
- *
- * Pointer Events rather than HTML5 drag-and-drop, which never fires on touch, so one path
- * covers mouse, touch and pen alike.
+ * DragGesture — the press, move and release of a drag, through Pointer Events
  *
  * The handle owns one container: it decides when a press has traveled far enough to be a
  * drag, keeps the pointer captured for the rest of the gesture, scrolls the nearest
  * scrolling ancestor while the pointer is held at an edge, and reports each stage to its
- * caller with the subject, where the pointer is and where the press began. What is being
- * dragged, where it may land, and what landing there means are all the caller's to answer.
+ * caller with the subject, where the pointer is and where the press began.
  *
  * A drag under way is an active registration on the input router, standing above whatever
- * contains it, so Escape and a platform close request cancel the drag wherever focus is and
- * leave a popup it began in open, and a press elsewhere dismisses nothing while it lasts.
+ * contains it: Escape and a platform close request cancel the drag wherever focus is, and a
+ * press elsewhere dismisses nothing while it lasts.
  */
 
 import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
@@ -35,11 +31,10 @@ import { capture, release } from '../operations/Pointer.js';
  *   pointerType?: 'mouse' | 'pen' | 'touch',
  *   action?: string
  * }} options
- *   How far a press travels before it is a drag, a threshold of zero making the first movement one; which
- *   axis that travel is measured along; whether a drag held at a scrolling edge scrolls; how long a touch
- *   rests before it lifts; the one pointer type the gesture answers, every type when unset; and the action
- *   the press is declared as on the gesture's registration in place of its own listener, so a press a
- *   nested scope routes never starts it and the host remaps it by that action.
+ *   How far a press travels before it is a drag; which axis that travel is measured along; whether a drag
+ *   held at a scrolling edge scrolls; how long a touch rests before it lifts; the one pointer type the
+ *   gesture answers, every type when unset; and the action the press is routed as on the gesture's
+ *   registration.
  */
 export function attach(target, options) {
     return new DragGesture(target, options);
@@ -97,9 +92,6 @@ class DragGesture {
 
         const { signal } = this.#listeners;
 
-        // The registration is active for as long as a drag lasts, when Escape cancels it and a press elsewhere is
-        // no dismissal; the press that begins one is the router's to hand over where an action names it, and the
-        // rest of the gesture rides the captured pointer.
         this.#registration = register(container, {
             escape: 'cancel',
             pressAway: 'ignore',
@@ -119,10 +111,7 @@ class DragGesture {
         container.addEventListener('pointerup', event => this.#handlePointerUp(event), { signal });
         container.addEventListener('pointercancel', () => this.cancel(), { signal });
 
-        // Pointer capture does not stop the compositor scrolling a touch that began on a
-        // scrollable area; it cancels the pointer instead. Only refusing the touchmove
-        // keeps a drag alive, and only once one is under way. A gesture that answers no
-        // touch installs no such listener, so the browser keeps touch scrolling passive.
+        // Refusing touchmove during a drag keeps the compositor from scrolling the touch and canceling the pointer.
         if (this.#pointerType === null || this.#pointerType === 'touch') {
             container.addEventListener('touchmove', event => {
                 if (this.#isDragging) {
@@ -139,7 +128,7 @@ class DragGesture {
         this.#registration.dispose();
     }
 
-    /** Abandons a gesture in flight, reporting it as canceled rather than dropped. */
+    /** Abandons a gesture in flight, reporting a drag under way as canceled. */
     cancel() {
         if (!this.#subject) {
             return;
@@ -183,7 +172,7 @@ class DragGesture {
         this.#isDragging = false;
     }
 
-    /** Marks the press a drag and stands it above whatever contains it, so Escape cancels the drag and nothing else; the click the drag ends in is claimed, so nothing under it takes it. */
+    /** Marks the press a drag, stands it above whatever contains it, and claims the click the drag ends in. */
     #begin() {
         this.#isDragging = true;
         this.#registration.activate();
@@ -197,7 +186,7 @@ class DragGesture {
         }
     }
 
-    /** What a press would drag: nothing while a gesture is under way, from a pointer the gesture does not answer, or on nothing the caller can drag. */
+    /** What a press would drag. */
     #findPressed(event) {
         if (this.#subject || (this.#pointerType && event.pointerType !== this.#pointerType)) {
             return null;
@@ -224,21 +213,17 @@ class DragGesture {
         this.#isDragging = false;
         this.#scroller = this.#autoScroll ? Scrolling.nearestScroller(this.#element) : null;
 
-        // A touch that could equally have been a scroll has to rest before it lifts,
-        // otherwise every swipe across the container would drag instead of scrolling.
-        // Capture waits too, so an abandoned press still reaches the browser as a scroll.
+        // Capture waits for the hold, so a touch abandoned as a swipe still scrolls.
         if (this.#holdDelay > 0 && event.pointerType === 'touch') {
             this.#holdTimer = setTimeout(() => this.#beginHeldDrag(), this.#holdDelay);
             return;
         }
 
-        // Captured on the container rather than whatever was pressed, so the gesture
-        // survives both the pointer leaving that element and the element itself going away.
+        // Captured on the container, so the gesture outlasts the pressed element going away.
         capture(this.#element, event.pointerId);
     }
 
-    // A held touch lifts straight into a drag: the rest has already made the intent clear,
-    // so it does not also have to travel the threshold.
+    /** Lifts a held touch straight into a drag. */
     #beginHeldDrag() {
         this.#holdTimer = null;
         if (!this.#subject) {
@@ -254,8 +239,7 @@ class DragGesture {
             return;
         }
 
-        // Moving before the hold elapses means the press was a swipe, so it is abandoned
-        // and the browser is left to scroll with it.
+        // A press that travels before the hold elapses is a swipe, left to the browser to scroll.
         if (this.#holdTimer !== null) {
             if (this.#travelled(event) >= this.#threshold) {
                 this.#release();
@@ -330,8 +314,7 @@ class DragGesture {
 
     #scrollTick() {
         (this.#scroller ?? window).scrollBy(0, this.#scrollStep);
-        // The pointer can sit still while content moves under it, so the caller is asked to
-        // re-evaluate each frame rather than only on the next pointermove.
+        // Content moves under a still pointer, so the caller is told each frame.
         this.#onMove?.(this.#context());
         this.#scrollScheduler.request(() => this.#scrollTick());
     }

@@ -1,7 +1,7 @@
 /**
  * Window — a window's browser side: shown in the top layer, put in front of the other windows
  * when raised; modal, it keeps Tab inside itself and stands on a scrim; either way it remembers
- * where focus was inside it and takes focus back. Its box is its frame's.
+ * where focus was inside it and takes focus back.
  */
 
 import { Focus, focusablesIn } from '../behaviors/Focus.js';
@@ -13,8 +13,8 @@ import { Focus, focusablesIn } from '../behaviors/Focus.js';
  *   modal: boolean,
  *   scrim: HTMLElement | null
  * }} options
- *   Whether the window is shown at all rather than minimized or hidden; whether Tab stays
- *   inside it; the popover shown beneath it, if any.
+ *   Whether the window is shown; whether Tab stays inside it; and the scrim popover shown
+ *   beneath it.
  */
 export function attach(target, options) {
     return new Window(target, options);
@@ -58,7 +58,12 @@ class Window {
         this.#hide();
     }
 
-    /** Moves focus into the window unless a control inside it already holds it: to the element last focused inside it, else its first control, else the window itself. */
+    /**
+     * Moves focus into the window.
+     *
+     * Focus already on a control inside the window stays there; otherwise it goes to the element last
+     * focused inside the window, else its first control, else the window itself.
+     */
     focus() {
         const active = document.activeElement;
 
@@ -74,12 +79,18 @@ class Window {
         target.focus();
     }
 
-    /** Puts a presented window on top of every other window; one pressed inside is raised once the press ends, since hiding it would end the press's pointer capture. A press ends with the pointer's release or cancel, or with the browser window losing focus. */
+    /**
+     * Puts a presented window on top of every other window.
+     *
+     * A window pressed inside is raised once the press ends, with the pointer's release or cancel or the
+     * browser window losing focus.
+     */
     raise() {
         if (!this.#presented || topmost === this) {
             return;
         }
 
+        // Hiding a pressed window would end the press's pointer capture.
         if (this.#isPressed) {
             this.#raiseAfterRelease = true;
             return;
@@ -90,7 +101,7 @@ class Window {
     }
 
     /**
-     * Shows the window in the top layer, or takes it out while it is minimized or hidden.
+     * Shows the window in the top layer or takes it out, to match presented.
      * @param {boolean} presented
      */
     present(presented) {
@@ -103,7 +114,7 @@ class Window {
         }
     }
 
-    /** Keeps the element focus is leaving, so focus can return there when the window is activated again. */
+    /** Keeps the element inside the window that focus is leaving. */
     #remember(element) {
         if (element instanceof HTMLElement && this.#window.contains(element)) {
             this.#lastFocused = element;
@@ -119,7 +130,7 @@ class Window {
         }
     }
 
-    /** Raises the window into the top layer, where no ancestor's box or stacking can reach it, with its scrim shown first so it stands beneath. */
+    /** Shows the window in the top layer, its scrim shown first so it stands beneath. */
     #show() {
         if (this.#scrim && typeof this.#scrim.showPopover === 'function' && !this.#scrim.matches(':popover-open')) {
             this.#scrim.showPopover();

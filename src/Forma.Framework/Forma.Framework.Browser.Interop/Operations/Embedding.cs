@@ -9,7 +9,7 @@ public sealed class Embedding(IJSEnvironment js) : IAsyncDisposable
 {
     private readonly JSModule _module = new(js, "./_content/forma/browser/scripts/operations/Embedding.js");
 
-    /// <summary>Loads the embed script if needed and asks it to process markup rendered since it last ran.</summary>
+    /// <summary>Loads the embed script and asks it to process the markup rendered since it last ran.</summary>
     public ValueTask<bool> ActivateAsync(string scriptUrl)
         => _module.TryInvokeAsync<bool>("activate", scriptUrl);
 

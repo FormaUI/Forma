@@ -17,7 +17,7 @@ public sealed class Pointer(IJSEnvironment js) : IAsyncDisposable
     public ValueTask<bool> CaptureAsync(ElementReference target, long pointerId)
         => _module.TryInvokeVoidAsync("capture", target, pointerId);
 
-    /// <summary>Releases capture of the pointer with the given id from <paramref name="target"/>, if held.</summary>
+    /// <summary>Releases capture of the pointer with the given id from <paramref name="target"/>.</summary>
     public ValueTask<bool> ReleaseAsync(ElementReference target, long pointerId)
         => _module.TryInvokeVoidAsync("release", target, pointerId);
 
