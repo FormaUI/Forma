@@ -5,13 +5,13 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The files a document carries beside its content, listed beneath the canvas whichever editor is active.</summary>
+/// <summary>The list of the files a document carries beside its content.</summary>
 public sealed partial class FormaComposerAttachments : FormaComponentBase
 {
-    /// <summary>The composer state cascaded from the parent shell.</summary>
+    /// <summary>The context of the composer the list belongs to.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
-    /// <summary>Everything this part invokes on the composer, cascaded from the parent shell.</summary>
+    /// <summary>The interaction the list invokes on the composer.</summary>
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     /// <inheritdoc />
@@ -24,7 +24,7 @@ public sealed partial class FormaComposerAttachments : FormaComponentBase
     private IReadOnlyList<ResourceInfo> Attachments
         => Composer?.Document.Attachments ?? [];
 
-    // A view shows the document without editing it, so removing an attachment belongs to the editor alone.
+    // Removing an attachment belongs to the editor alone.
     private bool CanRemove
         => Composer is { IsDisabled: false, IsReadOnly: false, ActiveView: null };
 

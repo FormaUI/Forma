@@ -1,4 +1,4 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
-/// <summary>What a composer dialog collects, and so what it can be reopened on.</summary>
+/// <summary>What a composer dialog collects and reopens on.</summary>
 public abstract record ComposerDialogResult;

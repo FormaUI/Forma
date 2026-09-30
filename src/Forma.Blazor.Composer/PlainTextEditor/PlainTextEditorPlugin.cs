@@ -5,7 +5,7 @@ using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 
-/// <summary>Proof-of-routing and fallback editor plugin, authoring plain text.</summary>
+/// <summary>The editor plugin that authors plain text, and the editor a composer falls back to.</summary>
 public sealed class PlainTextEditorPlugin : IComposerEditorPlugin
 {
     /// <inheritdoc />

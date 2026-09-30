@@ -2,14 +2,14 @@ namespace Forma.Blazor.Components.Composer.Dialogs;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Dialog for configuring and inserting video embeds.</summary>
+/// <summary>The dialog that collects a video embed.</summary>
 public sealed partial class FormaComposerVideoDialog : ComposerDialogBase
 {
     private string? _source;
     private string? _title;
     private bool _autoplay;
 
-    /// <summary>Callback invoked when video embed details are confirmed.</summary>
+    /// <summary>Callback invoked with the confirmed video.</summary>
     [Parameter] public EventCallback<VideoDialogResult> OnInsert { get; set; }
 
     /// <inheritdoc />
@@ -18,8 +18,7 @@ public sealed partial class FormaComposerVideoDialog : ComposerDialogBase
             ? (video.Source, video.Title, video.Autoplay)
             : (null, null, false);
 
-    // The document keeps only an http or https address, because the sanitizer drops every other scheme
-    // and the author would be left with a placeholder pointing nowhere.
+    // The sanitizer keeps a video address only with the http or https scheme.
     private static bool IsPlayable(string source)
         => Uri.TryCreate(source, UriKind.Absolute, out var address)
             && address.Scheme is "http" or "https";

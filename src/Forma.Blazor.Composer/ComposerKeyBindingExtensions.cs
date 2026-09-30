@@ -4,14 +4,15 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
 
-/// <summary>What a host's input policy makes of a composer's shortcut.</summary>
+/// <summary>Checks a composer's shortcut against the host's input policy.</summary>
 internal static class ComposerKeyBindingExtensions
 {
-    /// <summary>
-    /// Whether one of the host's preemptive routes answers the binding's keys, in which case the press never reaches
-    /// the composer. The host's key binding is read as the router matches it: Control and Alt count only where stated,
-    /// and Shift left unstated matches either way.
-    /// </summary>
+    /// <summary>Whether one of the host's preemptive routes claims the binding's keys.</summary>
+    /// <remarks>
+    /// A claimed press never reaches the composer. The host's key binding is read as the router matches it: Control and
+    /// Alt count only where stated, a Shift left unstated matches either way, and a release binding or one requiring Meta
+    /// claims nothing.
+    /// </remarks>
     public static bool IsClaimedBy(this ComposerKeyBinding binding, InputRouterOptions options)
     {
         ArgumentNullException.ThrowIfNull(binding);

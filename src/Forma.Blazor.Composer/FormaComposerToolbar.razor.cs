@@ -9,16 +9,16 @@ using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The command bar belonging to one editor or one view over it, giving its own commands and its plugins' commands a row each.</summary>
+/// <summary>The toolbar of an editor or a view over it, with rows for its own commands and its plugins' commands.</summary>
 public sealed partial class FormaComposerToolbar : FormaComponentBase
 {
-    /// <summary>The number of commands a bar carries before the next row starts one of its own.</summary>
+    /// <summary>The most commands one bar carries.</summary>
     public const int CommandsPerBar = 12;
 
     /// <summary>The editor this toolbar belongs to, or whose view it belongs to.</summary>
     [Parameter, EditorRequired] public IComposerEditorPlugin Editor { get; set; } = default!;
 
-    /// <summary>The view this toolbar belongs to, or null when it belongs to the editor itself.</summary>
+    /// <summary>The view this toolbar belongs to, where null means it belongs to the editor itself.</summary>
     [Parameter] public IComposerViewPlugin? View { get; set; }
 
     /// <summary>The feature plugins in play on this bar's surface.</summary>
@@ -55,7 +55,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     private IComposerPlugin Owner
         => View ?? (IComposerPlugin)Editor;
 
-    /// <summary>The bars to render, small rows folded together so none is spent on a handful of commands.</summary>
+    /// <summary>The bars to render, with small rows folded together.</summary>
     private IReadOnlyList<ComposerToolbarRowLayout> Bars
         => _bars;
 
@@ -68,12 +68,11 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     private void TogglePlugins()
         => _arePluginsShown = !_arePluginsShown;
 
-    /// <summary>How many commands a row's items amount to, counting through a group rather than as one.</summary>
+    /// <summary>The number of commands in the items, each item of a group counted.</summary>
     private static int CountLeaves(IEnumerable<ToolbarItem> items)
         => items.Sum(item => item is ToolbarGroup group ? group.Items.Count : 1);
 
-    // The layout is built from what the surface hands over and the reader's language, none of which changes
-    // between one render and the next as the selection moves, so it is built again only when one of them does.
+    // The layout is rebuilt only when its inputs change.
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -103,7 +102,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
             var count = CountLeaves(row.Items);
             var last = bars.Count > 0 ? bars[^1] : null;
 
-            // Two rows may each carry a group of the same name, so the fold joins those as the layout joins them within a row.
+            // Folding coalesces groups of the same name across the joined rows.
             if (last is not null && CountLeaves(last.Items) + count <= CommandsPerBar)
             {
                 bars[^1] = last with { Items = ComposerToolbarLayout.Coalesce([.. last.Items, .. row.Items]) };
@@ -117,6 +116,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
         return bars.Count > 0 ? bars : [_layout.Rows.First(row => row.IsBuiltIn)];
     }
 
-    /// <summary>What the layout is built from, compared by identity, since the composer hands the same instances over across renders.</summary>
+    /// <summary>What the layout is built from.</summary>
+    /// <remarks>The plugins compare by identity, as the composer hands the same instances over across renders.</remarks>
     private sealed record LayoutInputs(IComposerEditorPlugin Editor, IComposerViewPlugin? View, IReadOnlyList<IComposerPlugin> Plugins, string Culture);
 }

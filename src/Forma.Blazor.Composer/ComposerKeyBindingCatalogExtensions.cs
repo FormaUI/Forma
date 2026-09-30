@@ -8,7 +8,8 @@ using Forma.Framework.Input.Keyboard;
 /// <summary>The input routes a composer's shortcut catalog registers with the input router.</summary>
 internal static class ComposerKeyBindingCatalogExtensions
 {
-    /// <summary>One route per command, each bound to the command's keys; Control stands for the platform's shortcut key.</summary>
+    /// <summary>The catalog's bindings as input routes, one per command.</summary>
+    /// <remarks>A binding's Control becomes the platform's primary modifier.</remarks>
     public static IReadOnlyList<InputRoute> ToInputRoutes(this ComposerKeyBindingCatalog catalog)
     {
         ArgumentNullException.ThrowIfNull(catalog);

@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Composer;
 
-/// <summary>The composer's own chrome state, independent of the document any editor holds.</summary>
+/// <summary>The state of the composer's chrome.</summary>
 internal sealed class ComposerChrome
 {
     /// <summary>Whether the composer fills the viewport.</summary>

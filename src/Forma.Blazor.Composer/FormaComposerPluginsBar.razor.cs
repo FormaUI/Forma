@@ -6,7 +6,7 @@ using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The bar carrying the commands of the plugins a host registered, overflowing the surplus into a menu.</summary>
+/// <summary>The bar of the commands of the plugins a host registered, with an overflow menu.</summary>
 public sealed partial class FormaComposerPluginsBar : FormaElementBase
 {
     /// <summary>The number of commands shown before the rest move into the overflow menu.</summary>
@@ -24,10 +24,10 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
     /// <summary>Callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>Hides the bar while keeping it mounted, independently of whether it carries any items.</summary>
+    /// <summary>Whether the bar is hidden.</summary>
     [Parameter] public bool Hidden { get; set; }
 
-    /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
+    /// <summary>Whether hiding and showing the bar is animated.</summary>
     [Parameter] public bool Animated { get; set; }
 
     /// <inheritdoc />
@@ -43,8 +43,7 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
     {
         _visibleItems = SplitVisible();
 
-        // Skips before filtering, since the visible split counts every leaf toward the limit — filtering
-        // first would misalign the index and drop an action that is neither shown nor in the menu.
+        // Skips before filtering, since the visible split counts every leaf toward the limit.
         _overflowingActions = [.. Items.SelectMany(GetLeaves).Skip(InlineLimit).OfType<ToolbarAction>()];
     }
 

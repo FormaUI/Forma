@@ -10,10 +10,10 @@ using Forma.Framework.Composer.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-/// <summary>Describes what every composer in the application is made of.</summary>
+/// <summary>The registration of what every composer in the application is made of.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers the plugins every <c>FormaComposer</c> builds itself from.</summary>
+    /// <summary>Registers the plugins every <see cref="FormaComposer"/> is built from.</summary>
     /// <param name="services">The application's services.</param>
     /// <param name="configure">Registers the editors, views and capabilities a composer has.</param>
     public static IServiceCollection AddFormaComposer(this IServiceCollection services, Action<ComposerPluginBuilder> configure)
@@ -28,7 +28,7 @@ public static class ServiceCollectionExtensions
 
     /// <summary>Registers the visual rich text editor.</summary>
     /// <param name="composer">The composer being described.</param>
-    /// <param name="configure">Registers the editor's own plugins and views; omitted, the editor is registered bare.</param>
+    /// <param name="configure">Registers the editor's own plugins and views, where null registers the editor bare.</param>
     public static ComposerPluginBuilder AddRichTextEditor(
         this ComposerPluginBuilder composer,
         Action<ComposerEditorBuilder<RichTextEditorPlugin>>? configure = null)
@@ -38,9 +38,9 @@ public static class ServiceCollectionExtensions
         return composer.AddEditorPlugin(configure);
     }
 
-    /// <summary>Registers the plain text editor, which a composer otherwise falls back to only when no editor is registered.</summary>
+    /// <summary>Registers the plain text editor.</summary>
     /// <param name="composer">The composer being described.</param>
-    /// <param name="configure">Registers the editor's own plugins and views; omitted, the editor is registered bare.</param>
+    /// <param name="configure">Registers the editor's own plugins and views, where null registers the editor bare.</param>
     public static ComposerPluginBuilder AddPlainTextEditor(
         this ComposerPluginBuilder composer,
         Action<ComposerEditorBuilder<PlainTextEditorPlugin>>? configure = null)
@@ -50,7 +50,7 @@ public static class ServiceCollectionExtensions
         return composer.AddEditorPlugin(configure);
     }
 
-    /// <summary>Registers the capabilities every editor and every view has, for whichever of them the composer does not register itself.</summary>
+    /// <summary>Registers the default plugins of every editor and view.</summary>
     /// <param name="composer">The composer being described.</param>
     public static ComposerPluginBuilder TryAddDefaultPlugins(this ComposerPluginBuilder composer)
     {
@@ -61,7 +61,7 @@ public static class ServiceCollectionExtensions
             .TryAddFeaturePlugin<ShortcutsPlugin>();
     }
 
-    /// <summary>Registers the plain text editor's standard capabilities, for whichever of them the editor does not register itself.</summary>
+    /// <summary>Registers the plain text editor's default feature plugins.</summary>
     /// <param name="editor">The editor being described.</param>
     public static ComposerEditorBuilder<PlainTextEditorPlugin> TryAddDefaultFeatures(this ComposerEditorBuilder<PlainTextEditorPlugin> editor)
     {
@@ -70,7 +70,7 @@ public static class ServiceCollectionExtensions
         return editor.TryAddFeaturePlugin<FileUploadPlugin>();
     }
 
-    /// <summary>Registers the rich text editor's standard capabilities, for whichever of them the editor does not register itself.</summary>
+    /// <summary>Registers the rich text editor's default feature plugins.</summary>
     /// <param name="editor">The editor being described.</param>
     public static ComposerEditorBuilder<RichTextEditorPlugin> TryAddDefaultFeatures(this ComposerEditorBuilder<RichTextEditorPlugin> editor)
     {

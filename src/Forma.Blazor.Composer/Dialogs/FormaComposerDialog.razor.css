@@ -18,7 +18,7 @@
     color: var(--forma-composer-dialog-error-color, var(--danger-color));
 }
 
-/* The fields come from whichever dialog is being shown, so their scope is the caller's rather than this one's. */
+/* The fields carry the scope of the dialog that renders them. */
 ::deep .forma-composer-dialog-checkbox {
     margin-block-start: var(--space-2);
 }

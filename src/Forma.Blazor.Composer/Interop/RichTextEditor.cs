@@ -7,7 +7,7 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Rich text contenteditable canvas interop and formatting operations.</summary>
+/// <summary>The interop of the rich text editor's contenteditable canvas.</summary>
 internal sealed class RichTextEditor(IJSEnvironment js)
     : JSInterop(js, "./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js")
 {
@@ -41,7 +41,7 @@ internal sealed class RichTextEditor(IJSEnvironment js)
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
 public sealed record RichTextCommandResult(string Html, RichTextSelectionDto? Selection);
 
-/// <summary>What a link dialog is about to act on: the text covered, and the one address behind it when there is exactly one.</summary>
+/// <summary>What a link dialog acts on: the text it covers, the address of the single link it covers, and the number of links.</summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
 public sealed record RichTextLinkTargetDto(string Text, string? Href, int Count);
 

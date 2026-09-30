@@ -14,7 +14,7 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     /// <summary>The editor whose component fills this surface's canvas, or whose document the view shows.</summary>
     [Parameter, EditorRequired] public IComposerEditorPlugin Editor { get; set; } = default!;
 
-    /// <summary>The view filling this surface's canvas in the editor's place, or null for the editor itself.</summary>
+    /// <summary>The view filling this surface's canvas in the editor's place, where null means the editor fills it.</summary>
     [Parameter] public IComposerViewPlugin? View { get; set; }
 
     /// <summary>The feature plugins on offer to this surface.</summary>
@@ -45,7 +45,7 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     private ComposerPluginLocalizer Localizer
         => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
 
-    // The selection bar's items come from the same layout as the toolbar's, built again only when what it is built from changes.
+    // The selection bar is rebuilt only when its inputs change.
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -65,6 +65,7 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
         SelectionBar = new ComposerSelectionBar(items, KeyBindings);
     }
 
-    /// <summary>What the selection bar is built from, compared by identity, since the composer hands the same instances over across renders.</summary>
+    /// <summary>What the selection bar is built from.</summary>
+    /// <remarks>The plugins compare by identity, as the composer hands the same instances over across renders.</remarks>
     private sealed record SelectionBarInputs(IComposerEditorPlugin Editor, IReadOnlyList<IComposerPlugin> Plugins, ComposerKeyBindingCatalog KeyBindings, string Culture);
 }

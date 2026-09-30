@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Composer.Dialogs;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Dialog for configuring and inserting HTML tables.</summary>
+/// <summary>The dialog that collects a table.</summary>
 public sealed partial class FormaComposerTableDialog : ComposerDialogBase
 {
     private int _rows = 3;
@@ -10,13 +10,13 @@ public sealed partial class FormaComposerTableDialog : ComposerDialogBase
     private bool _includeHeader = true;
     private string? _caption;
 
-    /// <summary>The maximum rows allowed.</summary>
+    /// <summary>The maximum number of rows.</summary>
     [Parameter] public int MaxRows { get; set; } = 20;
 
-    /// <summary>The maximum columns allowed.</summary>
+    /// <summary>The maximum number of columns.</summary>
     [Parameter] public int MaxColumns { get; set; } = 10;
 
-    /// <summary>Callback invoked when table configuration is confirmed.</summary>
+    /// <summary>Callback invoked with the confirmed table.</summary>
     [Parameter] public EventCallback<TableDialogResult> OnInsert { get; set; }
 
     private async Task HandleConfirmAsync()

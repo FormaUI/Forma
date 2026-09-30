@@ -19,7 +19,8 @@ internal enum SelectionFollowerPlacement
 internal sealed class SelectionFollower(IJSEnvironment js)
     : JSInterop(js, "./_content/Forma.Blazor.Composer/scripts/SelectionFollower.js")
 {
-    /// <summary>Attaches to the element that follows the selection; a class marks it while a selection inside the owner is active, and a handle inside it drags or arrow-keys it to a new place.</summary>
+    /// <summary>Attaches to the element that follows the selection.</summary>
+    /// <remarks>The active class marks the element while a selection inside the owner is active, and the handle moves it by dragging or by the arrow keys.</remarks>
     public ValueTask<bool> AttachAsync(
         ElementReference target,
         ElementReference? owner = null,
@@ -31,7 +32,7 @@ internal sealed class SelectionFollower(IJSEnvironment js)
             activeClass,
             placement = placement == SelectionFollowerPlacement.Above ? "above" : "below",
             handleSelector,
-            // An owner named here must arrive in the browser; a reference that resolves to nothing hides the element rather than widening it to every selection.
+            // An owner that resolves to nothing in the browser hides the element.
             requiresOwner = owner is not null,
         });
 

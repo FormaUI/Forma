@@ -1,4 +1,4 @@
-/* FormaComposer — The composer engine hosting one surface per editor */
+/* FormaComposer — the composer that hosts a surface for each editor */
 .forma-composer {
     display: flex;
     flex-direction: column;
@@ -45,8 +45,8 @@
     box-sizing: border-box;
 }
 
-/* The bar and the tab strip belong to FormaCommandBar and FormaTabs, so they are reached
-   through ::deep; the child combinators outrank those components' own rules whatever the bundle order. */
+/* The bar and the tab strip belong to FormaCommandBar and FormaTabs; the child combinators
+   outrank those components' own rules in any bundle order. */
 ::deep .forma-composer-toolbar {
     --forma-command-area-padding: var(--space-2) var(--space-2);
     --forma-command-area-bg-color: var(--toolbar-bg-color);

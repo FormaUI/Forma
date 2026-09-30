@@ -5,13 +5,13 @@ using Forma.Blazor.Components.Feedback;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>The modal every composer dialog is built on: its fields, an optional notice, and whatever confirming refused.</summary>
+/// <summary>The modal every composer dialog is built on: its fields, a notice, and the messages confirming refused with.</summary>
 public sealed partial class FormaComposerDialog : FormaComponentBase
 {
-    // Confirming has to be able to fail, so the modal is not allowed to close itself before the fields are judged.
+    // The modal stays open on confirm, so confirming can fail.
     private static readonly DialogOptions StayOpenOnConfirm = new() { CloseOnConfirm = false };
 
-    /// <summary>Whether the dialog is currently visible.</summary>
+    /// <summary>Whether the dialog is open.</summary>
     [Parameter, EditorRequired] public bool Opened { get; set; }
 
     /// <summary>The title shown in the modal header.</summary>
@@ -23,16 +23,16 @@ public sealed partial class FormaComposerDialog : FormaComponentBase
     /// <summary>The fields the dialog offers.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Text explaining why the dialog can do nothing, shown beneath the fields.</summary>
+    /// <summary>The notice shown beneath the fields.</summary>
     [Parameter] public string? Notice { get; set; }
 
-    /// <summary>What confirming refused, shown beneath the fields, and empty while nothing has been refused.</summary>
+    /// <summary>The messages shown beneath the fields.</summary>
     [Parameter] public IReadOnlyList<string> Messages { get; set; } = [];
 
-    /// <summary>Optional override for the confirming action's text.</summary>
+    /// <summary>The text of the confirming action.</summary>
     [Parameter] public string? ConfirmText { get; set; }
 
-    /// <summary>Optional override for the dismissing action's text.</summary>
+    /// <summary>The text of the dismissing action.</summary>
     [Parameter] public string? CancelText { get; set; }
 
     /// <summary>Callback invoked when the confirming action is pressed.</summary>
@@ -47,7 +47,7 @@ public sealed partial class FormaComposerDialog : FormaComponentBase
 
     private readonly EditContext _editContext;
 
-    /// <summary>Creates the dialog shell over an edit context the bound inputs resolve against.</summary>
+    /// <summary>Creates the dialog with the edit context its bound inputs use.</summary>
     public FormaComposerDialog()
     {
         _editContext = new EditContext(this);

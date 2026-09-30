@@ -2,14 +2,14 @@ namespace Forma.Blazor.Components.Composer.Dialogs;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Dialog for inserting declarative embed placeholders.</summary>
+/// <summary>The dialog that collects an embed placeholder.</summary>
 public sealed partial class FormaComposerEmbedDialog : ComposerDialogBase
 {
     private string? _embedType;
     private string? _identifier;
     private string? _settings;
 
-    /// <summary>Callback invoked when embed details are confirmed.</summary>
+    /// <summary>Callback invoked with the confirmed embed.</summary>
     [Parameter] public EventCallback<EmbedDialogResult> OnInsert { get; set; }
 
     /// <inheritdoc />
@@ -22,7 +22,7 @@ public sealed partial class FormaComposerEmbedDialog : ComposerDialogBase
     {
         Messages.Clear();
 
-        // Both are named at once, so an author filling one is not sent back for the other.
+        // Every missing field is reported at once.
         if (string.IsNullOrWhiteSpace(_embedType))
         {
             Messages.Add(L["Enter the embed type before inserting."].Value);

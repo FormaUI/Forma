@@ -9,16 +9,16 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-/// <summary>The plain text canvas, filling the surface the engine gives its editor.</summary>
+/// <summary>The canvas of the plain text editor.</summary>
 public sealed partial class FormaPlainTextEditor : FormaComponentBase
 {
-    // Keystrokes within this delay commit as one state, so undo steps back a phrase rather than a character.
+    // Keystrokes within this delay commit as one history state.
     private static readonly TimeSpan CommitDelay = TimeSpan.FromMilliseconds(400);
 
-    /// <summary>The composer state cascaded from the parent shell.</summary>
+    /// <summary>The context of the composer the canvas belongs to.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
-    /// <summary>Everything this part invokes on the composer, cascaded from the parent shell.</summary>
+    /// <summary>The interaction the canvas invokes on the composer.</summary>
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -36,7 +36,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private string? _typedContent;
     private string? _committedContent;
 
-    // Rendering what the textarea already holds keeps an interleaved render from overwriting uncommitted typing.
+    // Uncommitted typing renders ahead of the document's content.
     private string Content
         => _typedContent ?? Composer?.Document.Content ?? string.Empty;
 
@@ -56,14 +56,14 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // A textarea claims its shortcuts natively, so the composer's routes are registered on it to be answered first.
+        // The composer's routes are registered on the textarea, ahead of its native shortcuts.
         if (firstRender && Composer is { } context)
         {
             _inputScope = await InputRouter.RegisterAsync(_textareaElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() }, _selfReference);
         }
     }
 
-    /// <summary>Runs the composer command whose shortcut the router matched inside the textarea; a command is its own action.</summary>
+    /// <summary>Runs the composer command named by the action the router matched inside the textarea.</summary>
     [JSInvokable]
     public Task HandleInputActionAsync(string action, InputInfo input)
     {
@@ -124,7 +124,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private Task HandleClickAsync(MouseEventArgs args)
         => ReportSelectionAsync();
 
-    // Coalesced the same way as the content commit, so holding an arrow key does not flood interop with one call per repeat.
+    // Selection reports are debounced by the same delay as the content commit.
     private async Task HandleKeyUpAsync(KeyboardEventArgs args)
     {
         if (_selectionCancellation is not null)

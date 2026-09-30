@@ -5,7 +5,7 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
-/// <summary>Contributes a reference of the shortcuts in play, for any editor, opened from the toolbar or by a shortcut of its own.</summary>
+/// <summary>The feature plugin that opens the reference of the shortcuts in play.</summary>
 public sealed class ShortcutsPlugin : IComposerFeaturePlugin
 {
     /// <inheritdoc />
@@ -34,7 +34,6 @@ public sealed class ShortcutsPlugin : IComposerFeaturePlugin
         ]),
     ];
 
-    // Ctrl+/ is what most applications open their shortcut reference with, and no browser claims it.
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
     [

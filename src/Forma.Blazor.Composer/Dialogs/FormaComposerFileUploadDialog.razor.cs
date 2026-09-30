@@ -8,11 +8,10 @@ using Forma.Framework.Resources;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>Dialog for choosing files, uploading them, and attaching what arrived to the document.</summary>
-/// <param name="store">The host's registered store, or null to offer no upload.</param>
+/// <summary>The dialog that uploads files and attaches them to the document.</summary>
+/// <param name="store">The host's file store, where null offers no upload.</param>
 public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = null) : ComposerDialogBase
 {
-    // Every measurement on, because a reader watching an upload wants to know how much is left.
     private static readonly FileUploaderOptions Detailed = FileUploaderOptions.Detailed;
 
     /// <summary>Which files may be attached.</summary>
@@ -29,7 +28,7 @@ public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = nu
     private static FileUploaderOptions UploaderOptions
         => Detailed;
 
-    /// <summary>The picker's options, single-select when only one file may be attached.</summary>
+    /// <summary>The options of the file picker.</summary>
     private FilePickerOptions PickerOptions
         => Options.Picker.MaxFiles == 1 ? Options.Picker with { AllowMultipleFiles = false } : Options.Picker;
 
@@ -60,13 +59,12 @@ public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = nu
     private void HandleFailed(UploadFailure failure)
         => Messages.Add(L["\"{Name}\" could not be uploaded.", failure.Name].Value);
 
-    // Handing these over would close the dialog, so what arrives is held until the reader is done choosing.
+    // Uploads are held until confirm, since handing them over closes the dialog.
     private void HandleCompleted(IReadOnlyList<ResourceInfo> uploaded)
         => _uploadedResources.AddRange(uploaded);
 
     private async Task HandleConfirmAsync()
     {
-        // Nothing has finished yet, so confirming means the reader is done choosing rather than done uploading.
         if (_uploadedResources.Count == 0)
         {
             await OnCancel.InvokeAsync();

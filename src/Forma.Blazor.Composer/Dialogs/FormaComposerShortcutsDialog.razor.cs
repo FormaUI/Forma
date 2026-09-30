@@ -9,7 +9,7 @@ using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Dialog listing every shortcut the surface currently answers, each under the name of the command it runs, leaving out what the host claims first.</summary>
+/// <summary>The dialog listing the shortcuts the surface answers, each under the name of the command it runs.</summary>
 public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
 {
     private static readonly DialogOptions CloseOnly = new() { ShowCancelAction = false };
@@ -17,10 +17,10 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
     /// <summary>The editor whose surface the shortcuts belong to.</summary>
     [Parameter, EditorRequired] public IComposerEditorPlugin Editor { get; set; } = default!;
 
-    /// <summary>The view showing over the editor's document, or null while the editor itself is.</summary>
+    /// <summary>The view showing over the editor's document, where null means the editor itself shows.</summary>
     [Parameter] public IComposerViewPlugin? View { get; set; }
 
-    /// <summary>The capabilities in play on the surface.</summary>
+    /// <summary>The plugins in play on the surface.</summary>
     [Parameter] public IReadOnlyList<IComposerPlugin> Plugins { get; set; } = [];
 
     /// <summary>The shortcuts the surface answers.</summary>
@@ -45,15 +45,13 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
         base.OnParametersSet();
     }
 
-    // Nothing the rows are built from can change while a modal holds the surface, so they are built once, as it opens.
+    // The rows are built once, as the dialog opens, since the modal holds the surface while it is open.
     /// <inheritdoc />
     private protected override void OnOpen()
         => _rows = BuildRows();
 
-    // Each shortcut is named as the toolbar names its command, so what a reader hears is what they see on the button; a
-    // binding no item names is left out, since nothing on the surface would tell a reader what it does, and so is one a
-    // host's preemptive route takes before the composer ever sees it, since it would not do what the reference says.
-    // Undo and redo are the command bar's own rather than any plugin's, so their names come from the composer directly.
+    // A command is titled as the toolbar titles it, and undo and redo as the composer does; a binding whose command no
+    // item titles, or one a host's preemptive route claims, is left out.
     private List<ShortcutRow> BuildRows()
     {
         var titles = new Dictionary<string, string>(StringComparer.Ordinal)

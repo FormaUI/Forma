@@ -6,7 +6,7 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
-/// <summary>Contributes a full-viewport maximized editing mode toggle to the composer toolbar, for any editor.</summary>
+/// <summary>The feature plugin that toggles whether the composer fills the viewport.</summary>
 public sealed class MaximizePlugin : IComposerFeaturePlugin
 {
     /// <inheritdoc />

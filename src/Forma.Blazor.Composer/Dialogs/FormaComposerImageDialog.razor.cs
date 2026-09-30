@@ -4,14 +4,14 @@ using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Dialog for inserting an image by address.</summary>
+/// <summary>The dialog that collects an image by its address.</summary>
 public sealed partial class FormaComposerImageDialog : ComposerDialogBase
 {
     private string? _source;
     private string? _altText;
     private string? _caption;
 
-    /// <summary>Callback invoked when image details are confirmed.</summary>
+    /// <summary>Callback invoked with the confirmed image.</summary>
     [Parameter] public EventCallback<ImageDialogResult> OnInsert { get; set; }
 
     /// <inheritdoc />
@@ -33,7 +33,7 @@ public sealed partial class FormaComposerImageDialog : ComposerDialogBase
 
         var source = _source.Trim();
 
-        // Accepting what the sanitizer would strip would leave the author with a picture that silently vanished.
+        // An address the sanitizer would strip is refused.
         if (!MarkupPolicy.Allows(HtmlSubject.Url, source, default, out _))
         {
             Messages.Add(L["An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture."].Value);

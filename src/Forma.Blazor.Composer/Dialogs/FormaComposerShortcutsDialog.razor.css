@@ -1,4 +1,4 @@
-/* FormaComposerShortcutsDialog — a two-column reference of the shortcuts in play, each combination drawn as the keys it is pressed on */
+/* FormaComposerShortcutsDialog — the reference table of the shortcuts in play */
 
 .forma-composer-shortcuts {
     inline-size: 100%;
@@ -23,7 +23,7 @@
     font-weight: 400;
 }
 
-/* A combination reads left to right whatever the page's direction, as the keys are printed on a keyboard. */
+/* A combination reads left to right in either direction. */
 .forma-composer-shortcuts-combination {
     display: inline-flex;
     gap: var(--space-1);

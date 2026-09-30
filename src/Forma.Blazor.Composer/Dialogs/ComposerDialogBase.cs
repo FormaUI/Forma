@@ -5,37 +5,33 @@ using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>What every composer dialog carries: its open state, its dismissal, and the rules a document is held to.</summary>
+/// <summary>The base of every composer dialog: its open state, its dismissal, and the markup policy of the document.</summary>
 public abstract class ComposerDialogBase : FormaComponentBase
 {
     private bool _hasOpened;
 
-    /// <summary>Whether the dialog is currently visible.</summary>
+    /// <summary>Whether the dialog is open.</summary>
     [Parameter] public bool Opened { get; set; }
 
     /// <summary>Callback invoked when the dialog is dismissed.</summary>
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    /// <summary>What the dialog reopened on, or null when it is collecting something new.</summary>
-    /// <remarks>
-    /// Public for Blazor parameter binding; dialog implementations should use
-    /// <see cref="Reopened{TResult}"/> rather than reading this property directly.
-    /// </remarks>
+    /// <summary>What the dialog reopened on, where null means it collects something new.</summary>
     [Parameter]
     public ComposerDialogResult? Reopening { get; set; }
 
-    /// <summary>The composer state cascaded from the parent shell.</summary>
+    /// <summary>The context of the composer the dialog belongs to.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaComposer);
 
-    /// <summary>The messages shown beneath the fields, rebuilt each time confirming is judged.</summary>
+    /// <summary>The messages shown beneath the fields.</summary>
     private protected List<string> Messages { get; } = [];
 
-    // A dialog standing outside a composer has no host rules to answer to, so it judges an address the way the engine would.
-    /// <summary>The markup the document may carry, from the host's sanitizer where there is one.</summary>
+    /// <summary>The markup policy the document is held to.</summary>
+    /// <remarks>Outside a composer, the policy is the rich content default.</remarks>
     private protected IMarkupPolicy MarkupPolicy
         => Composer?.Sanitizer.MarkupPolicy ?? RichContentMarkupPolicy.Default;
 
@@ -45,7 +41,7 @@ public abstract class ComposerDialogBase : FormaComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        // The fields are filled once, on the first opening, and hold what was typed from then on.
+        // The fields are filled once, on the first opening.
         if (!Opened || _hasOpened)
         {
             return;
@@ -56,12 +52,12 @@ public abstract class ComposerDialogBase : FormaComponentBase
         OnOpen();
     }
 
-    /// <summary>Called as the dialog opens, to fill its fields from whatever it reopened on.</summary>
+    /// <summary>Fills the fields as the dialog first opens.</summary>
     private protected virtual void OnOpen()
     {
     }
 
-    /// <summary>What the dialog reopened on when it is of this dialog's own kind, and null otherwise.</summary>
+    /// <summary>What the dialog reopened on, as a result of this dialog's own kind.</summary>
     /// <typeparam name="TResult">The result this dialog collects.</typeparam>
     private protected TResult? Reopened<TResult>()
         where TResult : ComposerDialogResult

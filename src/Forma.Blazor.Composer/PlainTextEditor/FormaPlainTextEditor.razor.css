@@ -1,4 +1,4 @@
-/* FormaPlainTextEditor — The plain text canvas for FormaComposer */
+/* FormaPlainTextEditor — the plain text canvas of FormaComposer */
 
 .forma-composer-plain-text-editor {
     display: flex;
@@ -22,11 +22,10 @@
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
 
-    /* Each line resolves its own base direction, so English content reads left-to-right
-       inside an RTL admin rather than inheriting the surrounding page. */
+    /* Each line resolves its own base direction. */
     unicode-bidi: plaintext;
 
-    /* The composer frame carries the resize grip; the textarea always fills the canvas. */
+    /* The composer frame carries the resize grip. */
     resize: none;
 }
 

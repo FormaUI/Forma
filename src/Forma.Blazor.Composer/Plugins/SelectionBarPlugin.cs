@@ -6,7 +6,7 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
-/// <summary>Contributes a toggle showing or hiding the formatting bar that follows the text selection, for any editor.</summary>
+/// <summary>The feature plugin that toggles the formatting bar that follows the text selection.</summary>
 public sealed class SelectionBarPlugin : IComposerFeaturePlugin
 {
     /// <inheritdoc />

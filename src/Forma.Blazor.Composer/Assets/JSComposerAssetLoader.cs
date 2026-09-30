@@ -4,7 +4,7 @@ using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.JavaScript.Interop;
 
-/// <summary>Loads browser assets a plugin declares, caching what has already loaded per circuit.</summary>
+/// <summary>Loads the browser assets a plugin declares, each once per circuit.</summary>
 internal sealed class JSComposerAssetLoader(IJSEnvironment js) : IComposerAssetLoader
 {
     private readonly Asset _asset = new(js);
@@ -20,7 +20,7 @@ internal sealed class JSComposerAssetLoader(IJSEnvironment js) : IComposerAssetL
             return;
         }
 
-        // A font is declared through a stylesheet, so both reach the browser the same way.
+        // A font is declared through a stylesheet.
         var loaded = asset.Kind switch
         {
             ComposerAssetKind.Module => await _asset.LoadModuleAsync(asset.Url),

@@ -1,4 +1,4 @@
-/* FormaComposerPluginsToolbar — The zone of host-registered plugin commands, ruled off inside the composer toolbar */
+/* FormaComposerPluginsBar — the bar of the host's plugin commands, ruled off inside the composer toolbar */
 
 .forma-composer-plugins-row {
     padding-block-start: var(--space-2);

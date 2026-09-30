@@ -1,18 +1,18 @@
 namespace Forma.Blazor.Components.Composer;
 
-/// <summary>Options configuring toolbar display, editor switcher, and default editor in <see cref="FormaComposer"/>.</summary>
+/// <summary>The options of a <see cref="FormaComposer"/>.</summary>
 public sealed record ComposerOptions
 {
-    /// <summary>Default options showing the toolbar and editor switcher.</summary>
+    /// <summary>The default options.</summary>
     public static ComposerOptions Default { get; } = new();
 
     /// <summary>Whether the toolbar is shown above the editor canvas.</summary>
     public bool ShowToolbar { get; init; } = true;
 
-    /// <summary>Whether the editor switcher is shown when more than one editor plugin is registered.</summary>
+    /// <summary>Whether the editor switcher is shown.</summary>
     public bool ShowEditorSwitcher { get; init; } = true;
 
-    /// <summary>The identifier of the default editor plugin to activate, or null to match the document format.</summary>
+    /// <summary>The identifier of the default editor plugin, where null picks the one matching the document format.</summary>
     public string? DefaultEditorId { get; init; }
 
     /// <summary>Whether the composer can be dragged taller by its block-end grip.</summary>

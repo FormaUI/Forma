@@ -6,13 +6,13 @@ using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>One command bar belonging to an editor, laying its items — and, optionally, undo/redo — on a <see cref="FormaToolbar"/>.</summary>
+/// <summary>An editor's command bar, which lays its items on a <see cref="Bars.FormaToolbar"/>.</summary>
 public sealed partial class FormaComposerCommandBar : FormaComponentBase
 {
     /// <summary>The accessible name of the bar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    /// <summary>The items laid out on the bar, already in the reader's language, ready for a FormaToolbar to render as given.</summary>
+    /// <summary>The items laid out on the bar, in the reader's language.</summary>
     [Parameter] public IReadOnlyList<ToolbarItem> Items { get; set; } = [];
 
     /// <summary>Whether the bar opens with the undo and redo commands.</summary>
@@ -27,13 +27,13 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     /// <summary>Callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>Content rendered after the command groups, such as an overflow toggle.</summary>
+    /// <summary>The content rendered after the items, such as an overflow toggle.</summary>
     [Parameter] public RenderFragment? TrailingContent { get; set; }
 
-    /// <summary>The toggles and options the bar's own plugin reports as active, beside what the selection reports.</summary>
+    /// <summary>The toggles and options the bar's plugin reports as active.</summary>
     [Parameter] public IReadOnlyCollection<string> PluginStates { get; set; } = [];
 
-    /// <summary>The composer state cascaded from the parent shell.</summary>
+    /// <summary>The context of the composer the bar belongs to.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     /// <inheritdoc />
@@ -46,7 +46,7 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     private bool CanRedo
         => Composer?.History.CanRedo ?? false;
 
-    /// <summary>What the bar actually renders: the history group first when shown, then Items patched with the shortcuts they currently answer to.</summary>
+    /// <summary>The items the bar renders: the history group where shown, then the items with their shortcuts.</summary>
     private IReadOnlyList<ToolbarItem> RenderedItems
     {
         get
@@ -93,7 +93,7 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
         };
     }
 
-    // Layers on the state only render time knows: which shortcut a command currently answers to.
+    // Adds each action's current shortcut.
     private ToolbarItem Patch(ToolbarItem item) => item switch
     {
         ToolbarGroup group => group with { Items = [.. group.Items.Select(Patch)] },
@@ -105,11 +105,11 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
         _ => item,
     };
 
-    // The engine's own toggles, whose state it reports rather than the selection.
+    // The composer's own toggles.
     private const string MaximizeToggleId = "maximize";
     private const string SelectionBarToggleId = "selection-bar";
 
-    /// <summary>What the toolbar treats as active: the styles the selection reports, plus the engine's own chrome state.</summary>
+    /// <summary>The states the toolbar shows as active: the selection's styles, the composer's chrome and the plugin states.</summary>
     private IReadOnlySet<string> ActiveStates
     {
         get
@@ -121,7 +121,6 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
                 states.UnionWith(styles);
             }
 
-            // Engine-owned chrome rather than a text style, so the selection never reports it.
             if (Composer?.IsMaximized ?? false)
             {
                 states.Add(MaximizeToggleId);

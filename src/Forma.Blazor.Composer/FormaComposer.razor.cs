@@ -24,9 +24,9 @@ using Forma.Framework.Sanitization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>The composer engine, hosting rich text, Markdown, code, or page composition through extensible editor plugins.</summary>
-/// <param name="syntaxHighlighter">The host's registered highlighter, or null to classify no code.</param>
-/// <param name="definition">What the application registered every composer to be made of, or null to have only the editor a composer falls back to.</param>
+/// <summary>The composer, an input that edits a document through the editor plugins it hosts.</summary>
+/// <param name="syntaxHighlighter">The host's syntax highlighter, where null classifies no code.</param>
+/// <param name="definition">The composer definition the application registered, where null means only the fallback editor.</param>
 public sealed partial class FormaComposer(
     IComposerSyntaxHighlighter? syntaxHighlighter = null,
     ComposerDefinition? definition = null)
@@ -61,10 +61,10 @@ public sealed partial class FormaComposer(
     private bool _isDialogBodyReady;
     private string? _dialogRefusal;
 
-    /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
+    /// <summary>The options of the composer.</summary>
     [Parameter] public ComposerOptions Options { get; set; } = ComposerOptions.Default;
 
-    /// <summary>What this composer alone is made of, in place of whatever the application registered.</summary>
+    /// <summary>The definition of this composer alone, in place of the one the application registered.</summary>
     [Parameter] public ComposerDefinition? Plugins { get; set; }
 
     /// <summary>The identifier of the active editor plugin.</summary>
@@ -73,13 +73,13 @@ public sealed partial class FormaComposer(
     /// <summary>Callback invoked when the active editor plugin changes.</summary>
     [Parameter] public EventCallback<string> ActiveEditorIdChanged { get; set; }
 
-    /// <summary>Whether the composer is disabled and ignores user interaction.</summary>
+    /// <summary>Whether the composer is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    /// <summary>Whether the composer is in a read-only state.</summary>
+    /// <summary>Whether the composer is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
-    /// <summary>The undo and redo stack this composer uses, constructed from <see cref="ComposerOptions.HistoryCapacity"/> when unset.</summary>
+    /// <summary>The undo and redo history of this composer, where null builds one holding <see cref="ComposerOptions.HistoryCapacity"/> steps.</summary>
     [Parameter] public IComposerHistory? History { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -88,7 +88,6 @@ public sealed partial class FormaComposer(
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
     [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
 
-    // A read-only composer offers no editing commands, so the toolbar would carry nothing actionable.
     private bool ShowToolbar
         => Options.ShowToolbar && !ReadOnly;
 
@@ -111,7 +110,7 @@ public sealed partial class FormaComposer(
     private ComposerDocument? _sanitizedValue;
     private DocumentConverterRegistry _converterRegistry = new();
 
-    // The same instance comes back until a member actually changes.
+    // The same instance comes back until a member changes.
     private ComposerContext? Composer
     {
         get
@@ -226,13 +225,13 @@ public sealed partial class FormaComposer(
         return Task.CompletedTask;
     }
 
-    // Attaching is the engine's to run, so the gates come from whichever plugin contributed the command.
+    // The attach dialog's options, from the file upload plugin in play.
     private FileUploadPluginOptions _attachOptions = FileUploadPluginOptions.Default;
     private async Task HandleAttachedAsync(IReadOnlyList<ResourceInfo> attached)
     {
         _isAttachOpen = false;
 
-        // The dialog reports everything it has uploaded so far, so what it hands back replaces rather than adds to itself.
+        // The dialog hands back everything it has uploaded, which replaces any earlier copy of the same attachment.
         var kept = CurrentDocument.Attachments.Where(held => !attached.Contains(held)).ToList();
 
         await HandleDocumentChangedAsync(CurrentDocument with { Attachments = [.. kept, .. attached] });
@@ -240,8 +239,7 @@ public sealed partial class FormaComposer(
 
     private async Task LoadPluginsAsync()
     {
-        // The plugins are this composer's own: an editor plugin carries events its canvas subscribes to,
-        // so a second composer sharing one would answer this one's commands.
+        // Each composer activates its own plugins, since an editor plugin carries events its canvas subscribes to.
         _ownPlugins = (Plugins ?? _definition ?? ComposerDefinition.Empty).Activate(Services);
 
         _pluginCatalog = await ComposerPluginCatalog.CreateAsync(_ownPlugins.Instances, new PlainTextEditorPlugin());
@@ -251,7 +249,7 @@ public sealed partial class FormaComposer(
         RebuildScope();
     }
 
-    // Two editors may each own a plugin whose command is the same, so what answers a command is the scope in play.
+    // A command is answered by the plugins in play for the active editor and view.
     private void RebuildScope()
     {
         _surfacePlugins = _pluginCatalog.GetFeaturePlugins(_activeEditor, _activeView);
@@ -288,7 +286,7 @@ public sealed partial class FormaComposer(
             StateHasChanged();
         }
 
-        // The first render can precede plugin loading, so interop waits for the render that follows it.
+        // Interop starts on the first render after the plugins have loaded.
         if (_isJsStarted || !_isInitialized)
         {
             return;
@@ -296,14 +294,14 @@ public sealed partial class FormaComposer(
 
         _isJsStarted = true;
 
-        // The composer's shortcuts route through its scope wherever focus rests inside it; the active editor registers them on its editable element as well, where a native control would otherwise claim them.
+        // The shortcuts route through the composer's scope; the active editor also registers them on its editable element, ahead of the native control.
         _inputScope = await InputRouter.RegisterAsync(RootElement, new InputProfile { InputRoutes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
         await _focus.AttachAsync(RootElement, order: [".forma-composer-canvas"]);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
     }
 
-    /// <summary>Runs the command whose shortcut the router matched; a composer command is its own action.</summary>
+    /// <summary>Runs the composer command named by the action the router matched.</summary>
     [JSInvokable]
     public Task HandleInputActionAsync(string action, InputInfo input)
     {
@@ -312,7 +310,7 @@ public sealed partial class FormaComposer(
         return HandleCommandAsync(action);
     }
 
-    /// <summary>Runs a composer command by name, whether the engine or a plugin owns it.</summary>
+    /// <summary>Runs a composer command by name.</summary>
     public async Task HandleCommandAsync(string command)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
@@ -336,7 +334,7 @@ public sealed partial class FormaComposer(
         });
     }
 
-    /// <summary>Switches the active editor plugin, converting the document format when needed.</summary>
+    /// <summary>Switches the active editor plugin, converting the document to its format.</summary>
     public async Task SwitchEditorAsync(string targetEditorId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetEditorId);
@@ -439,7 +437,7 @@ public sealed partial class FormaComposer(
     private IComposerInsertionDialog? DialogBody
         => _dialogComponent?.Instance as IComposerInsertionDialog;
 
-    // The body reports what confirming refused; the composer adds its own refusal when no editor took the insertion.
+    // The body's messages, followed by the composer's refusal of an insertion no editor took.
     private IReadOnlyList<string> DialogMessages
     {
         get
@@ -511,7 +509,6 @@ public sealed partial class FormaComposer(
         return Task.CompletedTask;
     }
 
-    // A status item or gutter marker changing does not touch the document, so only a re-render is needed.
     private void HandleRegionsChanged()
         => _ = InvokeAsync(StateHasChanged);
 
@@ -530,7 +527,7 @@ public sealed partial class FormaComposer(
         return Task.CompletedTask;
     }
 
-    /// <summary>Sanitizes the document the host bound, once per document, and hands the host the sanitized one when it differs.</summary>
+    /// <summary>Sanitizes the document the host bound.</summary>
     private void SanitizeValue()
     {
         if (Value is null || Value == _sanitizedValue)
@@ -547,7 +544,7 @@ public sealed partial class FormaComposer(
         }
     }
 
-    // Sanitization is mandatory on every crossing to the host, and applies to markup rather than to a format that carries none.
+    // Every document crossing to the host is sanitized; only an HTML document carries markup.
     private ComposerDocument Sanitize(ComposerDocument document)
         => document.Format == ComposerDocumentFormat.Html
             ? document with { Content = Sanitizer.Sanitize(document.Content) }

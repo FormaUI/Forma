@@ -11,7 +11,7 @@
             ConfirmText="@ConfirmLabel"
             CancelText="@CancelLabel">
     <Body>
-        @* The bound inputs need an edit context, and nothing here submits, so the context is cascaded without a form. *@
+        @* The bound inputs' edit context, cascaded without a form because nothing here submits. *@
         <CascadingValue Value="_editContext" IsFixed="true">
             <div class="forma-composer-dialog-form">
                 @ChildContent
