@@ -1,9 +1,8 @@
 # Forma.Framework.Icons.Glyphs
 
-Forma's own icon set, as the `IIconProvider` that `Forma.Framework.Icons` defines: every `Glyph`
-drawn by hand in both variants, every `Brand` as its official mark, and any character. The artwork
-is embedded in the assembly, so a host loads no icon font and serves no asset. It is the provider
-`Forma.Blazor` draws through unless a host registers its own.
+Forma's own icon set, as an `IIconProvider` from `Forma.Framework.Icons`: every `Glyph` in both
+variants, every `Brand` as its official mark, and any character. The artwork is embedded in the
+assembly and draws as inline SVG, so icons need only this package.
 
 ## Install and register
 
@@ -17,42 +16,31 @@ using Forma.Framework.Icons.Glyphs;
 builder.Services.AddFormaGlyphServices();
 ```
 
-That registers `GlyphIconProvider` as the `IIconProvider` singleton. Registration uses `TryAdd`,
-so a host that registered a provider first keeps its own. `AddFormaUI()` in `Forma.Blazor` makes
-this call itself, so a host of the components installs nothing and calls nothing to draw the set.
-
-Outside dependency injection, `new GlyphIconProvider()` is the same provider; it takes no
-arguments and reads its artwork once, on first use.
+`AddFormaGlyphServices` registers `GlyphIconProvider` as the `IIconProvider` singleton with
+`TryAdd`, so a provider registered first is kept. `AddFormaUI()` in `Forma.Blazor` makes this call
+itself. Outside dependency injection, `new GlyphIconProvider()` is the same provider.
 
 ## What it draws
 
 | Icon | Artwork |
 | --- | --- |
-| A `GlyphIcon` | An `IconVector`. `GlyphVariant.Default` is the outline, its paths stroked; `GlyphVariant.Alternate` is the solid shape, its paths filled, or heavier strokes for a glyph with nothing to fill, such as an arrow or a chevron. Every glyph is drawn on two grids, and the size picks the one whose stroke lands on whole pixels there: `0 0 24 24` for `IconSize.Small` and `IconSize.Large`, `0 0 32 32` for `IconSize.Inline`, `IconSize.Medium` and `IconSize.Display`. |
-| A `BrandIcon` | A `BrandIconArtwork`: the mark as one solid path, with the brand's name as its `Title`. The same mark answers every size. |
-| A `CharacterIcon` | An `IconCharacter` holding the character itself. |
-
-Every drawing is made for left-to-right reading. A glyph that points along the reading direction
-declares on its `Glyph` member the direction it adapts for, and `FormaIcon` turns the artwork over
-where text runs that way;
-the provider answers the one drawing either way.
-
-`Glyph.None` and `Brand.None` name no artwork, and both members throw
-`ArgumentOutOfRangeException` for them. A `Brand` value with no mark compiled answers `false`
-and `IconArtwork.None` from `TryGetArtwork`, and `GetArtwork` throws.
+| `GlyphIcon` | An `IconVector`. `GlyphVariant.Default` is the outline, its paths stroked; `GlyphVariant.Alternate` is the solid shape, its paths filled, or stroked heavier for a glyph with nothing to fill, such as an arrow. Each glyph is drawn on a 24-unit grid for `IconSize.Small` and `IconSize.Large` and a 32-unit grid for the other sizes, so its strokes land on whole pixels. |
+| `BrandIcon` | A `BrandIconArtwork`: the mark as one solid path, titled with the brand's name, the same at every size. |
+| `CharacterIcon` | An `IconCharacter` holding the character. |
 
 ```csharp
 using System.Text;
+
 using Forma.Framework.Icons;
 using Forma.Framework.Icons.Glyphs;
 
 IIconProvider provider = new GlyphIconProvider();
 
 var check = (IconVector)provider.GetArtwork(Glyph.Check, IconSize.Small);
-// check.ViewBox is "0 0 24 24"; each path has StrokeWidth 2
+// check.ViewBox is "0 0 24 24", and its paths are stroked
 
 var heart = (IconVector)provider.GetArtwork(Icon.FromGlyph(Glyph.Heart, GlyphVariant.Alternate), IconSize.Medium);
-// heart.ViewBox is "0 0 32 32"; each path has StrokeWidth 0, so it is filled
+// heart.ViewBox is "0 0 32 32", and its paths are filled
 
 var gitHub = (BrandIconArtwork)provider.GetArtwork(Brand.GitHub, IconSize.Inline);
 // gitHub.Title is "GitHub"
@@ -65,19 +53,18 @@ if (provider.TryGetArtwork(new Rune('Ω'), IconSize.Inline, out var omega))
 
 ## Artwork and licenses
 
-The glyphs are Forma's own drawings, authored to
-[the glyph artwork specification](../../../docs/glyph-artwork-spec.md) and licensed with the rest
-of the repository.
+The glyphs are Forma's own drawings, made to
+[the glyph artwork specification](https://github.com/FormaUI/Forma/blob/main/docs/glyph-artwork-spec.md)
+and licensed with the rest of the repository.
 
-The brand marks are never drawn by hand: each is the official mark, taken from a pinned release
-of an open icon set. Marks from [Simple Icons](https://simpleicons.org) are used under
-[CC0 1.0](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md); marks from
-[Bootstrap Icons](https://icons.getbootstrap.com) are used under the
-[MIT license](https://github.com/twbs/icons/blob/main/LICENSE), whose notice is reproduced in
-[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), shipped inside this package. Neither license
-covers the marks the drawings depict: each logo remains the trademark of its owner and is subject
-to that owner's brand guidelines, and the accepted use is linking to a presence on that brand's
-platform.
+Each brand mark is the brand's official mark, taken from a pinned release of an open icon set:
+[Simple Icons](https://simpleicons.org), used under
+[CC0 1.0](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md), and
+[Bootstrap Icons](https://icons.getbootstrap.com), used under the
+[MIT license](https://github.com/twbs/icons/blob/main/LICENSE), whose notice ships in this package
+as [`THIRD-PARTY-NOTICES.md`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Icons.Glyphs/THIRD-PARTY-NOTICES.md).
+Each logo remains the trademark of its owner and is subject to that owner's brand guidelines; use a
+mark to link to a presence on that brand's platform.
 
 ## License
 

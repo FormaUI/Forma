@@ -1,8 +1,8 @@
 # Forma.Framework.Emojis.Unicode
 
-The default emoji provider for `Forma.Blazor`. It implements `IEmojiProvider` from
-`Forma.Framework.Emojis` by drawing every emoji with the reader's own platform font, so
-`FormaEmoji` renders without any artwork installed.
+The default emoji provider for Forma. `UnicodeEmojiProvider` implements `IEmojiProvider` from
+`Forma.Framework.Emojis` by drawing every emoji with the reader's own emoji font, so each emoji
+renders straight from text, in the style of the reader's platform.
 
 ## Install and register
 
@@ -16,14 +16,13 @@ using Forma.Framework.Emojis.Unicode;
 builder.Services.AddFormaEmojiServices();
 ```
 
-That registers `UnicodeEmojiProvider` as the `IEmojiProvider` singleton. Registration uses
-`TryAdd`, so a host that registered its own provider first keeps it. `Forma.Blazor` calls
-`AddFormaEmojiServices` from `AddFormaUI`, so a host of the components registers nothing here
-itself; the call is for a host consuming the contract on its own.
+`AddFormaEmojiServices` registers `UnicodeEmojiProvider` as the `IEmojiProvider` singleton with
+`TryAdd`, so a provider registered first is kept. `AddFormaUI()` in `Forma.Blazor` makes this call
+itself.
 
-## What it provides
+## Use
 
-`UnicodeEmojiProvider.GetArtwork` returns `EmojiArtwork.Unicode` for any emoji, known or not:
+`GetArtwork` returns `EmojiArtwork.Unicode` for every emoji:
 
 ```csharp
 using Forma.Framework.Emojis;
@@ -34,14 +33,9 @@ IEmojiProvider provider = new UnicodeEmojiProvider();
 var artwork = provider.GetArtwork("😀");   // EmojiArtwork.Unicode
 ```
 
-The reader's font decides what it can draw, so the same emoji looks different per device rather
-than the same everywhere.
-
-## Without a catalog
-
-This package registers no `IEmojiCatalog`, so `FormaEmojiPicker` shows its empty state under it.
-An artwork pack such as `Forma.AddOns.Emojis.Twemoji` supplies both a provider and a catalog;
-registered before `AddFormaUI`, it replaces this provider and fills the picker.
+For one artwork on every platform, and a catalog for `FormaEmojiPicker` to browse, install an
+artwork pack such as
+[`FormaUI.NET-AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md).
 
 ## License
 

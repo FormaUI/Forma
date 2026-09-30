@@ -1,9 +1,9 @@
 # Forma.Framework.Emojis
 
-The emoji contracts for `Forma.Blazor`: an `Emoji` value, the artwork a provider draws it with,
-and the catalog a picker browses. `FormaEmoji` draws through `IEmojiProvider`, and
-`FormaEmojiPicker` browses `IEmojiCatalog`; a host that wants its own artwork or its own emoji
-data implements one of these and registers it.
+The emoji contracts for Forma: `Emoji`, the value that names one emoji; `IEmojiProvider`, which
+gives the artwork an emoji is drawn with; and `IEmojiCatalog`, the emoji a picker browses and
+searches. Implement a provider to draw emoji with your own artwork, and a catalog to choose the
+emoji `FormaEmojiPicker` offers.
 
 ## Install
 
@@ -11,30 +11,11 @@ data implements one of these and registers it.
 dotnet add package FormaUI.NET-Framework.Emojis
 ```
 
-The package holds contracts and value types only. `Forma.Framework.Emojis.Unicode` ships the
-default `IEmojiProvider`, drawing every emoji with the reader's own platform font, and
-`Forma.AddOns.Emojis.Twemoji` is an artwork pack a host can install instead, supplying both a
-provider and a catalog.
-
-## The contract
-
-| Type | What it is |
-| --- | --- |
-| `Emoji` | One emoji, named by the Unicode sequence that is it. Converts implicitly from `string`. |
-| `IEmojiProvider` | Provides artwork for emoji: `GetArtwork(Emoji)` returns the `EmojiArtwork` to draw it with. |
-| `EmojiArtwork` | The artwork used to draw an emoji: `Unicode`, `Sprite(symbol, sheet)`, or `Image(url)`. |
-| `EmojiSprite` | Artwork drawn from a `Symbol` in a `Sheet` that is loaded before it resolves. |
-| `EmojiImage` | Artwork drawn from a standalone image at `Url`. |
-| `IEmojiCatalog` | The emoji a host offers, browsable by category and searchable by name and keyword. |
-| `EmojiInfo` | One emoji in a catalog: its `Emoji`, English `Name`, search `Keywords`, and `GroupId`. |
-| `EmojiGroup` | One category an emoji is filed under: its `Id` and its English `Title`. |
-| `NullEmojiCatalog` | A catalog holding no emoji, standing in where a host installed none; `Instance` is the one instance. |
-
 ## Naming an emoji
 
-An `Emoji` is a single character, however many scalar values it takes — a flag, a skin-toned hand,
-or a family sequence is still one emoji. A `string` converts implicitly, and a sequence that may not
-be one character goes through `TryCreate`:
+An `Emoji` is one character, however many scalar values it takes: a flag, a skin-toned hand and a
+family sequence are each one emoji. A `string` converts implicitly, and `TryCreate` checks text
+that may hold more or less than one character:
 
 ```csharp
 using Forma.Framework.Emojis;
@@ -48,43 +29,55 @@ if (Emoji.TryCreate(userInput, out var emoji))
 }
 ```
 
-The constructor throws `ArgumentException` for an empty sequence or one longer than a character.
-
 ## Providing artwork
 
-A provider answers `GetArtwork` for any emoji, choosing the platform font, a symbol in a sprite
-sheet, or a standalone image. Register it as `IEmojiProvider` before `Forma.Blazor` registers its
-defaults, and the components draw through it:
+| Type | What it is |
+| --- | --- |
+| `IEmojiProvider` | Provides artwork for emoji: `GetArtwork(Emoji)` returns the `EmojiArtwork` to draw it with. |
+| `EmojiArtwork` | The artwork used to draw an emoji: `EmojiArtwork.Unicode`, the platform's emoji font; `EmojiArtwork.Sprite(symbol, sheet)`, a symbol in a sprite sheet; or `EmojiArtwork.Image(url)`, a standalone image. |
+| `EmojiSprite` | Sprite artwork: its `Symbol` and the `Sheet` it is loaded from. |
+| `EmojiImage` | Image artwork: its `Url`. |
+
+A provider answers every emoji with artwork, and `EmojiArtwork.Unicode` hands an emoji to the
+platform's font. This one draws each emoji from an image named by its code points:
 
 ```csharp
+using System.Globalization;
+
 using Forma.Framework.Emojis;
 
 public sealed class CdnEmojiProvider : IEmojiProvider
 {
     public EmojiArtwork GetArtwork(Emoji emoji)
     {
-        var codepoints = string.Join("-", emoji.Sequence.EnumerateRunes().Select(rune => rune.Value.ToString("x")));
+        var codepoints = string.Join("-", emoji.Sequence.EnumerateRunes()
+            .Select(rune => rune.Value.ToString("x", CultureInfo.InvariantCulture)));
 
         return EmojiArtwork.Image($"https://cdn.example.test/emoji/{codepoints}.svg");
     }
 }
 ```
 
+Register it as the `IEmojiProvider` before `AddFormaUI()`, which registers its default provider
+only where none is registered:
+
 ```csharp
 builder.Services.AddSingleton<IEmojiProvider, CdnEmojiProvider>();
 builder.Services.AddFormaUI();
 ```
 
-`EmojiArtwork.Unicode` hands the emoji to the reader's own font, so a provider that covers only part
-of the set returns it for the rest.
-
 ## Providing a catalog
 
-A catalog answers three questions: the members of a category by `TryFindByGroupId`, the entry for
-one emoji by `TryGetByEmoji`, and the entries whose name or keywords match every
-whitespace-separated term by `Find`. Each `EmojiInfo` names its category by `GroupId`, and the
-category ids are the ones the picker's `Groups` parameter lists, `FormaEmojiPicker.DefaultGroups`
-unless the host passes its own.
+| Type | What it is |
+| --- | --- |
+| `IEmojiCatalog` | The emoji a host offers: `TryFindByGroupId` lists a category, `TryGetByEmoji` finds one emoji's entry, and `Find` returns the entries whose name or keywords match every whitespace-separated term. |
+| `EmojiInfo` | One emoji in a catalog: its `Emoji`, English `Name`, search `Keywords` and `GroupId`. |
+| `EmojiGroup` | One category: its `Id` and its English `Title`, which is also its localization key. |
+| `NullEmojiCatalog` | The catalog holding no emoji, as `NullEmojiCatalog.Instance`. |
+
+Each entry's `GroupId` is one of the categories the picker lists: `FormaEmojiPicker.DefaultGroups`
+holds `smileys`, `people`, `animals`, `food`, `activities`, `travel`, `objects`, `symbols` and
+`flags`, and the picker's `Groups` parameter takes your own.
 
 ```csharp
 using System.Diagnostics.CodeAnalysis;
@@ -130,8 +123,12 @@ public sealed class TeamEmojiCatalog : IEmojiCatalog
 builder.Services.AddSingleton<IEmojiCatalog, TeamEmojiCatalog>();
 ```
 
-A host that registers no catalog gets `NullEmojiCatalog.Instance` in the picker, which browses and
-finds nothing.
+## Related packages
+
+- [`FormaUI.NET-Framework.Emojis.Unicode`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Emojis.Unicode/README.md)
+  is the default provider, drawing every emoji with the reader's own emoji font.
+- [`FormaUI.NET-AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md)
+  supplies Twemoji artwork and a catalog.
 
 ## License
 
