@@ -129,7 +129,7 @@ list.
   and a "new" button stand above it and belong to the page, composed from the toolbar, the
   selection toolbar, and the data view's sort menu and view switch.
 - **The explorer and the gallery are consumers.** The explorer's content area and its
-  folder-tree sidebar become one data view with its item template, its three flat
+  folder-tree sidebar are one data view with its item template, its three flat
   presentations and the tree, and the gallery browses
   media through a data view in the cards view at its compact density, grouped by date,
   keeping for itself what is about media rather than browsing.
