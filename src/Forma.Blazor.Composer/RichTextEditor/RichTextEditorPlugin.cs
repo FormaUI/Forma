@@ -22,7 +22,7 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     /// <summary>Raised when a plugin requests opening the table creation dialog.</summary>
     public event Action? TableDialogRequested;
 
-    /// <summary>Raised when a plugin requests opening the video embed dialog.</summary>
+    /// <summary>Raised when a plugin requests opening the video dialog.</summary>
     public event Action? VideoDialogRequested;
 
     /// <summary>Raised when a plugin requests opening the image insertion dialog.</summary>
@@ -78,7 +78,7 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     public void RequestTableDialog()
         => TableDialogRequested?.Invoke();
 
-    /// <summary>Requests opening the video embed dialog.</summary>
+    /// <summary>Requests opening the video dialog.</summary>
     public void RequestVideoDialog()
         => VideoDialogRequested?.Invoke();
 

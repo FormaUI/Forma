@@ -15,7 +15,7 @@ public sealed partial class FormaComposerEmojiButton : FormaComponentBase
     private FormaButton Trigger { get; set; } = default!;
     private FormaPopover Popover { get; set; } = default!;
 
-    /// <summary>How the picker this button opens browses.</summary>
+    /// <summary>The options of the emoji picker this button opens.</summary>
     [Parameter] public EmojiPickerOptions PickerOptions { get; set; } = EmojiPickerOptions.Default;
 
     [CascadingParameter] private IComposerInteraction? Interaction { get; set; }

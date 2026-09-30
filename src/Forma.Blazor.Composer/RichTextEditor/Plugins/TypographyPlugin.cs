@@ -162,7 +162,7 @@ public sealed class TypographyPlugin(
         }
     }
 
-    // The labels name a pixel size at the reader's default, which is the rem the same number divides to.
+    // A label is a pixel size at the default 16px root, so its rem is the label divided by 16.
     private string ToCssSize(string size)
         => Options.FontSizeUnit is ComposerFontSizeUnit.Points
             ? $"{size}pt"

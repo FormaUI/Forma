@@ -14,12 +14,12 @@ public sealed class SpecialCharacterPlugin(
     RichTextEditorPlugin editor,
     SpecialCharacterPluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<SpecialCharacterPluginOptions>
 {
-    /// <summary>Command prefix for inserting a specific special character.</summary>
+    /// <summary>The command prefix inserting the special character that follows it.</summary>
     public const string InsertCharacterPrefix = "special-character.insert:";
 
     private readonly RichTextEditorPlugin _editorPlugin = editor;
 
-    /// <summary>Options configuring available symbols.</summary>
+    /// <summary>Options configuring the special character plugin.</summary>
     public SpecialCharacterPluginOptions Options { get; } = options ?? SpecialCharacterPluginOptions.Default;
 
     /// <inheritdoc />

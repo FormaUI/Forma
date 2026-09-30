@@ -7,19 +7,19 @@ using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Floating formatting bar positioned beneath an active text selection, carrying the items plugins placed on the selection row.</summary>
+/// <summary>Floating formatting bar beneath the active text selection, carrying the selection bar's items.</summary>
 public sealed partial class FormaRichTextSelectionBar : FormaComponentBase
 {
     /// <summary>The editor element this selection bar is scoped to.</summary>
     [Parameter] public ElementReference? EditorElement { get; set; }
 
-    /// <summary>Callback invoked when a formatting command is clicked.</summary>
+    /// <summary>Callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
     /// <summary>The class the follower sets on the bar while a selection is active.</summary>
     private const string ActiveClass = "forma-composer-selection-bar-active";
 
-    /// <summary>The handle that drags the bar to where the author wants it.</summary>
+    /// <summary>The selector of the handle that drags the bar.</summary>
     private const string HandleSelector = ".forma-composer-selection-bar-handle";
 
     [CascadingParameter] private ComposerSelectionBar? Bar { get; set; }
@@ -43,7 +43,7 @@ public sealed partial class FormaRichTextSelectionBar : FormaComponentBase
     {
         if (!_isAttached && EditorElement.HasValue && EditorElement.Value.Id is not null && _menuElement.Id is not null)
         {
-            // The bar registers with the router from script, so the host's policy reaches the router before it does.
+            // The follower registers with the router from script, so the host's policy is configured on the router first.
             await InputRouter.ConfigureAsync();
             _isAttached = await _follower.AttachAsync(_menuElement, EditorElement.Value, ActiveClass, SelectionFollowerPlacement.Below, HandleSelector);
         }

@@ -12,12 +12,12 @@ public sealed class TemplatePlugin(
     RichTextEditorPlugin editor,
     TemplatePluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<TemplatePluginOptions>
 {
-    /// <summary>Command prefix for inserting a specific predefined template.</summary>
+    /// <summary>The command prefix inserting the template whose identifier follows it.</summary>
     public const string InsertTemplatePrefix = "template.insert:";
 
     private readonly RichTextEditorPlugin _editorPlugin = editor;
 
-    /// <summary>Options configuring available templates and replacement behavior.</summary>
+    /// <summary>Options configuring the template plugin.</summary>
     public TemplatePluginOptions Options { get; } = options ?? TemplatePluginOptions.Default;
 
     /// <inheritdoc />

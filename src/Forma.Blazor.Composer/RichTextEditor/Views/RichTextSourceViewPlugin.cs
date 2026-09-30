@@ -11,7 +11,7 @@ public sealed class RichTextSourceViewPlugin : IComposerViewPlugin
     /// <summary>The identifier of this view.</summary>
     public const string ViewId = "rich-text.source";
 
-    /// <summary>The row carrying how the source reads and where it goes.</summary>
+    /// <summary>The row carrying line wrapping, copy and download.</summary>
     public const string SourceRow = "rich-text.source.view";
 
     /// <summary>The command turning line wrapping on or off.</summary>
@@ -29,7 +29,7 @@ public sealed class RichTextSourceViewPlugin : IComposerViewPlugin
     /// <summary>Raised when the source is to be saved as a file.</summary>
     public event Action? DownloadRequested;
 
-    /// <summary>Whether long lines wrap rather than scroll.</summary>
+    /// <summary>Whether long lines wrap.</summary>
     public bool IsWrapped { get; private set; } = true;
 
     /// <inheritdoc />

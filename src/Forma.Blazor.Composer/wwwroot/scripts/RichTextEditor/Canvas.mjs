@@ -7,7 +7,7 @@ export class Canvas {
     /** The elements a caret treats as its enclosing block. */
     static BlockSelector = 'p, h1, h2, h3, h4, h5, h6, blockquote, pre, li, div';
 
-    /** Everything inline content cannot flow through, so a wrapping pass recurses into these instead. */
+    /** The elements inline content cannot flow through, which a wrapping pass recurses into. */
     static BlockLikeSelector = `${Canvas.BlockSelector}, table, thead, tbody, tfoot, tr, td, th, caption, ul, ol, figure, figcaption, hr`;
 
     /** The element a node belongs to, stepping out of a text node onto its parent. */
@@ -41,26 +41,26 @@ export class Canvas {
         this.#element.focus();
     }
 
-    /** Merges the split text nodes an unwrapping pass leaves behind. */
+    /** Merges the canvas's adjacent text nodes. */
     normalize() {
         this.#element.normalize();
     }
 
-    /** The nearest matching ancestor, but only while it stays inside the canvas. */
+    /** The nearest matching ancestor inside the canvas. */
     closest(node, selector) {
         const found = Canvas.elementOf(node)?.closest(selector);
 
         return found && this.contains(found) ? found : null;
     }
 
-    /** The nearest matching ancestor of the selection's anchor, but only while it stays inside the canvas. */
+    /** The nearest matching ancestor of the selection's anchor inside the canvas. */
     closestToSelection(selector) {
         const selection = window.getSelection();
 
         return selection && selection.rangeCount > 0 ? this.closest(selection.anchorNode, selector) : null;
     }
 
-    /** The current selection's first range, or null when there is none. */
+    /** The current selection's first range. */
     currentRange() {
         const selection = window.getSelection();
 
@@ -81,7 +81,7 @@ export class Canvas {
         return this.#element.querySelector(Canvas.BlockSelector) ?? this.#element;
     }
 
-    /** The innermost blocks the selection touches, so a command lands where typing would. */
+    /** The innermost blocks the selection touches. */
     selectedBlocks() {
         const range = this.currentRange();
         if (!range) {
@@ -165,12 +165,12 @@ export class Canvas {
         selection.addRange(range);
     }
 
-    /** The top-level block at a zero-based index, or null past the last one. */
+    /** The top-level block at a zero-based index. */
     blockAt(index) {
         return this.#element.children[index] ?? null;
     }
 
-    /** Collapses the caret to the start of an element's content, so what is typed next opens it. */
+    /** Collapses the caret to the start of an element's content. */
     placeCaretAtStart(element) {
         const selection = window.getSelection();
         if (!selection) {
@@ -184,7 +184,7 @@ export class Canvas {
         selection.addRange(caret);
     }
 
-    /** Collapses the caret to the end of an element's content, so what is typed next follows it. */
+    /** Collapses the caret to the end of an element's content. */
     placeCaretAtEnd(element) {
         const selection = window.getSelection();
         if (!selection) {
@@ -198,7 +198,7 @@ export class Canvas {
         selection.addRange(caret);
     }
 
-    /** Selects a whole node, so what replaces the selection replaces that node entirely. */
+    /** Selects a whole node inside the canvas. */
     selectNode(node) {
         const selection = window.getSelection();
         if (!selection || !this.contains(node)) {

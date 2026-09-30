@@ -33,7 +33,7 @@ export class SelectionInspector {
         this.#links = links;
     }
 
-    /** Describes the selection for the toolbar, or null when it sits outside the canvas. */
+    /** Describes the selection inside the canvas for the toolbar. */
     snapshot() {
         const range = this.#canvas.currentRange();
         // A range across marked text anchors on the block around it; the first text it covers is what carries the marks.

@@ -19,7 +19,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
-    /// <summary>Everything this part invokes on the composer, cascaded from the parent shell.</summary>
+    /// <summary>The composer interaction cascaded from the parent shell.</summary>
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     /// <summary>The editor plugin cascaded by the composer surface.</summary>
@@ -58,7 +58,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     private bool IsSelectionBarShown
         => Composer?.IsSelectionBarShown ?? true;
 
-    /// <summary>Whether any plugin has pushed a marker, which is when the gutter takes its column.</summary>
+    /// <summary>Whether the composer holds any gutter markers.</summary>
     private bool HasMarkers
         => Composer?.Regions.GutterMarkers.Count > 0;
 
@@ -101,7 +101,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         {
             _isAttached = await _canvas.AttachAsync(_editorElement, _selfReference!);
 
-            // An editable claims its shortcuts natively, so the composer's routes are registered on it to be answered first.
+            // The composer's routes are registered on the editable itself, so they are answered before its native shortcuts.
             if (Composer is { } context)
             {
                 _inputScope = await InputRouter.RegisterAsync(_editorElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() }, _selfReference);
@@ -118,7 +118,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         }
     }
 
-    /// <summary>Runs the composer command whose shortcut the router matched inside the canvas; a command is its own action.</summary>
+    /// <summary>Runs the composer command named by the action the router matched inside the canvas.</summary>
     [JSInvokable]
     public Task HandleInputActionAsync(string action, InputInfo input)
     {
@@ -127,7 +127,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         return Interaction?.ExecuteCommandAsync(action) ?? Task.CompletedTask;
     }
 
-    /// <summary>Callback invoked from Context.JS when content changes via debounced typing or blur.</summary>
+    /// <summary>Commits the canvas's changed content to the composer document.</summary>
     [JSInvokable]
     public async Task HandleContentChangedAsync(string html)
     {
@@ -142,7 +142,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitized });
     }
 
-    /// <summary>Callback invoked from Context.JS when the selection snapshot changes.</summary>
+    /// <summary>Reports the canvas's selection snapshot to the composer.</summary>
     [JSInvokable]
     public async Task HandleSelectionChangedAsync(RichTextSelectionDto dto)
     {
@@ -165,26 +165,26 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         await Interaction.ReportSelectionAsync(selection);
     }
 
-    /// <summary>Callback invoked from Context.JS when the author double-clicks an image already in the document.</summary>
-    /// <param name="image">What that image already holds.</param>
+    /// <summary>Reopens the image dialog on an image in the document.</summary>
+    /// <param name="image">The image's current values.</param>
     [JSInvokable]
     public Task HandleImageActivatedAsync(ImageDialogResult image)
         => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Image, image));
 
-    /// <summary>Callback invoked from Context.JS when the author double-clicks a video already in the document.</summary>
-    /// <param name="video">What that video already holds.</param>
+    /// <summary>Reopens the video dialog on a video in the document.</summary>
+    /// <param name="video">The video's current values.</param>
     [JSInvokable]
     public Task HandleVideoActivatedAsync(VideoDialogResult video)
         => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Video, video));
 
-    /// <summary>Callback invoked from Context.JS when the author double-clicks an embed already in the document.</summary>
-    /// <param name="embed">What that embed already holds.</param>
+    /// <summary>Reopens the embed dialog on an embed in the document.</summary>
+    /// <param name="embed">The embed's current values.</param>
     [JSInvokable]
     public Task HandleEmbedActivatedAsync(EmbedDialogResult embed)
         => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Embed, embed));
 
-    /// <summary>Callback invoked from Context.JS when the author double-clicks a link or a named anchor.</summary>
-    /// <param name="isAnchor">Whether it is a named anchor rather than a hyperlink.</param>
+    /// <summary>Reopens the link dialog on a link or a named anchor in the document.</summary>
+    /// <param name="isAnchor">Whether the link is a named anchor.</param>
     [JSInvokable]
     public Task HandleLinkActivatedAsync(bool isAnchor)
     {
@@ -193,7 +193,6 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             return Task.CompletedTask;
         }
 
-        // A link dialog fills its fields from the canvas, whichever way it was asked for.
         HandleLinkDialogRequested(isAnchor);
 
         return Task.CompletedTask;
@@ -213,7 +212,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         return Task.CompletedTask;
     }
 
-    /// <summary>Handles commands raised directly by UI elements like the selection bar.</summary>
+    /// <summary>Runs the named composer command.</summary>
     public void HandleCommand(string command)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
@@ -223,7 +222,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             return;
         }
 
-        // These are plugin command names, so they route through the engine registry rather than straight at the canvas.
+        // Plugin command names route through the engine's command registry.
         _ = Interaction.ExecuteCommandAsync(command);
     }
 
@@ -235,7 +234,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         {
             var target = await _canvas.BeginLinkDialogAsync(isAnchor);
 
-            // One link is being retargeted, so its address comes back; several share none, and the author names it.
+            // The address is prefilled only when the selection holds a single link.
             _dialog = new RichTextDialogState(
                 RichTextDialogKind.Link,
                 new LinkDialogResult(
@@ -349,8 +348,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         ("code", "Code"),
     ];
 
-    // A command that changed a formatting says so; the caret merely moving through formatted text does not, since
-    // a screen reader reports the formatting under the caret on its own.
+    // Announces the first formatting a command turned on or off; the caret moving through formatting is left to the screen reader.
     private void AnnounceFormatting(IReadOnlySet<string> before, IReadOnlySet<string> after)
     {
         foreach (var (style, name) in Formats)
@@ -368,7 +366,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         }
     }
 
-    // The block is named once, as the caret enters it, so a change of formatting inside it is not shouted down.
+    // A block is announced once, as the caret enters it.
     private void AnnounceBlock(string? blockType)
     {
         if (string.IsNullOrEmpty(blockType) || string.Equals(blockType, _announcedBlockType, StringComparison.OrdinalIgnoreCase))
@@ -394,7 +392,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        // The canvas throws from OnInitialized without a cascaded plugin, and is disposed all the same.
+        // The plugin is unset when OnInitialized threw for a missing cascade, and disposal still runs.
         if (_editorPlugin is not null)
         {
             _editorPlugin.CommandRequested -= HandlePluginCommand;

@@ -34,7 +34,7 @@ public sealed partial class FormaRichTextPreview : FormaComponentBase
     private string PageClass
         => _previewPlugin.Page.IsSheet ? $"forma-composer-preview-page forma-composer-preview-sheet {ProseClass}" : $"forma-composer-preview-page {ProseClass}";
 
-    /// <summary>The page's own size: a sheet's width and height, a screen's width, or nothing for the width on offer; and its zoom.</summary>
+    /// <summary>The inline style carrying the page's size and zoom.</summary>
     private string PageStyle
     {
         get

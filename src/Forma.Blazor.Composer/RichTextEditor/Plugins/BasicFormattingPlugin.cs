@@ -85,8 +85,7 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
         ]),
     ];
 
-    // Strikethrough, subscript and superscript follow the shortcuts most editors share; clearing formatting takes the
-    // backslash as document editors do. Code has none, since Ctrl+E is alignment here as in word processors.
+    // Code has no shortcut, since Ctrl+E is alignment.
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
     [

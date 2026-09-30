@@ -1,4 +1,4 @@
-/* FormaRichTextEditor — The visual rich text canvas, a contenteditable region; the document inside it is styled by forma-prose.css */
+/* FormaRichTextEditor — The visual rich text canvas. */
 
 .forma-composer-rich-text-editor {
     position: relative;
@@ -30,7 +30,7 @@
     outline: none;
 }
 
-/* The gutter's column stands in the canvas's start padding while a marker exists, so the text moves aside for it. */
+/* The gutter's column, held in the canvas's start padding. */
 .forma-composer-rich-text-editor.has-gutter .forma-composer-rich-text-canvas {
     padding-inline-start: calc(var(--space-2) + var(--target-size-sm) + var(--space-2));
 }

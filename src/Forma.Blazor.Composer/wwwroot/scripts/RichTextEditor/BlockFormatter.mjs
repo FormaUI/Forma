@@ -12,7 +12,7 @@ export class BlockFormatter {
         this.#canvas = canvas;
     }
 
-    /** Converts the touched blocks to the named tag, leaving list items to keep their lists whole. */
+    /** Converts the touched blocks other than list items to the named tag. */
     convert(value) {
         const name = String(value ?? 'p').replace(/[<>]/g, '').toLowerCase();
         const blocks = this.#canvas.selectedBlocks().filter(block => block.tagName !== 'LI');
@@ -66,7 +66,7 @@ export class BlockFormatter {
         }
     }
 
-    /** Brings the block at an index into view with the caret at its start, so a marker's command lands the author on what it marks. */
+    /** Brings the block at an index into view with the caret at its start. */
     reveal(index) {
         const block = this.#canvas.blockAt(Number(index));
         if (!block) {
@@ -77,7 +77,7 @@ export class BlockFormatter {
         this.#canvas.placeCaretAtStart(block);
     }
 
-    /** Aligns every touched block explicitly, the way typing over them would find them. */
+    /** Sets the alignment on every touched block. */
     align(value) {
         for (const block of this.#canvas.selectedBlocks()) {
             block.style.textAlign = value;
@@ -113,7 +113,7 @@ export class BlockFormatter {
         }
     }
 
-    /** Splits the caret's block and stands a rule between the halves rather than nesting it inside one. */
+    /** Splits the caret's block and stands a rule between the halves. */
     insertRule() {
         const rule = document.createElement('hr');
         const range = this.#canvas.currentRange();

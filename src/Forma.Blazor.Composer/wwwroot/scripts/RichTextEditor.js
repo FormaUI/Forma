@@ -1,6 +1,6 @@
 /**
- * RichTextEditor — the visual contenteditable component: lifecycle, events, and command dispatch.
- * Each editing concern is a concept of its own under RichTextEditor/, composed here.
+ * RichTextEditor — the visual contenteditable component: lifecycle, events, and command dispatch
+ * over the editing modules under RichTextEditor/.
  */
 
 import { sanitize } from '../../forma/core/scripts/Sanitizer.js';
@@ -111,10 +111,9 @@ class RichTextEditor {
     }
 
     /**
-     * What makes one selection snapshot distinct from the last: the block, the styles and whether it is a caret,
-     * which are what the toolbar reflects. The offsets change with every keystroke and drive nothing across the
-     * circuit, so a caret moving within one formatting costs no round trip; the offsets a report carries are those
-     * of the change that raised it.
+     * The key distinguishing one selection snapshot from the last: its block, its styles and whether it is a caret.
+     * Offsets stay out of the key, so a caret moving within one formatting reports nothing; a report carries the
+     * offsets of the change that raised it.
      */
     static #keyOf(snapshot) {
         return snapshot ? JSON.stringify([snapshot.blockType, snapshot.activeStyles, snapshot.isCollapsed]) : null;
@@ -137,13 +136,12 @@ class RichTextEditor {
     }
 
     setHtml(html) {
-        // Pending-format markers never leave the canvas, so the comparison ignores them
-        // rather than letting a round trip rewrite the content and disarm a pending mark.
+        // The comparison ignores pending-format markers, so a round trip leaves a pending mark armed.
         if (InlineFormatter.stripMarkers(this.#canvas.html) !== html) {
             this.#canvas.html = html;
             this.#lastHtml = html;
             this.#lastSelectionKey = null;
-            // The rewrite detached every node the remembered selection pointed into, so restoring it would land the next edit somewhere unrelated.
+            // The rewrite detached every node the remembered selection pointed into.
             this.#memory.forget();
         }
     }
@@ -160,8 +158,8 @@ class RichTextEditor {
     }
 
     /**
-     * What the link dialog is about to act on: the text it covers, and the address of the single link
-     * it touches. Several links share no one address, so that field is left for the author to fill.
+     * What the link dialog is about to act on: the text the selection covers, the address of the single
+     * link it touches, and how many links it touches.
      */
     beginLinkDialog(selector = 'a[href]') {
         const frozen = this.#memory.freeze();
@@ -400,7 +398,7 @@ class RichTextEditor {
             this.#debounceTimer = null;
         }
 
-        // Focus is leaving, so a format armed at the caret but never typed into has no future.
+        // A format armed at the caret but never typed into is dropped as focus leaves.
         this.#inline.clearPendingMarkers();
 
         this.#flushContent();
@@ -455,8 +453,7 @@ class RichTextEditor {
 
     /**
      * Unwraps every matching anchor the selection touches, keeping whatever text each held.
-     * A caret inside one is enough, and a selection merely overlapping several clears all of them,
-     * so an author never has to select a link exactly to remove it.
+     * A caret inside one is enough, and a selection overlapping several unwraps all of them.
      */
     #unwrapAnchors(selector) {
         this.#memory.restore();

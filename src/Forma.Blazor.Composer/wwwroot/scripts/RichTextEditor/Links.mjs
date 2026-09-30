@@ -13,8 +13,6 @@ export class Links {
 
     /**
      * Whether the selection touches a matching anchor, by sitting inside one or by overlapping any of them.
-     * A selection reaching across two links starts in plain text, so asking only where it begins would
-     * report no link and offer to insert one rather than remove what is already there.
      */
     touches(range, selector) {
         if (this.#canvas.closest(range.startContainer, selector)) {
@@ -46,9 +44,8 @@ export class Links {
     }
 
     /**
-     * Unwraps the matching anchors a range touches and reports how many went.
-     * The text nodes move rather than die, so the range still covers the same text afterwards and a
-     * caller may go on to wrap it; normalizing here would merge them and lose the range's offsets.
+     * Unwraps the matching anchors a range touches and returns how many it unwrapped.
+     * The text nodes move into the anchors' places unnormalized, so the range still covers the same text afterwards.
      */
     unwrapTouching(range, selector) {
         const found = this.touching(range, selector);
@@ -60,10 +57,7 @@ export class Links {
         return found.length;
     }
 
-    /**
-     * The markup a link or named anchor request builds, or null when the request names nothing to build.
-     * The caller supplies whatever text the selection already covered and inserts the result over it.
-     */
+    /** The markup a link or named anchor request builds around the selected text, where null means there is nothing to insert. */
     static markup(data, selectedText) {
         if (!data) {
             return null;

@@ -1,10 +1,9 @@
 /**
  * SelectionFollower — an element kept beside the text selection inside its owner, holding focus while it shows
  *
- * While the element has focus it is an active registration on the input router, so Escape returns
- * focus to its owner through the router's ordering: a drag of its handle in flight stands above it
- * and takes the key first, and a popup opened over it takes the key instead. It is never active
- * merely because it shows.
+ * While the element has focus, and only then, it is an active registration on the input router, so
+ * Escape returns focus to its owner through the router's ordering: a drag of its handle in flight
+ * stands above it and takes the key first, and a popup opened over it takes the key instead.
  */
 
 import { attach as attachDragGesture } from '../../forma/browser/scripts/behaviors/DragGesture.js';
@@ -67,8 +66,7 @@ class SelectionFollower {
         new Focus(target, { wrap: true }, signal);
         target.addEventListener('keydown', event => this.#handleKeyDown(event), { signal });
 
-        // Active from focus-in to focus-out, and only with an owner to return focus to; a press elsewhere
-        // moves focus by itself or leaves it alone, so it dismisses nothing.
+        // Active from focus-in to focus-out, and only with an owner to return focus to.
         this.#registration = register(target, {
             escape: 'dismiss',
             pressAway: 'ignore',
@@ -101,7 +99,7 @@ class SelectionFollower {
         window.addEventListener('resize', () => this.#schedule(), { signal });
         window.addEventListener('scroll', () => this.#schedule(), { signal, capture: true, passive: true });
 
-        // The owner's own box changing — maximizing, a layout shift — moves the selection without any of the events above firing.
+        // A change to the owner's box moves the selection without firing any of the events above.
         this.#resizeObserver = new ResizeObserver(() => this.#schedule());
         this.#resizeObserver.observe(target);
         if (owner) {
@@ -179,18 +177,18 @@ class SelectionFollower {
         this.#hide();
     }
 
-    // Selection changes, scrolls and resizes arrive faster than frames are painted, so updates are coalesced to one a frame.
+    // Updates are coalesced to one a frame.
     #schedule() {
         this.#scheduler.request(() => this.update());
     }
 
     update() {
-        // A drag in flight holds the element where the pointer has it, whatever the selection does meanwhile.
+        // A drag in flight holds the element where the pointer has it.
         if (this.#isDisposed || this.#dragOrigin) {
             return;
         }
 
-        // An owner that was promised but is missing or gone leaves the element hidden, never following the whole page.
+        // A required owner that is missing, or an owner that is gone, leaves the element hidden.
         if ((this.#requiresOwner && !this.#owner) || (this.#owner && !this.#owner.isConnected)) {
             this.#hide();
             return;
@@ -240,7 +238,7 @@ class SelectionFollower {
     #place() {
         const { width, height } = this.#target.getBoundingClientRect();
 
-        // A hidden element has no box to keep inside the viewport, so it keeps its offset for the next showing.
+        // A hidden element keeps its offset for the next showing.
         if (width === 0 && height === 0) {
             return this.#offset;
         }

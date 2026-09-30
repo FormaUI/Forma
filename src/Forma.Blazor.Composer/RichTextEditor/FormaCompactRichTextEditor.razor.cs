@@ -8,10 +8,10 @@ using Forma.Framework.Composer.Plugins;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Compact rich text editor preset providing basic formatting, alignment, and typography.</summary>
+/// <summary>Compact rich text editor preset providing typography, basic formatting, alignment, and links.</summary>
 public sealed partial class FormaCompactRichTextEditor : FormaInputBase<ComposerDocument>
 {
-    // A description rather than instances, so each composer rendering this preset builds its own plugins.
+    // A definition, from which each composer rendering this preset builds its own plugins.
     private static readonly ComposerDefinition Preset = ComposerDefinition.Create(composer => composer
         .AddRichTextEditor(editor => editor
             .AddFeaturePlugin<TypographyPlugin>()

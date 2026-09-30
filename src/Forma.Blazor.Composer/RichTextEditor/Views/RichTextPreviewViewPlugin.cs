@@ -16,7 +16,7 @@ public sealed class RichTextPreviewViewPlugin : IComposerViewPlugin
     /// <summary>The row carrying the page's size, orientation and zoom.</summary>
     public const string PageRow = "rich-text.preview.page";
 
-    /// <summary>The row carrying what leaves the preview: print and export.</summary>
+    /// <summary>The row carrying print and export.</summary>
     public const string OutputRow = "rich-text.preview.output";
 
     /// <summary>The prefix of the commands choosing a page size, completed by a <see cref="PreviewPage"/> identifier.</summary>

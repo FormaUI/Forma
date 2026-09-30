@@ -5,7 +5,7 @@
 import { Escape } from './Markup.mjs';
 
 export class MediaMarkup {
-    /** The markup an image request builds, or null when it names no source. */
+    /** The markup an image request builds, where null means there is nothing to insert. */
     static image({ source: src = '', altText: alt = '', caption = '' } = {}) {
         if (!src) {
             return null;
@@ -16,7 +16,7 @@ export class MediaMarkup {
             : `<p><img class="forma-composer-image" src="${Escape.attribute(src)}" alt="${Escape.attribute(alt)}" /></p>`;
     }
 
-    /** The markup a picked resource builds, or null when it names no source. */
+    /** The markup a picked resource builds, where null means there is nothing to insert. */
     static resource({ source: src = '', name = '', kind: kindName = 'file', embed = false, link = false } = {}) {
         const kind = kindName.toLowerCase();
 
@@ -35,7 +35,7 @@ export class MediaMarkup {
             parts.push(`<audio class="forma-composer-resource" src="${address}" controls></audio>`);
         }
 
-        // A file the browser cannot render, or one nothing above claimed, still has to arrive as something.
+        // A resource left unembedded arrives as a link.
         if (link || parts.length === 0) {
             parts.push(`<a href="${address}" target="_blank" rel="noopener noreferrer">${Escape.html(name || src)}</a>`);
         }
@@ -43,7 +43,7 @@ export class MediaMarkup {
         return `<p>${parts.join(' ')}</p>`;
     }
 
-    /** The markup a video placeholder builds, or null when it names no address. */
+    /** The markup a video placeholder builds, where null means there is nothing to insert. */
     static video({ source: url = '', title = '', autoplay = false } = {}) {
         if (!url) {
             return null;
@@ -55,7 +55,7 @@ export class MediaMarkup {
         return `<div class="forma-composer-video" data-video-url="${Escape.attribute(url)}"${titleAttr}${autoplayAttr}><p><a href="${Escape.attribute(url)}" target="_blank" rel="noopener noreferrer">${Escape.html(title || url)}</a></p></div><p>&nbsp;</p>`;
     }
 
-    /** The markup an embed placeholder builds, or null when it names neither a type nor an identifier. */
+    /** The markup an embed placeholder builds, where null means there is nothing to insert. */
     static embed({ embedType: type = '', identifier: id = '', settings = '' } = {}) {
         if (!type && !id) {
             return null;
@@ -77,7 +77,7 @@ export class MediaMarkup {
         { kind: 'link', selector: 'a[href]' },
     ];
 
-    /** Reads back what a built element holds, so the dialog reopening on it starts where the author left off. */
+    /** Reads back the values a built element holds. */
     static read(kind, element) {
         switch (kind) {
             case 'image': {

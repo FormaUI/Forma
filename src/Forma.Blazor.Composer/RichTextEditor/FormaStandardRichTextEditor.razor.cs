@@ -8,10 +8,10 @@ using Forma.Framework.Composer.Plugins;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Standard rich text editor preset providing core formatting, typography, paragraph blocks, lists, and alignment.</summary>
+/// <summary>Standard rich text editor preset providing paragraph blocks, typography, core formatting, lists, alignment, links, images, tables, and horizontal rules.</summary>
 public sealed partial class FormaStandardRichTextEditor : FormaInputBase<ComposerDocument>
 {
-    // A description rather than instances, so each composer rendering this preset builds its own plugins.
+    // A definition, from which each composer rendering this preset builds its own plugins.
     private static readonly ComposerDefinition Preset = ComposerDefinition.Create(composer => composer
         .AddRichTextEditor(editor => editor
             .AddFeaturePlugin<ParagraphFormatPlugin>()

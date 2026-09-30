@@ -11,12 +11,12 @@ public sealed class EmojiPlugin(
     RichTextEditorPlugin editor,
     EmojiPluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<EmojiPluginOptions>
 {
-    /// <summary>Command prefix for inserting a specific emoji character.</summary>
+    /// <summary>The command prefix inserting the emoji character that follows it.</summary>
     public const string InsertEmojiPrefix = "emoji.insert:";
 
     private readonly RichTextEditorPlugin _editorPlugin = editor;
 
-    /// <summary>Options configuring the emoji picker.</summary>
+    /// <summary>Options configuring the emoji plugin.</summary>
     public EmojiPluginOptions Options { get; } = options ?? EmojiPluginOptions.Default;
 
     /// <inheritdoc />

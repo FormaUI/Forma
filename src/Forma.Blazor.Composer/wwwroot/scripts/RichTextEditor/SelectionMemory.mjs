@@ -59,7 +59,7 @@ export class SelectionMemory {
         }
     }
 
-    /** Forgets everything, for when the canvas is rewritten and the ranges point at detached nodes. */
+    /** Forgets the remembered and frozen selections. */
     forget() {
         this.#saved = null;
         this.#frozen = null;

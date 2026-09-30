@@ -50,7 +50,6 @@ public sealed partial class FormaRichTextGutter : FormaComponentBase
         }
     }
 
-    // A marker with no tooltip still needs a name a screen reader can say.
     private string NameOf(IComposerGutterMarker marker)
         => marker.Tooltip ?? L["Marker"];
 

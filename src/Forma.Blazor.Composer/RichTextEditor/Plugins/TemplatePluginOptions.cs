@@ -10,7 +10,7 @@ public sealed record TemplatePluginOptions
         new("sidebar", "Sidebar Callout", "A highlight callout box with a title.", "<aside class=\"forma-composer-callout\"><h3>Key Takeaways</h3><ul><li>First essential point</li><li>Second essential point</li></ul></aside>"),
     ];
 
-    /// <summary>Whether inserting a template replaces the entire document content instead of inserting at the caret.</summary>
+    /// <summary>Whether a template replaces the entire document content.</summary>
     public bool ReplaceContent { get; set; }
 
     /// <summary>Default options for the template plugin.</summary>

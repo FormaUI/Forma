@@ -9,7 +9,7 @@ using Forma.Framework.Toolbar;
 /// <summary>Contributes horizontal rule separator insertion to the rich text editor.</summary>
 public sealed class HorizontalRulePlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
-    /// <summary>The command inserting a horizontal divider line at the active caret position.</summary>
+    /// <summary>The command inserting a horizontal rule at the caret.</summary>
     public const string InsertRuleCommand = "insert.horizontal-rule";
 
     private readonly RichTextEditorPlugin _editorPlugin = editor;

@@ -1,9 +1,8 @@
 /**
  * InlineFormatter — the inline formatting engine: tag marks, styled spans, and their removal.
  *
- * Everything here works by extracting the selected range, rewriting the fragment, and
- * reinserting it. Extraction splits any element the selection only partly covers, so a
- * toggle never has to reason about partial overlap itself.
+ * Each operation extracts the selected range, rewrites the fragment, and reinserts it.
+ * Extraction splits any element the selection only partly covers.
  */
 
 import { Canvas } from './Canvas.mjs';
@@ -16,7 +15,7 @@ export class InlineFormatter {
     /** An inline wrapper with nothing inside it, as markup. */
     static #EmptyWrapper = /<(b|strong|i|em|u|s|strike|del|sub|sup|code|span)((?:\s[^>]*)?)><\/\1>/g;
 
-    /** Strips pending-format markers and the wrappers armed around them from outgoing HTML, so neither reaches the document a host stores. */
+    /** Strips pending-format markers and the wrappers armed around them from outgoing HTML. */
     static stripMarkers(html) {
         let out = (html ?? '').replaceAll(InlineFormatter.PendingMarker, '');
 
@@ -133,7 +132,7 @@ export class InlineFormatter {
         this.#reinsert(range, fragment);
     }
 
-    /** Strips every inline mark and formatting style from the selection, leaving links and structure alone. */
+    /** Strips every inline mark and formatting style from the selection. */
     clearFormatting() {
         const range = this.#canvas.currentRange();
         if (!range || range.collapsed) {
@@ -220,7 +219,7 @@ export class InlineFormatter {
         }
     }
 
-    /** The nearest matching ancestor inside the canvas, or null. */
+    /** The nearest matching ancestor inside the canvas. */
     #containing(node, matches) {
         for (let element = Canvas.elementOf(node); element && element !== this.#canvas.element; element = element.parentElement) {
             if (matches(element)) {
@@ -312,8 +311,7 @@ export class InlineFormatter {
 
     /**
      * Wraps each run of consecutive inline content in a fresh wrapper, recursing into anything
-     * block-like, so a selection spanning paragraphs marks the text of each without ever
-     * wrapping the blocks themselves.
+     * block-like, so a selection spanning paragraphs marks the text inside each block.
      */
     #wrapRuns(container, makeWrapper) {
         let run = [];

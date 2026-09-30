@@ -75,7 +75,7 @@ export class ListFormatter {
         }
     }
 
-    /** Splits blocks into runs of adjacent siblings, so each run becomes one list rather than one list per block. */
+    /** Splits blocks into runs of adjacent siblings, each run becoming one list. */
     static #groupConsecutive(blocks) {
         const groups = [];
         let current = [];
@@ -214,7 +214,7 @@ export class ListFormatter {
         return lastBlock;
     }
 
-    /** Moves an item into a sublist under the item before it, the way outlines nest. */
+    /** Moves an item into a sublist under the item before it. */
     #nest(item) {
         const previous = item.previousElementSibling;
         if (!previous || previous.tagName !== 'LI') {
@@ -240,7 +240,7 @@ export class ListFormatter {
         const holder = list.parentElement;
 
         if (holder && holder.tagName === 'LI') {
-            // Items after the lifted one would otherwise read above it; they nest under it instead.
+            // Items after the lifted one nest under it.
             const followers = [];
             for (let sibling = item.nextElementSibling; sibling; sibling = sibling.nextElementSibling) {
                 followers.push(sibling);

@@ -161,7 +161,7 @@ export class TableEditor {
         this.#closestPart('table')?.remove();
     }
 
-    /** The nearest table part holding the selection, or null when the caret is not in one. */
+    /** The nearest table part holding the selection. */
     #closestPart(selector) {
         return this.#canvas.closestToSelection(selector);
     }

@@ -6,7 +6,7 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 
-/// <summary>Contributes declarative host-resolved embed placeholder insertion to the rich text editor.</summary>
+/// <summary>Contributes insertion of host-resolved embed placeholders to the rich text editor.</summary>
 public sealed class EmbedPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command opening the insert embed dialog.</summary>

@@ -24,7 +24,7 @@
     gap: var(--space-3);
 }
 
-/* Wide enough for four digits, so the text starts at one column however long the document grows. */
+/* Wide enough for four digits, so every line's text starts at one column. */
 .forma-composer-source-number {
     flex-shrink: 0;
     inline-size: 4ch;

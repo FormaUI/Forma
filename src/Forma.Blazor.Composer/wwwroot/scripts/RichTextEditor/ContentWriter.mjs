@@ -95,7 +95,7 @@ export class ContentWriter {
         this.#memory.save();
     }
 
-    /** Blocks that hold only inline content, so a block inserted into one splits it instead. */
+    /** Blocks that hold only inline content, which a block inserted into them splits. */
     static #InlineOnlyBlockSelector = 'p, h1, h2, h3, h4, h5, h6, pre';
 
     /** Elements that make a block worth keeping even when it holds no text. */
@@ -115,7 +115,7 @@ export class ContentWriter {
         return true;
     }
 
-    /** The current range, but only when an insert into it would land inside the canvas. */
+    /** The current range, when it lies inside the canvas. */
     #usableRange() {
         const range = this.#canvas.currentRange();
 

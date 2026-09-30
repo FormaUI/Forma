@@ -1,4 +1,4 @@
-/* FormaRichTextPreview — the document laid out on a page, at a chosen size, over a muted ground; the document itself is styled by forma-prose.css */
+/* FormaRichTextPreview — the document laid out on a page over a muted ground */
 
 .forma-composer-preview {
     display: flex;
@@ -25,7 +25,7 @@
     line-height: var(--line-height-prose);
 }
 
-/* A sheet keeps its size whatever the preview's width, so it scrolls rather than shrinks, and carries a printer's margin: 20mm. */
+/* A sheet keeps its size at any preview width and carries a 20mm printer's margin. */
 .forma-composer-preview-sheet {
     max-inline-size: none;
     padding: 20mm;

@@ -24,7 +24,7 @@ internal enum RichTextDialogKind
     Embed
 }
 
-/// <summary>The one dialog an editor has open, holding what a reopened element already carried.</summary>
+/// <summary>The dialog an editor has open, with the values of the element it reopened on.</summary>
 internal sealed record RichTextDialogState(RichTextDialogKind Kind, ComposerDialogResult? ExistingResult = null)
 {
     /// <summary>No dialog open.</summary>

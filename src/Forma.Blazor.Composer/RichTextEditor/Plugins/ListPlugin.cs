@@ -54,9 +54,7 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
         ]),
     ];
 
-    // A bulleted list takes the word processors' shortcut and the indentation keys the brackets, as document editors
-    // bind them; a numbered list has no shortcut, since the ones editors use ride Shift over a digit, which reaches the
-    // browser as the digit's shifted symbol and differs by keyboard layout.
+    // A numbered list has no shortcut, since Shift over a digit differs by keyboard layout.
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
     [

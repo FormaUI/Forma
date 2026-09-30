@@ -9,7 +9,7 @@ using Forma.Framework.Toolbar;
 /// <summary>Contributes video embed insertion to the rich text editor.</summary>
 public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
-    /// <summary>The command opening the insert video embed dialog.</summary>
+    /// <summary>The command opening the insert video dialog.</summary>
     public const string InsertVideoCommand = "video.insert";
 
     private readonly RichTextEditorPlugin _editorPlugin = editor;
