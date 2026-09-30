@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.DataView;
 
-/// <summary>Tells two items apart by the key a data view identifies them by, so a re-fetched copy counts as the item it stands for.</summary>
+/// <summary>Compares two items by the key a data view identifies them by.</summary>
 /// <typeparam name="TItem">The item compared.</typeparam>
 /// <param name="keySelector">Reads an item's key.</param>
 internal sealed class ItemKeyComparer<TItem>(Func<TItem, object> keySelector) : IEqualityComparer<TItem>

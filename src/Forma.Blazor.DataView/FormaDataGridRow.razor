@@ -7,7 +7,7 @@
     @if (Grid.HasSelectionColumn)
     {
         <td class="@Grid.SelectionCellClass" data-item-control>
-            @* Dropping the marker takes the editing row out of every selection gesture: the behavior only ever acts on rows that carry one. *@
+            @* The editing row drops its marker; the selection behavior acts only on rows that carry one. *@
             @if (!Grid.IsEditing(Item))
             {
                 <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">

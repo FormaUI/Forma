@@ -1,9 +1,8 @@
 /* ============================================================
    FormaDataGroupHeading — CSS isolation
-   The heading over a group in the list and the cards: the
-   library's button, read from its start, with the chevron that
-   folds the group and the count in the supporting tone. Logical
-   properties throughout for RTL/LTR parity.
+   The heading over a group: the library's button, read from its
+   start, with the chevron that folds the group and the count in
+   the supporting tone.
    ============================================================ */
 
 /* Named with the button's own class, so this rule outranks the button's centering whatever order the bundles load in. */

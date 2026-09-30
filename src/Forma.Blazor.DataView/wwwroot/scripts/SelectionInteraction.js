@@ -1,13 +1,10 @@
 /**
  * SelectionInteraction — click and keyboard selection across a list of keyed items
  *
- * A framework's own row click carries the item but no MouseEventArgs, so modifier keys
- * (ctrl/meta for toggle, shift for range) can only be read here, from the DOM event that
- * the item's own click handling never surfaces to Blazor. Each item is identified by a
- * key attribute already rendered by the component, so no DOM index or sort order has to be
- * reconstructed on this side. The keys are routes on the input router, declared on the list,
- * so a key inside a nested scope, a select open in a cell, is that scope's, and a key in a
- * field inside an item is the field's by the router's native table rather than by a check here.
+ * The modifier keys are read from the DOM event: Ctrl or Meta toggles, Shift extends a range.
+ * Each item is identified by the key attribute the component renders on its marker. The keys
+ * are routes on the input router, declared on the list, so a key inside a nested scope, a
+ * select open in a cell, is that scope's, and a key in a field inside an item is the field's.
  *
  * The arrows move by where the items stand: down and up to the item below or above in the same
  * column, right and left to the neighbor in the same row, so one behavior serves rows down a
@@ -27,8 +24,8 @@
  * the list in never takes it as a submission. The presses are routes too: where the list selects,
  * a press selects, a shift-press stops the browser extending its own text selection across the
  * items, and a double press activates; where it does not, a press activates. A press on a native
- * control inside an item is the control's, and one on a part of the item a caller names as its
- * own controls, a box's cell or a card's actions, activates nothing.
+ * control inside an item is the control's, as is one on a part of the item a caller names as its
+ * own controls, a box's cell or a card's actions.
  */
 
 import { Controls } from '../../forma/core/scripts/Controls.js';
@@ -315,7 +312,7 @@ class SelectionInteraction {
         return item && this.#target.contains(item) && this.#tokenOfItem(item) !== null ? item : null;
     }
 
-    // An item names its own token where the list gives one, since an item without a marker has no other.
+    // An item's token comes from its own attribute where the list names one, else from its marker.
     #tokenOfItem(item) {
         const value = this.#itemKeyAttribute
             ? item.getAttribute(this.#itemKeyAttribute)
@@ -504,8 +501,7 @@ class SelectionInteraction {
             return null;
         }
 
-        // Focus is the source of truth for "which item", not the roving tabindex: tabbing
-        // straight onto one sets the former and leaves the latter wherever it was.
+        // The focused marker names the current item; tabbing onto one leaves the roving tab index where it was.
         const focused = document.activeElement?.closest(this.#markerSelector);
         const currentIndex = focused ? all.indexOf(focused) : -1;
         // The reading direction is the list's own, which the page's may differ from.

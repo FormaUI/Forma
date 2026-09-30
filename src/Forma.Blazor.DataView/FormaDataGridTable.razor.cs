@@ -10,17 +10,17 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 public sealed partial class FormaDataGridTable<TItem> : FormaElementBase
     where TItem : notnull
 {
-    /// <summary>The grid the table draws for, which re-renders the table whenever the grid renders.</summary>
+    /// <summary>The grid the table draws for.</summary>
     [Parameter, EditorRequired] public FormaDataGrid<TItem> Grid { get; set; } = default!;
 
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
-    // The field the master box names to the input base; the selection is not a form field and nothing binds it.
+    // The field the master box names to the input base as its value expression.
     private bool MasterSelection { get; }
 
-    /// <summary>The virtualization the table renders its rows through, while the data view virtualizes.</summary>
+    /// <summary>The virtualization the table renders its rows through.</summary>
     internal Virtualize<DataViewRow<TItem>>? Virtualizer { get; private set; }
 
     /// <inheritdoc />

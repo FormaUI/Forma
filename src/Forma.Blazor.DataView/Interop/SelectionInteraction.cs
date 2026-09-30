@@ -13,10 +13,10 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="container">The element the items stand in.</param>
     /// <param name="owner">The owner told what was selected or activated.</param>
     /// <param name="itemSelector">The selector naming the item a marker sits in.</param>
-    /// <param name="itemKeyAttribute">The attribute an item carries its token in, so an item without a marker can be activated; its marker's token when omitted.</param>
-    /// <param name="controlSelector">The selector naming the parts of an item that hold its own controls, whose press activates nothing.</param>
-    /// <param name="selects">Whether a press and the arrows select; otherwise a press activates, as it does in a list whose items are selected by their boxes alone.</param>
-    /// <param name="positionAttribute">The attribute an item carries its position in the owner's order in, where the owner seeks.</param>
+    /// <param name="itemKeyAttribute">The attribute an item carries its token in, where null reads the token from its marker.</param>
+    /// <param name="controlSelector">The selector naming the parts of an item that hold its own controls, whose presses leave the item's selection and activation alone.</param>
+    /// <param name="selects">Whether a press and the arrows select, where false makes a press activate.</param>
+    /// <param name="positionAttribute">The attribute an item carries its position in the owner's order in.</param>
     /// <param name="seeks">Whether the owner holds more items than the page draws, so a move to the list's ends is asked of it and a range runs by position.</param>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, string? positionAttribute = null, bool seeks = false)
         where TOwner : class

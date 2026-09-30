@@ -5,7 +5,7 @@ namespace Forma.Blazor.Components.DataView;
 internal interface IDataViewPositions<TItem>
     where TItem : notnull
 {
-    /// <summary>The position of the first or the last item the view reaches, or null where it reaches none.</summary>
+    /// <summary>The position of the first or the last item the view reaches.</summary>
     /// <param name="last">Whether the last is asked for rather than the first.</param>
     int? GetEdgePosition(bool last);
 

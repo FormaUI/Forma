@@ -35,13 +35,13 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     /// <summary>The item's depiction drawn before its name, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ThumbnailTemplate { get; set; }
 
-    /// <summary>Tightens the rows for names alone.</summary>
+    /// <summary>Whether the rows tighten to the line of a node's name.</summary>
     [Parameter] public bool Dense { get; set; }
 
-    /// <summary>Makes a chosen node the current node, whose children the other views show; the tree then stands beside them as a sidebar, out of the view switch, its choice the current node rather than the data view's selection.</summary>
+    /// <summary>Whether a chosen node becomes the current node, whose children the other views show, with the tree standing beside them as a sidebar.</summary>
     [Parameter] public bool SelectsCurrent { get; set; }
 
-    /// <summary>Admits the items the tree shows, the folders alone for a sidebar over a source that holds files too; every item when omitted.</summary>
+    /// <summary>The filter admitting the items the tree shows, where null admits every item.</summary>
     [Parameter] public Func<TItem, bool>? NodeFilter { get; set; }
 
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;
@@ -67,7 +67,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private Virtualize<VisibleNode>? _virtualizer;
     private List<VisibleNode> _visibleRows = [];
 
-    // The field a node's box names to the input base; the selection is not a form field and nothing binds it.
+    // The field a node's box names to the input base as its value expression.
     private bool NodeSelection { get; }
 
     private bool IsActive
@@ -129,7 +129,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     {
         _collectionName = CollectionName.From(AdditionalAttributes);
 
-        // Whether the tree stands beside the other views is decided as it registers; it does not change under a mounted tree.
+        // Whether the tree stands beside the other views is fixed when it registers.
         if (SelectsCurrent != _isCompanion)
         {
             throw new InvalidOperationException($"{nameof(SelectsCurrent)} cannot change once {nameof(FormaDataTree<TItem>)} has registered.");
@@ -449,7 +449,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             step = parent;
         }
 
-        // A chain that does not reach a root is one the data view has not seen whole; nothing opens for it.
+        // Only a chain that reaches a root, one the data view has seen whole, opens.
         if (ancestors.Count == 0 || !View.Roots.Any(root => IsSame(root, step)))
         {
             return;

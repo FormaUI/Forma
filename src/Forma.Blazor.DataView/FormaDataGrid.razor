@@ -3,9 +3,9 @@
 @typeparam TItem where TItem : notnull
 @using Forma.Blazor.Components.Layout
 
-@* The columns render nothing; each registers with the grid as its parameters are set, in the order written, and the table part declared after them renders once they have. *@
+@* Each column registers with the grid as its parameters are set, in the order written; the table declared after them renders once they have. *@
 <CascadingValue TValue="FormaDataGrid<TItem>" Value="this" IsFixed="true">
-    @* Fixed: the session object is mutated in place, so columns read live state without the cascade ever changing value under a mounted editor. *@
+    @* Fixed: the session is mutated in place, so the cascade never changes value under a mounted editor. *@
     <CascadingValue TValue="RowEditSession<TItem>" Value="_editSession" IsFixed="true">
         @{ StartCollectingColumns(); }
         @Columns

@@ -1,10 +1,8 @@
 /**
  * GridColumns — telling its owner how many columns a grid lays out
  *
- * A stylesheet packs a grid with as many columns as its width holds, and the browser resolves that
- * into tracks. The target's resolved tracks are counted each time it is laid out again and reported
- * to the owner only when the count changes, so the arithmetic behind the count lives once, in the
- * stylesheet, and the component arranges its items in rows of that many.
+ * The target's resolved tracks are counted each time it is laid out again, and the count is reported
+ * to the owner only when it changes.
  */
 
 import { tell } from '../../forma/core/scripts/Owner.js';
@@ -38,7 +36,7 @@ class GridColumns {
     }
 
     #report() {
-        // A target taken out of the document lays nothing out, and its owner is on its way out with it.
+        // A target out of the document lays nothing out.
         if (!this.#target.isConnected) {
             return;
         }

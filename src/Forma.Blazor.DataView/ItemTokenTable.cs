@@ -2,7 +2,8 @@ namespace Forma.Blazor.Components.DataView;
 
 using System.Diagnostics.CodeAnalysis;
 
-/// <summary>Gives the selection behavior an opaque handle for an item that survives while the item stays on screen.</summary>
+/// <summary>The opaque tokens the selection behavior names items on screen by.</summary>
+/// <remarks>Tokens live in two generations: each pass retires the current one, a key seen again keeps its token from the retired generation, and a token resolves through both.</remarks>
 /// <typeparam name="TItem">The item the handle stands for.</typeparam>
 internal sealed class ItemTokenTable<TItem>
     where TItem : notnull
@@ -22,7 +23,7 @@ internal sealed class ItemTokenTable<TItem>
         _itemsByToken.Clear();
     }
 
-    /// <summary>The token for <paramref name="key"/>, reusing the one from the previous pass if it had one.</summary>
+    /// <summary>The token for <paramref name="key"/>.</summary>
     /// <param name="key">The item's key.</param>
     /// <param name="item">The item the token stands for.</param>
     public int GetToken(object key, TItem item)
@@ -39,9 +40,9 @@ internal sealed class ItemTokenTable<TItem>
         return token;
     }
 
-    /// <summary>Resolves a token back to its item, checking the retired generation too.</summary>
+    /// <summary>Resolves a token back to its item.</summary>
     /// <param name="token">The token to resolve.</param>
-    /// <param name="item">The item the token stands for, when it still does.</param>
+    /// <param name="item">The item the token stands for.</param>
     public bool TryGetItem(int token, [MaybeNullWhen(false)] out TItem item)
         => _itemsByToken.TryGetValue(token, out item)
             || _retiredItemsByToken.TryGetValue(token, out item);

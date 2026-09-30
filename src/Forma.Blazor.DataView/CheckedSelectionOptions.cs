@@ -3,13 +3,14 @@ namespace Forma.Blazor.Components.DataView;
 /// <summary>The bounds of a checked selection, and the caption its header offers.</summary>
 public sealed record CheckedSelectionOptions
 {
-    /// <summary>The fewest items that must remain selected once a selection exists. A selected item cannot be individually unchecked below this floor; clearing the whole selection is always allowed.</summary>
+    /// <summary>The fewest items that must remain selected once a selection exists.</summary>
+    /// <remarks>Unchecking a single item stops at this floor; clearing the whole selection passes it.</remarks>
     public int? Minimum { get; init; }
 
     /// <summary>The most items that may be selected at once.</summary>
     public int? Maximum { get; init; }
 
-    /// <summary>Caption shown in place of the header checkbox. A <see langword="null"/> value, or one with no text, keeps the plain checkbox.</summary>
+    /// <summary>The caption shown in place of the header checkbox, where null or a caption with no text keeps the plain checkbox.</summary>
     public CheckedSelectionCaption? Caption { get; init; }
 
     /// <summary>What the master control reaches when pressed.</summary>

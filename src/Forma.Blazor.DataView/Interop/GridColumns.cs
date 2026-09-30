@@ -5,7 +5,8 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Tells an owner how many columns a grid lays out, counted from its resolved tracks each time it is laid out again.</summary>
+/// <summary>Tells an owner how many columns a grid lays out.</summary>
+/// <remarks>The count is read from the grid's resolved tracks each time the grid is laid out again.</remarks>
 internal sealed class GridColumns(IJSEnvironment js)
     : JSInterop(js, "./_content/Forma.Blazor.DataView/scripts/GridColumns.js")
 {

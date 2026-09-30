@@ -4,12 +4,10 @@
    one gutter, the selection column on that same gutter, and the
    state rows that stand in for the items. The row and the header
    cell's content are parts sharing this scope, so a rule here may
-   reach them by class. Logical properties throughout for RTL/LTR
-   parity.
+   reach them by class.
    ============================================================ */
 
-/* A table sizes to its content by default, so a grid of short columns sat in one corner of its box with the
-   rest blank; filling the box puts the columns under the width the host gave the grid. */
+/* The table fills its box, so the columns spread across the width the host gave the grid. */
 .forma-data-grid {
     border-spacing: 0;
     inline-size: 100%;
@@ -33,12 +31,12 @@
     z-index: 2;
 }
 
-/* A frozen cell is opaque in its row's tone, so the cells sliding beneath it do not show through. */
+/* A frozen cell is opaque in its row's tone, hiding the cells sliding beneath it. */
 .forma-data-grid td.forma-freeze-pane-frozen {
     background: var(--forma-data-grid-frozen-bg-color, var(--backdrop-flat-bg-color));
 }
 
-/* A row's tint is translucent, so a frozen cell lays it over the opaque backdrop rather than over the cells beneath. */
+/* A row's tint is translucent, so a frozen cell lays it over the opaque backdrop. */
 .forma-data-grid .forma-data-grid-row-selected td.forma-freeze-pane-frozen {
     background:
         linear-gradient(var(--forma-data-grid-row-selected-bg-color, var(--primary-subtle-color)), var(--forma-data-grid-row-selected-bg-color, var(--primary-subtle-color)))
@@ -63,8 +61,7 @@
 /* ---------- header ---------- */
 
 
-/* Column titles stay put while the rows move under them, so they paint over the rows; the rule that separates
-   head from body would belong to the first body row, which scrolls away, so the header carries its own. */
+/* The sticky header paints over the rows and carries its own rule beneath, since the first body row scrolls away. */
 .forma-data-grid thead th {
     position: sticky;
     inset-block-start: 0;
@@ -115,8 +112,7 @@
 /* ---------- cells ---------- */
 
 
-/* A row is one line on its target step, so a cell never wraps; a table wider than its pane scrolls beneath the
-   frozen columns instead, which is also what lets a column the reader brought back overflow rather than squeeze the rest. */
+/* A row is one line on its target step, so a cell stays on one line and a table wider than its pane scrolls beneath the frozen columns. */
 .forma-data-grid-cell {
     padding-block: var(--space-2);
     padding-inline: var(--space-3);
@@ -137,8 +133,7 @@
 /* ---------- states ---------- */
 
 
-/* A tinted background reads as selected without depending on the checkbox column, so it still shows on a row
-   selected through item selection alone. */
+/* The tint marks a row selected through its box or through item selection alike. */
 .forma-data-grid-row-selected {
     background: var(--forma-data-grid-row-selected-bg-color, var(--primary-subtle-color));
 }
@@ -194,14 +189,13 @@ td.forma-data-grid-menu-column {
     inline-size: calc(2 * var(--target-size-sm) + var(--space-1) + 2 * var(--space-3));
 }
 
-/* Item selection without checkboxes carries the same focusable input for its native keyboard and ARIA
-   semantics, but takes up no visible space in the layout. */
+/* Item selection alone carries a focusable input for its native keyboard and ARIA semantics, in a column of no width. */
 .forma-data-grid-select-column-marker {
     inline-size: 0;
     padding-inline: 0;
 }
 
-/* The marker is collapsed to nothing; focusing it scrolls to its own row. The box is FormaCheckBox's, so its class is reached with ::deep. */
+/* The marker is collapsed yet focusable, so focusing it scrolls to its row; the box is FormaCheckBox's, reached with ::deep. */
 ::deep .forma-data-grid-row-marker {
     inline-size: 0;
     block-size: 0;
@@ -210,8 +204,7 @@ td.forma-data-grid-menu-column {
     pointer-events: none;
 }
 
-/* The marker carries the focus but cannot show it, so the row draws the ring: focus moves independently of
-   selection, so the tint is not enough. */
+/* The marker carries the focus but cannot show it, so the row draws the ring. */
 .forma-data-grid-row:has(::deep .forma-data-grid-row-marker:focus-visible) {
     outline: none;
     box-shadow: var(--focus-ring-inset);
@@ -245,8 +238,7 @@ td.forma-data-grid-menu-column {
 /* ---------- editing ---------- */
 
 
-/* An editor fills its cell so the row keeps its column widths while switching to edit, and the cell tightens its block
-   padding around it so the row holds its step: an input on the medium step, and the space a row of text has left over. */
+/* An editor fills its cell and the cell tightens its block padding, so the editing row keeps its column widths and its step. */
 ::deep .forma-data-grid-editor {
     box-sizing: border-box;
     inline-size: 100%;
@@ -264,8 +256,7 @@ td.forma-data-grid-menu-column {
     inline-size: auto;
 }
 
-/* The date picker is a field; in a cell it stands as the inputs beside it do, on the medium step with no field margin,
-   and its label, the column's title the header already shows, is kept for assistive technology alone. */
+/* A field in a cell stands on the medium step with no field margin, its label kept for assistive technology alone since the header shows the column's title. */
 .forma-data-grid-cell ::deep .forma-field {
     margin-block-end: 0;
 }

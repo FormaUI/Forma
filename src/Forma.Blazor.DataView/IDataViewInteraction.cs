@@ -17,7 +17,7 @@ public interface IDataViewInteraction<TItem>
     /// <param name="key">The view's key.</param>
     void UnregisterView(string key);
 
-    /// <summary>Starts a pass over the items a view is about to draw, so the tokens of items that left can be released.</summary>
+    /// <summary>Starts a pass over the items a view is about to draw.</summary>
     void BeginItemPass();
 
     /// <summary>Sorts by <paramref name="sort"/> under <paramref name="name"/>, in <paramref name="direction"/>.</summary>
@@ -33,10 +33,10 @@ public interface IDataViewInteraction<TItem>
     /// <param name="group">The group whose heading was pressed.</param>
     Task ToggleGroupAsync(DataViewGroup<TItem> group);
 
-    /// <summary>Asks the source for the roots, unless it has already answered.</summary>
+    /// <summary>Asks the source for the roots once.</summary>
     Task LoadRootsAsync();
 
-    /// <summary>Asks the source for the children of <paramref name="parent"/>, unless it has already answered.</summary>
+    /// <summary>Asks the source for the children of <paramref name="parent"/> once.</summary>
     /// <param name="parent">The node.</param>
     Task LoadChildrenAsync(TItem parent);
 
@@ -52,11 +52,11 @@ public interface IDataViewInteraction<TItem>
     /// <param name="item">The node, or null for the roots.</param>
     Task MakeCurrentAsync(TItem? item);
 
-    /// <summary>Selects <paramref name="item"/> alone, as a plain press on it does; the selection bounds may refuse.</summary>
+    /// <summary>Selects <paramref name="item"/> alone, as a plain press on it does, subject to the selection bounds.</summary>
     /// <param name="item">The item.</param>
     Task SelectItemAsync(TItem item);
 
-    /// <summary>Selects or clears <paramref name="item"/> through its own control, which the selection bounds may refuse.</summary>
+    /// <summary>Selects or clears <paramref name="item"/> through its own control, subject to the selection bounds.</summary>
     /// <param name="item">The item whose control changed.</param>
     /// <param name="selected">Whether the item is to be selected.</param>
     Task ToggleSelectionAsync(TItem item, bool selected);
@@ -64,16 +64,16 @@ public interface IDataViewInteraction<TItem>
     /// <summary>Selects or clears what the master control reaches in the selection options' mode.</summary>
     Task ToggleMasterAsync();
 
-    /// <summary>Selects every item on screen, which the selection bounds may refuse.</summary>
+    /// <summary>Selects every item on screen, subject to the selection bounds.</summary>
     Task SelectPageAsync();
 
-    /// <summary>Selects every item of the set where the data view holds it, else every item on screen; the selection bounds may refuse.</summary>
+    /// <summary>Selects every item of the set where the data view holds it, else every item on screen, subject to the selection bounds.</summary>
     Task SelectAllAsync();
 
-    /// <summary>Clears the selection, which is always allowed.</summary>
+    /// <summary>Clears the selection.</summary>
     Task ClearSelectionAsync();
 
-    /// <summary>Reports that the reader activated <paramref name="item"/> outside any selection gesture.</summary>
+    /// <summary>Reports that the reader activated <paramref name="item"/>.</summary>
     /// <param name="item">The item activated.</param>
     Task ActivateAsync(TItem item);
 }

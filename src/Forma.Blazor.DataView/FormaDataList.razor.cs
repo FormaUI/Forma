@@ -8,7 +8,7 @@ using Forma.Framework.Icons;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 
-/// <summary>A view over a data view drawing the items down the height, each a thumbnail where the caller templates one, its name and the caller's secondary text, flowing on into further columns, or one row each where the data view virtualizes.</summary>
+/// <summary>A view over a data view drawing the items down the height and on into further columns, each a thumbnail, its name and the caller's secondary text.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
 public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewViewport, IDataViewPositions<TItem>
     where TItem : notnull
@@ -21,7 +21,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     /// <summary>The item's depiction drawn before its name, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ThumbnailTemplate { get; set; }
 
-    /// <summary>Tightens the rows for names alone.</summary>
+    /// <summary>Whether the rows tighten to the line of an item's name.</summary>
     [Parameter] public bool Dense { get; set; }
 
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;
@@ -33,7 +33,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     private Virtualize<DataViewRow<TItem>>? _virtualizer;
     private bool _isRefreshWanted;
 
-    // The field an item's box names to the input base; the selection is not a form field and nothing binds it.
+    // The field an item's box names to the input base as its value expression.
     private bool ItemSelection { get; }
 
     private bool IsActive
@@ -45,7 +45,6 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     private bool IsVirtualizing
         => View.Virtualize && !View.EnablePagination;
 
-    // A row the virtualization has not fetched yet holds a row's height, so the rows beneath it stand where they will.
     private string PlaceholderStyle
         => string.Create(CultureInfo.InvariantCulture, $"block-size: {View.ItemHeight}px");
 
@@ -100,7 +99,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         if (_isRefreshWanted && _virtualizer is { } virtualizer)
         {
             _isRefreshWanted = false;
-            // The virtualization fetches the rows without drawing them, leaving the draw to its host.
+            // The virtualization fetches the rows and leaves drawing them to its host.
             await virtualizer.RefreshDataAsync();
             StateHasChanged();
         }

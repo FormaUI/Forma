@@ -4,8 +4,7 @@
    with its disclosure, its marker, its thumbnail and its name;
    the selected node in the tint with its name emphasized, the
    current node marked at its start. Standing beside the other
-   views as a sidebar, the tree takes a fixed inline size. Logical
-   properties throughout for RTL/LTR parity.
+   views as a sidebar, the tree takes a fixed inline size.
    ============================================================ */
 
 .forma-data-tree {

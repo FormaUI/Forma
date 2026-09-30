@@ -3,7 +3,7 @@
    Names flowing down the height and on into further columns,
    each row a thumbnail, a name and the caller's secondary text,
    with its selection drawn in the tint and a check beside
-   color. Logical properties throughout for RTL/LTR parity.
+   color.
    ============================================================ */
 
 /* Given a height by the region, the flow fills it and continues past its end into further columns, which the region
@@ -89,7 +89,7 @@
     flex-shrink: 0;
 }
 
-/* The marker is collapsed to nothing; focusing it scrolls to its own row. The box is FormaCheckBox's, so its class is reached with ::deep. */
+/* The marker is collapsed yet focusable, so focusing it scrolls to its row; the box is FormaCheckBox's, reached with ::deep. */
 ::deep .forma-data-list-item-marker {
     inline-size: 0;
     block-size: 0;

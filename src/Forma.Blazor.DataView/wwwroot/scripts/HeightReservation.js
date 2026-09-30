@@ -1,18 +1,13 @@
 /**
  * HeightReservation — holding a container at the tallest height its content has needed
  *
- * A page holding fewer rows than the page size leaves a container shorter than a full one,
- * so whatever sits beneath it jumps up under the pointer between pages. How tall a row
- * stands follows from whatever the host puts in its cells, which is only known once laid
- * out, so the height to hold is measured rather than computed from a declared row size.
- *
- * Fractional box heights throughout: a row rounded to the whole pixel carries that error
- * once per row of the page, which is enough to shift the content below on its own.
+ * The height held is measured from the rows as laid out, in fractional box heights, since a
+ * row rounded to the whole pixel carries that error once per row of the page.
  */
 
 /**
  * @param {HTMLElement} target
- * @param {{ rowSelector?: string }} options Rows to measure; those rendered empty as padding are ignored.
+ * @param {{ rowSelector?: string }} options The selector naming the rows to measure.
  */
 export function attach(target, options = {}) {
     return new HeightReservation(target, options);
@@ -39,8 +34,7 @@ class HeightReservation {
             return;
         }
 
-        // A grid may pad a short page out to the page size, but with empty rows that carry
-        // none of the content a row draws its height from, so they are no sample.
+        // Empty rows pad a short page out to the page size and carry no content to measure.
         const filled = [...this.#target.querySelectorAll(this.#rowSelector)]
             .filter(row => row.textContent.trim() !== '');
 
@@ -48,8 +42,7 @@ class HeightReservation {
             return;
         }
 
-        // A full page states the height outright, and is worth keeping: rows of unequal
-        // height make any projection from a short page an approximation of it.
+        // A full page's height is held outright; a short page projects its tallest row only while nothing is held.
         if (filled.length >= pageSize) {
             this.#reserved = table.getBoundingClientRect().height;
         } else if (this.#reserved === undefined) {

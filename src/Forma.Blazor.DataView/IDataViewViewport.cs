@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.DataView;
 
-/// <summary>The viewport a view keeps over the items, which the data view asks to move.</summary>
+/// <summary>The viewport a view keeps over the items.</summary>
 public interface IDataViewViewport
 {
     /// <summary>Scrolls the viewport so the item at <paramref name="index"/> is aligned to its start.</summary>

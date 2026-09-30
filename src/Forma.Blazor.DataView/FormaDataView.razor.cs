@@ -80,31 +80,33 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private int _orderVersion;
     private SelectionBounds _selectionBounds;
 
-    /// <summary>The items to show, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both. A new queryable is a new set the data view asks again, so a page keeps one across its renders until its set changes.</summary>
+    /// <summary>The items to show, sorted, counted and paged by the data view itself.</summary>
+    /// <remarks>A new queryable is a new set, which the data view reads again.</remarks>
     [Parameter] public IQueryable<TItem>? Items { get; set; }
 
-    /// <summary>The provider the items are read from, a slice at a time. Supply this or <see cref="Items"/>, not both.</summary>
+    /// <summary>The provider the items are read from, a slice at a time.</summary>
     [Parameter] public DataViewItemsProvider<TItem>? ItemsProvider { get; set; }
 
-    /// <summary>Identifies an item across reloads, so a selection or an edit survives its item being replaced by an equal copy.</summary>
+    /// <summary>Reads the key that identifies an item across reloads.</summary>
     [Parameter] public Func<TItem, object> ItemKey { get; set; } = item => item;
 
-    /// <summary>The key of the view to show among several, bindable; null shows the first declared.</summary>
+    /// <summary>The key of the view to show, where null shows the first declared.</summary>
     [Parameter] public string? View { get; set; }
 
     /// <summary>Raised with the key of the view the reader switched to.</summary>
     [Parameter] public EventCallback<string?> ViewChanged { get; set; }
 
-    /// <summary>The name an item goes by, which a view without columns shows for it; the item's own text when omitted.</summary>
+    /// <summary>The name an item goes by, where null uses the item's own text.</summary>
     [Parameter] public Func<TItem, string>? ItemName { get; set; }
 
-    /// <summary>The key of the item's parent, as <see cref="ItemKey"/> reads it on the parent, null for a root, which gives a set its hierarchy; a provider answers with a node's children from the request instead.</summary>
+    /// <summary>Reads the key of an item's parent, as <see cref="ItemKey"/> reads it on the parent, which gives the set its hierarchy; a null key marks a root.</summary>
     [Parameter] public Expression<Func<TItem, object?>>? ParentKey { get; set; }
 
-    /// <summary>Whether an item has children, so it opens in the tree and, activated in another view, becomes the current node; absent, a node opens until its children come back empty.</summary>
+    /// <summary>Whether an item has children, where null lets a node open until its children come back empty.</summary>
+    /// <remarks>An item with children opens in the tree and, activated in another view, becomes the current node.</remarks>
     [Parameter] public Func<TItem, bool>? HasChildren { get; set; }
 
-    /// <summary>The node whose children the views without a tree show, bindable; null shows the roots.</summary>
+    /// <summary>The node whose children the views without a tree show, where null shows the roots.</summary>
     [Parameter] public TItem? CurrentItem { get; set; }
 
     /// <summary>Raised with the node the reader moved into, or null for the roots.</summary>
@@ -116,19 +118,19 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>The class an item's row, card or node carries, from its item.</summary>
     [Parameter] public Func<TItem, string?>? ItemClass { get; set; }
 
-    /// <summary>What shows in place of the items when the source answers with none; absent, the library's own sentence.</summary>
+    /// <summary>What shows in place of the items when the source answers with none, where null shows the library's own sentence.</summary>
     [Parameter] public RenderFragment? EmptyContent { get; set; }
 
-    /// <summary>What shows in place of the items while the source has not answered yet; absent, the library's busy indicator.</summary>
+    /// <summary>What shows in place of the items while the source has not answered yet, where null shows the library's busy indicator.</summary>
     [Parameter] public RenderFragment? LoadingContent { get; set; }
 
     /// <summary>Content shown in the footer, beside the page navigation.</summary>
     [Parameter] public RenderFragment? Status { get; set; }
 
-    /// <summary>Whether the items are shown a page at a time. Off, every item shows in one scroll region.</summary>
+    /// <summary>Whether the items are shown a page at a time, or all in one scroll region.</summary>
     [Parameter] public bool EnablePagination { get; set; } = true;
 
-    /// <summary>How many items a page holds. Required while <see cref="EnablePagination"/> is on.</summary>
+    /// <summary>How many items a page holds.</summary>
     [Parameter] public int PageSize { get; set; }
 
     /// <summary>The page showing, counted from one.</summary>
@@ -140,13 +142,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Which parts of the page navigation are shown.</summary>
     [Parameter] public PaginationOptions PaginationOptions { get; set; } = PaginationOptions.Default;
 
-    /// <summary>Where the sort and the page are written in the address; absent, they stay in memory.</summary>
+    /// <summary>Where the sort and the page are written in the address, where null keeps them in memory.</summary>
     [Parameter] public DataViewAddressOptions? AddressOptions { get; set; }
 
     /// <summary>Raised with the size of the whole set whenever the source reports a different one.</summary>
     [Parameter] public EventCallback<int?> TotalItemCountChanged { get; set; }
 
-    /// <summary>Renders only the items near the scroll viewport, for a large set with <see cref="EnablePagination"/> off. Requires an ancestor that scrolls.</summary>
+    /// <summary>Whether a view renders only the items near the scroll viewport while <see cref="EnablePagination"/> is off.</summary>
     [Parameter] public bool Virtualize { get; set; }
 
     /// <summary>The height of the unit a view virtualizes by, in pixels.</summary>
@@ -158,16 +160,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Where the viewport holds when items arrive at an edge while virtualizing.</summary>
     [Parameter] public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
 
-    /// <summary>The index of the item the data view opens on while virtualizing, applied once; zero opens at the start.</summary>
+    /// <summary>The index of the item the data view opens on while virtualizing, applied once.</summary>
     [Parameter] public int InitialItemIndex { get; set; }
 
     /// <summary>The grouping the items fold under, each group a heading over its members; null shows the items ungrouped.</summary>
     [Parameter] public DataViewGrouping<TItem>? GroupBy { get; set; }
 
-    /// <summary>Gives every item a box to check, with a master control over them.</summary>
+    /// <summary>Whether every item has a box to check, with a master control over them.</summary>
     [Parameter] public bool EnableCheckedSelection { get; set; }
 
-    /// <summary>Lets items be selected through pointer and keyboard gestures on themselves, with or without <see cref="EnableCheckedSelection"/>.</summary>
+    /// <summary>Whether items are selected through pointer and keyboard gestures on themselves.</summary>
     [Parameter] public bool EnableItemSelection { get; set; }
 
     /// <summary>The items selected.</summary>
@@ -182,7 +184,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Raised when a selection attempt is blocked by <see cref="CheckedSelectionOptions.Minimum"/> or <see cref="CheckedSelectionOptions.Maximum"/>.</summary>
     [Parameter] public EventCallback<SelectionRejected> OnSelectionRejected { get; set; }
 
-    /// <summary>Raised when an item is activated outside any selection gesture.</summary>
+    /// <summary>Raised when an item is activated.</summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <inheritdoc />
@@ -305,7 +307,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     public bool IsBusy
         => _isBusy;
 
-    /// <summary>How many items the whole set holds, or null while the source has not said.</summary>
+    /// <inheritdoc />
     public int? TotalItemCount
         => _totalItemCount;
 
@@ -373,7 +375,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     RenderFragment IDataView<TItem>.EmptyContent
         => EmptyContent ?? RenderDefaultEmpty;
 
-    /// <summary>Whether <see cref="CheckedSelectionOptions.Maximum"/> has been reached, so no further item can be selected.</summary>
+    /// <summary>Whether <see cref="CheckedSelectionOptions.Maximum"/> has been reached.</summary>
     public bool IsMaximumSelectionReached
         => !_selectionBounds.CanAdd(_selectedSet.Count);
 
@@ -381,7 +383,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     public bool IsMinimumSelectionSatisfied
         => _selectionBounds.Minimum is null || _selectedSet.Count >= _selectionBounds.Minimum.Value;
 
-    // Selecting every item is offered only where it would not overshoot the maximum; there is no partial select-as-many-as-fit.
+    // Selecting every item is offered only where the whole set fits within the maximum.
     private bool CanSelectAll
         => _selectionBounds.CanSelectAll(_totalItemCount ?? _items.Count);
 
@@ -412,7 +414,6 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             && _totalItemCount is { } total
             && _selectedSet.Count < total;
 
-    // Skipped entirely when there is nothing to put in it, so the region's gap leaves no dead space beneath it.
     private bool HasFooter
         => Status is not null || ShowsPaginator || OffersSet;
 
@@ -500,7 +501,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
-        // Showing every item makes whichever page the data view was left on meaningless, so turning paging back on starts from the first page rather than resuming.
+        // Turning paging off moves to the first page, so turning it back on starts there.
         if (!EnablePagination && _page > 1)
         {
             await MoveToPageAsync(1);
@@ -550,7 +551,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, PositionAttribute, _isAttachedToSeek);
         }
 
-        // Virtualization sizes its own scroll range, and an unpaged data view has no short page to hold a height for.
+        // Only a paged data view that does not virtualize holds a height for a short page.
         if (EnablePagination && !Virtualize)
         {
             if (!_heightReservation.IsAttached)
@@ -627,7 +628,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await LoadAsync();
     }
 
-    /// <summary>Selects every item of the set where the data view holds it, else every item on screen; the selection bounds may refuse.</summary>
+    /// <inheritdoc />
     public async Task SelectAllAsync()
     {
         if (Items is null)
@@ -646,7 +647,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await ReplaceSelectionAsync(CreateSelection(whole.Items));
     }
 
-    /// <summary>Selects every item on screen, which the selection bounds may refuse.</summary>
+    /// <inheritdoc />
     public async Task SelectPageAsync()
     {
         if (!CanSelectPage)
@@ -660,11 +661,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await ReplaceSelectionAsync(updated);
     }
 
-    /// <summary>Clears the selection, which is always allowed.</summary>
+    /// <inheritdoc />
     public Task ClearSelectionAsync()
         => _selectedSet.Count == 0 ? Task.CompletedTask : ReplaceSelectionAsync(CreateSelection([]));
 
-    /// <summary>Clears the items on screen from the selection; a reset rather than a removal, so the floor does not bind.</summary>
+    /// <summary>Clears the items on screen from the selection.</summary>
+    /// <remarks>Clearing the page passes the selection's minimum, as clearing the whole selection does.</remarks>
     public Task ClearPageAsync()
     {
         if (PageSelectedCount == 0)
@@ -678,7 +680,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         return ReplaceSelectionAsync(updated);
     }
 
-    /// <summary>Adds <paramref name="items"/> to the selection, which the selection bounds may refuse.</summary>
+    /// <summary>Adds <paramref name="items"/> to the selection, subject to the selection bounds.</summary>
     /// <param name="items">The items to select.</param>
     public async Task SelectAsync(IEnumerable<TItem> items)
     {
@@ -696,7 +698,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await ReplaceSelectionAsync(updated);
     }
 
-    /// <summary>Removes <paramref name="items"/> from the selection, which the selection bounds may refuse.</summary>
+    /// <summary>Removes <paramref name="items"/> from the selection, subject to the selection bounds.</summary>
     /// <param name="items">The items to clear.</param>
     public async Task DeselectAsync(IEnumerable<TItem> items)
     {
@@ -944,7 +946,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     public void Unsubscribe(Func<Task> callback)
         => _stateNotifier.Unsubscribe(callback);
 
-    /// <summary>Replaces or toggles the selection with a single item, invoked from the selection behavior.</summary>
+    /// <summary>Replaces or toggles the selection with a single item.</summary>
     /// <param name="itemToken">The token of the item the gesture landed on.</param>
     /// <param name="additive">Whether the gesture toggles the item rather than replacing the selection with it.</param>
     [JSInvokable]
@@ -964,7 +966,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await SelectAloneAsync(item);
     }
 
-    // A plain press selects the item alone, which the bounds may refuse.
+    // A plain press selects the item alone, subject to the bounds.
     private async Task SelectAloneAsync(TItem item)
     {
         if (!CanSelect(item))
@@ -976,13 +978,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await ReplaceSelectionAsync(CreateSelection([item]));
     }
 
-    /// <summary>Activates the item whose marker held the focus when Enter was pressed, invoked from the selection behavior.</summary>
+    /// <summary>Activates the item an activating press or Enter on its marker landed on.</summary>
     /// <param name="itemToken">The token of the item.</param>
     [JSInvokable]
     public Task HandleActivateAsync(int itemToken)
         => _itemTokens.TryGetItem(itemToken, out var item) ? ActivateAsync(item) : Task.CompletedTask;
 
-    /// <summary>Replaces or extends the selection with a contiguous range of items, invoked from the selection behavior.</summary>
+    /// <summary>Replaces or extends the selection with a contiguous range of items.</summary>
     /// <param name="itemTokens">The tokens of the items in the range.</param>
     /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>
     [JSInvokable]
@@ -1003,7 +1005,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         return SelectRangeAsync(range, additive);
     }
 
-    /// <summary>Replaces or extends the selection with the items the active view reaches between two positions in its order, invoked from the selection behavior where the view virtualizes.</summary>
+    /// <summary>Replaces or extends the selection with the items the active view reaches between two positions in its order.</summary>
     /// <param name="fromPosition">The position of the range's anchor.</param>
     /// <param name="toPosition">The position of the item the gesture landed on.</param>
     /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>
@@ -1025,7 +1027,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
     }
 
-    /// <summary>Moves to the first or the last item the active view reaches, invoked from the selection behavior where the view virtualizes: the move selects by its rules, the view scrolls the item into range, and the behavior lands the focus on it once it is drawn.</summary>
+    /// <summary>Moves to the first or the last item the active view reaches.</summary>
+    /// <remarks>The move selects by its mode, the view scrolls the item into range, and the selection behavior lands the focus on it once it is drawn.</remarks>
     /// <param name="request">The request the behavior names the move by.</param>
     /// <param name="last">Whether the move reaches the last item rather than the first.</param>
     /// <param name="mode">How the move selects: <c>select</c> the item alone, <c>extend</c> the range from the anchor, or <c>focus</c> the item alone.</param>
@@ -1136,12 +1139,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         builder.CloseComponent();
     }
 
-    // An item already selected can always be cleared; an unselected one can only be added while doing so would not exceed the maximum.
+    // A selected item can be cleared, and an unselected one added while the maximum allows.
     private bool CanSelect(TItem item)
         => IsSelected(item) || _selectionBounds.CanAdd(_selectedSet.Count);
 
-    // A box enforces both bounds: an unselected item cannot be checked once the maximum is reached, and a selected one cannot be unchecked once
-    // doing so would drop below the minimum. A plain click or a range replaces the whole selection, so it is a reset rather than a removal and is exempt from the minimum.
+    // A box keeps both bounds, checking stopping at the maximum and unchecking at the minimum; a plain press or a range replaces
+    // the whole selection and passes the minimum.
     private bool CanToggle(TItem item)
         => IsSelected(item)
             ? _selectionBounds.CanRemove(_selectedSet.Count)
@@ -1263,7 +1266,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // The selection interaction reads a click and a key against the item the marker sits in, which every view marks the same way.
     private const string ItemSelector = "[" + ItemAttribute + "]";
 
-    /// <summary>The attribute a part of an item carries when it holds the item's own controls, its box's cell or a card's actions, whose press activates nothing.</summary>
+    /// <summary>The attribute a part of an item carries when it holds the item's own controls, its box's cell or a card's actions, whose presses are those controls' own.</summary>
     internal const string ControlAttribute = "data-item-control";
 
     // The attribute an item a virtualizing view draws carries its position in the view's order in.
@@ -1579,7 +1582,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
     }
 
-    // Written in place rather than as a new entry, so a reader stepping back leaves the page rather than retracing every sort and page they tried.
+    // Written in place of the current history entry, so stepping back leaves the page.
     private void WriteAddress()
     {
         if (AddressOptions is not { } options)

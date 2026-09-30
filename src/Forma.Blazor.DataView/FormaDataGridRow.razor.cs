@@ -16,7 +16,7 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
-    // The field a row's box names to the input base; the selection is not a form field and nothing binds it.
+    // The field a row's box names to the input base as its value expression.
     private bool RowSelection { get; }
 
     /// <inheritdoc />

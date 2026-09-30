@@ -8,7 +8,7 @@ public interface IDataViewSwitcher : INotifyStateChanged
     /// <summary>The views registered, in the order declared.</summary>
     IReadOnlyList<DataViewRegistration> Views { get; }
 
-    /// <summary>The key of the view showing, or null while none has registered.</summary>
+    /// <summary>The key of the view showing.</summary>
     string? ActiveViewKey { get; }
 
     /// <summary>Shows the view registered under <paramref name="key"/>.</summary>

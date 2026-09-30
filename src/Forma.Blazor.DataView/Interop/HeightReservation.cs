@@ -5,7 +5,7 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Holds a container at the tallest height its content has needed, so a short page does not shrink it.</summary>
+/// <summary>Holds a container at the tallest height its content has needed.</summary>
 internal sealed class HeightReservation(IJSEnvironment js)
     : JSInterop(js, "./_content/Forma.Blazor.DataView/scripts/HeightReservation.js")
 {

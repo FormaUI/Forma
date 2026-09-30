@@ -4,7 +4,7 @@
    each a thumbnail, a name, the caller's information and its
    actions, with its selection drawn in the tint and a check
    beside color; at the compact density the thumbnail and the
-   name alone. Logical properties throughout for RTL/LTR parity.
+   name alone.
    ============================================================ */
 
 .forma-data-cards {
@@ -35,7 +35,7 @@
 }
 
 /* Virtualizing, the cards stand in rows of the columns the ruler lays out at the width, each row a pack of its own with the
-   pack's gap beneath it, and a group's heading a row above its cards. The ruler packs nothing, so it stands no height. */
+   pack's gap beneath it, and a group's heading a row above its cards. */
 .forma-data-cards-ruler {
     block-size: 0;
     overflow: hidden;
@@ -106,7 +106,7 @@
     align-items: center;
 }
 
-/* The marker is collapsed to nothing; focusing it scrolls to its own card. The box is FormaCheckBox's, so its class is reached with ::deep. */
+/* The marker is collapsed yet focusable, so focusing it scrolls to its card; the box is FormaCheckBox's, reached with ::deep. */
 ::deep .forma-data-card-marker {
     inline-size: 0;
     block-size: 0;

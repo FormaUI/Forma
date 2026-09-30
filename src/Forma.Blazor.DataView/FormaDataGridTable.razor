@@ -59,7 +59,7 @@
                                 {
                                     <span class="forma-data-grid-master-caption-slot">
                                         <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-grid-master-caption" Disabled="@View.IsMasterControlDisabled" OnClick="HandleMasterClickAsync">@Grid.MasterCaptionText</FormaButton>
-                                        @* Holds the column at the width of the longer caption, so swapping between them does not resize every column beside it. *@
+                                        @* Holds the column at the width of the longer caption, so swapping captions keeps every column beside it in place. *@
                                         <span class="forma-data-grid-master-caption-ghost" aria-hidden="true">@Grid.MasterCaptionAlternateText</span>
                                     </span>
                                 }

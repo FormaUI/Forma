@@ -94,7 +94,7 @@ public sealed class DataViewSort<TItem>
         return this;
     }
 
-    // The member path the key reads, "Address.City" for a nested one; a key that is no member path has no name a store can order by.
+    // The member path the key reads, such as Address.City, and empty for a key that reads no member.
     private static string GetPropertyName<TValue>(Expression<Func<TItem, TValue>> key)
     {
         var parts = new List<string>();

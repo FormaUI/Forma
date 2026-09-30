@@ -25,7 +25,7 @@
             _visibleRows = GetVisibleRows();
             SettleTabStop();
 
-            @* Virtualizing, the visible nodes stand in one run, each saying its level and its place among its siblings in place of the group that would hold it. *@
+            @* Virtualizing, the visible nodes stand in one run, each carrying its level and its place among its siblings. *@
             <div class="forma-data-tree-level" role="tree" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 <Virtualize @ref="_virtualizer" Items="_visibleRows" ItemSize="View.ItemHeight" OverscanCount="View.OverscanCount" Context="row">
                     <div class="forma-data-tree-item" role="none" @key="View.ItemKey(row.Node)">

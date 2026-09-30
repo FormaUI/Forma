@@ -4,9 +4,9 @@ namespace Forma.Blazor.Components.DataView;
 /// <typeparam name="TItem">The item the group holds.</typeparam>
 /// <param name="Key">The key the group's items share.</param>
 /// <param name="Name">The name the heading shows.</param>
-/// <param name="Items">The group's items on screen, in the order shown; empty where a virtualizing view fetches them as it scrolls.</param>
+/// <param name="Items">The group's items on screen, in the order shown, where empty means a virtualizing view fetches them as it scrolls.</param>
 public sealed record DataViewGroup<TItem>(object? Key, string Name, IReadOnlyList<TItem> Items)
 {
-    /// <summary>How many items the group holds: the items on screen, or the whole group's where the view virtualizes.</summary>
+    /// <summary>How many items the group holds.</summary>
     public int Count { get; init; } = Items.Count;
 }

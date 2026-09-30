@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Components.Forms;
 internal sealed class RowEditSession<TItem>
     where TItem : notnull
 {
-    /// <summary>Resolves a row's identity, so the editing row is recognized across reloads.</summary>
+    /// <summary>Resolves a row's identity.</summary>
     public Func<TItem, object> KeySelector { get; set; } = item => item;
 
     /// <summary>The untouched row the edit started from.</summary>
     public TItem? Item { get; private set; }
 
-    /// <summary>The copy the editors bind to, discarded wholesale when the edit is canceled.</summary>
+    /// <summary>The copy the editors bind to.</summary>
     public TItem? Draft { get; private set; }
 
     /// <summary>Validation state for <see cref="Draft"/>.</summary>

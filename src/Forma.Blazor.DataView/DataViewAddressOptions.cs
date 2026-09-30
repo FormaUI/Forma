@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
-/// <summary>Where a data view writes its sort and page in the address: the prefix that keeps it apart from another data view on the page, and the parameter names under it.</summary>
-/// <param name="Prefix">The prefix every parameter is written under, so two data views on one page keep apart.</param>
+/// <summary>Where a data view writes its sort, page and view in the address: the prefix its parameters are written under, and their names.</summary>
+/// <param name="Prefix">The prefix every parameter is written under.</param>
 public sealed record DataViewAddressOptions(string Prefix)
 {
     /// <summary>The parameter naming the sort.</summary>

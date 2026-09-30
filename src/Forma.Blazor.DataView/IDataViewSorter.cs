@@ -13,7 +13,7 @@ public interface IDataViewSorter<TItem> : INotifyStateChanged
     /// <summary>The direction of the sort applied.</summary>
     DataViewSortDirection SortDirection { get; }
 
-    /// <summary>The name of the sort the address asked for and nothing has applied yet, or null.</summary>
+    /// <summary>The name of the sort the address asked for and nothing has applied yet.</summary>
     string? RequestedSortName { get; }
 
     /// <summary>The direction the address asked for beside <see cref="RequestedSortName"/>.</summary>

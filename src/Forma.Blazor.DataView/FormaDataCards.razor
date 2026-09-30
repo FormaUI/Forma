@@ -69,7 +69,7 @@
         }
         else if (IsVirtualizing)
         {
-            @* The ruler packs no cards; the columns it lays out at the width are the columns every row holds. *@
+            @* The ruler is an empty pack; the columns it lays out at the width are the columns every row holds. *@
             <div class="forma-data-cards-rows" role="list" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 <div class="forma-data-cards-pack forma-data-cards-ruler" aria-hidden="true" @ref="_rulerElement"></div>
                 @if (View.TotalItemCount == 0)

@@ -1,9 +1,9 @@
 namespace Forma.Blazor.Components.DataView;
 
-/// <summary>Counts and reads a queryable asynchronously, so a query backed by a store runs there rather than on the renderer.</summary>
+/// <summary>Counts and reads a queryable asynchronously.</summary>
 public interface IDataViewQueryExecutor
 {
-    /// <summary>Whether this executor handles <paramref name="query"/>; one that does not leaves it to the next.</summary>
+    /// <summary>Whether this executor handles <paramref name="query"/>.</summary>
     /// <typeparam name="TItem">The item the query yields.</typeparam>
     /// <param name="query">The query to judge.</param>
     bool Supports<TItem>(IQueryable<TItem> query);

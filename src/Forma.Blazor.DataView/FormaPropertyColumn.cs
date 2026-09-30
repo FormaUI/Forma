@@ -34,13 +34,13 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     /// <summary>The member this column reads, and writes back to while editing.</summary>
     [Parameter, EditorRequired] public Expression<Func<TItem, TValue>> Property { get; set; } = default!;
 
-    /// <summary>Format string applied to the displayed value. Requires a value type implementing <see cref="IFormattable"/>.</summary>
+    /// <summary>The format string applied to the displayed value.</summary>
     [Parameter] public string? Format { get; set; }
 
-    /// <summary>Whether this column offers an editor while its row is being edited. A member with no setter is never editable.</summary>
+    /// <summary>Whether this column offers an editor while its row is being edited.</summary>
     [Parameter] public bool Editable { get; set; } = true;
 
-    /// <summary>Editor rendered in place of the built-in one, receiving the row's draft copy.</summary>
+    /// <summary>The editor rendered in place of the built-in one, given the row's draft copy.</summary>
     [Parameter] public RenderFragment<TItem>? EditTemplate { get; set; }
 
     /// <inheritdoc />
@@ -64,8 +64,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             Title ??= ResolveTitle(Property);
             SortName ??= ResolveSortName(Property);
 
-            // Only replace a sort this column derived itself, so a caller-supplied one survives; a property with no path to name
-            // its sort derives none, so the column sorts once its caller names the sort.
+            // Only a sort the column derived itself is replaced; a caller's sort is kept, and a property with no path derives none.
             if (SortBy is null || ReferenceEquals(SortBy, _derivedSort))
             {
                 _derivedSort = SortName is null ? null : DataViewSort<TItem>.ByAscending(Property);
@@ -90,7 +89,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
 
         if (EditSession is { Draft: { } draft, EditContext: { } editContext } session && session.IsEditing(item))
         {
-            // Editors refuse a context swap, so they get one fixed to this edit and keyed to it; the next edit builds a new pair rather than re-parameterizing this one.
+            // Editors refuse a context swap, so they get one fixed to this edit and keyed to it.
             builder.OpenComponent<CascadingValue<EditContext>>(0);
             builder.SetKey(editContext);
             builder.AddComponentParameter(1, "Value", editContext);
@@ -111,7 +110,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
 
     private void EditingContent(RenderTreeBuilder builder, TItem draft)
     {
-        // Checked ahead of the template so opting a column out holds however its editor would have been produced.
+        // Checked ahead of the template, so a column opted out stays read-only with a template too.
         if (Editable)
         {
             if (EditTemplate is not null)
@@ -131,7 +130,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         builder.AddContent(1, _displayTextSelector(draft));
     }
 
-    // The library's input where it has one for the value's type, and the framework's in the library's look where it has none yet.
+    // The library's input for the value's type where it has one, else the framework's in the library's look.
     private static EditorKind ResolveEditorKind()
     {
         var type = typeof(TValue);
@@ -207,7 +206,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         return item => ((IFormattable?)getter(item))?.ToString(format, CultureInfo.CurrentCulture);
     }
 
-    // The property's path, "Customer.Name", which names the sort the same whatever the title reads in the culture; a property that is not a path of members names none.
+    // The property's path, such as Customer.Name, and null for a property that is not a path of members.
     private static string? ResolveSortName(Expression<Func<TItem, TValue>> property)
     {
         var names = new List<string>();
@@ -300,7 +299,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         builder.CloseComponent();
     }
 
-    // A framework input wears the text box's look until the library has an input of its own for the value.
+    // A framework input wears the text box's look.
     private void RenderFrameworkInput(RenderTreeBuilder builder, Type inputType, object? value, object valueChanged, object valueExpression)
     {
         builder.OpenComponent(9, inputType);

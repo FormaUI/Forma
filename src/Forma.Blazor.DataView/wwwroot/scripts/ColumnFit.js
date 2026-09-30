@@ -3,9 +3,8 @@
  *
  * The table's container is watched for the width it gives, and the table itself for content that
  * changes what its columns need. On either, the table is laid out at its content's own width for one
- * synchronous read, so each marked header cell reports the width it wants rather than the share it was
- * given, and then laid out as it was before anything paints. The owner decides which columns fit; the
- * report is sent only when it differs from the last.
+ * synchronous read of each marked header cell, then laid out as it was before anything paints, and
+ * the report is sent only when it differs from the last.
  */
 
 import { tell } from '../../forma/core/scripts/Owner.js';
@@ -46,7 +45,7 @@ class ColumnFit {
     }
 
     #report() {
-        // A table taken out of the document has no width, and its owner is on its way out with it.
+        // A table out of the document has no width.
         if (!this.#target.isConnected) {
             return;
         }

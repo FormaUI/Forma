@@ -46,19 +46,19 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     /// <summary>The columns, declared with the grid's own column components in the order they render.</summary>
     [Parameter, EditorRequired] public RenderFragment Columns { get; set; } = default!;
 
-    /// <summary>Whether the header row shows; off for a consumer that names its columns elsewhere.</summary>
+    /// <summary>Whether the header row shows.</summary>
     [Parameter] public bool ShowHeader { get; set; } = true;
 
-    /// <summary>Stands the rows on the small target step, for rows that are plain text.</summary>
+    /// <summary>Whether the rows stand on the small target step.</summary>
     [Parameter] public bool Dense { get; set; }
 
-    /// <summary>Allows one row at a time to be edited in place by the columns that offer an editor. Requires <see cref="CloneForEdit"/>.</summary>
+    /// <summary>Whether one row at a time can be edited in place by the columns that offer an editor.</summary>
     [Parameter] public bool EnableInlineEditing { get; set; }
 
-    /// <summary>Produces the detached copy an edit writes to, so canceling discards it rather than restoring the row.</summary>
+    /// <summary>Produces the detached copy an edit writes to.</summary>
     [Parameter] public Func<TItem, TItem>? CloneForEdit { get; set; }
 
-    /// <summary>Raised with the edited copy once it passes validation. Persisting it is the host's job.</summary>
+    /// <summary>Raised with the edited copy once it passes validation.</summary>
     [Parameter] public EventCallback<TItem> OnRowSave { get; set; }
 
     /// <summary>Raised with the untouched row when an edit is abandoned.</summary>
@@ -69,11 +69,12 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
 
-    /// <summary>The row being edited, or null when no edit is in progress.</summary>
+    /// <summary>The row being edited.</summary>
     public TItem? EditingItem
         => _editSession.Item;
 
-    /// <summary>The table, once rendered, which the part that draws it holds.</summary>
+    /// <inheritdoc />
+    /// <remarks>The grid's root element is the table its table part draws.</remarks>
     public override ElementReference RootElement
     {
         get => Table?.RootElement ?? default;
@@ -91,7 +92,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     private bool IsVirtualizing
         => View.Virtualize && !View.EnablePagination;
 
-    /// <summary>Whether the grid is the view showing, which it is alone or when the data view's active view names it.</summary>
+    /// <summary>Whether the grid is the view showing.</summary>
     internal bool IsActive
         => View.ActiveViewKey == ViewKey;
 
@@ -103,7 +104,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     internal IEnumerable<FormaColumnBase<TItem>> ShownColumns
         => _columns.Where(IsShown);
 
-    /// <summary>The columns the width may drop, listed in the columns menu: the visible ones below the highest priority that are not frozen.</summary>
+    /// <summary>The columns the width may drop, listed in the columns menu: the visible, unfrozen ones below the highest priority.</summary>
     internal IEnumerable<FormaColumnBase<TItem>> DroppableColumns
         => _columns.Where(IsDroppable);
 
@@ -111,7 +112,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     internal bool HasColumnsMenu
         => DroppableColumns.Any();
 
-    /// <summary>Whether any column stays at the start while the rest scroll, which freezes the selection column with it.</summary>
+    /// <summary>Whether any column stays at the start while the rest scroll.</summary>
     internal bool HasFrozenColumns
         => _columns.Any(column => column.Visible && column.Frozen);
 
@@ -181,7 +182,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         return builder.ToStringOrNull();
     }
 
-    /// <summary>Takes the width the table has and the widths its columns want, and decides again which fit; called from the script whenever either changes.</summary>
+    /// <summary>Takes the width the table has and the widths its columns want, and decides again which fit.</summary>
+    /// <param name="report">The width the table has and the widths its columns want.</param>
     [JSInvokable]
     public Task HandleColumnFitAsync(ColumnFitReport report)
     {
@@ -208,7 +210,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         return FitColumns() || frozenColumnsMoved ? InvokeAsync(StateHasChanged) : Task.CompletedTask;
     }
 
-    /// <summary>Shows a column the width dropped, or drops one it shows; the reader's choice holds until the grid is given a different width.</summary>
+    /// <summary>Shows a column the width dropped, or drops one it shows.</summary>
+    /// <remarks>The reader's choice holds until the grid is given a different width.</remarks>
     /// <param name="column">The column chosen in the columns menu.</param>
     public Task ToggleColumnAsync(FormaColumnBase<TItem> column)
     {
@@ -317,12 +320,11 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    /// <summary>Tells a virtualized row's item from a re-fetched copy of it, by the data view's key.</summary>
     /// <summary>The height a placeholder row holds while its item loads.</summary>
     internal string PlaceholderStyle
         => string.Create(CultureInfo.InvariantCulture, $"block-size: {View.ItemHeight}px");
 
-    /// <summary>The header shows the master checkbox unless a caption with a text stands in for it.</summary>
+    /// <summary>Whether a caption with a text stands in for the header's master checkbox.</summary>
     internal bool HasMasterCaption
         => View.CheckedSelectionOptions.Caption is { } caption && (caption.SelectAllText is not null || caption.DeselectAllText is not null);
 
@@ -371,7 +373,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
                 $"{nameof(EnableInlineEditing)} requires {nameof(CloneForEdit)}; an edit needs a copy to write to.");
         }
 
-        // Editors write through to the draft by reference; a value type would be copied on every read, so the edits would be silently dropped rather than reported.
+        // Editors write through to the draft by reference, which a value type copies on every read.
         if (EnableInlineEditing && typeof(TItem).IsValueType)
         {
             throw new InvalidOperationException(
@@ -392,7 +394,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             await ApplyInitialSortAsync();
         }
 
-        // Only a grid that can drop or freeze a column needs its widths; a plain grid attaches nothing.
+        // Only a grid that can drop or freeze a column attaches the fit.
         if (!_isColumnFitAttached && (HasColumnsMenu || HasFrozenColumns) && Table is { } table)
         {
             // Claimed before the await so a render arriving mid-call cannot attach a second observer to the same table.
@@ -404,7 +406,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         if (_isRefreshWanted && Table?.Virtualizer is { } virtualizer)
         {
             _isRefreshWanted = false;
-            // The virtualization fetches the rows without drawing them, leaving the draw to its host.
+            // The virtualization fetches the rows and leaves drawing them to its host.
             await virtualizer.RefreshDataAsync();
             StateHasChanged();
         }
@@ -434,7 +436,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         StateHasChanged();
     }
 
-    /// <summary>Validates the edit and, if it passes, ends it and reports the edited copy. Returns whether it was accepted.</summary>
+    /// <summary>Validates the edit and, once it passes, ends it and reports the edited copy.</summary>
+    /// <returns>Whether the edit was accepted.</returns>
     public async Task<bool> SaveEditAsync()
     {
         if (_editSession is not { Draft: { } draft, EditContext: { } editContext })
@@ -468,7 +471,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     }
 
     /// <summary>Sorts by <paramref name="column"/> in <paramref name="direction"/>, as pressing its header does.</summary>
-    /// <param name="column">The column to sort by, which must be sortable.</param>
+    /// <param name="column">The column to sort by.</param>
     /// <param name="direction">The direction to sort in.</param>
     public Task SortByColumnAsync(FormaColumnBase<TItem> column, DataViewSortDirection direction)
     {
@@ -556,7 +559,6 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             : Interaction.ClearSortAsync();
     }
 
-    // Selection state is layered on top of whatever class the host already assigns, so a custom class and the built-in selected and disabled styling never conflict.
     internal string? GetRowClass(TItem item)
     {
         var builder = new CssClassBuilder();
@@ -632,8 +634,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         return View.SortDirection == DataViewSortDirection.Ascending ? "ascending" : "descending";
     }
 
-    // The table part calls this as it starts rendering, which is after every column declared before it has registered.
-    // Two sortable columns naming one sort would leave the address unable to tell them apart, so the grid refuses them.
+    // Runs as the table part starts rendering, after every column declared before it has registered, and refuses two sortable columns naming one sort.
     internal void FinishCollectingColumns()
     {
         _isCollectingColumns = false;
@@ -670,7 +671,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    /// <summary>Tells a virtualized row from a re-fetched copy of it, by its heading's group or its item's key.</summary>
+    /// <summary>Compares virtualized rows by the group whose heading they are or the item they open on.</summary>
     internal IEqualityComparer<DataViewRow<TItem>> RowComparer
         => _rows.Comparer;
 
@@ -698,7 +699,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         return result;
     }
 
-    /// <summary>The one-based place of <paramref name="item"/> in the whole set, for a row a virtualizing grid draws; null where the grid does not virtualize.</summary>
+    /// <summary>The one-based place of <paramref name="item"/> in the whole set, for a row a virtualizing grid draws.</summary>
     internal int? GetRowIndex(TItem item)
         => _rowIndices.TryGetValue(item, out var index) ? index + 1 : null;
 

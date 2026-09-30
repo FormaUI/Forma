@@ -18,19 +18,19 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 {
     private const string ViewKey = "cards";
 
-    /// <summary>The information drawn beneath an item's name, given the item; left out at the compact density.</summary>
+    /// <summary>The information drawn beneath an item's name, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>The item's depiction the card opens with, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ThumbnailTemplate { get; set; }
 
-    /// <summary>The item's actions, drawn in a bar at the card's end, given the item; left out at the compact density.</summary>
+    /// <summary>The item's actions, drawn in a bar at the card's end, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ActionsTemplate { get; set; }
 
-    /// <summary>The narrowest a card packs to; as many pack across as the width holds at it.</summary>
+    /// <summary>The narrowest a card packs to.</summary>
     [Parameter] public CssLength CardSize { get; set; } = CssLength.FromRem(9);
 
-    /// <summary>Draws each card as its thumbnail and name alone, the compact density a consumer shows as thumbnails.</summary>
+    /// <summary>Whether each card draws its thumbnail and name alone, the compact density.</summary>
     [Parameter] public bool Dense { get; set; }
 
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;
@@ -48,7 +48,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     private bool _isRefreshWanted;
     private int _initialRowIndex;
 
-    // The field a card's box names to the input base; the selection is not a form field and nothing binds it.
+    // The field a card's box names to the input base as its value expression.
     private bool ItemSelection { get; }
 
     private bool IsActive
@@ -60,7 +60,6 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     private bool IsVirtualizing
         => View.Virtualize && !View.EnablePagination;
 
-    // A row the virtualization has not fetched yet holds a row's height, so the rows beneath it stand where they will.
     private string PlaceholderStyle
         => string.Create(CultureInfo.InvariantCulture, $"block-size: {View.ItemHeight}px");
 
@@ -131,7 +130,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // The ruler is measured while it shows; another view or paging takes it off the page with the rows it measured.
+        // The ruler is measured while it shows, and let go once another view or paging takes it off the page.
         var showsRuler = IsActive && IsVirtualizing && View.HasLoaded;
 
         if (showsRuler && !_isRulerAttached)
@@ -149,7 +148,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
         if (_isRefreshWanted && _virtualizer is { } virtualizer)
         {
             _isRefreshWanted = false;
-            // The virtualization fetches the rows without drawing them, leaving the draw to its host.
+            // The virtualization fetches the rows and leaves drawing them to its host.
             await virtualizer.RefreshDataAsync();
             StateHasChanged();
         }

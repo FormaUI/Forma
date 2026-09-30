@@ -16,7 +16,7 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <summary>The title shown in the header cell and read as the column's name.</summary>
     [Parameter] public string? Title { get; set; }
 
-    /// <summary>The name the column's sort goes by in the address and to a sort menu, the same in every culture; a property column takes its property's path when none is given, and any other sortable column is given one.</summary>
+    /// <summary>The name the column's sort goes by in the address and to a sort menu, the same in every culture.</summary>
     [Parameter] public string? SortName { get; set; }
 
     /// <summary>The class the column's header and cells carry.</summary>
@@ -25,22 +25,23 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <summary>Where the column's content sits in its cells.</summary>
     [Parameter] public ColumnAlign Align { get; set; }
 
-    /// <summary>How much the column matters when the width runs out: a lower number leaves first, and the highest priority among the columns never leaves.</summary>
+    /// <summary>How much the column matters when the width runs out.</summary>
+    /// <remarks>A column with a lower number leaves first, and the columns at the highest priority among them always stay.</remarks>
     [Parameter] public int Priority { get; set; }
 
-    /// <summary>Whether the column stays at the start of the pane while the others scroll sideways beneath it; frozen columns are written first.</summary>
+    /// <summary>Whether the column stays at the start of the pane while the others scroll sideways beneath it.</summary>
     [Parameter] public bool Frozen { get; set; }
 
-    /// <summary>Whether the column is drawn at all; off, it is out of the grid and its columns menu alike.</summary>
+    /// <summary>Whether the column is drawn in the grid and listed in its columns menu.</summary>
     [Parameter] public bool Visible { get; set; } = true;
 
-    /// <summary>The width the column takes, where its content does not size it well.</summary>
+    /// <summary>The width the column takes.</summary>
     [Parameter] public CssLength? Width { get; set; }
 
-    /// <summary>Whether the grid sorts by this column when its header is pressed; absent, the column decides for itself from what it shows.</summary>
+    /// <summary>Whether the grid sorts by this column when its header is pressed, where null leaves it to the column's own default.</summary>
     [Parameter] public bool? Sortable { get; set; }
 
-    /// <summary>The sort pressing the header applies; a derived column may supply one of its own.</summary>
+    /// <summary>The sort pressing the header applies.</summary>
     [Parameter] public virtual DataViewSort<TItem>? SortBy { get; set; }
 
     /// <summary>The direction the first press of the header sorts in.</summary>
@@ -84,7 +85,7 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <param name="item">The item the row shows.</param>
     protected internal abstract void CellContent(RenderTreeBuilder builder, TItem item);
 
-    /// <summary>Whether the column sorts unless the caller says otherwise.</summary>
+    /// <summary>Whether the column sorts by default.</summary>
     protected virtual bool IsSortableByDefault()
         => SortBy is not null;
 
@@ -100,7 +101,6 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        // The address carries a sort by its name, so a column that sorts has one, and a label that changes with the culture is never it.
         if (IsSortable && string.IsNullOrWhiteSpace(SortName))
         {
             throw new InvalidOperationException($"{GetType().Name} '{Title}' sorts, so it needs a {nameof(SortName)}: the name its sort goes by in the address, the same in every culture.");

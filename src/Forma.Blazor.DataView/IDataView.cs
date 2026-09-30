@@ -10,16 +10,16 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 public interface IDataView<TItem> : INotifyStateChanged
     where TItem : notnull
 {
-    /// <summary>The key of the view showing, which a view compares with its own to know whether to draw; null while none has registered.</summary>
+    /// <summary>The key of the view showing.</summary>
     string? ActiveViewKey { get; }
 
-    /// <summary>The name an item goes by, which a view without columns shows for it.</summary>
+    /// <summary>The name an item goes by.</summary>
     Func<TItem, string> ItemName { get; }
 
     /// <summary>The items on screen, in the order shown.</summary>
     IReadOnlyList<TItem> Items { get; }
 
-    /// <summary>The items on screen under the headings they fold under, in the order shown; empty when nothing groups them.</summary>
+    /// <summary>The items on screen under the headings they fold under, in the order shown.</summary>
     IReadOnlyList<DataViewGroup<TItem>> Groups { get; }
 
     /// <summary>Whether the items on screen stand under group headings.</summary>
@@ -29,13 +29,13 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <param name="group">The group.</param>
     bool IsFolded(DataViewGroup<TItem> group);
 
-    /// <summary>Whether the source has parentage, so items stand under nodes and the tree has something to show.</summary>
+    /// <summary>Whether the source has parentage, its items standing under nodes.</summary>
     bool HasHierarchy { get; }
 
-    /// <summary>The node whose children the views without a tree show, or null for the roots.</summary>
+    /// <summary>The node whose children the views without a tree show, where null means the roots.</summary>
     TItem? CurrentItem { get; }
 
-    /// <summary>The roots the source has answered with; empty until they have loaded.</summary>
+    /// <summary>The roots the source has answered with.</summary>
     IReadOnlyList<TItem> Roots { get; }
 
     /// <summary>Whether the roots have been asked for and answered.</summary>
@@ -44,7 +44,7 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>Whether the roots are being asked for.</summary>
     bool IsLoadingRoots { get; }
 
-    /// <summary>The children of <paramref name="parent"/> the source has answered with; empty until they have loaded.</summary>
+    /// <summary>The children of <paramref name="parent"/> the source has answered with.</summary>
     /// <param name="parent">The node.</param>
     IReadOnlyList<TItem> GetChildren(TItem parent);
 
@@ -75,16 +75,16 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>Whether the source is being asked and has not answered yet.</summary>
     bool IsBusy { get; }
 
-    /// <summary>How many items the whole set holds, or null while the source has not said.</summary>
+    /// <summary>How many items the whole set holds, where null means the source has not said.</summary>
     int? TotalItemCount { get; }
 
-    /// <summary>The name of the active sort, or null when the items are in the source's own order.</summary>
+    /// <summary>The name of the active sort, where null means the items stand in the source's own order.</summary>
     string? SortName { get; }
 
     /// <summary>Whether the active sort applies as written or reversed.</summary>
     DataViewSortDirection SortDirection { get; }
 
-    /// <summary>The name of the sort the address asked for and no view has applied yet, or null when there is none.</summary>
+    /// <summary>The name of the sort the address asked for and no view has applied yet.</summary>
     string? RequestedSortName { get; }
 
     /// <summary>The direction the address asked the requested sort to apply in.</summary>
@@ -135,19 +135,19 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>How many items are selected, on screen or not.</summary>
     int SelectedCount { get; }
 
-    /// <summary>Whether the data view holds the whole set, so it can select all of it and say how many that is.</summary>
+    /// <summary>Whether the data view holds the whole set.</summary>
     bool HoldsSet { get; }
 
     /// <summary>Whether selecting the whole set is worth offering: the set is held and holds more than is on screen.</summary>
     bool CanOfferSet { get; }
 
-    /// <summary>Identifies an item across reloads.</summary>
+    /// <summary>Reads the key an item is identified by.</summary>
     Func<TItem, object> ItemKey { get; }
 
-    /// <summary>Compares items by <see cref="ItemKey"/>, as the selection does.</summary>
+    /// <summary>Compares items by <see cref="ItemKey"/>.</summary>
     IEqualityComparer<TItem> ItemComparer { get; }
 
-    /// <summary>The class the caller gives an item, or null for none.</summary>
+    /// <summary>The class the caller gives an item.</summary>
     Func<TItem, string?>? ItemClass { get; }
 
     /// <summary>What a view shows in place of its items while the source has not answered yet.</summary>
@@ -160,7 +160,7 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <param name="item">The item to judge.</param>
     bool IsSelected(TItem item);
 
-    /// <summary>Whether <paramref name="item"/>'s own selection control can still act, which the selection bounds may deny.</summary>
+    /// <summary>Whether <paramref name="item"/>'s own selection control can act within the selection bounds.</summary>
     /// <param name="item">The item to judge.</param>
     bool CanInteractWith(TItem item);
 

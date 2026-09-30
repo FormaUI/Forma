@@ -1,9 +1,9 @@
 namespace Forma.Blazor.Components.DataView;
 
-/// <summary>Counts and reads any queryable by enumerating it where it stands, which is what a queryable over a collection in memory is.</summary>
+/// <summary>The query executor that counts and reads any queryable by enumerating it in memory.</summary>
 public sealed class InMemoryQueryExecutor : IDataViewQueryExecutor
 {
-    /// <summary>The one instance, since the executor holds nothing.</summary>
+    /// <summary>The shared instance.</summary>
     public static InMemoryQueryExecutor Instance { get; } = new();
 
     /// <inheritdoc />

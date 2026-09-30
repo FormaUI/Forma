@@ -9,9 +9,8 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 /// followed by its item rows unless the group is folded. A slice of rows is answered by fetching the item ranges those rows cover,
 /// one fetch per run of consecutive items, so a folded group between two open ones is never read. Over a source that cannot
 /// count, the rows run one slice past the last item answered until a slice comes back shorter than asked for, which ends the
-/// set, so a scroll to their end asks for the next slice and no request reaches further than one. The rows found by a fetch are
-/// published after it, never on the answer that found them, since the framework's virtualization holds the viewport where it was
-/// when the rows grow under a slice that reaches their end; a scroll the view asks for holds them back until it has landed.
+/// set. The rows found by a fetch are published after the answer that found them, once the virtualization has taken it in;
+/// a scroll the view asks for holds them back until it has landed.
 /// </remarks>
 /// <param name="view">The data view the rows are laid out over.</param>
 /// <param name="virtualizer">The virtualization the view draws the rows through, once it is drawn.</param>
@@ -47,11 +46,11 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
     /// <summary>How many rows the set lays out into.</summary>
     public int RowCount { get; private set; }
 
-    /// <summary>Tells a row from a re-fetched copy of it: the same group's heading, or a row opening on the same item.</summary>
+    /// <summary>Compares rows by the group whose heading they are or the item they open on.</summary>
     public IEqualityComparer<DataViewRow<TItem>> Comparer
         => _comparer;
 
-    /// <summary>Forgets what the rows were laid out from and what a source that cannot count has answered, for a data view whose source, sort or set changed.</summary>
+    /// <summary>Forgets what the rows were laid out from and what a source that cannot count has answered.</summary>
     public void Reset()
     {
         _isLaidOut = false;
@@ -186,7 +185,7 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
         return new ItemsProviderResult<DataViewRow<TItem>>(filled, _publishedRows);
     }
 
-    /// <summary>Scrolls the virtualization to the row holding the item at <paramref name="itemIndex"/>, publishing the rows found so far first and holding back the ones the scroll finds until it has landed.</summary>
+    /// <summary>Scrolls the virtualization to the row holding the item at <paramref name="itemIndex"/>.</summary>
     /// <param name="itemIndex">The index of the item in the whole set.</param>
     /// <param name="cancellationToken">Canceled when the scroll is no longer wanted.</param>
     public async ValueTask ScrollToAsync(int itemIndex, CancellationToken cancellationToken)
@@ -247,7 +246,7 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
         }
     }
 
-    /// <summary>The position in the set of the first or the last item the rows reach, across the open groups, or null where they reach none; uncounted, the last the source has answered.</summary>
+    /// <summary>The position in the set of the first or the last item the rows reach, across the open groups.</summary>
     /// <param name="last">Whether the last is asked for rather than the first.</param>
     public int? GetEdgePosition(bool last)
     {

@@ -23,14 +23,14 @@ public sealed class DataViewGrouping<TItem>
     /// <summary>Groups by <paramref name="key"/>, the groups coming smallest key first.</summary>
     /// <typeparam name="TValue">The key's value.</typeparam>
     /// <param name="key">The value an item's group is decided by.</param>
-    /// <param name="name">The name a group's heading shows for its key; the key's own text when omitted.</param>
+    /// <param name="name">The name a group's heading shows for its key, where null shows the key's own text.</param>
     public static DataViewGrouping<TItem> By<TValue>(Expression<Func<TItem, TValue>> key, Func<TValue, string>? name = null)
         => Create(key, DataViewSort<TItem>.ByAscending(key), name, descending: false);
 
     /// <summary>Groups by <paramref name="key"/>, the groups coming largest key first.</summary>
     /// <typeparam name="TValue">The key's value.</typeparam>
     /// <param name="key">The value an item's group is decided by.</param>
-    /// <param name="name">The name a group's heading shows for its key; the key's own text when omitted.</param>
+    /// <param name="name">The name a group's heading shows for its key, where null shows the key's own text.</param>
     public static DataViewGrouping<TItem> ByDescending<TValue>(Expression<Func<TItem, TValue>> key, Func<TValue, string>? name = null)
         => Create(key, DataViewSort<TItem>.ByDescending(key), name, descending: true);
 
@@ -48,7 +48,7 @@ public sealed class DataViewGrouping<TItem>
         return _count(source);
     }
 
-    /// <summary>The key as the member it reads, with the direction the groups come in, for a provider that writes its own query.</summary>
+    /// <summary>The key as the member it reads, with the direction the groups come in.</summary>
     public DataViewSortedProperty GetSortedProperty()
         => _order.GetSortedProperties(DataViewSortDirection.Ascending)[0];
 

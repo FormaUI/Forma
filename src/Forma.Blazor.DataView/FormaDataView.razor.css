@@ -1,12 +1,10 @@
 /* ============================================================
    FormaDataView — CSS isolation
    The engine's frame: a region the items scroll in and a footer
-   that stays put beneath it. What the items look like is the
-   view's. Logical properties throughout for RTL/LTR parity.
+   that stays put beneath it.
    ============================================================ */
 
-/* Caps at whatever height an ancestor bounds the data view to. A percentage max-height resolves to
-   none against an auto-height ancestor, so an unbounded page keeps the plain shrink-to-content layout. */
+/* The percentage max-block-size caps at a bounded ancestor's height and resolves to none against an auto-height one. */
 .forma-data-view {
     display: flex;
     flex-direction: column;
@@ -16,8 +14,7 @@
     container-type: inline-size;
 }
 
-/* The items scroll, the footer does not. min-block-size overrides the flex item's automatic content-based
-   minimum, which would otherwise refuse to shrink and push the footer out of the box. */
+/* A zero min-block-size lets the region shrink below its content, so the items scroll and the footer stays in the box. */
 .forma-data-view-region {
     display: flex;
     flex-direction: column;
@@ -27,13 +24,13 @@
     overscroll-behavior: contain;
 }
 
-/* A companion view, a tree standing as a sidebar, takes its place at the inline start with the active view beside it. */
+/* A companion view stands at the inline start with the active view beside it. */
 .forma-data-view-region-companions {
     flex-direction: row;
     align-items: stretch;
 }
 
-/* Below the width a sidebar and a view need together, a 16rem sidebar beside a view of at least 20rem, the companions stack, the sidebar above the view. */
+/* 36rem is a 16rem sidebar beside a view of at least 20rem; below it the companions stack, the sidebar above the view. */
 @container (max-width: 36rem) {
     .forma-data-view-region-companions {
         flex-direction: column;
@@ -48,14 +45,14 @@
     gap: var(--space-3);
 }
 
-/* An auto margin keeps the status at the inline end when there is no page navigation. */
+/* The auto margin holds the status at the inline end, with or without page navigation. */
 .forma-data-view-status {
     margin-inline-start: auto;
     color: var(--text-secondary-color);
     font-size: var(--font-size-sm);
 }
 
-/* Spoken, never seen: the announcement stays in the accessibility tree while taking no room beside the region. */
+/* The announcement is visually hidden and stays in the accessibility tree. */
 .forma-data-view-announcement {
     position: absolute;
     inline-size: 1px;
@@ -68,8 +65,7 @@
     white-space: nowrap;
 }
 
-/* A view's box stands at the center of a target the size of the pointer's floor, so a press near the box still
-   reaches it. The boxes are the views', so their class is reached with ::deep. */
+/* A view's box stands at the center of a target the size of the pointer's floor; the boxes are the views', reached with ::deep. */
 ::deep .forma-data-view-box-target {
     display: inline-flex;
     align-items: center;
