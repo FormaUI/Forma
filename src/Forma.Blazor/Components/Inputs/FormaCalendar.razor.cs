@@ -33,7 +33,7 @@ public sealed partial class FormaCalendar : FormaComponentBase
 
     private DateOnly _leftMonth;
     private DateOnly _rightMonth;
-    private CalendarMonthRange _calendar = default!;
+    private CalendarMonthRange _calendarMonthRange = default!;
 
     private bool ShowsTwoMonths
         => Months == 2;
@@ -49,7 +49,7 @@ public sealed partial class FormaCalendar : FormaComponentBase
         ArgumentOutOfRangeException.ThrowIfLessThan(Months, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(Months, 2);
 
-        _calendar = CalendarMonthRange.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
+        _calendarMonthRange = CalendarMonthRange.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
 
         if (MinDate.HasValue && MaxDate.HasValue && MinDate.Value > MaxDate.Value)
         {
@@ -70,43 +70,43 @@ public sealed partial class FormaCalendar : FormaComponentBase
         if (ShowsTwoMonths)
         {
             var endReference = Highlight?.End ?? today;
-            _rightMonth = _calendar.Clamp(GetMonthStart(endReference));
+            _rightMonth = _calendarMonthRange.Clamp(GetMonthStart(endReference));
 
             var startReference = Highlight?.Start ?? endReference;
-            _leftMonth = _calendar.Clamp(GetMonthStart(startReference));
+            _leftMonth = _calendarMonthRange.Clamp(GetMonthStart(startReference));
 
             if (_leftMonth >= _rightMonth)
             {
-                _leftMonth = _calendar.AddMonths(_rightMonth, -1);
-                if (_leftMonth < _calendar.MinMonth)
+                _leftMonth = _calendarMonthRange.AddMonths(_rightMonth, -1);
+                if (_leftMonth < _calendarMonthRange.MinMonth)
                 {
-                    _leftMonth = _calendar.MinMonth;
+                    _leftMonth = _calendarMonthRange.MinMonth;
                 }
             }
         }
         else
         {
-            _leftMonth = _calendar.Clamp(GetMonthStart(Highlight?.Start ?? today));
+            _leftMonth = _calendarMonthRange.Clamp(GetMonthStart(Highlight?.Start ?? today));
         }
     }
 
     private DateOnly GetMonthStart(DateOnly date)
-        => _calendar.GetMonthStart(_calendar.GetYear(date), _calendar.GetMonth(date));
+        => _calendarMonthRange.GetMonthStart(_calendarMonthRange.GetYear(date), _calendarMonthRange.GetMonth(date));
 
     private DateOnly GetPanelMonth(int panelIndex)
         => panelIndex == 0 ? _leftMonth : _rightMonth;
 
     private bool CanPanelGoPrev(int panelIndex)
-        => GetPanelMonth(panelIndex) > (ShowsTwoMonths && panelIndex == 1 ? _calendar.AddMonths(_calendar.MinMonth, 1) : _calendar.MinMonth);
+        => GetPanelMonth(panelIndex) > (ShowsTwoMonths && panelIndex == 1 ? _calendarMonthRange.AddMonths(_calendarMonthRange.MinMonth, 1) : _calendarMonthRange.MinMonth);
 
     private bool CanPanelGoNext(int panelIndex)
-        => GetPanelMonth(panelIndex) < (ShowsTwoMonths && panelIndex == 0 ? _calendar.AddMonths(_calendar.MaxMonth, -1) : _calendar.MaxMonth);
+        => GetPanelMonth(panelIndex) < (ShowsTwoMonths && panelIndex == 0 ? _calendarMonthRange.AddMonths(_calendarMonthRange.MaxMonth, -1) : _calendarMonthRange.MaxMonth);
 
     private void ShowPreviousPanel(int panelIndex)
     {
         if (CanPanelGoPrev(panelIndex))
         {
-            SetPanelMonth(panelIndex, _calendar.AddMonths(GetPanelMonth(panelIndex), -1));
+            SetPanelMonth(panelIndex, _calendarMonthRange.AddMonths(GetPanelMonth(panelIndex), -1));
         }
     }
 
@@ -114,7 +114,7 @@ public sealed partial class FormaCalendar : FormaComponentBase
     {
         if (CanPanelGoNext(panelIndex))
         {
-            SetPanelMonth(panelIndex, _calendar.AddMonths(GetPanelMonth(panelIndex), 1));
+            SetPanelMonth(panelIndex, _calendarMonthRange.AddMonths(GetPanelMonth(panelIndex), 1));
         }
     }
 
@@ -123,7 +123,7 @@ public sealed partial class FormaCalendar : FormaComponentBase
         if (int.TryParse(args.Value?.ToString(), out var month))
         {
             var current = GetPanelMonth(panelIndex);
-            SetPanelMonth(panelIndex, _calendar.GetMonthStart(_calendar.GetYear(current), month));
+            SetPanelMonth(panelIndex, _calendarMonthRange.GetMonthStart(_calendarMonthRange.GetYear(current), month));
         }
     }
 
@@ -132,33 +132,33 @@ public sealed partial class FormaCalendar : FormaComponentBase
         if (int.TryParse(args.Value?.ToString(), out var gregorianYear))
         {
             var current = GetPanelMonth(panelIndex);
-            var calendarMonth = _calendar.GetMonth(current);
+            var calendarMonth = _calendarMonthRange.GetMonth(current);
             // Find a Gregorian date in the target year, then build from calendar coordinates
             var midYear = new DateOnly(gregorianYear, 6, 1);
-            var targetCalendarYear = _calendar.GetYear(midYear);
-            var maxMonth = _calendar.GetMonthsInYear(targetCalendarYear);
+            var targetCalendarYear = _calendarMonthRange.GetYear(midYear);
+            var maxMonth = _calendarMonthRange.GetMonthsInYear(targetCalendarYear);
             if (calendarMonth > maxMonth)
             {
                 calendarMonth = maxMonth;
             }
 
-            SetPanelMonth(panelIndex, _calendar.GetMonthStart(targetCalendarYear, calendarMonth));
+            SetPanelMonth(panelIndex, _calendarMonthRange.GetMonthStart(targetCalendarYear, calendarMonth));
         }
     }
 
     private void SetPanelMonth(int panelIndex, DateOnly month)
     {
-        month = _calendar.Clamp(month);
+        month = _calendarMonthRange.Clamp(month);
         if (panelIndex == 0)
         {
             _leftMonth = month;
             if (ShowsTwoMonths && _leftMonth >= _rightMonth)
             {
-                _rightMonth = _calendar.AddMonths(_leftMonth, 1);
-                if (_rightMonth > _calendar.MaxMonth)
+                _rightMonth = _calendarMonthRange.AddMonths(_leftMonth, 1);
+                if (_rightMonth > _calendarMonthRange.MaxMonth)
                 {
-                    _rightMonth = _calendar.MaxMonth;
-                    _leftMonth = _calendar.AddMonths(_rightMonth, -1);
+                    _rightMonth = _calendarMonthRange.MaxMonth;
+                    _leftMonth = _calendarMonthRange.AddMonths(_rightMonth, -1);
                 }
             }
         }
@@ -167,11 +167,11 @@ public sealed partial class FormaCalendar : FormaComponentBase
             _rightMonth = month;
             if (_rightMonth <= _leftMonth)
             {
-                _leftMonth = _calendar.AddMonths(_rightMonth, -1);
-                if (_leftMonth < _calendar.MinMonth)
+                _leftMonth = _calendarMonthRange.AddMonths(_rightMonth, -1);
+                if (_leftMonth < _calendarMonthRange.MinMonth)
                 {
-                    _leftMonth = _calendar.MinMonth;
-                    _rightMonth = _calendar.AddMonths(_leftMonth, 1);
+                    _leftMonth = _calendarMonthRange.MinMonth;
+                    _rightMonth = _calendarMonthRange.AddMonths(_leftMonth, 1);
                 }
             }
         }
@@ -237,17 +237,17 @@ public sealed partial class FormaCalendar : FormaComponentBase
         for (var month = 1; month <= 12; month++)
         {
             var candidate = new DateOnly(gregorianYear, month, 1);
-            if (candidate < _calendar.MinMonth || candidate > _calendar.MaxMonth)
+            if (candidate < _calendarMonthRange.MinMonth || candidate > _calendarMonthRange.MaxMonth)
             {
                 continue;
             }
 
-            if (ShowsTwoMonths && panelIndex == 0 && candidate > _calendar.AddMonths(_calendar.MaxMonth, -1))
+            if (ShowsTwoMonths && panelIndex == 0 && candidate > _calendarMonthRange.AddMonths(_calendarMonthRange.MaxMonth, -1))
             {
                 continue;
             }
 
-            if (ShowsTwoMonths && panelIndex == 1 && candidate < _calendar.AddMonths(_calendar.MinMonth, 1))
+            if (ShowsTwoMonths && panelIndex == 1 && candidate < _calendarMonthRange.AddMonths(_calendarMonthRange.MinMonth, 1))
             {
                 continue;
             }
@@ -259,23 +259,23 @@ public sealed partial class FormaCalendar : FormaComponentBase
 
     private bool IsMonthDisabled(int calendarYear, int calendarMonth, int panelIndex)
     {
-        if (calendarMonth > _calendar.GetMonthsInYear(calendarYear))
+        if (calendarMonth > _calendarMonthRange.GetMonthsInYear(calendarYear))
         {
             return true;
         }
 
-        var candidate = _calendar.GetMonthStart(calendarYear, calendarMonth);
-        if (candidate < _calendar.MinMonth || candidate > _calendar.MaxMonth)
+        var candidate = _calendarMonthRange.GetMonthStart(calendarYear, calendarMonth);
+        if (candidate < _calendarMonthRange.MinMonth || candidate > _calendarMonthRange.MaxMonth)
         {
             return true;
         }
 
-        if (ShowsTwoMonths && panelIndex == 0 && candidate > _calendar.AddMonths(_calendar.MaxMonth, -1))
+        if (ShowsTwoMonths && panelIndex == 0 && candidate > _calendarMonthRange.AddMonths(_calendarMonthRange.MaxMonth, -1))
         {
             return true;
         }
 
-        if (ShowsTwoMonths && panelIndex == 1 && candidate < _calendar.AddMonths(_calendar.MinMonth, 1))
+        if (ShowsTwoMonths && panelIndex == 1 && candidate < _calendarMonthRange.AddMonths(_calendarMonthRange.MinMonth, 1))
         {
             return true;
         }

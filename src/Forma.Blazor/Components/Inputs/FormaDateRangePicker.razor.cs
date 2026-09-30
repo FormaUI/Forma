@@ -37,7 +37,7 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     private ElementReference _anchorElement;
     private FormaPopover Popover { get; set; } = default!;
     private readonly DateRangeDraft _draft = new();
-    private CalendarMonthRange _calendar = default!;
+    private CalendarMonthRange _calendarMonthRange = default!;
 
     private bool IsOpen
         => Popover is { IsOpen: true };
@@ -62,7 +62,7 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
-        _calendar = CalendarMonthRange.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
+        _calendarMonthRange = CalendarMonthRange.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
 
         if (MinDate.HasValue && MaxDate.HasValue && MinDate.Value > MaxDate.Value)
         {
@@ -155,16 +155,16 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
             Preset.Yesterday => (today.AddDays(-1), today.AddDays(-1)),
             Preset.Last7Days => (today.AddDays(-(ShortRangeDays - 1)), today),
             Preset.Last30Days => (today.AddDays(-(LongRangeDays - 1)), today),
-            Preset.ThisMonth => (_calendar.GetMonthStart(_calendar.GetYear(today), _calendar.GetMonth(today)), today),
+            Preset.ThisMonth => (_calendarMonthRange.GetMonthStart(_calendarMonthRange.GetYear(today), _calendarMonthRange.GetMonth(today)), today),
             Preset.LastMonth => GetLastMonthRange(today),
             _ => (today, today)
         };
 
     private (DateOnly Start, DateOnly End) GetLastMonthRange(DateOnly today)
     {
-        var thisMonthStart = _calendar.GetMonthStart(_calendar.GetYear(today), _calendar.GetMonth(today));
+        var thisMonthStart = _calendarMonthRange.GetMonthStart(_calendarMonthRange.GetYear(today), _calendarMonthRange.GetMonth(today));
         var lastMonthEnd = thisMonthStart.AddDays(-1);
-        var lastMonthStart = _calendar.GetMonthStart(_calendar.GetYear(lastMonthEnd), _calendar.GetMonth(lastMonthEnd));
+        var lastMonthStart = _calendarMonthRange.GetMonthStart(_calendarMonthRange.GetYear(lastMonthEnd), _calendarMonthRange.GetMonth(lastMonthEnd));
 
         return (lastMonthStart, lastMonthEnd);
     }

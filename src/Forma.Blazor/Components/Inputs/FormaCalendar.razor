@@ -20,19 +20,19 @@
                     <select class="forma-calendar-select"
                             value="@month.Year"
                             @onchange="args => OnYearDropdownChange(panel, args)">
-                        @for (var candidate = _calendar.MinYear; candidate <= _calendar.MaxYear; candidate++)
+                        @for (var candidate = _calendarMonthRange.MinYear; candidate <= _calendarMonthRange.MaxYear; candidate++)
                         {
                             var year = candidate;
                             <option value="@year" disabled="@IsYearDisabled(year, panel)">@year</option>
                         }
                     </select>
                     <select class="forma-calendar-select"
-                            value="@_calendar.GetMonth(month)"
+                            value="@_calendarMonthRange.GetMonth(month)"
                             @onchange="args => OnMonthDropdownChange(panel, args)">
-                        @for (var candidate = 1; candidate <= _calendar.GetMonthsInYear(_calendar.GetYear(month)); candidate++)
+                        @for (var candidate = 1; candidate <= _calendarMonthRange.GetMonthsInYear(_calendarMonthRange.GetYear(month)); candidate++)
                         {
                             var monthNumber = candidate;
-                            <option value="@monthNumber" disabled="@IsMonthDisabled(_calendar.GetYear(month), monthNumber, panel)">@_calendar.GetMonthName(_calendar.GetYear(month), monthNumber)</option>
+                            <option value="@monthNumber" disabled="@IsMonthDisabled(_calendarMonthRange.GetYear(month), monthNumber, panel)">@_calendarMonthRange.GetMonthName(_calendarMonthRange.GetYear(month), monthNumber)</option>
                         }
                     </select>
                 </div>
@@ -47,11 +47,11 @@
             <div class="forma-calendar-weekdays">
                 @for (var offset = 0; offset < 7; offset++)
                 {
-                    <span>@_calendar.GetDayAbbreviation(offset)</span>
+                    <span>@_calendarMonthRange.GetDayAbbreviation(offset)</span>
                 }
             </div>
             <div class="forma-calendar-days">
-                @foreach (var day in _calendar.GetDayCells(month))
+                @foreach (var day in _calendarMonthRange.GetDayCells(month))
                 {
                     @if (day is null)
                     {
@@ -64,12 +64,12 @@
                         <button type="button"
                                 class="forma-calendar-day@(dayClasses)"
                                 disabled="@IsDayDisabled(date)"
-                                aria-label="@_calendar.GetDayLabel(date)"
+                                aria-label="@_calendarMonthRange.GetDayLabel(date)"
                                 aria-current="@(IsToday(dayClasses) ? "date" : null)"
                                 aria-pressed="@(IsSelected(dayClasses) ? "true" : null)"
                                 @onclick="() => SelectDayAsync(date)"
                                 @onmouseenter="GetHoverHandler(date)">
-                            @_calendar.GetDayOfMonth(date)
+                            @_calendarMonthRange.GetDayOfMonth(date)
                         </button>
                     }
                 }
