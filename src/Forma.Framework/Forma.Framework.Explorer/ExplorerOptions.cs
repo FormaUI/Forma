@@ -4,16 +4,16 @@ using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 
-/// <summary>How a <see cref="FormaExplorer"/> presents itself: which surfaces it shows, and how it moves through a collection.</summary>
+/// <summary>How an explorer presents itself: which surfaces it shows, and how it moves through a collection.</summary>
 public sealed record ExplorerOptions
 {
     /// <summary>The standard presentation.</summary>
     public static ExplorerOptions Default { get; } = new();
 
-    /// <summary>Whether the explorer is presented as dialog content, without a frame of its own.</summary>
+    /// <summary>Whether the explorer is presented as dialog content.</summary>
     public bool AsDialog { get; init; }
 
-    /// <summary>Whether the explorer opens already selecting, so a caller whose whole purpose is choosing needs no first press of Select.</summary>
+    /// <summary>Whether the explorer opens in selection mode.</summary>
     public bool SelectOnOpen { get; init; }
 
     /// <summary>The maximum number of items that may be selected at once (0 for unlimited).</summary>
@@ -28,15 +28,15 @@ public sealed record ExplorerOptions
     /// <summary>Whether each breadcrumb offers a menu of that folder's children.</summary>
     public bool ShowFolderMenu { get; init; } = true;
 
-    /// <summary>Whether reaching the end of the list appends the next page, and whether a button does so instead.</summary>
+    /// <summary>How the explorer appends further pages to the list.</summary>
     public ExplorerInfiniteScrollMode InfiniteScroll { get; init; } = ExplorerInfiniteScrollMode.Off;
 
-    /// <summary>Which optional columns the details view shows beside the name when it opens; the reader may change them afterwards.</summary>
+    /// <summary>Which optional columns the details view initially shows beside the name.</summary>
     public ExplorerDetailsColumns DetailsColumns { get; init; } = ExplorerDetailsColumns.Kind | ExplorerDetailsColumns.Size | ExplorerDetailsColumns.Modified;
 
-    /// <summary>Whether the details view shows its column header when it opens; the reader may change it afterwards.</summary>
+    /// <summary>Whether the details view initially shows its column header.</summary>
     public bool ShowDetailsHeader { get; init; } = true;
 
-    /// <summary>How long typing pauses before a catalog is asked again; a held collection filters immediately.</summary>
+    /// <summary>How long typing pauses before a catalog is queried.</summary>
     public TimeSpan SearchDebounceDelay { get; init; } = TimeSpan.FromMilliseconds(300);
 }

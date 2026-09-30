@@ -9,28 +9,28 @@ public interface IExplorerContentInteraction
     /// <summary>Sorts by the field, reversing the direction when it is already the sorted field.</summary>
     Task SortByAsync(CatalogSortField field);
 
-    /// <summary>Sets the sort direction outright.</summary>
+    /// <summary>Sets the sort direction.</summary>
     Task SetSortDirectionAsync(CatalogSortDirection direction);
 
-    /// <summary>Gathers the items into groups by the field, or by none.</summary>
+    /// <summary>Gathers the items into groups by the field.</summary>
     Task GroupByAsync(ExplorerGroupField field);
 
-    /// <summary>Folds the group's items away when they are shown and shows them when they are folded away.</summary>
+    /// <summary>Toggles whether the group's items are folded away.</summary>
     Task ToggleGroupAsync(ExplorerItemGroup group);
 
-    /// <summary>Switches which layout the content is shown in.</summary>
+    /// <summary>Changes the layout the content is shown in.</summary>
     Task ChangeViewModeAsync(ExplorerViewMode mode);
 
-    /// <summary>Shows the details column when it is hidden and hides it when it is shown.</summary>
+    /// <summary>Toggles whether the details view shows the column.</summary>
     Task ToggleDetailsColumnAsync(ExplorerDetailsColumns column);
 
     /// <summary>Shows or hides the details view's column header.</summary>
     Task SetDetailsHeaderVisibleAsync(bool isVisible);
 
-    /// <summary>Fetches the next page, appending it to what is already shown.</summary>
+    /// <summary>Appends the next page to the shown items.</summary>
     Task RequestNextPageAsync();
 
-    /// <summary>Replaces what is shown with the given page.</summary>
+    /// <summary>Shows the page.</summary>
     Task ChangePageAsync(int page);
 
     /// <summary>Refreshes the explorer's content.</summary>

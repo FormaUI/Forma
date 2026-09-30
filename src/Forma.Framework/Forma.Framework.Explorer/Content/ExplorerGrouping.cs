@@ -16,7 +16,15 @@ public static class ExplorerGrouping
 
     private const long Gigabyte = Megabyte * 1024;
 
-    /// <summary>Gathers <paramref name="items"/> into groups by <paramref name="field"/>, keeping each group's items in list order and standing the groups in band order, reversed for a descending <paramref name="direction"/>; kinds are named through <paramref name="kindLabel"/> and dates banded against <paramref name="now"/> with weeks starting on <paramref name="firstDayOfWeek"/>.</summary>
+    /// <summary>Gathers the items into groups by the field.</summary>
+    /// <remarks>Each group keeps its items in list order; the groups stand in band order, kinds ordered by label, and the whole order reverses for a descending direction.</remarks>
+    /// <param name="items">The items to group.</param>
+    /// <param name="field">The field the items are grouped by.</param>
+    /// <param name="direction">The direction the groups are ordered in.</param>
+    /// <param name="kindLabel">The label of an item's kind.</param>
+    /// <param name="now">The moment dates are banded against.</param>
+    /// <param name="firstDayOfWeek">The day a week starts on.</param>
+    /// <returns>The groups of the items.</returns>
     public static IReadOnlyList<ExplorerItemGroup> GroupBy(
         IReadOnlyList<ICatalogItem> items,
         ExplorerGroupField field,

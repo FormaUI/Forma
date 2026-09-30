@@ -15,7 +15,7 @@ public interface IExplorerSidebarView
     /// <summary>What the explorer has selected.</summary>
     ICatalogSelectionView Selection { get; }
 
-    /// <summary>The folders directly inside the parent that are not hidden, or the top-level ones when none is named.</summary>
+    /// <summary>The listed folders directly inside the parent, or the top-level ones when null.</summary>
     IReadOnlyList<ICatalogFolderItem> GetChildren(string? parent);
 
     /// <summary>Whether the folder shows what it holds.</summary>

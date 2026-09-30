@@ -22,13 +22,13 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     /// <inheritdoc />
     public ExplorerPendingAction? PendingAction { get; private set; }
 
-    /// <summary>Called after this manager's own state changes, so its owner can render.</summary>
+    /// <summary>Called after the manager's state changes.</summary>
     public Action? OnChanged { get; set; }
 
-    /// <summary>Called to activate an item: preview it, or toggle its selection in selection mode.</summary>
+    /// <summary>Called to activate an item.</summary>
     public Func<ICatalogItem, Task>? OnActivate { get; set; }
 
-    /// <summary>Called to apply a drop of the given dragged item onto the given folder, or the top level when null.</summary>
+    /// <summary>Called to drop an item onto a folder, or onto the top level when null.</summary>
     public Func<ICatalogItem, ICatalogFolderItem?, Task>? OnDrop { get; set; }
 
     /// <summary>Called to open the new-folder dialog under the current folder.</summary>
@@ -87,7 +87,6 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
             return Task.CompletedTask;
         }
 
-        // Only a folder that accepts drops can receive one; the null target is the top level.
         return target switch
         {
             null => OnDrop?.Invoke(dragged, null) ?? Task.CompletedTask,
@@ -104,7 +103,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     public Task RequestNewFolderAsync()
         => OnRequestNewFolder?.Invoke() ?? Task.CompletedTask;
 
-    /// <summary>Opens the new-folder dialog under a parent that accepts new folders, or at a top level that does when null.</summary>
+    /// <summary>Opens the new-folder dialog under the parent, or at the top level when null.</summary>
     public void BeginCreateFolder(ICatalogFolderItem? parent)
     {
         var permitted = parent is null
@@ -164,7 +163,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         OnChanged?.Invoke();
     }
 
-    /// <summary>Opens confirmation for deleting the single item when it can be deleted, as a folder when it is one.</summary>
+    /// <summary>Opens confirmation for deleting the item.</summary>
     public void RequestDelete(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -185,7 +184,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         OnChanged?.Invoke();
     }
 
-    /// <summary>Opens confirmation for deleting the single folder when it can be deleted.</summary>
+    /// <summary>Opens confirmation for deleting the folder.</summary>
     public void RequestFolderDelete(ICatalogFolderItem folder)
     {
         ArgumentNullException.ThrowIfNull(folder);

@@ -11,6 +11,6 @@ public enum ExplorerInfiniteScrollMode
     /// <summary>A button at the end of the list loads each further page.</summary>
     Manual,
 
-    /// <summary>Scrolling to the end loads the next page on its own, showing a spinner while it arrives.</summary>
+    /// <summary>Scrolling to the end loads the next page.</summary>
     Automatic
 }

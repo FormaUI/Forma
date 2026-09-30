@@ -5,7 +5,7 @@ using Forma.Framework.Catalog;
 /// <summary>Reads what an explorer item can do under the options of the explorer listing it.</summary>
 public static class ExplorerItemExtensions
 {
-    /// <summary>The capabilities the item supports and the options permit on it; none while the item is disabled.</summary>
+    /// <summary>The capabilities the item supports and the options permit on it.</summary>
     public static CatalogItemCapabilities GetCapabilities(this ICatalogItem item, ExplorerItemOptions options)
     {
         ArgumentNullException.ThrowIfNull(item);

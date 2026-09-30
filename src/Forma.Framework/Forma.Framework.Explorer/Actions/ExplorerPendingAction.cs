@@ -1,9 +1,9 @@
 namespace Forma.Framework.Explorer.Actions;
 
-/// <summary>An explorer action currently awaiting confirmation, as components read it.</summary>
+/// <summary>An explorer action awaiting confirmation.</summary>
 public abstract class ExplorerPendingAction
 {
-    /// <summary>Whether the action has everything required for confirmation.</summary>
+    /// <summary>Whether the action can be confirmed.</summary>
     public abstract bool CanConfirm { get; }
 
     /// <summary>Clears the pending action.</summary>

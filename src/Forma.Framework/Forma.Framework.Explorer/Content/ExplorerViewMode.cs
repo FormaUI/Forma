@@ -2,15 +2,15 @@ namespace Forma.Framework.Explorer.Content;
 
 using Forma.Framework.Catalog.Queries;
 
-/// <summary>Specifies the presentation mode for media in the explorer.</summary>
+/// <summary>Specifies the layout an explorer presents its items in.</summary>
 public enum ExplorerViewMode
 {
-    /// <summary>A responsive grid of large media preview tiles.</summary>
+    /// <summary>A grid of large thumbnail tiles.</summary>
     Thumbnails,
 
-    /// <summary>A detailed tabular list with sortable columns.</summary>
+    /// <summary>A table of item details with sortable columns.</summary>
     Details,
 
-    /// <summary>Names alone, flowing down the height and on into further columns.</summary>
+    /// <summary>Names alone, flowing into columns.</summary>
     List
 }

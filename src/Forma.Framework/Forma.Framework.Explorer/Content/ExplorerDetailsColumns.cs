@@ -12,12 +12,12 @@ public enum ExplorerDetailsColumns
     /// <summary>The kind column.</summary>
     Kind = 1,
 
-    /// <summary>The byte size column.</summary>
+    /// <summary>The size column.</summary>
     Size = 2,
 
-    /// <summary>The last changed column.</summary>
+    /// <summary>The date modified column.</summary>
     Modified = 4,
 
-    /// <summary>The taken in column.</summary>
+    /// <summary>The date added column.</summary>
     Added = 8
 }

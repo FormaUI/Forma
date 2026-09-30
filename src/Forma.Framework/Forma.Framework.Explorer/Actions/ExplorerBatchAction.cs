@@ -3,11 +3,11 @@ namespace Forma.Framework.Explorer.Actions;
 using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 
-/// <summary>A list of items pending confirmation, replaced wholesale on each request.</summary>
+/// <summary>A batch of items pending confirmation.</summary>
 public sealed class ExplorerBatchAction<TTarget> : ExplorerPendingAction
     where TTarget : ICatalogItem
 {
-    /// <summary>The items currently pending, or empty when none are.</summary>
+    /// <summary>The items pending confirmation.</summary>
     public IReadOnlyList<TTarget> Targets { get; private set; } = [];
 
     /// <summary>Whether any items are pending.</summary>
@@ -16,7 +16,7 @@ public sealed class ExplorerBatchAction<TTarget> : ExplorerPendingAction
     /// <inheritdoc />
     public override bool CanConfirm => IsActive;
 
-    /// <summary>Requests confirmation for the given items, replacing any already pending.</summary>
+    /// <summary>Requests confirmation for the targets.</summary>
     public void Request(IReadOnlyList<TTarget> targets)
     {
         ArgumentNullException.ThrowIfNull(targets);

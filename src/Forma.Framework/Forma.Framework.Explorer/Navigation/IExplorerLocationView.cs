@@ -13,7 +13,7 @@ public interface IExplorerLocationView
     /// <summary>The path from the root to the current folder.</summary>
     IReadOnlyList<ICatalogFolderItem> Breadcrumbs { get; }
 
-    /// <summary>The indexed folder hierarchy used by the tree and breadcrumb.</summary>
+    /// <summary>The indexed folder hierarchy.</summary>
     CatalogFolderTree FolderTree { get; }
 
     /// <summary>Whether a previous folder is available to return to.</summary>

@@ -3,14 +3,14 @@ namespace Forma.Framework.Explorer.Actions;
 using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 
-/// <summary>An item and an editable name, held from Set until Clear.</summary>
+/// <summary>A pending action on an item that collects a name.</summary>
 public abstract class ExplorerNamedAction<TItem> : ExplorerPendingNamedAction
     where TItem : class, ICatalogItem
 {
     private bool _isActive;
     private TItem? _item;
 
-    /// <summary>The item the action is scoped to, or null when it has none.</summary>
+    /// <summary>The item the action is scoped to.</summary>
     protected TItem? Item => _item;
 
     /// <inheritdoc />
@@ -22,10 +22,10 @@ public abstract class ExplorerNamedAction<TItem> : ExplorerPendingNamedAction
     /// <inheritdoc />
     public override bool CanConfirm => IsActive && !string.IsNullOrWhiteSpace(Name);
 
-    /// <summary>The name as a confirmation would apply it.</summary>
+    /// <summary>The name a confirmation applies.</summary>
     public string NameToConfirm => Name.Trim();
 
-    /// <summary>Opens the action with the given item and starting name.</summary>
+    /// <summary>Opens the action on the item, with the initial name.</summary>
     protected void Set(TItem item, string initialName = "")
     {
         ArgumentNullException.ThrowIfNull(item);

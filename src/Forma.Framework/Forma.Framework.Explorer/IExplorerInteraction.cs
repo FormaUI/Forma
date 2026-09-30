@@ -8,7 +8,7 @@ using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Explorer.Selection;
 
-/// <summary>Everything components drawing an explorer may ask it to do, except what it may ask of its files.</summary>
+/// <summary>What components drawing an explorer may ask of its content, location, selection and search.</summary>
 public interface IExplorerInteraction :
     IExplorerContentInteraction,
     IExplorerLocationInteraction,

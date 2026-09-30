@@ -11,7 +11,7 @@ public interface IExplorerContentView
     /// <summary>The field the content is sorted by.</summary>
     CatalogSortField SortField { get; }
 
-    /// <summary>The direction that order runs in.</summary>
+    /// <summary>The direction the content is sorted in.</summary>
     CatalogSortDirection SortDirection { get; }
 
     /// <summary>Which layout the content is shown in.</summary>
@@ -29,7 +29,7 @@ public interface IExplorerContentView
     /// <summary>The items currently shown.</summary>
     IReadOnlyList<ICatalogItem> VisibleItems { get; }
 
-    /// <summary>The shown items gathered by <see cref="GroupField"/>; empty while nothing groups them.</summary>
+    /// <summary>The shown items gathered into groups by <see cref="GroupField"/>.</summary>
     IReadOnlyList<ExplorerItemGroup> VisibleGroups { get; }
 
     /// <summary>Whether the group's items are folded away.</summary>

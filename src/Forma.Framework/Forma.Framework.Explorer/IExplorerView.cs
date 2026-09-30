@@ -20,6 +20,6 @@ public interface IExplorerView :
     /// <summary>What the explorer has selected.</summary>
     ICatalogSelectionView Selection { get; }
 
-    /// <summary>The explorer's items.</summary>
+    /// <summary>What the explorer exposes about its items.</summary>
     IExplorerItemView Item { get; }
 }

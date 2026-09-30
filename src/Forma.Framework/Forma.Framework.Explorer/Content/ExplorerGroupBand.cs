@@ -2,10 +2,11 @@ namespace Forma.Framework.Explorer.Content;
 
 using Forma.Framework.Catalog.Queries;
 
-/// <summary>The band a group of items falls in, in the order the bands stand in.</summary>
+/// <summary>The band a group of items falls in.</summary>
+/// <remarks>Groups stand in the order their bands are declared in.</remarks>
 public enum ExplorerGroupBand
 {
-    /// <summary>A kind of item; the group's label names it.</summary>
+    /// <summary>A kind of item, named by the group's kind label.</summary>
     Kind,
 
     /// <summary>Names beginning with a digit.</summary>
@@ -23,7 +24,7 @@ public enum ExplorerGroupBand
     /// <summary>Names beginning with any other character.</summary>
     NameOther,
 
-    /// <summary>Items with no size to speak of, such as folders.</summary>
+    /// <summary>Items with no size, such as folders.</summary>
     SizeUnspecified,
 
     /// <summary>Empty items.</summary>

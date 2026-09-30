@@ -5,10 +5,10 @@ using Forma.Framework.Catalog;
 /// <summary>The item currently being dragged.</summary>
 public sealed class ExplorerDragItem
 {
-    /// <summary>The item being dragged, or null when nothing is.</summary>
+    /// <summary>The item being dragged.</summary>
     public ICatalogItem? Target { get; private set; }
 
-    /// <summary>Starts dragging the given item.</summary>
+    /// <summary>Starts dragging the target.</summary>
     public void Begin(ICatalogItem target)
     {
         ArgumentNullException.ThrowIfNull(target);
@@ -16,7 +16,7 @@ public sealed class ExplorerDragItem
         Target = target;
     }
 
-    /// <summary>Ends the drag, wherever it lands.</summary>
+    /// <summary>Ends the drag.</summary>
     public void End()
         => Target = null;
 }

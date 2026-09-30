@@ -3,14 +3,14 @@ namespace Forma.Framework.Explorer.Actions;
 using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 
-/// <summary>The single item being renamed, and its draft name.</summary>
+/// <summary>An item being renamed, and its draft name.</summary>
 public sealed class ExplorerRenameAction<TTarget> : ExplorerNamedAction<TTarget>
     where TTarget : class, ICatalogItem
 {
-    /// <summary>The item being renamed, or null when nothing is.</summary>
+    /// <summary>The item being renamed.</summary>
     public TTarget? Target => Item;
 
-    /// <summary>Starts renaming the given item, with its current name as the draft.</summary>
+    /// <summary>Starts renaming the target, with its current name as the draft.</summary>
     public void Request(TTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);

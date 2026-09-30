@@ -2,7 +2,7 @@ namespace Forma.Framework.Explorer.Items;
 
 using Forma.Framework.Catalog;
 
-/// <summary>Which operations a <see cref="FormaExplorer"/> permits on the items it lists.</summary>
+/// <summary>Which operations an explorer permits on the items it lists.</summary>
 public sealed record ExplorerItemOptions
 {
     private const CatalogItemCapabilities EveryCapability =
@@ -24,7 +24,7 @@ public sealed record ExplorerItemOptions
     /// <summary>Every operation permitted.</summary>
     public static ExplorerItemOptions Default { get; } = new();
 
-    /// <summary>Browsing and selection alone, with nothing that changes what is stored.</summary>
+    /// <summary>Browsing and selection alone.</summary>
     public static ExplorerItemOptions ReadOnly { get; } = new()
     {
         AllowedCapabilities = BrowsingCapabilities,

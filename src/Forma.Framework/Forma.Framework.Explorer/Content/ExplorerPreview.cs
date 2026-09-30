@@ -4,16 +4,16 @@ using Forma.Framework.Catalog.Queries;
 
 using Forma.Framework.Resources;
 
-/// <summary>The resource currently shown full-size, and the siblings a viewer can step through.</summary>
+/// <summary>The resource shown full-size, and the siblings a viewer can step through.</summary>
 public sealed class ExplorerPreview
 {
-    /// <summary>The resource being shown, or null when no preview is open.</summary>
+    /// <summary>The resource the preview shows.</summary>
     public ResourceInfo? Resource { get; private set; }
 
-    /// <summary>The sources a viewer can step to while this preview stays open.</summary>
+    /// <summary>The sources of the siblings a viewer can step through.</summary>
     public IReadOnlyList<string> Siblings { get; private set; } = [];
 
-    /// <summary>Opens the preview on the given resource, among the given siblings.</summary>
+    /// <summary>Opens the preview on the resource, among the siblings.</summary>
     public void Open(ResourceInfo resource, IReadOnlyList<string> siblings)
     {
         ArgumentNullException.ThrowIfNull(resource);
@@ -23,7 +23,7 @@ public sealed class ExplorerPreview
         Siblings = siblings;
     }
 
-    /// <summary>Steps the open preview to a different resource, keeping the same siblings.</summary>
+    /// <summary>Steps the preview to the resource.</summary>
     public void NavigateTo(ResourceInfo resource)
     {
         ArgumentNullException.ThrowIfNull(resource);

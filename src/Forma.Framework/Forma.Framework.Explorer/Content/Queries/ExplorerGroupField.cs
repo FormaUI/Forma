@@ -8,16 +8,16 @@ public enum ExplorerGroupField
     /// <summary>No grouping.</summary>
     None,
 
-    /// <summary>By the first character of the name: digits, then bands of letters.</summary>
+    /// <summary>By the first character of the name.</summary>
     Name,
 
-    /// <summary>By byte size band.</summary>
+    /// <summary>By size.</summary>
     Size,
 
     /// <summary>By kind.</summary>
     Kind,
 
-    /// <summary>By how long ago the item was taken in.</summary>
+    /// <summary>By how long ago the item was added.</summary>
     DateAdded,
 
     /// <summary>By how long ago the item last changed.</summary>
