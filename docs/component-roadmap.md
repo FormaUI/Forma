@@ -1,12 +1,12 @@
 # Forma Component Roadmap
 
-**28 components not yet implemented.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the ones not yet started, and one in progress stands in the catalog's structure until then.
+**31 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 23 not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
 ```text
 Forma.Blazor/Components/
-├── (10) Buttons/
+├── (9) Buttons/
 │   ├── FormaAddButton
 │   ├── FormaDeleteButton
 │   ├── FormaDuplicateButton
@@ -15,8 +15,7 @@ Forma.Blazor/Components/
 │   ├── FormaPublishButton
 │   ├── FormaRefreshButton
 │   ├── FormaShareButton
-│   ├── FormaUpdateButton
-│   └── FormaViewButton
+│   └── FormaUpdateButton
 ├── (4) Editors/
 │   ├── FormaFilterEditor
 │   ├── FormaNotesEditor
@@ -32,9 +31,8 @@ Forma.Blazor/Components/
 │   ├── FormaDesignPicker
 │   ├── FormaFontPicker
 │   └── FormaImageEditor
-├── (2) Menus/
-│   ├── FormaContextMenu
-│   └── FormaSortMenu
+├── (1) Menus/
+│   └── FormaContextMenu
 ├── (1) Navigation/
 │   └── FormaCategorySelector
 └── (1) Windows/
@@ -51,32 +49,30 @@ The components still to build, in the order dependency and reuse suggest.
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaCurrencyInput` | Form inputs — needed before building any edit forms |
-| 2 | `FormaCapacityIndicator` | Data display — needed for list pages |
-| 3 | `FormaCategorySelector` | Interactive widgets — needed for editor pages |
-| 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
-| 5 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors — built alongside their specific pages |
-| 6 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |
-| 7 | `FormaContextMenu` | The menu panel of `FormaOverflowMenu` opened by right-click, once there is a menu worth opening that way |
+| 1 | `FormaCurrencyInput` | Form inputs, needed before any edit form |
+| 2 | `FormaCapacityIndicator` | Data display, needed for list pages |
+| 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
+| 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
+| 5 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
+| 6 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
+| 7 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
 | 8 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
-| 9 | `FormaSortMenu`, `FormaViewButton` | The two controls that exist for the managers' tile grids — a layout with no column headers to sort by and two layouts to switch between. The explorer composes them in place of the sort control and view switch it drew for itself |
-| 10 | `FormaLaunchBar` | The bar a workspace is launched from, hosting `FormaRestArea` beside its launchers, so the windows and the way back to them stand in one place |
-| 11 | `FormaVirtualize` | Forma's virtualization, rendering the part of a long collection around the viewport and keeping rendered the items its owner pins, such as the one holding the focus; the data view's views move onto it, so it comes before the data view is finished — see [the virtualization design](virtualization-design.md) |
-| 12 | `FormaDataView`, `FormaDataList`, `FormaDataCards`, `FormaDataTree` | The engine every browsing surface shares, its source, selection, sort, page, address, hierarchy, grouping and states, with the list, the cards and the tree views beside the grid it rebuilds; the explorer adopts it and the gallery is built on it, so it comes before the gallery — see [the data view design](data-view-design.md) |
-| 13 | `FormaGallery` | A media-only surface of its own over the items package the explorer shares, browsing through the data view in its cards view and keeping for itself what is about media, so it comes after the data view and before the editor that its tiles would launch — see [the gallery design](gallery-design.md) |
-| 14 | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
+| 9 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
+| 10 | `FormaVirtualize` | Forma's virtualization; the data view's views move onto it, so it comes before the data view is finished — see [the virtualization design](virtualization-design.md) |
+| 11 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch` | The engine every collection surface shares, with its views and controls; the explorer adopts it and the gallery is built on it, so it comes before the gallery — see [the data view design](data-view-design.md) |
+| 12 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
+| 13 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
 
 ## Components
 
 ### `FormaAddButton`
 
-An icon button for adding, labeled in place when the action is primary. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+An icon button for adding. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | The "new" button in each page's toolbar, opening the new-item modal |
 | **Used in** | `FormaToolbar` actions, `FormaMultiSelect`'s add-new affordance, and any editor that appends a row |
-| **Glyph** | A **plus** |
 
 ### `FormaCapacityIndicator`
 
@@ -98,11 +94,11 @@ Two lists side by side, the reader moving items between them to choose a set.
 
 ### `FormaContextMenu`
 
-The drop-down menu's panel opened by right-click, the context-menu key or Shift+F10, as a shortcut to actions reachable elsewhere.
+The drop-down menu's panel opened as a context menu, a shortcut to actions reachable elsewhere.
 
 | | |
 |---|---|
-| **Old pattern** | None — Coi had no right-click menu; this is new capability rather than parity |
+| **Old pattern** | None |
 | **Used in** | Grid rows and media tiles, as a shortcut to the actions the overflow menu already lists |
 
 ### `FormaCurrencyInput`
@@ -116,16 +112,25 @@ A number input with the currency symbol beside it.
 
 ### `FormaDataCards`
 
-A view over the data view drawing each item as a card, its image, its name and what the caller places beneath, packed across the width, and the image and name alone at its compact density. Its design is [data-view-design.md](data-view-design.md).
+A view over the data view drawing each item as a card: its image, its name and what the caller places beneath. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | The image library's tile grid in Coi, and the explorer's thumbnails view, each drawing tiles of its own |
 | **Used in** | The explorer's cards view, the gallery's browsing, and any page that shows records as tiles |
 
+### `FormaDataGrid`
+
+A view over the data view drawing its items as rows with aligned columns and headers. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | `asp:GridView` with server-side paging, sortable columns, row click-through, checkbox column for mass select, action icon columns (view/edit/delete), status badges, responsive hide classes |
+| **Used in** | pages, products, orders, leads, comments, users, coupons (all 7 main list pages) |
+
 ### `FormaDataList`
 
-A view over the data view drawing items down the height, a depiction, a name and the caller's secondary text per row, flowing on into further columns. Its design is [data-view-design.md](data-view-design.md).
+A view over the data view drawing items down the height, a depiction, a name and the caller's secondary text per row. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|
@@ -134,7 +139,7 @@ A view over the data view drawing items down the height, a depiction, a name and
 
 ### `FormaDataSortMenu`
 
-A drop-down a page composes beside a data view, sorting it by the sorts it offers and turning the direction, whichever view shows. Its design is [data-view-design.md](data-view-design.md).
+A drop-down that sorts a data view by the sorts it offers, whichever view shows. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|
@@ -143,7 +148,7 @@ A drop-down a page composes beside a data view, sorting it by the sorts it offer
 
 ### `FormaDataTree`
 
-A view over the data view drawing the hierarchy as nodes under their parents, each opened, closed and selected from the keyboard, with a template per node and a busy state while its children load. Its design is [data-view-design.md](data-view-design.md).
+A view over the data view drawing the hierarchy as nodes under their parents. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|
@@ -152,7 +157,7 @@ A view over the data view drawing the hierarchy as nodes under their parents, ea
 
 ### `FormaDataView`
 
-The collection component: an engine that manages a set of items, a queryable or a provider, with its selection, sort, page, address, grouping, virtualization and states, handing what is on screen to the built-in or custom view that presents it. Its design is [data-view-design.md](data-view-design.md).
+The collection component: an engine that manages a set of items and the state around them, handing what is on screen to the view that presents it. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|
@@ -161,7 +166,7 @@ The collection component: an engine that manages a set of items, a queryable or 
 
 ### `FormaDataViewSwitch`
 
-A row of toggle buttons a page composes beside a data view, one per view it registered, showing the one pressed. Its design is [data-view-design.md](data-view-design.md).
+A row of toggle buttons switching a data view between the views it registered. Its design is [data-view-design.md](data-view-design.md).
 
 | | |
 |---|---|
@@ -170,13 +175,12 @@ A row of toggle buttons a page composes beside a data view, one per view it regi
 
 ### `FormaDeleteButton`
 
-An icon button for deleting; confirmation stays the caller's. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+An icon button for deleting. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | The delete icon in each list page's action column, guarded by `AreYouSure(this, 'message')` before the postback |
 | **Used in** | Row actions on every list page, and the destructive action in an editor's footer |
-| **Glyph** | A **trash can** |
 
 ### `FormaDesignPicker`
 
@@ -189,31 +193,29 @@ A grid of design cards with a preview image, applied after confirmation.
 
 ### `FormaDuplicateButton`
 
-An icon button for making another one; what duplication means stays the caller's. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+An icon button for duplicating. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | None in Coi's action columns |
-| **Used in** | Row actions on list pages — Épica names duplicate in the same breath as edit, publish, delete and view |
-| **Glyph** | **Two overlapping sheets** |
+| **Used in** | Row actions on list pages |
 
 ### `FormaEditButton`
 
-An icon button for editing; whether the click navigates or begins an inline edit stays the caller's. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+An icon button for editing. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | The edit icon in each action column, linking through to the full editor page |
 | **Used in** | Row actions on every list page; starts `FormaDataGrid`'s inline edit where the row is edited in place |
-| **Glyph** | A **pencil** |
 
 ### `FormaExportButton`
 
-A button that starts a server-side export and streams the file from the authorized response.
+A button that exports a list to a file.
 
 | | |
 |---|---|
-| **Old pattern** | Confirm dialog, then `WaitForDownload` navigates straight to a per-entity `.aspx` under `admin/services` that builds a workbook with EPPlus, saves it to a public `up/tmp` path and redirects to it. Generation is synchronous inside that request; a `dwait` cookie set alongside the redirect tells a 500 ms poll to hide the spinner, so nothing waits for readiness before downloading. Columns, headers and the query are hardcoded per entity, and the export always covers every row |
+| **Old pattern** | A confirm dialog, then a per-entity `.aspx` under `admin/services` that built a workbook of every row and redirected to it |
 | **Used in** | orders, leads |
 
 ### `FormaFilterEditor`
@@ -249,8 +251,8 @@ Crops, rotates, flips and resizes an image, describing the edit for the host to 
 
 | | |
 |---|---|
-| **Old pattern** | Two surfaces, not one. `jcrop` in `slider.aspx` did a **constrained crop-to-fit**: aspect ratio and minimum size both pinned to the destination slot, the image scaled into a fixed 590×350 box, an initial selection set for the editor, and `tellSelect()` posting `x/y/w/h` plus the target dimensions to `crop.asmx`. Separately, `pops/pixie.aspx` hosted the commercial **Pixie** editor in an `<iframe>`, launched per-entry from the image library |
-| **Used in** | Making an arbitrary upload fit a fixed slot — article covers and OG images, video thumbnails, sponsor logos, gallery tiles. Launched from `FormaFileViewer`, the manager and the picker, the same way Coi launched it from its library |
+| **Old pattern** | Two surfaces: `jcrop` in `slider.aspx` cropping an image to fit a fixed slot, and the commercial Pixie editor hosted in an `<iframe>` from the image library |
+| **Used in** | Making an upload fit a fixed slot: article covers and OG images, video thumbnails, sponsor logos, gallery tiles, launched from `FormaFileViewer`, the explorer and the picker |
 
 ### `FormaLaunchBar`
 
@@ -258,18 +260,17 @@ The bar a workspace's applications are launched from, hosting the rest area besi
 
 | | |
 |---|---|
-| **Old pattern** | None — Coi opened each tool as its own page; launching applications into a workspace of windows is new capability rather than parity |
+| **Old pattern** | None |
 | **Used in** | The Admin Console's shell, as the bar its applications are launched from |
 
 ### `FormaMediaPicker`
 
-A file picker pinned to image, video and audio types, previewing each accepted file through the file viewer. Its design is [resources-design.md](resources-design.md).
+A file picker pinned to image, video and audio types. Its design is [resources-design.md](resources-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | None — Coi's library was images-only, and video arrived as a pasted YouTube URL |
-| **Used in** | Surfaces taking either an image or a video off the device — Épica's Videos module, article media, and `FormaComposer` |
-| **Open** | Whether audio belongs in the same pin as image and video, or earns its own skin |
+| **Used in** | Surfaces taking an image or a video off the device: a videos module, article media and `FormaComposer` |
 
 ### `FormaNotesEditor`
 
@@ -300,67 +301,43 @@ An editor for a product's option types and their values, each row's fields follo
 
 ### `FormaPublishButton`
 
-A stateful icon button for publishing and unpublishing, labeled where primary; scheduling stays outside it. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+A stateful icon button for publishing and unpublishing. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | Coi's per-item active/publish toggle |
-| **Used in** | Editor footers and row actions — Épica names publish beside edit, duplicate, delete and view, and `FormaStatusBadge` already renders the draft/scheduled/published state it changes |
-| **Glyph** | A **globe**, struck through when the action is to unpublish |
+| **Used in** | Editor footers and row actions |
 
 ### `FormaRefreshButton`
 
-An icon button for refreshing that shows and announces its busy state. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+An icon button for refreshing, with a busy state. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | None — Coi reloaded the whole page |
-| **Used in** | `FormaDataGrid`'s `RefreshDataAsync()`, which is public API today with no affordance of its own, and any list fed by a provider that can go stale |
-| **Glyph** | A **circular arrow** |
+| **Used in** | Any list fed by a provider that can go stale, such as a `FormaDataGrid` |
 
 ### `FormaShareButton`
 
-An icon button that raises a share click and nothing more; what sharing means stays the caller's. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+An icon button for sharing. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | None |
 | **Used in** | Copying or sending an item's public link, from its editor or its row |
-| **Glyph** | **Three connected nodes** |
-
-### `FormaSortMenu`
-
-A drop-down menu of sort choices for a layout with no column headers to sort by.
-
-| | |
-|---|---|
-| **Old pattern** | Coi sorted by clicking a column header, and had no standalone sort control. Header sorting is **not** what this replaces — `FormaDataGrid` already ships it by passing QuickGrid's `Sortable`, `SortBy`, `InitialSortDirection` and `GridSort<T>` straight through |
-| **Used in** | Layouts with no header row to click — the explorer's tile grid, and any card list |
-| **Glyph** | **Two opposed arrows** |
 
 ### `FormaUpdateButton`
 
-An icon button committing an inline edit, opposite the cross that discards it. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+An icon button committing an inline edit. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | The save button ending an edit postback |
 | **Used in** | `FormaDataGrid`'s inline editing beside a cancel control, and editor footers |
-| **Glyph** | A **check mark** |
-
-### `FormaViewButton`
-
-A stateful icon button switching between a list and a tile grid, drawing and naming the mode it switches to. Its design is [icon-buttons-design.md](icon-buttons-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | None — Coi's image library had one fixed thumbnail grid |
-| **Used in** | `FormaExplorer`, switching between a dense list and thumbnails |
-| **Glyph** | **Layout lines**, stacked rows for a list and a square of cells for a tile grid |
 
 ### `FormaVirtualize`
 
-Renders the items of a long list near the viewport, with spacers for the rest, keeping rendered the items its owner pins. Its design is [virtualization-design.md](virtualization-design.md).
+Forma's virtualization: the part of a long collection around the viewport, and the items its owner pins. Its design is [virtualization-design.md](virtualization-design.md).
 
 | | |
 |---|---|

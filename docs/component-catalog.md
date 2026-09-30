@@ -1,19 +1,8 @@
 # Forma Component Catalog
 
-> Identified from the old Coi admin codebase, which is where the component set was derived
-> from — the library itself is general-purpose. Each component maps an old Web Forms + jQuery
-> pattern to a Blazor component using **only** built-in Blazor components, native HTML elements,
-> and browser APIs — no external JS libraries.
->
-> Target location: `Forma.Blazor/Components/`, or its own project under `src/` for a component large enough to grow sub-components
->
-> **Naming convention:** All components use the `Forma` prefix for their tag names (e.g., `<FormaDialog>`,
-> `<FormaTabs>`) to avoid clashes with third-party libraries. CSS classes use the `forma-` prefix.
-> C# types (enums, services) rely on namespaces for disambiguation and don't carry the prefix.
->
-> The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
+The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**60 components implemented, 3 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**60 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -127,12 +116,12 @@ A trail of segments to the current page, each a link, a button or plain text, wi
 
 | | |
 |---|---|
-| **Old pattern** | The hand-rolled breadcrumb section of `FormaExplorerAddressBar` — root icon, chevron separators, a per-segment dropdown of alternatives, and drop-target handlers, all written directly into that component. `FormaPageTitle`'s own plain `<ol>` of links predates it too |
-| **Used in** | Any trail of segments: a page header's site navigation as well as an explorer's folder path. `FormaExplorerBreadcrumb` and `FormaPageTitle` both compose it now rather than drawing their own |
+| **Old pattern** | `<ol class="breadcrumb">` of links under each page's title |
+| **Used in** | Any trail of segments: a page header's site navigation, and `FormaExplorer`'s folder path through `FormaExplorerBreadcrumb` and `FormaPageTitle` |
 
 ### `FormaButton`
 
-The library's button: one variant and size scale, a busy state that stays focusable, and the source of every other control's hover, focus and disabled treatment.
+The library's button: one scale of variants and sizes, a busy state, and the hover, focus and disabled treatment every other control takes from it.
 
 | | |
 |---|---|
@@ -150,7 +139,7 @@ One or two months of days with month and year selectors, drawing whatever highli
 
 ### `FormaCheckBox`
 
-A form checkbox with an indeterminate state, usable bare as a control that names its field through `ValueExpression`.
+A form checkbox with an indeterminate state, usable bare as a control.
 
 | | |
 |---|---|
@@ -168,13 +157,12 @@ A frame whose drag region is a title bar carrying the icon, the title and the ho
 
 ### `FormaCloseButton`
 
-The one dismiss control: a ghost icon-only button with the cross glyph and a required accessible name.
+The one dismiss control: an icon-only button with the cross glyph.
 
 | | |
 |---|---|
 | **Old pattern** | The `×` dismiss control repeated across `admin/pops/*.aspx` modal headers and notification strips |
 | **Used in** | Single source of truth for dismiss controls — `FormaDialog`'s header, `FormaToastContainer`'s toasts, `FormaSelectionToolbar`'s clear-selection control |
-| **Glyph** | A **cross** |
 
 ### `FormaColorPicker`
 
@@ -187,48 +175,30 @@ A hex color field with the platform's own color dialog behind the swatch beside 
 
 ### `FormaCommandArea` / `FormaCommandBar`
 
-The area is the surface that stacks command bars; each bar lays its commands on a scrolling track with arrows at whichever end they continue past.
+The area is the surface that stacks command bars; each bar is a track of commands that scrolls when they cannot fit.
 
 | | |
 |---|---|
-| **Old pattern** | The header region of `FormaExplorer` — the surface, the rule beneath it and the stacked bars — written into the explorer's own stylesheet |
-| **Used in** | The region above any page's content: an explorer header, a list page's action strip, an editor's publish bar. `FormaExplorer` composes the area for its own header, and lays its toolbar and its selection bar on command bars, the view controls and the selection count standing past the track |
+| **Old pattern** | Each page's strip of actions above its content, drawn per page |
+| **Used in** | The region above any page's content: `FormaExplorer`'s header, a list page's action strip, an editor's publish bar |
 
 ### `FormaComposer`
 
-An authoring surface for rich text, Markdown, code and page composition, every capability and every editing surface arriving as a plugin; the rich text editor is complete, and the Markdown and code editors and the satellite capabilities still follow [the composer implementation plan](composer-implementation-plan.md). Its design is [composer-design.md](composer-design.md).
+An authoring surface for rich text, Markdown, code and page composition, every capability and every editing surface arriving as a plugin. Its design is [composer-design.md](composer-design.md).
 
 | | |
 |---|---|
-| **Old pattern** | **Two Coi surfaces, not one.** The rich text editor was CKEditor 4 (`Controls/CKeditor2/config.js`) in three presets — `Website`, `Basic`, `Mini` — with a fourth, collapsed arrangement under 600px; custom plugins `imagelibrary` (opens `pops/images.aspx`), `youtube`, `smiley`, `lineheight`, `qform`; `enterMode = ENTER_BR`, `format_tags = p;h1;h2;h3;h4`, RTL contents direction, and `allowedContent = true` — no content filtering whatsoever. The larger surface was the **page designer**, `admin/pops/template.aspx` over `Controls/Edit/`: a drag-and-drop page builder with a side palette, a live canvas, per-element delete/style/edit chrome, jquery-sortable reordering, column and element resizing, and a settings editor per element kind in `elm.js`. One entry point, `OpenTemplate(type, title)`, drove seven targets by numeric type — product page templates, the product tile, headings, rich content, popups and the custom dropdown menu |
+| **Old pattern** | Two Coi surfaces: CKEditor 4 in three presets with custom plugins for images, video, emoji, line height and forms, and the drag-and-drop page designer over `admin/pops/template.aspx` |
 | **Used in** | page editor, product description, product and category templates, popups, custom menus — and in Épica, the News article body |
 
 ### `FormaConfirmDialog`
 
-A yes-or-no dialog opened through `IConfirmDialogService`, answering the caller with the reader's choice.
+A yes-or-no dialog answering the caller with the reader's choice.
 
 | | |
 |---|---|
 | **Old pattern** | `AreYouSure(this, 'message')` — custom confirm that returns bool. Used on delete buttons, destructive actions |
 | **Used in** | Every page with delete/remove actions (list pages bulk delete, individual row delete, design change, template swap) |
-
-### `FormaDataGrid<TItem>`
-
-A view over the data view drawing its items as rows with aligned columns and headers, sorted by a header and edited a row at a time. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | `asp:GridView` with server-side paging, sortable columns, row click-through, checkbox column for mass select, action icon columns (view/edit/delete), status badges, responsive hide classes |
-| **Used in** | pages, products, orders, leads, comments, users, coupons (all 7 main list pages) |
-
-### `FormaDataView<TItem>`
-
-The collection component: an engine that manages a set of items, a queryable or a provider, with its selection, sort, page, address, grouping, virtualization and states, handing what is on screen to the built-in or custom view that presents it. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | The same browsing built three times: `asp:GridView` over a repository data source on every list page, the explorer's content area, and the gallery's planned engine |
-| **Used in** | Every list page under `FormaDataGrid`, the explorer's content area, and the gallery |
 
 ### `FormaDatePicker`
 
@@ -241,7 +211,7 @@ A form input for one date: a trigger opening an anchored calendar, with the cult
 
 ### `FormaDateRangePicker`
 
-A form input for a `DateRange`: a trigger opening a two-month calendar with presets, committing the span once both ends are picked.
+A form input for a span of days: a trigger opening a two-month calendar with presets.
 
 | | |
 |---|---|
@@ -250,7 +220,7 @@ A form input for a `DateRange`: a trigger opening a two-month calendar with pres
 
 ### `FormaDialog`
 
-A modal dialog over the native `<dialog>`, with built-in localized actions or the caller's own footer, dismissed through the input router.
+A modal dialog with built-in localized actions or the caller's own footer.
 
 | | |
 |---|---|
@@ -259,7 +229,7 @@ A modal dialog over the native `<dialog>`, with built-in localized actions or th
 
 ### `FormaDropDownMenu`
 
-A button that opens an anchored menu of items, groups and dividers, navigated by arrow keys and dismissed through the input router.
+A button that opens an anchored menu of items, groups and dividers.
 
 | | |
 |---|---|
@@ -268,7 +238,7 @@ A button that opens an anchored menu of items, groups and dividers, navigated by
 
 ### `FormaEmoji`
 
-Draws an emoji as inline artwork from the provider the host registered, falling back to the reader's platform font.
+Draws an emoji as artwork from the provider the host registered.
 
 | | |
 |---|---|
@@ -277,7 +247,7 @@ Draws an emoji as inline artwork from the provider the host registered, falling 
 
 ### `FormaEmojiPicker`
 
-A categorized emoji palette with search, recently used entries and a tab per category, browsing the set an `IEmojiCatalog` describes.
+A categorized emoji palette with search, recently used entries and a tab per category.
 
 | | |
 |---|---|
@@ -295,13 +265,12 @@ A file manager for what is already on the server: a folder tree, an address bar,
 
 ### `FormaEyeButton`
 
-A ghost icon-only button showing an eye, struck through while what it guards is hidden.
+An icon-only button showing an eye, struck through while what it guards is hidden.
 
 | | |
 |---|---|
 | **Old pattern** | `<span onclick="TogglePass(this)" class="fas fa-eye-slash">` beside a password field — a clickable span, not a button |
 | **Used in** | Single source of truth for reveal controls — `FormaPasswordBox`'s toggle, and any later show/hide or preview affordance |
-| **Glyph** | An **eye**, struck through when hidden |
 
 ### `FormaField`
 
@@ -314,7 +283,7 @@ The chrome every labeled input shares: the floating label, the box, the focus ri
 
 ### `FormaFilePicker`
 
-A drop zone and file dialog yielding the browser files the reader picked from their device, validated one by one and never transferred. Its design is [resources-design.md](resources-design.md).
+A drop zone and file dialog yielding the files the reader picked from their device. Its design is [resources-design.md](resources-design.md).
 
 | | |
 |---|---|
@@ -323,7 +292,7 @@ A drop zone and file dialog yielding the browser files the reader picked from th
 
 ### `FormaFileUploader`
 
-Moves the files a picker produced into the host's `IFileStore`, one at a time, with progress, cancellation and the resources they became. Its design is [resources-design.md](resources-design.md).
+Moves the files a picker produced into the host's store, with progress and cancellation. Its design is [resources-design.md](resources-design.md).
 
 | | |
 |---|---|
@@ -332,7 +301,7 @@ Moves the files a picker produced into the host's `IFileStore`, one at a time, w
 
 ### `FormaFileViewer`
 
-Shows a stored resource for what it is, image, video, audio, document or markup, through a chain of resource providers, stepping through siblings. Its design is [resources-design.md](resources-design.md).
+Shows a stored resource for what it is, image, video, audio, document or markup, stepping through its siblings. Its design is [resources-design.md](resources-design.md).
 
 | | |
 |---|---|
@@ -341,7 +310,7 @@ Shows a stored resource for what it is, image, video, audio, document or markup,
 
 ### `FormaFrame`
 
-A raised backdrop with a box of its own: placed, it is moved by its drag region, resized at its edges and maximized to its bounds; presented, it drives its parent's box.
+A raised backdrop with a box of its own, which the reader can move, resize and maximize, or which drives its parent's box.
 
 | | |
 |---|---|
@@ -355,11 +324,11 @@ A scroll box along one axis whose frozen parts stay at the start, moved by the s
 | | |
 |---|---|
 | **Old pattern** | The command bar's own track, arrows and measuring, written into the bar |
-| **Used in** | `FormaCommandBar` for its track, `FormaExplorerDetailsView` for its columns with the actions and the name frozen, and any surface whose content outgrows its box along one axis while part of it must stay put: a table with frozen columns or a frozen header, a strip of chips, a tab list |
+| **Used in** | `FormaCommandBar` for its track, `FormaExplorer`'s details view, and any surface whose content outgrows its box along one axis while part of it stays put: a table with frozen columns or a frozen header, a strip of chips, a tab list |
 
 ### `FormaIcon`
 
-Draws an icon, a glyph, a brand mark or a character, as inline SVG or symbol-font text, so no icon font is loaded.
+Draws an icon: a glyph, a brand mark or a character.
 
 | | |
 |---|---|
@@ -386,12 +355,12 @@ A panel showing the input router's latest decisions and the active ordering, liv
 
 ### `FormaInputScope`
 
-An element registered with the input router as a scope, declared from markup with a profile of routes and dismissal behavior.
+An element registered with the input router as a scope, declared from markup.
 
 | | |
 |---|---|
 | **Old pattern** | None — input ownership was decided per component by whichever listener ran first |
-| **Used in** | A host or a component that declares an input scope declaratively: a region that routes its own keys, a surface held active while it is open, a modal barrier. The library's own components register with the router from their code-behind and do not need it |
+| **Used in** | A host declaring an input scope in markup: a region that routes its own keys, a surface held active while it is open, a modal barrier |
 
 ### `FormaMultiSelect`
 
@@ -404,22 +373,21 @@ A form input for several values: a dropdown of checkboxes with search, the chose
 
 ### `FormaOverflowMenu`
 
-A drop-down menu behind the ellipsis trigger, so every row's overflow affordance is the same glyph and target.
+A drop-down menu behind an ellipsis trigger.
 
 | | |
 |---|---|
 | **Old pattern** | `Info('divId', '#buttonId', 's')` opening a `dropdown-menu` from a row's options button |
 | **Used in** | Row actions once a row carries more than two; `FormaExplorer`'s item, folder and action-bar menus, and `FormaComposer`'s plugins bar |
-| **Glyph** | An **ellipsis**, horizontal or vertical as the host orients it |
 
 ### `FormaPageHead`
 
-The document head a host renders once: charset, viewport, title, base and icon, Forma's stylesheets in cascade order, and the framework's own outlets closing it.
+The document head a host renders once, with Forma's stylesheets in their cascade order.
 
 | | |
 |---|---|
 | **Old pattern** | Each host hand-writing the same `<head>`: charset, viewport, base address, and Forma's stylesheets linked one by one in an order nothing enforced |
-| **Used in** | Every host's `App.razor`. The Showcase composes it, and any consuming application does the same |
+| **Used in** | Every host's `App.razor` |
 
 ### `FormaPageTitle`
 
@@ -432,7 +400,7 @@ A page's heading with its breadcrumb trail and an actions slot.
 
 ### `FormaPagination`
 
-A paginator usable on its own or composed into a grid, with numbered links, a page-number box and a Go button as options.
+A paginator usable on its own or composed into a grid.
 
 | | |
 |---|---|
@@ -450,12 +418,12 @@ A password field with a reveal toggle, a strength meter, advice on what a value 
 
 ### `FormaPopover`
 
-A manual popover in the top layer anchored to its trigger, owning placement, focus return and dismissal for every dropdown, menu and picker. Its design is [popover-design.md](popover-design.md).
+A panel in the top layer anchored to its trigger, for every dropdown, menu and picker. Its design is [popover-design.md](popover-design.md).
 
 | | |
 |---|---|
-| **Old pattern** | None as a component — each of `FormaSelect`, `FormaMultiSelect`, `FormaDatePicker`, `FormaDropDownMenu` and the composer's emoji button carried its own copy of the open flag, the backdrop, the popover element and the `AnchoredPopover` wiring, and two of the five had no Escape handling at all |
-| **Used in** | Every anchored panel in the library: the select and multi-select lists, the date picker's calendar, the drop-down menu and the composer's emoji picker. A host reaches for it directly for any panel that hangs from a control and is not a modal — a modal is `FormaDialog` |
+| **Old pattern** | Each dropdown, menu and picker positioning a hidden `<div>` of its own below its button |
+| **Used in** | Every anchored panel in the library: the select and multi-select lists, the date picker's calendar, the drop-down menu and the composer's emoji picker, and any panel a host hangs from a control |
 
 ### `FormaRestArea`
 
@@ -464,16 +432,16 @@ One persistent handle per window in the workspace, grouped by origin or instance
 | | |
 |---|---|
 | **Old pattern** | None — Coi had no way back to a panel once it was out of sight |
-| **Used in** | The Showcase's window page; the Admin Console's shell, and `FormaLaunchBar` once it exists |
+| **Used in** | The Showcase's window page; the Admin Console's shell |
 
 ### `FormaSearchBox`
 
-A search field reporting its value on every keystroke and the committed term on Enter, clear or a pause in typing.
+A search field with a clear control.
 
 | | |
 |---|---|
-| **Old pattern** | The hand-rolled search box in `FormaExplorerAddressBar` — a magnifying glass glyph, a `type="search"` input, and a clear button, all written directly into that component |
-| **Used in** | General search and filter fields anywhere a caller wants a `type="search"` box rather than a plain `FormaTextBox`. Now the box `FormaExplorerSearchBox` composes rather than draws itself |
+| **Old pattern** | The search textbox in each list page's action strip |
+| **Used in** | Search and filter fields, and `FormaExplorerSearchBox` |
 
 ### `FormaSearchToolbar`
 
@@ -509,11 +477,11 @@ A menu of everything the app can do with an item: the share networks and destina
 | | |
 |---|---|
 | **Old pattern** | None — loose Download/Print/Copy buttons scattered per surface, and no sharing at all |
-| **Used in** | Anywhere a subject leaves the application: an article shared to a network, a file downloaded, a document printed. Planned over the composer's Preview and Source outputs and `FormaExplorer`'s download actions |
+| **Used in** | Anywhere a subject leaves the application: an article shared to a network, a file downloaded, a document printed |
 
 ### `FormaSlider`
 
-A form input over a native range control, generic over any number, showing its value beside the label.
+A form input choosing a number from a range, showing its value beside the label.
 
 | | |
 |---|---|
@@ -545,7 +513,7 @@ A divider standing in the seam between two backdrops, dragged or driven by arrow
 | | |
 |---|---|
 | **Old pattern** | Two hand-rolled sashes in the explorer — the vertical one resizing the folders panel and the horizontal one resizing the folder list — each with its own pointer plumbing, key handling and clamping |
-| **Used in** | Any pair of panes a reader can resize. `FormaExplorer` composes it for its sidebar splitter and `FormaExplorerSidebar` for its tree sash, which is what proved both orientations |
+| **Used in** | Any pair of panes a reader can resize, such as `FormaExplorer`'s sidebar and its folder tree |
 
 ### `FormaStackLayout`
 
@@ -571,12 +539,12 @@ A toolbar of readouts and commands along the bottom of a surface, announcing a r
 
 | | |
 |---|---|
-| **Old pattern** | None — extracted from `FormaComposerStatusStrip`'s shape into a generic component, so any host can show a quiet strip of readouts and commands without pulling in the composer. |
+| **Old pattern** | None |
 | **Used in** | `FormaComposerStatusStrip`, which composes it |
 
 ### `FormaTabs`
 
-A tab list over tab panels, walked by the arrow keys, Home and End, with the active tab bound or controlled by the host.
+A tab list over tab panels.
 
 | | |
 |---|---|
@@ -589,12 +557,12 @@ A multi-line text input in a field, resizable downward, with an optional running
 
 | | |
 |---|---|
-| **Old pattern** | `<asp:TextBox TextMode="MultiLine">` — the same `.form-control` class as a single-line field, plus `textarea { resize: vertical }` and a label offset (`.row textarea ~ label.lblForm { top: 13px }`) |
+| **Old pattern** | `<asp:TextBox TextMode="MultiLine">` styled as a single-line field and resizable downward |
 | **Used in** | SEO head, meta description, store details — and in Épica, article excerpts and summaries |
 
 ### `FormaTextBox`
 
-A single-line text input, bare or in a field with a floating label, typed as text, email, telephone, web address, a name or a one-time code.
+A single-line text input, bare or in a field with a floating label.
 
 | | |
 |---|---|
@@ -603,7 +571,7 @@ A single-line text input, bare or in a field with a floating label, typed as tex
 
 ### `FormaToastContainer`
 
-The live region at layout level that renders the toasts raised through `IToastService` and dismisses each on its own timer.
+The live region at layout level that shows toasts.
 
 | | |
 |---|---|
@@ -630,30 +598,30 @@ A form input for a Boolean, drawn as a sliding switch.
 
 ### `FormaToolbar`
 
-A row of commands, toggles, menus, readouts and custom items described as data, scrolling when it cannot fit, with shortcuts routed through the input router. Its design is [toolbar-design.md](toolbar-design.md).
+A row of commands, toggles, menus, readouts and custom items described as data. Its design is [toolbar-design.md](toolbar-design.md).
 
 | | |
 |---|---|
-| **Old pattern** | None — a new, generic addition rather than a Coi-derived one, extracted from `FormaComposer`'s own toolbar to give any host a grouped, item-driven command bar without pulling in the composer |
-| **Used in** | Anywhere a host needs a bar of commands driven by data rather than hand-written markup. Already the base for `FormaSearchToolbar`, `FormaSelectionToolbar`, `FormaStatusStrip` and `FormaComposerCommandBar`, and the title bar of `FormaChrome` |
+| **Old pattern** | None |
+| **Used in** | Any bar of commands driven by data: `FormaSearchToolbar`, `FormaSelectionToolbar`, `FormaStatusStrip`, `FormaComposerCommandBar` and `FormaChrome`'s title bar |
 
 ### `FormaVideoPlayer`
 
-Plays a video by its address, through a chain of player providers that know the services, loading nothing from a service until the reader presses play. Its design is [media-design.md](media-design.md).
+Plays a video by its address, from the services its providers know. Its design is [media-design.md](media-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | CKEditor's **YouTube embed** toolbar button and the raw `<iframe>` markup it pasted into the body |
-| **Used in** | The most-demanded component on this list — Épica wants it on four separate surfaces: YouTube-by-URL embeds in articles (6.5), the auto-embedded live broadcast player (9.2), the Videos module's listings and featured video (P10), and the home page's featured video block (11.4). `FormaFileViewer` delegates its video branch here |
+| **Used in** | Video embeds in articles, a live broadcast player, video listings and a home page's featured video; `FormaFileViewer` for a video |
 
 ### `FormaVisibility`
 
-Collapses its content to nothing without unmounting it, animated on request.
+Collapses its content to nothing without unmounting it.
 
 | | |
 |---|---|
-| **Old pattern** | None — extracted after `FormaCommandBar` and `FormaStatusStrip` each grew their own `Hidden`/`Animated` and hand-rolled an identical `grid-template-rows: 0fr → 1fr` collapse, down to the same three CSS rules copy-pasted under a different class prefix each time |
-| **Used in** | `FormaCommandBar`, `FormaStatusStrip`, `FormaShareMenu` and `FormaComposerPluginsBar` wrap their own chrome in it. `FormaToolbar` forwards `Hidden`/`Animated` to the `FormaCommandBar` it is built on when it scrolls, and wraps its wrapping row in it when it does not |
+| **Old pattern** | None |
+| **Used in** | `FormaCommandBar`, `FormaStatusStrip`, `FormaShareMenu`, `FormaComposerPluginsBar` and `FormaToolbar` |
 
 ### `FormaWindow`
 
@@ -663,17 +631,3 @@ A chrome floated into the top layer as a member of the workspace: activated, sta
 |---|---|
 | **Old pattern** | Every floating box — the composer maximized, a dialog — inventing its own chrome |
 | **Used in** | The Showcase's window page; the Admin Console's floating panels |
-
-## Components NOT Needed (handled by built-ins or native HTML)
-
-| Old Pattern | Replaced By |
-|---|---|
-| **MiniBar** (custom scrollbar) | CSS `scrollbar-width: thin` + `scrollbar-color` (Firefox) / `::-webkit-scrollbar` (Chromium). Or just let browser handle it |
-| **UpdatePanel** (partial postback) | Blazor's built-in component re-rendering. Interactive Server mode handles partial updates natively |
-| **RepositoryDataSource** | EF Core `IQueryable<T>` passed to components, or injected services |
-| **ASMX web services** | Blazor component methods (Interactive Server) or Minimal API endpoints |
-| **Hidden fields for state** | Blazor `@bind` and component parameters — state lives in C# |
-| **Parent frame communication** | Blazor `EventCallback` between components — no iframes needed |
-| **btn-load CSS class** | Blazor disable-during-async pattern + CSS loading indicator |
-| **jQuery `$.ajax`** | `HttpClient` in Blazor, or direct C# calls in Interactive Server mode |
-| **CKEditor** | Now in scope as `FormaComposer` rather than excluded — Forma builds its own editor over `contenteditable` with its own controls, taking Coi's feature set as the floor. External libraries appear only as isolated capability satellites, never as the editor itself |
