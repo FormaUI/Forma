@@ -24,9 +24,9 @@ public readonly record struct Emoji
     /// <summary>The scalar values, one or more, that together form the emoji.</summary>
     public string Sequence { get; }
 
-    /// <summary>Attempts to name an emoji by a sequence that may not be one.</summary>
-    /// <param name="sequence">The scalar values that may form an emoji.</param>
-    /// <param name="emoji">The emoji named, when the sequence is a single character.</param>
+    /// <summary>Attempts to name an emoji by a sequence.</summary>
+    /// <param name="sequence">The scalar values to name the emoji by.</param>
+    /// <param name="emoji">The emoji named.</param>
     /// <returns>Whether the sequence names an emoji.</returns>
     public static bool TryCreate([NotNullWhen(true)] string? sequence, out Emoji emoji)
     {

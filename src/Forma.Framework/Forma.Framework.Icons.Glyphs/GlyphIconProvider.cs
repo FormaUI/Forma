@@ -169,7 +169,7 @@ public sealed class GlyphIconProvider : IIconProvider
     }
 }
 
-/// <summary>The glyph set as scripts/Build-GlyphPack.ps1 writes it: glyph name, then grid size, then style name.</summary>
+/// <summary>The embedded glyph set, keyed by glyph name, then grid size, then style name.</summary>
 internal sealed record RawGlyphSet(
     [property: JsonPropertyName("glyphs")] Dictionary<string, Dictionary<string, Dictionary<string, RawGlyphStyle>>> Glyphs);
 
@@ -184,7 +184,7 @@ internal sealed record RawGlyphPath(
     [property: JsonPropertyName("o")] double? O,
     [property: JsonPropertyName("f")] bool? F);
 
-/// <summary>The brand set as scripts/Build-BrandPack.ps1 writes it: brand name, then its mark.</summary>
+/// <summary>The embedded brand set, keyed by brand name.</summary>
 internal sealed record RawBrandSet(
     [property: JsonPropertyName("brands")] Dictionary<string, RawBrandMark> Brands);
 

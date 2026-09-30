@@ -7,7 +7,7 @@ public abstract record Icon
 {
     /// <summary>A glyph in a variant.</summary>
     /// <param name="glyph">The glyph to draw.</param>
-    /// <param name="variant">The representation to request.</param>
+    /// <param name="variant">The variant to draw.</param>
     public static Icon FromGlyph(Glyph glyph, GlyphVariant variant = GlyphVariant.Default)
         => new GlyphIcon(glyph, variant);
 

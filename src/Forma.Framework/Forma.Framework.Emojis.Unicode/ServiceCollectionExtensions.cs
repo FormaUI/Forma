@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// <summary>Registers the emoji services this package ships.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers the reader's font as the emoji provider, unless a host has already registered its own.</summary>
+    /// <summary>Registers <see cref="UnicodeEmojiProvider"/> as the emoji provider.</summary>
     /// <param name="services">The collection to register into.</param>
-    /// <returns>The same collection, for chaining.</returns>
+    /// <returns>The same collection.</returns>
     public static IServiceCollection AddFormaEmojiServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

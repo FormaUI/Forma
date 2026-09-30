@@ -2,10 +2,10 @@ namespace Forma.Framework.Emojis;
 
 using System.Diagnostics.CodeAnalysis;
 
-/// <summary>A catalog holding no emoji, standing in where a host installed none.</summary>
+/// <summary>A catalog holding no emoji.</summary>
 public sealed class NullEmojiCatalog : IEmojiCatalog
 {
-    /// <summary>The one instance, since an empty catalog has no state to vary.</summary>
+    /// <summary>The single instance.</summary>
     public static NullEmojiCatalog Instance { get; } = new();
 
     private NullEmojiCatalog()

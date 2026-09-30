@@ -1,9 +1,10 @@
 namespace Forma.Framework.Icons;
 
-/// <summary>A mark the library draws, named for its recognizable form, or for that form's conventional meaning where the literal name would be obscure. A glyph whose form points along the reading direction is marked <see cref="GlyphDirectionSensitiveAttribute"/> with the direction it adapts for, which <see cref="GlyphExtensions.GetDirectionSensitivity"/> reads.</summary>
+/// <summary>A mark the library draws.</summary>
+/// <remarks>A glyph is named for its recognizable form, or for that form's conventional meaning where the literal name would be obscure. A glyph whose form points along the reading direction carries <see cref="GlyphDirectionSensitiveAttribute"/> naming the direction it adapts for, and is drawn turned over when text runs that way.</remarks>
 public enum Glyph
 {
-    /// <summary>No glyph. Asking a provider for this is an error.</summary>
+    /// <summary>No glyph.</summary>
     None = 0,
 
     /// <summary>A figure in a wheelchair, for accessibility.</summary>
@@ -21,16 +22,16 @@ public enum Glyph
     /// <summary>Rows with one added below.</summary>
     AddRowBelow,
 
-    /// <summary>An aeroplane flying down the page.</summary>
+    /// <summary>An airplane flying down the page.</summary>
     AirplaneDown,
 
-    /// <summary>An aeroplane flying left.</summary>
+    /// <summary>An airplane flying left.</summary>
     AirplaneLeft,
 
-    /// <summary>An aeroplane flying right.</summary>
+    /// <summary>An airplane flying right.</summary>
     AirplaneRight,
 
-    /// <summary>An aeroplane flying up the page.</summary>
+    /// <summary>An airplane flying up the page.</summary>
     AirplaneUp,
 
     /// <summary>A clock with bells, for an alarm.</summary>
@@ -81,7 +82,7 @@ public enum Glyph
     /// <summary>A paper clip, for an attachment.</summary>
     Attachment,
 
-    /// <summary>A quaver, for sound.</summary>
+    /// <summary>An eighth note, for audio.</summary>
     Audio,
 
     /// <summary>A lightning bolt, for an automatic mode.</summary>
@@ -129,16 +130,16 @@ public enum Glyph
     /// <summary>A camera body with its lens.</summary>
     Camera,
 
-    /// <summary>A shopping trolley.</summary>
+    /// <summary>A shopping cart.</summary>
     Cart,
 
-    /// <summary>A shopping trolley wearing a tick badge, for an order confirmed.</summary>
+    /// <summary>A shopping cart wearing a check mark badge, for an order confirmed.</summary>
     CartCheck,
 
-    /// <summary>A shopping trolley wearing a cross badge, for an order canceled.</summary>
+    /// <summary>A shopping cart wearing a cross badge, for an order canceled.</summary>
     CartCross,
 
-    /// <summary>A shopping trolley wearing a plus badge, for adding to it.</summary>
+    /// <summary>A shopping cart wearing a plus badge, for adding to it.</summary>
     CartPlus,
 
     /// <summary>A screen with waves rising from its corner, for casting to a display.</summary>
@@ -153,10 +154,10 @@ public enum Glyph
     /// <summary>A capital A beside a small a, for changing case.</summary>
     ChangeCase,
 
-    /// <summary>A tick.</summary>
+    /// <summary>A check mark.</summary>
     Check,
 
-    /// <summary>A ticked square.</summary>
+    /// <summary>A checked square.</summary>
     CheckSquare,
 
     /// <summary>A downward chevron.</summary>
@@ -176,7 +177,7 @@ public enum Glyph
     /// <summary>A chip with its pins, for hardware.</summary>
     Chip,
 
-    /// <summary>A circle holding a tick.</summary>
+    /// <summary>A circle holding a check mark.</summary>
     CircleCheck,
 
     /// <summary>A circle holding a cross.</summary>
@@ -269,7 +270,7 @@ public enum Glyph
     /// <summary>A solid box showing the digits 0, 1 and a 2 rolling to 3, for a counter.</summary>
     CountBox,
 
-    /// <summary>A `CountBox` with a divider between each digit.</summary>
+    /// <summary>A <see cref="CountBox"/> with a divider between each digit.</summary>
     CountDividedBox,
 
     /// <summary>A payment card.</summary>
@@ -402,7 +403,7 @@ public enum Glyph
     /// <summary>A pennant on a pole.</summary>
     Flag,
 
-    /// <summary>A torch with light rays, for a flashlight.</summary>
+    /// <summary>A flashlight with light rays.</summary>
     Flashlight,
 
     /// <summary>A closed folder.</summary>
@@ -511,7 +512,7 @@ public enum Glyph
     /// <summary>A marker pen, for highlighted text.</summary>
     Highlight,
 
-    /// <summary>A clock with a counter-clockwise arrow, for recent items.</summary>
+    /// <summary>A clock with a counterclockwise arrow, for recent items.</summary>
     History,
 
     /// <summary>A house, for the home page.</summary>
@@ -887,7 +888,7 @@ public enum Glyph
     /// <summary>A magnifying glass, for searching.</summary>
     Search,
 
-    /// <summary>A shield with a tick, for security.</summary>
+    /// <summary>A shield with a check mark, for security.</summary>
     Security,
 
     /// <summary>A dashed selection frame, for selecting.</summary>
@@ -937,7 +938,7 @@ public enum Glyph
     /// <summary>A bell with a sleeping mark, for snoozing.</summary>
     Snooze,
 
-    /// <summary>A football.</summary>
+    /// <summary>A soccer ball.</summary>
     SoccerBall,
 
     /// <summary>Paired arrows, for sorting.</summary>
@@ -961,7 +962,7 @@ public enum Glyph
     /// <summary>A loudspeaker cabinet, for an audio device.</summary>
     Speaker,
 
-    /// <summary>A heavy tick, for checked spelling.</summary>
+    /// <summary>A heavy check mark, for checked spelling.</summary>
     SpellCheck,
 
     /// <summary>A frame divided in two, for splitting a view.</summary>
@@ -991,7 +992,7 @@ public enum Glyph
     /// <summary>Opposing horizontal arrows, for swapping or replacing.</summary>
     Swap,
 
-    /// <summary>Two arrows chasing counter-clockwise, for syncing.</summary>
+    /// <summary>Two arrows chasing counterclockwise, for syncing.</summary>
     Sync,
 
     /// <summary>A grid of cells under a header, for a table.</summary>
@@ -1000,7 +1001,7 @@ public enum Glyph
     /// <summary>A tablet.</summary>
     Tablet,
 
-    /// <summary>Lines beside ticks, for a task list.</summary>
+    /// <summary>Lines beside check marks, for a task list.</summary>
     [GlyphDirectionSensitive("rtl")]
     TaskList,
 
@@ -1041,13 +1042,13 @@ public enum Glyph
     /// <summary>A solid triangle pointing up.</summary>
     TriangleUp,
 
-    /// <summary>A delivery lorry.</summary>
+    /// <summary>A delivery truck.</summary>
     Truck,
 
     /// <summary>A letter U above a rule, for underlined text.</summary>
     Underline,
 
-    /// <summary>An anticlockwise arrow, for undoing.</summary>
+    /// <summary>A counterclockwise arrow, for undoing.</summary>
     [GlyphDirectionSensitive("rtl")]
     Undo,
 
@@ -1090,7 +1091,7 @@ public enum Glyph
     /// <summary>An arrow down onto a line, for minimizing a window.</summary>
     WindowMinimize,
 
-    /// <summary>A spanner, for configuration or repair.</summary>
+    /// <summary>A wrench, for configuration or repair.</summary>
     Wrench,
 
     /// <summary>The Aquarius sign.</summary>

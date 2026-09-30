@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// <summary>Registers the artwork this package ships.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers Forma's own glyphs and brand marks as the icon provider, unless a host has already registered its own.</summary>
+    /// <summary>Registers <see cref="GlyphIconProvider"/> as the icon provider.</summary>
     /// <param name="services">The collection to register into.</param>
-    /// <returns>The same collection, for chaining.</returns>
+    /// <returns>The same collection.</returns>
     public static IServiceCollection AddFormaGlyphServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

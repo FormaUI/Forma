@@ -17,7 +17,7 @@ public static class GlyphExtensions
     public static string? GetDirectionSensitivity(this Glyph glyph)
         => SensitiveDirections.GetValueOrDefault(glyph);
 
-    /// <summary>Whether the glyph's presentation adapts for a text direction, so it is drawn turned over when text runs that way: an arrow or a chevron pointing left or right, the curve of undo or reply, an arrow leaving a frame, the marks a list starts with.</summary>
+    /// <summary>Whether the glyph's presentation adapts for a text direction.</summary>
     /// <param name="glyph">The glyph.</param>
     /// <param name="direction">The text direction, as the HTML <c>dir</c> token.</param>
     public static bool IsDirectionSensitive(this Glyph glyph, string direction)

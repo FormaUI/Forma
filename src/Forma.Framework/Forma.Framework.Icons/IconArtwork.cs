@@ -5,7 +5,7 @@ using System.Text;
 /// <summary>The artwork used to draw an icon.</summary>
 public record IconArtwork
 {
-    /// <summary>Nothing to draw, for an icon the provider cannot depict.</summary>
+    /// <summary>Nothing to draw.</summary>
     public static IconArtwork None { get; } = new();
 
     /// <summary>Drawn as SVG geometry.</summary>

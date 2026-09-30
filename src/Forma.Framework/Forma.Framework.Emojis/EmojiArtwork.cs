@@ -8,7 +8,7 @@ public record EmojiArtwork
     /// <summary>Drawn by the platform's own emoji font.</summary>
     public static EmojiArtwork Unicode { get; } = new();
 
-    /// <summary>Drawn from a symbol in a sheet that must be loaded before it resolves.</summary>
+    /// <summary>Drawn from a symbol in a sprite sheet.</summary>
     /// <param name="symbol">The identifier of the symbol within the sheet.</param>
     /// <param name="sheet">The address of the sheet the symbol is loaded from.</param>
     public static EmojiArtwork Sprite(string symbol, string sheet)
