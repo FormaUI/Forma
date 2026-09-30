@@ -1,107 +1,72 @@
 # Forma.Framework.Composer
 
-The engine behind `FormaComposer`: the catalog that decides which plugins one composer has, the
-registry that routes a command to whichever layer claims it, the layout that turns contributions
-into toolbar rows, the undo stack, the region registry plugins push readouts onto, the text
-operations every editor would otherwise reinvent, and the registry converters are held in.
-
-The contracts all of this reads — the plugin interfaces, the document, the context and the
-interaction — are
-[`Forma.Framework.Composer.Extensibility`](../Forma.Framework.Composer.Extensibility/README.md).
-**That is the package to read to write a plugin**; this assembly is how the composer runs one.
-
-It ships inside `Forma.Blazor.Composer` rather than as a package of its own, because
-nothing outside the composer has reason to reach it. It references nothing from ASP.NET Core, so
-every piece of it is testable from a plain class library. How the component is consumed is in
-[`Forma.Blazor.Composer`](../../Forma.Blazor.Composer/README.md).
-
-## Namespaces
-
-| Namespace | What it holds |
-| --- | --- |
-| `Forma.Framework.Composer.Plugins` | `ComposerDefinition` with the builders that describe one, and `ComposerPluginCatalog`. |
-| `.Editing` | `ComposerCommandRegistry` with `ComposerCommandResult`, `ComposerToolbarLayout`, `ComposerHistory`, `ComposerRegionRegistry`, `ComposerKeyBindingSource`, and the `ComposerText` operations with `ComposerTextSpan` and `ComposerEdit`. |
-| `.Documents` | `DocumentConverterRegistry` and `HtmlSourceFormatter`. |
-| `.Syntax` | `NullSyntaxHighlighter`. |
+The engine `FormaComposer` runs its plugins with: the description of a composer's plugins and the
+builders that write it, the catalog that picks the editor and the plugins in play, the registry
+that routes a command to the layer that runs it, the toolbar layout, the undo history, the status
+items and gutter markers, text operations, and document conversion. It is plain .NET, and it ships
+inside the `FormaUI.NET-Blazor.Composer` package, whose
+[README](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Composer/README.md) covers
+installing and using the composer. The contracts these types read, the plugin interfaces, the
+document and the context, are
+[`Forma.Framework.Composer.Extensibility`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Composer.Extensibility/README.md).
 
 ## Describing a composer
 
-`ComposerDefinition.Create(configure)` describes a composer's plugins once, and `Activate(services)`
-builds them for one composer into a `PluginScope` it disposes. The description is a tree over the
-registry in [`Forma.Framework.Plugins`](../Forma.Framework.Plugins/README.md), written through three
-builders whose methods say the role: `ComposerPluginBuilder` at the root, where a plugin reaches
-every editor and every view; `ComposerEditorBuilder<TEditor>` under an editor, typed by that editor
-so each editor's package extends it with defaults of its own; and `ComposerViewBuilder` under a
-view.
+`ComposerDefinition.Create` describes a composer's plugins once, and `Activate` builds them for
+one composer into a `PluginScope` that disposes them. A host writes the same description through
+`AddFormaComposer`, or hands one composer its own through the `Plugins` parameter.
 
-## The catalog
+```csharp
+using Forma.Framework.Composer.Plugins;
 
-`ComposerPluginCatalog.CreateAsync(instances, fallbackEditor)` takes the plugins one composer
-built, each still naming what it was registered under. It keeps the first of each `Id` an owner
-registers that reports itself available, and takes the fallback editor when no editor remains —
-which is what guarantees a composer always has a surface. `ResolveEditor(requestedId, defaultId,
-format)` picks the editor to activate, preferring an explicit request, then a configured default,
-then the document's format.
+var definition = ComposerDefinition.Create(composer => composer
+    .AddEditorPlugin<RichTextEditorPlugin>(editor => editor
+        .AddFeaturePlugin<BasicFormattingPlugin>()
+        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRows = 12)
+        .AddViewPlugin<RichTextPreviewViewPlugin>())
+    .TryAddFeaturePlugin<MaximizePlugin>());
 
-The rest answers by surface. `GetViews(editor)` gives the views registered under an editor.
-`GetFeaturePlugins(editor, view)` gives the capabilities in play: the composer's, and the
-surface's own, where a showing view takes the editor's place and a surface's registration answers
-in place of the composer's for an identifier both carry. `GetSurfacePlugins(editor, view)` gives
-the surface followed by those, which is what commands and key bindings are drawn from.
+await using var plugins = definition.Activate(services);
+```
 
-## Commands
+| Builder | What it registers |
+| --- | --- |
+| `ComposerPluginBuilder` | The composer's editors with `AddEditorPlugin`, and with `AddFeaturePlugin` and `TryAddFeaturePlugin` the capabilities that reach every editor and view. |
+| `ComposerEditorBuilder<TEditor>` | The capabilities on one editor's surface, and its views with `AddViewPlugin`. |
+| `ComposerViewBuilder` | The capabilities on one view's bar. |
 
-`ComposerCommandRegistry` holds every command one composer can run and the layer that runs it.
-`RegisterEngineCommand(command, handler)` claims one for the engine; `RegisterPlugins(plugins)`
-claims every command the given plugins name through a toolbar item, a key binding or an input
-trigger, and every command matching one of their prefixes. `ExecuteAsync` resolves the engine's
-own commands **before** consulting any plugin and answers `ComposerCommandResult.Engine`,
-`.Plugin` or `.Unhandled`, so a plugin contributing an item for an engine command never runs code
-of its own for it.
+Each `AddFeaturePlugin` comes in three forms: by type, by type with the options record it
+declares, and through a factory. The registry beneath the builders is
+[`Forma.Framework.Plugins`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Plugins/README.md).
 
-`ComposerKeyBindingSource.Default` carries the engine's own shortcuts — Ctrl+Z for undo, and both
-Ctrl+Y and Ctrl+Shift+Z for redo — and is merged with every plugin's by the key binding catalog.
+## Running one composer
 
-## Toolbar layout
+```csharp
+using Forma.Framework.Composer.Editing;
 
-`ComposerToolbarLayout.Create(editor, plugins)` lays out the editor's own commands and those of
-the plugins it is handed, and `CreateForView(view, plugins)` does the same for a view's bar, where
-an item naming a row the view never declared is left out rather than falling back. Each answers
-`Rows`, a `ComposerToolbarRowLayout` per row, the shared built-in row first and each declared row
-after the one it defaults to. Groups sharing an identifier fold into the first of them, so several
-plugins fill one named cluster rather than repeating it. Given a way to localize, each takes a
-title and the plugin that declared it — or none, for the layout's own row names — and localizes
-every contribution before the groups fold, since a folded group no longer says whose item is whose.
+var catalog = await ComposerPluginCatalog.CreateAsync(plugins.Instances, new PlainTextEditorPlugin());
+var editor = catalog.ResolveEditor(activeEditorId, options.DefaultEditorId, document.Format);
 
-## History, regions and text
+var commands = new ComposerCommandRegistry();
+commands.RegisterEngineCommand(ComposerCommands.Undo, UndoAsync);
+commands.RegisterPlugins(catalog.GetSurfacePlugins(editor));
 
-`ComposerHistory` is the undo stack behind `IComposerHistory`, one per composer and shared by
-every editor it hosts, so switching editor is itself an undoable step.
+var result = await commands.ExecuteAsync(command, context, interaction);
+```
 
-`ComposerRegionRegistry` is the registry behind `IComposerRegionRegistry`. `CreateStatusItem` and
-`CreateGutterMarker` each answer a handle whose members stay mutable for as long as it is held and
-which is disposed to remove it; the registry raises `Changed` so the composer redraws. Every
-member is called from the composer's own dispatcher thread.
-
-`ComposerText` operates on a document's raw content: `GetWordAt`, `GetSelected` and `GetLines`
-answer `ComposerTextSpan`s, and `Replace` and `ReplaceAll` answer a `ComposerEdit` — the new
-content together with the selection to restore once it is applied. These are pure functions, so an
-editor never reimplements them against raw offsets.
-
-## Documents
-
-`DocumentConverterRegistry` holds the registered `IComposerDocumentConverter`s keyed by the pair of
-formats, a later converter replacing an earlier one for the same pair. `Convert(document,
-targetFormat)` answers the document's own content when the formats already match, and otherwise
-the converter's result — which may refuse, naming what the target format cannot represent.
-
-`HtmlSourceFormatter.Format(html)` lays markup out one block per line, indented by nesting, for
-reading rather than rendering; it is what the rich text editor's source view shows.
-
-`NullSyntaxHighlighter.Instance` classifies nothing and stands in wherever a host registered no
-highlighter, so a code surface renders unhighlighted rather than failing.
+| Type | What the composer uses it for |
+| --- | --- |
+| `ComposerPluginCatalog` | The plugins that report themselves available, the first of each `Id` under each owner, with the fallback editor when no editor is available. `ResolveEditor` picks the editor to activate: the requested one, then the default, then the first for the document's format. `GetViews`, `GetFeaturePlugins` and `GetSurfacePlugins` answer what is in play on one surface. |
+| `ComposerCommandRegistry` | Every command the composer can run. `ExecuteAsync` runs the engine's own commands first, then the plugin that named the command or its prefix, and answers `ComposerCommandResult.Engine`, `Plugin` or `Unhandled`. |
+| `ComposerKeyBindingSource` | `Default` carries the engine's shortcuts: Ctrl+Z for undo, Ctrl+Y and Ctrl+Shift+Z for redo. |
+| `ComposerToolbarLayout` | `Create` for an editor's toolbar and `CreateForView` for a view's bar lay contributions out as `Rows` of `ComposerToolbarRowLayout`, localized through the function they are given. `Coalesce` folds groups sharing an identifier into the first of them. |
+| `ComposerHistory` | The `IComposerHistory` undo and redo stack, holding at most the number of states it is created with. |
+| `ComposerRegionRegistry` | The `IComposerRegionRegistry` the status strip and the gutter draw from, raising `Changed` when an item or marker is created, changed or disposed. |
+| `ComposerText` | Operations on a document's raw content: `GetWordAt`, `GetSelected` and `GetLines` answer `ComposerTextSpan`s, and `Replace` and `ReplaceAll` answer a `ComposerEdit`, the new content with the selection to restore. |
+| `DocumentConverterRegistry` | The registered `IComposerDocumentConverter`s by the pair of formats: `Register`, `Find`, `CanConvert`, and `Convert`, which answers a `ComposerConversionResult`. |
+| `HtmlSourceFormatter` | `Format` lays HTML out one block per line, indented by nesting, for the rich text editor's source view. |
+| `NullSyntaxHighlighter` | `Instance` classifies no code, for a composer whose host registered no highlighter. |
 
 ## License
 
-Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE). The assembly ships inside
-`Forma.Blazor.Composer`.
+Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).
