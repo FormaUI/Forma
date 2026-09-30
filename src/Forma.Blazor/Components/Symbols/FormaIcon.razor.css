@@ -1,9 +1,7 @@
 /* ============================================================
    FormaIcon — CSS isolation
-   Sized in em, so an inline icon follows the text it sits in
-   and a sized one takes its token through font-size. Width
-   follows each glyph's own aspect ratio rather than being
-   forced square.
+   An icon sized in em to the surrounding text or to its size
+   token, as wide as each glyph's own aspect ratio.
    ============================================================ */
 
 .forma-icon {
@@ -15,8 +13,7 @@
     overflow: visible;
 }
 
-/* A character fills the same box as a drawing, set in the symbol font so every script and sign
-   comes from one face rather than the page font's fallback chain. */
+/* A character fills the same box as a drawing, set in the symbol font. */
 .forma-icon-character {
     display: inline-flex;
     align-items: center;
@@ -28,8 +25,7 @@
     font-variant-emoji: text;
 }
 
-/* A glyph whose form points along the reading direction is drawn for one direction and turned over when text
-   runs the direction it is sensitive to, so the one glyph reads as back, forward, undo or indent in both. */
+/* A direction-sensitive glyph turns over when text runs the direction it is sensitive to. */
 .forma-icon-logical-direction[data-direction="rtl"]:dir(rtl),
 .forma-icon-logical-direction[data-direction="ltr"]:dir(ltr) {
     scale: -1 1;

@@ -17,7 +17,7 @@ using Microsoft.JSInterop;
 
 /// <summary>A categorized emoji palette with search, recently used entries, and a tab per category.</summary>
 /// <param name="registeredCatalog">The host's registered catalog, or null to browse nothing.</param>
-/// <param name="emojiProvider">The registered provider: the host's own, or the reader's font when it registered none.</param>
+/// <param name="emojiProvider">The registered emoji provider.</param>
 public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmojiCatalog? registeredCatalog = null)
     : FormaElementBase
 {
@@ -31,9 +31,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     /// <summary>The identifier of the tab holding recently chosen emoji.</summary>
     public const string RecentGroupId = "recent";
 
-    // A host supplying a different IEmojiCatalog also supplies matching Groups, since browsing and
-    // data are two halves of one decision.
-    /// <summary>The nine standard categories, matching what a shipped catalog groups its entries under.</summary>
+    /// <summary>The nine standard emoji categories.</summary>
     public static IReadOnlyList<EmojiGroup> DefaultGroups { get; } =
     [
         new() { Id = "smileys", Title = "Smileys & Emotion" },
@@ -82,7 +80,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     /// <summary>How the picker browses: search, tabs, and the recents it keeps.</summary>
     [Parameter] public EmojiPickerOptions Options { get; set; } = EmojiPickerOptions.Default;
 
-    /// <summary>The categories the tab strip offers, defaulting to the nine standard ones.</summary>
+    /// <summary>The categories the tab strip offers.</summary>
     [Parameter] public IReadOnlyList<EmojiGroup> Groups { get; set; } = DefaultGroups;
 
     [Inject] private IEmojiSpriteLoader SpriteLoader { get; set; } = default!;
@@ -116,16 +114,15 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
             ? L["Search Results"]
             : Tabs.FirstOrDefault(tab => tab.Id == ActiveGroupId)?.Title ?? string.Empty;
 
-    // The sheets the visible emoji need, in the order they are rendered, so a prefix of this is what has loaded.
-    // An emoji whose artwork carries no sheet — native or an image — needs nothing awaited.
+    // The sheets the matching emoji draw from, in render order, so the loaded sheets form a prefix of it.
     private IReadOnlyList<string> RequiredSheets
         => _requiredSheets ??= [.. MatchingEmojis.Select(GetSheet).OfType<string>().Distinct(StringComparer.Ordinal)];
 
-    // Cells stop at the first sheet still missing, so nothing renders ahead of its own artwork.
+    // Cells stop at the first emoji whose sheet has not completed.
     private IReadOnlyList<EmojiInfo> RenderedEmojis
         => _renderedEmojis ??= [.. MatchingEmojis.TakeWhile(info => GetSheet(info) is not { } sheet || IsCompleted(sheet))];
 
-    /// <summary>Forgets the derived view, so the next read rebuilds it from the state that just changed.</summary>
+    /// <summary>Forgets the derived view, which the next read rebuilds.</summary>
     private void InvalidateView()
     {
         _tabs = null;
@@ -233,12 +230,11 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            // Artwork is decorative, so a sheet that will not load must not take the surface down with it.
             EmojiPickerLog.SheetLoadThrew(Context.Logger, ex, next, Context.RuntimeId);
         }
         finally
         {
-            // A sheet that failed still counts as completed: empty cells beat a spinner that never clears.
+            // A failed sheet counts as completed, so its cells render without artwork.
             if (arrived)
             {
                 _sheetLoadTracker.MarkLoaded(next);

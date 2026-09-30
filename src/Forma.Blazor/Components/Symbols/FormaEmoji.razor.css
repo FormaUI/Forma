@@ -1,9 +1,7 @@
 /* ============================================================
    FormaEmoji — CSS isolation
-   Sized in em so a caller that set font-size around it gets a
-   matching glyph, whether the artwork is a sprite, an image, or
-   the platform's own emoji font. The native-font case is plain
-   text, so it takes no box sizing of its own.
+   An emoji's sprite or image sized in em to the surrounding
+   text, and its native-font glyph as inline text.
    ============================================================ */
 
 svg.forma-emoji,

@@ -11,7 +11,7 @@ using Forma.Framework.Windows;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A chrome floated into the top layer, whose frame moves, resizes and maximizes the window. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
+/// <summary>A workspace window: a chrome floated into the top layer, whose frame moves, resizes and maximizes the window.</summary>
 public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 {
     private const string CloseCommand = "window.close";
@@ -39,19 +39,19 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     [CascadingParameter] private WindowManager? CascadedManager { get; set; }
     [CascadingParameter] private WindowOrigin? CascadedOrigin { get; set; }
 
-    /// <summary>The title shown in the title bar and read as the window's name.</summary>
+    /// <inheritdoc />
     [Parameter, EditorRequired] public string Title { get; set; } = default!;
 
-    /// <summary>The icon shown before the title.</summary>
+    /// <inheritdoc />
     [Parameter] public Icon? Icon { get; set; }
 
-    /// <summary>The application or feature instance the window belongs to; unset, it is the parent's, else the cascaded one, else the workspace's own.</summary>
+    /// <summary>The application or feature instance the window belongs to, where null takes the parent's, the cascaded one or the workspace's own.</summary>
     [Parameter] public WindowOrigin? Origin { get; set; }
 
-    /// <summary>The window that opened this one; it closes and minimizes with it.</summary>
+    /// <inheritdoc />
     [Parameter] public IWindow? Parent { get; set; }
 
-    /// <summary>Where the window stands and how large it is; unset, it opens centered at its default size.</summary>
+    /// <summary>Where the window stands and how large it is, where null opens it centered at its default size.</summary>
     [Parameter] public FramePlacement? Placement { get; set; }
 
     /// <summary>Raised when the reader moves or resizes the window, and once when it first opens without a placement.</summary>
@@ -63,7 +63,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     /// <summary>Raised when the reader maximizes or restores the window from its title bar.</summary>
     [Parameter] public EventCallback<bool> MaximizedChanged { get; set; }
 
-    /// <summary>Whether the window is held where it is: neither moved, resized nor maximized.</summary>
+    /// <summary>Whether the window is held at its placement, size and maximization.</summary>
     [Parameter] public bool Locked { get; set; }
 
     /// <summary>Raised when the reader locks or unlocks the window from its title bar.</summary>
@@ -99,19 +99,20 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     /// <summary>What the reader may do to the window's frame, how far, and where it is held.</summary>
     [Parameter] public FrameOptions FrameOptions { get; set; } = FrameOptions.Default;
 
-    /// <summary>Raised before the window closes, on its own or with a window above it; setting <see cref="WindowClosingEventArgs.Cancel"/> keeps every window of that close open.</summary>
+    /// <summary>Raised before the window closes, on its own or with a window above it.</summary>
+    /// <remarks>Setting <see cref="WindowClosingEventArgs.Cancel"/> keeps every window of that close open.</remarks>
     [Parameter] public EventCallback<WindowClosingEventArgs> OnClosing { get; set; }
 
-    /// <summary>Raised once the window closes, from its title bar, with Escape, with its parent, or through its workspace.</summary>
+    /// <summary>Raised once the window closes.</summary>
     [Parameter] public EventCallback OnClose { get; set; }
 
-    /// <summary>The band beneath the title bar, generally text.</summary>
+    /// <summary>The band beneath the title bar.</summary>
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>The window's content.</summary>
     [Parameter] public RenderFragment? Body { get; set; }
 
-    /// <summary>The band at the foot, generally actions or text.</summary>
+    /// <summary>The band at the foot of the window.</summary>
     [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>The workspace the window belongs to: the one cascaded to it, else the circuit's.</summary>
@@ -146,8 +147,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     private bool ShowsScrim
         => Modal && Parent is null;
 
-    // Escape closes the focused window and nothing else; a modal one bars everything beneath it; a press away reaches
-    // the window only when it is to send the window back.
+    // Escape closes the focused window alone; a modal one bars everything beneath it; a press away reaches the window only to send it back.
     private InputProfile Profile
         => new()
         {
@@ -240,7 +240,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     public ValueTask<WindowOperationResult> CloseAsync(IWindowSelector? selector = null)
         => Manager.CloseAsync(Manager.Within(this, selector));
 
-    /// <summary>Moves this window to the front of the stacking order without activating it.</summary>
+    /// <summary>Moves this window to the front of the stacking order, leaving the current window as it is.</summary>
     public ValueTask<WindowOperationResult> BringToFrontAsync()
         => Manager.BringToFrontAsync(Manager.Within(this));
 
@@ -297,7 +297,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: false);
             _isAttached = await _window.AttachAsync(RootElement, IsPresented, Modal, ShowsScrim ? _scrim : null);
 
-            // A window that opens is the one the reader is working in.
+            // A window that opens becomes the current one.
             if (_isAttached && !Active && !Disabled && IsPresented)
             {
                 await ActivateAsync();
@@ -445,8 +445,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         await LockedChanged.InvokeAsync(locked);
     }
 
-    // A press anywhere inside makes the window current, whether or not what was pressed can take focus; one already current comes forward from wherever it was sent.
-    // The press is observed rather than routed, so it stays whatever inside the window owns it.
+    // A press anywhere inside makes the window current, or brings the current one forward; the press is observed, and stays with what owns it.
     private async Task HandlePointerDownAsync()
     {
         if (IsInert)
@@ -486,7 +485,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     private WindowOrigin ResolveOrigin()
         => Origin ?? Parent?.Origin ?? CascadedOrigin ?? Manager.Origin;
 
-    // A change the workspace makes is reported through the callback with the refresh held off, since the workspace already knows.
+    // A change the workspace makes is reported through the callback with the refresh held off.
     private async Task RaiseAsync<TValue>(EventCallback<TValue> callback, TValue value)
     {
         _isApplying = true;
@@ -525,8 +524,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             .Add("is-maximized", Maximized)
             .Add("has-placement", Placement is not null);
 
-    // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
-    // as logical insets.
+    // The placement is in physical viewport coordinates, so it is written as left and top.
     /// <inheritdoc />
     protected override void BuildRootStyle(CssStyleBuilder builder)
     {

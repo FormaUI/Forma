@@ -27,10 +27,10 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     // where the heights the reach measured moved it.
     private const int ScrollAttempts = 3;
 
-    /// <summary>The items the owner holds. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
+    /// <summary>The items the list holds.</summary>
     [Parameter] public IReadOnlyList<TItem>? Items { get; set; }
 
-    /// <summary>The provider the items are read from, a slice at a time. Supply this or <see cref="Items"/>, not both.</summary>
+    /// <summary>The provider the items are read from, a slice at a time.</summary>
     [Parameter] public ItemsProviderDelegate<TItem>? ItemsProvider { get; set; }
 
     /// <summary>The stable key of an item.</summary>
@@ -330,7 +330,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     private static Drawn Spacer(string role, int before, double height)
         => new(DrawnKind.Spacer, before, default, height, role);
 
-    // The spacers and the items as siblings of one sequence, each keyed, which is what lets an item that stays drawn keep its element.
+    // The spacers and the items as keyed siblings of one sequence.
     private RenderFragment RenderList() => builder =>
     {
         foreach (var drawn in Draw())
@@ -367,7 +367,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         }
     };
 
-    // An item's place among the items the list draws, spacers left out, or null where it is not drawn.
+    // An item's place among the items the list draws, spacers left out.
     private int? GetOrdinal(int index)
     {
         var ordinal = 0;

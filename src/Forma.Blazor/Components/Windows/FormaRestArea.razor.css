@@ -43,7 +43,7 @@
     display: contents;
 }
 
-/* Reaches FormaToggleButton's element. A minimized window's handle wears the secondary tone; the window is out of sight, not out of reach. */
+/* Reaches FormaToggleButton's element: a minimized window's handle wears the secondary tone. */
 ::deep .forma-rest-area-handle.is-minimized {
     color: var(--text-secondary-color);
 }

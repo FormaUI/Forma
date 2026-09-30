@@ -7,7 +7,7 @@ using Forma.Framework.Windows;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>An area holding one persistent handle per window of the workspace, whatever the window's state; choosing a handle restores the window, brings it forward and makes it current.</summary>
+/// <summary>An area holding a handle for each window of the workspace, which restores the window, brings it forward and makes it current when chosen.</summary>
 public sealed partial class FormaRestArea : FormaElementBase
 {
     private WindowManager? _manager;
@@ -16,7 +16,7 @@ public sealed partial class FormaRestArea : FormaElementBase
 
     [CascadingParameter] private WindowManager? CascadedManager { get; set; }
 
-    /// <summary>The accessible name of the area; unset, it is "Windows".</summary>
+    /// <summary>The accessible name of the area.</summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>How the handles are arranged and clustered.</summary>
@@ -26,7 +26,7 @@ public sealed partial class FormaRestArea : FormaElementBase
     public WindowManager Manager
         => CascadedManager ?? InjectedManager;
 
-    // Handles keep the workspace's registration order, so they never shuffle as windows are activated.
+    // Handles keep the workspace's registration order.
     private IEnumerable<RestAreaGroup> Groups
         => Options.Grouping switch
         {

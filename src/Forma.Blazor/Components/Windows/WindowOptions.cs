@@ -15,7 +15,7 @@ public sealed record WindowOptions
     /// <summary>Whether the title bar offers a minimize command.</summary>
     public bool Minimizable { get; init; } = true;
 
-    /// <summary>Whether the title bar offers a lock command, which holds the window where it is: neither moved, resized nor maximized until unlocked.</summary>
+    /// <summary>Whether the title bar offers a lock command, which holds the window at its placement, size and maximization.</summary>
     public bool Lockable { get; init; }
 
     /// <summary>What the window does when the reader presses outside it.</summary>

@@ -7,7 +7,7 @@ using Forma.Framework.Emojis;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Renders an emoji as inline artwork, drawing it from a host's chosen provider.</summary>
-/// <param name="emojiProvider">The registered provider: the host's own, or the reader's font when it registered none.</param>
+/// <param name="emojiProvider">The registered emoji provider.</param>
 public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : FormaElementBase
 {
     private EmojiArtwork _artwork = default!;
@@ -17,10 +17,10 @@ public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : FormaElem
     /// <summary>The emoji to draw.</summary>
     [Parameter, EditorRequired] public Emoji Emoji { get; set; }
 
-    /// <summary>The accessible name announced for this emoji, or null when it carries none of its own.</summary>
+    /// <summary>The emoji's accessible name, where null hides the emoji from assistive technology.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>The provider supplying this emoji's artwork, taken from the surrounding subtree or the registered provider when unset.</summary>
+    /// <summary>The provider supplying this emoji's artwork, where null takes the surrounding subtree's provider or the registered one.</summary>
     [Parameter] public IEmojiProvider? Provider { get; set; }
 
     [Inject] private IEmojiSpriteLoader SpriteLoader { get; set; } = default!;
@@ -36,8 +36,7 @@ public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : FormaElem
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        // Nearest wins: this emoji's own provider, then the one a surrounding subtree draws from, then the
-        // registered provider.
+        // Nearest wins: this emoji's own provider, then the surrounding subtree's, then the registered one.
         var provider = Provider
             ?? CascadingProvider
             ?? emojiProvider;
@@ -53,8 +52,7 @@ public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : FormaElem
             return;
         }
 
-        // A sprite draws from a symbol adopted into the document, which the reference alone never fetches.
-        // The symbol resolves the reference already rendered above it, so nothing has to re-render here.
+        // The sheet's symbols are adopted into the document, where the rendered reference resolves them without a re-render.
         _requestedSheet = sprite.Sheet;
 
         if (!await SpriteLoader.LoadAsync(sprite.Sheet))

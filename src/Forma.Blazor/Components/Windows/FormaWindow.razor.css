@@ -5,10 +5,8 @@
    modal.
    ============================================================ */
 
-/* The window is a manual popover in the top layer, so no ancestor's margin, transform or stacking reaches its
-   box; the layer token stands in where the top layer is unavailable. Until it is placed it opens centered at a
-   default size; once placed, the inline left, top, width and height govern. The popover's own margin, border,
-   padding, colors and overflow are reset so the frame inside draws the window. */
+/* A manual popover in the top layer, with the layer token where the top layer is unavailable; the popover's own
+   margin, border, padding, colors and overflow are reset so the frame inside draws the window. */
 .forma-window {
     display: grid;
     position: fixed;
@@ -45,12 +43,12 @@
     block-size: auto;
 }
 
-/* A window that is not the workspace's current one wears its title in the secondary tone. */
+/* An inactive window wears its title in the secondary tone. */
 .forma-window:not(.is-active) ::deep .forma-chrome-title {
     color: var(--text-secondary-color);
 }
 
-/* A box over the page casts a deeper shadow than a card lying on the canvas. */
+/* A window casts the large shadow of a box over the page. */
 .forma-window ::deep .forma-frame-backdrop {
     box-shadow: var(--shadow-large);
 }

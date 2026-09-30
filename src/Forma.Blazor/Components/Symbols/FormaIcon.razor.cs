@@ -7,8 +7,8 @@ using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Renders an icon as inline SVG, or as a single character set by the font, so no icon font has to be loaded.</summary>
-/// <param name="iconProvider">The registered provider: the host's own, or the library's glyphs when it registered none.</param>
+/// <summary>Renders an icon as inline SVG or as a single character set by the font.</summary>
+/// <param name="iconProvider">The registered icon provider.</param>
 public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElementBase
 {
     /// <summary>One vector path as the markup writes it: its data, its stroke width or null for a filled path, and its opacity.</summary>
@@ -24,13 +24,12 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElement
     /// <summary>The size to draw at, which selects both the icon's box and the artwork drawn for that box.</summary>
     [Parameter] public IconSize Size { get; set; }
 
-    /// <summary>The provider supplying this icon's artwork, taken from the surrounding subtree or the registered provider when unset.</summary>
+    /// <summary>The provider supplying this icon's artwork, where null takes the surrounding subtree's provider or the registered one.</summary>
     [Parameter] public IIconProvider? Provider { get; set; }
 
     [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
 
-    // Only a glyph drawn as geometry turns: a character the browser mirrors itself where the script calls for it,
-    // and a brand mark never turns.
+    // Only a glyph drawn as geometry turns; the browser mirrors a character itself, and a brand mark never turns.
     private string? Direction
         => _artwork is IconVector and not BrandIconArtwork && Icon is GlyphIcon glyph ? glyph.Glyph.GetDirectionSensitivity() : null;
 
@@ -49,15 +48,13 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElement
     {
         ArgumentNullException.ThrowIfNull(Icon);
 
-        // Nearest wins: this icon's own provider, then the one a surrounding subtree draws from; the registered
-        // provider answers whatever those decline.
+        // Nearest wins: this icon's own provider, then the surrounding subtree's; the registered one answers what those decline.
         var provider = Provider ?? CascadingProvider;
 
         _artwork = provider is not null && provider.TryGetArtwork(Icon, Size, out var supplied)
             ? supplied
             : iconProvider.TryGetArtwork(Icon, Size, out var registered) ? registered : IconArtwork.None;
 
-        // The path attributes are written once here rather than formatted again on every render.
         _vectorPaths = _artwork is IconVector vector
             ? [.. vector.Paths.Select(path => new VectorPathView(path.Data, path.StrokeWidth > 0 ? GetWidth(path) : null, GetFade(path)))]
             : [];
