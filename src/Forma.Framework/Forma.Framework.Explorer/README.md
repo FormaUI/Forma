@@ -1,64 +1,80 @@
 # Forma.Framework.Explorer
 
-The state behind `FormaExplorer`'s parts: the options and item options that shape one explorer,
-the view and interaction contracts the parts drawing it read and ask, the item manager holding
-the actions, the pending confirmations and the drag state those parts share, the grouping of the
-listed items, and the preview.
+The options and state behind `FormaExplorer`: the records a host configures an explorer with, and
+the view and interaction contracts through which the explorer's parts, its toolbar, sidebar, address
+bar and content views, read its state and ask it for changes.
 
-The items the explorer lists, the provider that answers it, the requests it hands back, the
-ceilings it keeps and the bookkeeping every browsing surface repeats are
-[`Forma.Framework.Catalog`](../Forma.Framework.Catalog/README.md). **That is the
-package to read to write items or a provider**; this assembly is how the explorer draws them.
+The assembly ships inside the `FormaUI.NET-Blazor.Explorer` package, so a host installs that
+package and uses these types from it. The items, providers and requests an explorer works with are
+[`Forma.Framework.Catalog`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Catalog/README.md)'s,
+and the component's parameters and callbacks are documented in
+[`Forma.Blazor.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Explorer/README.md).
 
-It ships inside `Forma.Blazor.Explorer` rather than as a package of its own, because
-nothing outside the explorer has reason to reach it. It references nothing from ASP.NET Core, so
-every piece of it is testable from a plain class library. How the component itself is consumed —
-its parameters, its callbacks and the registrations it reads — is in
-[`Forma.Blazor.Explorer`](../../Forma.Blazor.Explorer/README.md).
+## Configuring an explorer
 
-## Namespaces
+A host hands `FormaExplorer` two init-only records:
 
-| Namespace | What it holds |
+| Type | Namespace | What it configures |
+| --- | --- | --- |
+| `ExplorerOptions` | `Forma.Framework.Explorer` | The presentation: the sidebar, the folder menus, resizing, dialog presentation, selection, infinite scrolling, the details columns and the search delay. `ExplorerOptions.Default` is the standard presentation. |
+| `ExplorerItemOptions` | `Forma.Framework.Explorer.Items` | The operations permitted on items and on folders, and upload. `ExplorerItemOptions.Default` permits every operation, and `ExplorerItemOptions.ReadOnly` permits browsing and selection. |
+
+The enums the component's parameters take live beside them: `ExplorerViewMode` and
+`ExplorerDetailsColumns` in `Forma.Framework.Explorer.Content`, and `ExplorerGroupField` and
+`ExplorerInfiniteScrollMode` in `Forma.Framework.Explorer.Content.Queries`.
+
+```csharp
+using Forma.Framework.Catalog;
+using Forma.Framework.Explorer;
+using Forma.Framework.Explorer.Content;
+using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items;
+
+var options = ExplorerOptions.Default with
+{
+    ShowSidebar = false,
+    InfiniteScroll = ExplorerInfiniteScrollMode.Automatic,
+    DetailsColumns = ExplorerDetailsColumns.Size | ExplorerDetailsColumns.Modified,
+};
+
+var itemOptions = ExplorerItemOptions.Default with
+{
+    AllowedCapabilities = CatalogItemCapabilities.Open | CatalogItemCapabilities.View | CatalogItemCapabilities.Rename,
+    AllowUpload = false,
+};
+```
+
+An item offers an operation when the item's own `Capabilities` support it and the item options
+permit it. `GetCapabilities(options)` and `Permits(options, capability)`, extension methods on
+`ICatalogItem` in `ExplorerItemExtensions`, answer that combination, with nothing permitted on a
+disabled item.
+
+## How the explorer's parts use it
+
+`FormaExplorer` implements `IExplorerView` and `IExplorerInteraction` and cascades both to its
+parts, and the sidebar cascades its own contracts to its folder nodes. Each part takes the narrower
+contract it needs as a cascading parameter:
+
+| Contract | What a part reads or asks |
 | --- | --- |
-| `Forma.Framework.Explorer` | `ExplorerOptions`, and `IExplorerView` and `IExplorerInteraction`, the whole of what the parts drawing an explorer read and ask. |
-| `.Items` | `ExplorerItemOptions`, the operations the explorer offers on the items it lists; the actions, drag state and pending confirmations shared by every region listing items; and what those regions read and ask. |
-| `.Content` | How the listed items are shown: the view mode, the details columns, the grouping bands and the preview, and what the content area reads and asks. |
-| `.Content.Queries` | The group and infinite-scroll choices, the paging record, and what the search reads and asks. |
-| `.Navigation` | What the address bar and the sidebar read and ask. |
-| `.Selection` | What the parts ask of the selection. |
-| `.Actions` | The confirmations awaiting the reader: a rename, a new folder, a deletion. |
+| `IExplorerConfigurationView` | The options in force, and whether the sidebar shows. |
+| `IExplorerLocationView`, `IExplorerLocationInteraction` | The current folder, the breadcrumbs, the folder tree and whether back, forward and up are open; moving between folders. |
+| `IExplorerContentView`, `IExplorerContentInteraction` | The items and groups shown, the view mode, sort, grouping, details columns and paging; changing them and refreshing. |
+| `IExplorerSearchView`, `IExplorerSearchInteraction` | The search text and placeholder; changing the search text. |
+| `IExplorerSelectionInteraction` | Toggling an item, toggling selection mode and clearing; parts read the selection as an `ICatalogSelectionView`. |
+| `IExplorerItemView`, `IExplorerItemInteraction` | The item actions, item options and pending confirmation; activating, dragging, renaming, deleting and confirming. |
+| `IExplorerSidebarView`, `IExplorerSidebarInteraction` | The folders under a parent, which are expanded and which is current; expanding, choosing, creating, renaming, deleting and dragging folders. |
 
-## What a caller constructs
-
-`ExplorerOptions` and `ExplorerItemOptions` are init-only records the host hands the component,
-each with a preset: `ExplorerOptions.Default`, `ExplorerItemOptions.Default` and
-`ExplorerItemOptions.ReadOnly`. Their members are tabled in the component's README.
-`ExplorerItemOptions` is what an item's own `Capabilities` are intersected with:
-`GetCapabilities(options)` and `Permits(options, capability)`, extension methods in
-`ExplorerItemExtensions`, answer the combination, and answer nothing while the item is disabled.
-
-## What the explorer's parts read
-
-`IExplorerView` is everything the parts drawing an explorer read, composed of
-`IExplorerConfigurationView`, `IExplorerLocationView`, `IExplorerContentView` and
-`IExplorerSearchView`, with the `Selection` as an `ICatalogSelectionView` and the `Item` state as
-an `IExplorerItemView`. `IExplorerInteraction` is everything they ask, composed of
-`IExplorerContentInteraction`, `IExplorerLocationInteraction`, `IExplorerSelectionInteraction` and
-`IExplorerSearchInteraction`. The sidebar's nodes read `IExplorerSidebarView` and
-`IExplorerSidebarInteraction`, and the regions listing items read `IExplorerItemView` and
-`IExplorerItemInteraction`.
-
-The state behind those contracts that is the explorer's own:
+The state behind those contracts is held in:
 
 | Type | What it is |
 | --- | --- |
-| `ExplorerGrouping`, `ExplorerItemGroup` | The listed items gathered into the groups a field bands them by, each group a run of items sharing an `ExplorerGroupBand`. |
-| `ExplorerItemManager` | The actions, pending confirmations and drag state shared by every region listing items. |
-| `ExplorerItemAction` | One operation offered on every item: its icon and label, the capabilities it requires, and what it runs. |
-| `ExplorerPendingAction` | A confirmation awaiting the reader: `ExplorerRenameAction<T>` and `ExplorerCreateFolderAction` collect a name, and `ExplorerBatchAction<T>` holds the items to delete. |
-| `ExplorerPreview` | The resource shown full-size, and the siblings a viewer can step through. |
+| `ExplorerItemManager` | The item actions, pending confirmations and drag state shared by every region that lists items. |
+| `ExplorerItemAction` | One operation offered on an item: its icon, label, required capabilities and what it runs. |
+| `ExplorerPendingAction` | A confirmation awaiting the reader: `ExplorerRenameAction<T>`, `ExplorerCreateFolderAction` or `ExplorerBatchAction<T>`. |
+| `ExplorerGrouping`, `ExplorerItemGroup` | The shown items gathered into groups by an `ExplorerGroupField`, each group the items sharing an `ExplorerGroupBand`, such as names from A to H or sizes up to 1 MB. |
+| `ExplorerPreview` | The resource shown full-size, and the siblings a viewer steps through. |
 
 ## License
 
-Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE). The assembly ships inside
-`Forma.Blazor.Explorer`.
+Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

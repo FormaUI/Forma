@@ -1,15 +1,9 @@
 # Forma.Framework.Catalog
 
-The items a browsing surface lists: what an item and a folder are, the provider that answers a
-surface one slice of them at a time, the requests a surface hands back to its host, the ceilings
-a host's collection keeps, and the bookkeeping every such surface repeats — the view over a held
-collection, the items fetched from a provider, the folder tree, the history and the selection. A host
-writes its own items and its own provider on these contracts once, and every surface that
-browses them reads the same ones.
-
-`FormaExplorer` is the surface that speaks it today. A surface of its own — a gallery, a file
-manager, a picker — builds on this package and on nothing of the explorer's, so two surfaces
-share the model without either depending on the other.
+The model of a browsable collection of items and folders: the item and folder contracts, the
+provider that answers one slice of them at a time, the requests a surface hands back when the reader
+renames, deletes or moves something, and the ceilings a collection keeps. A host writes its items and
+its provider against these contracts once, and every surface that browses a catalog lists them.
 
 ## Install
 
@@ -17,86 +11,40 @@ share the model without either depending on the other.
 dotnet add package FormaUI.NET-Framework.Catalog
 ```
 
-A host of `Forma.Blazor.Explorer` already has it, restored beside the component. Install
-it directly in the project that implements items or a provider, which needs no component behind
-it. The package references nothing from ASP.NET Core, so an item or a provider is written in a
-plain class library, and it registers nothing.
+The package builds on `Forma.Framework.Resources` alone, so items and providers can live in a plain
+class library. Its types are used directly, without registration.
 
-## Namespaces
+## Items
 
-| Namespace | What it holds |
+`ICatalogItem` is one item, and `ICatalogFolderItem` is a folder, adding `ParentKey` and `Count`.
+
+| Member | What it is |
 | --- | --- |
-| `Forma.Framework.Catalog` | The item model: `ICatalogItem` and `ICatalogFolderItem`, the ready `CatalogItem` and `CatalogFolderItem`, the capabilities and visibility of an item, and `CatalogConstraints`, the ceilings a collection keeps. |
-| `.Queries` | `ICatalogProvider` and the query and page it exchanges, the sort field and direction, the resource filter, the view over a held collection and the items fetched from a provider. |
-| `.Requests` | The records every change a reader asks for comes back to the host as, and the rejection a ceiling reports. |
-| `.Navigation` | The folder tree indexed by key and by parent, and the history of folders visited. |
-| `.Selection` | The selected items, one kind at a time, and what a surface's parts read of them. |
+| `Key` | The stable identifier, unique among the items and the same each time the item is rebuilt. |
+| `Name` | The displayed name. |
+| `Capabilities` | The operations the item supports, as `CatalogItemCapabilities` flags: `Open`, `View`, `Drag`, `Drop`, `Move`, `Rename`, `Delete`, `Create` and more. |
+| `Visibility` | `Visible`, `Hidden` (left out of the listing and its counts), or `Invisible` (keeps its place, undrawn). |
+| `IsDisabled` | Whether the item is listed with its operations unavailable. |
+| `CreatedAt`, `ModifiedAt` | When the item was created and last changed. |
+| `ThumbnailSource` | The address of the item's thumbnail. |
+| `Resource` | The `ResourceInfo` the item wraps, which a thumbnail, a preview and the kind and size read. |
+| `ParentKey` | On a folder, the key of the folder it sits inside; null is the top level. |
+| `Count` | On a folder, how many items it holds. |
 
-## What a caller implements
-
-### Items
-
-`ICatalogItem` is one item a surface lists. `ICatalogFolderItem` adds `ParentKey` and `Count`,
-and narrows `Resource` to a `FolderResourceInfo`; a folder is a folder by implementing it, and
-needs no resource behind it. The rules an implementation keeps:
-
-- `Key` is unique among the items and unchanged when the item is reconstructed while refreshing,
-  filtering, sorting or paging; the selection and the folder tree identify an item by it.
-- `Capabilities` says what the item supports. What a surface permits is its own configuration,
-  and an operation is offered only where both agree.
-- `Resource` is what a thumbnail, a preview, the kind and size and the byte ceilings read, so an
-  item with a resource is shown as the kind its `ResourceInfo` says it is.
-
-`CatalogItem` and `CatalogFolderItem` implement both over init-only members, and
-`CatalogItem.For`, `ForAll` and `ForFolder` build them from resources with the capabilities each
-kind supports.
-
-### The provider
-
-`ICatalogProvider.GetItemsAsync(CatalogQuery, CancellationToken)` answers one slice.
-`CatalogQuery` carries the state a surface owns — `Skip`, `Take`, `Search`, `SortBy` and
-`Direction` — and `CatalogPage` carries the `Items` of the slice and a `TotalCount`.
-Whatever the query does not carry belongs to the implementation:
-
-- The folder being browsed is the host's; the query never names it.
-- The kinds accepted are applied by the provider itself. `CatalogResourceFilter.Parse(pattern)`
-  reads an accepted-kinds pattern, `globs:*.jpg;*.pdf` or `contentType:image;video`, and
-  `Accepts(resource)` answers for one resource.
-- `TotalCount` counts every item that matches, hidden ones included, or is null when the store
-  cannot say without counting; a slice shorter than `Take` ends the collection.
-- `CatalogPage.Empty` is a slice of nothing with a total of zero.
-
-## What a caller constructs
-
-`CatalogConstraints` is an init-only record of the ceilings a host's collection keeps — the
-resource kinds accepted, the most top-level folders, subfolders, nesting depth, items per folder,
-items and bytes — with `CatalogConstraints.None` keeping none. Each ceiling pairs with an
-`CatalogRejectionReason`, and a refusal comes back as an `CatalogRejection` of the `Reason`, the
-`Allowed` ceiling where the reason is a count, and a `Message` written in the reader's language.
-
-## What a surface reports
-
-Every change a reader asks for is a record in `Forma.Framework.Catalog.Requests` carrying
-the host's own items: `CatalogRenameRequest`, `CatalogDeleteRequest`, `CatalogDropRequest`,
-`CatalogFolderCreateRequest`, `CatalogFolderRenameRequest`, `CatalogFolderDeleteRequest` and
-`CatalogFolderDropRequest`. Which callback of a surface raises which is tabled in that surface's
-README.
-
-## What a surface keeps
-
-| Type | What it is |
-| --- | --- |
-| `CatalogCollectionView` | The view over a held collection: filtered by kind, searched by name, sorted, and cut to the visible page. |
-| `CatalogProviderItems` | The items fetched from a provider, one slice replacing the last or slices appended while infinite scrolling, with the fetch itself in flight; a superseded fetch is abandoned rather than raced. |
-| `CatalogFolderTree` | The folder items indexed by key and by parent. |
-| `CatalogHistory` | The trail of folders visited, with a cursor moving back and forward along it. |
-| `CatalogSelection` | The selected items, one kind at a time, capped by a limit; `ICatalogSelectionView` is what a surface's parts read of it. |
-
-## Example
-
-A host's own catalog entry as an item, with what it supports decided by the entry:
+`CatalogItem` and `CatalogFolderItem` implement both with init-only members. `CatalogItem.For`,
+`ForAll` and `ForFolder` build them from resources, with the capabilities each kind supports:
 
 ```csharp
+using Forma.Framework.Catalog;
+
+IReadOnlyList<ICatalogItem> folders = CatalogItem.ForAll(await store.GetFoldersAsync());
+IReadOnlyList<ICatalogItem> files = CatalogItem.ForAll(await store.GetFilesAsync(folderKey));
+```
+
+A host's own entity can implement `ICatalogItem` itself, deciding what each entry supports:
+
+```csharp
+using Forma.Framework.Catalog;
 using Forma.Framework.Resources;
 
 public sealed class PhotoItem(Photo photo) : ICatalogItem
@@ -107,11 +55,8 @@ public sealed class PhotoItem(Photo photo) : ICatalogItem
 
     public CatalogItemCapabilities Capabilities => photo.IsLocked
         ? CatalogItemCapabilities.View
-        : CatalogItemCapabilities.View
-            | CatalogItemCapabilities.Drag
-            | CatalogItemCapabilities.Move
-            | CatalogItemCapabilities.Rename
-            | CatalogItemCapabilities.Delete;
+        : CatalogItemCapabilities.View | CatalogItemCapabilities.Drag | CatalogItemCapabilities.Move
+            | CatalogItemCapabilities.Rename | CatalogItemCapabilities.Delete;
 
     public CatalogItemVisibility Visibility => CatalogItemVisibility.Visible;
 
@@ -133,23 +78,73 @@ public sealed class PhotoItem(Photo photo) : ICatalogItem
 }
 ```
 
-A provider answering slices of those items from a catalog that lists without counting, so the
-total is null and a surface keeps asking while slices come back full:
+## Providers
+
+A collection too large to hold in memory is answered one slice at a time by an `ICatalogProvider`.
+`GetItemsAsync` receives a `CatalogQuery` of `Skip`, `Take`, `Search`, `SortBy` and `Direction`,
+and returns a `CatalogPage` of the slice's `Items` and a `TotalCount`. The folder being browsed and
+the kinds accepted are the provider's own to apply. A null `TotalCount` suits a store that cannot
+count cheaply, and a slice shorter than `Take` then ends the collection.
 
 ```csharp
+using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Queries;
 
-public sealed class PhotoItemsProvider(IPhotoCatalog catalog, Func<string?> currentFolderKey) : ICatalogProvider
+public sealed class PhotoItemsProvider(IPhotoStore store, Func<string?> currentFolderKey) : ICatalogProvider
 {
     public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
-        var photos = await catalog.ListAsync(
+        var photos = await store.ListAsync(
             currentFolderKey(), query.Search, query.SortBy, query.Direction, query.Skip, query.Take, cancellationToken);
 
         return new CatalogPage([.. photos.Select(photo => new PhotoItem(photo))], TotalCount: null);
     }
 }
 ```
+
+`CatalogResourceFilter.Parse` reads an accepted-kinds pattern, `globs:*.jpg;*.pdf` or
+`contentType:image;video`, and its `Accepts` answers for one resource.
+
+## Requests and constraints
+
+Each change the reader asks a surface for comes back to the host as a record in
+`Forma.Framework.Catalog.Requests`, carrying the host's own items for the host to carry out:
+
+| Request | Carries |
+| --- | --- |
+| `CatalogRenameRequest` | `Item`, `NewName` |
+| `CatalogDeleteRequest` | `Items` |
+| `CatalogDropRequest` | `Items`, `TargetFolder` (null is the top level) |
+| `CatalogFolderCreateRequest` | `ParentFolder`, `Name` |
+| `CatalogFolderRenameRequest` | `Folder`, `NewName` |
+| `CatalogFolderDeleteRequest` | `Folder` |
+| `CatalogFolderDropRequest` | `SourceFolder`, `TargetFolder` |
+
+`CatalogConstraints` holds the ceilings a collection keeps, each unlimited at zero:
+`AcceptedResourceKinds`, `MaxFolderDepth`, `MaxFolderRootCount`, `MaxSubfolderCount`,
+`MaxFolderItemCount`, `MaxItemCount` and `MaxTotalBytes`. A surface reports a refusal as a
+`CatalogRejection` of its `Reason`, the `Allowed` ceiling and a localized `Message`.
+
+```csharp
+var constraints = new CatalogConstraints
+{
+    AcceptedResourceKinds = "contentType:image;video",
+    MaxFolderDepth = 3,
+    MaxTotalBytes = 500L * 1024 * 1024,
+};
+```
+
+## Building a surface
+
+A component that browses a catalog keeps its state in the types this package provides:
+
+| Type | What it is |
+| --- | --- |
+| `CatalogCollectionView` | A held collection filtered by kind, searched by name, sorted and cut to the visible page. |
+| `CatalogProviderItems` | The items fetched from a provider, one slice replacing the last or slices appended, with the fetch in flight. |
+| `CatalogFolderTree` | The folder items indexed by key and by parent. |
+| `CatalogHistory` | The folders visited, with a cursor moving back and forward. |
+| `CatalogSelection` | The selected items, folders or other items one kind at a time, capped by a limit; `ICatalogSelectionView` is its read-only view. |
 
 ## License
 
