@@ -3,11 +3,7 @@ namespace Forma.Framework.Feedback;
 using System.Collections;
 using System.Collections.Concurrent;
 
-/// <summary>
-/// In-memory <see cref="IStatusBadgeCatalog"/> holding the statuses an application defines.
-/// Supports collection expressions:
-/// <c>StatusBadgeCatalog c = [new("draft", CssColor.FromHex(0xeeeeee), CssColor.FromHex(0x333333))];</c>
-/// </summary>
+/// <summary>The in-memory <see cref="IStatusBadgeCatalog"/> holding the statuses an application defines.</summary>
 public sealed class StatusBadgeCatalog : IStatusBadgeCatalog
 {
     private readonly ConcurrentDictionary<string, StatusBadgeStyle> _statuses =
@@ -27,25 +23,25 @@ public sealed class StatusBadgeCatalog : IStatusBadgeCatalog
         }
     }
 
-    /// <summary>Every registered status badge.</summary>
+    /// <inheritdoc />
     public IReadOnlyCollection<StatusBadgeStyle> Statuses
         => [.. _statuses.Values];
 
-    /// <summary>Registers a status badge, replacing any entry with the same name.</summary>
+    /// <inheritdoc />
     public void Add(StatusBadgeStyle status)
     {
         ArgumentNullException.ThrowIfNull(status);
         _statuses[status.Name] = status;
     }
 
-    /// <summary>Returns the badge registered under a name, or null when the name is unknown.</summary>
+    /// <inheritdoc />
     public StatusBadgeStyle? Find(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         return _statuses.TryGetValue(name, out var style) ? style : null;
     }
 
-    /// <summary>Returns an enumerator over every registered status badge.</summary>
+    /// <inheritdoc />
     public IEnumerator<StatusBadgeStyle> GetEnumerator()
         => _statuses.Values.GetEnumerator();
 

@@ -14,7 +14,7 @@ public abstract class WebhookShare(string id, string title, Icon icon, Uri webho
 {
     private readonly Uri _webhookAddress = webhookAddress ?? throw new ArgumentNullException(nameof(webhookAddress));
 
-    /// <summary>An item is postable when the target can make a payload of it.</summary>
+    /// <inheritdoc />
     public override bool Supports(ShareItem item)
         => GetPayload(item) is not null;
 
@@ -32,6 +32,6 @@ public abstract class WebhookShare(string id, string title, Icon icon, Uri webho
         return true;
     }
 
-    /// <summary>The payload posted for the item, or null when the item has nothing the target can post.</summary>
+    /// <summary>The payload posted for the item, where null means the target has nothing to post for it.</summary>
     protected abstract object? GetPayload(ShareItem item);
 }

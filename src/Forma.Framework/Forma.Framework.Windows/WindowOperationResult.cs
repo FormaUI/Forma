@@ -1,6 +1,8 @@
 namespace Forma.Framework.Windows;
 
-/// <summary>The outcome of a window operation and the windows it concerned: those changed when applied, those that declined when declined, and none otherwise.</summary>
+/// <summary>The outcome of a window operation and the windows it concerned.</summary>
+/// <param name="Outcome">How the operation ended.</param>
+/// <param name="Windows">The windows the operation changed, or those that declined it.</param>
 public sealed record WindowOperationResult(WindowOperationOutcome Outcome, IReadOnlyList<IWindow> Windows)
 {
     /// <summary>The result of an operation whose selector matched nothing.</summary>

@@ -6,9 +6,9 @@ public interface IStatusBadgeCatalog : IEnumerable<StatusBadgeStyle>
     /// <summary>Every registered status badge.</summary>
     IReadOnlyCollection<StatusBadgeStyle> Statuses { get; }
 
-    /// <summary>Registers a status badge, replacing any entry with the same name.</summary>
+    /// <summary>Registers a status badge under its name.</summary>
     void Add(StatusBadgeStyle status);
 
-    /// <summary>Returns the badge registered under a name, or null when the name is unknown.</summary>
+    /// <summary>Returns the badge registered under a name.</summary>
     StatusBadgeStyle? Find(string name);
 }

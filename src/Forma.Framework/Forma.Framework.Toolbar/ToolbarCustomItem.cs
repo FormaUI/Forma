@@ -6,6 +6,6 @@ public sealed record ToolbarCustomItem : ToolbarItem
     /// <summary>The component type rendered in place of a standard toolbar control.</summary>
     public required Type Component { get; init; }
 
-    /// <summary>Parameters passed to the component, or null when it takes none.</summary>
+    /// <summary>The parameters passed to the component.</summary>
     public IReadOnlyDictionary<string, object>? Parameters { get; init; }
 }

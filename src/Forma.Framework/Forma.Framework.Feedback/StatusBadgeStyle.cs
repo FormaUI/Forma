@@ -22,7 +22,7 @@ public sealed record StatusBadgeStyle
     /// <summary>Text color of the badge.</summary>
     public CssColor Foreground { get; }
 
-    /// <summary>Icon shown before the text, so the status reads without color.</summary>
+    /// <summary>The marker icon shown before the badge's text.</summary>
     public Icon? Marker { get; init; }
 
     /// <summary>Name the badge is referenced by.</summary>

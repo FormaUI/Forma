@@ -1,6 +1,6 @@
 namespace Forma.Framework.Windows;
 
-/// <summary>One workspace of windows: its registry, its parent tree, its stacking order, and its activation history, with every query and operation expressed through a <see cref="IWindowSelector"/>.</summary>
+/// <summary>One workspace of windows: its registry, its parent tree, its stacking order, and its activation history.</summary>
 public sealed class WindowManager
 {
     private readonly List<IManagedWindow> _stackedWindows = [];
@@ -13,24 +13,25 @@ public sealed class WindowManager
     private readonly Dictionary<string, int> _lastInstanceNumbers = [with(StringComparer.Ordinal)];
     private readonly SemaphoreSlim _gate = new(1, 1);
 
-    /// <summary>The origin a window without one of its own resolves to.</summary>
+    /// <summary>The default origin of the workspace's windows.</summary>
     public WindowOrigin Origin { get; } = WindowOrigin.NewInstance("workspace", "Workspace");
 
     /// <summary>Every registered window, from the back of the stacking order to the front.</summary>
     public IReadOnlyList<IWindow> StackedWindows
         => _stackedWindows;
 
-    /// <summary>Every registered window, in the order it registered; the order a handle for each keeps while the stacking order changes.</summary>
+    /// <summary>Every registered window, in the order it registered.</summary>
     public IReadOnlyList<IWindow> Windows
         => _windows;
 
-    /// <summary>The active window, if any.</summary>
+    /// <summary>The active window.</summary>
     public IWindow? Current { get; private set; }
 
     /// <summary>Raised after anything a handle or a query reads has changed.</summary>
     public event EventHandler? Changed;
 
-    /// <summary>Registers a window at the front of the stacking order, under the parent it declares; a window under a minimized ancestor starts hidden.</summary>
+    /// <summary>Registers a window at the front of the stacking order, under the parent it declares.</summary>
+    /// <remarks>A window under a minimized ancestor starts hidden, and a current window that a registering modal takes out of reach gives way to an eligible one.</remarks>
     /// <exception cref="ArgumentException">The window is already registered, or its parent is not registered here.</exception>
     /// <exception cref="InvalidOperationException">The parent is being asked whether it may close.</exception>
     public async ValueTask RegisterAsync(IManagedWindow window)
@@ -57,7 +58,6 @@ public sealed class WindowManager
 
         await ApplyBlockingAsync().ConfigureAwait(false);
 
-        // A modal registering over the current window takes it out of reach; something eligible takes its place.
         if (Current is IManagedWindow currentWindow && !IsEligible(currentWindow))
         {
             await FallBackAsync(currentWindow, _parents.GetValueOrDefault(currentWindow.RuntimeId)).ConfigureAwait(false);
@@ -66,7 +66,8 @@ public sealed class WindowManager
         OnChanged();
     }
 
-    /// <summary>Removes a window the host has disposed, closing its descendants first without asking them.</summary>
+    /// <summary>Removes a window the host has disposed, with its descendants.</summary>
+    /// <remarks>The descendants close first, unconditionally.</remarks>
     public async ValueTask UnregisterAsync(IManagedWindow window)
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -110,7 +111,8 @@ public sealed class WindowManager
         }
     }
 
-    /// <summary>Takes in a change to what a window shows or declares: a new origin instance is numbered, its parent is validated and re-linked, its descendants' hiding follows, a modal moves in front of what it blocks, and a current window that is no longer eligible gives way.</summary>
+    /// <summary>Takes in a change to what a window shows or declares.</summary>
+    /// <remarks>A new origin instance is numbered, the parent is validated and re-linked, the descendants' hiding follows, a modal moves in front of what it blocks, and a current window that is no longer eligible gives way.</remarks>
     /// <exception cref="ArgumentException">The window or its parent is not registered here, or the parent is the window itself or one of its descendants.</exception>
     /// <exception cref="InvalidOperationException">The window or its parent is being asked whether it may close.</exception>
     public async ValueTask RefreshAsync(IWindow window)
@@ -150,7 +152,8 @@ public sealed class WindowManager
         }
     }
 
-    /// <summary>Scopes a selector to a window: none selects the window itself, criteria without a parent reach its descendants, and a parent given must be the window or one of its descendants.</summary>
+    /// <summary>Scopes a selector to a window.</summary>
+    /// <remarks>No selector selects the window itself, <see cref="WindowSelector.All"/> and criteria without a parent reach every descendant of the window, and criteria with a parent keep it, which must be the window or one of its descendants.</remarks>
     /// <exception cref="ArgumentException">The window is not registered here, the selector's parent lies outside the window's subtree, or the selector is a standing selection of the workspace other than <see cref="WindowSelector.All"/>.</exception>
     public IWindowSelector Within(IWindow window, IWindowSelector? selector = null)
     {
@@ -198,7 +201,8 @@ public sealed class WindowManager
         return window is not null;
     }
 
-    /// <summary>Finds every window the selector describes, back to front, reporting whether there was any; an empty selector matches every window.</summary>
+    /// <summary>Finds every window the selector describes, back to front, reporting whether there was any.</summary>
+    /// <remarks>A selector without criteria matches every window.</remarks>
     public bool TryFindWindows(IWindowSelector selector, out IReadOnlyList<IWindow> windows)
     {
         windows = Resolve(selector, forOperation: false);
@@ -218,7 +222,8 @@ public sealed class WindowManager
         return _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.RuntimeId)?.RuntimeId == parent.RuntimeId).ToList();
     }
 
-    /// <summary>The number of a window's instance among the instances of its origin this workspace has seen, from 1, in the order they first registered; an instance keeps its number for the workspace's lifetime, and a number is reissued only past the limit and to no instance still open.</summary>
+    /// <summary>The number of a window's instance among the instances of its origin this workspace has seen, from 1.</summary>
+    /// <remarks>Instances are numbered in the order they first registered and keep their number for the workspace's lifetime; past <see cref="int.MaxValue"/> the numbering wraps to 1, skipping every number an open instance of the origin holds.</remarks>
     public int GetInstanceNumber(IWindow window)
         => _instanceNumbers[GetRegisteredWindow(window, nameof(window)).Origin.InstanceId];
 
@@ -238,7 +243,8 @@ public sealed class WindowManager
         return !registeredWindow.IsDisabled && IsVisible(registeredWindow) && GetBlocker(registeredWindow) is null;
     }
 
-    /// <summary>Makes exactly one window the current one, restoring the ancestors and the window itself from minimization, and redirecting to the modal that controls it when one does.</summary>
+    /// <summary>Makes the one selected window the current one.</summary>
+    /// <remarks>The window and its minimized ancestors are restored, and a visible modal that controls or blocks the window becomes current in its place.</remarks>
     public async ValueTask<WindowOperationResult> ActivateAsync(IWindowSelector selector)
     {
         await _gate.WaitAsync().ConfigureAwait(false);
@@ -281,11 +287,12 @@ public sealed class WindowManager
     public ValueTask<WindowOperationResult> BringToFrontAsync(IWindowSelector selector)
         => RestackAsync(selector, toFront: true);
 
-    /// <summary>Moves the selected windows to the back, keeping their order among themselves; a visible modal never goes behind what it blocks.</summary>
+    /// <summary>Moves the selected windows to the back, keeping their order among themselves.</summary>
+    /// <remarks>A visible modal stays in front of the windows it blocks.</remarks>
     public ValueTask<WindowOperationResult> SendToBackAsync(IWindowSelector selector)
         => RestackAsync(selector, toFront: false);
 
-    /// <summary>Minimizes the selected windows that are not already minimized, hiding their descendants.</summary>
+    /// <summary>Minimizes the selected windows, hiding their descendants.</summary>
     public async ValueTask<WindowOperationResult> MinimizeAsync(IWindowSelector selector)
     {
         await _gate.WaitAsync().ConfigureAwait(false);
@@ -330,7 +337,8 @@ public sealed class WindowManager
         }
     }
 
-    /// <summary>Restores the selected minimized windows; a descendant minimized on its own stays minimized. A lone restored window becomes current.</summary>
+    /// <summary>Restores the selected minimized windows.</summary>
+    /// <remarks>A descendant minimized on its own stays minimized, and a lone restored window that is eligible becomes current, or the visible modal that controls it does.</remarks>
     public async ValueTask<WindowOperationResult> RestoreAsync(IWindowSelector selector)
     {
         await _gate.WaitAsync().ConfigureAwait(false);
@@ -373,7 +381,8 @@ public sealed class WindowManager
         }
     }
 
-    /// <summary>Closes the selected windows and their descendants, asking every one of them first; one refusal leaves them all open.</summary>
+    /// <summary>Closes the selected windows and their descendants.</summary>
+    /// <remarks>Every affected window is asked whether it may close before any closes, and one refusal leaves them all open.</remarks>
     public async ValueTask<WindowOperationResult> CloseAsync(IWindowSelector selector)
     {
         await _gate.WaitAsync().ConfigureAwait(false);
@@ -586,7 +595,7 @@ public sealed class WindowManager
         }
     }
 
-    // Tells each window whose blocking changed, so a blocked one can refuse interaction and a released one take it again.
+    // Tells each window whose blocking changed.
     private async ValueTask ApplyBlockingAsync()
     {
         foreach (var window in _stackedWindows.ToList())
@@ -684,11 +693,11 @@ public sealed class WindowManager
     private IManagedWindow? GetPreviousWindow()
         => _activationHistory.AsEnumerable().Reverse().FirstOrDefault(window => Current is null || window.RuntimeId != Current.RuntimeId);
 
-    // The modal descendant that controls a window, frontmost first, if a visible one exists.
+    // The frontmost visible modal descendant of a window.
     private IManagedWindow? GetControllingModal(IManagedWindow window)
         => _stackedWindows.AsEnumerable().Reverse().FirstOrDefault(candidate => candidate.IsModal && IsVisible(candidate) && IsDescendant(candidate, window));
 
-    // The frontmost visible modal that blocks a window, if any.
+    // The frontmost visible modal that blocks a window.
     private IManagedWindow? GetBlocker(IManagedWindow window)
         => _stackedWindows.AsEnumerable().Reverse().FirstOrDefault(candidate => candidate.IsModal && candidate.RuntimeId != window.RuntimeId && IsVisible(candidate) && GetBlockedWindows(candidate).Contains(window));
 
@@ -750,7 +759,6 @@ public sealed class WindowManager
         }
     }
 
-    // Numbers start at 1 and wrap back to 1 past the limit, skipping any number a live instance of the origin still holds.
     private void NumberInstance(WindowOrigin origin)
     {
         if (_instanceNumbers.ContainsKey(origin.InstanceId))

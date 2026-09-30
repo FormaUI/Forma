@@ -21,7 +21,6 @@ public sealed partial class TikTokPlayerProvider : IPlayerProvider
             return null;
         }
 
-        // The address reaches the markup, so it is encoded rather than trusted.
         var address = WebUtility.HtmlEncode(match.Value);
         var id = match.Groups["id"].Value;
         var html = $"""<blockquote class="tiktok-embed" cite="{address}" data-video-id="{id}"><section></section></blockquote>""";

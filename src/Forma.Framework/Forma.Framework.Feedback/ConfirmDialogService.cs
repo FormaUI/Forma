@@ -3,15 +3,15 @@ namespace Forma.Framework.Feedback;
 using Forma.Framework.Events;
 
 
-/// <summary><see cref="IConfirmDialogService"/> that tracks the active request and notifies subscribers on change.</summary>
+/// <summary>The in-memory <see cref="IConfirmDialogService"/>.</summary>
 public sealed class ConfirmDialogService : IConfirmDialogService
 {
     private readonly StateNotifier _notifier = new();
 
-    /// <summary>The confirmation currently awaiting a response, or <see langword="null"/> when none is active.</summary>
+    /// <inheritdoc />
     public ConfirmDialogRequest? Current { get; private set; }
 
-    /// <summary>Shows a confirmation dialog and resolves to the user's choice.</summary>
+    /// <inheritdoc />
     public async Task<bool> ConfirmAsync(
         string message,
         string confirmText,
@@ -42,8 +42,7 @@ public sealed class ConfirmDialogService : IConfirmDialogService
         }
         finally
         {
-            // Clear only if this request is still the active one; a later
-            // ConfirmAsync may have superseded it while we awaited.
+            // A later ConfirmAsync may have superseded this request while it was awaited.
             if (ReferenceEquals(Current, request))
             {
                 Current = null;
@@ -51,11 +50,11 @@ public sealed class ConfirmDialogService : IConfirmDialogService
         }
     }
 
-    /// <summary>Registers a callback invoked whenever the active request changes.</summary>
+    /// <inheritdoc />
     public void Subscribe(Func<Task> callback)
         => _notifier.Subscribe(callback);
 
-    /// <summary>Removes a previously registered callback.</summary>
+    /// <inheritdoc />
     public void Unsubscribe(Func<Task> callback)
         => _notifier.Unsubscribe(callback);
 }

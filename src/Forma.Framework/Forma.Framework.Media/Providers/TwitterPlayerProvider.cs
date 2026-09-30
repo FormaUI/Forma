@@ -21,7 +21,6 @@ public sealed partial class TwitterPlayerProvider : IPlayerProvider
             return null;
         }
 
-        // The address reaches the markup, so it is encoded rather than trusted.
         var address = WebUtility.HtmlEncode(match.Value);
         var html = $"""<blockquote class="twitter-tweet" data-dnt="true"><a href="{address}"></a></blockquote>""";
 

@@ -3,17 +3,17 @@ namespace Forma.Framework.Feedback;
 using Forma.Framework.Events;
 
 
-/// <summary>In-memory <see cref="IToastService"/> that tracks active toasts and notifies subscribers on change.</summary>
+/// <summary>The in-memory <see cref="IToastService"/>.</summary>
 public sealed class ToastService : IToastService
 {
     private readonly StateNotifier _notifier = new();
     private readonly List<ToastMessage> _toasts = [];
 
-    /// <summary>The currently visible toasts.</summary>
+    /// <inheritdoc />
     public IReadOnlyList<ToastMessage> Toasts
         => _toasts;
 
-    /// <summary>Removes the toast with the given identifier.</summary>
+    /// <inheritdoc />
     public async Task RemoveAsync(string id, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
@@ -21,7 +21,7 @@ public sealed class ToastService : IToastService
         await _notifier.NotifyAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>Adds a toast with the given message, severity, and lifetime.</summary>
+    /// <inheritdoc />
     public async Task ShowAsync(
         string message,
         ToastType type = ToastType.Success,
@@ -44,11 +44,11 @@ public sealed class ToastService : IToastService
         await _notifier.NotifyAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>Registers a callback invoked whenever the toast collection changes.</summary>
+    /// <inheritdoc />
     public void Subscribe(Func<Task> callback)
         => _notifier.Subscribe(callback);
 
-    /// <summary>Removes a previously registered callback.</summary>
+    /// <inheritdoc />
     public void Unsubscribe(Func<Task> callback)
         => _notifier.Unsubscribe(callback);
 }

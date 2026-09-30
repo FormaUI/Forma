@@ -6,7 +6,7 @@ public static class ShareItemKind
     /// <summary>A page or article living at an address: the networks, email and copying the link apply.</summary>
     public const string Link = "link";
 
-    /// <summary>A file: downloading and saving apply; nobody posts a file to a network.</summary>
+    /// <summary>A file: downloading and saving apply.</summary>
     public const string File = "file";
 
     /// <summary>A picture living at an address: the networks apply, and so does a board that pins media.</summary>

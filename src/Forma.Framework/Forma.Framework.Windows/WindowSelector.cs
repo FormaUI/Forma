@@ -3,7 +3,7 @@ namespace Forma.Framework.Windows;
 /// <summary>Selects windows by criteria that must all match; a criterion left <see langword="null"/> imposes nothing.</summary>
 public sealed record WindowSelector : IWindowSelector
 {
-    /// <summary>Every window in the workspace, stated explicitly.</summary>
+    /// <summary>Every window in the workspace.</summary>
     public static IWindowSelector All { get; } = new StandingWindowSelector(StandingWindowSelection.All);
 
     /// <summary>The active window.</summary>
@@ -30,10 +30,10 @@ public sealed record WindowSelector : IWindowSelector
     /// <summary>An exact, ordinal title.</summary>
     public string? Title { get; init; }
 
-    /// <summary>The window whose children are selected; the parent itself is never selected.</summary>
+    /// <summary>The window whose children are selected.</summary>
     public IWindow? Parent { get; init; }
 
-    /// <summary>Whether <see cref="Parent"/> reaches every descendant rather than direct children only.</summary>
+    /// <summary>Whether <see cref="Parent"/> selects every descendant.</summary>
     public bool Recursive { get; init; }
 
     /// <summary>Whether any criterion is set.</summary>

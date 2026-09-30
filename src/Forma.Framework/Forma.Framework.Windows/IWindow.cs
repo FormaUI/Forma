@@ -11,7 +11,7 @@ public interface IWindow
     /// <summary>The title shown in the title bar and in the window's handle.</summary>
     string Title { get; }
 
-    /// <summary>The icon shown before the title, if any.</summary>
+    /// <summary>The icon shown before the title.</summary>
     Icon? Icon { get; }
 
     /// <summary>The application or feature instance the window belongs to.</summary>

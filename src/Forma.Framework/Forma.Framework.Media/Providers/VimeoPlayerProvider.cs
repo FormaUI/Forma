@@ -39,7 +39,6 @@ public sealed partial class VimeoPlayerProvider : IPlayerProvider
         return new EmbeddedPlayerFrame($"https://player.vimeo.com/video/{match.Groups["id"].Value}{suffix}");
     }
 
-    // Anchored to Vimeo's own hosts, so an address on any other domain is not mistaken for one.
     [GeneratedRegex(
         @"^https?://(?:www\.)?(?:vimeo\.com/(?:video/|channels/[^/]+/|groups/[^/]+/videos/)?|player\.vimeo\.com/video/)(?<id>\d+)(?:[?&#/]|$)",
         RegexOptions.IgnoreCase)]

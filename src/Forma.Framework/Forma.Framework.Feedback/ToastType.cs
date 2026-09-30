@@ -12,6 +12,6 @@ public enum ToastType
     /// <summary>A neutral notice.</summary>
     Info,
 
-    /// <summary>Something needs attention but nothing failed.</summary>
+    /// <summary>Something needs attention.</summary>
     Warning,
 }

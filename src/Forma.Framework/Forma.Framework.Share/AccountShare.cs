@@ -2,11 +2,11 @@ namespace Forma.Framework.Share;
 
 using Forma.Framework.Icons;
 
-/// <summary>The shell an account-backed API target stands on: it shares under the current user's token, and shares nothing without one.</summary>
+/// <summary>The shell an account-backed API target stands on: it shares under the current user's token.</summary>
 /// <param name="id">The unique identifier of the target.</param>
 /// <param name="title">The target's displayed title.</param>
 /// <param name="icon">The icon drawn with the title.</param>
-/// <param name="tokens">Answers the user's token for the target.</param>
+/// <param name="tokens">The source of the user's token for the target.</param>
 /// <param name="http">The connection to post over, or null for one of the target's own.</param>
 public abstract class AccountShare(string id, string title, Icon icon, IShareTokenSource tokens, HttpClient? http) : ApiShare(id, title, icon, http)
 {

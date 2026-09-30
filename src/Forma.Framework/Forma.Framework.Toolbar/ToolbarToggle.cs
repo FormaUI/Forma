@@ -8,9 +8,9 @@ public sealed record ToolbarToggle : ToolbarAction
     /// <summary>Whether the toggle is currently on.</summary>
     public bool IsActive { get; init; }
 
-    /// <summary>The alternate title shown while on, or null to keep <see cref="ToolbarItem.Title"/> unchanged.</summary>
+    /// <summary>The alternate title shown while the toggle is on.</summary>
     public string? AlternateTitle { get; init; }
 
-    /// <summary>The alternate icon shown while on, or null to keep <see cref="ToolbarItem.Icon"/> unchanged.</summary>
+    /// <summary>The alternate icon shown while the toggle is on.</summary>
     public Icon? AlternateIcon { get; init; }
 }

@@ -21,7 +21,6 @@ public sealed partial class FacebookPlayerProvider : IPlayerProvider
             return null;
         }
 
-        // The address reaches the markup, so it is encoded rather than trusted.
         var address = WebUtility.HtmlEncode(match.Value);
         var html = $"""<div class="fb-video" data-href="{address}" data-allowfullscreen="true" data-width="auto"></div>""";
 

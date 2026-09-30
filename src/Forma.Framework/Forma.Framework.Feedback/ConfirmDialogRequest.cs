@@ -1,6 +1,6 @@
 namespace Forma.Framework.Feedback;
 
-/// <summary>Describes an active confirmation dialog and carries its pending result.</summary>
+/// <summary>An active confirmation dialog and its pending result.</summary>
 public sealed class ConfirmDialogRequest
 {
     /// <summary>Label for the button that rejects the confirmation.</summary>
@@ -12,6 +12,6 @@ public sealed class ConfirmDialogRequest
     /// <summary>The prompt shown to the user.</summary>
     public required string Message { get; init; }
 
-    /// <summary>Completed with the user's choice when the dialog resolves.</summary>
+    /// <summary>The pending result that carries the user's choice.</summary>
     public required TaskCompletionSource<bool> Result { get; init; }
 }

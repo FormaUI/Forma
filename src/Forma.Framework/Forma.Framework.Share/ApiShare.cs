@@ -33,7 +33,7 @@ public abstract class ApiShare(string id, string title, Icon icon, HttpClient? h
     /// <inheritdoc />
     public abstract Task<bool> ShareAsync(ShareItem item, CancellationToken cancellationToken = default);
 
-    /// <summary>The public address the item's resource can be fetched from, or null when it lives nowhere reachable.</summary>
+    /// <summary>The public address the item's resource can be fetched from.</summary>
     protected static string? GetReachableSource(ShareItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -50,7 +50,7 @@ public abstract class ApiShare(string id, string title, Icon icon, HttpClient? h
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>Releases the connection when this target owns it.</summary>
+    /// <summary>Releases the connection this target owns.</summary>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing && _ownsHttp)

@@ -27,11 +27,11 @@ public abstract class LinkShare(string id, string title, Icon icon) : IShareTarg
     /// <inheritdoc />
     public abstract string? GetAddress(ShareItem item);
 
-    /// <summary>A navigation target shares through its address, so a call shares nothing.</summary>
+    /// <inheritdoc />
     public Task<bool> ShareAsync(ShareItem item, CancellationToken cancellationToken = default)
         => Task.FromResult(false);
 
-    /// <summary>The item's address percent-encoded, for a link or a picture; null for any other kind or an item without one.</summary>
+    /// <summary>The item's percent-encoded address.</summary>
     protected static string? EscapeAddress(ShareItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -41,7 +41,7 @@ public abstract class LinkShare(string id, string title, Icon icon) : IShareTarg
             : null;
     }
 
-    /// <summary>The item's name percent-encoded, or nothing for a nameless one.</summary>
+    /// <summary>The item's percent-encoded name.</summary>
     protected static string EscapeName(ShareItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -49,7 +49,7 @@ public abstract class LinkShare(string id, string title, Icon icon) : IShareTarg
         return Uri.EscapeDataString(item.Name ?? string.Empty);
     }
 
-    /// <summary>The name and address as one encoded message, or the address alone for a nameless item.</summary>
+    /// <summary>The item's name and address as one percent-encoded message.</summary>
     protected static string? EscapeText(ShareItem item)
     {
         if (EscapeAddress(item) is not { } address)

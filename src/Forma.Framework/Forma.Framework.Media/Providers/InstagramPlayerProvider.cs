@@ -25,7 +25,6 @@ public sealed partial class InstagramPlayerProvider : IPlayerProvider
         var kind = match.Groups["kind"].Value;
         var singular = kind.Equals("reels", StringComparison.OrdinalIgnoreCase) ? "reel" : kind;
 
-        // The permalink reaches the markup, so it is encoded rather than trusted.
         var permalink = WebUtility.HtmlEncode($"https://www.instagram.com/{singular}/{match.Groups["shortcode"].Value}/");
         var html = $"""<blockquote class="instagram-media" data-instgrm-permalink="{permalink}" data-instgrm-version="14"></blockquote>""";
 

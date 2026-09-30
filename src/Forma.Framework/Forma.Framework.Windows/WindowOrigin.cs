@@ -3,7 +3,7 @@ namespace Forma.Framework.Windows;
 /// <summary>The application or feature instance a window belongs to.</summary>
 /// <param name="OriginId">The stable identity of the application or feature, shared by every instance of it.</param>
 /// <param name="OriginName">The display name of the application or feature.</param>
-/// <param name="InstanceId">The identity of one running instance, generated once when it starts.</param>
+/// <param name="InstanceId">The identity of one running instance.</param>
 public sealed record WindowOrigin(string OriginId, string OriginName, Guid InstanceId)
 {
     /// <summary>The stable identity of the application or feature, shared by every instance of it.</summary>

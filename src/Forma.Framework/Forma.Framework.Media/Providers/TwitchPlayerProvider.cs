@@ -10,7 +10,7 @@ public sealed partial class TwitchPlayerProvider : IPlayerProvider
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        // Twitch refuses to load without the embedding host, so an unknown page is an address it cannot play.
+        // Twitch refuses to load without the embedding host.
         return ValueTask.FromResult<PlayerFrame?>(options.PageAddress is null ? null : BuildFrame(source, options, options.PageAddress.Host));
     }
 
@@ -39,7 +39,7 @@ public sealed partial class TwitchPlayerProvider : IPlayerProvider
 
     private static EmbeddedPlayerFrame Embedded(string playerUrl, string target, PlayerOptions options, string parent)
     {
-        // Twitch autoplays unless told not to, which is the opposite of every other provider here.
+        // Twitch autoplays unless told not to.
         var query = new List<string>
         {
             target,

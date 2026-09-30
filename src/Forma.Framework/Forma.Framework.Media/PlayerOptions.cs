@@ -1,14 +1,14 @@
 namespace Forma.Framework.Media;
 
-/// <summary>How a caller asked the player to behave, and what the page can tell it about itself.</summary>
+/// <summary>How a player behaves, and the page it renders on.</summary>
 public sealed record PlayerOptions
 {
-    /// <summary>Starts playback without interaction, always muted because browsers block unmuted autoplay.</summary>
+    /// <summary>Whether playback starts on its own, muted.</summary>
     public bool Autoplay { get; init; }
 
-    /// <summary>Asks the hosting service to collect as little as it offers to, by whatever means it provides.</summary>
+    /// <summary>Whether the hosting service is asked to limit tracking.</summary>
     public bool LimitTracking { get; init; } = true;
 
-    /// <summary>Address of the page the player renders on, which some services demand the host of.</summary>
+    /// <summary>The address of the page the player renders on.</summary>
     public Uri? PageAddress { get; init; }
 }

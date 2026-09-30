@@ -30,12 +30,10 @@ public sealed partial class YouTubePlayerProvider : IPlayerProvider
             query.Add("mute=1");
         }
 
-        // YouTube expresses limited tracking as a separate domain rather than a parameter.
         var host = options.LimitTracking ? "www.youtube-nocookie.com" : "www.youtube.com";
         return new EmbeddedPlayerFrame($"https://{host}/embed/{match.Groups["id"].Value}?{string.Join('&', query)}");
     }
 
-    // Anchored to YouTube's own hosts, so an address on any other domain is not mistaken for one.
     [GeneratedRegex(
         @"^https?://(?:www\.|m\.)?(?:youtube\.com/(?:watch\?(?:[^#]*&)?v=|embed/|shorts/|v/|live/)|youtu\.be/)(?<id>[A-Za-z0-9_-]{11})(?:[?&#/]|$)",
         RegexOptions.IgnoreCase)]
