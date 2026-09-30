@@ -12,7 +12,7 @@ describe('SelectionInteraction', () => {
     const row = (key, trailing) =>
         `<tr><td><span data-row-key="${key}" tabindex="-1">Row</span></td><td>${trailing}</td></tr>`;
 
-    // The router keeps every registration until it is disposed, so each test's are released after it.
+    // The handles attached in a test, whose registrations the router holds until they are disposed after it.
     const handles = [];
     const attachSelection = (target, options) => {
         const handle = attach(target, options);
@@ -41,7 +41,7 @@ describe('SelectionInteraction', () => {
     const cellOf = key => document.querySelector(`[data-row-key="${key}"]`);
     const selected = () => expect(owner.invokeMethodAsync);
 
-    // A press from the pointer reaches the router as a press and then a click that follows it.
+    // A pointer press followed by the click it produces.
     const click = (element, modifiers = {}) => {
         element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, pointerId: 1, ...modifiers }));
         element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1, ...modifiers }));
@@ -113,7 +113,6 @@ describe('SelectionInteraction', () => {
             selected().toHaveBeenLastCalledWith('HandleSelectAsync', 3, false);
         });
 
-        // A shift-click would otherwise extend the page's own text selection across the rows.
         it('stops a shift-click selecting the text it crosses', () => {
             attachSelection(grid, { owner });
             click(cellOf(1));
@@ -251,8 +250,7 @@ describe('SelectionInteraction', () => {
             selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', [1, 2], false);
         });
 
-        // The caret keys are the field's by the router's native table; a vertical arrow, which a single-line field
-        // does not consume, is the list's.
+        // The router's native table gives the caret keys to the field and a vertical arrow to the list.
         it('leaves the caret keys to a text field inside an item', () => {
             attachSelection(grid, { owner });
             const field = grid.querySelector('input[type="text"]');
@@ -333,7 +331,6 @@ describe('SelectionInteraction', () => {
     });
 
     describe('across a packed layout', () => {
-        // Six cards packed three across, each a keyed marker inside a card the item selector names.
         const card = key => `<div class="card"><span data-row-key="${key}" tabindex="-1">Card</span></div>`;
         const pack = (columns, { width = 100, height = 100 } = {}) => {
             [...document.querySelectorAll('.card')].forEach((element, index) => {

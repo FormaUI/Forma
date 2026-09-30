@@ -29,7 +29,6 @@ describe('Pointer', () => {
         expect(handle.releasePointerCapture).toHaveBeenCalledExactlyOnceWith(7);
     });
 
-    // A gesture the browser already canceled has released the pointer for us.
     it('does nothing when the element no longer holds the pointer', () => {
         release(handle, 7);
 

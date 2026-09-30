@@ -38,7 +38,7 @@ describe('ReorderInteraction', () => {
         stackRows(items());
     });
 
-    // The router keeps every registration until it is disposed, so each test's list is released after it.
+    // The list handles attached in a test, whose registrations the router holds until they are disposed after it.
     const handles = [];
     const attachList = options => {
         const handle = attach(list, options);
@@ -276,8 +276,6 @@ describe('ReorderInteraction', () => {
             reordered().toHaveBeenCalledExactlyOnceWith('HandleReorderAsync', 0, 2, true);
         });
 
-        // Releasing in the empty space under the list sends the item to the end rather
-        // than doing nothing.
         it('sends an item released below the list to the end', () => {
             attachList({ owner });
 
@@ -364,7 +362,6 @@ describe('ReorderInteraction', () => {
             reordered().toHaveBeenCalledExactlyOnceWith('HandleReorderAsync', 0, 2, true);
         });
 
-        // A link inside the item owns its own press.
         it('leaves a press on a link inside the item to that link', () => {
             attachList({ owner, dragFromItem: true });
 
@@ -385,7 +382,6 @@ describe('ReorderInteraction', () => {
         });
     });
 
-    // Dragging the item body competes with scrolling the list, so a touch has to rest first.
     describe('by dragging the item itself under a finger', () => {
         beforeEach(() => vi.useFakeTimers());
 
@@ -412,7 +408,7 @@ describe('ReorderInteraction', () => {
             reordered().toHaveBeenCalledExactlyOnceWith('HandleReorderAsync', 0, 2, true);
         });
 
-        // A handle carries touch-action: none, so it never competes with a scroll.
+        // A handle carries touch-action: none, so a touch on it drags at once.
         it('drags from a handle without waiting', () => {
             attachList({ owner });
 

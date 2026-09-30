@@ -141,7 +141,6 @@ describe('Scroll watching a boundary', () => {
         expect(resizes.latest().targets).toHaveLength(3);
     });
 
-    // Commands can be added or removed without the track's own box changing.
     it('watches a command added after it attached', () => {
         attach(track, { boundary: { owner } });
 
@@ -172,7 +171,7 @@ describe('Scroll watching a boundary', () => {
         expect(mutations.latest().isConnected).toBe(false);
     });
 
-    // Its coalesced report was already queued against listeners that dispose only tore down.
+    // The coalesced report is queued on a frame before dispose tears the listeners down.
     it('drops a report queued before disposal', () => {
         sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
         const handle = attach(track, { boundary: { owner } });
@@ -351,8 +350,7 @@ describe('Scroll watching a sentinel', () => {
         expect(observers.latest().isConnected).toBe(false);
     });
 
-    // Observations queued before disconnect are still delivered afterwards, by which point
-    // the owner may already be gone.
+    // An observation queued before disconnect is delivered after it.
     it('ignores an observation delivered after disposal', () => {
         const owner = fakeOwner();
         const handle = attach(sentinel, { sentinel: { owner } });
@@ -391,7 +389,7 @@ describe('Scroll moving a container', () => {
             expect([container.scrollLeft, container.scrollTop]).toEqual([0, 0]);
         });
 
-        // A right-to-left container counts scrollLeft downwards from zero, and a positive position would be clamped to its start.
+        // A right-to-left container counts scrollLeft downwards from zero and clamps a positive position to its start.
         it('counts the inline middle downwards in a right-to-left container', () => {
             container.style.direction = 'rtl';
             sizeScroller(container, { scrollWidth: 900, clientWidth: 300, scrollHeight: 500, clientHeight: 100 });

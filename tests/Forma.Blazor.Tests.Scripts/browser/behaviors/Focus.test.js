@@ -11,7 +11,7 @@ function tab(shiftKey = false) {
 
 const focus = id => document.querySelector(`#${id}`).focus();
 
-// The router keeps every registration until it is disposed, so each test's surfaces are released after it.
+// The surface handles attached in a test, whose registrations the router holds until they are disposed after it.
 const handles = [];
 const attachSurface = (target, options) => {
     const handle = attach(target, options);

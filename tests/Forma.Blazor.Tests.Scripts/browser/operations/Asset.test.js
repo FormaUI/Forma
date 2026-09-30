@@ -35,7 +35,6 @@ describe('Asset', () => {
             await expect(pending).resolves.toBe(true);
         });
 
-        // Nothing rejects; an asset that will not load reports false.
         it('reports failure rather than rejecting', async () => {
             const pending = assets.loadScript('/lib/missing.js');
 
@@ -82,7 +81,6 @@ describe('Asset', () => {
             expect(script.isConnected).toBe(false);
         });
 
-        // A failure is forgotten so a later attempt can retry.
         it('tries again after a failure', async () => {
             const first = assets.loadScript('/lib/flaky.js');
             settle('script', 'error');
@@ -131,8 +129,7 @@ describe('Asset', () => {
         });
     });
 
-    // The cache is keyed by kind as well as url, so a script and a stylesheet at the
-    // same path do not answer for one another.
+    // The cache is keyed by kind as well as url.
     it('keeps a script and a stylesheet at one url apart', async () => {
         const script = assets.loadScript('/lib/asset');
         const style = assets.loadStyle('/lib/asset');
@@ -225,10 +222,9 @@ describe('Asset', () => {
             expect(document.querySelectorAll('#emoji-1f600')).toHaveLength(1);
         });
 
-        // A stalled connection would otherwise never settle, hanging every later caller on the cached promise.
         it('abandons a request that never settles', async () => {
             global.fetch.mockImplementation((_, options) => new Promise((_resolve, reject) => {
-                // Without an abort signal there is nothing to cut this short, so the test times out.
+                // The fetch settles only when its abort signal fires.
                 options.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'TimeoutError')));
             }));
 
@@ -243,7 +239,6 @@ describe('Asset', () => {
             expect(global.fetch.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
         });
 
-        // A failed load is forgotten, so a later attempt can retry rather than replaying the failure.
         it('retries after a failure', async () => {
             global.fetch.mockResolvedValueOnce({ ok: false });
             await expect(assets.loadSprite('/emojis/flaky.svg')).resolves.toBe(false);

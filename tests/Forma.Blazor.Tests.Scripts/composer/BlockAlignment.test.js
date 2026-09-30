@@ -72,7 +72,7 @@ describe('BlockAlignment', () => {
         expect(rows()[1].style.insetBlockStart).toBe('136px');
     });
 
-    // A change to the document's blocks is observed rather than announced, so the rows follow it on their own.
+    // The rows follow a change to the document's blocks through observation alone.
     it('shows a row again once its block exists', async () => {
         attach(gutter, { source: canvas, rowSelector: '.row' });
         canvas.insertAdjacentHTML('beforeend', '<p>four</p><p>five</p><p>six</p>');

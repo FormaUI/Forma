@@ -10,7 +10,7 @@ describe('Frame', () => {
 
     const options = (overrides = {}) => ({ owner, box: 'self', dragRegionClass: 'grip', handleClass: 'handle', stepPixels: 16, ...overrides });
 
-    // The frame's drag registers on the input router, which keeps every registration until it is disposed, so each test's is released after it.
+    // The handles attached in a test, whose drag registrations the input router holds until they are disposed after it.
     const handles = [];
     const attachFrame = (target, frameOptions) => {
         const handle = attach(target, frameOptions);
@@ -21,7 +21,7 @@ describe('Frame', () => {
 
     afterEach(() => handles.splice(0).forEach(handle => handle.dispose()));
 
-    // A headless DOM lays nothing out, so an element's rectangle is read back from the styles the frame writes.
+    // Gives an element the rectangle its inline styles describe, as the frame writes them.
     const measureFromStyles = element => {
         element.getBoundingClientRect = () => {
             const value = name => parseFloat(element.style[name]);

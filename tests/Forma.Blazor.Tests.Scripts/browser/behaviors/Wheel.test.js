@@ -7,7 +7,7 @@ describe('Wheel', () => {
     /** @type {HTMLElement} */
     let track;
 
-    // The router keeps every registration until it is disposed, so each test's are released after it.
+    // The handles attached in a test, whose registrations the router holds until they are disposed after it.
     const handles = [];
     const attachWheel = (target, options) => {
         const handle = attach(target, { action: options?.owner ? 'test.turn' : 'test.scroll', ...options });
@@ -27,12 +27,12 @@ describe('Wheel', () => {
         configure({ bindings: {} });
     });
 
-    /** A track wider than its box, so there is something to scroll along. */
+    /** Makes the track wider than its box. */
     function overflowing({ scrollWidth = 500, clientWidth = 200 } = {}) {
         sizeScroller(track, { scrollWidth, clientWidth });
     }
 
-    // The test DOM drops the modifier keys a browser puts on a wheel event, so a held key is defined on the event itself.
+    // A wheel event with any held key defined on the event, which the test DOM drops from a WheelEvent's init.
     function wheel({ ctrlKey, shiftKey, ...properties }, target = track) {
         const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, ...properties });
 
@@ -97,7 +97,7 @@ describe('Wheel', () => {
 
         const event = wheel({ deltaY: 120 });
 
-        // 500 - 200 is the whole slack, so the track is already at its end; the page still stays put.
+        // 500 - 200 is the whole slack, so the track is already at its end.
         expect(track.scrollLeft).toBe(300);
         expect(event.defaultPrevented).toBe(true);
     });

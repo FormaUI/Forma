@@ -1,7 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-// Vite matches aliases as forward-slash paths, and a checkout under a path with a space
-// arrives percent-encoded, so the URL is decoded rather than converted by fileURLToPath.
+// A path in the forward slashes Vite matches aliases by, decoded from its URL so a space in the checkout path resolves.
 const resolved = path => decodeURIComponent(new URL(path, import.meta.url).pathname);
 
 // The scripts root of the interop assembly named for a concept, under the Framework family folder.
@@ -19,10 +18,9 @@ const scripts = {
     explorer: getProductScriptsPath('Explorer'),
 };
 
-// One alias per assembly that ships scripts, pointing at its scripts root. Every assembly is served under
-// _content/, so a script reaches another assembly by climbing to it, `../../../core/scripts/FrameScheduler.js`
-// between interop assemblies, `../../forma/core/scripts/FrameScheduler.js` from a product; here each such
-// climb is resolved to the assembly's source folder instead.
+// One alias per assembly that ships scripts, pointing at its scripts root, and one per assembly resolving a
+// script's climb to it under _content/ to its source folder: `../../../core/scripts/FrameScheduler.js`
+// between interop assemblies, `../../forma/core/scripts/FrameScheduler.js` from a product.
 export default defineConfig({
     resolve: {
         alias: [

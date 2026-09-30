@@ -1,6 +1,6 @@
 /**
- * Replacements for the platform pieces a headless DOM either omits or reports as zero,
- * each handing back a control the test drives instead of waiting on the browser.
+ * Replacements for the platform pieces a headless DOM omits or reports as zero,
+ * each handing back a control the test drives.
  */
 
 /** Replaces the animation frame queue with one the test flushes by hand. */
@@ -63,7 +63,7 @@ function stubObserver(name) {
             this.isConnected = false;
         }
 
-        /** Delivers observations exactly as the browser would, connected or not. */
+        /** Delivers observations to the callback, connected or not. */
         deliver(observations) {
             this.callback(observations, this);
         }
@@ -110,10 +110,7 @@ export function stubPointerCapture(element) {
     return captured;
 }
 
-/**
- * A pointer event carrying the fields a gesture reads. Built on a plain Event because a
- * MouseEvent exposes its coordinates as prototype getters that cannot be assigned.
- */
+/** A pointer event carrying the fields a gesture reads, on a plain Event whose fields can be assigned. */
 export function pointerEvent(type, { pointerId = 1, pointerType = 'mouse', button = 0, clientX = 0, clientY = 0 } = {}) {
     const event = new Event(type, { bubbles: true, cancelable: true });
 

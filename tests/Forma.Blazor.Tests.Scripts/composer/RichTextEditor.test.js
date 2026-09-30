@@ -583,7 +583,6 @@ describe('RichTextEditor', () => {
             expect(reports()[0][1]).toMatchObject({ start: 0, end: 5, blockType: 'p' });
         });
 
-        // Typing moves the caret with every key, and nothing across the circuit reads where it is.
         it('leaves a caret moving within one formatting unreported', () => {
             attach(editor, { owner });
             const text = editor.querySelector('p').firstChild;
@@ -1188,7 +1187,7 @@ describe('RichTextEditor', () => {
 
             doubleClick(editor.querySelector('img'));
 
-            // What closing a dialog does: hands the canvas a collapsed caret somewhere else entirely.
+            // The collapsed caret a closing dialog hands the canvas, elsewhere in it.
             const elsewhere = document.createRange();
             elsewhere.selectNodeContents(editor.querySelector('p').firstChild);
             elsewhere.collapse(true);

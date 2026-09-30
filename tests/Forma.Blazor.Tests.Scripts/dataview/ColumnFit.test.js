@@ -14,7 +14,7 @@ describe('ColumnFit', () => {
     let owner;
     const options = () => ({ owner, columnAttribute: 'data-column', measuringClass: 'is-measuring' });
 
-    // A headless DOM lays nothing out, so each header cell answers with the width it is given, and only while the table is being measured.
+    // Gives the container its available width, and each named header cell its given width while the table is being measured and zero otherwise.
     const lay = (widths, available) => {
         Object.defineProperty(container, 'clientWidth', { value: available, configurable: true });
 

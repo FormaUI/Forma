@@ -67,7 +67,7 @@ describe('AnchoredPopover', () => {
 
         handle.open();
 
-        // Hangs from the anchor's right edge minus the popover's width, not its left edge.
+        // The anchor's right edge minus the popover's width.
         expect(popover.style.left).toBe('200px');
     });
 
@@ -132,13 +132,10 @@ describe('AnchoredPopover', () => {
 
         handle.open();
 
-        // The mirrored position (right - width) would be negative; the gap floors it instead.
+        // The mirrored position, right minus width, is negative, so the gap floors it.
         expect(popover.style.left).toBe('4px');
     });
 
-    // The popover's own content can grow after it opens — a progressively loaded picker, a search
-    // result count, a category switch — so its size alone must trigger repositioning, not only
-    // a browser window resize or scroll.
     it('recalculates position when the popover itself changes size after opening', () => {
         setAnchorRect({ top: 700, bottom: 730, left: 50, right: 90, width: 40, height: 30 });
         setPopupHeight(30);
@@ -146,7 +143,6 @@ describe('AnchoredPopover', () => {
         handle.open();
         expect(popover.style.top).toBe('734px');
 
-        // The picker finished loading and is now far taller than the tiny box measured at open time.
         setPopupHeight(200);
         resizes.latest().deliver([{ target: popover }]);
         frames.flush();

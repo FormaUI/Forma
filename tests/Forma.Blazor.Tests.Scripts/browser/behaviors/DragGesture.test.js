@@ -18,7 +18,7 @@ describe('DragGesture', () => {
         reported = [];
     });
 
-    // The router keeps every registration until it is disposed, so each test's are released after it.
+    // The handles attached in a test, whose registrations the router holds until they are disposed after it.
     const handles = [];
 
     afterEach(() => {
@@ -78,7 +78,6 @@ describe('DragGesture', () => {
             expect(reported).toEqual([]);
         });
 
-        // A press that never travels is a click, and the caller hears nothing about it.
         it('reports nothing when a press lifts where it landed', () => {
             start();
 
@@ -124,8 +123,6 @@ describe('DragGesture', () => {
             expect(reported).toEqual([]);
         });
 
-        // The threshold measures the axis the gesture reorders along, so sideways travel
-        // alone leaves the press a click.
         it('ignores travel across the axis it drags along', () => {
             start();
 
@@ -154,7 +151,6 @@ describe('DragGesture', () => {
             expect(reported.at(-1)).toEqual({ stage: 'move', clientY: 340 });
         });
 
-        // The browser would otherwise select the text the pointer sweeps across.
         it('claims a move it is dragging with', () => {
             start();
             press();
@@ -259,7 +255,7 @@ describe('DragGesture', () => {
             expect(event.defaultPrevented).toBe(true);
         });
 
-        // The drag holds the pointer, not the focus, so the key is answered from wherever it is pressed.
+        // The drag holds the pointer, so the key is answered wherever it is pressed.
         it('cancels on Escape pressed outside the container', () => {
             start();
             press();
@@ -332,7 +328,6 @@ describe('DragGesture', () => {
         });
     });
 
-    // A touch that could equally have been a scroll has to rest before it lifts.
     describe('with a touch that must rest first', () => {
         beforeEach(() => vi.useFakeTimers());
 
@@ -364,7 +359,6 @@ describe('DragGesture', () => {
             expect(captured.has(7)).toBe(true);
         });
 
-        // A rested press has already made its intent clear, so it drags from where it is.
         it('drags from where it rested without travelling first', () => {
             start({ holdDelay: 400 });
 
@@ -375,7 +369,6 @@ describe('DragGesture', () => {
             expect(stages()).toEqual(['start', 'drop']);
         });
 
-        // Otherwise every swipe across the list would drag instead of scrolling it.
         it('abandons a press that moves before it has rested', () => {
             start({ holdDelay: 400 });
 
@@ -407,7 +400,6 @@ describe('DragGesture', () => {
             expect(stages()).toEqual(['start']);
         });
 
-        // A mouse has no scroll to compete with, so it drags on travel as it always does.
         it('makes a mouse press wait for travel rather than for rest', () => {
             start({ holdDelay: 400 });
 
@@ -428,7 +420,7 @@ describe('DragGesture', () => {
         });
     });
 
-    // The popup around the container is active while it is open, as a popover is, and the drag stands above it.
+    // The popup around the container is an active scope, and the drag stands above it.
     describe('inside an active popup', () => {
         /** @type {import('vitest').Mock} */
         let dismissed;
@@ -519,7 +511,7 @@ describe('DragGesture', () => {
             const wasCaptured = captured.has(7);
             lift({ pointerId: 7 });
 
-            // Resolved once the gesture it began has ended, since while one is under way the route matches no other press.
+            // Resolved after the gesture ends, as the route matches no other press while one is under way.
             expect(wasCaptured).toBe(true);
             expect(resolve(event)).toMatchObject({ owner: container, action: 'test.drag', precedence: 'structural' });
         });

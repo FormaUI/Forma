@@ -29,8 +29,6 @@ describe('Dialog', () => {
         expect(dialog.open).toBe(false);
     });
 
-    // showModal lands on the first control in the dialog, the header's close button, which is
-    // the last thing an author opening a form wants to reach first.
     it('focuses the first control inside the part asked for', () => {
         document.body.innerHTML = '<dialog><header><button id="close">Close</button></header><div class="body"><input id="url"><input id="text"></div></dialog>';
         dialog = document.querySelector('dialog');
@@ -79,8 +77,7 @@ describe('Dialog', () => {
         expect(dialog.open).toBe(true);
     });
 
-    // A dialog can close by Escape or a method="dialog" form without close() running, which
-    // is what let the previous listener survive into the next open and close twice over.
+    // The dialog closing itself, as Escape or a method="dialog" form does, bypasses the handle's close().
     it('closes once on a scrim click after the dialog closed itself and reopened', () => {
         const handle = attach(dialog);
         const close = vi.spyOn(dialog, 'close');

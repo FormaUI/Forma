@@ -3,7 +3,7 @@ import { attach } from '#composer/SelectionFollower.js';
 import { stack } from '#input/InputRouter.js';
 import { pointerEvent, stubAnimationFrames, stubPointerCapture, stubResizeObserver } from '#support/platform.js';
 
-// The bar's drag registers on the input router, which keeps every registration until it is disposed, so each test's is released after it.
+// The handles attached in a test, whose drag registrations the input router holds until they are disposed after it.
 const handles = [];
 const attachFollower = (target, owner, options) => {
     const handle = attach(target, owner, options);

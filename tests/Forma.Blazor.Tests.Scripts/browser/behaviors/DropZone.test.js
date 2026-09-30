@@ -7,7 +7,7 @@ describe('DropZone', () => {
     /** @type {HTMLElement} */
     let zone;
 
-    // The router keeps every registration until it is disposed, so each test's are released after it.
+    // The handles attached in a test, whose registrations the router holds until they are disposed after it.
     const handles = [];
     const attachZone = (target, options) => {
         const handle = attach(target, { action: 'test.drop', ...options });

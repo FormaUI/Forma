@@ -48,7 +48,7 @@ function release(target, init = {}) {
     return event;
 }
 
-// happy-dom's WheelEvent does not carry the modifier keys of its init, so they are defined here.
+// A wheel event with its modifier keys defined on the event, which happy-dom drops from a WheelEvent's init.
 function wheel(target, { shiftKey = false, ctrlKey = false, altKey = false, metaKey = false, ...init } = {}) {
     const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 40, ...init });
     Object.defineProperties(event, { shiftKey: { value: shiftKey }, ctrlKey: { value: ctrlKey }, altKey: { value: altKey }, metaKey: { value: metaKey } });
@@ -853,7 +853,6 @@ describe('InputRouter native controls', () => {
         expect(paged).not.toHaveBeenCalled();
     });
 
-    // The composer's shortcuts are routes on its scope; a popup opened over it is an active scope of its own.
     it('leaves a shortcut pressed inside an active nested scope to that scope, never to the routes around it', () => {
         const bold = vi.fn();
         scope(grid(), { routes: [route('composer.bold', bold, keyBinding('b', { primary: true }))] });

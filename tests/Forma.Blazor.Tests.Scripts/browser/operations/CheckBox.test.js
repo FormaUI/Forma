@@ -24,7 +24,6 @@ describe('CheckBox', () => {
         expect(checkbox.indeterminate).toBe(false);
     });
 
-    // The mixed state is what the checkbox shows, not what it submits.
     it('leaves the checked value alone', () => {
         checkbox.checked = true;
 
