@@ -19,7 +19,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
     private const int BlockRowCount = 10_000;
     private const int InitialRowIndex = 49_999;
     private const int FeedBatchSize = 5;
-    private static readonly TimeSpan _slowWindowDelay = TimeSpan.FromMilliseconds(600);
+    private static readonly TimeSpan _slowSliceDelay = TimeSpan.FromMilliseconds(600);
 
     [Inject] private IStringLocale<FormaDataGridPage> L { get; set; } = default!;
 
@@ -158,17 +158,17 @@ public sealed partial class FormaDataGridPage : ComponentBase
             ? dataView.ScrollToItemAsync(Math.Clamp(_scrollTargetRow, 1, HugeRowCount) - 1)
             : Task.CompletedTask;
 
-    // Answers a window after a pause long enough to see the placeholders it leaves.
+    // Answers a slice after a pause long enough to see the placeholders it leaves.
     private static async ValueTask<DataViewPage<GridItem>> ProvideSlowItemsAsync(DataViewRequest<GridItem> request)
     {
         if (request.Count is not 0)
         {
-            await Task.Delay(_slowWindowDelay, request.CancellationToken);
+            await Task.Delay(_slowSliceDelay, request.CancellationToken);
         }
 
-        var window = _hugeItems.Skip(request.StartIndex).Take(request.Count ?? HugeRowCount).ToArray();
+        var slice = _hugeItems.Skip(request.StartIndex).Take(request.Count ?? HugeRowCount).ToArray();
 
-        return new DataViewPage<GridItem>(window, HugeRowCount);
+        return new DataViewPage<GridItem>(slice, HugeRowCount);
     }
 
     private async Task PrependFeedItemsAsync()

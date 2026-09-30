@@ -145,7 +145,7 @@ members are the data view's, the column's are the grid's.
 | `Items` and `ItemsProvider`, one or the other | The same two ways in, one supplied |
 | `IAsyncQueryExecutor`, so a queryable backed by a store is counted and read asynchronously | `IDataViewQueryExecutor`, a service the host registers for its store, with an in-memory default the library carries |
 | `GridItemsProviderRequest`: start, count, sort column, direction, cancellation, `ApplySorting` and `GetSortByProperties` | `DataViewRequest` with the same members, so a provider applies the sort to its own queryable or reads the sorted properties for a query it writes itself |
-| `GridItemsProviderResult`: items and total | `DataViewPage`: items and an optional total, a window shorter than asked for ending a set it cannot count |
+| `GridItemsProviderResult`: items and total | `DataViewPage`: items and an optional total, a slice shorter than asked for ending a set it cannot count |
 | `PaginationState` and `Paginator`, with a summary template | `PageSize`, a bindable `Page`, the reported total, and `FormaPagination` with its options |
 | `Virtualize`, `ItemSize`, `OverscanCount` | `Virtualize`, `ItemHeight`, `OverscanCount` |
 | `AnchorMode`, `InitialItemIndex`, `ItemComparer`, `ScrollToItemAsync` | The same anchoring set: where the viewport holds when items arrive during virtualization, the item to open on, the comparer that tells a prepend from an append, and scrolling to an item on request |
@@ -196,7 +196,7 @@ states, and the fit.
 - **Two ways in, exactly one supplied.** `Items` hands over a queryable set the engine
   sorts, counts and pages itself, through a query executor the host can replace for its
   store. `ItemsProvider` answers one request at a time and returns the items with the
-  total where the store can count; the engine then holds only the window it shows. The
+  total where the store can count; the engine then holds only the slice it shows. The
   split is the explorer's, and its request and page records take the same shape as the
   catalog's.
 - **Sort, page and view live in the address** under a prefix the caller names, so two data
@@ -252,7 +252,7 @@ provider holds or hand over the sorted properties for a query the provider write
 and that returns a **page**: the items and the total, or no total where the store cannot
 count cheaply, in which case the engine drops its pager and pages by the items it
 received. A request superseded by a newer one is canceled rather than ignored, and the
-newest answer is the one shown. `RefreshDataAsync` asks the source again for the window
+newest answer is the one shown. `RefreshDataAsync` asks the source again for the items
 being shown, which is how a host reports that the records changed; a page that no longer
 exists, because the last items on it were deleted, gives way to the last page that does.
 
@@ -349,7 +349,7 @@ and the tree has nothing to show for it.
 `GroupBy` names a key the items fold under: a group is a heading the view draws over its
 members, folded or open, and a folded group stays folded when the reader switches views
 and opens again on a new grouping. The engine groups a set itself and asks a provider for
-the sorted window a grouping needs. A group heading carries the group's name and count and
+the sorted slice a grouping needs. A group heading carries the group's name and count and
 is a target, so a reader folds it from the keyboard.
 
 A virtualizing data view draws its groups before it has read their items, so with the
@@ -377,7 +377,7 @@ card size and tells the cards, so a narrower width packs fewer across and more r
 Grouped, a heading is a row of its own before its group's rows, a group starts a row of
 its own, and a folded group keeps its heading while its rows are neither drawn nor read.
 The items a view draws say where they stand in the whole set, since the page holds only
-some of them. An item whose window has not loaded draws the view's placeholder. `AnchorMode` says where the viewport
+some of them. An item whose slice has not loaded draws the view's placeholder. `AnchorMode` says where the viewport
 holds when items arrive at an edge, `ItemComparer` tells a prepend from an append so the
 items on screen stay put, `InitialItemIndex` opens the data view on an item, and
 `ScrollToItemAsync` scrolls to one later, and moves a paged data view to the item's page. The region announces its real item count, so
@@ -404,7 +404,7 @@ items themselves.
 
 A view is declared inside the data view's content and registers with the engine on
 initialization, handing over the viewport it keeps, which the engine scrolls to an item on
-request and asks to fetch its windows again when the source, the sort or the set changed;
+request and asks to fetch its slices again when the source, the sort or the set changed;
 the engine cascades its item type, so a view names no type argument of its own. A data
 view with one view shows it; one with several shows the active view,
 `View` with `ViewChanged`, naming the view by the key each declares, `grid`, `list`,
@@ -540,7 +540,7 @@ as a tree with each node's level, its
 open state and whether it has children, and virtualizes over the visible nodes with a
 row as its unit: the nodes then stand in one run, each saying its level, how many
 siblings it has and its place among them in place of the group that would hold it, and a
-key that moves to a node scrolled out of the window scrolls it back and focuses it.
+key that moves to a node scrolled out of the rendered range scrolls it back and focuses it.
 
 ### A host's own view
 
@@ -597,10 +597,10 @@ A browsing surface is the component a reader waits on most, so what it costs is 
 its design, and every phase is held to these rules.
 
 - **Only what is on screen is rendered.** A page renders its page, a virtualized view its
-  window, and a tree its open nodes; nothing renders an item the reader cannot see.
+  rendered range, and a tree its open nodes; nothing renders an item the reader cannot see.
 - **The source does the work.** Sorting, counting and slicing a queryable run in the
   store through the executor, never after materializing the set, and a provider is asked
-  for one window, once, with a superseded request canceled rather than awaited.
+  for one slice, once, with a superseded request canceled rather than awaited.
 - **A render costs what changed.** Every item is keyed, so a re-render diffs rows rather
   than rebuilding them; a selection change touches the rows whose state changed; the
   selection is looked up by key in a set, never by scanning a list; and a column's fit is
@@ -639,7 +639,7 @@ names the end it wants, the view scrolls the item into range, and the focus land
 it is drawn, so the outcome is the one a view drawing every item gives; a move the reader
 leaves, or one whose order or view changes before it lands, lets the focus go. Over a source
 that cannot count, End reaches the last item the source has answered, and the view reads one
-window further as it scrolls there.
+slice further as it scrolls there.
 
 Every offset, alignment and border is logical, so the same stylesheet serves both
 directions; a numeric cell reads as a number in either, cards pack from the inline start,

@@ -117,9 +117,9 @@
         await Task.Delay(SlowAnswer, request.CancellationToken);
 
         var sorted = request.ApplySorting(DataViewShowcaseProducts.All);
-        var window = sorted.Skip(request.StartIndex);
+        var slice = sorted.Skip(request.StartIndex);
 
-        return new DataViewPage<ShowcaseProduct>([.. request.Count is { } count ? window.Take(count) : window], DataViewShowcaseProducts.All.Count());
+        return new DataViewPage<ShowcaseProduct>([.. request.Count is { } count ? slice.Take(count) : slice], DataViewShowcaseProducts.All.Count());
     }
 
     // A node's children, or the roots for none, each answer arriving after a moment.

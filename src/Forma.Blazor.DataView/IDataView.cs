@@ -93,7 +93,7 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>Whether the items are shown a page at a time.</summary>
     bool EnablePagination { get; }
 
-    /// <summary>Whether a view renders only the items near the scroll viewport, fetching windows through <see cref="LoadWindowAsync"/>.</summary>
+    /// <summary>Whether a view renders only the items near the scroll viewport, fetching slices through <see cref="LoadSliceAsync"/>.</summary>
     bool Virtualize { get; }
 
     /// <summary>The height of the unit a view virtualizes by, in pixels.</summary>
@@ -168,9 +168,9 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <param name="item">The item on screen.</param>
     int GetItemToken(TItem item);
 
-    /// <summary>The items of one window, sorted as the data view is, for a view that virtualizes.</summary>
+    /// <summary>The items of one slice, sorted as the data view is, for a view that virtualizes.</summary>
     /// <param name="startIndex">The index of the first item asked for.</param>
     /// <param name="count">How many items are asked for.</param>
-    /// <param name="cancellationToken">Canceled when the window is no longer wanted.</param>
-    ValueTask<DataViewPage<TItem>> LoadWindowAsync(int startIndex, int count, CancellationToken cancellationToken);
+    /// <param name="cancellationToken">Canceled when the slice is no longer wanted.</param>
+    ValueTask<DataViewPage<TItem>> LoadSliceAsync(int startIndex, int count, CancellationToken cancellationToken);
 }

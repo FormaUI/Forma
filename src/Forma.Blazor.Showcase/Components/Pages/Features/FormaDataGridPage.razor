@@ -410,7 +410,7 @@
 
 <div class="demo-section">
     <h2>@L["Virtualized Over a Provider"]</h2>
-    <p class="description">@L["Each window is fetched from a provider as it scrolls into view, with a delay here to show the placeholders each column draws while its window loads."]</p>
+    <p class="description">@L["Each slice is fetched from a provider as it scrolls into view, with a delay here to show the placeholders each column draws while its slice loads."]</p>
     <div class="demo-box demo-box-bounded">
         <FormaDataView TItem="GridItem" ItemsProvider="ProvideSlowItemsAsync" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" AddressOptions='@(new DataViewAddressOptions("slow"))'>
             <ChildContent>
@@ -425,7 +425,7 @@
                     </Columns>
                 </FormaDataGrid>
             </ChildContent>
-            <Status>@L["{HugeRowCount:N0} rows, fetched a window at a time.", HugeRowCount]</Status>
+            <Status>@L["{HugeRowCount:N0} rows, fetched a slice at a time.", HugeRowCount]</Status>
         </FormaDataView>
     </div>
 </div>

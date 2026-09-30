@@ -82,7 +82,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>The items to show, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both. A new queryable is a new set the data view asks again, so a page keeps one across its renders until its set changes.</summary>
     [Parameter] public IQueryable<TItem>? Items { get; set; }
 
-    /// <summary>Answers one window of items at a time, for a store the data view does not hold. Supply this or <see cref="Items"/>, not both. A new provider is a new source the data view asks again, so a page keeps one across its renders.</summary>
+    /// <summary>Answers one slice of items at a time, for a store the data view does not hold. Supply this or <see cref="Items"/>, not both. A new provider is a new source the data view asks again, so a page keeps one across its renders.</summary>
     [Parameter] public DataViewItemsProvider<TItem>? ItemsProvider { get; set; }
 
     /// <summary>Identifies an item across reloads, so a selection or an edit survives its item being replaced by an equal copy.</summary>
@@ -148,7 +148,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Renders only the items near the scroll viewport, for a large set with <see cref="EnablePagination"/> off. Requires an ancestor that scrolls.</summary>
     [Parameter] public bool Virtualize { get; set; }
 
-    /// <summary>The height of the unit a view virtualizes by, in pixels, which sizes the scroll range and how many items a window fetches.</summary>
+    /// <summary>The height of the unit a view virtualizes by, in pixels, which sizes the scroll range and how many items a slice fetches.</summary>
     [Parameter] public float ItemHeight { get; set; } = 32;
 
     /// <summary>How many units a view renders beyond each edge of the viewport while virtualizing.</summary>
@@ -391,7 +391,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool MasterReachesSet
         => CheckedSelectionOptions.SelectAllMode == SelectAllMode.Direct || IsVirtualizing;
 
-    // A virtualizing view fetches its own windows, so the engine holds no page of items.
+    // A virtualizing view fetches its own slices, so the engine holds no page of items.
     private bool IsVirtualizing
         => Virtualize && !EnablePagination;
 
@@ -418,7 +418,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private int StartIndex
         => EnablePagination ? (_page - 1) * PageSize : 0;
 
-    private int? WindowCount
+    private int? SliceSize
         => EnablePagination ? PageSize : null;
 
     /// <inheritdoc />
@@ -561,7 +561,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
     }
 
-    /// <summary>Asks the source again for the window being shown, which is how a host reports that the records changed.</summary>
+    /// <summary>Asks the source again for the items being shown, which is how a host reports that the records changed.</summary>
     public Task RefreshDataAsync()
         => LoadAsync();
 
@@ -594,12 +594,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
     }
 
-    /// <summary>The items of one window, for a view that virtualizes; sorted as the data view is.</summary>
+    /// <summary>The items of one slice, for a view that virtualizes; sorted as the data view is.</summary>
     /// <param name="startIndex">The index of the first item asked for.</param>
     /// <param name="count">How many items are asked for.</param>
-    /// <param name="cancellationToken">Canceled when the window is no longer wanted.</param>
-    public ValueTask<DataViewPage<TItem>> LoadWindowAsync(int startIndex, int count, CancellationToken cancellationToken)
-        => LoadWindowCoreAsync(startIndex, count, cancellationToken);
+    /// <param name="cancellationToken">Canceled when the slice is no longer wanted.</param>
+    public ValueTask<DataViewPage<TItem>> LoadSliceAsync(int startIndex, int count, CancellationToken cancellationToken)
+        => LoadSliceCoreAsync(startIndex, count, cancellationToken);
 
     /// <inheritdoc />
     public async Task SortByAsync(string name, DataViewSort<TItem> sort, DataViewSortDirection direction)
@@ -644,7 +644,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
-        var whole = await LoadWindowCoreAsync(0, null, CancellationToken.None);
+        var whole = await LoadSliceCoreAsync(0, null, CancellationToken.None);
         await ReplaceSelectionAsync(CreateSelection(whole.Items));
     }
 
@@ -1390,29 +1390,29 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         try
         {
-            // A virtualizing view fetches its own windows, so the engine asks for the count alone, with the size of each group where it groups.
-            var window = IsVirtualizing
-                ? await LoadWindowCoreAsync(0, 0, cancellation.Token, includesGroupSizes: GroupBy is not null)
-                : await LoadWindowCoreAsync(StartIndex, WindowCount, cancellation.Token);
+            // A virtualizing view fetches its own slices, so the engine asks for the count alone, with the size of each group where it groups.
+            var page = IsVirtualizing
+                ? await LoadSliceCoreAsync(0, 0, cancellation.Token, includesGroupSizes: GroupBy is not null)
+                : await LoadSliceCoreAsync(StartIndex, SliceSize, cancellation.Token);
 
             if (cancellation.IsCancellationRequested)
             {
                 return;
             }
 
-            _items = window.Items;
-            _groups = IsVirtualizing ? CreateGroups(window.GroupSizes) : CreateGroups(window.Items);
+            _items = page.Items;
+            _groups = IsVirtualizing ? CreateGroups(page.GroupSizes) : CreateGroups(page.Items);
             _hasLoaded = true;
-            await SetTotalItemCountAsync(window.TotalCount);
+            await SetTotalItemCountAsync(page.TotalCount);
 
-            // A virtualizing view fetches its own windows, so it is asked to fetch them again.
+            // A virtualizing view fetches its own slices, so it is asked to fetch them again.
             if (IsVirtualizing && ActiveViewport is { } viewport)
             {
                 await viewport.RefreshAsync();
             }
 
             // A page past the last, because the rows on it went away, gives way to the last page that exists.
-            if (EnablePagination && _page > 1 && _items.Count == 0 && window.TotalCount is { } total)
+            if (EnablePagination && _page > 1 && _items.Count == 0 && page.TotalCount is { } total)
             {
                 await MoveToPageAsync(Math.Max(1, (total + PageSize - 1) / PageSize));
                 await LoadAsync();
@@ -1477,7 +1477,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         _settledCount = _totalItemCount;
     }
 
-    private async ValueTask<DataViewPage<TItem>> FetchWindowAsync(int startIndex, int? count, bool includesGroupSizes, CancellationToken cancellationToken)
+    private async ValueTask<DataViewPage<TItem>> FetchSliceAsync(int startIndex, int? count, bool includesGroupSizes, CancellationToken cancellationToken)
     {
         // The views without a tree show the current node's children, which over a set means the items naming it as parent.
         var request = new DataViewRequest<TItem>(startIndex, count, _currentItem, GroupBy, _sort, _sortDirection, cancellationToken)
@@ -1499,30 +1499,30 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         var query = request.ApplySorting(children);
         var executor = GetExecutor(query);
         var total = await executor.CountAsync(query, cancellationToken);
-        var window = query.Skip(startIndex);
+        var slice = query.Skip(startIndex);
 
-        if (count is { } windowCount)
+        if (count is { } sliceSize)
         {
-            window = window.Take(windowCount);
+            slice = slice.Take(sliceSize);
         }
 
-        var items = await executor.ToArrayAsync(window, cancellationToken);
+        var items = await executor.ToArrayAsync(slice, cancellationToken);
         var groupSizes = includesGroupSizes ? await executor.ToArrayAsync(request.CountGroups(children), cancellationToken) : null;
 
         return new DataViewPage<TItem>(items, total) { GroupSizes = groupSizes };
     }
 
-    // Every window is a set of the current node's children, so each item in it is remembered under that node.
-    private async ValueTask<DataViewPage<TItem>> LoadWindowCoreAsync(int startIndex, int? count, CancellationToken cancellationToken, bool includesGroupSizes = false)
+    // Every slice is a set of the current node's children, so each item in it is remembered under that node.
+    private async ValueTask<DataViewPage<TItem>> LoadSliceCoreAsync(int startIndex, int? count, CancellationToken cancellationToken, bool includesGroupSizes = false)
     {
-        var window = await FetchWindowAsync(startIndex, count, includesGroupSizes, cancellationToken);
+        var page = await FetchSliceAsync(startIndex, count, includesGroupSizes, cancellationToken);
 
         if (HasHierarchy && !cancellationToken.IsCancellationRequested)
         {
-            RecordParent(window.Items, _currentItem);
+            RecordParent(page.Items, _currentItem);
         }
 
-        return window;
+        return page;
     }
 
     // The host's executor answers for the queryables it supports; every other one is enumerated where it stands.

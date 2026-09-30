@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 /// <typeparam name="TItem">The item the rows hold.</typeparam>
 /// <remarks>
 /// The rows are laid out as segments, one for an ungrouped set and one per group otherwise, each a heading row where it has a group
-/// followed by its item rows unless the group is folded. A window of rows is answered by fetching the item ranges those rows cover,
+/// followed by its item rows unless the group is folded. A slice of rows is answered by fetching the item ranges those rows cover,
 /// one fetch per run of consecutive items, so a folded group between two open ones is never read. Over a source that cannot
-/// count, the rows run one window past the last item answered until a window comes back shorter than asked for, which ends the
-/// set, so a scroll to their end asks for the next window and no request reaches further than one. The rows found by a fetch are
+/// count, the rows run one slice past the last item answered until a slice comes back shorter than asked for, which ends the
+/// set, so a scroll to their end asks for the next slice and no request reaches further than one. The rows found by a fetch are
 /// published after it, never on the answer that found them, since the framework's virtualization holds the viewport where it was
-/// when the rows grow under a window that reaches their end; a scroll the view asks for holds them back until it has landed.
+/// when the rows grow under a slice that reaches their end; a scroll the view asks for holds them back until it has landed.
 /// </remarks>
 /// <param name="view">The data view the rows are laid out over.</param>
 /// <param name="virtualizer">The virtualization the view draws the rows through, once it is drawn.</param>
@@ -61,7 +61,7 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
         _continuationRows = 0;
     }
 
-    /// <summary>Lays the rows out again from the data view's count, groups and folds and the columns across; true when the rows changed, so the view fetches its windows again.</summary>
+    /// <summary>Lays the rows out again from the data view's count, groups and folds and the columns across; true when the rows changed, so the view fetches its slices again.</summary>
     public bool Update()
     {
         List<(object? Key, int Count, bool IsFolded)> shape = [.. _view.Groups.Select(group => (group.Key, group.Count, _view.IsFolded(group)))];
@@ -98,7 +98,7 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
         }
         else if (_view.TotalItemCount is null)
         {
-            // A source that cannot count is read as far as it answers; the rows end where a window comes back short.
+            // A source that cannot count is read as far as it answers; the rows end where a slice comes back short.
             var segment = new Segment(0, null, 0, UncountedItems, false);
             _segments.Add(segment);
             row = segment.GetRowCount(_columns);
@@ -160,7 +160,7 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
             return new ItemsProviderResult<DataViewRow<TItem>>(answered, RowCount);
         }
 
-        // Uncounted, a window shorter than asked for ends the set; until one does, the rows run one window past the last answered,
+        // Uncounted, a slice shorter than asked for ends the set; until one does, the rows run one slice past the last answered,
         // so a scroll to their end asks for the next.
         var filled = answered.TakeWhile(row => row.Items.Count > 0).ToList();
 
@@ -215,7 +215,7 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
         await RepublishAsync();
     }
 
-    // Uncounted, the rows only ever grow: every item answered so far, and one window more while the source may hold further ones.
+    // Uncounted, the rows only ever grow: every item answered so far, and one slice more while the source may hold further ones.
     private int PublishableRows
         => ((_knownItems + _columns - 1) / _columns) + (_isExhausted ? 0 : _continuationRows);
 
@@ -277,15 +277,15 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
 
             if (stop > start && !cancellationToken.IsCancellationRequested)
             {
-                var window = await _view.LoadWindowAsync(start, stop - start, cancellationToken);
-                items.AddRange(window.Items);
+                var page = await _view.LoadSliceAsync(start, stop - start, cancellationToken);
+                items.AddRange(page.Items);
             }
         }
 
         return items;
     }
 
-    // The items the rows hold, read in one window per run of consecutive items and kept by their index in the set.
+    // The items the rows hold, read in one slice per run of consecutive items and kept by their index in the set.
     private async ValueTask<Dictionary<int, TItem>> FetchAsync(List<(DataViewGroup<TItem>? Group, int FirstItem, int ItemCount)> rows, CancellationToken cancellationToken)
     {
         Dictionary<int, TItem> items = [];
@@ -316,11 +316,11 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
                 return;
             }
 
-            var window = await _view.LoadWindowAsync(start, stop - start, cancellationToken);
+            var page = await _view.LoadSliceAsync(start, stop - start, cancellationToken);
 
-            for (var offset = 0; offset < window.Items.Count; offset++)
+            for (var offset = 0; offset < page.Items.Count; offset++)
             {
-                items[start + offset] = window.Items[offset];
+                items[start + offset] = page.Items[offset];
             }
         }
     }

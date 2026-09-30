@@ -282,7 +282,7 @@
         [Fact]
         public async Task Should_reach_the_last_item_a_source_that_cannot_count_answered()
         {
-            // Arrange — the window comes back shorter than asked for, which ends the set
+            // Arrange — the slice comes back shorter than asked for, which ends the set
             using var ctx = new FormaDataViewTests();
             DataViewItemsProvider<Product> provider = request => ValueTask.FromResult(new DataViewPage<Product>([.. CreateProducts().Skip(request.StartIndex).Take(request.Count ?? 4)], null));
             var cut = ctx.Render(

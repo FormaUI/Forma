@@ -361,7 +361,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    // A node a virtualizing tree has scrolled out of its window is scrolled back first, and focused once its row is drawn.
+    // A node a virtualizing tree has scrolled out of its rendered range is scrolled back first, and focused once its row is drawn.
     private async Task FocusNodeAsync(TItem node)
     {
         var key = View.ItemKey(node);

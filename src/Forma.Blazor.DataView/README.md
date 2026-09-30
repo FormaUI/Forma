@@ -5,7 +5,7 @@ items and shared state, while interchangeable built-in or custom views determine
 are presented and interacted with. It can present a simple list or support richer arrangements
 such as grids, cards and trees.
 
-The engine accepts a set of items or a provider that supplies one window at a time, and supports
+The engine accepts a set of items or a provider that supplies one slice at a time, and supports
 sorting, counting, paging, keyed selection and synchronizing sort and page state with the address.
 It also renders the empty, busy and loading states and the footer. Each view supplies its own
 presentation and interactions: `FormaDataGrid`, for example, displays rows with aligned columns
@@ -59,7 +59,7 @@ the renderer; a host that registers nothing gets the in-memory one all the same.
 ```
 
 `Items` is any `IQueryable<TItem>`; the engine sorts, counts and takes the page in the store the
-queryable stands on. `ItemsProvider` stands in for it where the store answers one window at a time,
+queryable stands on. `ItemsProvider` stands in for it where the store answers one slice at a time,
 taking a `DataViewRequest` and returning a `DataViewPage`. A prefix in `AddressOptions` keeps the
 sort and the page in the address, apart from any other data view on the page. `GroupBy` folds the
 items under headings, a `DataViewGrouping` naming the key and the name a heading shows; a heading

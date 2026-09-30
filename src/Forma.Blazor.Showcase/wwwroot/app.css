@@ -557,7 +557,7 @@ body {
     background: var(--hover-bg-color);
 }
 
-/* A bar standing in for a cell's text while its row's window loads. */
+/* A bar standing in for a cell's text while its row's slice loads. */
 .demo-skeleton {
     display: inline-block;
     inline-size: 60%;

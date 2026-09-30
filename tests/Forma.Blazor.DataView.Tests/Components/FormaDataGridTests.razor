@@ -236,7 +236,7 @@
         [Fact]
         public async Task Should_keep_the_rows_on_screen_until_a_grouping_s_items_arrive()
         {
-            // Arrange — the first window answers at once; the one the grouping asks for is held
+            // Arrange — the first slice answers at once; the one the grouping asks for is held
             using var ctx = new FormaDataGridTests();
             var held = new TaskCompletionSource<DataViewPage<Product>>();
             var requests = 0;
@@ -257,7 +257,7 @@
             var dataView = cut.FindComponent<FormaDataView<Product>>();
             dataView.Render(parameters => parameters.Add(p => p.GroupBy, DataViewGrouping<Product>.By(product => product.Category)));
 
-            // Assert — the rows stand ungrouped until the grouped window lands
+            // Assert — the rows stand ungrouped until the grouped slice lands
             Assert.Equal(6, cut.FindAll("tr.forma-data-grid-row").Count);
             Assert.Empty(cut.FindAll("tbody.forma-data-grid-group"));
 
@@ -1212,16 +1212,16 @@
         }
 
         [Fact]
-        public void Should_fetch_the_windows_again_when_the_sort_changes_while_virtualizing()
+        public void Should_fetch_the_slices_again_when_the_sort_changes_while_virtualizing()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var windowRequests = 0;
+            var sliceRequests = 0;
             DataViewItemsProvider<GridItem> provider = request =>
             {
                 if (request.Count != 0)
                 {
-                    windowRequests++;
+                    sliceRequests++;
                 }
 
                 return ValueTask.FromResult(new DataViewPage<GridItem>(CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(), 25));
@@ -1235,14 +1235,14 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
-            var before = windowRequests;
+            var before = sliceRequests;
 
             // Act
             cut.Find("thead button").Click();
-            cut.WaitForState(() => windowRequests > before);
+            cut.WaitForState(() => sliceRequests > before);
 
             // Assert
-            Assert.True(windowRequests > before);
+            Assert.True(sliceRequests > before);
         }
 
         [Fact]

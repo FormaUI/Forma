@@ -681,7 +681,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     {
         var result = await _rows.ProvideAsync(request);
 
-        // The rows drawn are the last window's, so their places in the set are recorded once per fetch, never per render.
+        // The rows drawn are the last slice's, so their places in the set are recorded once per fetch, never per render.
         var rowIndices = new Dictionary<TItem, int>(View.ItemComparer);
 
         foreach (var row in result.Items)
