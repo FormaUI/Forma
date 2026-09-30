@@ -1,0 +1,53 @@
+# Forma.Blazor.Locales.Spanish
+
+The Spanish localization of Forma, as a locale pack: a package of locale files alone, carrying the
+Spanish strings of `Forma.Blazor`, `Forma.Blazor.Composer`, `Forma.Blazor.DataView` and
+`Forma.Blazor.Explorer`. Installing it is all an application does to show Forma's components in
+Spanish.
+
+## Install
+
+```pwsh
+dotnet add package FormaUI.NET-Blazor.Locales.Spanish
+```
+
+Reference the pack from the application itself. The package records the pack in the application
+when it builds, and `AddJsonLocalization()` reads it:
+
+```csharp
+using Forma.Blazor;
+using Forma.Framework.Localization.Json;
+
+builder.Services.AddJsonLocalization();
+builder.Services.AddFormaUI();
+```
+
+Forma's strings then appear in Spanish wherever `CultureInfo.CurrentUICulture` is `es` or a culture
+beneath it, such as `es-419` or `es-MX`. The pack carries strings for each of the four
+assemblies, so it serves whichever of them the application installs.
+
+## Rewording a string
+
+An application's own `.locales` folder overrides the pack. A file there, in a folder named for the
+assembly and laid out by the type's namespace, holds only the keys it changes:
+
+```text
+.locales/Forma.Blazor/Components/Bars/es.json
+```
+
+```json
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaSelectionToolbar": {
+    "Clear Selection": "Quitar Selección"
+  }
+}
+```
+
+[`Forma.Framework.Localization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Localization/README.md)
+documents how a host lays out its files and copies them to the output, and how a class library or
+a test names a pack in `LocalizationOptions.LocalePacks`.
+
+## License
+
+Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

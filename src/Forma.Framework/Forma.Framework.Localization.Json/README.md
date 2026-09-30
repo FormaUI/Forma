@@ -1,15 +1,8 @@
 # Forma.Framework.Localization.Json
 
-The JSON backend for `Forma.Framework.Localization`: it implements `IStringLocaleFactory` and
-`IStringLocale<T>` over JSON locale files that sit in a `.locales` folder beside the types they
-localize and ship inside their assembly or in a locale pack, with the host's own files laid over
-both. A lookup resolves the right file from the type asking and the culture in force, and a key
-with no translation renders as written.
-
-This document covers what is JSON's: registering the backend, the file's shape, and how a lookup
-resolves. Where a file sits, what a host lays over it, and the paths behind both are
-`Forma.Framework.Localization`'s, whose README walks one type through every file that can
-localize it.
+The JSON backend for `Forma.Framework.Localization`. It reads translations from JSON locale files
+embedded in the assembly whose types they localize, from the locale packs the application
+references, and from the host's own `.locales` folder, and serves them through `IStringLocale<T>`.
 
 ## Install and register
 
@@ -23,51 +16,26 @@ using Forma.Framework.Localization.Json;
 
 builder.Services.AddJsonLocalization();
 
+// or, with settings
 builder.Services.AddJsonLocalization(new LocalizationOptions
 {
     RequireMatchingLocalization = builder.Environment.IsDevelopment(),
 });
 ```
 
-That registers `IStringLocaleFactory` and `IStringLocale<T>` as singletons, so a consumer
-injecting either resolves. Registration uses `TryAdd`, so a host that registered either contract
-first keeps its own. Registration is also where the locale packs the application was built against
-are found, read from the application's own assembly and laid before any the options name; a
-factory constructed by hand reads only the packs its options name. The locales log through the
-host's `ILoggerFactory`, and discard their messages where none is registered. The options are the
-`LocalizationOptions` every backend shares, which `Forma.Framework.Localization` documents.
+That registers `IStringLocaleFactory` and `IStringLocale<T>` as singletons, with `TryAdd`, so a
+host that registered either first keeps its own. It also finds the locale packs the application
+references. The settings are `Forma.Framework.Localization`'s `LocalizationOptions`.
 
-| Type | What it is |
-| --- | --- |
-| `ServiceCollectionExtensions` | `AddJsonLocalization`, with or without options; finds the locale packs the application was built against. |
-| `JsonStringLocaleFactory` | Creates locales reading JSON files embedded in the assembly owning the type, with the locale packs the options name and then the host's files laid over them; constructed with no arguments, with options, or with options and an `ILoggerFactory`. |
-| `JsonStringLocale<T>` | The `IStringLocale<T>` the container resolves, reading the strings belonging to `T`. |
-| `JsonLocaleFileFormat` | The `ILocaleFileFormat` a JSON locale file is written in, for a tool reading files by the runtime's rule. |
+## Localizing a type
 
-## Getting started
-
-Put a file for each culture in the `.locales` folder beside the type it localizes, named for the
-culture, and embed it:
+Put a file for each culture in a `.locales` folder beside the type, named for the culture:
 
 ```text
 Uploads/UploadStatus.cs
 Uploads/.locales/es.json
 Uploads/.locales/he.json
 ```
-
-```xml
-<ItemGroup>
-    <EmbeddedResource Include="**\*.json" Exclude="$(DefaultItemExcludes)" />
-</ItemGroup>
-```
-
-The SDK embeds no JSON by default, so the item names the files. A file named for its culture alone
-stays in the assembly itself rather than moving into a satellite assembly; a file named for the
-type, `Uploads/.locales/UploadStatus.es.json`, ends in its culture, so the item sets
-`WithCulture="false"` to keep it there too, or the runtime reads it from the satellite.
-
-A file is a JSON object opening with the metadata entry, whose sections complete the type's name
-from its folder and whose entries are keyed by the source text:
 
 ```json
 {
@@ -80,16 +48,21 @@ from its folder and whose entries are keyed by the source text:
 }
 ```
 
-Inject the locale for the type and look a key up by the source text:
+Embed the files, since the SDK embeds no JSON by default:
+
+```xml
+<ItemGroup>
+    <EmbeddedResource Include="**\.locales\*.json" Exclude="$(DefaultItemExcludes)" WithCulture="false" />
+</ItemGroup>
+```
+
+Then look each string up by its source text:
 
 ```csharp
 using Forma.Framework.Localization;
 
 public sealed class UploadStatus(IStringLocale<UploadStatus> locale)
 {
-    public string Saved
-        => locale["Saved"];
-
     public string Progress(int stored, int total)
         => locale["Stored {Stored} of {Total}.", stored, total];
 
@@ -99,95 +72,54 @@ public sealed class UploadStatus(IStringLocale<UploadStatus> locale)
 ```
 
 Under `es`, `Progress(3, 9)` renders `Se guardaron 3 de 9.` and `FileCount(1)` renders
-`1 archivo`; under `en`, with no file, they render `Stored 3 of 9.` and `1 file` from the keys
-themselves. A Razor component injects the same locale, `@inject IStringLocale<UploadPage> L`.
-Values pair with the key's holes by position, and `Forma.Framework.Localization` documents the
-hole and plural syntax in full.
+`1 archivo`; under `en` they render `Stored 3 of 9.` and `1 file` from the keys themselves.
+`Forma.Framework.Localization` documents the hole and plural syntax, where else a file may sit,
+and how a host overrides one.
 
-## Locale files
+A file named for its type, `Uploads/.locales/UploadStatus.es.json`, holds that type's entries at
+its top level. `WithCulture="false"` keeps such a file in the main assembly; without it the SDK
+moves the file into the culture's satellite assembly, which is read all the same.
 
-Every file names its culture in its own file name and in its metadata; there is no cultureless
-file, and the source language needs none. A text value is a translation, a nested object is a
-section completing a type's name, and `null` says the translation is deliberately the source text
-itself. Comments and trailing commas are allowed.
+## The file
 
-`Forma.Framework.Localization` owns the layout: a type's translations are read from the root down
-to the type, from each folder's `.locales` folder, unless the assembly's `.locale.json` at its
-root states other paths. It also defines the `$shared` section any node may hold, the `@.` a
-top-level section counts its name from the assembly's root with, and the `$$` escape for a key
-shaped like a reserved entry. This backend adds the format alone: the extension is `.json`, and
-the metadata entry is the `$localization` property.
+A locale file is a JSON object. Comments and trailing commas are allowed.
 
-### Metadata
-
-```json
-{
-  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Save": "שמור"
-}
-```
-
-The value is a list of `Name: value;` fields. `SchemaVersion` and `Culture` are required, and a
-file may add `Author` and `Revision`. Where a file belongs is the business of the assembly's
-`.locale.json`, never of the entry. The entry is removed before lookup, so it appears in neither
-a key search nor `GetAllStrings`.
-
-Reading a file without the entry throws `LocalizationMetadataException`, as does a malformed
-value, a `Culture` other than the one the file's own name gives it, or a `SchemaVersion` this
-build cannot read. The version is compared by part: a differing **major** is refused, a differing
-**minor** is accepted in either direction, and **patch** is ignored. A field this build does not
-recognize is ignored, so a file written by a newer minor schema still loads.
-
-A file that is not readable JSON, not an object, or that gives a key a value that is neither
-text, `null` nor a section throws `LocaleFileException`, which the metadata exception is one of,
-so a caller catches one type for a file that cannot be read.
-
-### Source-text entries
-
-A `null` value declares that the translation for this culture is the source text itself, for a
-term the language borrows, an acronym, a brand or proper noun, or a symbol:
+| Entry | What it is |
+| --- | --- |
+| `"$localization"` | The metadata, required: `SchemaVersion` and `Culture`, optionally `Author` and `Revision`. |
+| `"Key": "text"` | A translation, keyed by the source text. |
+| `"Key": null` | A translation that is the source text itself, for an acronym, a brand or a borrowed term. |
+| `"Name": { … }` | A section completing a type's name from where the file sits, `"Bars.FormaSelectionToolbar"` or one segment at a time. |
+| `"@.Name": { … }` | A top-level section spelling the type's name from the assembly's root namespace, wherever the file sits. |
+| `"$shared": { … }` | Translations every type beneath this node gets; a type's own entry wins. |
+| `"$$key"` | The key `$key`, for a key shaped like a reserved entry. |
 
 ```json
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Email": null,
-  "PDF": null,
-  "Forma": null
+  "$shared": { "Bold": "מודגש", "Italic": "נטוי" },
+  "FormaComposer": {
+    "PDF": null,
+    "Rich Text": "טקסט עשיר"
+  }
 }
 ```
 
-A null entry and an absent entry both render the source text, and differ in what they report:
+`Culture` must match the culture in the file's name. A differing major `SchemaVersion` is refused,
+a differing minor is read, and a field the reader does not know is ignored. A file that cannot be
+read throws `LocaleFileException`, or `LocalizationMetadataException` for bad metadata.
 
-| | `"Email": null` | key absent |
-| --- | --- | --- |
-| `ResourceNotFound` | `false` | `true` |
-| `RequireMatchingLocalization` | passes | throws |
-| `GetAllStrings` | lists it | omits it |
-
-The source text is still interpreted: holes are filled and plural expressions evaluated, with the
-plural rules of `SourceLanguage` rather than the culture on screen.
+A `null` entry and a missing one both render the source text; the `null` entry counts as
+translated, so `RequireMatchingLocalization` accepts it and `GetAllStrings` lists it.
 
 ## How a lookup resolves
 
-A lookup walks `CultureInfo.CurrentUICulture` outward through `Parent`, taking the first culture
-whose files carry the key and stopping before the invariant culture, which no file can name. So an
-`es-419` reader gets the `es` file's entry where no `es-419` file has it, and a host override
-written in `es` is a fallback for that reader rather than a replacement for every Spanish string.
-
-Within a culture, the assembly's embedded files are read first and the host's `.locales` folder is
-laid over them, so a host entry wins over the assembly's own at the same position. Each file is
-read once per factory and kept in memory.
-
-A plural expression in a translation is resolved before the holes are filled, and the rules read
-CLDR operands rather than a bare integer, so `1` and `1.0` can differ: `1.0` is `one` in Spanish
-and `other` in English. A key with no translation resolves its plural forms under
-`SourceLanguage`, `en` by default, while the count itself follows the reader, so an English key
-shows `1.234,5` to a Colombian.
+A lookup walks `CultureInfo.CurrentUICulture` out through its parents, taking the first culture
+whose files carry the key: an `es-419` reader gets the `es` entry where no `es-419` file has one.
+Within a culture, the assembly's own files are read first, then the locale packs, then the host's
+folder, each overriding the one before. Each file is read once per factory.
 
 ## Outside the container
-
-A factory is constructed directly where no container is at hand, and creates a locale for a type
-or for a base name inside a named assembly:
 
 ```csharp
 using Forma.Framework.Localization;
@@ -196,11 +128,10 @@ using Forma.Framework.Localization.Json;
 var factory = new JsonStringLocaleFactory(new LocalizationOptions { LocalesPath = string.Empty });
 
 IStringLocale locale = factory.Create(typeof(UploadStatus));
-IStringLocale shared = factory.Create("Forma.Blazor.Components.Bars", "Forma.Blazor");
 ```
 
-A factory returns the same locale for the same type, and every locale reads the culture in force
-on each lookup.
+A factory constructed this way reads only the locale packs its options name in `LocalePacks`.
+`JsonLocaleFileFormat` reads one file by the runtime's rules, for a tool that checks locale files.
 
 ## License
 
