@@ -12,16 +12,16 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
 {
     private readonly List<SampleResource> _resources = [.. resources];
 
-    /// <summary>How many slices have been asked for, so a demo can show that only what is seen is fetched.</summary>
+    /// <summary>How many slices have been asked for.</summary>
     public int QueryCount { get; private set; }
 
-    /// <summary>The last slice asked for, so a demo can show what the explorer requested.</summary>
+    /// <summary>The last slice asked for.</summary>
     public CatalogQuery? LastQuery { get; private set; }
 
-    /// <summary>Raised once a slice has been answered, so a demo can redraw its own reporting.</summary>
+    /// <summary>Raised once a slice has been answered.</summary>
     public Func<Task>? Queried { get; set; }
 
-    /// <summary>Answers for one slice of the named folder, or of everything when none is named, after a delay standing in for the round trip.</summary>
+    /// <summary>Answers one slice of the named folder.</summary>
     public async ValueTask<CatalogPage> GetPageAsync(string? folder, CatalogQuery query, CancellationToken cancellationToken)
     {
         QueryCount++;

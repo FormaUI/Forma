@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
 
-/// <summary>Renders the items of a long list near the viewport, with spacers standing for the rest, and keeps rendered the items its owner pins wherever they lie.</summary>
+/// <summary>A long list rendered around the viewport, with the items its owner pins.</summary>
 /// <typeparam name="TItem">The item the list holds.</typeparam>
 /// <remarks>
 /// The items and the spacers are drawn side by side under the owner's element, in the items' order: a spacer opening the list, the
@@ -30,28 +30,28 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     /// <summary>The items the owner holds. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
     [Parameter] public IReadOnlyList<TItem>? Items { get; set; }
 
-    /// <summary>Answers a slice of positions with its items and the size of the whole set, for items the owner does not hold. Supply this or <see cref="Items"/>, not both.</summary>
+    /// <summary>The provider the items are read from, a slice at a time. Supply this or <see cref="Items"/>, not both.</summary>
     [Parameter] public ItemsProviderDelegate<TItem>? ItemsProvider { get; set; }
 
-    /// <summary>The stable key of an item, which keeps its element while it stays drawn and names it in <see cref="PinnedKeys"/>.</summary>
+    /// <summary>The stable key of an item.</summary>
     [Parameter, EditorRequired] public Func<TItem, object> ItemKey { get; set; } = default!;
 
-    /// <summary>The one element an item draws.</summary>
+    /// <summary>The element an item draws.</summary>
     [Parameter, EditorRequired] public RenderFragment<TItem> ItemContent { get; set; } = default!;
 
-    /// <summary>The one element drawn for an item a provider has not answered yet; a spacer stands for it where none is given.</summary>
+    /// <summary>The element drawn for an item the provider has not answered yet.</summary>
     [Parameter] public RenderFragment<PlaceholderContext>? Placeholder { get; set; }
 
-    /// <summary>The room an item is estimated to take, in pixels from its top to the next item's, until items have been drawn and measured.</summary>
+    /// <summary>The estimated room an item takes, in pixels.</summary>
     [Parameter] public float ItemSize { get; set; } = 50;
 
     /// <summary>How many items are drawn beyond each edge of the viewport.</summary>
     [Parameter] public int OverscanCount { get; set; } = 3;
 
-    /// <summary>The element a spacer is, <c>div</c> in a list and <c>tr</c> among the rows of a table.</summary>
+    /// <summary>The element a spacer is drawn as.</summary>
     [Parameter] public string SpacerElement { get; set; } = "div";
 
-    /// <summary>The keys of the items kept drawn wherever they lie, such as the item that holds the focus; a key that names no item draws nothing.</summary>
+    /// <summary>The keys of the items kept rendered wherever they lie.</summary>
     [Parameter] public IReadOnlyCollection<object>? PinnedKeys { get; set; }
 
     private readonly Dictionary<object, (int Index, TItem Item)> _pins = [];
@@ -94,10 +94,11 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     private int InitialCount
         => (OverscanCount * 2) + 1;
 
-    /// <summary>Scrolls the item at <paramref name="index"/> into view, completing true once it is in view, and false when there is no item at the index or it could not be drawn; a newer scroll cancels it, as <paramref name="cancellationToken"/> does.</summary>
+    /// <summary>Scrolls the item at <paramref name="index"/> into view.</summary>
     /// <param name="index">The item's position in the list.</param>
-    /// <param name="alignment">Whether the item is brought by the least scroll that shows it or to the top of the viewport.</param>
-    /// <param name="cancellationToken">Canceled when the scroll is no longer wanted.</param>
+    /// <param name="alignment">Where the scroll brings the item.</param>
+    /// <param name="cancellationToken">Cancels the scroll.</param>
+    /// <returns>Whether the item is in view.</returns>
     public async Task<bool> ScrollToIndexAsync(int index, ScrollAlignment alignment = ScrollAlignment.Nearest, CancellationToken cancellationToken = default)
     {
         if (_scrollCancellation is { } superseded)
@@ -145,7 +146,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         }
     }
 
-    /// <summary>Reads the items again, for a list whose items changed: a provider is asked for the rendered range again, and a pinned item outside it is kept only while it still stands at its position.</summary>
+    /// <summary>Reads the items again.</summary>
     public async Task RefreshDataAsync()
     {
         _isStale = true;
@@ -160,10 +161,10 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         StateHasChanged();
     }
 
-    /// <summary>Takes where the list stands in the viewport, reported by the browser.</summary>
-    /// <param name="offset">How far the top of the viewport stands past the start of the list, in pixels; negative while the list starts below it.</param>
+    /// <summary>Takes where the list stands in the viewport.</summary>
+    /// <param name="offset">How far the top of the viewport stands past the start of the list, in pixels.</param>
     /// <param name="viewport">How tall the viewport is, in pixels.</param>
-    /// <param name="itemSize">The average room a drawn item takes, from its top to the next item's, or zero where none are drawn.</param>
+    /// <param name="itemSize">The average room a drawn item takes, in pixels.</param>
     [JSInvokable]
     public async Task HandleViewportAsync(double offset, double viewport, double itemSize)
     {
@@ -589,12 +590,12 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         await base.DisposeAsyncCore();
     }
 
-    /// <summary>One thing the list draws: a spacer standing for a run of items, an item, or a placeholder for an item not yet answered.</summary>
+    /// <summary>One thing the list draws: a spacer, an item or a placeholder.</summary>
     private readonly record struct Drawn(DrawnKind Kind, int Index, TItem? Item, double Height, string? Role);
 
-    /// <summary>Keys a spacer by its role and the item it stands before, apart from every item's key.</summary>
+    /// <summary>The key of a spacer.</summary>
     private sealed record SpacerKey(string Role, int Before);
 
-    /// <summary>Keys a placeholder by the position it stands for, apart from every item's key.</summary>
+    /// <summary>The key of a placeholder.</summary>
     private sealed record PlaceholderKey(int Index);
 }

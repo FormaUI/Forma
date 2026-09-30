@@ -61,7 +61,8 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
         _continuationRows = 0;
     }
 
-    /// <summary>Lays the rows out again from the data view's count, groups and folds and the columns across; true when the rows changed, so the view fetches its slices again.</summary>
+    /// <summary>Lays the rows out again.</summary>
+    /// <returns>Whether the rows changed.</returns>
     public bool Update()
     {
         List<(object? Key, int Count, bool IsFolded)> shape = [.. _view.Groups.Select(group => (group.Key, group.Count, _view.IsFolded(group)))];

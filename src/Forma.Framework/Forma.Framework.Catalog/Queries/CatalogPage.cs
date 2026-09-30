@@ -1,9 +1,9 @@
 namespace Forma.Framework.Catalog.Queries;
 
 
-/// <summary>The items a <see cref="CatalogQuery"/> asked for, and how much there is to page through.</summary>
-/// <param name="Items">The slice itself, which may be shorter than asked for at the end of the collection.</param>
-/// <param name="TotalCount">How many items match in all, including any the store returns hidden, or null when the store cannot say without counting them.</param>
+/// <summary>What a provider answers a <see cref="CatalogQuery"/> with.</summary>
+/// <param name="Items">The slice of the catalog items that should be processed.</param>
+/// <param name="TotalCount">How many items match in all.</param>
 public sealed record CatalogPage(IReadOnlyList<ICatalogItem> Items, int? TotalCount)
 {
     /// <summary>Nothing to show.</summary>

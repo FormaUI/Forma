@@ -82,7 +82,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>The items to show, sorted, counted and paged by the data view itself. Supply this or <see cref="ItemsProvider"/>, not both. A new queryable is a new set the data view asks again, so a page keeps one across its renders until its set changes.</summary>
     [Parameter] public IQueryable<TItem>? Items { get; set; }
 
-    /// <summary>Answers one slice of items at a time, for a store the data view does not hold. Supply this or <see cref="Items"/>, not both. A new provider is a new source the data view asks again, so a page keeps one across its renders.</summary>
+    /// <summary>The provider the items are read from, a slice at a time. Supply this or <see cref="Items"/>, not both.</summary>
     [Parameter] public DataViewItemsProvider<TItem>? ItemsProvider { get; set; }
 
     /// <summary>Identifies an item across reloads, so a selection or an edit survives its item being replaced by an equal copy.</summary>
@@ -148,7 +148,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Renders only the items near the scroll viewport, for a large set with <see cref="EnablePagination"/> off. Requires an ancestor that scrolls.</summary>
     [Parameter] public bool Virtualize { get; set; }
 
-    /// <summary>The height of the unit a view virtualizes by, in pixels, which sizes the scroll range and how many items a slice fetches.</summary>
+    /// <summary>The height of the unit a view virtualizes by, in pixels.</summary>
     [Parameter] public float ItemHeight { get; set; } = 32;
 
     /// <summary>How many units a view renders beyond each edge of the viewport while virtualizing.</summary>
@@ -561,7 +561,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
     }
 
-    /// <summary>Asks the source again for the items being shown, which is how a host reports that the records changed.</summary>
+    /// <summary>Reads the items being shown again.</summary>
     public Task RefreshDataAsync()
         => LoadAsync();
 
@@ -594,10 +594,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
     }
 
-    /// <summary>The items of one slice, for a view that virtualizes; sorted as the data view is.</summary>
-    /// <param name="startIndex">The index of the first item asked for.</param>
-    /// <param name="count">How many items are asked for.</param>
-    /// <param name="cancellationToken">Canceled when the slice is no longer wanted.</param>
+    /// <inheritdoc />
     public ValueTask<DataViewPage<TItem>> LoadSliceAsync(int startIndex, int count, CancellationToken cancellationToken)
         => LoadSliceCoreAsync(startIndex, count, cancellationToken);
 

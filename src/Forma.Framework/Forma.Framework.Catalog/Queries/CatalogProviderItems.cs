@@ -1,7 +1,7 @@
 namespace Forma.Framework.Catalog.Queries;
 
 
-/// <summary>The items fetched from a provider, one slice replacing the last or slices appended while infinite scrolling, with the fetch itself in flight.</summary>
+/// <summary>The items fetched from a catalog provider.</summary>
 public sealed class CatalogProviderItems : IDisposable
 {
     private List<ICatalogItem> _items = [];
@@ -13,28 +13,24 @@ public sealed class CatalogProviderItems : IDisposable
     public IReadOnlyList<ICatalogItem> Items
         => _items;
 
-    /// <summary>How many items the provider has returned, the hidden and stray ones left out of the items included.</summary>
+    /// <summary>How many items the provider has returned.</summary>
     public int FetchedCount
         => _fetchedCount;
 
-    /// <summary>How many items the provider reports in total, or null when it cannot say without counting them.</summary>
+    /// <summary>How many items the provider reports in total.</summary>
     public int? Total { get; private set; }
 
-    /// <summary>The reported total less the items the provider returned that were left out, or null when the total is unknown.</summary>
+    /// <summary>The reported total less the items left out.</summary>
     public int? ListedTotal
         => Total is { } total ? Math.Max(total - _unlistedCount, _items.Count) : null;
 
-    /// <summary>Whether the last page came back full — the only signal left for more pages once <see cref="Total"/> is unknown.</summary>
+    /// <summary>Whether the last page came back full.</summary>
     public bool WasFull { get; private set; }
 
     /// <summary>Whether a fetch is currently running.</summary>
     public bool IsFetching { get; private set; }
 
-    /// <summary>
-    /// Runs the query against the provider, replacing the items or extending them, leaving out hidden items and
-    /// a stray item the provider let through. A fetch still running when a newer one starts, or when the given token
-    /// is canceled, is abandoned rather than raced.
-    /// </summary>
+    /// <summary>Runs the query against the provider.</summary>
     public async Task FetchAsync(
         ICatalogProvider provider,
         Action onStateChanged,

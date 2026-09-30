@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Globalization;
 
-/// <summary>One culture's calendar over a bounded range of months: coordinates, names, clamping, and the day grid.</summary>
+/// <summary>One culture's calendar over a bounded range of months.</summary>
 internal sealed class CalendarMonthRange
 {
     private const int DefaultYearRadius = 10;

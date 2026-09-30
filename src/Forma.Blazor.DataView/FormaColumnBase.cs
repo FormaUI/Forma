@@ -55,7 +55,7 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <summary>An options surface the header opens from a button beside the title.</summary>
     [Parameter] public RenderFragment? ColumnOptions { get; set; }
 
-    /// <summary>What a cell of this column draws while its row's slice has not loaded, in a virtualizing grid.</summary>
+    /// <summary>The placeholder a cell of this column draws.</summary>
     [Parameter] public RenderFragment<PlaceholderContext>? PlaceholderTemplate { get; set; }
 
     /// <summary>The value the grid names the column by in its markup and its measurements, for its own lifetime.</summary>

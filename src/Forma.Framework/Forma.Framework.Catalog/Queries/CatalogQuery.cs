@@ -1,6 +1,6 @@
 namespace Forma.Framework.Catalog.Queries;
 
-/// <summary>The slice of items a surface is asking for, described by the state the surface itself owns.</summary>
+/// <summary>The slice of items a surface asks for.</summary>
 /// <param name="Skip">How many matching items to pass over before the slice begins.</param>
 /// <param name="Take">How many items the slice holds.</param>
 /// <param name="Search">What the reader typed into the surface's search box, or null when it is empty.</param>

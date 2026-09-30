@@ -110,7 +110,7 @@ public sealed class CatalogCollectionView
     /// <summary>How many items one page holds.</summary>
     public int PageSize { get; set; } = 1;
 
-    /// <summary>Whether the visible slice grows from the first page instead of moving, as infinite scrolling needs.</summary>
+    /// <summary>Whether the visible slice grows from the first page.</summary>
     public bool IsAppending { get; set; }
 
     /// <summary>The items that are not hidden and pass the filter and the search, in sort order.</summary>

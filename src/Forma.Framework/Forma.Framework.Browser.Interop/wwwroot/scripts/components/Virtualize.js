@@ -1,13 +1,6 @@
 /**
  * Virtualize — a virtualized list's browser side: where the list stands in what scrolls it, how much
  * room its drawn items take, and bringing one of them into view.
- *
- * The list is the run of elements its owner draws between two spacers, the first of which marks
- * where the list starts; a spacer is told apart from an item by the attribute it carries. What
- * scrolls the list is its nearest ancestor that scrolls, or the page. How far the viewport has
- * scrolled into the list, how tall the viewport is and the average room an item drawn takes are
- * reported to the owner at most once a frame, and only when one of them changed: on a scroll, on a
- * resize of the viewport or the list, and when items are drawn or taken away.
  */
 
 import { tell } from '../../../core/scripts/Owner.js';
@@ -15,8 +8,7 @@ import { tell } from '../../../core/scripts/Owner.js';
 /**
  * @param {HTMLElement} start The spacer that opens the list.
  * @param {{ owner: import('../../../core/scripts/Owner.js').Owner, spacerAttribute: string }} options
- *   The owner told where the list stands through HandleViewportAsync, and the attribute every spacer carries,
- *   the closing one with the value `end`.
+ *   The owner told where the list stands, and the attribute every spacer carries.
  */
 export function attach(start, options) {
     return new Virtualize(start, options);
@@ -78,7 +70,7 @@ class Virtualize {
     }
 
     /**
-     * Brings the drawn item at `ordinal`, counted among the items the list draws, into view.
+     * Brings the drawn item at `ordinal` into view.
      * @param {number} ordinal
      * @param {'nearest' | 'start'} alignment By the least scroll that shows it, or aligned to the top.
      * @returns {boolean} Whether the item is in view.

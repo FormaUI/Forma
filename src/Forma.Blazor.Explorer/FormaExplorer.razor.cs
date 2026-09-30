@@ -48,7 +48,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>The items to display, held in full. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
     [Parameter] public IReadOnlyList<ICatalogItem>? Items { get; set; }
 
-    /// <summary>Answers for one slice of items at a time, for collections too large to hold. Supply this or <see cref="Items"/>, not both.</summary>
+    /// <summary>The provider the items are read from, a slice at a time. Supply this or <see cref="Items"/>, not both.</summary>
     [Parameter] public ICatalogProvider? ItemsProvider { get; set; }
 
     /// <summary>The folders the sidebar's tree shows and items are moved between.</summary>
@@ -325,7 +325,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private bool IsInfiniteScrolling
         => Options.InfiniteScroll != ExplorerInfiniteScrollMode.Off;
 
-    /// <summary>The items on screen; a provider supplies its own slices, and a held collection is sliced into one.</summary>
+    /// <summary>The items on screen.</summary>
     private IReadOnlyList<ICatalogItem> VisibleItems
         => IsProviderMode ? _providerItems.Items : _collection.VisibleItems;
 
@@ -421,7 +421,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await QueryAsync(append: false);
     }
 
-    /// <summary>Fetches a slice from the provider, replacing what is shown or extending it while infinite scrolling.</summary>
+    /// <summary>Fetches a slice from the provider.</summary>
     private Task QueryAsync(bool append, CancellationToken cancellationToken = default)
     {
         if (ItemsProvider is not { } provider)
@@ -441,7 +441,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return _providerItems.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, append, cancellationToken);
     }
 
-    /// <summary>Re-reads the items shown, after something the explorer does not own has changed the collection.</summary>
+    /// <summary>Reads the items shown again.</summary>
     private Task RefreshProviderAsync()
     {
         if (!IsProviderMode)
