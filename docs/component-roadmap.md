@@ -61,7 +61,7 @@ The components still to build, in the order dependency and reuse suggest.
 | 8 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
 | 9 | `FormaSortMenu`, `FormaViewButton` | The two controls that exist for the managers' tile grids — a layout with no column headers to sort by and two layouts to switch between. The explorer composes them in place of the sort control and view switch it drew for itself |
 | 10 | `FormaLaunchBar` | The bar a workspace is launched from, hosting `FormaRestArea` beside its launchers, so the windows and the way back to them stand in one place |
-| 11 | `FormaVirtualize` | Forma's virtualization, rendering a long collection's window and keeping rendered the items its owner pins, such as the one holding the focus; the data view's views move onto it, so it comes before the data view is finished — see [the virtualization design](virtualization-design.md) |
+| 11 | `FormaVirtualize` | Forma's virtualization, rendering the part of a long collection around the viewport and keeping rendered the items its owner pins, such as the one holding the focus; the data view's views move onto it, so it comes before the data view is finished — see [the virtualization design](virtualization-design.md) |
 | 12 | `FormaDataView`, `FormaDataList`, `FormaDataCards`, `FormaDataTree` | The engine every browsing surface shares, its source, selection, sort, page, address, hierarchy, grouping and states, with the list, the cards and the tree views beside the grid it rebuilds; the explorer adopts it and the gallery is built on it, so it comes before the gallery — see [the data view design](data-view-design.md) |
 | 13 | `FormaGallery` | A media-only surface of its own over the items package the explorer shares, browsing through the data view in its cards view and keeping for itself what is about media, so it comes after the data view and before the editor that its tiles would launch — see [the gallery design](gallery-design.md) |
 | 14 | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
@@ -364,6 +364,6 @@ Renders the items of a long list near the viewport, with spacers for the rest, k
 
 | | |
 |---|---|
-| **Old pattern** | The framework's list virtualization, which keeps no item rendered outside its window, so an item holding the focus is removed as it scrolls away |
+| **Old pattern** | The framework's list virtualization, which keeps no item rendered outside its range, so an item holding the focus is removed as it scrolls away |
 | **Used in** | Every component that shows a long collection, the data view's tree, grid, list and cards first |
 

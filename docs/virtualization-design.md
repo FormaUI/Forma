@@ -4,11 +4,11 @@
 
 ## Purpose
 
-A component over a large collection draws only what the reader can see, so its items come and go as the reader scrolls. An item holding the focus has to stay: when its element is removed, the browser drops the focus to the page, a roving tab stop that scrolled away leaves the component with none, and a focused checkbox inside an item goes with its item. A component that keeps its focus, its tab stop and its focused control needs the element that holds them to stay on the page. `FormaVirtualize` renders the window and keeps the items its owner names, so the element that holds the focus is the same element from the moment it is drawn until the owner lets it go.
+A component over a large collection draws only what the reader can see, so its items come and go as the reader scrolls. An item holding the focus has to stay: when its element is removed, the browser drops the focus to the page, a roving tab stop that scrolled away leaves the component with none, and a focused checkbox inside an item goes with its item. A component that keeps its focus, its tab stop and its focused control needs the element that holds them to stay on the page. `FormaVirtualize` renders the items around the viewport and keeps the items its owner names, so the element that holds the focus is the same element from the moment it is drawn until the owner lets it go.
 
 ## Why Forma has its own
 
-Blazor's `Virtualize` renders one contiguous window between two spacers, and nothing outside that window. An owner can neither ask it to keep an item nor keep one itself: an item the owner drew beside the component, outside the window, would stand under another parent or in another run of siblings than the same item drawn inside it, and Blazor's keys match only among siblings of one sequence, so the item crossing from one to the other is torn down and drawn afresh, taking the focus with it. Keeping the focused item therefore has to happen inside the virtualizer, where the window and the pinned items are one sequence of keyed siblings, and that is the virtualizer Forma carries.
+Blazor's `Virtualize` renders one contiguous range of items between two spacers, and nothing outside that range. An owner can neither ask it to keep an item nor keep one itself: an item the owner drew beside the component, outside the range, would stand under another parent or in another run of siblings than the same item drawn inside it, and Blazor's keys match only among siblings of one sequence, so the item crossing from one to the other is torn down and drawn afresh, taking the focus with it. Keeping the focused item therefore has to happen inside the virtualizer, where the rendered range and the pinned items are one sequence of keyed siblings, and that is the virtualizer Forma carries.
 
 ## Compared with Blazor's `Virtualize`
 
@@ -16,11 +16,11 @@ Blazor's `Virtualize` renders one contiguous window between two spacers, and not
 
 | Concern | Blazor's `Virtualize` | `FormaVirtualize` |
 |---|---|---|
-| What it renders | One contiguous window between a spacer before it and a spacer after it | The window and every pinned item, in order, with a spacer standing for each run of items between them |
+| What it renders | One contiguous range between a spacer before it and a spacer after it | The rendered range and every pinned item, in order, with a spacer standing for each run of items between them |
 | An item's element | Whatever the owner's template keys, inside the component's own regions | Keyed by the owner's item key, so an item that stays rendered keeps its element as the ranges around it change |
 | Measurement | The distance between its two spacers as they come into view, divided among the items between them | The room each drawn item takes, from its top to the next item's, reported at most once a frame while the list scrolls, resizes or changes |
 | Scrolling to an item | By index, aligned to the top, completing once the item is aligned or a newer scroll supersedes it, and refusing before the component is interactive | By index, by the least scroll that shows the item or aligned to the top, completing true once the item is in view and false where no item stands at the index, a newer scroll or the caller's token canceling it |
-| Reading the items again | Reads them again, and the owner renders to show them | Reads them again and renders them, keeping a pinned item outside the window only while its position still holds it |
+| Reading the items again | Reads them again, and the owner renders to show them | Reads them again and renders them, keeping a pinned item outside the rendered range only while its position still holds it |
 | An empty set | Draws the owner's `EmptyContent` | Draws nothing, leaving the empty state to the owner, which knows what an empty collection means to it |
 | How many items it draws | The viewport and the overscan, capped by `MaxItemCount` | The viewport and the overscan, and the pinned items |
 | Anchoring | `AnchorMode`, `InitialItemIndex` and `ItemComparer` | The same set, described under Anchoring |
@@ -29,9 +29,9 @@ Blazor's `Virtualize` renders one contiguous window between two spacers, and not
 
 The virtualizer owns the geometry and the rendered set, and nothing about what the items mean:
 
-- the visible range, the overscan beyond it, and the spacers that stand for the rest;
-- the items its owner names as **pinned**, kept rendered outside the range by their stable keys;
-- disjoint rendered ranges, the window and each pinned item, without rendering the items between them;
+- the **rendered range**, the items the viewport shows and the overscan beyond it, and the spacers that stand for the rest;
+- the items its owner names as **pinned**, kept rendered outside the rendered range by their stable keys;
+- disjoint runs of rendered items, the rendered range and each pinned item, without rendering the items between them;
 - scrolling an item into range, and telling its caller when that item's element is on the page;
 - letting go of what an item that leaves the rendered set held.
 
@@ -40,26 +40,26 @@ What to pin is the owner's decision; selection, the current item, expansion and 
 ## Guarantees
 
 - **Continuity.** A pinned item's element stays connected, and keeps the focus it holds, while the list scrolls it out of range and back and while the spacers and the ranges around it change, in a list of `div`s and in the rows of a table, a checkbox inside the item included.
-- **Bounded rendering.** An item is rendered once however it is reached, in the window, pinned, or both. A pinned key that names no item renders nothing, and the virtualizer keeps nothing of an item once no range and no pin holds it.
+- **Bounded rendering.** An item is rendered once however it is reached, in the rendered range, pinned, or both. A pinned key that names no item renders nothing, and the virtualizer keeps nothing of an item once no range and no pin holds it.
 - **Scroll completion.** A scroll to an item completes when the item is in view, which is more than its element existing: a pinned item's element may stand far outside the viewport. It completes false when no item stands at the position asked for, as when the set ends before it, and a newer scroll or the caller's token cancels it.
 
 ## Supported scope
 
 - **One element per item.** Each item draws one element, which is what the virtualizer measures, keeps and scrolls to.
 - **Sizing.** The virtualizer measures the room each drawn item takes, from its top to the next item's, so a gap or a margin between items counts, and sizes every spacer by their average, starting from the owner's estimate, so items of one height, or near enough, scroll smoothly; items that differ widely scroll true to their average.
-- **Sources.** The items come from a list the owner holds, every item with a stable key, or from a provider that answers a window of positions with its items and the size of the whole set. A pinned key is found in the list, or among the items the provider has answered; after the owner asks for the items to be read again, a pinned item outside the window is read again at its position and kept only while it is still there.
+- **Sources.** The items come from a list the owner holds, every item with a stable key, or from a provider that answers a **slice**, a run of positions given by its start and its count, with its items and the size of the whole set. A pinned key is found in the list, or among the items the provider has answered; after the owner asks for the items to be read again, a pinned item outside the rendered range is read again at its position and kept only while it is still there.
 
 ## Rendering
 
-Every rendered item and every spacer is a direct child of one parent, in the items' order, each item keyed by its stable key. A spacer stands in normal layout for the run of items it replaces, so the same rendering serves rows of a `<div>` list and rows of a `<tbody>`: the spacer is the element the owner names, a `div` or a `tr`. A pinned item outside the window stands between two spacers that split the run around it. An item that crosses between the window and its pinned place keeps its place among its siblings and so keeps its element, which is what keeps the focus on it.
+Every rendered item and every spacer is a direct child of one parent, in the items' order, each item keyed by its stable key. A spacer stands in normal layout for the run of items it replaces, so the same rendering serves rows of a `<div>` list and rows of a `<tbody>`: the spacer is the element the owner names, a `div` or a `tr`. A pinned item outside the rendered range stands between two spacers that split the run around it. An item that crosses between the rendered range and its pinned place keeps its place among its siblings and so keeps its element, which is what keeps the focus on it.
 
 ## Sizes and measurement
 
-An item's size starts as the estimate the owner gives and becomes the average room the drawn items take once some are, so a page zoomed or a density changed keeps the spacers true. One behavior per instance watches the scroll container, or the window where the list scrolls with the page, and reports where the list stands in it; it measures the drawn items as they resize. On a server-rendered circuit every report is a round trip, so the reports are throttled and the overscan covers the time one takes.
+An item's size starts as the estimate the owner gives and becomes the average room the drawn items take once some are, so a page zoomed or a density changed keeps the spacers true. One behavior per instance watches the scroll container, or the page where the list scrolls with it, and reports where the list stands in it; it measures the drawn items as they resize. On a server-rendered circuit every report is a round trip, so the reports are throttled and the overscan covers the time one takes.
 
 ## Sources
 
-The items come from a list the owner holds, or from a provider asked for one window at a time, with a placeholder drawn for an item not yet answered and a superseded request canceled. The owner can ask for the rendered set to be read again when its items changed.
+The items come from a list the owner holds, or from a provider asked for one slice at a time, with a placeholder drawn for an item not yet answered and a superseded request canceled. The owner can ask for the rendered set to be read again when its items changed.
 
 ## Scrolling
 

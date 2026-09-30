@@ -27,7 +27,7 @@
 
 <div class="demo-section">
     <h2>@L["Rows of a Table"]</h2>
-    <p class="description">@L["A list drawn as the rows of a table body, with a table row standing for each run of rows outside the window, pinning the last row to take the focus."]</p>
+    <p class="description">@L["A list drawn as the rows of a table body, with a table row standing for each run of rows outside the rendered range, pinning the last row to take the focus."]</p>
     <div class="demo-box demo-virtualize-box">
         <table class="demo-table">
             <thead>
@@ -73,7 +73,7 @@
 
 <div class="demo-section">
     <h2>@L["Items from a Provider"]</h2>
-    <p class="description">@L["A hundred thousand items read a window at a time from a source that takes a moment to answer, with a placeholder standing for each item until it arrives. A window the reader scrolled past before it arrived is canceled."]</p>
+    <p class="description">@L["A hundred thousand items read a slice at a time from a source that takes a moment to answer, with a placeholder standing for each item until it arrives. A slice the reader scrolled past before it arrived is canceled."]</p>
     <div class="demo-box demo-virtualize-box">
         <FormaVirtualize TItem="Todo" ItemsProvider="ProvideAsync" ItemKey="@(todo => todo.Id)" ItemSize="44">
             <ItemContent Context="todo">

@@ -38,7 +38,7 @@
         }
 
         [Fact]
-        public async Task Should_draw_the_window_around_the_viewport_with_spacers_for_the_rest()
+        public async Task Should_draw_the_rendered_range_around_the_viewport_with_spacers_for_the_rest()
         {
             // Arrange
             using var ctx = new FormaVirtualizeTests();
@@ -82,7 +82,7 @@
         }
 
         [Fact]
-        public async Task Should_keep_a_pinned_item_drawn_outside_the_window_between_spacers_split_around_it()
+        public async Task Should_keep_a_pinned_item_drawn_outside_the_rendered_range_between_spacers_split_around_it()
         {
             // Arrange
             using var ctx = new FormaVirtualizeTests();
@@ -98,14 +98,14 @@
             // Act
             await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
 
-            // Assert — the pinned row first, then the window, each run between them stood for by a spacer
+            // Assert — the pinned row first, then the rendered range, each run between them stood for by a spacer
             Assert.Multiple(
                 () => Assert.Equal(["Row 5", .. Enumerable.Range(48, 14).Select(id => $"Row {id}")], Drawn(cut)),
                 () => Assert.Equal(["start 100px", "gap 840px", "end 760px"], Spacers(cut)));
         }
 
         [Fact]
-        public async Task Should_draw_a_pinned_item_in_the_window_once()
+        public async Task Should_draw_a_pinned_item_in_the_rendered_range_once()
         {
             // Arrange
             using var ctx = new FormaVirtualizeTests();
@@ -149,7 +149,7 @@
         }
 
         [Fact]
-        public async Task Should_keep_a_pinned_item_the_same_item_while_the_window_moves_away_and_back()
+        public async Task Should_keep_a_pinned_item_the_same_item_while_the_rendered_range_moves_away_and_back()
         {
             // Arrange — every row records when it is made
             using var ctx = new FormaVirtualizeTests();
@@ -172,7 +172,7 @@
             await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
             await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(0, 200, 20));
 
-            // Assert — the pinned row was made once, and a row the window let go was made again
+            // Assert — the pinned row was made once, and a row the rendered range let go was made again
             Assert.Multiple(
                 () => Assert.Single(made, id => id == 5),
                 () => Assert.Equal(2, made.Count(id => id == 0)));
@@ -224,9 +224,9 @@
         }
 
         [Fact]
-        public async Task Should_cancel_a_window_asked_for_once_the_viewport_moved_on()
+        public async Task Should_cancel_a_slice_asked_for_once_the_viewport_moved_on()
         {
-            // Arrange — the first window answers at once; the next is held
+            // Arrange — the first slice answers at once; the next is held
             using var ctx = new FormaVirtualizeTests();
             List<ItemsProviderRequest> requests = [];
             var held = new TaskCompletionSource<ItemsProviderResult<Row>>();
@@ -257,7 +257,7 @@
         }
 
         [Fact]
-        public async Task Should_keep_a_pinned_item_a_provider_answered_once_the_window_moves_away()
+        public async Task Should_keep_a_pinned_item_a_provider_answered_once_the_rendered_range_moves_away()
         {
             // Arrange
             using var ctx = new FormaVirtualizeTests();
@@ -300,7 +300,7 @@
             shifted = true;
             await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
 
-            // Assert — the window alone is drawn
+            // Assert — the rendered range alone is drawn
             Assert.Equal(14, Drawn(cut).Count);
         }
 
@@ -334,7 +334,7 @@
             var virtualizer = Virtualizer(cut);
             await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
 
-            // Act — the items change, and the viewport shrinks inside the window read before they did
+            // Act — the items change, and the viewport shrinks inside the slice read before they did
             changed = true;
             _ = virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
             await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 100, 20));
@@ -393,7 +393,7 @@
             // Act
             var reached = await virtualizer.InvokeAsync(() => virtualizer.Instance.ScrollToIndexAsync(50));
 
-            // Assert — the window opens at the item, so it is the first drawn
+            // Assert — the rendered range opens at the item, so it is the first drawn
             Assert.Multiple(
                 () => Assert.True(reached),
                 () => Assert.Equal("Row 50", Drawn(cut)[0]));

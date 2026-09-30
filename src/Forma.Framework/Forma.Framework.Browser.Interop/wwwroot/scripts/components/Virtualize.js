@@ -4,7 +4,7 @@
  *
  * The list is the run of elements its owner draws between two spacers, the first of which marks
  * where the list starts; a spacer is told apart from an item by the attribute it carries. What
- * scrolls the list is its nearest ancestor that scrolls, or the window. How far the viewport has
+ * scrolls the list is its nearest ancestor that scrolls, or the page. How far the viewport has
  * scrolled into the list, how tall the viewport is and the average room an item drawn takes are
  * reported to the owner at most once a frame, and only when one of them changed: on a scroll, on a
  * resize of the viewport or the list, and when items are drawn or taken away.
@@ -69,7 +69,7 @@ class Virtualize {
     scrollTo(offset) {
         const change = offset - this.#offset();
 
-        // Instant whatever the page's scroll-behavior, so the window the scroll reaches is the one the owner draws next.
+        // Instant whatever the page's scroll-behavior, so the range the scroll reaches is the one the owner draws next.
         if (this.#scroller) {
             this.#scroller.scrollTo({ top: this.#scroller.scrollTop + change, behavior: 'instant' });
         } else {
@@ -178,7 +178,7 @@ class Virtualize {
         return box.bottom > top && box.top < bottom;
     }
 
-    // The nearest ancestor that scrolls its content vertically, or null for the window.
+    // The nearest ancestor that scrolls its content vertically, or null where the page itself scrolls.
     static #scrollerOf(element) {
         for (let node = element; node && node !== document.body && node !== document.documentElement; node = node.parentElement) {
             const { overflowY } = getComputedStyle(node);

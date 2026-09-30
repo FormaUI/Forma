@@ -149,7 +149,7 @@ describe('Virtualize', () => {
         expect(handle.reveal(3, 'nearest')).toBe(false);
     });
 
-    it('stands in the window where nothing around the list scrolls', () => {
+    it('stands in the page where nothing around the list scrolls', () => {
         scroller.style.overflowY = 'visible';
         place(start, -120, 0);
 

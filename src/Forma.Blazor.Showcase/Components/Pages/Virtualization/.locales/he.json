@@ -8,7 +8,7 @@
     "Nothing is pinned until an item takes the focus.": "דבר אינו מוצמד עד שפריט מקבל מיקוד.",
     "Task {Number}": "משימה {Number}",
     "Rows of a Table": "שורות של טבלה",
-    "A list drawn as the rows of a table body, with a table row standing for each run of rows outside the window, pinning the last row to take the focus.": "רשימה המוצגת כשורות של גוף טבלה, כששורת טבלה מחזיקה את מקומו של כל רצף שורות מחוץ לחלון, והשורה האחרונה שקיבלה מיקוד מוצמדת.",
+    "A list drawn as the rows of a table body, with a table row standing for each run of rows outside the rendered range, pinning the last row to take the focus.": "רשימה המוצגת כשורות של גוף טבלה, כששורת טבלה מחזיקה את מקומו של כל רצף שורות מחוץ לטווח המוצג, והשורה האחרונה שקיבלה מיקוד מוצמדת.",
     "Stage": "שלב",
     "Distance": "מרחק",
     "Done": "הושלם",
@@ -24,7 +24,7 @@
     "{Name} is in view.": "{Name} בתצוגה.",
     "There is no item at position {Position}.": "אין פריט במיקום {Position}.",
     "Items from a Provider": "פריטים מספק",
-    "A hundred thousand items read a window at a time from a source that takes a moment to answer, with a placeholder standing for each item until it arrives. A window the reader scrolled past before it arrived is canceled.": "מאה אלף פריטים הנקראים חלון אחר חלון ממקור שלוקח לו רגע לענות, כשממלא מקום עומד במקום כל פריט עד שהוא מגיע. חלון שהקורא גלל מעבר לו לפני שהגיע מבוטל.",
+    "A hundred thousand items read a slice at a time from a source that takes a moment to answer, with a placeholder standing for each item until it arrives. A slice the reader scrolled past before it arrived is canceled.": "מאה אלף פריטים הנקראים מקטע אחר מקטע ממקור שלוקח לו רגע לענות, כשממלא מקום עומד במקום כל פריט עד שהוא מגיע. מקטע שהקורא גלל מעבר לו לפני שהגיע מבוטל.",
     "Loading…": "טוען…"
   }
 }

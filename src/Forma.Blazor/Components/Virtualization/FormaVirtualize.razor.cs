@@ -12,8 +12,8 @@ using Microsoft.JSInterop;
 /// <typeparam name="TItem">The item the list holds.</typeparam>
 /// <remarks>
 /// The items and the spacers are drawn side by side under the owner's element, in the items' order: a spacer opening the list, the
-/// window of items around the viewport and each pinned item outside it, a spacer standing for each run of items between them, and a
-/// spacer closing the list. Every item is keyed by its owner's key, so one that stays drawn, in the window or pinned, keeps its element
+/// rendered range of items around the viewport and each pinned item outside it, a spacer standing for each run of items between them, and a
+/// spacer closing the list. Every item is keyed by its owner's key, so one that stays drawn, in the rendered range or pinned, keeps its element
 /// as the ranges around it change. A spacer is as tall as the items it stands for at the average room a drawn item takes, from its top to the next item's.
 /// </remarks>
 public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
@@ -30,7 +30,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     /// <summary>The items the owner holds. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
     [Parameter] public IReadOnlyList<TItem>? Items { get; set; }
 
-    /// <summary>Answers a window of positions with its items and the size of the whole set, for items the owner does not hold. Supply this or <see cref="Items"/>, not both.</summary>
+    /// <summary>Answers a slice of positions with its items and the size of the whole set, for items the owner does not hold. Supply this or <see cref="Items"/>, not both.</summary>
     [Parameter] public ItemsProviderDelegate<TItem>? ItemsProvider { get; set; }
 
     /// <summary>The stable key of an item, which keeps its element while it stays drawn and names it in <see cref="PinnedKeys"/>.</summary>
@@ -125,7 +125,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
                     return await _interop.RevealAsync(ordinal, alignment == ScrollAlignment.Start);
                 }
 
-                // Not drawn: the list scrolls to where the item stands, which draws the window around it.
+                // Not drawn: the list scrolls to where the item stands, which draws the rendered range around it.
                 var top = index * CurrentItemSize;
                 var target = alignment == ScrollAlignment.Start || top < _offset ? top : top - Math.Max(0, _viewport - CurrentItemSize);
                 _offset = target;
@@ -145,7 +145,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         }
     }
 
-    /// <summary>Reads the items again, for a list whose items changed: a provider is asked for the window again, and a pinned item outside it is kept only while it still stands at its position.</summary>
+    /// <summary>Reads the items again, for a list whose items changed: a provider is asked for the rendered range again, and a pinned item outside it is kept only while it still stands at its position.</summary>
     public async Task RefreshDataAsync()
     {
         _isStale = true;
@@ -167,7 +167,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     [JSInvokable]
     public async Task HandleViewportAsync(double offset, double viewport, double itemSize)
     {
-        var window = GetWindow();
+        var range = GetRenderedRange();
         var size = CurrentItemSize;
         _offset = offset;
         _viewport = viewport;
@@ -177,7 +177,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             _measuredItemSize = itemSize;
         }
 
-        if (GetWindow() == window && Math.Abs(CurrentItemSize - size) < 0.5)
+        if (GetRenderedRange() == range && Math.Abs(CurrentItemSize - size) < 0.5)
         {
             return;
         }
@@ -251,12 +251,12 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         }
     }
 
-    // The window around the viewport, from the first item drawn to the one past the last.
-    private (int First, int End) GetWindow()
+    // The rendered range: the items around the viewport and the overscan beyond it, from the first to the one past the last; pinned items stand outside it.
+    private (int First, int End) GetRenderedRange()
     {
         var size = CurrentItemSize;
 
-        // Before the viewport is known, the window opens at the offset asked for, which is the start until a scroll asks for another.
+        // Before the viewport is known, the range opens at the offset asked for, which is the start until a scroll asks for another.
         if (_viewport <= 0)
         {
             var start = Math.Clamp((int)Math.Floor(Math.Max(0, _offset) / size), 0, _count);
@@ -272,10 +272,10 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         return (first, end);
     }
 
-    // What the list draws, in order: the spacers, and the window's items and the pinned ones, each once.
+    // What the list draws, in order: the spacers, and the rendered range's items and the pinned ones, each once.
     private List<Drawn> Draw()
     {
-        var (first, end) = GetWindow();
+        var (first, end) = GetRenderedRange();
         SortedDictionary<int, Drawn> entries = [];
 
         for (var index = first; index < end; index++)
@@ -453,7 +453,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         return indexByKey;
     }
 
-    // A provider is asked for the window once it has moved past what it answered, or once the items were read again.
+    // A provider is asked for the rendered range once it has moved past what it answered, or once the items were read again.
     private async Task LoadAsync()
     {
         if (ItemsProvider is not { } provider)
@@ -461,7 +461,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             return;
         }
 
-        var (first, end) = _hasLoaded ? GetWindow() : (0, InitialCount);
+        var (first, end) = _hasLoaded ? GetRenderedRange() : (0, InitialCount);
 
         if (_hasLoaded && !_isStale && first >= _loadedStart && end <= _loadedStart + _loaded.Count)
         {
@@ -507,7 +507,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         }
     }
 
-    // A pinned item a provider answered is kept with its position, so it can be drawn once the window moves away from it.
+    // A pinned item a provider answered is kept with its position, so it can be drawn once the rendered range moves away from it.
     private void RecordPins(int start, List<TItem> items)
     {
         if (_pinnedKeys.Count == 0)
@@ -526,7 +526,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         }
     }
 
-    // After the items were read again, a pinned item outside the window is kept only while its position still holds it.
+    // After the items were read again, a pinned item outside the rendered range is kept only while its position still holds it.
     private async Task VerifyPinsAsync(ItemsProviderDelegate<TItem> provider, CancellationToken token)
     {
         foreach (var (key, (index, _)) in _pins.ToList())
