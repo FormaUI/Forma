@@ -4,8 +4,8 @@
 
 The icon-button set: `FormaCloseButton`, `FormaEyeButton`, `FormaAddButton`,
 `FormaDeleteButton`, `FormaDuplicateButton`, `FormaEditButton`, `FormaPublishButton`,
-`FormaRefreshButton`, `FormaShareButton`, `FormaUpdateButton` and `FormaViewButton`, and
-the menu triggers that follow the same rule, `FormaOverflowMenu` and `FormaSortMenu`.
+`FormaRefreshButton`, `FormaShareButton` and `FormaUpdateButton`, and the menu trigger
+that follows the same rule, `FormaOverflowMenu`.
 
 ## Purpose
 
@@ -18,45 +18,36 @@ so a reader learns each once and no page draws its own.
   glyph and its accessible name, owning no colors and shipping no stylesheet; every visual
   decision belongs to the button. Retinting for a saturated surface goes through the
   button's ghost color knobs rather than a fork.
-- **The accessible name is required, not defaulted.** A wrong name is worse than an
-  obvious compile error, and the call sites genuinely differ.
+- **The accessible name is required.** The call sites genuinely differ, and a missing name
+  is a compile error where a default would be a wrong name read aloud.
 - **The glyph names the action's meaning, and avoids the glyph a neighbor owns.** Delete
   is a trash can, not a cross: a cross reads as dismiss, and borrowing it for an
   irreversible action is how a reader deletes what they meant to close. Duplicate is two
   overlapping sheets, not a second pencil, so making another can never be misread as
   changing this one. Share is three connected nodes, not the arrow leaving a box, which is
-  the external-link glyph a row may already carry for "open on the public site". Update
-  is the check mark, the commit half of an inline edit opposite the cross that discards it.
+  the external-link glyph a row may already carry for "open on the public site". Update is
+  the check mark, the commit half of an inline edit opposite the cross that discards it.
 - **A stateful button draws its state and is named for what a press does.** The eye is
-  struck through while what it guards is hidden, and publish reuses that strike-through for
-  unpublish, so one control reads as two states rather than two icons. The view button
-  draws the mode it switches to and names that mode, since an icon-only toggle that draws
-  its current state cannot say which it is.
+  struck through while what it guards is hidden, and publish reuses that strike-through
+  for unpublish, so one control reads as two states rather than two icons.
 - **Labeled where the action is primary.** Add is the one of the set that is not always
-  icon-only: a primary add is usually labeled in place, so it takes optional child content
-  and drops `IconOnly` when given it. Publish is labeled in an editor footer and a glyph
-  alone in a dense row.
+  icon-only: a primary add is usually labeled in place, so it takes an optional label and
+  shows it beside the glyph. Publish is labeled in an editor footer and a glyph alone in a
+  dense row.
 - **The button owns no policy.** Confirmation before a delete stays the caller's through
-  `IConfirmDialogService`, since a button that confirms on its own cannot be composed into
-  a bulk action that confirms once. What duplication means, whether an edit navigates or
-  begins in place, and what sharing means, which needs a product decision about
-  `navigator.share()` and its fallback, are all the caller's. Scheduling stays out of the
-  publish button: draft, scheduled and published are three states and a button offers
-  two, so "Schedule…" belongs in a menu beside it.
-- **Refresh forwards `Busy`.** A slow refresh spins and announces `aria-busy` rather than
-  looking dead; it is the one of the set where busy is the point.
-- **The menu triggers follow the same rule.** The overflow menu is the ellipsis,
-  horizontal in a toolbar and vertical in a grid row, where a column is narrow and a row
-  is tall; the sort menu is two opposed arrows, and is a menu rather than a button because
-  sorting offers a choice rather than performing one action. A grid that already has
-  sortable column headers keeps using them, since two controls over one sort state is a
-  synchronization problem with no upside.
+  the confirm dialog service, so a delete can join a bulk action that confirms once for
+  every item it holds. What duplication means, whether an edit navigates or begins in
+  place, and what sharing means, which needs a product decision about the platform's share
+  sheet and its fallback, are all the caller's. Scheduling stays out of the publish
+  button: draft, scheduled and published are three states and a button offers two, so
+  "Schedule…" belongs in a menu beside it.
+- **Refresh shows it is busy.** A slow refresh spins and announces that it is busy, so it
+  reads as working; it is the one of the set where busy is the point.
+- **The overflow menu follows the same rule.** It is the ellipsis, horizontal in a toolbar
+  and vertical in a grid row, where a column is narrow and a row is tall.
 
 ## Open decisions
 
 - **Does `FormaDeleteButton` pin the danger variant?** Right for a lone destructive button,
   and loud repeated down every row of a grid. The alternative leaves it ghost like the rest
   of the set and puts the emphasis on the confirm step instead.
-- **Is `FormaViewButton` a toggle or a two-option segmented control?** A toggle draws the
-  mode it switches to; a segmented control shows both modes at once and marks the active
-  one. Which reads better is guesswork until the managers that use it exist.
