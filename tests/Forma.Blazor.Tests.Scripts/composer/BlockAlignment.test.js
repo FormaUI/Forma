@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { attach } from '#browser/behaviors/BlockAlignment.js';
+import { attach } from '#composer/BlockAlignment.js';
 import { stubAnimationFrames, stubResizeObserver, stackRows } from '#support/platform.js';
 
 describe('BlockAlignment', () => {

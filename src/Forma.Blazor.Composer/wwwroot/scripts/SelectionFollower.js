@@ -7,10 +7,10 @@
  * merely because it shows.
  */
 
-import { attach as attachDragGesture } from './DragGesture.js';
-import { Focus } from './Focus.js';
-import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
-import { register } from '../../../input/scripts/InputRouter.js';
+import { attach as attachDragGesture } from '../../forma/browser/scripts/behaviors/DragGesture.js';
+import { Focus } from '../../forma/browser/scripts/behaviors/Focus.js';
+import { FrameScheduler } from '../../forma/core/scripts/FrameScheduler.js';
+import { register } from '../../forma/input/scripts/InputRouter.js';
 
 /** Space kept between the element and the selection, and between the element and the viewport's edge. */
 const Gap = 8;

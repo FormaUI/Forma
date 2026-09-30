@@ -1,4 +1,4 @@
-namespace Forma.Framework.Browser.Interop.Behaviors;
+namespace Forma.Blazor.Components.DataView.Interop;
 
 /// <summary>The width one column wants: the inline size its header cell takes when the table is laid out at its content's own width.</summary>
 /// <param name="Key">The value the header cell names its column by.</param>

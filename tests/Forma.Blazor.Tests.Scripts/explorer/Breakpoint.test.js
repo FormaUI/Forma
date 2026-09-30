@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { attach } from '#browser/behaviors/Breakpoint.js';
+import { attach } from '#explorer/Breakpoint.js';
 import { fakeOwner } from '#support/owner.js';
 import { stubResizeObserver } from '#support/platform.js';
 

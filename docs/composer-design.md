@@ -74,18 +74,17 @@ The split exists because a plugin may live outside the composer's own package, a
 |---|---|---|
 | `Forma.Framework.Composer.Extensibility` | `Forma.Framework.Composer` | `Forma.Framework.Plugins`, `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
 | `Forma.Framework.Composer` | `Forma.Framework.Composer` | the contracts, `Forma.Framework.Icons`, `Forma.Framework.Toolbar` |
-| `Forma.Framework.Composer.Interop` | `Forma.Framework.Composer.Interop` | `Forma.Framework.JavaScript.Interop` + ASP.NET Core |
 | `Forma.AddOns.Composer.Markdown` | `Forma.Framework.Composer.Markdown` | the contracts + Markdig |
 | `Forma.AddOns.Composer.TextMate` | `Forma.Framework.Composer.TextMate` | the contracts + TextMateSharp |
 | `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the contracts + KaTeX browser assets |
-| `Forma.Blazor.Composer` | `Forma.Blazor.Components.Composer` | the engine, the interop assembly and `Forma.Framework.Sanitization` |
+| `Forma.Blazor.Composer` | `Forma.Blazor.Components.Composer` | the engine and `Forma.Framework.Sanitization` |
 | `Forma.AddOns.Composer.Plugins.Explorer` | `Forma.Blazor.Components.Composer.Plugins` | the contracts + `Forma.Blazor.Explorer`, whose `FormaExplorer` its dialog composes |
 
 Both assemblies share the namespace `Forma.Framework.Composer`, because the split is a packaging boundary rather than a second concept: a host moving a type across it should not have to change a `using`.
 
 Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract and the allowlist implementation sit together in `Forma.Framework.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
 
-The rich text canvas's script module and its `RichTextEditor` wrapper live in `Forma.Framework.Composer.Interop`, the one composer assembly that compiles against ASP.NET Core, so the contracts stay free of it.
+The rich text canvas's script module and its `RichTextEditor` wrapper ship in `Forma.Blazor.Composer`, beside the editor that uses them, so the contracts stay free of ASP.NET Core.
 
 **The composer project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to the assemblies that genuinely compile against ASP.NET Core — the components, the interop wrappers and the test support — so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
 

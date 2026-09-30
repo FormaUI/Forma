@@ -1,4 +1,4 @@
-namespace Forma.Framework.Browser.Interop.Behaviors;
+namespace Forma.Blazor.Components.DataView.Interop;
 
 /// <summary>What a column fit reports about its table: the width it has and the width each of its columns wants.</summary>
 /// <param name="AvailableWidth">The inline size the table's container gives it, in pixels.</param>

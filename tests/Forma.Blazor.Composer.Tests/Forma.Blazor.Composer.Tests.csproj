@@ -12,7 +12,6 @@
         <ProjectReference Include="..\..\src\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Files\Forma.Framework.Files.csproj" />

@@ -13,7 +13,7 @@ A component lives in the components assembly under a category, where a category 
 - Do give a component a category of its own, as an explorer or an editor has, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.
 - Do place supporting types such as a size enum or an item record beside the component that owns them.
 - Do put a supporting type in the feature assembly instead once the concern has one, because a type a host names in a callback or an options parameter is the feature's vocabulary rather than one component's detail; what stays beside the component is what no caller ever names, such as a stream wrapper driving a progress bar.
-- Do put script a component needs in the interop assembly that ships it, never beside the component.
+- Do put script a component needs where the scripting standard places it: in its product when only that product uses it, otherwise in the interop assembly that serves it, never beside the component.
 - Do add the locale sections only when the component invents user-facing text.
 - Don't use `@code` blocks in library components.
 - Don't file such a component under a category naming its subject matter instead, the way a category named for files would swallow an explorer.

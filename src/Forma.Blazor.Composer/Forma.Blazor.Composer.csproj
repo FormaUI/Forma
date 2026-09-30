@@ -24,7 +24,6 @@
     <!-- The component's own feature vocabulary and interop assembly, which ship inside this package. -->
     <ItemGroup>
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" PrivateAssets="all" />
     </ItemGroup>
 
     <!-- The Framework assemblies the component compiles against, every one of which the product's package already ships or declares. -->

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { attach } from '#browser/behaviors/SelectionFollower.js';
+import { attach } from '#composer/SelectionFollower.js';
 import { stack } from '#input/InputRouter.js';
 import { pointerEvent, stubAnimationFrames, stubPointerCapture, stubResizeObserver } from '#support/platform.js';
 

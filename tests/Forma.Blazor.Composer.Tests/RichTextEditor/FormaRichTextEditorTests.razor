@@ -1,6 +1,6 @@
 @using Bunit.Rendering
 @using Forma.Blazor.Components.Composer.Plugins
-@using Forma.Framework.Composer.Interop
+@using Forma.Blazor.Components.Composer.Interop
 @inherits FormaBunitContext
 @code {
     public sealed class Component
@@ -61,7 +61,7 @@
 
         private IRenderedComponent<ContainerFragment> RenderWithMarkers(FormaRichTextEditorTests ctx, MarkerPushingPlugin plugin, TestModel model)
         {
-            ctx.JSInterop.SetupModule("./_content/forma/composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
+            ctx.JSInterop.SetupModule("./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
             var plugins = ComposerDefinition.Create(composer => composer
                 .AddRichTextEditor(editor => editor.AddFeaturePlugin(_ => plugin)));
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
@@ -198,7 +198,7 @@
         {
             // Arrange
             using var ctx = new FormaRichTextEditorTests();
-            var canvas = ctx.JSInterop.SetupModule("./_content/forma/composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
+            var canvas = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
             canvas.Setup<RichTextCommandResult>("exec", _ => true)
                 .SetResult(new RichTextCommandResult("<p><strong>Initial Text</strong></p>", new RichTextSelectionDto(0, 0, true, "p", ["bold"])));
             var model = new TestModel();

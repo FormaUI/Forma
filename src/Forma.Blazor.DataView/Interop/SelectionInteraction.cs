@@ -1,4 +1,4 @@
-namespace Forma.Framework.Browser.Interop.Behaviors;
+namespace Forma.Blazor.Components.DataView.Interop;
 
 using Forma.Framework.JavaScript.Interop;
 
@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Click and keyboard selection across a list of keyed items, and Enter on an item's marker activating it.</summary>
-public sealed class SelectionInteraction(IJSEnvironment js)
-    : JSInterop(js, "./_content/forma/browser/scripts/behaviors/SelectionInteraction.js")
+internal sealed class SelectionInteraction(IJSEnvironment js)
+    : JSInterop(js, "./_content/Forma.Blazor.DataView/scripts/SelectionInteraction.js")
 {
     /// <summary>Attaches selection to the list, invoking <c>HandleSelectAsync</c>, <c>HandleRangeSelectAsync</c> or <c>HandleActivateAsync</c> on <paramref name="owner"/>, and where it seeks, <c>HandleSeekAsync</c> and <c>HandleRangeSelectByPositionAsync</c>.</summary>
     /// <param name="container">The element the items stand in.</param>

@@ -1,4 +1,4 @@
-namespace Forma.Framework.Browser.Interop.Behaviors;
+namespace Forma.Blazor.Components.DataView.Interop;
 
 using Forma.Framework.JavaScript.Interop;
 
@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Tells an owner the width a table has and the widths its columns want, measured again whenever either changes.</summary>
-public sealed class ColumnFit(IJSEnvironment js)
-    : JSInterop(js, "./_content/forma/browser/scripts/behaviors/ColumnFit.js")
+internal sealed class ColumnFit(IJSEnvironment js)
+    : JSInterop(js, "./_content/Forma.Blazor.DataView/scripts/ColumnFit.js")
 {
     /// <summary>Attaches to <paramref name="table"/>; the <paramref name="owner"/> is told through <c>HandleColumnFitAsync</c> with a <see cref="ColumnFitReport"/> whenever the width it has or the widths its columns want change.</summary>
     /// <param name="table">The table, laid out inside the container that gives it its width.</param>

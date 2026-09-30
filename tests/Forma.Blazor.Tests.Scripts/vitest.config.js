@@ -7,22 +7,27 @@ const resolved = path => decodeURIComponent(new URL(path, import.meta.url).pathn
 // The scripts root of the interop assembly named for a concept, under the Framework family folder.
 const getInteropScriptsPath = name => resolved(`../../src/Forma.Framework/Forma.Framework.${name}.Interop/wwwroot/scripts/`);
 
+// The scripts root of a product that ships scripts of its own.
+const getProductScriptsPath = name => resolved(`../../src/Forma.Blazor.${name}/wwwroot/scripts/`);
+
 const scripts = {
     core: getInteropScriptsPath('JavaScript'),
     browser: getInteropScriptsPath('Browser'),
-    composer: getInteropScriptsPath('Composer'),
     input: getInteropScriptsPath('Input'),
+    composer: getProductScriptsPath('Composer'),
+    dataview: getProductScriptsPath('DataView'),
+    explorer: getProductScriptsPath('Explorer'),
 };
 
-// One alias per assembly that ships scripts, named for the root it is served under and pointing at its scripts root. The
-// assemblies are served side by side under _content/forma/, so a script reaches another assembly
-// by climbing to that root, `../../../core/scripts/FrameScheduler.js`; here each such climb is resolved to
-// the assembly's source folder instead.
+// One alias per assembly that ships scripts, pointing at its scripts root. Every assembly is served under
+// _content/, so a script reaches another assembly by climbing to it, `../../../core/scripts/FrameScheduler.js`
+// between interop assemblies, `../../forma/core/scripts/FrameScheduler.js` from a product; here each such
+// climb is resolved to the assembly's source folder instead.
 export default defineConfig({
     resolve: {
         alias: [
             ...Object.entries(scripts).map(([name, root]) => ({ find: `#${name}/`, replacement: root })),
-            ...Object.entries(scripts).map(([name, root]) => ({ find: new RegExp(`^(?:\\.\\./)+${name}/scripts/(.+)$`), replacement: `${root}$1` })),
+            ...Object.entries(scripts).map(([name, root]) => ({ find: new RegExp(`^(?:\\.\\./)+(?:forma/)?${name}/scripts/(.+)$`), replacement: `${root}$1` })),
             { find: '#support/', replacement: resolved('./support/') },
         ],
     },

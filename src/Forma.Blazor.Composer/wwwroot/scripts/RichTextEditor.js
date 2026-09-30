@@ -3,7 +3,7 @@
  * Each editing concern is a concept of its own under RichTextEditor/, composed here.
  */
 
-import { sanitize } from '../../core/scripts/Sanitizer.js';
+import { sanitize } from '../../forma/core/scripts/Sanitizer.js';
 import { Canvas } from './RichTextEditor/Canvas.mjs';
 import { SelectionMemory } from './RichTextEditor/SelectionMemory.mjs';
 import { InlineFormatter } from './RichTextEditor/InlineFormatter.mjs';

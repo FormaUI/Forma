@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { attach } from '#browser/behaviors/SelectionInteraction.js';
+import { attach } from '#dataview/SelectionInteraction.js';
 import { configure, register, resolve } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 

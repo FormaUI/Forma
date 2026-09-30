@@ -8,9 +8,9 @@
  * report is sent only when it differs from the last.
  */
 
-import { tell } from '../../../core/scripts/Owner.js';
+import { tell } from '../../forma/core/scripts/Owner.js';
 
-/** @typedef {import('../../../core/scripts/Owner.js').Owner} Owner */
+/** @typedef {import('../../forma/core/scripts/Owner.js').Owner} Owner */
 
 /**
  * @param {HTMLTableElement} target The table whose columns are measured, laid out inside the container that gives it its width.

@@ -8,7 +8,7 @@
  * longer exists is hidden rather than left where the block was.
  */
 
-import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
+import { FrameScheduler } from '../../forma/core/scripts/FrameScheduler.js';
 
 /**
  * @param {HTMLElement} target The element whose rows follow the blocks.

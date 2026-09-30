@@ -1,7 +1,8 @@
 # Forma.Framework.Browser.Interop
 
-The behaviors and operations any component may attach or call, and the browser side of the
-components that belong to no feature, each script beside the C# wrapper that reaches it. It is not
+The behaviors and operations the component library's components use or several products share, and
+the browser side of the component library's own components, each script beside the C# wrapper that
+reaches it. It is not
 a package; it ships inside `Forma.Blazor`, and a host never references it. It is built on
 `Forma.Framework.JavaScript.Interop`, whose bases every wrapper derives from and whose scripts its own
 scripts import.
@@ -21,18 +22,14 @@ have no wrapper because only other scripts attach them.
 | --- | --- | --- |
 | `AnchoredPopover.js` | `AnchoredPopover` | Keeps a popover positioned against its anchor while it is open, returning focus to its trigger on a close that asks for it. |
 | `AutofillTracker.js` | `AutofillTracker` | Marks a field the browser filled in without the user typing. |
-| `Breakpoint.js` | `Breakpoint` | Tells the owner, through `HandleBreakpointAsync`, which layout tier a stylesheet has put the target in. |
 | `DragGesture.js` | — | The press-move-release of a drag, with pointer capture and edge scrolling, reported to the script that composes it; a drag under way is an active registration on the input router, which cancels it on Escape, and the press is a route on it where the script names an action. |
 | `DropZone.js` | `DropZone` | A drag-and-drop target whose drop is a route on the input router, marked while a drag is over it, telling the owner through `HandleDropAsync` which of its targets took the drop. |
 | `FileDropZone.js` | `FileDropZone` | Hands dropped files to the file input inside an element. |
 | `FilePreview.js` | `FilePreview` | Thumbnails rendered from the browser's own `File` objects into a container's images. |
 | `Focus.js` | `Focus` | Decides where Tab and the arrow keys go inside a surface: wrapping among its controls, visiting named regions first, or roving as one Tab stop. |
-| `HeightReservation.js` | `HeightReservation` | Holds a container at the tallest height its content has needed. |
 | `PanGesture.js` | `PanGesture` | Drags a scroll container's contents with the mouse while a class marks it eligible. |
 | `ReorderInteraction.js` | `ReorderInteraction` | Drags or keys an item into a new position in its list, telling the owner through `HandleReorderAsync`. |
 | `Scroll.js` | `Scroll` | Tells the owner how far a surface can still scroll through `HandleOverflowAsync` and when a sentinel comes into view through `HandleReachedAsync`; exports `toCenter` and `step` beside the attachment. |
-| `SelectionFollower.js` | `SelectionFollower` | Keeps an element positioned beside the text selection inside its owner, holding focus while it shows and standing on the input router while focused so Escape returns focus to the owner. |
-| `SelectionInteraction.js` | `SelectionInteraction` | Click and keyboard selection across a list of keyed items, told to the owner through `HandleSelectAsync` and `HandleRangeSelectAsync`, and the press, double press or Enter that activates an item through `HandleActivateAsync`, each a route on the input router. |
 | `Wheel.js` | `Wheel` | Answers a wheel turned over a surface: a track moves by it, or the owner is told the direction through `HandleWheelAsync`. |
 
 The options a behavior's `AttachAsync` takes and the reports its owner receives sit beside the

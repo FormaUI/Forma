@@ -1,4 +1,4 @@
-namespace Forma.Framework.Browser.Interop.Behaviors;
+namespace Forma.Blazor.Components.Composer.Interop;
 
 using Forma.Framework.JavaScript.Interop;
 
@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Keeps the rows of an element level with the blocks of another, as those blocks move with typing, resizing and scrolling.</summary>
-public sealed class BlockAlignment(IJSEnvironment js)
-    : JSInterop(js, "./_content/forma/browser/scripts/behaviors/BlockAlignment.js")
+internal sealed class BlockAlignment(IJSEnvironment js)
+    : JSInterop(js, "./_content/Forma.Blazor.Composer/scripts/BlockAlignment.js")
 {
     /// <summary>Attaches to the element whose rows follow the blocks, which are the source's children; each row names its block's index in the attribute.</summary>
     /// <param name="target">The element holding the rows.</param>

@@ -29,16 +29,20 @@ component  → interop owned by a specific component
 service    → one instance per document that many callers register with
 ```
 
-Scripts and their wrappers ship together in an interop assembly, never in the components
-assembly. The JavaScript interop assembly is the floor: the interop bases every wrapper builds on,
-`JSModule`, `JSInterop` and the `IJSEnvironment` they take, and the scripts every other script
-builds on, directly under its `wwwroot/scripts/` with no wrapper. The browser interop assembly
-holds every behavior and operation any component may attach, with the wrappers of components
-that belong to no feature. A feature with scripts of its own ships them, and their wrappers, in
-an interop assembly of its own. Every interop assembly is built on the JavaScript one, and a
-dependency between two others is declared as a project reference, so the graph stays visible.
+A script and its wrapper ship together, with the project that owns them. A product built on the
+component library, such as a data view or an editor, ships the scripts only it uses itself: the
+scripts under its `wwwroot/scripts/`, their wrappers in its `Interop/` folder. Everything else ships
+in an interop assembly, since the component library's components and the Framework both reach it and
+a Framework project cannot reference a product. The JavaScript interop assembly is the floor: the
+interop bases every wrapper builds on, `JSModule`, `JSInterop` and the `IJSEnvironment` they take,
+and the scripts every other script builds on, directly under its `wwwroot/scripts/` with no wrapper.
+The browser interop assembly holds the behaviors and operations the component library's components
+use or several products share, with the wrappers of the component library's own component scripts.
+A Framework feature with scripts of its own ships them, and their wrappers, in an interop assembly of
+its own. Every interop assembly is built on the JavaScript one, and a dependency between two others is
+declared as a project reference, so the graph stays visible.
 
-The assemblies are served side by side under one content root, each with its scripts under
+Every assembly's static assets are served under one content root, each assembly with its scripts under
 `scripts/`. A script reaches another assembly's script by climbing to that root, so the import
 stays relative to the module and survives a host path base.
 
@@ -68,14 +72,15 @@ root, a service's script beside the wrapper that owns it.
 - Do name a behavior for what the target can do while it is attached: `DropZone`, `DragGesture`, `Focus`, `Scroll`, `Breakpoint`, `AnchoredPopover`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
 - Do name an operation module for the browser concern it serves: `TextEntry.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
-- Do lift a capability another component could want out into a behavior or an operation in the browser interop assembly, however it arrived; a component script is for what only its own component wants.
+- Do lift a capability out of a component script into a behavior or an operation once a second component uses it; a component script is for what only its own component wants.
+- Do move a script from a product into the browser interop assembly only when a second product needs it, never in anticipation of one.
 - Do compose behaviors in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
 - Do leave a behavior no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
 - Do read the existing behaviors before writing a new one; capability names make their folder its own inventory.
 - Don't name a behavior after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
 - Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `Playback.js` and `Geometry.js` divide by what the calls are for.
 - Don't name a shared behavior or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, so the next component that needs one writes it again.
-- Don't place a script beside the component that uses it; a component's own interop belongs in an interop assembly, not in the component's folder.
+- Don't place a script beside the component that uses it; a project's scripts live under its `wwwroot/scripts/`, never in a component's folder.
 - Don't group unrelated capabilities in one file because one component happens to use both.
 
 ## Behavior contract

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { attach } from '#browser/behaviors/GridColumns.js';
+import { attach } from '#dataview/GridColumns.js';
 import { fakeOwner } from '#support/owner.js';
 import { stubResizeObserver } from '#support/platform.js';
 

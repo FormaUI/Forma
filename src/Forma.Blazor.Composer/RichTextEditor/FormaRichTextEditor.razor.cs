@@ -3,9 +3,9 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor;
 using System.Globalization;
 
 using Forma.Blazor.Components.Composer.Dialogs;
+using Forma.Blazor.Components.Composer.Interop;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Framework.Composer.Editing;
-using Forma.Framework.Composer.Interop;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;

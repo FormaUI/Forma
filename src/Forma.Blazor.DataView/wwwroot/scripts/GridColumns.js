@@ -7,9 +7,9 @@
  * stylesheet, and the component arranges its items in rows of that many.
  */
 
-import { tell } from '../../../core/scripts/Owner.js';
+import { tell } from '../../forma/core/scripts/Owner.js';
 
-/** @typedef {import('../../../core/scripts/Owner.js').Owner} Owner */
+/** @typedef {import('../../forma/core/scripts/Owner.js').Owner} Owner */
 
 /**
  * @param {HTMLElement} target The grid whose columns are counted.

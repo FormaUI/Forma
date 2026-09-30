@@ -31,9 +31,9 @@
  * own controls, a box's cell or a card's actions, activates nothing.
  */
 
-import { Controls } from '../../../core/scripts/Controls.js';
-import { tell } from '../../../core/scripts/Owner.js';
-import { register } from '../../../input/scripts/InputRouter.js';
+import { Controls } from '../../forma/core/scripts/Controls.js';
+import { tell } from '../../forma/core/scripts/Owner.js';
+import { register } from '../../forma/input/scripts/InputRouter.js';
 
 /** Where each key sends the focused item: a step in a direction, or to either end of its row or the list. */
 const Moves = [
@@ -51,7 +51,7 @@ const SeekPatience = 3000;
 /**
  * @param {HTMLElement} target
  * @param {{
- *   owner: import('../../../core/scripts/Owner.js').Owner,
+ *   owner: import('../../forma/core/scripts/Owner.js').Owner,
  *   keyAttribute?: string,
  *   itemSelector?: string,
  *   itemKeyAttribute?: string | null,

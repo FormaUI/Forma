@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.DataView;
 
 using System.Globalization;
 
+using Forma.Blazor.Components.DataView.Interop;
 using Forma.Blazor.Components.Layout;
 using Forma.Framework.Browser.Interop.Behaviors;
 

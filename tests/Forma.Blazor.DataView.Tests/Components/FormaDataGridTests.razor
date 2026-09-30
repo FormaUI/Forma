@@ -2,7 +2,7 @@
 @using AngleSharp.Dom
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
-@using Forma.Framework.Browser.Interop.Behaviors
+@using Forma.Blazor.Components.DataView.Interop
 @using Forma.Framework.Css
 @using Forma.Blazor.Components.Layout
 @using Microsoft.AspNetCore.Components.Web.Virtualization
@@ -63,7 +63,7 @@
         {
             // Arrange — the behavior hands back a handle, so the grid holds it as attached
             using var ctx = new FormaDataGridTests();
-            var selection = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/SelectionInteraction.js");
+            var selection = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.DataView/scripts/SelectionInteraction.js");
             selection.SetupModule("attach", _ => true);
             var cut = ctx.Render(
                 @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true">

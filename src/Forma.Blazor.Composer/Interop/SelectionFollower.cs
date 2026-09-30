@@ -1,4 +1,4 @@
-namespace Forma.Framework.Browser.Interop.Behaviors;
+namespace Forma.Blazor.Components.Composer.Interop;
 
 using Forma.Framework.JavaScript.Interop;
 
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Where a following element sits relative to the selection.</summary>
-public enum SelectionFollowerPlacement
+internal enum SelectionFollowerPlacement
 {
     /// <summary>Beneath the selection, moving above it only when the viewport leaves no room beneath.</summary>
     Below,
@@ -16,8 +16,8 @@ public enum SelectionFollowerPlacement
 }
 
 /// <summary>Keeps an element positioned beside the text selection inside its owner, holding focus while it shows.</summary>
-public sealed class SelectionFollower(IJSEnvironment js)
-    : JSInterop(js, "./_content/forma/browser/scripts/behaviors/SelectionFollower.js")
+internal sealed class SelectionFollower(IJSEnvironment js)
+    : JSInterop(js, "./_content/Forma.Blazor.Composer/scripts/SelectionFollower.js")
 {
     /// <summary>Attaches to the element that follows the selection; a class marks it while a selection inside the owner is active, and a handle inside it drags or arrow-keys it to a new place.</summary>
     public ValueTask<bool> AttachAsync(

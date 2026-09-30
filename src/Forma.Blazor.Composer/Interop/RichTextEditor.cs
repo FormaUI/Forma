@@ -1,4 +1,4 @@
-namespace Forma.Framework.Composer.Interop;
+namespace Forma.Blazor.Components.Composer.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Rich text contenteditable canvas interop and formatting operations.</summary>
-public sealed class RichTextEditor(IJSEnvironment js)
-    : JSInterop(js, "./_content/forma/composer/scripts/RichTextEditor.js")
+internal sealed class RichTextEditor(IJSEnvironment js)
+    : JSInterop(js, "./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js")
 {
     /// <summary>Attaches the rich text canvas to the contenteditable target.</summary>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference target, DotNetObjectReference<TOwner> owner, int debounceDelay = 400)
