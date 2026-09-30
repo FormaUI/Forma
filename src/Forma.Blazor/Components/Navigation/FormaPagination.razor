@@ -50,7 +50,7 @@
             </ul>
         }
 
-        @* The input row stands in for the steps: always when state calls for it, otherwise only where the steps do not fit. *@
+        @* The input row stands in for the steps: always when state calls for it, otherwise at widths too narrow for the steps. *@
         <div class="@(HasInputByState ? "forma-pagination-navigation-input" : "forma-pagination-navigation-input forma-pagination-navigation-input-fallback")">
             @RenderNavigationButton(NavigationDirection.Previous, 1)
             <div class="forma-pagination-navigation-input-group">
@@ -75,7 +75,7 @@
 }
 
 @code {
-    // A navigation button; the stride is how far it moves.
+    // A navigation button moving stride pages.
     private RenderFragment RenderNavigationButton(NavigationDirection direction, int stride) => @<FormaButton Variant="ButtonVariant.Tertiary"
                  class="@(direction is NavigationDirection.Previous ? "forma-pagination-navigation-button forma-pagination-navigation-button-previous" : "forma-pagination-navigation-button forma-pagination-navigation-button-next")"
                  Disabled="@(direction is NavigationDirection.Previous ? ActivePage <= 1 : ActivePage >= PageCount)"

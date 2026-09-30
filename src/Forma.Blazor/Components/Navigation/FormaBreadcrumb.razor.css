@@ -1,8 +1,7 @@
 /* ============================================================
    FormaBreadcrumb — CSS isolation
-   A trail of segments — links, buttons, or static text depending
-   on what the caller wires up — chevron-separated, with an
-   optional menu of alternatives per segment.
+   A chevron-separated trail of links, buttons or static text,
+   with the menus of alternatives beside its segments.
    ============================================================ */
 
 .forma-breadcrumb {
@@ -36,7 +35,7 @@
     min-inline-size: 0;
 }
 
-/* Isolated but not self-directed: deriving direction from the label would align a Latin one against the reading direction. */
+/* Isolated in the trail's own direction, so a Latin label in a right-to-left trail aligns with the reading direction. */
 .forma-breadcrumb-item {
     min-inline-size: 0;
     min-block-size: var(--target-size-md);

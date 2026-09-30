@@ -1,11 +1,11 @@
 namespace Forma.Blazor.Components.Menus;
 
-/// <summary>Which way an overflow menu's ellipsis glyph points.</summary>
+/// <summary>The orientation of an overflow menu's ellipsis glyph.</summary>
 public enum MenuOrientation
 {
-    /// <summary>Horizontal ellipsis (⋯), for toolbars and wider contexts.</summary>
+    /// <summary>A horizontal ellipsis (⋯).</summary>
     Horizontal,
 
-    /// <summary>Vertical ellipsis (⋮), for table rows and narrow columns.</summary>
+    /// <summary>A vertical ellipsis (⋮).</summary>
     Vertical,
 }

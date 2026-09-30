@@ -1,8 +1,7 @@
 /* ============================================================
    FormaPagination — CSS isolation
    Navigation buttons at either end of one row, and between them
-   either the navigation steps or the navigation input. Logical
-   properties throughout for RTL/LTR parity.
+   either the navigation steps or the navigation input.
    ============================================================ */
 
 .forma-pagination {
@@ -42,7 +41,7 @@
     margin-inline-start: auto;
 }
 
-/* The input row shows only where the steps do not fit. */
+/* The fallback input row shows only at widths too narrow for the steps. */
 .forma-pagination-navigation-input-fallback {
     display: none;
 }
@@ -60,9 +59,8 @@
 }
 
 /* ── Steps ── */
-/* A step is one width in every pager: room for the four digits the steps go up to, plus a button's padding. So
-   two pagers side by side put their first page in the same place, whatever either of them counts to; a gap or an
-   empty step takes the same width and stands a control tall, so the row never changes shape. */
+/* A step is one width in every pager, room for four digits plus a button's padding, so pagers side by side put their
+   first page in the same place; a gap or an empty step takes the same width and a control's height, so the row keeps its shape. */
 .forma-pagination-navigation-steps {
     --forma-pagination-step-width: calc(2.5em + 2 * var(--space-3));
 }
@@ -115,7 +113,7 @@
     text-align: center;
 }
 
-/* The glyph stands in for the words where they do not fit. */
+/* The glyph stands in for the words at narrow widths. */
 ::deep .forma-pagination-navigation-button-glyph {
     display: none;
 }

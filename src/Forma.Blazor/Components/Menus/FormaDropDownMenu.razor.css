@@ -1,26 +1,24 @@
 /* ============================================================
    FormaDropDownMenu — CSS isolation
-   The trigger is a FormaButton; what lives here is the anchored
-   menu popover, reaching its items and dividers with ::deep.
+   The trigger's anchor and the menu popover, with its items,
+   groups and dividers.
    ============================================================ */
 
 /* ---------- trigger ---------- */
-/* The trigger is a FormaButton, which owns its look, sizing and focus ring; the wrapper
-   exists only to give the popover something to measure against, so it is exactly as wide as
-   the trigger, and a stretching flex or grid parent cannot widen it. */
+/* The popover measures this wrapper, so it stays as wide as the trigger inside a stretching parent. */
 .forma-dropdown-menu-anchor {
     display: inline-flex;
     inline-size: fit-content;
 }
 
-/* While the menu is open its trigger stays reachable, so a second click on it closes the menu. */
+/* The open menu's trigger stays above the popover layer, so a second click on it closes the menu. */
 .forma-dropdown-menu-anchor-open {
     position: relative;
     z-index: var(--z-index-popover);
 }
 
 /* ---------- popover ---------- */
-/* The menu inside the FormaPopover, which owns the top-layer placement and dismissal. */
+/* The menu inside the FormaPopover. */
 .forma-dropdown-menu {
     padding: var(--space-2);
     display: flex;
@@ -114,7 +112,7 @@
     }
 }
 
-/* Matches the hover emphasis for keyboard users, who never produce a hover state. */
+/* Keyboard focus takes the hover emphasis. */
 ::deep .forma-dropdown-menu-item.is-destructive:focus-visible {
     color: var(--forma-dropdown-menu-destructive-color, var(--danger-color));
 }
@@ -141,8 +139,7 @@
     gap: var(--space-1);
 }
 
-/* The label band reaches the panel's edges across the panel's own padding, and its text starts where the items' text
-   does: the panel's padding plus an item's. */
+/* The label band spans the panel's padding, and its text starts where the items' text does. */
 ::deep .forma-dropdown-menu-group-label {
     margin-inline: calc(-1 * var(--space-2));
     padding-block: var(--space-1);

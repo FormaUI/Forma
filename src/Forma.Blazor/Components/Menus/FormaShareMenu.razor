@@ -26,7 +26,7 @@
     <ChildContent>
         @if (HasSocialNetworks)
         {
-            @* The networks ride the command bar; a target a host registered is a network here too. *@
+            @* The networks, the targets a host registered among them, ride the command bar. *@
             <div class="forma-share-menu-primary" role="none">
                 <FormaCommandBar>
                     @if (_canShareNatively && Item is { Address: not null })
@@ -58,7 +58,7 @@
             <FormaDropDownMenuDivider />
         }
 
-        @* The built-in commands stand in the open, never behind More. *@
+        @* The built-in commands stand in the open, outside More. *@
         @if (Item is { Resource: { } resource })
         {
             <FormaDropDownMenuItem Href="@resource.Source" download="@resource.Name"><FormaIcon Icon="Glyph.Download" Size="IconSize.Small" /><span>@L["Download"]</span></FormaDropDownMenuItem>
@@ -99,7 +99,7 @@
 </span>
 
 @code {
-    /// <summary>The menu's header for an item with a name, and nothing for one without, so no empty header block renders.</summary>
+    /// <summary>The menu's header for an item with a name.</summary>
     private RenderFragment? ItemHeader => Item is { Name: not null }
         ? @<div class="forma-share-menu-item">
                 @if (Item.Icon is { } icon)

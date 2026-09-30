@@ -1,8 +1,8 @@
 /* FormaShareMenu — the item header and the primary row inside the menu it composes */
 
-/* The menu opens wide enough for the primary row's five widest columns beside the bar's arrows:
+/* The menu opens wide enough for five of the primary row's columns beside the bar's arrows:
    5 × 4rem + 4 × 0.25rem gaps + 2 × 1.5rem arrows + 1rem padding = 25rem; more scroll within the bar.
-   The popover inherits the width from this wrapper, its position in the top layer notwithstanding. */
+   The popover in the top layer inherits the width from this wrapper. */
 .forma-share-menu {
     display: inline-flex;
     --forma-dropdown-menu-max-inline-size: 25rem;

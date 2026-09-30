@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-/// <summary>A page-number navigator for splitting a list of items across multiple pages.</summary>
+/// <summary>A page-number navigator over a list of items split across pages.</summary>
 public sealed partial class FormaPagination : FormaElementBase
 {
     // The navigation steps show the current page and the four after it, then a gap and the last page: seven in all.
@@ -29,7 +29,7 @@ public sealed partial class FormaPagination : FormaElementBase
 
     private static readonly TextBoxOptions NavigationEntryOptions = new() { InputMode = TextInputMode.Numeric, EnterKeyHint = TextEnterKeyHint.Go };
 
-    // Enter in the box goes to the typed page, a route on the box itself so it wins over the box's own claim on the key and the form around the pager never takes it as a submission.
+    // Enter in the box goes to the typed page; routed on the box, it wins over the box's own claim and the enclosing form's submission.
     private static readonly InputProfile NavigationInputProfile = new()
     {
         InputRoutes = [new InputRoute(GoAction, new KeyBinding("Enter"))],
@@ -44,19 +44,19 @@ public sealed partial class FormaPagination : FormaElementBase
     private string? _navigationEntry;
     private int _shownPage;
 
-    /// <summary>Total number of items being paginated.</summary>
+    /// <summary>The total number of items.</summary>
     [Parameter, EditorRequired] public int TotalItems { get; set; }
 
-    /// <summary>Number of items shown per page.</summary>
+    /// <summary>The number of items on a page.</summary>
     [Parameter, EditorRequired] public int PageSize { get; set; }
 
-    /// <summary>The current page, 1-based. Values outside the available range are clamped.</summary>
+    /// <summary>The current page, 1-based.</summary>
     [Parameter, EditorRequired] public int CurrentPage { get; set; }
 
-    /// <summary>Fired when the user selects a different page.</summary>
+    /// <summary>Raised when the reader selects a different page.</summary>
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
 
-    /// <summary>How the reader moves between pages.</summary>
+    /// <summary>The options for how the reader moves between pages.</summary>
     [Parameter] public PaginationOptions Options { get; set; } = PaginationOptions.Default;
 
     private string NavigationInputId
@@ -64,18 +64,15 @@ public sealed partial class FormaPagination : FormaElementBase
 
     private int PageCount => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
 
-    // Whether state calls for the input; the width is the stylesheet's decision.
+    // Whether state calls for the input; the stylesheet decides by width.
     private bool HasInputByState => Options.NavigationInput || PageCount > Options.MaxPagesWithSteps;
 
-    // The page shown; a page outside the range resolves to the nearest.
     private int ActivePage => Math.Clamp(CurrentPage, 1, PageCount);
 
     private IReadOnlyList<NavigationStep> NavigationSteps => BuildNavigationSteps(ActivePage, PageCount);
 
-    // The navigation box; the reference reaches its element.
     private FormaTextBox NavigationInput { get; set; } = default!;
 
-    // The host's accessible name wins.
     private string NavLabel => AdditionalAttributes?.GetValueOrDefault("aria-label")?.ToString() ?? L["Pagination"].Value;
 
     // Handlers splatted onto the box's input.
@@ -85,11 +82,11 @@ public sealed partial class FormaPagination : FormaElementBase
     private EventCallback<FocusEventArgs> NavigationInputBlur
         => EventCallback.Factory.Create<FocusEventArgs>(this, ShowPageIfEmpty);
 
-    // The box reads "7 of 200" at rest: where the reader is, out of how many.
+    // The box reads "7 of 200" at rest.
     private string PageSummary
         => L["{PageNumber} of {PageCount}", ActivePage.ToString(CultureInfo.CurrentCulture), PageCount.ToString("N0", CultureInfo.CurrentCulture)].Value;
 
-    /// <summary>Turns one page in the direction of a wheel gesture; called from the wheel behavior.</summary>
+    /// <summary>Turns one page in the direction of a wheel gesture.</summary>
     [JSInvokable]
     public Task HandleWheelAsync(int direction)
         => InvokeAsync(() => MoveAsync(direction < 0 ? NavigationDirection.Previous : NavigationDirection.Next, 1));
@@ -133,7 +130,7 @@ public sealed partial class FormaPagination : FormaElementBase
         {
             _selfReference ??= DotNetObjectReference.Create(this);
 
-            // The turn is a route the script declares itself, so the host's policy reaches the router before it does.
+            // The script declares the turn's route itself, so the host's policy reaches the router first.
             await InputRouter.ConfigureAsync();
             await _wheel.AttachAsync(RootElement, ScrollWheel.Tells(PageAction), _selfReference);
         }
@@ -143,7 +140,7 @@ public sealed partial class FormaPagination : FormaElementBase
         }
     }
 
-    // The run of steps starts at the current page and looks ahead; near the end the last seven pages show whole; a shorter list pads with empty steps so the first page sits in the same place.
+    // The run of steps starts at the current page and looks ahead; near the end the last seven pages show whole; a shorter list pads with empty steps so the first page keeps its place.
     private static List<NavigationStep> BuildNavigationSteps(int currentPage, int pageCount)
     {
         var steps = new List<NavigationStep>(StepCount);
@@ -168,7 +165,7 @@ public sealed partial class FormaPagination : FormaElementBase
         return steps;
     }
 
-    /// <summary>What a position in the navigation steps holds.</summary>
+    /// <summary>The kind of a position in the navigation steps.</summary>
     private enum StepKind
     {
         Page,
@@ -176,7 +173,7 @@ public sealed partial class FormaPagination : FormaElementBase
         Empty,
     }
 
-    /// <summary>Which way a navigation button moves.</summary>
+    /// <summary>The direction a navigation button moves.</summary>
     private enum NavigationDirection
     {
         Previous,
@@ -184,8 +181,8 @@ public sealed partial class FormaPagination : FormaElementBase
     }
 
     /// <summary>One position in the navigation steps.</summary>
-    /// <param name="Kind">What the step holds.</param>
-    /// <param name="Number">The page, when the step holds one.</param>
+    /// <param name="Kind">The kind of the step.</param>
+    /// <param name="Number">The page number of the step.</param>
     private readonly record struct NavigationStep(StepKind Kind, int Number)
     {
         public static readonly NavigationStep Gap = new(StepKind.Gap, 0);

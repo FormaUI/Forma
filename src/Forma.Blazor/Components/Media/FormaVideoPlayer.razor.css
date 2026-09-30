@@ -1,6 +1,6 @@
 /* ============================================================
    FormaVideoPlayer — CSS isolation
-   A fluid 16:9 frame the player fills, whether native or embedded.
+   A fluid 16:9 frame the player fills.
    ============================================================ */
 
 .forma-video-player {
@@ -12,7 +12,7 @@
     overflow: hidden;
 }
 
-/* A service that sizes its own player, often portrait, cannot be held to a 16:9 box. */
+/* A player the service sizes itself, often portrait. */
 .forma-video-player-flow {
     aspect-ratio: auto;
     background-color: transparent;
@@ -45,7 +45,7 @@
     text-align: center;
     color: var(--forma-video-player-fallback-color, var(--primary-color));
 }
-/* The service replaces its own markup with an iframe, and that player stands in for the link. */
+/* The iframe player the service replaces its markup with stands in for the link. */
 [role="group"]:has(iframe) > .forma-video-player-fallback {
     display: none;
 }
@@ -68,7 +68,7 @@
     touch-action: manipulation;
 }
 
-/* A play glyph points the way the media runs, not the way the text reads, so it stays put in RTL. */
+/* A play glyph points the way media runs, so it keeps its direction in RTL. */
 ::deep .forma-video-player-facade-glyph {
     position: relative;
     z-index: 1;
@@ -82,7 +82,7 @@
     object-fit: cover;
 }
 
-/* A still can be any color, so the text sits on a shade rather than on the picture. */
+/* The text sits on a shade over the still, which can be any color. */
 .forma-video-player-facade:has(.forma-video-player-facade-placeholder)::after {
     content: '';
     position: absolute;

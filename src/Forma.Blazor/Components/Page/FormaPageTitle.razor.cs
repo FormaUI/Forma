@@ -5,23 +5,22 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A page's heading, with an optional breadcrumb trail beneath it and controls beside it.</summary>
+/// <summary>A page's heading, which can carry a breadcrumb trail beneath it and controls beside it.</summary>
 public sealed partial class FormaPageTitle : FormaElementBase
 {
-    /// <summary>The page's heading.</summary>
+    /// <summary>The title of the page.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = "";
 
-    /// <summary>The trail of segments leading to this page.</summary>
+    /// <summary>The breadcrumbs leading to this page.</summary>
     [Parameter] public IReadOnlyList<BreadcrumbItem<object?>>? Breadcrumbs { get; set; }
 
-    /// <summary>Controls rendered beside the heading.</summary>
+    /// <summary>The actions rendered beside the heading.</summary>
     [Parameter] public RenderFragment? Actions { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
-    // Only the last crumb without a Url counts as the current page; an earlier one without
-    // a Url is a non-navigable category label, not a claim about where the trail stands.
+    // Only the last crumb, when it has no Url, is the current page; an earlier one without a Url is a category label.
     private List<BreadcrumbItem<object?>>? RenderedBreadcrumbs
     {
         get

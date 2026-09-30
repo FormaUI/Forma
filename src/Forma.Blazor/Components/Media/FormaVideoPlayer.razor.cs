@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A player for a file the browser can fetch, or a video a hosting service embeds.</summary>
 public sealed partial class FormaVideoPlayer : FormaElementBase
 {
-    // Ordered: the file provider accepts any fetchable address, so it answers only once the services have declined.
+    // The file provider accepts any fetchable address, so it stays last.
     private static readonly IPlayerProvider[] Providers =
     [
         new YouTubePlayerProvider(),
@@ -23,27 +23,27 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
         new FilePlayerProvider(),
     ];
 
-    /// <summary>Address of the video, whether a file or a page on a hosting service.</summary>
+    /// <summary>The source address of the video, a file or a page on a hosting service.</summary>
     [Parameter, EditorRequired] public string Source { get; set; } = default!;
 
-    /// <summary>Accessible name for the player.</summary>
+    /// <summary>The title of the video, the player's accessible name.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = default!;
 
-    /// <summary>Starts playback without interaction, always muted because browsers block unmuted autoplay.</summary>
+    /// <summary>Whether playback starts on load, muted.</summary>
     [Parameter] public bool Autoplay { get; set; }
 
-    /// <summary>Holds a hosting service's player back until the reader presses play, so nothing loads from it before then.</summary>
+    /// <summary>Whether a hosting service's player loads only once the reader presses play.</summary>
     [Parameter] public bool DeferLoading { get; set; } = true;
 
-    /// <summary>Still shown before the player loads, served by the host so holding the player back stays worth doing.</summary>
+    /// <summary>The address of the still shown before the player loads.</summary>
     [Parameter] public string? Placeholder { get; set; }
 
-    /// <summary>Caption files offered for a file the browser plays; a hosting service serves its own.</summary>
+    /// <summary>The caption tracks offered for a file the browser plays.</summary>
     [Parameter] public IReadOnlyList<VideoCaptionTrack>? Captions { get; set; }
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
-    /// <summary>Providers the host registered, tried before the services this library recognizes.</summary>
+    /// <summary>The player providers the host registered.</summary>
     [Inject] private IEnumerable<IPlayerProvider> RegisteredProviders { get; set; } = default!;
 
     private Playback _playback = default!;
@@ -70,7 +70,6 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
     private string NoteId
         => $"{ElementId}-note";
 
-    // Autoplay is a request to start, so it overrides holding the player back.
     private bool ShowFacade
         => DeferLoading && !Autoplay && !_isActivated && Frame is EmbeddedPlayerFrame or HtmlPlayerFrame;
 
@@ -87,24 +86,24 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
         ArgumentException.ThrowIfNullOrWhiteSpace(Source);
         ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
-        // The providers decide by address and autoplay alone, so the chain is asked again only when either changes.
+        // The providers decide by address and autoplay alone.
         if (Source != _resolvedSource || Autoplay != _resolvedAutoplay)
         {
             var previous = Frame;
 
             Frame = await ResolveFrameAsync();
 
-            // Recorded only once resolution finished, so a provider that threw is asked again on the next change.
+            // Recorded after resolution, so a provider that threw is asked again.
             _resolvedSource = Source;
             _resolvedAutoplay = Autoplay;
 
-            // A different video is a fresh decision to load a third party.
+            // Each video is activated on its own.
             if (previous?.Source != Frame?.Source)
             {
                 _isActivated = false;
             }
 
-            // A frame of another kind takes the video element with it, so the next one has to be muted again.
+            // A frame of another kind discards the video element, so the next one is muted again.
             if (Frame is not NativePlayerFrame)
             {
                 _autoplayMuted = false;
@@ -126,7 +125,7 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
             PageAddress = Uri.TryCreate(Navigation.BaseUri, UriKind.Absolute, out var pageAddress) ? pageAddress : null,
         };
 
-        // A host provider comes first so it can claim an address, including one a built-in service would otherwise take.
+        // A host provider comes first, so it can claim any address.
         foreach (var provider in RegisteredProviders.Concat(Providers))
         {
             if (await provider.GetPlayerFrameAsync(Source, options, CancellationToken.None) is { } frame)
@@ -146,7 +145,7 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
             _autoplayMuted = await _playback.MuteAsync(_videoElement);
         }
 
-        // Keyed by address rather than script, because a new video needs the loaded script to scan again.
+        // Keyed by address, since each new video needs the loaded script to scan again.
         if (ShowFacade || Frame is not HtmlPlayerFrame markup || _activatedSource == markup.Source)
         {
             return;
@@ -165,7 +164,7 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder
             .Add("forma-video-player")
-            // A service that sizes its own player is left to do so rather than cropped to the frame's ratio.
+            // A service's HTML player keeps the size the service gives it.
             .Add("forma-video-player-flow", Frame is HtmlPlayerFrame && !ShowFacade);
 
     /// <inheritdoc />

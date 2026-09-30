@@ -8,16 +8,16 @@ public sealed partial class FormaPageHead : FormaComponentBase
     /// <summary>The document title.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = default!;
 
-    /// <summary>The address every relative URL resolves against, for a host mounted below the site root.</summary>
+    /// <summary>The base address every relative URL resolves against.</summary>
     [Parameter] public string BaseHref { get; set; } = "/";
 
-    /// <summary>The address of the icon a browser shows for the page in its tab and bookmarks; no icon is linked when unset.</summary>
+    /// <summary>The address of the icon a browser shows for the page in its tab and bookmarks.</summary>
     [Parameter] public string? IconHref { get; set; }
 
-    /// <summary>Head content rendered after Forma's stylesheets, so a host's own styles win over them.</summary>
+    /// <summary>The head content rendered after Forma's stylesheets.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Whether to preload the runtime assets a WebAssembly render mode needs. Requires the Razor Components hosting services.</summary>
+    /// <summary>Whether the runtime assets a WebAssembly render mode needs are preloaded.</summary>
     [Parameter] public bool PreloadAssets { get; set; } = true;
 
     /// <inheritdoc />

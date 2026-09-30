@@ -7,23 +7,23 @@ using Forma.Framework.Share;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A share menu over one item: the social networks and download baseline on a scrolling row, a consumer's own actions beside them, and the rest behind More.</summary>
-/// <param name="connections">The accounts the user has connected for targets sharing through one, or null when the host reports none.</param>
+/// <summary>A menu of the ways to share one item: the social networks on a scrolling row, the built-in commands below them, and the consumer's own actions behind More.</summary>
+/// <param name="connections">The accounts the user has connected for the targets that share through one.</param>
 public sealed partial class FormaShareMenu(IShareConnections? connections = null) : FormaElementBase
 {
-    /// <summary>What the menu acts on.</summary>
+    /// <summary>The item the menu shares.</summary>
     [Parameter] public ShareItem? Item { get; set; }
 
-    /// <summary>Actions the consumer adds beside the baseline.</summary>
+    /// <summary>The actions the consumer adds to the menu.</summary>
     [Parameter] public IReadOnlyList<ShareAction> Actions { get; set; } = [];
 
-    /// <summary>Callback invoked with the command of a consumer action that was chosen.</summary>
+    /// <summary>Raised with the command of the chosen action.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>Content rendered inside the trigger button, standing in for the share icon and label.</summary>
+    /// <summary>The content of the trigger button, in place of the share icon and label.</summary>
     [Parameter] public RenderFragment? Trigger { get; set; }
 
-    /// <summary>Appearance of the trigger button.</summary>
+    /// <summary>The appearance of the trigger button.</summary>
     [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.Default;
 
     private FormaDropDownMenu Menu { get; set; } = default!;
@@ -48,7 +48,6 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
     private bool HasSocialNetworks
         => _supportedTargets.Count > 0 || (_canShareNatively && Item is { Address: not null });
 
-    // A file is not posted to a network; a contact is reached by email rather than a copied address.
     private bool OffersEmail
         => Item is { Name: not null } && (Item.Kind is ShareItemKind.Contact || (Item.Kind is ShareItemKind.Link or ShareItemKind.Image && Item.Address is not null));
 
@@ -60,7 +59,7 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
     {
         _supportedTargets = Item is null ? [] : [.. ShareTargets.Where(target => target.Supports(Item))];
 
-        // The notice is about the item it was made for, so it outlives a parent's re-render and not a change of item.
+        // The notice belongs to the item it was made for, so only a change of item clears it.
         if (!ReferenceEquals(Item, _noticedItem))
         {
             _notice = null;
@@ -102,7 +101,8 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
     private Task ConnectAsync(IShareTarget target)
         => connections!.ConnectAsync(target.Id);
 
-    /// <summary>Shares through a target that needs a call, and says how it went; the host's connection status is advisory, so a missing account is reported here whatever it said.</summary>
+    /// <summary>Shares through a target that needs a call, and reports how it went.</summary>
+    /// <remarks>A failed call to a target that requires an account reports the account as missing, whatever the host's connection status said.</remarks>
     private async Task ShareAsync(IShareTarget target)
     {
         _notice = await target.ShareAsync(Item!)

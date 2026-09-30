@@ -38,16 +38,16 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         new InputRoute(LastAction, new KeyBinding("End")),
     ];
 
-    /// <summary>Content rendered inside the trigger button.</summary>
+    /// <summary>The content of the trigger button.</summary>
     [Parameter, EditorRequired] public RenderFragment Trigger { get; set; } = default!;
 
-    /// <summary>Non-interactive content rendered above the items, such as the name of what the menu acts on.</summary>
+    /// <summary>The non-interactive content above the items, such as the name of what the menu acts on.</summary>
     [Parameter] public RenderFragment? HeaderContent { get; set; }
 
-    /// <summary>The menu's items and dividers.</summary>
+    /// <summary>The menu's items, groups and dividers.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    /// <summary>Appearance of the trigger button.</summary>
+    /// <summary>The appearance of the trigger button.</summary>
     [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.Default;
 
     /// <summary>The inline edge of the trigger the menu lines up with.</summary>
@@ -84,7 +84,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     protected override void OnInitialized()
         => _trigger = new InputRegistration(InputRouter, HandleActionAsync);
 
-    // The trigger's keys are routes on the trigger, which is in the document whether or not the menu is; the menu's ride on the popover.
+    // The trigger's keys route on the trigger, and the menu's on the popover.
     /// <inheritdoc />
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _trigger.SyncAsync(TriggerButton.RootElement, TriggerProfile);
@@ -95,11 +95,10 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     internal void UnregisterItem(FormaDropDownMenuItem item)
         => _items.Remove(item);
 
-    /// <summary>Closes the menu and returns focus to the trigger, for an item that has just been activated.</summary>
+    /// <summary>Closes the menu and returns focus to the trigger.</summary>
     internal Task RequestActivateAsync()
         => Popover.CloseAsync();
 
-    // Opens the menu, or moves through it, as the router matched the key.
     private Task HandleActionAsync(string action, InputInfo input)
     {
         return action switch
@@ -124,8 +123,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         return Popover.ToggleAsync(TriggerButton.RootElement);
     }
 
-    // Items register while the popover renders, so which one to focus is resolved afterwards
-    // rather than indexed here against a list that is still empty.
+    // Items register while the popover renders, so the item to focus is found once it has opened.
     private async Task OpenAsync(bool atLastItem)
     {
         _openAtLastItem = atLastItem;
@@ -138,7 +136,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     private Task MoveFocusAsync(int delta)
         => FocusIndexAsync(FindEnabledIndex(_focusedIndex + delta, delta));
 
-    /// <summary>The index of the first enabled item at or past <paramref name="start"/> in the direction of <paramref name="step"/>, wrapping around the ends; null when no item is enabled.</summary>
+    /// <summary>Finds the index of the first enabled item at or past <paramref name="start"/> in the direction of <paramref name="step"/>, wrapping around the ends.</summary>
     private int? FindEnabledIndex(int start, int step)
     {
         for (var visited = 0; visited < _items.Count; visited++)

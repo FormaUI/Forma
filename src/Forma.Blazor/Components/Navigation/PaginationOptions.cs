@@ -3,25 +3,26 @@ namespace Forma.Blazor.Components.Navigation;
 /// <summary>How a <see cref="FormaPagination"/> lets the reader move between pages.</summary>
 public sealed record PaginationOptions
 {
-    /// <summary>Navigation steps where they fit, the navigation input where they do not.</summary>
+    /// <summary>The default options, showing the navigation steps where they fit and the navigation input elsewhere.</summary>
     public static PaginationOptions Default { get; } = new();
 
-    /// <summary>The most pages a step can number; a step is sized for four digits.</summary>
+    /// <summary>The most pages a step can number.</summary>
     public const int MaxStepsPageCount = 9999;
 
-    /// <summary>Shows the navigation input in place of the navigation steps, whatever the page count or the width.</summary>
+    /// <summary>Whether the navigation input stands in for the navigation steps at every page count and width.</summary>
     public bool NavigationInput { get; init; }
 
-    /// <summary>Page count past which the navigation steps give way to the navigation input; held between 1 and <see cref="MaxStepsPageCount"/>.</summary>
+    /// <summary>The page count past which the navigation input stands in for the navigation steps.</summary>
     public int MaxPagesWithSteps
     {
         get;
         init => field = Math.Clamp(value, 1, MaxStepsPageCount);
     } = 50;
 
-    /// <summary>Shows the Go button beside the navigation input; a touch keypad with no Enter key gets it regardless.</summary>
+    /// <summary>Whether the Go button shows beside the navigation input.</summary>
+    /// <remarks>On a coarse pointer the Go button shows either way.</remarks>
     public bool GoButton { get; init; } = true;
 
-    /// <summary>Turns a page with a wheel gesture over the pager.</summary>
+    /// <summary>Whether a wheel gesture over the pager turns a page.</summary>
     public bool PageOnWheelGesture { get; init; }
 }
