@@ -12,7 +12,7 @@ public sealed class DebouncerTests
     {
         var clock = new FakeTimeProvider();
 
-        return (new Debouncer { Clock = clock }, clock);
+        return (new Debouncer(clock), clock);
     }
 
     [Fact]
@@ -183,6 +183,6 @@ public sealed class DebouncerTests
     }
 
     [Fact]
-    public void Should_measure_on_the_system_clock_unless_given_another()
-        => Assert.Same(TimeProvider.System, new Debouncer().Clock);
+    public void Should_reject_a_null_clock()
+        => Assert.Throws<ArgumentNullException>(() => new Debouncer(null!));
 }

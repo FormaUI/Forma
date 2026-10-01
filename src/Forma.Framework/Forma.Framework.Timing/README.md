@@ -17,14 +17,15 @@ builder.Services.AddFormaTimingServices();
 ```
 
 `AddFormaTimingServices` registers `IDebounceable` as a transient `Debouncer`, so each consumer
-holds its own pending request, and `TimeProvider.System` as the singleton `TimeProvider`. It
-registers with `TryAdd`, so a service the host registered first is kept.
+holds its own pending request, and `TimeProvider.System` as the singleton `TimeProvider` each
+debouncer measures on. It registers with `TryAdd`, so a service the host registered first is kept,
+a `TimeProvider` included.
 
 | Member | What it does |
 | --- | --- |
 | `IDebounceable.DebounceAsync(action, delay, cancellationToken)` | Runs the action once the delay passes with no further request. |
 | `IDebounceable.Cancel()` | Abandons the request still waiting or running. |
-| `Debouncer.Clock` | The `TimeProvider` the delay is measured on; `TimeProvider.System` by default. |
+| `Debouncer.Clock` | The `TimeProvider` the delay is measured on, given to the constructor. |
 
 The token handed to the action is canceled by a later `DebounceAsync`, by `Cancel` or by the
 caller's token, including while the action runs. A superseded or canceled request completes
@@ -59,7 +60,7 @@ and advances it:
 
 ```csharp
 var clock = new FakeTimeProvider();
-var debouncer = new Debouncer { Clock = clock };
+var debouncer = new Debouncer(clock);
 
 var request = debouncer.DebounceAsync(_ => RunAsync(), TimeSpan.FromMilliseconds(300));
 clock.Advance(TimeSpan.FromMilliseconds(300));
