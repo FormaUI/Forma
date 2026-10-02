@@ -3,15 +3,28 @@
 #:property JsonSerializerIsReflectionEnabledByDefault=true
 #:property PublishAot=false
 
-// Drives the Showcase in Chrome while NVDA runs, and checks that each scenario step is followed by the
-// utterances it expects, in order, in the speech the recorder writes. Arguments: the Showcase's address,
-// the recorder's file, and the transcript to write; --show slows the browser and holds each step on screen.
+// Drives the Showcase in Playwright's Chromium while NVDA runs, and checks that each scenario step is
+// followed by the utterances it expects, in order, in the speech the recorder writes. Arguments: the
+// Showcase's address, the recorder's file, and the transcript to write; --show slows the browser and holds
+// each step on screen. --prepare-browser installs the Chromium it drives, the step the script takes before
+// each run. Windows only, since NVDA is.
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using Microsoft.Playwright;
+
+if (!OperatingSystem.IsWindows())
+{
+    await Console.Error.WriteLineAsync("NVDA runs on Windows alone, so the screen reader check does too.").ConfigureAwait(false);
+    return 4;
+}
+
+if (args.Contains("--prepare-browser"))
+{
+    return Microsoft.Playwright.Program.Main(["install", "chromium"]);
+}
 
 var positional = args.Where(argument => !argument.StartsWith("--", StringComparison.Ordinal)).ToArray();
 var show = args.Contains("--show");
@@ -40,11 +53,11 @@ IBrowser browser;
 
 try
 {
-    browser = await playwright.Chromium.LaunchAsync(new() { Channel = "chrome", Headless = false, SlowMo = show ? 500 : 0 }).ConfigureAwait(false);
+    browser = await playwright.Chromium.LaunchAsync(new() { Headless = false, SlowMo = show ? 500 : 0 }).ConfigureAwait(false);
 }
 catch (PlaywrightException exception)
 {
-    await Console.Error.WriteLineAsync($"Chrome would not start: {exception.Message.Split('\n')[0]}").ConfigureAwait(false);
+    await Console.Error.WriteLineAsync($"Chromium would not start: {exception.Message.Split('\n')[0]}").ConfigureAwait(false);
     return 3;
 }
 
@@ -62,13 +75,23 @@ foreach (var scenario in scenarios)
     foreach (var step in scenario.Steps)
     {
         var mark = speech.Count;
-        if (step.Act is null)
+
+        try
         {
-            await page.GotoAsync(baseUrl + scenario.Path, new() { WaitUntil = WaitUntilState.Load }).ConfigureAwait(false);
+            if (step.Act is null)
+            {
+                await page.GotoAsync(baseUrl + scenario.Path, new() { WaitUntil = WaitUntilState.Load }).ConfigureAwait(false);
+            }
+            else
+            {
+                await step.Act(page).ConfigureAwait(false);
+            }
         }
-        else
+        catch (Exception exception) when (exception is PlaywrightException or TimeoutException)
         {
-            await step.Act(page).ConfigureAwait(false);
+            transcript.AppendLine(CultureInfo.InvariantCulture, $"## {step.Description}: the action failed: {exception.Message.Split('\n')[0]}");
+            failures++;
+            break;
         }
 
         var outcome = await speech.WaitForAsync(mark, step.Expect, step.Timeout ?? TimeSpan.FromSeconds(10)).ConfigureAwait(false);

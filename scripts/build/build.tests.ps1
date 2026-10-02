@@ -167,7 +167,7 @@ Set-Content -LiteralPath (Join-Path $tree '.local/benchmarks/Thing/bin/result') 
 try {
     $cleaned = Initialize-BuildContext -RepositoryRoot $repositoryRoot
     $cleaned.RepositoryRoot = $tree
-    $cleaned.TaskPrograms = Join-Path $tree 'scripts/cs'
+    $cleaned.TaskPrograms = Join-Path $tree 'scripts'
 
     $step = Clear-BuildOutput -Context $cleaned 6>$null
 

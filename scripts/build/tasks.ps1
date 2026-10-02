@@ -6,7 +6,7 @@
 Build the task programs written in C#.
 
 .DESCRIPTION
-Inner-loop wrapper that builds the file-based C# programs under scripts/cs by delegating to the
+Inner-loop wrapper that builds the file-based C# programs under scripts by delegating to the
 Forma.Build module. The solution build never reaches them, which is how both of them came to be broken
 for weeks without a single run saying so.
 

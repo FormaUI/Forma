@@ -68,7 +68,7 @@ function Initialize-BuildContext {
         RepositoryRoot = $RepositoryRoot
         Solution       = $solution.FullName
         Scripts        = Join-Path $RepositoryRoot 'scripts'
-        TaskPrograms   = Join-Path $RepositoryRoot 'scripts' 'cs'
+        TaskPrograms   = Join-Path $RepositoryRoot 'scripts'
         ScriptTests    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Tests.Scripts'
     }
 }
@@ -263,7 +263,7 @@ function Get-TaskProgram {
         [Parameter(Mandatory)] [psobject] $Context
     )
 
-    @(Get-ChildItem -LiteralPath $Context.TaskPrograms -Filter '*.cs' -File |
+    @(Get-ChildItem -LiteralPath $Context.TaskPrograms -Filter '*.cs' -File -Recurse |
         Where-Object { (Get-Content -LiteralPath $_.FullName -TotalCount 1) -like '#!*' })
 }
 

@@ -15,12 +15,19 @@ asserted in order, proves them on every run, in every culture the Showcase serve
 
 ## The check
 
-`scripts/Test-ScreenReaderSpeech.ps1` starts a portable NVDA with a profile of its own, so a reader's
-own settings and add-ons take no part, the profile's synthesizer being the speech recorder. It then
-runs `scripts/cs/CheckScreenReaderSpeech.cs` against a running Showcase, the way the scale check runs,
+`scripts/Test-ScreenReaderSpeech.ps1` needs nothing done by hand. It provides each thing the check
+needs, in order, installing what is missing into a per-user folder of its own: the .NET SDK the
+repository pins, NVDA as a portable copy, and Playwright's Chromium, the same build on every machine.
+It starts the Showcase when nothing answers at the address and stops it again at the end. Uninstalling
+removes that folder, and nothing it did not install; a file a running program still holds, such as
+NVDA's accessibility bridge loaded into an editor, is moved to a temporary folder that the next run or
+uninstall clears once the program has let go of it.
+
+The script starts NVDA with a profile of its own, so a reader's own settings and add-ons take no part,
+the profile's synthesizer being the speech recorder. It then runs `scripts/nvda/CheckScreenReaderSpeech.cs`
 and quits NVDA when the program is done. The program:
 
-1. Opens Chrome through Playwright, visibly, since NVDA reads the window the desktop shows.
+1. Opens Chromium through Playwright, visibly, since NVDA reads the window the desktop shows.
 2. Runs each scenario: it opens the scenario's page in its culture, then for each step marks the
    position in the recorded speech, performs the step's action, and waits for the step's expected
    utterances, in order, after that mark, each within a timeout.
@@ -48,12 +55,12 @@ after a fixed delay, which leaves the busy announcement its time to be spoken be
 
 ## Where it runs
 
-On Windows with a desktop session, by hand or in a Windows CI job, against a Showcase already
-listening, as the scale check runs. A run made to be watched opens NVDA's Speech Viewer and slows the
-browser enough to follow, and one made to be heard has the recorder speak each utterance through
-Windows' OneCore voice as it writes it down. It stays outside the build gate, which runs headless on any platform.
+On Windows with a desktop session, by hand or in a Windows CI job. A run made to be watched opens
+NVDA's Speech Viewer and slows the browser enough to follow, and one made to be heard has the
+recorder speak each utterance through Windows' OneCore voice as it writes it down. It stays outside
+the build gate, which runs headless on any platform.
 
 ## What it proves
 
-It proves that NVDA in Chrome speaks what each scenario expects, in order. A human evaluation of the
+It proves that NVDA in Chromium speaks what each scenario expects, in order. A human evaluation of the
 experience, and other screen readers and browsers, stay checks of their own.
