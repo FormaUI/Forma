@@ -447,6 +447,18 @@ row as its unit: the nodes then stand in one run, each saying its level, how man
 siblings it has and its place among them in place of the group that would hold it, and a
 key that moves to a node scrolled out of the rendered range scrolls it back and focuses it.
 
+Tab back into a plain tree returns to the node last focused in it, so a reader who leaves
+the collection comes back to where they were; on first entry, or once that node is gone,
+it lands on the current node, then the first node. A tree standing as a sidebar returns to
+the current node instead, the page the reader is on. When the node holding the focus goes
+away, the focus moves to the nearest node that remains. An ancestor that collapses over it
+takes the focus, while a node that collapses itself keeps it. A removed node hands it to
+its next sibling, then its previous sibling, then its parent, so the reader stays at the
+same level; a removed branch resolves the same way from the branch's place among the nodes
+that remain, and a tree left with no nodes holds the focus itself. Where the focus has
+already left the tree, a collapse or a removal moves only the node Tab returns to, and the
+page's focus stays where it is. None of these moves changes the selection.
+
 ### A host's own view
 
 A component that registers with the engine and reads the pair is a view, so a host
