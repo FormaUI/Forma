@@ -142,6 +142,12 @@ Test-Case -Name 'stopping .NET reports without stopping' -Script 'Stop-DotNet.ps
 Test-Case -Name 'stopping everything says it reached past the repository' -Script 'Stop-DotNet.ps1' `
     -Arguments @('-All', '-WhatIf') -Expect @('whatever they belonged to')
 
+# The screen reader check runs NVDA, which runs on Windows alone.
+if ($IsWindows) {
+    Test-Case -Name 'the screen reader check describes the NVDA run it would make' -Script 'Test-ScreenReaderSpeech.ps1' `
+        -Arguments @('-WhatIf') -Expect @('NVDA 2026.2', 'speech recorder')
+}
+
 # Ports are asked for rather than chosen. A number written here would be free on the machine it was
 # written on and taken on some other, which is a test that fails for a reason that has nothing to do with
 # what it checks.
