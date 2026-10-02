@@ -38,13 +38,11 @@ internal sealed class RichTextEditor(IJSEnvironment js)
 }
 
 /// <summary>The result of executing a rich text command.</summary>
-[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
 public sealed record RichTextCommandResult(string Html, RichTextSelectionDto? Selection);
 
 /// <summary>What a link dialog acts on: the text it covers, the address of the single link it covers, and the number of links.</summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
-public sealed record RichTextLinkTargetDto(string Text, string? Href, int Count);
+internal sealed record RichTextLinkTargetDto(string Text, string? Href, int Count);
 
 /// <summary>A selection snapshot reported by the rich text editor.</summary>
-[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
 public sealed record RichTextSelectionDto(int Start, int End, bool IsCollapsed, string? BlockType, IReadOnlyList<string> ActiveStyles);

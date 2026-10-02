@@ -25,9 +25,6 @@ public sealed record ComposerDocumentFormat
     /// <summary>The plain text format.</summary>
     public static ComposerDocumentFormat PlainText { get; } = new("text");
 
-    /// <summary>The serialized widget tree format.</summary>
-    internal static ComposerDocumentFormat WidgetTree { get; } = new("widget-tree");
-
     /// <inheritdoc />
     public override string ToString()
         => Id;
