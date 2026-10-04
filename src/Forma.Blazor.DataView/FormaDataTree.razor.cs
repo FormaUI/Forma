@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Virtualization;
+using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -28,6 +29,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private const string CloseAction = "tree.close";
     private const string ChooseAction = "tree.choose";
     private const string FindAction = "tree.find";
+
+    // The attribute marking the element that takes the focus from a node that went away.
+    private const string HeirAttribute = "data-focus-heir";
 
     /// <summary>What a node shows beside its name, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -67,6 +71,8 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private object? _lastFocusedKey;
     private bool _holdsFocus;
     private bool _focusesSelf;
+    private object? _heirKey;
+    private FocusHandOff _focusHandOff = default!;
     private FormaVirtualize<VisibleNode>? _virtualizer;
     private List<VisibleNode> _visibleRows = [];
 
@@ -123,6 +129,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         _isCompanion = SelectsCurrent;
         _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _focusHandOff = new FocusHandOff(Context.JS);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Tree"], Glyph.FolderTree, this) { IsCompanion = _isCompanion });
         View.Subscribe(HandleViewChangedAsync);
     }
@@ -172,6 +179,16 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: IsActive);
+
+        // The hand-off watches the tree while it shows, and lets go of a root the tree no longer draws.
+        if (IsActive && !_focusHandOff.IsAttached)
+        {
+            await _focusHandOff.AttachAsync(RootElement, HeirAttribute);
+        }
+        else if (!IsActive && _focusHandOff.IsAttached)
+        {
+            await _focusHandOff.DetachAsync();
+        }
 
         if (_pendingFocusKey is { } pending && await TryFocusAsync(pending))
         {
@@ -342,12 +359,18 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             _lastFocusedKey = null;
         }
 
+        if (_heirKey is { } heir && !remaining.Contains(heir))
+        {
+            _heirKey = null;
+        }
+
         _visibleRows = rows;
         SettleTabStop();
     }
 
     // When the node holding the focus goes away, the focus moves to the nearest node that remains: an ancestor closed over it, else the
     // next sibling, the previous sibling or the parent of the branch that went, else the tree itself. None of it changes the selection.
+    // The render that takes the node away marks the one taking the focus, which the hand-off behavior focuses as the render lands.
     private void HandFocusOn(List<VisibleNode> rows, HashSet<object> remaining)
     {
         if (_focusedNode is not { } focused || remaining.Contains(View.ItemKey(focused)))
@@ -376,7 +399,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         if (FindHeir(previous, gone, parent, remaining) is { } heir)
         {
-            _pendingFocusKey = GetRowKey(previous[heir]);
+            _pendingFocusKey = _heirKey = GetRowKey(previous[heir]);
         }
         else if (rows.Count == 0)
         {
@@ -466,7 +489,12 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         _focusedNode = node;
         _lastFocusedKey = View.ItemKey(node);
         _holdsFocus = false;
+        _heirKey = null;
     }
+
+    // The mark on the element taking the focus from a node that went away: the node's marker where a marker carries the focus, else its row.
+    private string? GetHeirMark(object key, bool marker)
+        => marker == HasSelection && Equals(_heirKey, key) ? string.Empty : null;
 
     private string? GetNodeTabIndex(object key)
         => KeepsFocus ? Equals(_tabStopKey, key) ? "0" : "-1" : null;
@@ -660,6 +688,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         View.Unsubscribe(HandleViewChangedAsync);
         Interaction.UnregisterView(ViewKey);
         await _inputRegistration.DisposeAsync();
+        await _focusHandOff.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

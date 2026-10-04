@@ -63,6 +63,7 @@ A wrapper's calls report whether they ran, so a component carries on when its ci
 | `FileDropZone` | Hands dropped files to the file input inside an element. |
 | `FilePreview` | Renders thumbnails of a file input's selected files into a container's images. |
 | `Focus` | Decides where Tab and the arrow keys go inside a surface: wrapping among its controls, visiting named regions first, or roving as one Tab stop. |
+| `FocusHandOff` | Keeps the focus inside a surface when the element holding it goes away, handing it to the element its owner marks. |
 | `PanGesture` | Drags a scroll container's contents with the pointer. |
 | `ReorderInteraction` | Moves an item to a new position in its list by dragging or by keyboard, telling its owner through `HandleReorderAsync`. |
 | `Scroll` | Tells its owner how far a surface can still scroll and when a sentinel comes into view, and moves a container one step or to its center. |

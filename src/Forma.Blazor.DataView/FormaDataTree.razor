@@ -12,7 +12,8 @@
          style="@RootStyle"
          @attributes="_collectionName.RootAttributes"
          @ref="RootElement"
-         tabindex="@(_holdsFocus ? "-1" : null)">
+         tabindex="@(_holdsFocus ? "-1" : null)"
+         data-focus-heir="@(_focusesSelf ? string.Empty : null)">
         @if (!View.AreRootsLoaded)
         {
             <div class="forma-data-tree-state">@View.LoadingContent</div>
@@ -91,6 +92,7 @@
              aria-labelledby="@nameId"
              aria-owns="@ownsId"
              tabindex="@GetNodeTabIndex(key)"
+             data-focus-heir="@GetHeirMark(key, marker: false)"
              data-item="@(HasSelection ? View.GetItemToken(node) : null)"
              data-item-position="@row.Row"
              @onfocusin="() => HandleNodeFocusIn(node)"
@@ -120,6 +122,7 @@
                     <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
                         <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
                                        data-row-key="@View.GetItemToken(node)"
+                                       data-focus-heir="@GetHeirMark(key, marker: true)"
                                        aria-label="@L["Select Item"]"
                                        aria-disabled="@(!View.CanInteractWith(node) ? "true" : null)"
                                        Value="@View.IsSelected(node)"

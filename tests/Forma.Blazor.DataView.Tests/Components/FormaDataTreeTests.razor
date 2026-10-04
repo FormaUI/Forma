@@ -629,6 +629,32 @@
         }
 
         [Fact]
+        public void Should_mark_the_node_taking_the_focus_in_the_render_that_takes_the_focused_one_away()
+        {
+            // Arrange — Reports focused under the open Documents
+            using var ctx = new FormaDataTreeTests();
+            var cut = RenderOpenDocuments(ctx);
+            cut.FindAll(".forma-data-tree-node")[1].FocusIn();
+
+            // Act
+            Replace(cut, entry => entry.Id is not (3 or 6));
+            cut.WaitForState(() => !Names(cut).Contains("Reports"));
+
+            // Assert — the hand-off is attached once, and Notes.txt's marker carries the mark it focuses
+            var marked = cut.FindAll("[data-focus-heir]");
+            Assert.Multiple(
+                () => Assert.Single(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "attach" && invocation.Arguments is [_, { } options] && options.GetType().GetProperty("attribute")?.GetValue(options) is "data-focus-heir"),
+                () => Assert.Equal("INPUT", Assert.Single(marked).TagName),
+                () => Assert.Equal("Notes.txt", marked[0].Closest(".forma-data-tree-node")!.QuerySelector(".forma-data-tree-node-name")!.TextContent));
+
+            // Act — the mark goes once the node holds the focus
+            cut.FindAll(".forma-data-tree-node")[2].FocusIn();
+
+            // Assert
+            Assert.Empty(cut.FindAll("[data-focus-heir]"));
+        }
+
+        [Fact]
         public void Should_hand_the_focus_of_a_removed_node_to_its_next_sibling()
         {
             // Arrange — Reports focused under the open Documents
