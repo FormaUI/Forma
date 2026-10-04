@@ -45,6 +45,10 @@ Scenario[] scenarios =
     [
         new("open the page", null, ["Loading", "9 items"]),
     ]),
+    new("The tree's focus kept while it scrolls", "en", "/data-view/tree", TreeScrolling(rightToLeft: false)),
+    new("The tree's focus kept while it scrolls", "he", "/he/data-view/tree", TreeScrolling(rightToLeft: true)),
+    new("The tree's focus handed on when its node goes away", "en", "/data-view/tree", TreeHandOff(rightToLeft: false)),
+    new("The tree's focus handed on when its node goes away", "he", "/he/data-view/tree", TreeHandOff(rightToLeft: true)),
 ];
 
 using var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
@@ -122,6 +126,67 @@ await File.WriteAllTextAsync(positional[2], transcript.ToString()).ConfigureAwai
 await Console.Out.WriteAsync(transcript.ToString()).ConfigureAwait(false);
 
 return failures == 0 ? 0 : 1;
+
+// The archive of a hundred thousand nodes: a node focused, scrolled out of view, and the keys carrying on from it. A name is
+// expected as NVDA speaks it, its full stop read as "dot".
+static Step[] TreeScrolling(bool rightToLeft)
+{
+    return [
+        new("open the page", null, []),
+        new("focus the first archive", page => TreeNode(page, 1, "Archive 1").FocusAsync(), ["Archive 1"]),
+        new("open it", page => page.Keyboard.PressAsync(rightToLeft ? "ArrowLeft" : "ArrowRight"), ["expanded"]),
+        new("move to the third scan", page => PressAsync(page, "ArrowDown", 3), ["Scan 1-00003 dot jpg"]),
+        new("scroll it out of view, then move on", async page =>
+        {
+            await page.Locator(".demo-section").Nth(1).Locator(".forma-data-tree").EvaluateAsync("tree => tree.scrollTop = 60000").ConfigureAwait(false);
+            await Task.Delay(1000).ConfigureAwait(false);
+            await page.Keyboard.PressAsync("ArrowDown").ConfigureAwait(false);
+        }, ["Scan 1-00004 dot jpg"]),
+        new("go to the last node", page => page.Keyboard.PressAsync("End"), ["Archive 10"]),
+    ];
+}
+
+// The tree whose source changes under it: the node holding the focus taken away, and an ancestor closed over it.
+static Step[] TreeHandOff(bool rightToLeft)
+{
+    return [
+        new("open the page", null, []),
+        new("focus Documents", page => TreeNode(page, 3, "Documents").FocusAsync(), ["Documents"]),
+        new("open it", page => page.Keyboard.PressAsync(rightToLeft ? "ArrowLeft" : "ArrowRight"), ["expanded"]),
+        new("move to Reports", page => page.Keyboard.PressAsync("ArrowDown"), ["Reports"]),
+        new("take Reports away while it holds the focus", page => PressControlAsync(page, 3, 1), ["Contracts"], TimeSpan.FromSeconds(8)),
+        new("put everything back, and move to Reports", async page =>
+        {
+            await PressControlAsync(page, 3, 6).ConfigureAwait(false);
+            await Task.Delay(1000).ConfigureAwait(false);
+            await page.Keyboard.PressAsync("ArrowUp").ConfigureAwait(false);
+        }, ["Reports"]),
+        new("open it", page => page.Keyboard.PressAsync(rightToLeft ? "ArrowLeft" : "ArrowRight"), ["expanded"]),
+        new("move to Q1.pdf", page => page.Keyboard.PressAsync("ArrowDown"), ["Q 1 dot pdf"]),
+        new("close Documents over the focus", page => PressControlAsync(page, 3, 4), ["Documents"], TimeSpan.FromSeconds(8)),
+    ];
+}
+
+// A node of the tree in a section of the tree tab, by the section's place on the page.
+static ILocator TreeNode(IPage page, int section, string name)
+{
+    return page.Locator(".demo-section").Nth(section).Locator(".forma-data-tree-node")
+        .Filter(new() { Has = page.Locator(".forma-data-tree-node-name").GetByText(name, new() { Exact = true }) });
+}
+
+static async Task PressAsync(IPage page, string key, int times)
+{
+    for (var press = 0; press < times; press++)
+    {
+        await page.Keyboard.PressAsync(key).ConfigureAwait(false);
+    }
+}
+
+// Presses a section's control without taking the focus to it, as a change arriving from elsewhere would.
+static Task PressControlAsync(IPage page, int section, int control)
+{
+    return page.Locator(".demo-section").Nth(section).Locator(".demo-controls button").Nth(control).EvaluateAsync("button => button.click()");
+}
 
 /// <summary>A page in a culture, and the steps taken on it.</summary>
 internal sealed record Scenario(string Name, string Culture, string Path, Step[] Steps);
