@@ -8,8 +8,23 @@
     block-size: 1rem;
     flex-shrink: 0;
     margin: 0;
+    border-radius: var(--radius-sm);
     accent-color: var(--primary-color);
     touch-action: manipulation;
+}
+
+/* The box's ring is an outline, so the gap before it is whatever the box stands on, a tinted row's backdrop included. */
+.forma-checkbox:focus-visible {
+    box-shadow: none;
+    outline: var(--focus-ring-width) solid var(--focus-color);
+    outline-offset: var(--focus-ring-gap);
+}
+
+/* Under forced colors the ring is in the system highlight, as every other control's is. */
+@media (forced-colors: active) {
+    .forma-checkbox:focus-visible {
+        outline-color: Highlight;
+    }
 }
 
 .forma-checkbox:disabled {
