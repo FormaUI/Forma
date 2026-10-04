@@ -126,13 +126,14 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
                     return await _interop.RevealAsync(ordinal, alignment == ScrollAlignment.Start);
                 }
 
-                // Not drawn: the list scrolls to where the item stands, which draws the rendered range around it.
+                // Not drawn: the rendered range around where the item stands is drawn, and the list scrolls there once it is, so the
+                // viewport never stands over spacers alone, which WebKit anchors to as their heights change.
                 var top = index * CurrentItemSize;
                 var target = alignment == ScrollAlignment.Start || top < _offset ? top : top - Math.Max(0, _viewport - CurrentItemSize);
                 _offset = target;
-                await _interop.ScrollToAsync(target);
                 await LoadAsync();
                 await RenderAsync(token);
+                await _interop.ScrollToAsync(target);
             }
 
             return false;
@@ -308,7 +309,9 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             }
             else if (index > cursor)
             {
-                drawn.Add(Spacer(GapRole, index, (index - cursor) * size));
+                // A gap is keyed by the first position it stands for, which holds while the runs after it move, so a gap above the
+                // viewport keeps its element: WebKit moves the viewport when a spacer above it is replaced by another.
+                drawn.Add(Spacer(GapRole, cursor, (index - cursor) * size));
             }
 
             drawn.Add(entry);
@@ -327,8 +330,8 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         return drawn;
     }
 
-    private static Drawn Spacer(string role, int before, double height)
-        => new(DrawnKind.Spacer, before, default, height, role);
+    private static Drawn Spacer(string role, int position, double height)
+        => new(DrawnKind.Spacer, position, default, height, role);
 
     // The spacers and the items as keyed siblings of one sequence.
     private RenderFragment RenderList() => builder =>
@@ -594,7 +597,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     private readonly record struct Drawn(DrawnKind Kind, int Index, TItem? Item, double Height, string? Role);
 
     /// <summary>The key of a spacer.</summary>
-    private sealed record SpacerKey(string Role, int Before);
+    private sealed record SpacerKey(string Role, int Position);
 
     /// <summary>The key of a placeholder.</summary>
     private sealed record PlaceholderKey(int Index);

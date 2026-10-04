@@ -400,6 +400,35 @@
         }
 
         [Fact]
+        public async Task Should_draw_the_range_around_an_item_before_scrolling_to_it()
+        {
+            // Arrange — what is drawn is read as the scroll is asked of the script
+            using var ctx = new FormaVirtualizeTests();
+            IReadOnlyList<string> drawnAtScroll = [];
+            IRenderedComponent<IComponent> cut = default!;
+            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            ctx.JSInterop.SetupVoid("scrollTo", _ =>
+            {
+                drawnAtScroll = Drawn(cut);
+                return true;
+            }).SetVoidResult();
+            cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(0, 200, 20));
+
+            // Act
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.ScrollToIndexAsync(80));
+
+            // Assert — the viewport never stands over spacers alone on its way to the item
+            Assert.Contains("Row 80", drawnAtScroll);
+        }
+
+        [Fact]
         public async Task Should_answer_false_for_a_scroll_to_a_position_past_the_end()
         {
             // Arrange
