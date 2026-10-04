@@ -129,7 +129,14 @@
     flex-shrink: 0;
 }
 
-::deep .forma-data-tree-node-marker {
+/* Holding the collapsed marker alone, the lead stands out of the row's flow, so the row is laid out as it is with no selection. */
+.forma-data-tree-node-lead-collapsed {
+    position: absolute;
+}
+
+/* The marker is collapsed yet focusable; the box is FormaCheckBox's, reached with ::deep and named by its element as well, so the
+   rule outweighs the box's own size. */
+::deep input.forma-data-tree-node-marker {
     inline-size: 0;
     block-size: 0;
     margin: 0;

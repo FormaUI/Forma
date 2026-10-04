@@ -116,7 +116,7 @@
             }
             @if (HasSelection)
             {
-                <span class="forma-data-tree-node-lead" data-item-control>
+                <span class="forma-data-tree-node-lead @(View.EnableCheckedSelection ? null : "forma-data-tree-node-lead-collapsed")" data-item-control>
                     <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
                         <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
                                        data-row-key="@View.GetItemToken(node)"

@@ -89,8 +89,9 @@
     flex-shrink: 0;
 }
 
-/* The marker is collapsed yet focusable, so focusing it scrolls to its row; the box is FormaCheckBox's, reached with ::deep. */
-::deep .forma-data-list-item-marker {
+/* The marker is collapsed yet focusable, so focusing it scrolls to its row; the box is FormaCheckBox's, reached with ::deep and named
+   by its element as well, so the rule outweighs the box's own size. */
+::deep input.forma-data-list-item-marker {
     inline-size: 0;
     block-size: 0;
     margin: 0;
