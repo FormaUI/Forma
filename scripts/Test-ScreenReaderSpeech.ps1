@@ -406,6 +406,24 @@ try {
         return
     }
 
+    # NVDA reads the window the desktop shows, and a locked desktop shows the lock screen, where every
+    # scenario would hear nothing.
+    if (-not ('FormaNvda.ForegroundWindow' -as [type])) {
+        Add-Type -Namespace FormaNvda -Name ForegroundWindow -MemberDefinition @'
+[DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+[DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
+'@
+    }
+
+    $foregroundProcess = [uint32] 0
+    [void] [FormaNvda.ForegroundWindow]::GetWindowThreadProcessId([FormaNvda.ForegroundWindow]::GetForegroundWindow(), [ref] $foregroundProcess)
+
+    $foreground = Get-Process -Id $foregroundProcess -ErrorAction SilentlyContinue
+
+    if ($foreground -and $foreground.ProcessName -in 'LockApp', 'LogonUI') {
+        throw 'The desktop is locked, and NVDA reads only the desktop it is shown. Unlock it and run the check again.'
+    }
+
     $previousSpeechLog = $env:FORMA_SPEECH_LOG
     $previousAudible = $env:FORMA_SPEECH_AUDIBLE
     $env:FORMA_SPEECH_LOG = $speechLog
