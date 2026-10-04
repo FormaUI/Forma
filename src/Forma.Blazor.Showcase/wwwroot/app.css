@@ -222,6 +222,7 @@ body {
 }
 
 .showcase-tabs {
+    container-type: inline-size;
     display: flex;
     gap: var(--space-1);
     margin-block-end: var(--space-5);
@@ -249,11 +250,20 @@ body {
     }
 }
 
+/* The data view's six variants, the most a page has, take 27rem at that padding, so a narrower strip packs them tighter. */
+@container (max-width: 27rem) {
+    .showcase-tabs a {
+        padding-inline: var(--space-2);
+    }
+}
+
 @media (pointer: coarse) {
     .showcase-tabs a {
         display: flex;
         align-items: center;
-        min-block-size: 2.75rem;
+        justify-content: center;
+        min-inline-size: var(--target-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 }
 
