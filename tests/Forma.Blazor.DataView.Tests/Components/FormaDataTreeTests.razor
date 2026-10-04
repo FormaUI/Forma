@@ -15,6 +15,10 @@
         new Entry(6, 3, "Q1.pdf", false),
     }.AsQueryable();
 
+    // Leaves at the root, named from one.
+    private static IQueryable<Entry> CreateLeaves(int count)
+        => Enumerable.Range(1, count).Select(id => new Entry(id, null, $"Leaf {id}", false)).AsQueryable();
+
     public sealed class Component
     {
         [Fact]
@@ -563,9 +567,249 @@
             // Assert
             Assert.Equal("Q1.pdf", cut.Find("tbody tr.forma-data-grid-row td").TextContent);
         }
+
+        [Fact]
+        public async Task Should_keep_the_tab_stop_and_the_focused_node_drawn_when_a_virtualizing_tree_scrolls_them_away()
+        {
+            // Arrange — a hundred nodes of twenty pixels, the first the tab stop and the third holding the focus
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateLeaves(100)" EnablePagination="false" Virtualize="true" ItemHeight="20" OverscanCount="2" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count > 0);
+            cut.FindAll(".forma-data-tree-node")[2].FocusIn();
+
+            // Act — scrolled a thousand pixels in, two hundred tall
+            await ReportViewportAsync(ctx, cut, 1000, 200, 20);
+
+            // Assert — the nodes from 49 to 62 around the viewport, and the first and the third kept where they stand
+            Assert.Multiple(
+                () => Assert.Equal(["Leaf 1", "Leaf 3", .. Enumerable.Range(49, 14).Select(id => $"Leaf {id}")], Names(cut)),
+                () => Assert.Equal("0", cut.Find(".forma-data-tree-node").GetAttribute("tabindex")));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_node_whose_marker_was_last_focused_and_its_neighbors_drawn_after_the_focus_left_the_tree()
+        {
+            // Arrange — the third node's marker focused, then the focus gone elsewhere on the page
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateLeaves(100)" EnablePagination="false" Virtualize="true" ItemHeight="20" OverscanCount="2" EnableCheckedSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count > 0);
+            cut.FindAll(".forma-data-tree-node")[2].FocusIn();
+            cut.FindAll(".forma-data-tree-node")[2].FocusOut();
+
+            // Act
+            await ReportViewportAsync(ctx, cut, 1000, 200, 20);
+
+            // Assert — the selection behavior leaves the tab stop on the marker last focused, so its node stays, with the nodes its arrows reach
+            Assert.Equal(["Leaf 2", "Leaf 3", "Leaf 4", .. Enumerable.Range(49, 14).Select(id => $"Leaf {id}")], Names(cut));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_nodes_either_side_of_a_focused_marker_drawn_for_the_arrows_to_reach()
+        {
+            // Arrange — the selection behavior moves among the markers drawn, from the third node's
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateLeaves(100)" EnablePagination="false" Virtualize="true" ItemHeight="20" OverscanCount="2" EnableItemSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count > 0);
+            cut.FindAll(".forma-data-tree-node")[2].FocusIn();
+
+            // Act
+            await ReportViewportAsync(ctx, cut, 1000, 200, 20);
+
+            // Assert
+            Assert.Equal(["Leaf 2", "Leaf 3", "Leaf 4", .. Enumerable.Range(49, 14).Select(id => $"Leaf {id}")], Names(cut));
+        }
+
+        [Fact]
+        public void Should_hand_the_focus_of_a_removed_node_to_its_next_sibling()
+        {
+            // Arrange — Reports focused under the open Documents
+            using var ctx = new FormaDataTreeTests();
+            var cut = RenderOpenDocuments(ctx);
+            cut.FindAll(".forma-data-tree-node")[1].FocusIn();
+
+            // Act
+            Replace(cut, entry => entry.Id is not (3 or 6));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Notes.txt", LastFocused(ctx, cut)));
+        }
+
+        [Fact]
+        public void Should_hand_the_focus_of_a_removed_last_child_to_its_previous_sibling()
+        {
+            // Arrange — Notes.txt, the last of Documents' children, focused
+            using var ctx = new FormaDataTreeTests();
+            var cut = RenderOpenDocuments(ctx);
+            cut.FindAll(".forma-data-tree-node")[2].FocusIn();
+
+            // Act
+            Replace(cut, entry => entry.Id != 4);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Reports", LastFocused(ctx, cut)));
+        }
+
+        [Fact]
+        public void Should_hand_the_focus_of_a_removed_only_child_to_its_parent()
+        {
+            // Arrange — Beach.jpg, the only child of Pictures, focused
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+            cut.FindAll(".forma-data-tree-node")[2].FocusIn();
+
+            // Act
+            Replace(cut, entry => entry.Id != 5);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Pictures", LastFocused(ctx, cut)));
+        }
+
+        [Fact]
+        public void Should_hand_the_focus_inside_a_removed_branch_on_from_the_branch_s_place()
+        {
+            // Arrange — Q1.pdf focused inside Reports, which is removed with it
+            using var ctx = new FormaDataTreeTests();
+            var cut = RenderOpenDocuments(ctx);
+            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
+            cut.FindAll(".forma-data-tree-node")[2].FocusIn();
+
+            // Act
+            Replace(cut, entry => entry.Id is not (3 or 6));
+
+            // Assert — Reports' next sibling
+            cut.WaitForAssertion(() => Assert.Equal("Notes.txt", LastFocused(ctx, cut)));
+        }
+
+        [Fact]
+        public void Should_hand_the_focus_to_the_ancestor_that_closes_over_it()
+        {
+            // Arrange — Q1.pdf focused two levels down
+            using var ctx = new FormaDataTreeTests();
+            var cut = RenderOpenDocuments(ctx);
+            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
+            cut.FindAll(".forma-data-tree-node")[2].FocusIn();
+
+            // Act — Documents closed from its disclosure
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Documents", LastFocused(ctx, cut)));
+        }
+
+        [Fact]
+        public void Should_hold_the_focus_itself_once_no_node_remains()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var cut = RenderOpenDocuments(ctx);
+            cut.Find(".forma-data-tree-node").FocusIn();
+
+            // Act
+            Replace(cut, _ => false);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("the tree", LastFocused(ctx, cut)));
+            Assert.Equal("-1", cut.Find(".forma-data-tree").GetAttribute("tabindex"));
+        }
+
+        [Fact]
+        public void Should_hand_the_focus_to_a_marker_without_selecting_its_node()
+        {
+            // Arrange — with a selection, a marker carries the focus, and moving onto a node would select it
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" EnableItemSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+            cut.FindAll(".forma-data-tree-node")[1].FocusIn();
+
+            // Act
+            Replace(cut, entry => entry.Id is not (3 or 6));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Notes.txt", LastFocused(ctx, cut)));
+            Assert.Empty(cut.FindAll(".forma-data-tree-node-selected"));
+        }
     }
 
     private sealed record Entry(int Id, int? ParentId, string Name, bool IsFolder);
+
+    // Documents opened, in a tree whose markers carry the focus.
+    private static IRenderedComponent<IComponent> RenderOpenDocuments(FormaDataTreeTests ctx)
+    {
+        var cut = ctx.Render(
+            @<FormaDataView Items="CreateEntries()" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                <FormaDataTree TItem="Entry" />
+            </FormaDataView>);
+        cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+        cut.Find("button.forma-data-tree-disclosure-button").Click();
+        cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+        return cut;
+    }
+
+    // Gives the data view the entries the filter keeps, as a new source.
+    private static void Replace(IRenderedComponent<IComponent> cut, Func<Entry, bool> keeps)
+        => cut.FindComponent<FormaDataView<Entry>>().Render(parameters => parameters.Add(view => view.Items, CreateEntries().Where(keeps).AsQueryable()));
+
+    private static List<string> Names(IRenderedComponent<IComponent> cut)
+        => [.. cut.FindAll(".forma-data-tree-node-name").Select(name => name.TextContent)];
+
+    // The node whose marker the tree last focused, or the tree itself.
+    private static string? LastFocused(FormaDataTreeTests ctx, IRenderedComponent<IComponent> cut)
+    {
+        var focuses = ctx.JSInterop.Invocations.Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus").ToList();
+
+        if (focuses.Count == 0)
+        {
+            return null;
+        }
+
+        var id = Assert.IsType<ElementReference>(focuses[^1].Arguments[0]).Id;
+
+        if (cut.FindComponent<FormaDataTree<Entry>>().Instance.RootElement.Id == id)
+        {
+            return "the tree";
+        }
+
+        // bUnit draws a component's markup apart from its ancestors, so the marker is found again in the whole tree by the key its row carries.
+        var key = cut.FindComponents<FormaCheckBox>().FirstOrDefault(marker => marker.Instance.RootElement.Id == id)?.Find("input").GetAttribute("data-row-key");
+
+        return key is null ? null : cut.Find($"input[data-row-key='{key}']").Closest(".forma-data-tree-node")?.QuerySelector(".forma-data-tree-node-name")?.TextContent;
+    }
+
+    // Reports where the tree stands in its viewport, as the virtualizer's script does through the reference it attached with.
+    private static Task ReportViewportAsync(FormaDataTreeTests ctx, IRenderedComponent<IComponent> cut, double offset, double viewport, double itemSize)
+    {
+        var options = ctx.JSInterop.Invocations.Last(invocation => invocation.Identifier == "attach" && invocation.Arguments is [_, { } candidate] && Read(candidate, "spacerAttribute") is "data-virtualize-spacer").Arguments[1]!;
+        var virtualizer = Read(Read(options, "owner")!, "Value")!;
+        var report = virtualizer.GetType().GetMethod("HandleViewportAsync")!;
+
+        return cut.InvokeAsync(() => (Task)report.Invoke(virtualizer, [offset, viewport, itemSize])!);
+
+        static object? Read(object source, string property)
+            => source.GetType().GetProperty(property)?.GetValue(source);
+    }
 
     // Presses a row the way the selection behavior reports it, by the token the row carries.
     private static Task PressRowAsync(IRenderedComponent<IComponent> cut, int index)

@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.DataView;
 using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
+using Forma.Blazor.Components.Virtualization;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -11,7 +12,6 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
 
 /// <summary>A view over a data view drawing the hierarchy as nodes under their parents, each opened, closed and selected from the keyboard, with a busy state while its children load.</summary>
@@ -64,7 +64,10 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private object? _tabStopKey;
     private object? _currentKey;
     private object? _pendingFocusKey;
-    private Virtualize<VisibleNode>? _virtualizer;
+    private object? _lastFocusedKey;
+    private bool _holdsFocus;
+    private bool _focusesSelf;
+    private FormaVirtualize<VisibleNode>? _virtualizer;
     private List<VisibleNode> _visibleRows = [];
 
     // The field a node's box names to the input base as its value expression.
@@ -108,7 +111,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     /// <inheritdoc />
     ValueTask IDataViewPositions<TItem>.ScrollToPositionAsync(int position, CancellationToken cancellationToken)
-        => _virtualizer is { } virtualizer ? new ValueTask(virtualizer.ScrollToItemAsync(position, cancellationToken)) : ValueTask.CompletedTask;
+        => _virtualizer is { } virtualizer ? new ValueTask(virtualizer.ScrollToIndexAsync(position, cancellationToken: cancellationToken)) : ValueTask.CompletedTask;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -173,6 +176,20 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         if (_pendingFocusKey is { } pending && await TryFocusAsync(pending))
         {
             _pendingFocusKey = null;
+        }
+
+        if (_focusesSelf)
+        {
+            _focusesSelf = false;
+
+            try
+            {
+                await RootElement.FocusAsync();
+            }
+            catch (JSException)
+            {
+                // The tree left the page before the focus reached it.
+            }
         }
 
         // The roots are asked for once the tree shows, and again after the source or the sort left the data view with none.
@@ -302,10 +319,153 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             return;
         }
 
-        var visible = GetVisibleNodes();
-        var current = View.CurrentItem is { } item ? visible.Find(candidate => IsSame(candidate, item)) : default;
+        var current = View.CurrentItem is { } item ? _visibleRows.FindIndex(row => IsSame(row.Node, item)) : -1;
 
-        _tabStopKey = visible.Count == 0 ? null : View.ItemKey(current ?? visible[0]);
+        _tabStopKey = _visibleRows.Count == 0 ? null : GetRowKey(_visibleRows[Math.Max(current, 0)]);
+    }
+
+    // The nodes this render draws, the focus handed on where the node holding it went away.
+    private void SettleRows()
+    {
+        var rows = GetVisibleRows();
+        HashSet<object> remaining = [.. rows.Select(GetRowKey)];
+
+        HandFocusOn(rows, remaining);
+
+        if (_pendingFocusKey is { } pending && !remaining.Contains(pending))
+        {
+            _pendingFocusKey = null;
+        }
+
+        if (_lastFocusedKey is { } last && !remaining.Contains(last))
+        {
+            _lastFocusedKey = null;
+        }
+
+        _visibleRows = rows;
+        SettleTabStop();
+    }
+
+    // When the node holding the focus goes away, the focus moves to the nearest node that remains: an ancestor closed over it, else the
+    // next sibling, the previous sibling or the parent of the branch that went, else the tree itself. None of it changes the selection.
+    private void HandFocusOn(List<VisibleNode> rows, HashSet<object> remaining)
+    {
+        if (_focusedNode is not { } focused || remaining.Contains(View.ItemKey(focused)))
+        {
+            return;
+        }
+
+        var previous = _visibleRows;
+        var gone = previous.FindIndex(row => IsSame(row.Node, focused));
+
+        if (gone < 0)
+        {
+            return;
+        }
+
+        // The top of the branch that went, and the nearest of its ancestors that remains.
+        var parent = GetParentRow(previous, gone);
+
+        while (parent >= 0 && !remaining.Contains(GetRowKey(previous[parent])))
+        {
+            gone = parent;
+            parent = GetParentRow(previous, gone);
+        }
+
+        _focusedNode = default;
+
+        if (FindHeir(previous, gone, parent, remaining) is { } heir)
+        {
+            _pendingFocusKey = GetRowKey(previous[heir]);
+        }
+        else if (rows.Count == 0)
+        {
+            _holdsFocus = true;
+            _focusesSelf = true;
+        }
+    }
+
+    // The row taking the focus from the branch at this one: its parent where the parent closed over it, else a sibling that remains, the
+    // next before the previous, else the parent.
+    private int? FindHeir(List<VisibleNode> previous, int gone, int parent, HashSet<object> remaining)
+    {
+        if (parent >= 0 && !View.IsOpen(previous[parent].Node))
+        {
+            return parent;
+        }
+
+        var depth = previous[gone].Depth;
+
+        for (var index = gone + 1; index < previous.Count && previous[index].Depth >= depth; index++)
+        {
+            if (previous[index].Depth == depth && remaining.Contains(GetRowKey(previous[index])))
+            {
+                return index;
+            }
+        }
+
+        for (var index = gone - 1; index >= 0 && previous[index].Depth >= depth; index--)
+        {
+            if (previous[index].Depth == depth && remaining.Contains(GetRowKey(previous[index])))
+            {
+                return index;
+            }
+        }
+
+        return parent >= 0 ? parent : null;
+    }
+
+    // A row's parent is the nearest row before it standing a level up.
+    private static int GetParentRow(List<VisibleNode> rows, int index)
+    {
+        for (var candidate = index - 1; candidate >= 0; candidate--)
+        {
+            if (rows[candidate].Depth < rows[index].Depth)
+            {
+                return candidate;
+            }
+        }
+
+        return -1;
+    }
+
+    private object GetRowKey(VisibleNode row)
+        => View.ItemKey(row.Node);
+
+    // The nodes the virtualizer keeps drawn wherever the tree scrolls: the one holding the focus, the one Tab returns to, a row's or a
+    // marker's, and the one a move is bringing the focus to. The selection behavior moves among the markers drawn, so the nodes either
+    // side of the marker last focused stay drawn too: an arrow's move takes the focus off one marker before it lands on the next, and
+    // the next has to be drawn through the render between.
+    private HashSet<object> GetPinnedKeys()
+    {
+        HashSet<object> keys = [];
+        Pin(_focusedNode is { } focused ? View.ItemKey(focused) : null);
+        Pin(HasSelection ? _lastFocusedKey : _tabStopKey);
+        Pin(_pendingFocusKey);
+
+        if (HasSelection && _lastFocusedKey is { } marked && _visibleRows.FindIndex(row => Equals(GetRowKey(row), marked)) is var index and >= 0)
+        {
+            Pin(index > 0 ? GetRowKey(_visibleRows[index - 1]) : null);
+            Pin(index < _visibleRows.Count - 1 ? GetRowKey(_visibleRows[index + 1]) : null);
+        }
+
+        return keys;
+
+        void Pin(object? key)
+        {
+            if (key is not null)
+            {
+                keys.Add(key);
+            }
+        }
+    }
+
+    // A marker keeps the tab stop once focused, which the selection behavior leaves on it.
+    private void HandleNodeFocusIn(TItem node)
+    {
+        _focusedNode = node;
+        _lastFocusedKey = View.ItemKey(node);
+        _holdsFocus = false;
     }
 
     private string? GetNodeTabIndex(object key)
@@ -361,7 +521,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    // A node a virtualizing tree has scrolled out of its rendered range is scrolled back first, and focused once its row is drawn.
+    // A node a virtualizing tree has scrolled out of its rendered range is scrolled back first, and focused once it is in view.
     private async Task FocusNodeAsync(TItem node)
     {
         var key = View.ItemKey(node);
@@ -372,12 +532,22 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             return;
         }
 
-        var index = GetVisibleNodes().FindIndex(candidate => IsSame(candidate, node));
+        var index = _visibleRows.FindIndex(row => IsSame(row.Node, node));
 
-        if (index >= 0)
+        if (index < 0)
         {
-            _pendingFocusKey = key;
-            await virtualizer.ScrollToItemAsync(index);
+            return;
+        }
+
+        _pendingFocusKey = key;
+
+        if (await virtualizer.ScrollToIndexAsync(index) && Equals(_pendingFocusKey, key) && await TryFocusAsync(key))
+        {
+            _pendingFocusKey = null;
+        }
+        else if (Equals(_pendingFocusKey, key))
+        {
+            // The node is drawn where it stands, pinned, and focused once that render is on the page.
             StateHasChanged();
         }
     }

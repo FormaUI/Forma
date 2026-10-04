@@ -43,6 +43,74 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Boxes Over a Hundred Thousand Nodes"]</h2>
+    <p class="description">@L["The same archive with a box on each node, where pressing a node or moving to it with the arrows selects it. A box keeps its node on the page while it holds the focus, so the tree can scroll it out of view and back without the focus falling to the page, and the arrows carry on from it."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView TItem="ShowcaseEntry" Items="DataViewShowcaseFolders.Many" EnablePagination="false" Virtualize="true" ItemHeight="32" EnableCheckedSelection="true" EnableItemSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.Parent)" HasChildren="@(entry => entry.IsFolder)">
+            <FormaDataTree TItem="ShowcaseEntry" aria-label="@L["Archives"]">
+                <ThumbnailTemplate Context="entry"><FormaIcon Icon="@entry.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
+            </FormaDataTree>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["When Nodes Go Away"]</h2>
+    <p class="description">@L["The source changes while the tree is in use: each button acts three seconds after it is pressed, which leaves time to put the focus back on a node. When the node holding the focus goes away, the focus moves to the nearest node that remains, at the same level where it can, and the selection stays as it was."]</p>
+    <div class="demo-box demo-row demo-controls">
+        <FormaToggleButton Label="@L["Select Nodes"]" ShowLabel="true" Pressed="_changingSelects" OnClick="() => _changingSelects = !_changingSelects" />
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => RemoveLaterAsync(4)">@L["Remove Reports"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => RemoveLaterAsync(6)">@L["Remove Notes.txt"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => RemoveLaterAsync(9)">@L["Remove Lease.pdf"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => CloseLaterAsync(1)">@L["Close Documents"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => RemoveLaterAsync(1, 2, 3)">@L["Remove Everything"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _changingEntries = DataViewShowcaseFolders.All">@L["Put Everything Back"]</FormaButton>
+    </div>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView @key="_changingSelects" @ref="_changingView" TItem="ShowcaseEntry" Items="_changingEntries" EnablePagination="false" Virtualize="true" ItemHeight="32" EnableItemSelection="_changingSelects" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.Parent)" HasChildren="@(entry => entry.IsFolder)">
+            <FormaDataTree TItem="ShowcaseEntry" aria-label="@L["Folders"]">
+                <ThumbnailTemplate Context="entry"><FormaIcon Icon="@entry.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
+            </FormaDataTree>
+        </FormaDataView>
+    </div>
+</div>
+
 @code {
+    // How long a change to the source waits after its button is pressed, time enough to put the focus back on a node.
+    private static readonly TimeSpan ChangeDelay = TimeSpan.FromSeconds(3);
+
     private ShowcaseEntry? _currentFolder;
+    private IQueryable<ShowcaseEntry> _changingEntries = DataViewShowcaseFolders.All;
+    private FormaDataView<ShowcaseEntry> _changingView = default!;
+    private bool _changingSelects;
+
+    // Takes the entries away from the source, with everything under them.
+    private async Task RemoveLaterAsync(params int[] ids)
+    {
+        await Task.Delay(ChangeDelay);
+
+        var entries = _changingEntries.ToList();
+        HashSet<int> removed = [.. ids];
+        var reached = 0;
+
+        // Each pass takes the children of what is taken, until a pass takes nothing new.
+        while (removed.Count != reached)
+        {
+            reached = removed.Count;
+            removed.UnionWith(entries.Where(entry => entry.ParentId is { } parent && removed.Contains(parent)).Select(entry => entry.Id));
+        }
+
+        _changingEntries = entries.Where(entry => !removed.Contains(entry.Id)).ToArray().AsQueryable();
+    }
+
+    private async Task CloseLaterAsync(int id)
+    {
+        await Task.Delay(ChangeDelay);
+
+        if (_changingEntries.FirstOrDefault(entry => entry.Id == id) is { } entry)
+        {
+            await _changingView.CloseNodeAsync(entry);
+        }
+    }
 }

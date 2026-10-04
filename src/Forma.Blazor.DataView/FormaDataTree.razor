@@ -2,7 +2,7 @@
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
 
-@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Forma.Blazor.Components.Virtualization
 
 @if (IsActive)
 {
@@ -11,32 +11,35 @@
          class="@RootClass"
          style="@RootStyle"
          @attributes="_collectionName.RootAttributes"
-         @ref="RootElement">
+         @ref="RootElement"
+         tabindex="@(_holdsFocus ? "-1" : null)">
         @if (!View.AreRootsLoaded)
         {
             <div class="forma-data-tree-state">@View.LoadingContent</div>
         }
         else if (GetRoots().Count == 0)
         {
+            SettleRows();
             <div class="forma-data-tree-state">@View.EmptyContent</div>
         }
         else if (IsVirtualizing)
         {
-            _visibleRows = GetVisibleRows();
-            SettleTabStop();
+            SettleRows();
 
             @* Virtualizing, the visible nodes stand in one run, each carrying its level and its place among its siblings. *@
             <div class="forma-data-tree-level" role="tree" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
-                <Virtualize @ref="_virtualizer" Items="_visibleRows" ItemSize="View.ItemHeight" OverscanCount="View.OverscanCount" Context="row">
-                    <div class="forma-data-tree-item" role="none" @key="View.ItemKey(row.Node)">
-                        @RenderNode(row, null)
-                    </div>
-                </Virtualize>
+                <FormaVirtualize @ref="_virtualizer" TItem="VisibleNode" Items="_visibleRows" ItemKey="GetRowKey" ItemSize="View.ItemHeight" OverscanCount="View.OverscanCount" PinnedKeys="GetPinnedKeys()">
+                    <ItemContent Context="row">
+                        <div class="forma-data-tree-item" role="none">
+                            @RenderNode(row, null)
+                        </div>
+                    </ItemContent>
+                </FormaVirtualize>
             </div>
         }
         else
         {
-            SettleTabStop();
+            SettleRows();
             <ul class="forma-data-tree-level" role="tree" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 @RenderLevel(GetRoots(), 1)
             </ul>
@@ -90,7 +93,7 @@
              tabindex="@GetNodeTabIndex(key)"
              data-item="@(HasSelection ? View.GetItemToken(node) : null)"
              data-item-position="@row.Row"
-             @onfocusin="() => _focusedNode = node"
+             @onfocusin="() => HandleNodeFocusIn(node)"
              @onfocusout="() => _focusedNode = default"
              @ref="_nodeElements[key]">
             @if (isLoading)
