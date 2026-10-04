@@ -318,4 +318,31 @@
 
         private sealed record Product(int Id, string Name, string Category);
     }
+
+    public sealed class Selection
+    {
+        [Fact]
+        public async Task Should_keep_a_selection_the_host_does_not_bind_when_the_host_renders_again()
+        {
+            // Arrange — the host passes no selection, and a press selects the second item
+            using var ctx = new FormaDataViewTests();
+            var products = new[] { new Product(1, "Hammer"), new Product(2, "Atlas") };
+            var cut = ctx.Render(
+                @<FormaDataView Items="products.AsQueryable()" EnablePagination="false" EnableItemSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 2);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            var token = int.Parse(cut.FindAll("[data-item]")[1].GetAttribute("data-item")!, System.Globalization.CultureInfo.InvariantCulture);
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, additive: false));
+
+            // Act — the host renders again, handing over a new source
+            engine.Render(parameters => parameters.Add(view => view.Items, products.AsQueryable()));
+
+            // Assert
+            Assert.Equal(1, engine.Instance.SelectedCount);
+        }
+
+        private sealed record Product(int Id, string Name);
+    }
 }

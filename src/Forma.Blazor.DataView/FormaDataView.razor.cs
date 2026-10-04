@@ -469,7 +469,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _keyComparer = new ItemKeyComparer<TItem>(ItemKey);
         }
 
-        // The set is rebuilt only when the host hands over a different list, since every change this data view reports arrives as a new one.
+        // The set is rebuilt only when the host hands over a different list; a host that leaves the selection unbound keeps handing over
+        // the list it began with, so the selection made since stays.
         if (_selectedItemsParameter.Update(SelectedItems) || keyChanged)
         {
             _selectedSet = new HashSet<TItem>(SelectedItems, _keyComparer);
@@ -1319,7 +1320,6 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         _selectedSet = updated;
         IReadOnlyList<TItem> reported = [.. updated];
-        _selectedItemsParameter.Update(reported);
         await SelectedItemsChanged.InvokeAsync(reported);
         await NotifyStateAsync();
     }
