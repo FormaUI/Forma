@@ -56,6 +56,10 @@ $cases = @(
     @{ Name = 'a repeated run says how many times'; Script = 'test.ps1'; Arguments = @('DotNet', '-Times', '3'); Expect = @('3 times') }
     @{ Name = 'a project that matches nothing is refused'; Script = 'test.ps1'; Arguments = @('DotNet', '-Project', 'NoSuchProject'); Fails = $true; Expect = @('No test project matches') }
     @{ Name = 'a .NET argument given to the script tests is refused'; Script = 'test.ps1'; Arguments = @('Scripts', '-Times', '5'); Fails = $true; Expect = @('nothing to say about') }
+    @{ Name = 'a run under load names the projects loading it'; Script = 'test.ps1'; Arguments = @('DotNet', '-NoBuild', '-Times', '3', '-LoadWith', 'Blazor.Explorer'); Expect = @('under load from Forma.Blazor.Explorer.Tests') }
+    @{ Name = 'a run under load that would build first is refused'; Script = 'test.ps1'; Arguments = @('DotNet', '-LoadWith', 'Blazor.Explorer'); Fails = $true; Expect = @('takes -NoBuild') }
+    @{ Name = 'a run recording its waits says where'; Script = 'test.ps1'; Arguments = @('DotNet', '-WaitLog', 'wait-log'); Expect = @('recording its waits in') }
+    @{ Name = 'a wait log given to the script tests is refused'; Script = 'test.ps1'; Arguments = @('Scripts', '-WaitLog', 'wait-log'); Fails = $true; Expect = @('nothing to say about') }
 )
 
 function Invoke-Case {
@@ -197,6 +201,54 @@ finally {
     Remove-Item -LiteralPath $tree -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+# Clearing a wait log deletes files, and the summary is read off what the waits wrote, so both run for real
+# here against a folder made for the purpose: records from two test processes, and a file of someone else's.
+$log = Join-Path ([System.IO.Path]::GetTempPath()) ("forma-wait-log-" + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $log | Out-Null
+Set-Content -LiteralPath (Join-Path $log '101.log') -Value 'held A.razor:9', 'waited A.razor:12', 'held B.razor:3'
+Set-Content -LiteralPath (Join-Path $log '202.log') -Value 'held A.razor:9', 'held A.razor:12', 'waited A.razor:9'
+Set-Content -LiteralPath (Join-Path $log 'notes.log') -Value 'waited Kept.razor:1'
+
+try {
+    $module = Get-Module Forma.Build
+    $summary = @(& $module { param($Path) Get-WaitLogSummary -Path $Path } $log)
+    & $module { param($Path) Clear-WaitLog -Path $Path } $log
+    $cleared = @(& $module { param($Path) Get-WaitLogSummary -Path $Path } $log)
+
+    $wrong = @(
+        if ($summary[0] -ne '2 of 3 waits needed time, as the times each waited of the times it was reached:') { "the summary opened '$($summary[0])'" }
+        if ($summary.Count -ne 3 -or $summary[1] -notmatch '1/3\s+A\.razor:9$' -or $summary[2] -notmatch '1/2\s+A\.razor:12$') { 'the waits that needed time were not listed by file and line with their counts' }
+        if (Test-Path (Join-Path $log '101.log')) { 'a record was left behind' }
+        if (-not (Test-Path (Join-Path $log 'notes.log'))) { 'a file the waits did not write was deleted' }
+        if ($cleared[0] -notlike 'No wait recorded itself*') { 'the cleared folder still read as holding records' }
+    )
+
+    $waitLog = [pscustomobject]@{
+        Name     = 'a wait log is read by file and line, and cleared of the records alone'
+        Passed   = $wrong.Count -eq 0
+        Problems = $wrong
+        Output   = ''
+    }
+}
+catch {
+    $waitLog = [pscustomobject]@{
+        Name     = 'a wait log is read by file and line, and cleared of the records alone'
+        Passed   = $false
+        Problems = @("the check could not be made: $($_.Exception.Message)")
+        Output   = ''
+    }
+}
+finally {
+    Remove-Item -LiteralPath $log -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+$mark = if ($waitLog.Passed) { 'ok  ' } else { 'FAIL' }
+Write-Host ("  {0} {1}" -f $mark, $waitLog.Name)
+
+foreach ($problem in $waitLog.Problems) {
+    Write-Host ("        {0}" -f $problem)
+}
+
 $mark = if ($cleaning.Passed) { 'ok  ' } else { 'FAIL' }
 Write-Host ("  {0} {1}" -f $mark, $cleaning.Name)
 
@@ -211,7 +263,7 @@ foreach ($problem in $guard.Problems) {
     Write-Host ("        {0}" -f $problem)
 }
 
-$all = @($results) + $guard + $cleaning
+$all = @($results) + $guard + $cleaning + $waitLog
 $failed = @($all | Where-Object { -not $_.Passed })
 
 Write-Host ''

@@ -33,7 +33,9 @@ the narrower loops live under `scripts/build/`.
   `test.ps1`, `format.ps1`, `tasks.ps1`, `clean.ps1`. The gate is about two and a half minutes and the
   format check alone is half of it, so a narrow loop is worth reaching for.
 - Do narrow a test run with `test.ps1 -Project`, `-Filter` and `-NoBuild`, and hunt a test that fails
-  sometimes with `-Times`, which continues past a failure so the failure shows as a rate.
+  sometimes with `-Times`, which continues past a failure so the failure shows as a rate; add `-LoadWith`
+  to run other test projects beside it, so a race a busy machine exposes shows here too, and `-WaitLog`
+  to list which waits made with diagnostics found their state only after waiting for it.
 - Do reach for `clean.ps1 -All` when the disk is filling: a program run from a single .cs file is built
   into the system temp directory and left there on every edit and rename.
 - Do name a build script for its action in lowercase, since it is a command someone types; the functions

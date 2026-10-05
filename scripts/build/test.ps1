@@ -12,11 +12,12 @@ alone is half, while one project is a few seconds.
 
 Repeating a run is for hunting a test that fails sometimes. Every iteration runs whatever the ones before
 it did and the run continues past a failure, so an intermittent failure surfaces as a rate rather than as
-a single result that happened to go either way.
+a single result that happened to go either way. Other test projects running beside it load the machine, as
+a busy build agent is, and a wait log shows which of a test's waits the machine's speed decided.
 
 .PARAMETER Target
-Which tests to run: DotNet, Scripts, or All (default). -Project, -Filter, -NoBuild and -Times narrow the
-.NET run, so they have nothing to say about the script tests.
+Which tests to run: DotNet, Scripts, or All (default). -Project, -Filter, -NoBuild, -Times, -LoadWith and
+-WaitLog shape the .NET run, so they have nothing to say about the script tests.
 
 .PARAMETER Project
 One test project to run instead of the solution, named rather than spelled out as a path. A partial name
@@ -32,6 +33,14 @@ as one straight after compile.ps1 or build.ps1.
 .PARAMETER Times
 Repeats the run, continuing past a failure, so that a test failing sometimes shows as a rate.
 
+.PARAMETER LoadWith
+Test projects run over and over while the runs last, so a test that fails only on a busy machine fails
+here too. They run from the output already on disk, so this takes -NoBuild after a build.
+
+.PARAMETER WaitLog
+A folder for the waits a test makes with diagnostics to record themselves in. What a run before left there
+is cleared first, and the waits that needed time are listed once the runs are over.
+
 .EXAMPLE
 ./scripts/build/test.ps1
 
@@ -40,6 +49,9 @@ Repeats the run, continuing past a failure, so that a test failing sometimes sho
 
 .EXAMPLE
 ./scripts/build/test.ps1 -Filter 'FullyQualifiedName~Glyph' -NoBuild -Times 40
+
+.EXAMPLE
+./scripts/build/test.ps1 -Project DataView -NoBuild -Times 30 -LoadWith Forma.Blazor.Tests, Blazor.Explorer -WaitLog .local/wait-log
 
 .EXAMPLE
 ./scripts/build/test.ps1 -Target Scripts
@@ -58,7 +70,11 @@ param(
     [switch] $NoBuild,
 
     [ValidateRange(1, 10000)]
-    [int] $Times = 1
+    [int] $Times = 1,
+
+    [string[]] $LoadWith,
+
+    [string] $WaitLog
 )
 
 Set-StrictMode -Version Latest
@@ -66,8 +82,8 @@ $ErrorActionPreference = 'Stop'
 
 # An argument the chosen target never reads is refused rather than ignored, so a run narrowed by something
 # that has no say in it does not quietly test everything instead.
-if ($Target -eq 'Scripts' -and ($Project -or $Filter -or $NoBuild -or $Times -gt 1)) {
-    throw '-Project, -Filter, -NoBuild and -Times narrow the .NET tests, so they have nothing to say about the script tests.'
+if ($Target -eq 'Scripts' -and ($Project -or $Filter -or $NoBuild -or $Times -gt 1 -or $LoadWith -or $WaitLog)) {
+    throw '-Project, -Filter, -NoBuild, -Times, -LoadWith and -WaitLog have nothing to say about the script tests.'
 }
 
 Import-Module (Join-Path $PSScriptRoot 'Forma.Build.psd1') -Force
@@ -76,7 +92,7 @@ $context = Initialize-BuildContext -RepositoryRoot (Split-Path -Parent (Split-Pa
 $results = [System.Collections.Generic.List[psobject]]::new()
 
 if ($Target -in 'All', 'DotNet') {
-    $results.Add((Test-Solution -Context $context -Project $Project -Filter $Filter -NoBuild:$NoBuild -Times $Times -WhatIf:$WhatIfPreference))
+    $results.Add((Test-Solution -Context $context -Project $Project -Filter $Filter -NoBuild:$NoBuild -Times $Times -LoadWith $LoadWith -WaitLog $WaitLog -WhatIf:$WhatIfPreference))
 }
 
 if ($Target -in 'All', 'Scripts') {

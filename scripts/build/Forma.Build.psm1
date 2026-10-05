@@ -364,6 +364,14 @@ Runs against the output already on disk rather than building first. For a run th
 .PARAMETER Times
 Repeats the run, continuing past a failure so that a flake shows as a rate.
 
+.PARAMETER LoadWith
+Test projects run over and over from the output on disk while the runs last, so a test that fails only on a
+busy machine fails here. They run without FORMA_WAIT_LOG, so what they wait for is never recorded.
+
+.PARAMETER WaitLog
+The folder the waits a test makes with diagnostics record themselves in, through FORMA_WAIT_LOG. The
+records a run before left there are cleared first, and the waits that needed time are listed at the end.
+
 .OUTPUTS
 The step's result.
 #>
@@ -375,10 +383,21 @@ function Test-Solution {
         [string] $Project,
         [string] $Filter,
         [switch] $NoBuild,
-        [ValidateRange(1, 10000)] [int] $Times = 1
+        [ValidateRange(1, 10000)] [int] $Times = 1,
+        [string[]] $LoadWith,
+        [string] $WaitLog
     )
 
+    # A build writes the output the loading projects are running from, so the build has to come first.
+    if ($LoadWith -and -not $NoBuild) {
+        throw '-LoadWith runs its projects from the output already on disk, which a build would be writing to, so it takes -NoBuild after a build.'
+    }
+
     $target = if ($Project) { Resolve-TestProject -Context $Context -Name $Project } else { $Context.Solution }
+    $load = @(foreach ($name in $LoadWith) { Resolve-TestProject -Context $Context -Name $name })
+    $waitLogPath = if ($WaitLog) { $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($WaitLog) } else { $null }
+    $clearWaitLog = ${function:Clear-WaitLog}
+    $summarizeWaitLog = ${function:Get-WaitLogSummary}
 
     $arguments = @($target, '--nologo', '-v:q', '--logger', 'console;verbosity=normal')
 
@@ -393,20 +412,102 @@ function Test-Solution {
     $runs = $Times
     $description = if ($runs -gt 1) { "dotnet test, $runs times" } else { 'dotnet test' }
 
+    if ($load.Count -gt 0) {
+        $description += ", under load from $(($load | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }) -join ', ')"
+    }
+
+    if ($waitLogPath) {
+        $description += ", recording its waits in $waitLogPath"
+    }
+
     Invoke-BuildStep -Name 'test' -Target $target -Description $description -WhatIf:$WhatIfPreference -Command {
         $failures = [System.Collections.Generic.List[int]]::new()
+        $previousWaitLog = $env:FORMA_WAIT_LOG
+        $stopLoad = [System.Threading.CancellationTokenSource]::new()
+        $loaders = @()
+        $loadFailed = $false
 
-        for ($run = 1; $run -le $runs; $run++) {
-            if ($runs -gt 1) {
+        try {
+            if ($waitLogPath) {
+                & $clearWaitLog -Path $waitLogPath
+                $env:FORMA_WAIT_LOG = $waitLogPath
+            }
+
+            # Each loading project runs until the runs are over, its output discarded, and without the wait
+            # log, so its own waits stay out of the records.
+            $loaders = @(foreach ($project in $load) {
+                    Write-Host ("   loading the machine with {0}" -f [System.IO.Path]::GetFileNameWithoutExtension($project))
+
+                    $job = Start-ThreadJob -ArgumentList $project, $stopLoad.Token -ScriptBlock {
+                        param($project, $token)
+
+                        $output = New-TemporaryFile
+                        $errors = New-TemporaryFile
+                        $ran = 0
+                        $failed = 0
+
+                        try {
+                            while (-not $token.IsCancellationRequested) {
+                                $process = Start-Process -FilePath 'dotnet' -ArgumentList 'test', $project, '--no-build', '--nologo', '-v:q' -Environment @{ FORMA_WAIT_LOG = $null } -NoNewWindow -Wait -PassThru -RedirectStandardOutput $output -RedirectStandardError $errors
+                                $ran++
+
+                                if ($process.ExitCode -ne 0) {
+                                    $failed++
+                                }
+                            }
+                        }
+                        finally {
+                            Remove-Item -LiteralPath $output, $errors -ErrorAction SilentlyContinue
+                        }
+
+                        [pscustomobject]@{ Ran = $ran; Failed = $failed }
+                    }
+
+                    [pscustomobject]@{ Name = [System.IO.Path]::GetFileNameWithoutExtension($project); Job = $job }
+                })
+
+            for ($run = 1; $run -le $runs; $run++) {
+                if ($runs -gt 1) {
+                    Write-Host ''
+                    Write-Host ("   run {0} of {1}" -f $run, $runs)
+                }
+
+                dotnet test @arguments
+
+                if ($LASTEXITCODE -ne 0) {
+                    $failures.Add($run)
+                }
+            }
+        }
+        finally {
+            $env:FORMA_WAIT_LOG = $previousWaitLog
+
+            # A loading project finishes the run it is in rather than being cut off, which would leave its
+            # test host running.
+            if ($loaders.Count -gt 0) {
                 Write-Host ''
-                Write-Host ("   run {0} of {1}" -f $run, $runs)
+                Write-Host '   waiting for the load to finish the runs it is in'
+                $stopLoad.Cancel()
+
+                # A loader that could not run leaves the runs without the load they were asked to have, so it
+                # is said and fails the step rather than passing as though the machine had been busy.
+                foreach ($loader in $loaders) {
+                    $loadErrors = $null
+                    $report = $loader.Job | Wait-Job | Receive-Job -ErrorVariable loadErrors -ErrorAction SilentlyContinue
+                    Remove-Job -Job $loader.Job -Force
+
+                    if ($loadErrors -or -not $report) {
+                        $loadFailed = $true
+                        Write-Host ("   {0} could not load the machine: {1}" -f $loader.Name, (@($loadErrors) | Select-Object -First 1))
+                    }
+                    else {
+                        Write-Host ("   {0} ran {1} {2} beside the runs, {3} of them failing" -f $loader.Name, $report.Ran,
+                            $(if ($report.Ran -eq 1) { 'time' } else { 'times' }), $report.Failed)
+                    }
+                }
             }
 
-            dotnet test @arguments
-
-            if ($LASTEXITCODE -ne 0) {
-                $failures.Add($run)
-            }
+            $stopLoad.Dispose()
         }
 
         if ($runs -gt 1) {
@@ -415,10 +516,102 @@ function Test-Solution {
                 $(if ($failures.Count -gt 0) { ": $($failures -join ', ')" } else { '' }))
         }
 
+        if ($waitLogPath) {
+            Write-Host ''
+            & $summarizeWaitLog -Path $waitLogPath | Write-Host
+        }
+
         # The loop swallows each run's code so that a later run still happens, so the step's own outcome
         # is set here rather than left to whichever run happened to be last.
-        $global:LASTEXITCODE = if ($failures.Count -gt 0) { 1 } else { 0 }
+        $global:LASTEXITCODE = if ($failures.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
     }.GetNewClosure()
+}
+
+<#
+.SYNOPSIS
+Clears the records the waits a test makes with diagnostics wrote in a folder.
+
+.DESCRIPTION
+A wait records itself in a file named for the id of the test process it ran in, so only files named that
+way are removed; the folder and everything else in it stay.
+
+.PARAMETER Path
+The folder the waits recorded themselves in.
+#>
+function Clear-WaitLog {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)] [string] $Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+        return
+    }
+
+    Get-ChildItem -LiteralPath $Path -Filter '*.log' -File |
+        Where-Object { $_.Name -match '^\d+\.log$' } |
+        Remove-Item
+}
+
+<#
+.SYNOPSIS
+Reads the records the waits a test makes with diagnostics wrote in a folder, and says which needed time.
+
+.DESCRIPTION
+A wait records whether its state already held when it was reached. One that ever had to wait is listed
+with how many times it waited of the times it was reached, by file and then by line.
+
+.PARAMETER Path
+The folder the waits recorded themselves in.
+
+.OUTPUTS
+The lines that say it.
+#>
+function Get-WaitLogSummary {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)] [string] $Path
+    )
+
+    $files = if (Test-Path -LiteralPath $Path -PathType Container) {
+        @(Get-ChildItem -LiteralPath $Path -Filter '*.log' -File | Where-Object { $_.Name -match '^\d+\.log$' })
+    }
+    else {
+        @()
+    }
+
+    $records = @(foreach ($file in $files) {
+            foreach ($line in Get-Content -LiteralPath $file.FullName) {
+                if ($line -match '^(held|waited) (.+:\d+)$') {
+                    [pscustomobject]@{ Waited = $Matches[1] -eq 'waited'; Location = $Matches[2] }
+                }
+            }
+        })
+
+    if ($records.Count -eq 0) {
+        return 'No wait recorded itself: a wait is recorded only where a test makes it with diagnostics.'
+    }
+
+    $waits = @($records | Group-Object Location)
+    $slow = @($waits |
+            ForEach-Object {
+                $waited = @($_.Group | Where-Object Waited).Count
+                if ($waited -gt 0) {
+                    [pscustomobject]@{ Location = $_.Name; Waited = $waited; Reached = $_.Count }
+                }
+            } |
+            Sort-Object { ($_.Location -split ':')[0] }, { [int](($_.Location -split ':')[-1]) })
+
+    if ($slow.Count -eq 0) {
+        return ("Every wait found its state already reached: {0} waits, reached {1} times." -f $waits.Count, $records.Count)
+    }
+
+    "{0} of {1} waits needed time, as the times each waited of the times it was reached:" -f $slow.Count, $waits.Count
+
+    foreach ($wait in $slow) {
+        "  {0,5}/{1,-5} {2}" -f $wait.Waited, $wait.Reached, $wait.Location
+    }
 }
 
 <#
