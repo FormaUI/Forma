@@ -49,6 +49,8 @@ Scenario[] scenarios =
     new("The tree's focus kept while it scrolls", "he", "/he/data-view/tree", TreeScrolling(rightToLeft: true)),
     new("The tree's focus handed on when its node goes away", "en", "/data-view/tree", TreeHandOff(rightToLeft: false)),
     new("The tree's focus handed on when its node goes away", "he", "/he/data-view/tree", TreeHandOff(rightToLeft: true)),
+    new("A checkbox and its state", "en", "/checkbox", CheckBoxState("Subscribe to updates")),
+    new("A checkbox and its state", "he", "/he/checkbox", CheckBoxState("הרשמה לעדכונים")),
 ];
 
 using var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
@@ -164,6 +166,17 @@ static Step[] TreeHandOff(bool rightToLeft)
         new("open it", page => page.Keyboard.PressAsync(rightToLeft ? "ArrowLeft" : "ArrowRight"), ["expanded"]),
         new("move to Q1.pdf", page => page.Keyboard.PressAsync("ArrowDown"), ["Q 1 dot pdf"]),
         new("close Documents over the focus", page => PressControlAsync(page, 3, 4), ["Documents"], TimeSpan.FromSeconds(8)),
+    ];
+}
+
+// The checkbox named by its label: announced as one, then its state as Space turns it on and off.
+static Step[] CheckBoxState(string label)
+{
+    return [
+        new("open the page", null, []),
+        new("focus the box", page => page.Locator("label.forma-checkbox-label").Filter(new() { HasTextString = label }).Locator("input").FocusAsync(), [label, "check box", "not checked"]),
+        new("check it", page => page.Keyboard.PressAsync("Space"), ["checked"]),
+        new("clear it", page => page.Keyboard.PressAsync("Space"), ["not checked"]),
     ];
 }
 
