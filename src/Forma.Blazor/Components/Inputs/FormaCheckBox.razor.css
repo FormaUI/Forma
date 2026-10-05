@@ -1,27 +1,76 @@
 /* ============================================================
    FormaCheckBox — CSS isolation
-   A native checkbox, sized and tinted to the design tokens.
+   A native checkbox drawn by the library: the input keeps its
+   semantics, its keyboard and its part in a form, and its box,
+   fill, check and dash come from the design tokens.
    ============================================================ */
 
 .forma-checkbox {
+    appearance: none;
+    position: relative;
+    box-sizing: border-box;
     inline-size: 1rem;
     block-size: 1rem;
     flex-shrink: 0;
     margin: 0;
+    background-color: var(--forma-checkbox-bg-color, var(--input-bg-color));
+    border: 1px solid var(--forma-checkbox-border-color, var(--gray-500));
     border-radius: var(--radius-sm);
-    accent-color: var(--primary-color);
     touch-action: manipulation;
+    /* The fill is the checked state, so it is printed even where a page's backgrounds are left out. */
+    print-color-adjust: exact;
 }
 
-/* The box's ring is an outline, so the gap before it is whatever the box stands on, a tinted row's backdrop included. */
+/* The mark is the Check glyph's stroke, or the Minus glyph's for a box neither checked nor clear, cut from the mark's color. */
+.forma-checkbox::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
+    background-color: var(--forma-checkbox-mark-color, var(--primary-fg-color));
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 4 13 L 9 18 L 20 6'/%3E%3C/svg%3E") center / 100% no-repeat;
+}
+
+.forma-checkbox:checked,
+.forma-checkbox:indeterminate {
+    background-color: var(--forma-checkbox-checked-bg-color, var(--primary-color));
+    border-color: var(--forma-checkbox-checked-bg-color, var(--primary-color));
+}
+
+.forma-checkbox:checked::after,
+.forma-checkbox:indeterminate::after {
+    visibility: visible;
+}
+
+.forma-checkbox:indeterminate::after {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M 4 12 H 20'/%3E%3C/svg%3E");
+}
+
+@media (hover: hover) {
+    .forma-checkbox:not(:disabled, :checked, :indeterminate):hover {
+        border-color: var(--forma-checkbox-checked-bg-color, var(--primary-color));
+    }
+}
+
+/* The ring is an outline, which follows the box's corner, and the gap before it is whatever the box stands on, a tinted row's
+   backdrop included. */
 .forma-checkbox:focus-visible {
     box-shadow: none;
     outline: var(--focus-ring-width) solid var(--focus-color);
     outline-offset: var(--focus-ring-gap);
 }
 
-/* Under forced colors the ring is in the system highlight, as every other control's is. */
+/* Under forced colors the system draws the box in its own colors, and the ring is in the system highlight, as every other
+   control's is. */
 @media (forced-colors: active) {
+    .forma-checkbox {
+        appearance: auto;
+    }
+
+    .forma-checkbox::after {
+        content: none;
+    }
+
     .forma-checkbox:focus-visible {
         outline-color: Highlight;
     }

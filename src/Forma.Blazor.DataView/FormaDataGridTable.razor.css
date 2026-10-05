@@ -201,6 +201,7 @@ td.forma-data-grid-menu-column {
     inline-size: 0;
     block-size: 0;
     margin: 0;
+    border: 0;
     opacity: 0;
     pointer-events: none;
 }
