@@ -10,6 +10,9 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     /// <summary>The item the row shows.</summary>
     [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
 
+    /// <summary>The item's place in the whole set, where a virtualizing grid draws the row.</summary>
+    [Parameter] public int? Position { get; set; }
+
     [CascadingParameter] private FormaDataGrid<TItem> Grid { get; set; } = default!;
 
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;

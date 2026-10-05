@@ -169,10 +169,7 @@
                     }
                     else
                     {
-                        @foreach (var item in row.Items)
-                        {
-                            <FormaDataGridRow TItem="TItem" Item="item" @key="View.ItemKey(item)" />
-                        }
+                        <FormaDataGridRow TItem="TItem" Item="row.Items[0]" Position="row.FirstItemIndex" @key="View.ItemKey(row.Items[0])" />
                     }
                 </ItemContent>
                 <Placeholder>

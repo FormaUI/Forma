@@ -1154,6 +1154,85 @@
         }
 
         [Fact]
+        public async Task Should_keep_every_drawn_row_s_place_once_a_row_focused_far_away_is_read_again()
+        {
+            // Arrange — the first row's box takes the focus, then the grid scrolls thirty rows away from it
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(50)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="40" OverscanCount="2">
+                    <FormaDataGrid><Columns><FormaPropertyColumn Property="@(item => item.Title)" /></Columns></FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody input[data-row-key]").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+            cut.FindAll("tbody input[data-row-key]")[0].FocusIn();
+            await ReportViewportAsync(cut, 1200, 200, 40);
+
+            // Act — the rows are read again, which checks the focused row where it stands apart from the rest
+            await cut.InvokeAsync(() => cut.FindComponent<FormaDataView<GridItem>>().Instance.RefreshDataAsync());
+
+            // Assert — every row drawn, the focused one among them, says which row of the set it is
+            var rows = cut.FindAll("tbody tr.forma-data-grid-row:not(.forma-data-grid-placeholder-row)");
+            Assert.Multiple(
+                () => Assert.Contains(rows, row => row.TextContent.Trim() == "Item 1"),
+                () => Assert.All(rows, row => Assert.Equal(row.TextContent.Trim()["Item ".Length..], row.GetAttribute("aria-rowindex"))));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_rows_either_side_of_a_focused_box_drawn_once_it_scrolls_away()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(50)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="40" OverscanCount="2">
+                    <FormaDataGrid><Columns><FormaPropertyColumn Property="@(item => item.Title)" /></Columns></FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody input[data-row-key]").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+
+            // Act — Item 3's box takes the focus, and the grid scrolls thirty rows past it
+            cut.FindAll("tbody tr.forma-data-grid-row").Single(row => row.TextContent.Trim() == "Item 3").QuerySelector("input")!.FocusIn();
+            await ReportViewportAsync(cut, 1200, 200, 40);
+
+            // Assert — the focused row and the rows either side of it stay drawn, ahead of the rows the viewport stands over
+            var drawn = cut.FindAll("tbody tr.forma-data-grid-row").Select(row => row.TextContent.Trim()).ToList();
+            Assert.Equal(["Item 2", "Item 3", "Item 4"], drawn.Take(3));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_rows_either_side_of_a_focused_box_drawn_when_it_takes_the_focus_again_scrolled_away()
+        {
+            // Arrange — Item 3's box holds the focus while the grid scrolls thirty rows past it
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(50)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="40" OverscanCount="2">
+                    <FormaDataGrid><Columns><FormaPropertyColumn Property="@(item => item.Title)" /></Columns></FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody input[data-row-key]").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+            Box(cut, "Item 3").FocusIn();
+            await ReportViewportAsync(cut, 1200, 200, 40);
+
+            // Act — the box takes the focus again where it stands, as it does when the window is returned to
+            Box(cut, "Item 3").FocusIn();
+
+            // Assert
+            var drawn = cut.FindAll("tbody tr.forma-data-grid-row").Select(row => row.TextContent.Trim()).ToList();
+            Assert.Equal(["Item 2", "Item 3", "Item 4"], drawn.Take(3));
+
+            static AngleSharp.Dom.IElement Box(IRenderedComponent<IComponent> cut, string title)
+                => cut.FindAll("tbody tr.forma-data-grid-row").Single(row => row.TextContent.Trim() == title).QuerySelector("input")!;
+        }
+
+        // Reports where the grid stands in its viewport, as the virtualizer's script does.
+        private static Task ReportViewportAsync(IRenderedComponent<IComponent> cut, double offset, double viewport, double itemSize)
+        {
+            var virtualizer = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(FormaVirtualize<>)).Instance;
+            var report = virtualizer.GetType().GetMethod(nameof(FormaVirtualize<GridItem>.HandleViewportAsync))!;
+
+            return cut.InvokeAsync(() => (Task)report.Invoke(virtualizer, [offset, viewport, itemSize])!);
+        }
+
+        [Fact]
         public void Should_throw_when_the_initial_item_index_is_negative()
         {
             // Arrange
