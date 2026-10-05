@@ -72,7 +72,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private bool _holdsFocus;
     private bool _focusesSelf;
     private object? _heirKey;
-    private FocusHandOff _focusHandOff = default!;
+    private Focus _focus = default!;
     private FormaVirtualize<VisibleNode>? _virtualizer;
     private List<VisibleNode> _visibleRows = [];
 
@@ -129,7 +129,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         _isCompanion = SelectsCurrent;
         _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
-        _focusHandOff = new FocusHandOff(Context.JS);
+        _focus = new Focus(Context.JS);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Tree"], Glyph.FolderTree, this) { IsCompanion = _isCompanion });
         View.Subscribe(HandleViewChangedAsync);
     }
@@ -181,13 +181,13 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: IsActive);
 
         // The hand-off watches the tree while it shows, and lets go of a root the tree no longer draws.
-        if (IsActive && !_focusHandOff.IsAttached)
+        if (IsActive && !_focus.IsAttached)
         {
-            await _focusHandOff.AttachAsync(RootElement, HeirAttribute);
+            await _focus.AttachAsync(RootElement, heir: HeirAttribute);
         }
-        else if (!IsActive && _focusHandOff.IsAttached)
+        else if (!IsActive && _focus.IsAttached)
         {
-            await _focusHandOff.DetachAsync();
+            await _focus.DetachAsync();
         }
 
         if (_pendingFocusKey is { } pending && await TryFocusAsync(pending))
@@ -370,7 +370,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     // When the node holding the focus goes away, the focus moves to the nearest node that remains: an ancestor closed over it, else the
     // next sibling, the previous sibling or the parent of the branch that went, else the tree itself. None of it changes the selection.
-    // The render that takes the node away marks the one taking the focus, which the hand-off behavior focuses as the render lands.
+    // The render that takes the node away marks the one taking the focus, which the focus behavior focuses as the render lands.
     private void HandFocusOn(List<VisibleNode> rows, HashSet<object> remaining)
     {
         if (_focusedNode is not { } focused || remaining.Contains(View.ItemKey(focused)))
@@ -688,7 +688,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         View.Unsubscribe(HandleViewChangedAsync);
         Interaction.UnregisterView(ViewKey);
         await _inputRegistration.DisposeAsync();
-        await _focusHandOff.DisposeAsync();
+        await _focus.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

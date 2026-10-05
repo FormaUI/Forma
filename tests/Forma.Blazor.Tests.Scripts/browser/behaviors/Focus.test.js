@@ -423,3 +423,106 @@ describe('Focus roving inside a surface', () => {
         expect(tabindexOf('custom')).toBe('0');
     });
 });
+
+describe('Focus handing on from an element that goes away', () => {
+    /** @type {HTMLElement} */
+    let surface;
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <button id="outside">Outside</button>
+            <div id="surface" tabindex="-1">
+                <div id="first" tabindex="0">First</div>
+                <div id="second" tabindex="-1">Second</div>
+            </div>
+            <button id="after">After</button>`;
+        surface = document.querySelector('#surface');
+    });
+
+    // A render's removal and its mark are seen together once the mutation observer has run.
+    const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+    const start = () => attachSurface(surface, { heir: 'data-heir' });
+
+    it('hands the focus to the marked element when the element holding it goes away', async () => {
+        start();
+        focus('first');
+
+        document.querySelector('#second').setAttribute('data-heir', '');
+        document.querySelector('#first').remove();
+        await settle();
+
+        expect(document.activeElement?.id).toBe('second');
+    });
+
+    it('hands the focus to the surface itself where the surface is marked', async () => {
+        start();
+        focus('first');
+
+        surface.setAttribute('data-heir', '');
+        document.querySelector('#first').remove();
+        await settle();
+
+        expect(document.activeElement).toBe(surface);
+    });
+
+    it('leaves a focus the reader took out of the surface where it went', async () => {
+        start();
+        focus('first');
+        focus('outside');
+
+        document.querySelector('#second').setAttribute('data-heir', '');
+        document.querySelector('#first').remove();
+        await settle();
+
+        expect(document.activeElement?.id).toBe('outside');
+    });
+
+    it('hands nothing on while no element is marked', async () => {
+        start();
+        focus('first');
+
+        document.querySelector('#first').remove();
+        await settle();
+
+        expect(document.activeElement).toBe(document.body);
+    });
+
+    it('hands nothing on while the element holding the focus stays', async () => {
+        start();
+        focus('first');
+
+        document.querySelector('#second').setAttribute('data-heir', '');
+        await settle();
+
+        expect(document.activeElement?.id).toBe('first');
+    });
+
+    it('hands nothing on without an heir', async () => {
+        attachSurface(surface, { wrap: true });
+        focus('first');
+
+        document.querySelector('#second').setAttribute('data-heir', '');
+        document.querySelector('#first').remove();
+        await settle();
+
+        expect(document.activeElement).toBe(document.body);
+    });
+
+    it('stops handing on once disposed', async () => {
+        start().dispose();
+        focus('first');
+
+        document.querySelector('#second').setAttribute('data-heir', '');
+        document.querySelector('#first').remove();
+        await settle();
+
+        expect(document.activeElement).toBe(document.body);
+    });
+
+    it('leaves Tab to the page where the surface only hands on', () => {
+        start();
+        focus('first');
+
+        expect(tab().defaultPrevented).toBe(false);
+    });
+});

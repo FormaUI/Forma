@@ -640,10 +640,10 @@
             Replace(cut, entry => entry.Id is not (3 or 6));
             cut.WaitForState(() => !Names(cut).Contains("Reports"));
 
-            // Assert — the hand-off is attached once, and Notes.txt's marker carries the mark it focuses
+            // Assert — the focus is attached once with its heir, and Notes.txt's marker carries the mark it focuses
             var marked = cut.FindAll("[data-focus-heir]");
             Assert.Multiple(
-                () => Assert.Single(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "attach" && invocation.Arguments is [_, { } options] && options.GetType().GetProperty("attribute")?.GetValue(options) is "data-focus-heir"),
+                () => Assert.Single(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "attach" && invocation.Arguments is [_, { } options] && options.GetType().GetProperty("heir")?.GetValue(options) is "data-focus-heir"),
                 () => Assert.Equal("INPUT", Assert.Single(marked).TagName),
                 () => Assert.Equal("Notes.txt", marked[0].Closest(".forma-data-tree-node")!.QuerySelector(".forma-data-tree-node-name")!.TextContent));
 

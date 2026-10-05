@@ -1,15 +1,23 @@
 /**
- * Focus — where Tab and the arrow keys go inside one surface
+ * Focus — where the focus goes inside one surface
  *
  * A wrapping surface keeps Tab and Shift+Tab among its own controls and wraps at either
  * end. An arranged surface visits the regions named first in the order given and the rest
  * of itself in document order, then leaves for whatever follows or precedes it in the page.
  * A roving surface is one Tab stop: the arrow keys along its axis move among its controls
  * and wrap at either end, Home and End reach the ends, and the control focused last keeps
- * the stop while the rest are parked at tabindex -1.
+ * the stop while the rest are parked at tabindex -1. A surface that neither wraps, arranges
+ * nor roves leaves Tab to the page.
  *
  * The keys are routes on the input router, declared on the surface; a key this surface has
  * nowhere to send matches no route and keeps its default.
+ *
+ * A surface with an heir keeps the focus when the element holding it goes away. Its owner
+ * marks the element that takes the focus, with the attribute it names, in the same render
+ * that takes the focused element away; once that render is on the page, in the same task,
+ * the focus moves to the marked element, so the browser reports one move of the focus rather
+ * than its fall to the page and then the element. Only a focus that fell to nothing is
+ * handed on: one the reader moved elsewhere stays where it went.
  */
 
 import { Controls } from '../../../core/scripts/Controls.js';
@@ -25,8 +33,8 @@ const Actions = {
 };
 
 /**
- * @param {HTMLElement} target The surface whose Tab order is decided.
- * @param {{ wrap?: boolean, order?: string[], roving?: 'horizontal' | 'vertical' | null }} options Whether Tab wraps inside the surface, the selectors of the regions visited first, and the axis the arrow keys rove along.
+ * @param {HTMLElement} target The surface whose focus is decided.
+ * @param {{ wrap?: boolean, order?: string[], roving?: 'horizontal' | 'vertical' | null, heir?: string | null }} options Whether Tab wraps inside the surface, the selectors of the regions visited first, the axis the arrow keys rove along, and the attribute marking the element that takes the focus when the one holding it goes away.
  */
 export function attach(target, options = {}) {
     const controller = new AbortController();
@@ -68,22 +76,32 @@ export class Focus {
     #wrap;
     #order;
     #roving;
+    #heir;
     /** Each control a roving surface has parked, with the tabindex it carried before. */
     #parked = new Map();
+    /** The element inside the surface that last took the focus, while the surface still holds it. */
+    #held = null;
 
     /**
-     * @param {HTMLElement} target The surface whose Tab order is decided.
-     * @param {{ wrap?: boolean, order?: string[], roving?: 'horizontal' | 'vertical' | null }} options
+     * @param {HTMLElement} target The surface whose focus is decided.
+     * @param {{ wrap?: boolean, order?: string[], roving?: 'horizontal' | 'vertical' | null, heir?: string | null }} options
      * @param {AbortSignal} signal Ends the handling.
      */
-    constructor(target, { wrap = false, order = [], roving = null } = {}, signal) {
+    constructor(target, { wrap = false, order = [], roving = null, heir = null } = {}, signal) {
         this.#target = target;
         this.#wrap = wrap;
         this.#order = order;
         this.#roving = roving;
+        this.#heir = heir;
 
-        const registration = register(target, { routes: roving ? this.#rovingRoutes() : this.#tabbingRoutes() });
-        signal.addEventListener('abort', () => registration.dispose(), { once: true });
+        if (roving || wrap || order.length > 0) {
+            const registration = register(target, { routes: roving ? this.#rovingRoutes() : this.#tabbingRoutes() });
+            signal.addEventListener('abort', () => registration.dispose(), { once: true });
+        }
+
+        if (heir) {
+            this.#keepHeld(signal);
+        }
 
         if (roving) {
             target.addEventListener('focusin', event => this.#park(event.target), { signal });
@@ -197,6 +215,41 @@ export class Focus {
         }
 
         this.#parked.clear();
+    }
+
+    /** Follows the element holding the focus, and hands the focus to the heir once that element goes away with it. */
+    #keepHeld(signal) {
+        const target = this.#target;
+        target.addEventListener('focusin', event => { this.#held = event.target; }, { signal });
+
+        // A focus the reader took out of the surface is not the surface's to hand on.
+        target.addEventListener('focusout', event => {
+            if (event.relatedTarget !== null && !target.contains(event.relatedTarget)) {
+                this.#held = null;
+            }
+        }, { signal });
+
+        const observer = new MutationObserver(() => this.#handOn());
+        observer.observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: [this.#heir] });
+        signal.addEventListener('abort', () => observer.disconnect(), { once: true });
+    }
+
+    /** Moves a focus that fell to nothing with the element holding it to the element marked as heir. */
+    #handOn() {
+        const held = this.#held;
+        const active = this.#target.ownerDocument.activeElement;
+
+        if (held === null || held.isConnected || (active !== null && active !== this.#target.ownerDocument.body)) {
+            return;
+        }
+
+        const selector = `[${this.#heir}]`;
+        const heir = this.#target.matches(selector) ? this.#target : this.#target.querySelector(selector);
+
+        if (heir !== null) {
+            this.#held = null;
+            heir.focus();
+        }
     }
 
     /** The control at a place in the sequence, or the page's neighbor past either end. */
