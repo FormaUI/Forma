@@ -2,11 +2,11 @@ namespace Forma.Blazor.Components.DataView;
 
 using System.Globalization;
 
+using Forma.Blazor.Components.Virtualization;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>A view over a data view drawing the items down the height and on into further columns, each a thumbnail, its name and the caller's secondary text.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
@@ -30,7 +30,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
 
     private CollectionName _collectionName = CollectionName.None;
     private DataViewRows<TItem> _rows = default!;
-    private Virtualize<DataViewRow<TItem>>? _virtualizer;
+    private FormaVirtualize<DataViewRow<TItem>>? _virtualizer;
     private bool _isRefreshWanted;
 
     // The field an item's box names to the input base as its value expression.
@@ -84,7 +84,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         _rows = new DataViewRows<TItem>(View,
             () => _virtualizer is not null,
             () => _virtualizer!.RefreshDataAsync(),
-            (index, token) => _virtualizer!.ScrollToItemAsync(index, cancellationToken: token),
+            (index, token) => _virtualizer!.ScrollToIndexAsync(index, cancellationToken: token),
             InvokeAsync, StateHasChanged);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["List"], Glyph.List, this));
         View.Subscribe(HandleViewChangedAsync);

@@ -85,10 +85,6 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
     private FormaDataGridTable<TItem>? Table { get; set; }
 
-    private List<DataViewRow<TItem>> _answeredRows = [];
-    private object? _lastFocusedKey;
-    private object? _previousKey;
-    private object? _nextKey;
     private DataViewRows<TItem> _rows = default!;
     private bool _isRefreshWanted;
 
@@ -686,82 +682,22 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     internal int InitialRowIndex
         => _rows.GetRowIndex(View.InitialItemIndex);
 
-    internal async ValueTask<ItemsProviderResult<DataViewRow<TItem>>> ProvideVirtualizedRowsAsync(ItemsProviderRequest request)
-    {
-        var result = await _rows.ProvideAsync(request);
-        _answeredRows = [.. result.Items];
+    internal ValueTask<ItemsProviderResult<DataViewRow<TItem>>> ProvideVirtualizedRowsAsync(ItemsProviderRequest request)
+        => _rows.ProvideAsync(request);
 
-        // The pinned keys are read where the table draws, so a neighbor found in this answer reaches the virtualizer on the table's next render.
-        if (FindFocusedNeighbors())
-        {
-            StateHasChanged();
-        }
-
-        return result;
-    }
-
-    /// <summary>The stable key a virtualizing grid draws a row under: a group's key for its heading, the row's one item's key otherwise.</summary>
+    /// <summary>The stable key a virtualizing grid draws a row under.</summary>
     internal object GetRowKey(DataViewRow<TItem> row)
-        => row.Group is { } group ? group.Key! : View.ItemKey(row.Items[0]);
+        => _rows.GetRowKey(row);
 
-    /// <summary>The keys the virtualizer keeps drawn wherever the grid scrolls: the marker last focused, so Tab finds it and the
-    /// focus never falls to the page, and the markers either side of it, so an arrow from it reaches the one beside it.</summary>
+    /// <summary>The keys of the rows the virtualizer keeps drawn wherever the grid scrolls.</summary>
     internal HashSet<object> GetPinnedKeys()
-    {
-        HashSet<object> keys = [];
+        => _rows.GetPinnedKeys();
 
-        foreach (var key in (ReadOnlySpan<object?>)[_lastFocusedKey, _previousKey, _nextKey])
-        {
-            if (key is not null)
-            {
-                keys.Add(key);
-            }
-        }
-
-        return keys;
-    }
-
-    // A marker keeps the key last focused, which Tab and the virtualizer's pinning both read. The focus lands inside the row
-    // component rather than here, so the table that reads the pinned keys is told to draw again. A marker taking the focus
-    // again, as it does when the window is returned to, keeps the neighbors it had, which the rows last answered may not hold.
+    // The focus lands inside the row component rather than here, so the table that hands the pinned keys on is told to draw again.
     internal void HandleRowFocusIn(TItem item)
     {
-        var key = View.ItemKey(item);
-
-        if (!Equals(key, _lastFocusedKey))
-        {
-            _lastFocusedKey = key;
-            _previousKey = null;
-            _nextKey = null;
-        }
-
-        FindFocusedNeighbors();
+        _rows.NoteFocus(item);
         StateHasChanged();
-    }
-
-    // The items either side of the focused one, headings passed over, read from the rows last answered where they hold it; a
-    // side the answer ends before is left as it was. Returns whether either changed.
-    private bool FindFocusedNeighbors()
-    {
-        if (_lastFocusedKey is not { } focused)
-        {
-            return false;
-        }
-
-        var index = _answeredRows.FindIndex(row => row.Group is null && Equals(View.ItemKey(row.Items[0]), focused));
-
-        if (index < 0)
-        {
-            return false;
-        }
-
-        var previous = _answeredRows.Take(index).LastOrDefault(row => row.Group is null) is { } before ? View.ItemKey(before.Items[0]) : _previousKey;
-        var next = _answeredRows.Skip(index + 1).FirstOrDefault(row => row.Group is null) is { } after ? View.ItemKey(after.Items[0]) : _nextKey;
-        var changed = !Equals(previous, _previousKey) || !Equals(next, _nextKey);
-        _previousKey = previous;
-        _nextKey = next;
-
-        return changed;
     }
 
     /// <inheritdoc />

@@ -12,9 +12,10 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 /// one fetch per run of consecutive items, so a folded group between two open ones is never read. Over a source that cannot
 /// count, the rows run one slice past the last item answered until a slice comes back shorter than asked for, which ends the
 /// set. The rows found by a fetch are published after the answer that found them, once the virtualization has taken it in;
-/// a scroll the view asks for holds them back until it has landed. The virtualizer itself stays out of this type: a view not yet
-/// moved onto <see cref="FormaVirtualize{TItem}"/> still draws through the framework's
-/// own, so the three delegates let each view hand over whichever one it draws through.
+/// a scroll the view asks for holds them back until it has landed. The rows also know the row holding the item whose marker last
+/// took the focus and the rows of items either side of it, found among the rows last answered, for a view to pin. The virtualizer
+/// itself stays out of this type: a view not yet moved onto <see cref="FormaVirtualize{TItem}"/> still draws through the
+/// framework's own, so the three delegates let each view hand over whichever one it draws through.
 /// </remarks>
 /// <param name="view">The data view the rows are laid out over.</param>
 /// <param name="isVirtualized">Whether the view currently draws through a virtualizer.</param>
@@ -47,6 +48,11 @@ internal sealed class DataViewRows<TItem>(
     private int _publishedRows;
     private int _continuationRows;
     private bool _isHeld;
+    private List<DataViewRow<TItem>> _answered = [];
+    private object? _focusedItemKey;
+    private object? _focusedRowKey;
+    private object? _previousRowKey;
+    private object? _nextRowKey;
 
     /// <summary>How many items stand across a row.</summary>
     public int Columns
@@ -61,6 +67,47 @@ internal sealed class DataViewRows<TItem>(
     /// <summary>Compares rows by the group whose heading they are or the item they open on.</summary>
     public IEqualityComparer<DataViewRow<TItem>> Comparer
         => _comparer;
+
+    /// <summary>The stable key a row is drawn under: its group's key for a heading, its first item's key otherwise.</summary>
+    /// <param name="row">The row.</param>
+    public object GetRowKey(DataViewRow<TItem> row)
+        => row.Group is { } group ? group.Key! : _view.ItemKey(row.Items[0]);
+
+    /// <summary>The keys of the rows kept drawn wherever the view scrolls: the row whose marker last held the focus, so Tab finds
+    /// it and the focus never falls to the page, and the rows of items either side of it, so an arrow from it reaches the one beside it.</summary>
+    public HashSet<object> GetPinnedKeys()
+    {
+        HashSet<object> keys = [];
+
+        foreach (var key in (ReadOnlySpan<object?>)[_focusedRowKey, _previousRowKey, _nextRowKey])
+        {
+            if (key is not null)
+            {
+                keys.Add(key);
+            }
+        }
+
+        return keys;
+    }
+
+    /// <summary>Notes the item whose marker took the focus, finding the rows either side of its own among the rows last answered.</summary>
+    /// <param name="item">The item.</param>
+    /// <remarks>A marker taking the focus again, as it does when the window is returned to, keeps the rows it had beside it,
+    /// which the rows last answered may not hold.</remarks>
+    public void NoteFocus(TItem item)
+    {
+        var key = _view.ItemKey(item);
+
+        if (!Equals(key, _focusedItemKey))
+        {
+            _focusedItemKey = key;
+            _focusedRowKey = key;
+            _previousRowKey = null;
+            _nextRowKey = null;
+        }
+
+        FindFocusedNeighbors();
+    }
 
     /// <summary>Forgets what the rows were laid out from and what a source that cannot count has answered.</summary>
     public void Reset()
@@ -169,7 +216,7 @@ internal sealed class DataViewRows<TItem>(
 
         if (_view.TotalItemCount is not null || _view.IsGrouped)
         {
-            return new ItemsProviderResult<DataViewRow<TItem>>(answered, RowCount);
+            return Answer(answered, RowCount);
         }
 
         // Uncounted, a slice shorter than asked for ends the set; until one does, the rows run one slice past the last answered,
@@ -194,7 +241,46 @@ internal sealed class DataViewRows<TItem>(
             _ = invoke(RepublishAsync);
         }
 
-        return new ItemsProviderResult<DataViewRow<TItem>>(filled, _publishedRows);
+        return Answer(filled, _publishedRows);
+    }
+
+    // The rows answered are kept to find the focused row's neighbors in; the view draws again where those changed, since it
+    // hands the pinned keys to the virtualization as it draws.
+    private ItemsProviderResult<DataViewRow<TItem>> Answer(List<DataViewRow<TItem>> rows, int count)
+    {
+        _answered = rows;
+
+        if (FindFocusedNeighbors())
+        {
+            redraw();
+        }
+
+        return new ItemsProviderResult<DataViewRow<TItem>>(rows, count);
+    }
+
+    // The row holding the focused item and the rows of items either side of it, headings passed over, read from the rows last
+    // answered where they hold it; a side the answer ends before is left as it was. Returns whether any changed.
+    private bool FindFocusedNeighbors()
+    {
+        if (_focusedItemKey is not { } focused)
+        {
+            return false;
+        }
+
+        var index = _answered.FindIndex(row => row.Items.Any(item => Equals(_view.ItemKey(item), focused)));
+
+        if (index < 0)
+        {
+            return false;
+        }
+
+        var current = GetRowKey(_answered[index]);
+        var previous = _answered.Take(index).LastOrDefault(row => row.Group is null) is { } before ? GetRowKey(before) : _previousRowKey;
+        var next = _answered.Skip(index + 1).FirstOrDefault(row => row.Group is null) is { } after ? GetRowKey(after) : _nextRowKey;
+        var changed = !Equals(current, _focusedRowKey) || !Equals(previous, _previousRowKey) || !Equals(next, _nextRowKey);
+        (_focusedRowKey, _previousRowKey, _nextRowKey) = (current, previous, next);
+
+        return changed;
     }
 
     /// <summary>Scrolls the virtualization to the row holding the item at <paramref name="itemIndex"/>.</summary>

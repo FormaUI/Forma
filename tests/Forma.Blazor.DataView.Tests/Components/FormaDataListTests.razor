@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using AngleSharp.Dom
+@using Forma.Blazor.Components.Virtualization
 
 @code {
     public sealed class Component
@@ -269,6 +270,42 @@
                 () => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-group-name").Select(name => name.TextContent)),
                 () => Assert.Equal(["1", "2"], cut.FindAll(".forma-data-group-count").Select(count => count.TextContent)),
                 () => Assert.Equal(["Hammer", "Wrench"], cut.FindAll(".forma-data-list-item-name").Select(name => name.TextContent)));
+        }
+
+        [Fact]
+        public async Task Should_keep_a_focused_box_and_the_items_either_side_drawn_once_it_scrolls_away()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateMany(50)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="40" OverscanCount="2" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem] input").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+
+            // Act — Product 3's box takes the focus, and the list scrolls thirty items past it
+            cut.FindAll("[role=listitem]").Single(item => item.QuerySelector(".forma-data-list-item-name")!.TextContent == "Product 3").QuerySelector("input")!.FocusIn();
+            await ReportViewportAsync(cut, 1200, 200, 40);
+
+            // Assert — the focused item and the items either side of it stay drawn, each saying where it stands
+            var drawn = cut.FindAll("[role=listitem]").Take(3).ToList();
+            Assert.Multiple(
+                () => Assert.Equal(["Product 2", "Product 3", "Product 4"], drawn.Select(item => item.QuerySelector(".forma-data-list-item-name")!.TextContent)),
+                () => Assert.Equal(["2", "3", "4"], drawn.Select(item => item.GetAttribute("aria-posinset"))));
+        }
+
+        private static IQueryable<Product> CreateMany(int count) => Enumerable.Range(1, count)
+            .Select(id => new Product(id, $"Product {id}", "Tools"))
+            .AsQueryable();
+
+        // Reports where the list stands in its viewport, as the virtualizer's script does.
+        private static Task ReportViewportAsync(IRenderedComponent<IComponent> cut, double offset, double viewport, double itemSize)
+        {
+            var virtualizer = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(FormaVirtualize<>)).Instance;
+            var report = virtualizer.GetType().GetMethod(nameof(FormaVirtualize<Product>.HandleViewportAsync))!;
+
+            return cut.InvokeAsync(() => (Task)report.Invoke(virtualizer, [offset, viewport, itemSize])!);
         }
 
         private sealed record Product(int Id, string Name, string Category);
