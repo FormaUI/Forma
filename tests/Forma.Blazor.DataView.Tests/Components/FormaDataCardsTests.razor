@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
+@using System.Globalization
 @using AngleSharp.Dom
+@using Forma.Blazor.Components.Virtualization
 
 @code {
     public sealed class Component
@@ -255,7 +257,7 @@
             cut.WaitForState(() => cut.FindAll(".forma-data-card").Count > 0);
 
             // Assert — Wrench stands in Tools' first row, so the rows open on Tools' heading
-            var virtualization = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<>)).Instance;
+            var virtualization = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(Forma.Blazor.Components.Virtualization.FormaVirtualize<>)).Instance;
             Assert.Equal(2, virtualization.GetType().GetProperty("InitialItemIndex")!.GetValue(virtualization));
         }
 
@@ -279,6 +281,58 @@
             Assert.Multiple(
                 () => Assert.Equal(["Books", "Tools"], cut.FindAll(".forma-data-group-name").Select(name => name.TextContent)),
                 () => Assert.Equal([1, 2], cut.FindAll(".forma-data-cards-row").Select(row => row.QuerySelectorAll(".forma-data-card").Length)));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_row_of_a_focused_card_and_the_rows_either_side_drawn_as_the_focus_moves_scrolled_away()
+        {
+            // Arrange — rows of three cards, a hundred pixels tall
+            using var ctx = new FormaDataCardsTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateMany(60)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="100" OverscanCount="2" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
+            var cards = cut.FindComponent<FormaDataCards<Product>>();
+            await cards.InvokeAsync(() => cards.Instance.HandleGridColumnsAsync(3));
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count > 0);
+            await ReportViewportAsync(cut, 0, 300, 100);
+
+            // Act — the middle card of the second row takes the focus, and the cards scroll twenty rows past it
+            Box(cut, 4).FocusIn();
+            await ReportViewportAsync(cut, 2000, 300, 100);
+
+            // Assert — its row and the rows either side of it stay drawn
+            Assert.Equal([0, 1, 2, 3, 4, 5, 6, 7, 8], Positions(cut).Take(9));
+
+            // Act — the focus moves along the row, and then onto the row below it, both kept
+            Box(cut, 5).FocusIn();
+            var along = Positions(cut).Take(9).ToList();
+            Box(cut, 8).FocusIn();
+
+            // Assert — moving along keeps every row; moving down keeps the row it left and the row it reached
+            Assert.Multiple(
+                () => Assert.Equal([0, 1, 2, 3, 4, 5, 6, 7, 8], along),
+                () => Assert.Equal([3, 4, 5, 6, 7, 8], Positions(cut).Take(6)));
+
+            static IElement Box(IRenderedComponent<IComponent> cut, int position)
+                => cut.Find($"[data-item-position='{position}'] input");
+
+            static IEnumerable<int> Positions(IRenderedComponent<IComponent> cut)
+                => cut.FindAll("[data-item-position]").Select(card => int.Parse(card.GetAttribute("data-item-position")!, CultureInfo.InvariantCulture));
+        }
+
+        private static IQueryable<Product> CreateMany(int count) => Enumerable.Range(1, count)
+            .Select(id => new Product(id, $"Product {id}", "Tools"))
+            .AsQueryable();
+
+        // Reports where the cards stand in their viewport, as the virtualizer's script does.
+        private static Task ReportViewportAsync(IRenderedComponent<IComponent> cut, double offset, double viewport, double itemSize)
+        {
+            var virtualizer = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(FormaVirtualize<>)).Instance;
+            var report = virtualizer.GetType().GetMethod(nameof(FormaVirtualize<Product>.HandleViewportAsync))!;
+
+            return cut.InvokeAsync(() => (Task)report.Invoke(virtualizer, [offset, viewport, itemSize])!);
         }
 
         private sealed record Product(int Id, string Name, string Category);

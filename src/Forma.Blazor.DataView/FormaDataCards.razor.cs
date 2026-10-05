@@ -3,12 +3,13 @@ namespace Forma.Blazor.Components.DataView;
 using System.Globalization;
 
 using Forma.Blazor.Components.DataView.Interop;
+using Forma.Blazor.Components.Virtualization;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>A view over a data view drawing each item as a card, its thumbnail, its name and what the caller places beneath, packed across the width; at its compact density, the thumbnail and the name alone.</summary>
@@ -41,7 +42,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     private DataViewRows<TItem> _rows = default!;
     private GridColumns _gridColumns = default!;
     private DotNetObjectReference<FormaDataCards<TItem>>? _selfReference;
-    private Virtualize<DataViewRow<TItem>>? _virtualizer;
+    private FormaVirtualize<DataViewRow<TItem>>? _virtualizer;
     private ElementReference _rulerElement;
     private bool _isRulerAttached;
     private bool _areColumnsKnown;
@@ -114,11 +115,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
             throw new InvalidOperationException($"{nameof(FormaDataCards<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        _rows = new DataViewRows<TItem>(View,
-            () => _virtualizer is not null,
-            () => _virtualizer!.RefreshDataAsync(),
-            (index, token) => _virtualizer!.ScrollToItemAsync(index, cancellationToken: token),
-            InvokeAsync, StateHasChanged);
+        _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
         _gridColumns = new GridColumns(Context.JS);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Cards"], Glyph.GridView, this));
         View.Subscribe(HandleViewChangedAsync);
@@ -178,6 +175,18 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
     private string GetGroupNameId(int index)
         => $"{ElementId}-group-{index}";
+
+    // Only virtualizing cards read the focus, for the rows they pin, and they draw again only when those change.
+    private EventCallback<FocusEventArgs> GetFocusHandler(TItem item)
+        => IsVirtualizing ? NonRenderingHandler.Create<FocusEventArgs>(() => HandleFocusIn(item), DispatchExceptionAsync) : default;
+
+    private void HandleFocusIn(TItem item)
+    {
+        if (_rows.NoteFocus(item))
+        {
+            StateHasChanged();
+        }
+    }
 
     // A fold, a new count or a new grouping lays the rows out again, and the rows on screen are fetched again after the render.
     private Task HandleViewChangedAsync()

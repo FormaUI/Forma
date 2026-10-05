@@ -10,6 +10,7 @@ using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
 
@@ -356,11 +357,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
 
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Grid"], Glyph.DetailsView, this));
-        _rows = new DataViewRows<TItem>(View,
-            () => Table?.Virtualizer is not null,
-            () => Table!.Virtualizer!.RefreshDataAsync(),
-            (index, token) => Table!.Virtualizer!.ScrollToIndexAsync(index, cancellationToken: token),
-            InvokeAsync, StateHasChanged);
+        _rows = new DataViewRows<TItem>(View, () => Table?.Virtualizer, InvokeAsync, StateHasChanged);
         _columnFit = new ColumnFit(Context.JS);
         View.Subscribe(HandleViewChangedAsync);
     }
@@ -693,11 +690,18 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     internal HashSet<object> GetPinnedKeys()
         => _rows.GetPinnedKeys();
 
-    // The focus lands inside the row component rather than here, so the table that hands the pinned keys on is told to draw again.
-    internal void HandleRowFocusIn(TItem item)
+    /// <summary>The handler a row's marker takes the focus through: only a virtualizing grid reads the focus, for the rows it pins,
+    /// and it draws again only when those change.</summary>
+    internal EventCallback<FocusEventArgs> GetRowFocusHandler(TItem item)
+        => IsVirtualizing ? NonRenderingHandler.Create<FocusEventArgs>(() => HandleRowFocusIn(item), DispatchExceptionAsync) : default;
+
+    // The focus lands inside the row component rather than here, so the table that hands the pinned keys on is drawn again from here.
+    private void HandleRowFocusIn(TItem item)
     {
-        _rows.NoteFocus(item);
-        StateHasChanged();
+        if (_rows.NoteFocus(item))
+        {
+            StateHasChanged();
+        }
     }
 
     /// <inheritdoc />

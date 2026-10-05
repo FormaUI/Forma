@@ -1,6 +1,7 @@
 @inherits FormaBunitContext
 @using AngleSharp.Dom
 @using Forma.Blazor.Components.Virtualization
+@using Microsoft.AspNetCore.Components.Web
 
 @code {
     public sealed class Component
@@ -293,6 +294,74 @@
             Assert.Multiple(
                 () => Assert.Equal(["Product 2", "Product 3", "Product 4"], drawn.Select(item => item.QuerySelector(".forma-data-list-item-name")!.TextContent)),
                 () => Assert.Equal(["2", "3", "4"], drawn.Select(item => item.GetAttribute("aria-posinset"))));
+        }
+
+        [Fact]
+        public void Should_give_a_box_no_focus_handler_while_not_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateMany(5)" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem] input").Count == 5);
+
+            // Assert
+            Assert.All(cut.FindAll("[role=listitem] input"), box => Assert.False(box.HasAttribute("blazor:onfocusin")));
+        }
+
+        [Fact]
+        public async Task Should_draw_nothing_again_when_a_box_takes_the_focus_without_changing_the_items_kept()
+        {
+            // Arrange — Product 3's box already holds the focus
+            using var ctx = new FormaDataListTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateMany(50)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="40" OverscanCount="2" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem] input").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+            var list = cut.FindComponent<FormaDataList<Product>>();
+            Box(cut, "Product 3").FocusIn();
+            var renders = list.RenderCount;
+
+            // Act — it takes the focus again, as it does when the window is returned to
+            Box(cut, "Product 3").FocusIn();
+
+            // Assert
+            Assert.Equal(renders, list.RenderCount);
+
+            static IElement Box(IRenderedComponent<IComponent> cut, string name)
+                => cut.FindAll("[role=listitem]").Single(item => item.QuerySelector(".forma-data-list-item-name")!.TextContent == name).QuerySelector("input")!;
+        }
+
+        [Fact]
+        public async Task Should_hand_a_failure_while_taking_the_focus_to_the_error_boundary_around_it()
+        {
+            // Arrange — the item key fails once the list is drawn, which taking the focus reads
+            using var ctx = new FormaDataListTests();
+            var fails = false;
+            var cut = ctx.Render(
+                @<ErrorBoundary>
+                    <ChildContent>
+                        <FormaDataView Items="CreateMany(50)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="40" OverscanCount="2" ItemName="@(product => product.Name)" ItemKey="@(product => fails ? throw new InvalidOperationException("Key") : product.Id)">
+                            <FormaDataList TItem="Product" />
+                        </FormaDataView>
+                    </ChildContent>
+                    <ErrorContent><p class="failed">Failed</p></ErrorContent>
+                </ErrorBoundary>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem] input").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+
+            // Act
+            fails = true;
+            cut.FindAll("[role=listitem] input")[2].FocusIn();
+
+            // Assert
+            cut.WaitForState(() => cut.FindAll(".failed").Count == 1);
         }
 
         private static IQueryable<Product> CreateMany(int count) => Enumerable.Range(1, count)

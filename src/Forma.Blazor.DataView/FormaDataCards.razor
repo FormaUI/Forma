@@ -2,7 +2,7 @@
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
 
-@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Forma.Blazor.Components.Virtualization
 
 @if (IsActive)
 {
@@ -34,6 +34,7 @@
                                            Value="@View.IsSelected(item)"
                                            PreventDefault="true"
                                            OnClick="() => Interaction.ToggleSelectionAsync(item, !View.IsSelected(item))"
+                                           @onfocusin="GetFocusHandler(item)"
                                            ValueExpression="() => ItemSelection" />
                         </label>
                         @if (!View.EnableCheckedSelection && View.IsSelected(item))
@@ -78,14 +79,16 @@
                 }
                 else if (_areColumnsKnown)
                 {
-                    <Virtualize @ref="_virtualizer"
-                                TItem="DataViewRow<TItem>"
-                                ItemsProvider="_rows.ProvideAsync"
-                                ItemComparer="_rows.Comparer"
-                                ItemSize="View.ItemHeight"
-                                OverscanCount="View.OverscanCount"
-                                AnchorMode="View.AnchorMode"
-                                InitialItemIndex="_initialRowIndex">
+                    <FormaVirtualize @ref="_virtualizer"
+                                     TItem="DataViewRow<TItem>"
+                                     ItemsProvider="_rows.ProvideAsync"
+                                     ItemKey="_rows.GetRowKey"
+                                     PinnedKeys="_rows.GetPinnedKeys()"
+                                     ItemComparer="_rows.Comparer"
+                                     ItemSize="View.ItemHeight"
+                                     OverscanCount="View.OverscanCount"
+                                     AnchorMode="View.AnchorMode"
+                                     InitialItemIndex="_initialRowIndex">
                         <ItemContent Context="row">
                             @if (row.Group is { } group)
                             {
@@ -106,7 +109,7 @@
                         <Placeholder>
                             <div class="forma-data-cards-placeholder-row" role="none" style="@PlaceholderStyle"></div>
                         </Placeholder>
-                    </Virtualize>
+                    </FormaVirtualize>
                 }
             </div>
         }

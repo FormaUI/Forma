@@ -13,21 +13,15 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 /// count, the rows run one slice past the last item answered until a slice comes back shorter than asked for, which ends the
 /// set. The rows found by a fetch are published after the answer that found them, once the virtualization has taken it in;
 /// a scroll the view asks for holds them back until it has landed. The rows also know the row holding the item whose marker last
-/// took the focus and the rows of items either side of it, found among the rows last answered, for a view to pin. The virtualizer
-/// itself stays out of this type: a view not yet moved onto <see cref="FormaVirtualize{TItem}"/> still draws through the
-/// framework's own, so the three delegates let each view hand over whichever one it draws through.
+/// took the focus and the rows of items either side of it, found among the rows last answered, for a view to pin.
 /// </remarks>
 /// <param name="view">The data view the rows are laid out over.</param>
-/// <param name="isVirtualized">Whether the view currently draws through a virtualizer.</param>
-/// <param name="refreshVirtualizedAsync">Asks the virtualizer to read the rows again.</param>
-/// <param name="scrollVirtualizedToAsync">Asks the virtualizer to scroll to a row.</param>
+/// <param name="virtualizer">The virtualizer the view draws the rows through, once it is drawn.</param>
 /// <param name="invoke">Runs work on the view's renderer.</param>
 /// <param name="redraw">Draws the view again.</param>
 internal sealed class DataViewRows<TItem>(
     IDataView<TItem> view,
-    Func<bool> isVirtualized,
-    Func<Task> refreshVirtualizedAsync,
-    Func<int, CancellationToken, Task> scrollVirtualizedToAsync,
+    Func<FormaVirtualize<DataViewRow<TItem>>?> virtualizer,
     Func<Func<Task>, Task> invoke,
     Action redraw)
     where TItem : notnull
@@ -50,9 +44,9 @@ internal sealed class DataViewRows<TItem>(
     private bool _isHeld;
     private List<DataViewRow<TItem>> _answered = [];
     private object? _focusedItemKey;
-    private object? _focusedRowKey;
-    private object? _previousRowKey;
-    private object? _nextRowKey;
+    private DataViewRow<TItem>? _focusedRow;
+    private DataViewRow<TItem>? _previousRow;
+    private DataViewRow<TItem>? _nextRow;
 
     /// <summary>How many items stand across a row.</summary>
     public int Columns
@@ -79,11 +73,21 @@ internal sealed class DataViewRows<TItem>(
     {
         HashSet<object> keys = [];
 
-        foreach (var key in (ReadOnlySpan<object?>)[_focusedRowKey, _previousRowKey, _nextRowKey])
+        // Until a row holding it is known, the focused item stands for its own row, which it heads in a view of one item a row.
+        if (_focusedRow is { } focused)
         {
-            if (key is not null)
+            keys.Add(GetRowKey(focused));
+        }
+        else if (_focusedItemKey is { } key)
+        {
+            keys.Add(key);
+        }
+
+        foreach (var row in (ReadOnlySpan<DataViewRow<TItem>?>)[_previousRow, _nextRow])
+        {
+            if (row is not null)
             {
-                keys.Add(key);
+                keys.Add(GetRowKey(row));
             }
         }
 
@@ -92,21 +96,27 @@ internal sealed class DataViewRows<TItem>(
 
     /// <summary>Notes the item whose marker took the focus, finding the rows either side of its own among the rows last answered.</summary>
     /// <param name="item">The item.</param>
-    /// <remarks>A marker taking the focus again, as it does when the window is returned to, keeps the rows it had beside it,
-    /// which the rows last answered may not hold.</remarks>
-    public void NoteFocus(TItem item)
+    /// <returns>Whether the rows kept drawn changed.</returns>
+    /// <remarks>An item in a row already kept, the focused row or one beside it, keeps the rows known around it, which the rows
+    /// last answered may not hold: a marker taking the focus again, as it does when the window is returned to, and an arrow
+    /// moving the focus along the focused row or onto a row beside it.</remarks>
+    public bool NoteFocus(TItem item)
     {
+        var kept = GetPinnedKeys();
         var key = _view.ItemKey(item);
 
         if (!Equals(key, _focusedItemKey))
         {
             _focusedItemKey = key;
-            _focusedRowKey = key;
-            _previousRowKey = null;
-            _nextRowKey = null;
+            (_previousRow, _focusedRow, _nextRow) = Holds(_focusedRow, key) ? (_previousRow, _focusedRow, _nextRow)
+                : Holds(_nextRow, key) ? (_focusedRow, _nextRow, null)
+                : Holds(_previousRow, key) ? (null, _previousRow, _focusedRow)
+                : (null, null, null);
         }
 
         FindFocusedNeighbors();
+
+        return !kept.SetEquals(GetPinnedKeys());
     }
 
     /// <summary>Forgets what the rows were laid out from and what a source that cannot count has answered.</summary>
@@ -259,7 +269,7 @@ internal sealed class DataViewRows<TItem>(
     }
 
     // The row holding the focused item and the rows of items either side of it, headings passed over, read from the rows last
-    // answered where they hold it; a side the answer ends before is left as it was. Returns whether any changed.
+    // answered where they hold it; a side the answer ends before is left as it was. Returns whether the rows kept drawn changed.
     private bool FindFocusedNeighbors()
     {
         if (_focusedItemKey is not { } focused)
@@ -267,28 +277,30 @@ internal sealed class DataViewRows<TItem>(
             return false;
         }
 
-        var index = _answered.FindIndex(row => row.Items.Any(item => Equals(_view.ItemKey(item), focused)));
+        var index = _answered.FindIndex(row => Holds(row, focused));
 
         if (index < 0)
         {
             return false;
         }
 
-        var current = GetRowKey(_answered[index]);
-        var previous = _answered.Take(index).LastOrDefault(row => row.Group is null) is { } before ? GetRowKey(before) : _previousRowKey;
-        var next = _answered.Skip(index + 1).FirstOrDefault(row => row.Group is null) is { } after ? GetRowKey(after) : _nextRowKey;
-        var changed = !Equals(current, _focusedRowKey) || !Equals(previous, _previousRowKey) || !Equals(next, _nextRowKey);
-        (_focusedRowKey, _previousRowKey, _nextRowKey) = (current, previous, next);
+        var kept = GetPinnedKeys();
+        _focusedRow = _answered[index];
+        _previousRow = _answered.Take(index).LastOrDefault(row => row.Group is null) ?? _previousRow;
+        _nextRow = _answered.Skip(index + 1).FirstOrDefault(row => row.Group is null) ?? _nextRow;
 
-        return changed;
+        return !kept.SetEquals(GetPinnedKeys());
     }
+
+    private bool Holds(DataViewRow<TItem>? row, object key)
+        => row is not null && row.Items.Any(item => Equals(_view.ItemKey(item), key));
 
     /// <summary>Scrolls the virtualization to the row holding the item at <paramref name="itemIndex"/>.</summary>
     /// <param name="itemIndex">The index of the item in the whole set.</param>
     /// <param name="cancellationToken">Canceled when the scroll is no longer wanted.</param>
     public async ValueTask ScrollToAsync(int itemIndex, CancellationToken cancellationToken)
     {
-        if (!isVirtualized())
+        if (virtualizer() is not { } rows)
         {
             return;
         }
@@ -299,11 +311,11 @@ internal sealed class DataViewRows<TItem>(
         {
             if (Publish())
             {
-                await refreshVirtualizedAsync();
+                await rows.RefreshDataAsync();
                 redraw();
             }
 
-            await scrollVirtualizedToAsync(GetRowIndex(itemIndex), cancellationToken);
+            await rows.ScrollToIndexAsync(GetRowIndex(itemIndex), cancellationToken: cancellationToken);
         }
         finally
         {
@@ -337,9 +349,9 @@ internal sealed class DataViewRows<TItem>(
     {
         await Task.Yield();
 
-        if (!_isHeld && Publish() && isVirtualized())
+        if (!_isHeld && Publish() && virtualizer() is { } rows)
         {
-            await refreshVirtualizedAsync();
+            await rows.RefreshDataAsync();
             redraw();
         }
     }

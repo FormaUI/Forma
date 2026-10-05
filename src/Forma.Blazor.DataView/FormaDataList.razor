@@ -29,7 +29,7 @@
                                        Value="@View.IsSelected(item)"
                                        PreventDefault="true"
                                        OnClick="() => Interaction.ToggleSelectionAsync(item, !View.IsSelected(item))"
-                                       @onfocusin="() => _rows.NoteFocus(item)"
+                                       @onfocusin="GetFocusHandler(item)"
                                        ValueExpression="() => ItemSelection" />
                     </label>
                     @if (!View.EnableCheckedSelection && View.IsSelected(item))

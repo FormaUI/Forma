@@ -1105,6 +1105,30 @@
         }
 
         [Fact]
+        public void Should_give_a_row_s_box_a_focus_handler_only_while_virtualizing()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var paged = ctx.Render(
+                @<FormaDataView Items="CreateItems(5)" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid><Columns><FormaPropertyColumn Property="@(item => item.Title)" /></Columns></FormaDataGrid>
+                </FormaDataView>);
+            var virtualizing = ctx.Render(
+                @<FormaDataView Items="CreateItems(5)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true">
+                    <FormaDataGrid><Columns><FormaPropertyColumn Property="@(item => item.Title)" /></Columns></FormaDataGrid>
+                </FormaDataView>);
+            paged.WaitForState(() => paged.FindAll("tbody input[data-row-key]").Count == 5);
+            virtualizing.WaitForState(() => virtualizing.FindAll("tbody input[data-row-key]").Count == 5);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.All(paged.FindAll("tbody input[data-row-key]"), box => Assert.False(box.HasAttribute("blazor:onfocusin"))),
+                () => Assert.All(virtualizing.FindAll("tbody input[data-row-key]"), box => Assert.True(box.HasAttribute("blazor:onfocusin"))));
+        }
+
+        [Fact]
         public void Should_render_rows_when_virtualization_is_enabled_alongside_disabled_pagination()
         {
             // Arrange

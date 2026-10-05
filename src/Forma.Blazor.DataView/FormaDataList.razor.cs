@@ -7,6 +7,7 @@ using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A view over a data view drawing the items down the height and on into further columns, each a thumbnail, its name and the caller's secondary text.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
@@ -81,11 +82,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
             throw new InvalidOperationException($"{nameof(FormaDataList<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        _rows = new DataViewRows<TItem>(View,
-            () => _virtualizer is not null,
-            () => _virtualizer!.RefreshDataAsync(),
-            (index, token) => _virtualizer!.ScrollToIndexAsync(index, cancellationToken: token),
-            InvokeAsync, StateHasChanged);
+        _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["List"], Glyph.List, this));
         View.Subscribe(HandleViewChangedAsync);
     }
@@ -129,6 +126,18 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
 
     private string GetGroupNameId(int index)
         => $"{ElementId}-group-{index}";
+
+    // Only a virtualizing list reads the focus, for the rows it pins, and it draws again only when those change.
+    private EventCallback<FocusEventArgs> GetFocusHandler(TItem item)
+        => IsVirtualizing ? NonRenderingHandler.Create<FocusEventArgs>(() => HandleFocusIn(item), DispatchExceptionAsync) : default;
+
+    private void HandleFocusIn(TItem item)
+    {
+        if (_rows.NoteFocus(item))
+        {
+            StateHasChanged();
+        }
+    }
 
     // A fold, a new count or a new grouping lays the rows out again, and the rows on screen are fetched again after the render.
     private Task HandleViewChangedAsync()
