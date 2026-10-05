@@ -28,6 +28,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private InputRouter InputRouter { get; set; } = default!;
+    [Inject] private TimeProvider Clock { get; set; } = default!;
 
     private readonly StateNotifier _stateNotifier = new();
     private readonly ItemTokenTable<TItem> _itemTokens = new();
@@ -1446,7 +1447,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         try
         {
-            await Task.Delay(LoadingAnnouncementDelay, cancellation.Token);
+            await Task.Delay(LoadingAnnouncementDelay, Clock, cancellation.Token);
         }
         catch (OperationCanceledException)
         {

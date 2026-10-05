@@ -742,17 +742,24 @@
         [Fact]
         public void Should_hold_the_focus_itself_once_no_node_remains()
         {
-            // Arrange
+            // Arrange — the tree's own attributes are read as it asks for the focus, from the render that took the last node away
             using var ctx = new FormaDataTreeTests();
             var cut = RenderOpenDocuments(ctx);
             cut.Find(".forma-data-tree-node").FocusIn();
+            (string? TabIndex, string? Heir)? asked = null;
+            ctx.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ =>
+            {
+                var tree = cut.Find(".forma-data-tree");
+                asked ??= (tree.GetAttribute("tabindex"), tree.GetAttribute("data-focus-heir"));
+                return true;
+            }).SetVoidResult();
 
             // Act
             Replace(cut, _ => false);
 
-            // Assert
+            // Assert — the tree can take the focus and is marked to, in the render it focuses after
             cut.WaitForAssertion(() => Assert.Equal("the tree", LastFocused(ctx, cut)));
-            Assert.Equal("-1", cut.Find(".forma-data-tree").GetAttribute("tabindex"));
+            Assert.Equal(("-1", string.Empty), asked);
         }
 
         [Fact]

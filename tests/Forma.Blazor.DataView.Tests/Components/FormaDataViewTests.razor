@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Time.Testing
 
 @code {
     public sealed class Announcement
@@ -10,8 +12,9 @@
         [Fact]
         public void Should_say_nothing_when_the_first_load_answers_at_once()
         {
-            // Arrange
+            // Arrange — the clock stands still, so the wait before a slow load is announced never runs out on its own
             using var ctx = new FormaDataViewTests();
+            ctx.Services.AddSingleton<TimeProvider>(new FakeTimeProvider());
 
             // Act
             var cut = ctx.Render(
@@ -28,41 +31,60 @@
         }
 
         [Fact]
-        public void Should_announce_the_count_when_a_new_source_changes_it()
+        public async Task Should_announce_the_count_when_a_new_source_changes_it()
         {
-            // Arrange
+            // Arrange — the new source's answer is held, so the announcement is read once the load it settles has finished
             using var ctx = new FormaDataViewTests();
-            var cut = ctx.Render(
-                @<FormaDataView Items="CreateProducts(3)" EnablePagination="false" ItemName="@(product => product.Name)">
-                    <FormaDataList TItem="Product" />
-                </FormaDataView>);
-            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+            var (cut, held) = await RenderThenHoldNewSourceAsync(ctx);
 
             // Act
-            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.Items, CreateProducts(2)));
-            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 2);
+            await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>([.. CreateProducts(2)], 2)));
 
             // Assert
-            Assert.Equal("2 items", cut.Find(".forma-data-view-announcement").TextContent);
+            Assert.Multiple(
+                () => Assert.Equal(2, cut.FindAll("[role=listitem]").Count),
+                () => Assert.Equal("2 items", cut.Find(".forma-data-view-announcement").TextContent));
         }
 
         [Fact]
-        public void Should_say_nothing_when_a_new_source_keeps_the_count()
+        public async Task Should_say_nothing_when_a_new_source_keeps_the_count()
         {
-            // Arrange
+            // Arrange — the new source's answer is held, so the silence is read once the load it settles has finished
             using var ctx = new FormaDataViewTests();
+            var (cut, held) = await RenderThenHoldNewSourceAsync(ctx);
+
+            // Act — three other products, so the new source is seen to have answered
+            await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>([.. CreateProducts(3, firstId: 4)], 3)));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("Product 4", cut.Markup, StringComparison.Ordinal),
+                () => Assert.Empty(cut.Find(".forma-data-view-announcement").TextContent));
+        }
+
+        // Draws three products from a source that answers at once, then gives the data view a new source whose answer the test holds,
+        // returning once the data view has asked it, so the release lands on a load already waiting for it; the clock stands still, so
+        // the wait before a slow load is announced never runs out on its own.
+        private static async Task<(IRenderedComponent<IComponent> Cut, TaskCompletionSource<DataViewPage<Product>> Held)> RenderThenHoldNewSourceAsync(FormaDataViewTests ctx)
+        {
+            ctx.Services.AddSingleton<TimeProvider>(new FakeTimeProvider());
+            DataViewItemsProvider<Product> first = _ => ValueTask.FromResult(new DataViewPage<Product>([.. CreateProducts(3)], 3));
+            var held = new TaskCompletionSource<DataViewPage<Product>>();
+            var asked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            DataViewItemsProvider<Product> second = _ =>
+            {
+                asked.TrySetResult();
+                return new ValueTask<DataViewPage<Product>>(held.Task);
+            };
             var cut = ctx.Render(
-                @<FormaDataView Items="CreateProducts(3)" EnablePagination="false" ItemName="@(product => product.Name)">
+                @<FormaDataView ItemsProvider="first" EnablePagination="false" ItemName="@(product => product.Name)">
                     <FormaDataList TItem="Product" />
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.ItemsProvider, second));
+            await asked.Task.WaitAsync(TestContext.Current.CancellationToken);
 
-            // Act — three other products, so the new source is seen to have answered
-            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.Items, CreateProducts(3, firstId: 4)));
-            cut.WaitForState(() => cut.Markup.Contains("Product 4", StringComparison.Ordinal));
-
-            // Assert
-            Assert.Empty(cut.Find(".forma-data-view-announcement").TextContent);
+            return (cut, held);
         }
 
         [Fact]
@@ -70,6 +92,8 @@
         {
             // Arrange
             using var ctx = new FormaDataViewTests();
+            var clock = new FakeTimeProvider();
+            ctx.Services.AddSingleton<TimeProvider>(clock);
             var held = new TaskCompletionSource<DataViewPage<Product>>();
             DataViewItemsProvider<Product> provider = _ => new ValueTask<DataViewPage<Product>>(held.Task);
             var cut = ctx.Render(
@@ -77,13 +101,17 @@
                     <FormaDataList TItem="Product" />
                 </FormaDataView>);
 
-            // Act — the source is still answering after the moment the data view waits
-            cut.WaitForState(() => cut.Find(".forma-data-view-announcement").TextContent == "Loading", TimeSpan.FromSeconds(5));
+            // Act — the source is still answering after the moment the data view waits; the wait ends where the clock is moved,
+            // and the data view acts on it once the renderer reaches the work the end queued
+            await cut.ReleaseAsync(() => clock.Advance(TimeSpan.FromSeconds(1)));
+            await cut.InvokeAsync(() => { });
+            var announcedWhileLoading = cut.Find(".forma-data-view-announcement").TextContent;
             var busyWhileLoading = cut.Find(".forma-data-view-region").GetAttribute("aria-busy");
             await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>([.. CreateProducts(1)], 1)));
 
             // Assert
             Assert.Multiple(
+                () => Assert.Equal("Loading", announcedWhileLoading),
                 () => Assert.Equal("true", busyWhileLoading),
                 () => Assert.Equal("1 item", cut.Find(".forma-data-view-announcement").TextContent),
                 () => Assert.Null(cut.Find(".forma-data-view-region").GetAttribute("aria-busy")));

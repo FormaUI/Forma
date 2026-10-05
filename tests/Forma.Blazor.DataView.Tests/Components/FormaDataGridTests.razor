@@ -6,6 +6,7 @@
 @using Forma.Framework.Css
 @using Forma.Blazor.Components.Layout
 @using Forma.Blazor.Components.Virtualization
+@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 @code {
@@ -826,9 +827,9 @@
         }
 
         [Fact]
-        public void Should_keep_the_selection_across_a_page_change()
+        public async Task Should_keep_the_selection_across_a_page_change()
         {
-            // Arrange
+            // Arrange — each press is awaited to its handler's end, so what it changed is read once it has
             using var ctx = new FormaDataGridTests();
             IReadOnlyList<GridItem>? changedTo = null;
             var cut = ctx.Render(
@@ -840,12 +841,12 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
-            cut.Find("thead input[type=checkbox]").Click();
-            cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
-            cut.WaitForState(() => cut.Markup.Contains("Item 11", StringComparison.Ordinal));
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
+            await cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
+            Assert.Contains("Item 11", cut.Markup, StringComparison.Ordinal);
 
             // Act — the second page's master adds to what the first page selected
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(20, changedTo!.Count);

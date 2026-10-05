@@ -6,6 +6,12 @@
 
 @if (IsActive)
 {
+    // The rows settle before the root is drawn, since settling decides whether the root holds the focus itself.
+    if (View.AreRootsLoaded)
+    {
+        SettleRows();
+    }
+
     <div id="@Id"
          data-rid="@Context.RuntimeId"
          class="@RootClass"
@@ -20,13 +26,10 @@
         }
         else if (GetRoots().Count == 0)
         {
-            SettleRows();
             <div class="forma-data-tree-state">@View.EmptyContent</div>
         }
         else if (IsVirtualizing)
         {
-            SettleRows();
-
             @* Virtualizing, the visible nodes stand in one run, each carrying its level and its place among its siblings. *@
             <div class="forma-data-tree-level" role="tree" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 <FormaVirtualize @ref="_virtualizer" TItem="VisibleNode" Items="_visibleRows" ItemKey="GetRowKey" ItemSize="View.ItemHeight" OverscanCount="View.OverscanCount" PinnedKeys="GetPinnedKeys()">
@@ -40,7 +43,6 @@
         }
         else
         {
-            SettleRows();
             <ul class="forma-data-tree-level" role="tree" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
                 @RenderLevel(GetRoots(), 1)
             </ul>
