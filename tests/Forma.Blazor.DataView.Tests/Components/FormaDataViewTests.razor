@@ -31,11 +31,30 @@
         }
 
         [Fact]
+        public void Should_draw_a_new_source_in_the_render_that_gives_it_while_the_last_load_waits_to_be_announced()
+        {
+            // Arrange — the clock stands still, so the wait the first load began before announcing itself is still running
+            using var ctx = new FormaDataViewTests();
+            ctx.Services.AddSingleton<TimeProvider>(new FakeTimeProvider());
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts(3)" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Act
+            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.Items, CreateProducts(2)));
+
+            // Assert
+            Assert.Equal(2, cut.FindAll("[role=listitem]").Count);
+        }
+
+        [Fact]
         public async Task Should_announce_the_count_when_a_new_source_changes_it()
         {
             // Arrange — the new source's answer is held, so the announcement is read once the load it settles has finished
             using var ctx = new FormaDataViewTests();
-            var (cut, held) = await RenderThenHoldNewSourceAsync(ctx);
+            var (cut, held) = RenderThenHoldNewSource(ctx);
 
             // Act
             await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>([.. CreateProducts(2)], 2)));
@@ -51,7 +70,7 @@
         {
             // Arrange — the new source's answer is held, so the silence is read once the load it settles has finished
             using var ctx = new FormaDataViewTests();
-            var (cut, held) = await RenderThenHoldNewSourceAsync(ctx);
+            var (cut, held) = RenderThenHoldNewSource(ctx);
 
             // Act — three other products, so the new source is seen to have answered
             await cut.ReleaseAsync(() => held.SetResult(new DataViewPage<Product>([.. CreateProducts(3, firstId: 4)], 3)));
@@ -63,26 +82,20 @@
         }
 
         // Draws three products from a source that answers at once, then gives the data view a new source whose answer the test holds,
-        // returning once the data view has asked it, so the release lands on a load already waiting for it; the clock stands still, so
-        // the wait before a slow load is announced never runs out on its own.
-        private static async Task<(IRenderedComponent<IComponent> Cut, TaskCompletionSource<DataViewPage<Product>> Held)> RenderThenHoldNewSourceAsync(FormaDataViewTests ctx)
+        // which the data view asks in the render that gives it; the clock stands still, so the wait before a slow load is announced
+        // never runs out on its own.
+        private static (IRenderedComponent<IComponent> Cut, TaskCompletionSource<DataViewPage<Product>> Held) RenderThenHoldNewSource(FormaDataViewTests ctx)
         {
             ctx.Services.AddSingleton<TimeProvider>(new FakeTimeProvider());
             DataViewItemsProvider<Product> first = _ => ValueTask.FromResult(new DataViewPage<Product>([.. CreateProducts(3)], 3));
             var held = new TaskCompletionSource<DataViewPage<Product>>();
-            var asked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            DataViewItemsProvider<Product> second = _ =>
-            {
-                asked.TrySetResult();
-                return new ValueTask<DataViewPage<Product>>(held.Task);
-            };
+            DataViewItemsProvider<Product> second = _ => new ValueTask<DataViewPage<Product>>(held.Task);
             var cut = ctx.Render(
                 @<FormaDataView ItemsProvider="first" EnablePagination="false" ItemName="@(product => product.Name)">
                     <FormaDataList TItem="Product" />
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
             cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.ItemsProvider, second));
-            await asked.Task.WaitAsync(TestContext.Current.CancellationToken);
 
             return (cut, held);
         }

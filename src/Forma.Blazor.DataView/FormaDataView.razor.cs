@@ -1445,16 +1445,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // A load still answering after a moment is announced as loading; a quicker one says nothing until it settles.
     private async Task AnnounceLoadingAsync(CancellationTokenSource cancellation)
     {
-        try
-        {
-            await Task.Delay(LoadingAnnouncementDelay, Clock, cancellation.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
+        // The wait runs on the clock alone and the check after it finds whether its load still answers, so the load replacing it starts on the renderer.
+        await Task.Delay(LoadingAnnouncementDelay, Clock);
 
-        if (!_isBusy || !ReferenceEquals(_loadCancellation, cancellation))
+        if (IsDisposed || !_isBusy || !ReferenceEquals(_loadCancellation, cancellation))
         {
             return;
         }
