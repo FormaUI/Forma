@@ -5,6 +5,7 @@
 @using Forma.Blazor.Components.DataView.Interop
 @using Forma.Framework.Css
 @using Forma.Blazor.Components.Layout
+@using Forma.Blazor.Components.Virtualization
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 @code {
@@ -317,7 +318,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" Virtualize="true" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" Virtualize="true" OverscanCount="10" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
                     <FormaDataGrid>
                         <Columns>
                             <FormaPropertyColumn Property="@(item => item.Title)" />
@@ -339,7 +340,7 @@
             // Arrange
             using var ctx = new FormaDataGridTests();
             var cut = ctx.Render(
-                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" Virtualize="true" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false" Virtualize="true" OverscanCount="10" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
                     <FormaDataGrid>
                         <Columns>
                             <FormaPropertyColumn Property="@(item => item.Title)" />
@@ -377,7 +378,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataView TItem="Product" ItemsProvider="provider" EnablePagination="false" Virtualize="true" GroupBy="@(DataViewGrouping<Product>.ByDescending(product => product.Category))">
+                @<FormaDataView TItem="Product" ItemsProvider="provider" EnablePagination="false" Virtualize="true" OverscanCount="10" GroupBy="@(DataViewGrouping<Product>.ByDescending(product => product.Category))">
                     <FormaDataGrid>
                         <Columns>
                             <FormaPropertyColumn Property="@(item => item.Title)" />
@@ -1143,13 +1144,13 @@
             cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
 
             // Assert — each row holds one item, so the initial item opens the row that holds it
-            var virtualization = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(Virtualize<>)).Instance;
+            var virtualization = cut.FindComponents<IComponent>().Single(component => component.Instance.GetType().IsGenericType && component.Instance.GetType().GetGenericTypeDefinition() == typeof(FormaVirtualize<>)).Instance;
             object? Read(string property) => virtualization.GetType().GetProperty(property)!.GetValue(virtualization);
             Assert.Multiple(
-                () => Assert.Equal(40f, Read(nameof(Virtualize<GridItem>.ItemSize))),
-                () => Assert.Equal(5, Read(nameof(Virtualize<GridItem>.OverscanCount))),
-                () => Assert.Equal(VirtualizeAnchorMode.End, Read(nameof(Virtualize<GridItem>.AnchorMode))),
-                () => Assert.Equal(12, Read(nameof(Virtualize<GridItem>.InitialItemIndex))));
+                () => Assert.Equal(40f, Read(nameof(FormaVirtualize<GridItem>.ItemSize))),
+                () => Assert.Equal(5, Read(nameof(FormaVirtualize<GridItem>.OverscanCount))),
+                () => Assert.Equal(VirtualizeAnchorMode.End, Read(nameof(FormaVirtualize<GridItem>.AnchorMode))),
+                () => Assert.Equal(12, Read(nameof(FormaVirtualize<GridItem>.InitialItemIndex))));
         }
 
         [Fact]

@@ -114,7 +114,11 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
             throw new InvalidOperationException($"{nameof(FormaDataCards<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
+        _rows = new DataViewRows<TItem>(View,
+            () => _virtualizer is not null,
+            () => _virtualizer!.RefreshDataAsync(),
+            (index, token) => _virtualizer!.ScrollToItemAsync(index, cancellationToken: token),
+            InvokeAsync, StateHasChanged);
         _gridColumns = new GridColumns(Context.JS);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Cards"], Glyph.GridView, this));
         View.Subscribe(HandleViewChangedAsync);

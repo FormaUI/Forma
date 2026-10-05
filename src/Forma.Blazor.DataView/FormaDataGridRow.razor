@@ -18,6 +18,7 @@
                                    Value="@View.IsSelected(Item)"
                                    PreventDefault="true"
                                    OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
+                                   @onfocusin="() => Grid.HandleRowFocusIn(Item)"
                                    ValueExpression="() => RowSelection" />
                 </label>
             }

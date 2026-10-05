@@ -1,9 +1,9 @@
 namespace Forma.Blazor.Components.DataView;
 
+using Forma.Blazor.Components.Virtualization;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>The table a grid draws: its header row, its rows, and the state row that stands in for them while loading or empty.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
@@ -21,7 +21,7 @@ public sealed partial class FormaDataGridTable<TItem> : FormaElementBase
     private bool MasterSelection { get; }
 
     /// <summary>The virtualization the table renders its rows through.</summary>
-    internal Virtualize<DataViewRow<TItem>>? Virtualizer { get; private set; }
+    internal FormaVirtualize<DataViewRow<TItem>>? Virtualizer { get; private set; }
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType

@@ -15,6 +15,9 @@ using Microsoft.JSInterop;
 /// rendered range of items around the viewport and each pinned item outside it, a spacer standing for each run of items between them, and a
 /// spacer closing the list. Every item is keyed by its owner's key, so one that stays drawn, in the rendered range or pinned, keeps its element
 /// as the ranges around it change. A spacer is as tall as the items it stands for at the average room a drawn item takes, from its top to the next item's.
+/// Over a provider, the item a fetch opens on is tracked from one answer to the next; where the item there has changed, the set was added to or
+/// taken from before it, and the viewport holds its place unless <see cref="AnchorMode"/> names the edge it stands at and it is already there,
+/// where it follows what arrived instead.
 /// </remarks>
 public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
 {
@@ -54,6 +57,15 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     /// <summary>The keys of the items kept rendered wherever they lie.</summary>
     [Parameter] public IReadOnlyCollection<object>? PinnedKeys { get; set; }
 
+    /// <summary>The edge the viewport follows when a provider's set grows there while it already stands at it.</summary>
+    [Parameter] public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
+
+    /// <summary>Compares two items a provider answered, to tell the set added to from the same set fetched again.</summary>
+    [Parameter] public IEqualityComparer<TItem> ItemComparer { get; set; } = EqualityComparer<TItem>.Default;
+
+    /// <summary>The item the list opens scrolled to.</summary>
+    [Parameter] public int InitialItemIndex { get; set; }
+
     private readonly Dictionary<object, (int Index, TItem Item)> _pins = [];
     private Virtualize _interop = default!;
     private DotNetObjectReference<FormaVirtualize<TItem>>? _selfReference;
@@ -74,6 +86,9 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     private CancellationTokenSource? _scrollCancellation;
     private List<TaskCompletionSource> _renderWaiters = [];
     private List<Drawn> _drawn = [];
+    private (int Index, TItem Item)? _loadedAnchor;
+    private bool _hasAppliedInitialIndex;
+    private bool _initialIndexNeedsCorrection;
 
     private enum DrawnKind
     {
@@ -179,6 +194,23 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             _measuredItemSize = itemSize;
         }
 
+        // The item the list opened on was placed by the estimated size, before any item had been measured; the first real
+        // measurement corrects it to where the item actually stands.
+        if (_initialIndexNeedsCorrection && itemSize > 0)
+        {
+            _initialIndexNeedsCorrection = false;
+            var corrected = InitialItemIndex * CurrentItemSize;
+
+            if (Math.Abs(corrected - _offset) >= 1)
+            {
+                _offset = corrected;
+                await LoadAsync();
+                StateHasChanged();
+                await _interop.ScrollToAsync(_offset);
+                return;
+            }
+        }
+
         if (GetRenderedRange() == range && Math.Abs(CurrentItemSize - size) < 0.5)
         {
             return;
@@ -204,7 +236,9 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         ArgumentNullException.ThrowIfNull(ItemContent);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ItemSize);
         ArgumentOutOfRangeException.ThrowIfNegative(OverscanCount);
+        ArgumentOutOfRangeException.ThrowIfNegative(InitialItemIndex);
         ArgumentException.ThrowIfNullOrWhiteSpace(SpacerElement);
+        ArgumentNullException.ThrowIfNull(ItemComparer);
 
         if (!ReferenceEquals(Items, _indexedItems))
         {
@@ -224,6 +258,13 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         {
             _pins.Remove(key);
         }
+
+        // A key pinned from an item already drawn is recorded now, over a provider: the fetch that drew it ran before it was
+        // pinned, and no fetch after it is bound to ask for its position again.
+        if (ItemsProvider is not null)
+        {
+            RecordPins(_loadedStart, _loaded);
+        }
     }
 
     /// <inheritdoc />
@@ -242,6 +283,20 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         {
             _selfReference ??= DotNetObjectReference.Create(this);
             _isAttached = await _interop.AttachAsync(_startSpacer, _selfReference, SpacerAttribute);
+
+            // Opens on the item by its own offset rather than through ScrollToIndexAsync, which would wait on a render of its
+            // own to confirm the item drawn — a render this very call is the one to produce, so waiting on it here would wait
+            // on itself. The range around the new offset is drawn on the render StateHasChanged asks for; the real scroll is a
+            // plain interop call with no render of its own to wait on, so it is awaited directly.
+            if (_isAttached && InitialItemIndex > 0 && !_hasAppliedInitialIndex)
+            {
+                _hasAppliedInitialIndex = true;
+                _initialIndexNeedsCorrection = true;
+                _offset = InitialItemIndex * CurrentItemSize;
+                await LoadAsync();
+                StateHasChanged();
+                await _interop.ScrollToAsync(_offset);
+            }
         }
 
         var waiters = _renderWaiters;
@@ -481,34 +536,99 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         var cancellation = _loadCancellation = new CancellationTokenSource();
         var token = cancellation.Token;
         var wasStale = _isStale;
+        var hadLoadedBefore = _hasLoaded;
+        var previousCount = _count;
+        var previousOffset = _offset;
+        var previousViewport = _viewport;
+        var anchored = false;
         ItemsProviderResult<TItem> result;
+        List<TItem> loaded;
 
         try
         {
             result = await provider(new ItemsProviderRequest(first, Math.Max(1, end - first), token));
+            loaded = [.. result.Items];
+
+            if (hadLoadedBefore && result.TotalItemCount != previousCount
+                && AdjustForAnchor(result.TotalItemCount, previousCount, previousOffset, previousViewport, first, loaded) is { } adjusted)
+            {
+                // The corrected range is computed against the set's new count, which lands early for that alone. The window
+                // itself moves by exactly what changed before it rather than being re-read from the corrected offset: an
+                // ancestor outside the list, a sticky header among them, can leave the offset negative at the true top, where
+                // it is clamped to zero, so deriving the window from pixels again does not track the same shift linearly.
+                anchored = true;
+                var delta = result.TotalItemCount - previousCount;
+                _count = result.TotalItemCount;
+                _offset = adjusted;
+                first = Math.Clamp(first + delta, 0, _count);
+                end = Math.Clamp(end + delta, first, _count);
+                result = await provider(new ItemsProviderRequest(first, Math.Max(1, end - first), token));
+                loaded = [.. result.Items];
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // The set stays stale until a read that was not superseded answers, so the read that supersedes one still reads it again.
+            _isStale = false;
+            _loadedStart = first;
+            _loaded = loaded;
+            _count = result.TotalItemCount;
+            _hasLoaded = true;
+            RecordPins(_loadedStart, _loaded);
+            _loadedAnchor = _loaded.Count > 0 ? (_loadedStart, _loaded[0]) : null;
+
+            if (wasStale)
+            {
+                await VerifyPinsAsync(provider, token);
+            }
+
+            // A held or followed viewport is drawn at its old position until this render lands, so the real scroll is corrected after it.
+            if (anchored)
+            {
+                await RenderAsync(token);
+                await _interop.ScrollToAsync(_offset);
+            }
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
-            return;
         }
+    }
 
-        if (token.IsCancellationRequested)
+    // The offset that holds the viewport in place or follows it to the edge it stands at, or null where nothing arrived to react to.
+    // The item the last answer opened on is found in this one, at the same position, to tell the set added to from the set fetched
+    // again: where it no longer matches, the set grew or shrank before it; where it still matches and the set grew, the set grew
+    // after it.
+    private double? AdjustForAnchor(int newCount, int previousCount, double previousOffset, double previousViewport, int first, List<TItem> loaded)
+    {
+        if (_loadedAnchor is not { } anchor || anchor.Index < first || anchor.Index - first >= loaded.Count)
         {
-            return;
+            return null;
         }
 
-        // The set stays stale until a read that was not superseded answers, so the read that supersedes one still reads it again.
-        _isStale = false;
-        _loadedStart = first;
-        _loaded = [.. result.Items];
-        _count = result.TotalItemCount;
-        _hasLoaded = true;
-        RecordPins(_loadedStart, _loaded);
+        var size = CurrentItemSize;
+        var delta = newCount - previousCount;
 
-        if (wasStale)
+        if (!ItemComparer.Equals(anchor.Item, loaded[anchor.Index - first]))
         {
-            await VerifyPinsAsync(provider, token);
+            // Added or taken before the anchor. Standing at the start already, the start shows what arrived there; otherwise the
+            // viewport holds the items it showed.
+            var atStart = previousOffset <= size;
+
+            return (AnchorMode & VirtualizeAnchorMode.Start) != VirtualizeAnchorMode.None && atStart
+                ? null
+                : Math.Max(0, previousOffset + (delta * size));
         }
+
+        // Added after the anchor, with the end already in view, is followed there; taken, or added with the end out of view, leaves
+        // the viewport where it was.
+        var atEnd = previousOffset + previousViewport >= (previousCount * size) - size;
+
+        return delta > 0 && (AnchorMode & VirtualizeAnchorMode.End) != VirtualizeAnchorMode.None && atEnd
+            ? Math.Max(0, (newCount * size) - previousViewport)
+            : null;
     }
 
     // A pinned item a provider answered is kept with its position, so it can be drawn once the rendered range moves away from it.

@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
+using Forma.Blazor.Components.Virtualization;
+
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>The rows a virtualizing view draws over its data view: a heading for each group where the data view groups, and the items in rows of as many as stand across.</summary>
@@ -10,13 +12,23 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 /// one fetch per run of consecutive items, so a folded group between two open ones is never read. Over a source that cannot
 /// count, the rows run one slice past the last item answered until a slice comes back shorter than asked for, which ends the
 /// set. The rows found by a fetch are published after the answer that found them, once the virtualization has taken it in;
-/// a scroll the view asks for holds them back until it has landed.
+/// a scroll the view asks for holds them back until it has landed. The virtualizer itself stays out of this type: a view not yet
+/// moved onto <see cref="FormaVirtualize{TItem}"/> still draws through the framework's
+/// own, so the three delegates let each view hand over whichever one it draws through.
 /// </remarks>
 /// <param name="view">The data view the rows are laid out over.</param>
-/// <param name="virtualizer">The virtualization the view draws the rows through, once it is drawn.</param>
+/// <param name="isVirtualized">Whether the view currently draws through a virtualizer.</param>
+/// <param name="refreshVirtualizedAsync">Asks the virtualizer to read the rows again.</param>
+/// <param name="scrollVirtualizedToAsync">Asks the virtualizer to scroll to a row.</param>
 /// <param name="invoke">Runs work on the view's renderer.</param>
 /// <param name="redraw">Draws the view again.</param>
-internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize<DataViewRow<TItem>>?> virtualizer, Func<Func<Task>, Task> invoke, Action redraw)
+internal sealed class DataViewRows<TItem>(
+    IDataView<TItem> view,
+    Func<bool> isVirtualized,
+    Func<Task> refreshVirtualizedAsync,
+    Func<int, CancellationToken, Task> scrollVirtualizedToAsync,
+    Func<Func<Task>, Task> invoke,
+    Action redraw)
     where TItem : notnull
 {
     // Room enough for any set a source cannot count, which is read until it comes back short.
@@ -190,7 +202,7 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
     /// <param name="cancellationToken">Canceled when the scroll is no longer wanted.</param>
     public async ValueTask ScrollToAsync(int itemIndex, CancellationToken cancellationToken)
     {
-        if (virtualizer() is not { } rows)
+        if (!isVirtualized())
         {
             return;
         }
@@ -201,11 +213,11 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
         {
             if (Publish())
             {
-                await rows.RefreshDataAsync();
+                await refreshVirtualizedAsync();
                 redraw();
             }
 
-            await rows.ScrollToItemAsync(GetRowIndex(itemIndex), cancellationToken);
+            await scrollVirtualizedToAsync(GetRowIndex(itemIndex), cancellationToken);
         }
         finally
         {
@@ -239,9 +251,9 @@ internal sealed class DataViewRows<TItem>(IDataView<TItem> view, Func<Virtualize
     {
         await Task.Yield();
 
-        if (!_isHeld && Publish() && virtualizer() is { } rows)
+        if (!_isHeld && Publish() && isVirtualized())
         {
-            await rows.RefreshDataAsync();
+            await refreshVirtualizedAsync();
             redraw();
         }
     }

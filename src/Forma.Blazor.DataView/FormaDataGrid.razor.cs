@@ -86,6 +86,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     private FormaDataGridTable<TItem>? Table { get; set; }
 
     private Dictionary<TItem, int> _rowIndices = [];
+    private object? _lastFocusedKey;
     private DataViewRows<TItem> _rows = default!;
     private bool _isRefreshWanted;
 
@@ -357,7 +358,11 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
 
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Grid"], Glyph.DetailsView, this));
-        _rows = new DataViewRows<TItem>(View, () => Table?.Virtualizer, InvokeAsync, StateHasChanged);
+        _rows = new DataViewRows<TItem>(View,
+            () => Table?.Virtualizer is not null,
+            () => Table!.Virtualizer!.RefreshDataAsync(),
+            (index, token) => Table!.Virtualizer!.ScrollToIndexAsync(index, cancellationToken: token),
+            InvokeAsync, StateHasChanged);
         _columnFit = new ColumnFit(Context.JS);
         View.Subscribe(HandleViewChangedAsync);
     }
@@ -702,6 +707,23 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     /// <summary>The one-based place of <paramref name="item"/> in the whole set, for a row a virtualizing grid draws.</summary>
     internal int? GetRowIndex(TItem item)
         => _rowIndices.TryGetValue(item, out var index) ? index + 1 : null;
+
+    /// <summary>The stable key a virtualizing grid draws a row under: a group's key for its heading, the row's one item's key otherwise.</summary>
+    internal object GetRowKey(DataViewRow<TItem> row)
+        => row.Group is { } group ? group.Key! : View.ItemKey(row.Items[0]);
+
+    /// <summary>The keys the virtualizer keeps drawn wherever the grid scrolls: the marker last focused, so Tab finds it and the
+    /// focus never falls to the page.</summary>
+    internal HashSet<object> GetPinnedKeys()
+        => _lastFocusedKey is { } key ? [key] : [];
+
+    // A marker keeps the key last focused, which Tab and the virtualizer's pinning both read. The focus lands inside the row
+    // component rather than here, so the table that reads the pinned keys is told to draw again.
+    internal void HandleRowFocusIn(TItem item)
+    {
+        _lastFocusedKey = View.ItemKey(item);
+        StateHasChanged();
+    }
 
     /// <inheritdoc />
     public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)

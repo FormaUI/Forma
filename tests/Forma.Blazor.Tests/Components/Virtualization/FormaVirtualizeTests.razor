@@ -474,6 +474,179 @@
         }
 
         [Fact]
+        public async Task Should_hold_the_viewport_in_place_when_items_are_added_before_the_one_it_opened_on()
+        {
+            // Arrange - a hundred rows, scrolled away from the start, so the row the viewport opened on is Row 50
+            using var ctx = new FormaVirtualizeTests();
+            var rows = CreateRows().ToList();
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(rows.Skip(request.StartIndex).Take(request.Count), rows.Count));
+            double? scrolledTo = null;
+            ctx.JSInterop.SetupVoid("scrollTo", invocation => { scrolledTo = (double)invocation.Arguments[0]!; return true; }).SetVoidResult();
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Act - ten rows land before Row 50
+            rows.InsertRange(0, CreateRows(10).Select(row => row with { Id = row.Id - 10, Name = $"Row {row.Id - 10}" }));
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+
+            // Assert - the viewport moves down by the ten rows' height, so Row 50 stands where it did, two items in for the overscan
+            // the viewport opened with, and the real scroll follows
+            Assert.Multiple(
+                () => Assert.Equal("Row 50", Drawn(cut)[2]),
+                () => Assert.Equal(1200d, scrolledTo));
+        }
+
+        [Fact]
+        public async Task Should_show_what_arrives_at_the_start_once_the_viewport_already_stands_there()
+        {
+            // Arrange - anchored to the start, which is the default, and standing at it
+            using var ctx = new FormaVirtualizeTests();
+            var rows = CreateRows().ToList();
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(rows.Skip(request.StartIndex).Take(request.Count), rows.Count));
+            var scrolled = false;
+            ctx.JSInterop.SetupVoid("scrollTo", _ => { scrolled = true; return true; }).SetVoidResult();
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(0, 200, 20));
+
+            // Act
+            rows.InsertRange(0, CreateRows(10).Select(row => row with { Id = row.Id - 10, Name = $"Row {row.Id - 10}" }));
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+
+            // Assert - the new rows show where the old ones were, and nothing corrected the real scroll
+            Assert.Multiple(
+                () => Assert.Equal("Row -10", Drawn(cut)[0]),
+                () => Assert.False(scrolled));
+        }
+
+        [Fact]
+        public async Task Should_follow_what_arrives_at_the_end_once_the_viewport_already_stands_there()
+        {
+            // Arrange - anchored to the end, scrolled to the last row of a hundred
+            using var ctx = new FormaVirtualizeTests();
+            var rows = CreateRows().ToList();
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(rows.Skip(request.StartIndex).Take(request.Count), rows.Count));
+            double? scrolledTo = null;
+            ctx.JSInterop.SetupVoid("scrollTo", invocation => { scrolledTo = (double)invocation.Arguments[0]!; return true; }).SetVoidResult();
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" AnchorMode="VirtualizeAnchorMode.End">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1800, 200, 20));
+
+            // Act - five rows land after Row 99
+            rows.AddRange(CreateRows(5).Select(row => row with { Id = row.Id + 100, Name = $"Row {row.Id + 100}" }));
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+
+            // Assert - the viewport follows to the new end
+            Assert.Multiple(
+                () => Assert.Equal("Row 104", Drawn(cut)[^1]),
+                () => Assert.Equal(1900, scrolledTo));
+        }
+
+        [Fact]
+        public async Task Should_leave_the_viewport_when_items_arrive_at_an_edge_it_is_not_anchored_to()
+        {
+            // Arrange - the default anchors the start, not the end, standing at the end of a hundred rows
+            using var ctx = new FormaVirtualizeTests();
+            var rows = CreateRows().ToList();
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(rows.Skip(request.StartIndex).Take(request.Count), rows.Count));
+            var scrolled = false;
+            ctx.JSInterop.SetupVoid("scrollTo", _ => { scrolled = true; return true; }).SetVoidResult();
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1800, 200, 20));
+
+            // Act
+            rows.AddRange(CreateRows(5).Select(row => row with { Id = row.Id + 100, Name = $"Row {row.Id + 100}" }));
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+
+            // Assert - nothing scrolled, and the rows already on screen stay there
+            Assert.Multiple(
+                () => Assert.Equal("Row 99", Drawn(cut)[^1]),
+                () => Assert.False(scrolled));
+        }
+
+        [Fact]
+        public async Task Should_scroll_to_the_initial_item_once_attached()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+
+            // Act
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" InitialItemIndex="50">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+
+            // Assert — the item's own offset, opening the range drawn on it; the real scroll follows once attached
+            cut.WaitForAssertion(() => Assert.Equal("Row 50", Drawn(cut)[0]), TimeSpan.FromSeconds(5));
+            var scrollTo = ctx.JSInterop.Invocations.Last(invocation => invocation.Identifier == "scrollTo");
+            Assert.Equal(1000d, scrollTo.Arguments[0]);
+        }
+
+        [Fact]
+        public async Task Should_correct_the_initial_item_once_a_real_measurement_differs_from_the_estimate()
+        {
+            // Arrange — opens on item 50 by the estimated size of 20, before anything is measured
+            using var ctx = new FormaVirtualizeTests();
+            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" InitialItemIndex="50">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            cut.WaitForAssertion(() => Assert.Contains("scrollTo", ctx.JSInterop.Invocations.Select(invocation => invocation.Identifier)), TimeSpan.FromSeconds(5));
+            var virtualizer = Virtualizer(cut);
+
+            // Act — the real room an item takes turns out to be 25, not the 20 estimated
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 25));
+
+            // Assert — the item's real offset corrects the one the estimate opened it on
+            var scrollTo = ctx.JSInterop.Invocations.Last(invocation => invocation.Identifier == "scrollTo");
+            Assert.Equal(1250d, scrollTo.Arguments[0]);
+        }
+
+        [Fact]
+        public void Should_reject_a_negative_initial_item_index()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+
+            // Act
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
+                @<FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" InitialItemIndex="-1">
+                    <ItemContent Context="row"><div>@row.Name</div></ItemContent>
+                </FormaVirtualize>));
+
+            // Assert
+            Assert.Equal(nameof(FormaVirtualize<Row>.InitialItemIndex), ex.ParamName);
+        }
+
+        [Fact]
         public void Should_refuse_both_sources_and_neither()
         {
             // Arrange

@@ -81,7 +81,11 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
             throw new InvalidOperationException($"{nameof(FormaDataList<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
+        _rows = new DataViewRows<TItem>(View,
+            () => _virtualizer is not null,
+            () => _virtualizer!.RefreshDataAsync(),
+            (index, token) => _virtualizer!.ScrollToItemAsync(index, cancellationToken: token),
+            InvokeAsync, StateHasChanged);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["List"], Glyph.List, this));
         View.Subscribe(HandleViewChangedAsync);
     }

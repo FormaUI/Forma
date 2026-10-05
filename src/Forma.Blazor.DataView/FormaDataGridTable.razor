@@ -3,6 +3,7 @@
 @typeparam TItem where TItem : notnull
 @using System.Globalization
 @using Forma.Blazor.Components.Menus
+@using Forma.Blazor.Components.Virtualization
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 @{
@@ -151,14 +152,16 @@
         else if (View.Virtualize && !View.EnablePagination && View.TotalItemCount != 0)
         {
             @* A row is one item, or a group's heading where the data view groups. *@
-            <Virtualize @ref="Virtualizer"
-                        TItem="DataViewRow<TItem>"
-                        ItemsProvider="Grid.ProvideVirtualizedRowsAsync"
-                        ItemComparer="Grid.RowComparer"
-                        ItemSize="View.ItemHeight"
-                        OverscanCount="View.OverscanCount"
-                        AnchorMode="View.AnchorMode"
-                        InitialItemIndex="Grid.InitialRowIndex">
+            <FormaVirtualize @ref="Virtualizer"
+                              TItem="DataViewRow<TItem>"
+                              ItemsProvider="Grid.ProvideVirtualizedRowsAsync"
+                              ItemKey="Grid.GetRowKey"
+                              PinnedKeys="Grid.GetPinnedKeys()"
+                              ItemComparer="Grid.RowComparer"
+                              ItemSize="View.ItemHeight"
+                              OverscanCount="View.OverscanCount"
+                              AnchorMode="View.AnchorMode"
+                              InitialItemIndex="Grid.InitialRowIndex">
                 <ItemContent Context="row">
                     @if (row.Group is { } group)
                     {
@@ -188,7 +191,7 @@
                         }
                     </tr>
                 </Placeholder>
-            </Virtualize>
+            </FormaVirtualize>
         }
         else if (View.Items.Count == 0)
         {
