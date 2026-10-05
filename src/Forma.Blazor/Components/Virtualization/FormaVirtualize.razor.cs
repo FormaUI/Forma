@@ -549,15 +549,16 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             result = await provider(new ItemsProviderRequest(first, Math.Max(1, end - first), token));
             loaded = [.. result.Items];
 
-            if (hadLoadedBefore && result.TotalItemCount != previousCount
-                && AdjustForAnchor(result.TotalItemCount, previousCount, previousOffset, previousViewport, first, loaded) is { } adjusted)
+            var delta = result.TotalItemCount - previousCount;
+
+            if (hadLoadedBefore && delta != 0
+                && AdjustForAnchor(result.TotalItemCount, previousCount, delta, previousOffset, previousViewport, first, loaded) is { } adjusted)
             {
                 // The corrected range is computed against the set's new count, which lands early for that alone. The window
                 // itself moves by exactly what changed before it rather than being re-read from the corrected offset: an
                 // ancestor outside the list, a sticky header among them, can leave the offset negative at the true top, where
                 // it is clamped to zero, so deriving the window from pixels again does not track the same shift linearly.
                 anchored = true;
-                var delta = result.TotalItemCount - previousCount;
                 _count = result.TotalItemCount;
                 _offset = adjusted;
                 first = Math.Clamp(first + delta, 0, _count);
@@ -601,7 +602,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     // The item the last answer opened on is found in this one, at the same position, to tell the set added to from the set fetched
     // again: where it no longer matches, the set grew or shrank before it; where it still matches and the set grew, the set grew
     // after it.
-    private double? AdjustForAnchor(int newCount, int previousCount, double previousOffset, double previousViewport, int first, List<TItem> loaded)
+    private double? AdjustForAnchor(int newCount, int previousCount, int delta, double previousOffset, double previousViewport, int first, List<TItem> loaded)
     {
         if (_loadedAnchor is not { } anchor || anchor.Index < first || anchor.Index - first >= loaded.Count)
         {
@@ -609,7 +610,6 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         }
 
         var size = CurrentItemSize;
-        var delta = newCount - previousCount;
 
         if (!ItemComparer.Equals(anchor.Item, loaded[anchor.Index - first]))
         {
