@@ -346,12 +346,13 @@
         [Fact]
         public async Task Should_let_a_pinned_item_go_when_its_pin_is_let_go_while_its_position_is_read_again()
         {
-            // Arrange — two pinned items; after the items are read again, the read of the first one's position is held
+            // Arrange — two pinned items; after the items are read again, the read around the first one's position, the
+            // overscan either side of it, is held
             using var ctx = new FormaVirtualizeTests();
             object[] pins = [3, 4];
             var refreshing = false;
             var held = new TaskCompletionSource<ItemsProviderResult<Row>>();
-            ItemsProviderDelegate<Row> provider = request => refreshing && request.StartIndex == 3 && request.Count == 1
+            ItemsProviderDelegate<Row> provider = request => refreshing && request.StartIndex == 1 && request.Count == 5
                 ? new ValueTask<ItemsProviderResult<Row>>(held.Task)
                 : ValueTask.FromResult(new ItemsProviderResult<Row>(CreateRows().Skip(request.StartIndex).Take(request.Count), 100));
             var cut = ctx.Render(
@@ -365,15 +366,91 @@
             refreshing = true;
             var refresh = virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
 
-            // Act — the first pin is let go, and then its position answers with the same item
+            // Act — the first pin is let go, and then its surroundings answer with the same items
             virtualizer.Render(parameters => parameters.Add(p => p.PinnedKeys, new object[] { 4 }));
-            await cut.ReleaseAsync(() => held.SetResult(new ItemsProviderResult<Row>(CreateRows().Skip(3).Take(1), 100)));
+            await cut.ReleaseAsync(() => held.SetResult(new ItemsProviderResult<Row>(CreateRows().Skip(1).Take(5), 100)));
             await refresh;
 
             // Assert
             Assert.Multiple(
                 () => Assert.DoesNotContain("Row 3", Drawn(cut)),
                 () => Assert.Contains("Row 4", Drawn(cut)));
+        }
+
+        [Fact]
+        public async Task Should_draw_an_item_pinned_beside_a_pinned_one_once_the_items_are_read_again()
+        {
+            // Arrange — Row 3 pinned while the viewport stands fifty rows away
+            using var ctx = new FormaVirtualizeTests();
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(CreateRows().Skip(request.StartIndex).Take(request.Count), 100));
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="new object[] { 3 }">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(0, 200, 20));
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Act — the items are read again, and Row 4, beside the pinned row, is pinned once that read is answered
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+            virtualizer.Render(parameters => parameters.Add(p => p.PinnedKeys, new object[] { 3, 4 }));
+
+            // Assert
+            Assert.Equal(["Row 3", "Row 4"], Drawn(cut).Take(2));
+        }
+
+        [Fact]
+        public async Task Should_keep_a_pinned_item_that_moved_within_the_overscan_once_the_items_are_read_again()
+        {
+            // Arrange — Row 3 pinned while the viewport stands fifty rows away
+            using var ctx = new FormaVirtualizeTests();
+            var rows = CreateRows().ToList();
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(rows.Skip(request.StartIndex).Take(request.Count), rows.Count));
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="new object[] { 3 }">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(0, 200, 20));
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Act — a row lands before Row 3, which now stands one place on
+            rows.Insert(0, new Row(-1, "Row -1"));
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+
+            // Assert
+            Assert.Equal("Row 3", Drawn(cut)[0]);
+        }
+
+        [Fact]
+        public async Task Should_let_go_of_a_pinned_item_that_left_the_rendered_range_once_the_items_are_read_again()
+        {
+            // Arrange — Row 50 pinned inside the rendered range
+            using var ctx = new FormaVirtualizeTests();
+            var rows = CreateRows().ToList();
+            ItemsProviderDelegate<Row> provider = request => ValueTask.FromResult(new ItemsProviderResult<Row>(rows.Skip(request.StartIndex).Take(request.Count), rows.Count));
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" PinnedKeys="new object[] { 50 }">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Act — Row 50 moves to the end, and another row takes its place
+            rows[50] = new Row(200, "Row 200");
+            rows[99] = new Row(50, "Row 50");
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.RefreshDataAsync());
+
+            // Assert — the row now at its place is drawn there, and Row 50, out of the range, is not
+            Assert.Multiple(
+                () => Assert.Contains("Row 200", Drawn(cut)),
+                () => Assert.DoesNotContain("Row 50", Drawn(cut)));
         }
 
         [Fact]

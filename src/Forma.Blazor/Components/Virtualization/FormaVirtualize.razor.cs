@@ -67,6 +67,9 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     [Parameter] public int InitialItemIndex { get; set; }
 
     private readonly Dictionary<object, (int Index, TItem Item)> _pins = [];
+
+    // The items read around the pins when the items were last read again, each run with the position it starts at.
+    private List<(int Start, List<TItem> Items)> _pinSurroundings = [];
     private Virtualize _interop = default!;
     private DotNetObjectReference<FormaVirtualize<TItem>>? _selfReference;
     private ElementReference _startSpacer;
@@ -259,10 +262,15 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             _pins.Remove(key);
         }
 
-        // A key pinned from an item already drawn is recorded now, over a provider: the fetch that drew it ran before it was
-        // pinned, and no fetch after it is bound to ask for its position again.
+        // A key pinned from an item already answered is recorded now, over a provider: the fetch that answered it ran before it
+        // was pinned, and no fetch after it is bound to ask for its position again.
         if (ItemsProvider is not null)
         {
+            foreach (var (start, around) in _pinSurroundings)
+            {
+                RecordPins(start, around);
+            }
+
             RecordPins(_loadedStart, _loaded);
         }
     }
@@ -578,6 +586,13 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             _loaded = loaded;
             _count = result.TotalItemCount;
             _hasLoaded = true;
+
+            // A set that grew or shrank has moved what was read around the pins.
+            if (_count != previousCount)
+            {
+                _pinSurroundings = [];
+            }
+
             RecordPins(_loadedStart, _loaded);
             _loadedAnchor = _loaded.Count > 0 ? (_loadedStart, _loaded[0]) : null;
 
@@ -650,33 +665,38 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         }
     }
 
-    // After the items were read again, a pinned item outside the rendered range is kept only while its position still holds it.
+    // After the items were read again, each pinned item is looked for in the rendered range, else among the items read around
+    // where it stood, the overscan either side of it, and kept where it is found or let go. The items read around the pins are
+    // kept, so a key the owner pins once it has seen them, an item beside a pinned one, is found among them.
     private async Task VerifyPinsAsync(ItemsProviderDelegate<TItem> provider, CancellationToken token)
     {
+        _pinSurroundings = [];
+        HashSet<object> found = [.. _loaded.Select(ItemKey).Where(_pinnedKeys.Contains)];
+
         foreach (var (key, (index, _)) in _pins.ToList())
         {
-            if (index >= _loadedStart && index < _loadedStart + _loaded.Count)
+            if (found.Contains(key))
             {
                 continue;
             }
 
-            var result = index < _count ? await provider(new ItemsProviderRequest(index, 1, token)) : default;
-
-            if (token.IsCancellationRequested)
+            if (index < _count && (index < _loadedStart || index >= _loadedStart + _loaded.Count))
             {
-                return;
+                var start = Math.Max(0, index - OverscanCount);
+                var result = await provider(new ItemsProviderRequest(start, Math.Min(_count, index + OverscanCount + 1) - start, token));
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                List<TItem> around = [.. result.Items];
+                _pinSurroundings.Add((start, around));
+                RecordPins(start, around);
+                found.UnionWith(around.Select(ItemKey).Where(_pinnedKeys.Contains));
             }
 
-            if (!_pinnedKeys.Contains(key))
-            {
-                continue;
-            }
-
-            if (result.Items is { } answered && answered.Take(1).ToList() is [var item] && Equals(ItemKey(item), key))
-            {
-                _pins[key] = (index, item);
-            }
-            else
+            if (!found.Contains(key))
             {
                 _pins.Remove(key);
             }

@@ -20,7 +20,7 @@ Blazor's `Virtualize` renders one contiguous range of items between two spacers,
 | An item's element | Whatever the owner's template keys, inside the component's own regions | Keyed by the owner's item key, so an item that stays rendered keeps its element as the ranges around it change |
 | Measurement | The distance between its two spacers as they come into view, divided among the items between them | The room each drawn item takes, from its top to the next item's, reported at most once a frame while the list scrolls, resizes or changes |
 | Scrolling to an item | By index, aligned to the top, completing once the item is aligned or a newer scroll supersedes it, and refusing before the component is interactive | By index, by the least scroll that shows the item or aligned to the top, completing true once the item is in view and false where no item stands at the index, a newer scroll or the caller's token canceling it |
-| Reading the items again | Reads them again, and the owner renders to show them | Reads them again and renders them, keeping a pinned item outside the rendered range only while its position still holds it |
+| Reading the items again | Reads them again, and the owner renders to show them | Reads them again and renders them, keeping a pinned item outside the rendered range only while it still stands within the overscan of its position |
 | An empty set | Draws the owner's `EmptyContent` | Draws nothing, leaving the empty state to the owner, which knows what an empty collection means to it |
 | How many items it draws | The viewport and the overscan, capped by `MaxItemCount` | The viewport and the overscan, and the pinned items |
 | Anchoring | `AnchorMode`, `InitialItemIndex` and `ItemComparer` | The same set, described under Anchoring |
@@ -53,7 +53,7 @@ An item's size starts as the estimate the owner gives and becomes the average ro
 
 ## Sources
 
-The items come from a list the owner holds, every item with a stable key, or from a provider that answers a **slice**, a run of positions given by its start and its count, with its items and the size of the whole set; a placeholder stands for an item not yet answered, and a superseded request is canceled. A pinned key is found in the list, or among the items the provider has answered. The owner can ask for the rendered set to be read again when its items changed; a pinned item outside the rendered range is then read again at its position and kept only while it is still there.
+The items come from a list the owner holds, every item with a stable key, or from a provider that answers a **slice**, a run of positions given by its start and its count, with its items and the size of the whole set; a placeholder stands for an item not yet answered, and a superseded request is canceled. A pinned key is found in the list, or among the items the provider has answered. The owner can ask for the rendered set to be read again when its items changed; a pinned item outside the rendered range is then read again with the overscan either side of its position, kept where it stands among those items and let go where it does not, and a key the owner pins once it has seen them, an item beside a pinned one, is found among them too.
 
 ## Anchoring
 

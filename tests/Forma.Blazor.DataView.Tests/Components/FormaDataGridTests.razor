@@ -1223,6 +1223,30 @@
                 => cut.FindAll("tbody tr.forma-data-grid-row").Single(row => row.TextContent.Trim() == title).QuerySelector("input")!;
         }
 
+        [Fact]
+        public async Task Should_draw_the_rows_now_either_side_of_a_focused_box_once_the_rows_are_read_again_scrolled_away()
+        {
+            // Arrange — Item 3's box holds the focus while the grid scrolls thirty rows past it
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(50)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="40" OverscanCount="2">
+                    <FormaDataGrid><Columns><FormaPropertyColumn Property="@(item => item.Title)" /></Columns></FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody input[data-row-key]").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+            cut.FindAll("tbody tr.forma-data-grid-row").Single(row => row.TextContent.Trim() == "Item 3").QuerySelector("input")!.FocusIn();
+            await ReportViewportAsync(cut, 1200, 200, 40);
+
+            // Act — the rows either side of Item 3 are replaced, and the rows are read again
+            var replaced = CreateItems(50).ToArray().Select(item => item.Id switch { 2 => new GridItem(100, "Item 100"), 4 => new GridItem(101, "Item 101"), _ => item }).AsQueryable();
+            cut.FindComponent<FormaDataView<GridItem>>().Render(parameters => parameters.Add(view => view.Items, replaced));
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").All(row => row.TextContent.Trim() != "Item 2"));
+
+            // Assert — the rows now beside Item 3 are the ones drawn with it
+            var drawn = cut.FindAll("tbody tr.forma-data-grid-row").Select(row => row.TextContent.Trim()).ToList();
+            Assert.Equal(["Item 100", "Item 3", "Item 101"], drawn.Take(3));
+        }
+
         // Reports where the grid stands in its viewport, as the virtualizer's script does.
         private static Task ReportViewportAsync(IRenderedComponent<IComponent> cut, double offset, double viewport, double itemSize)
         {
