@@ -150,7 +150,12 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
 
         var underlying = Nullable.GetUnderlyingType(type) ?? type;
 
-        if (underlying == typeof(DateTime) || underlying == typeof(DateTimeOffset) || underlying == typeof(TimeOnly))
+        if (type == typeof(TimeOnly) || type == typeof(TimeOnly?))
+        {
+            return EditorKind.TimePicker;
+        }
+
+        if (underlying == typeof(DateTime) || underlying == typeof(DateTimeOffset))
         {
             return EditorKind.DateInput;
         }
@@ -256,7 +261,10 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
                 RenderInput(builder, typeof(FormaCheckBox), value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.DatePicker:
-                RenderDatePicker(builder, value, valueChanged, GetValueExpression(draft));
+                RenderPicker(builder, typeof(FormaDatePicker<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+                break;
+            case EditorKind.TimePicker:
+                RenderPicker(builder, typeof(FormaTimePicker<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.NumberInput:
                 RenderInput(builder, typeof(FormaNumberInput<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
@@ -281,15 +289,15 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         builder.CloseComponent();
     }
 
-    // The picker is a field and asks for its label, the column's title, which the cell hides while it stays the picker's name.
-    private void RenderDatePicker(RenderTreeBuilder builder, object? value, object valueChanged, object valueExpression)
+    // A picker is a field and asks for its label, the column's title, which the cell hides while it stays the picker's name.
+    private void RenderPicker(RenderTreeBuilder builder, Type pickerType, object? value, object valueChanged, object valueExpression)
     {
-        builder.OpenComponent(15, typeof(FormaDatePicker<>).MakeGenericType(typeof(TValue)));
-        builder.AddComponentParameter(16, nameof(FormaDatePicker<TValue>.Value), value);
-        builder.AddComponentParameter(17, nameof(FormaDatePicker<TValue>.ValueChanged), valueChanged);
-        builder.AddComponentParameter(18, nameof(FormaDatePicker<TValue>.ValueExpression), valueExpression);
-        builder.AddComponentParameter(19, nameof(FormaDatePicker<TValue>.Label), Title);
-        builder.AddComponentParameter(20, nameof(FormaDatePicker<TValue>.Class), EditorClass);
+        builder.OpenComponent(15, pickerType);
+        builder.AddComponentParameter(16, "Value", value);
+        builder.AddComponentParameter(17, "ValueChanged", valueChanged);
+        builder.AddComponentParameter(18, "ValueExpression", valueExpression);
+        builder.AddComponentParameter(19, "Label", Title);
+        builder.AddComponentParameter(20, "Class", EditorClass);
         builder.CloseComponent();
     }
 
@@ -335,6 +343,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         TextBox,
         CheckBox,
         DatePicker,
+        TimePicker,
         NumberInput,
         DateInput,
     }
