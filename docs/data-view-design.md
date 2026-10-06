@@ -492,6 +492,17 @@ its design.
   than rebuilding them; a selection change touches the rows whose state changed; the
   selection is looked up by key in a set, never by scanning a list; and a column's fit is
   computed when the width changes, not on every render.
+- **An item draws again when what draws it changed.** Each view draws an item through a
+  component of its own, which draws again only when the item, its place, its own state, or
+  what every item of the view is drawn by has changed. An item's own state is whether it is
+  selected, whether its control can act, and in a tree whether it is open, loading, current
+  or the tab stop. What every item is drawn by is the data view's revision, which counts a
+  load, a change of what the host gave the data view, and a change of view, together with
+  what the view itself was given and, in a grid, what its columns were given; a change of
+  selection, of a node's opening or of a group's folding is not counted. What the host gives
+  is judged by value where it has one and by reference where it has not, so a template that
+  stays the same delegate while the state it reads changes is not noticed, and an item changed
+  in place is drawn again once the data view is refreshed or given its items again.
 - **Measurement is observed, not polled.** One resize observer per data view reports the
   width the fit reads and the heights virtualization needs, and the interop it takes is
   attached once and released on disposal, never a call per row.
