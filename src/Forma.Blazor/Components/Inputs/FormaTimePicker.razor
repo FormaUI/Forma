@@ -1,0 +1,24 @@
+@namespace Forma.Blazor.Components.Inputs
+@typeparam TValue
+@inherits FormaInputBase<TValue>
+
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" Required="@IsRequired" LabelMode="FieldLabelMode.Pinned">
+    <ChildContent>
+        <FormaTimeBox @ref="Box"
+                      ElementId="@ElementId"
+                      OwnerRuntimeId="@Context.RuntimeId"
+                      Text="@(_unreadText ?? CurrentValueAsString)"
+                      Time="@Time"
+                      Suggestions="_suggestions"
+                      FormatTime="FormatTime"
+                      ListLabel="@Label"
+                      OnChange="HandleChange"
+                      OnChoose="HandleChoose"
+                      Required="@IsRequired"
+                      Disabled="@Disabled"
+                      ReadOnly="@ReadOnly"
+                      InputClass="@RootClass"
+                      InputStyle="@RootStyle"
+                      InputAttributes="AdditionalAttributes" />
+    </ChildContent>
+</FormaField>

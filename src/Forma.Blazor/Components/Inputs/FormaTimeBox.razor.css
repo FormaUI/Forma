@@ -1,0 +1,80 @@
+/* ============================================================
+   FormaTimeBox — a text field with a list of suggested times
+   The field's box comes from forma-input.css; the list is a
+   panel opening beneath it, each option a target.
+   ============================================================ */
+
+.forma-time-box {
+    position: relative;
+    display: block;
+}
+
+/* Room for the button at the field's end: its inset from the edge and its own width. */
+.forma-time-box > input {
+    padding-inline-end: calc(var(--space-2) + var(--target-size-sm));
+}
+
+.forma-time-box-toggle {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(--space-1);
+    transform: translateY(-50%);
+    display: inline-flex;
+}
+
+.forma-time-box-list {
+    /* Six options show at once, and the list scrolls through the rest. */
+    max-block-size: calc(var(--target-size-md) * 6);
+    min-inline-size: min(12rem, calc(100vw - var(--space-4)));
+    overflow-y: auto;
+    padding-block: var(--space-1);
+    background: var(--input-bg-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-medium);
+}
+
+.forma-time-box-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-block-size: var(--target-size-md);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary-color);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+@media (hover: hover) {
+    .forma-time-box-option:hover {
+        background-color: var(--hover-bg-color);
+    }
+}
+
+/* The highlighted option is outlined as well as tinted, so it reads without color and in forced colors. */
+.forma-time-box-option-active {
+    background-color: var(--hover-bg-color);
+    outline: 2px solid var(--focus-color);
+    outline-offset: -2px;
+}
+
+.forma-time-box-option-current {
+    font-weight: 600;
+}
+
+.forma-time-box-option-check {
+    flex-shrink: 0;
+    color: var(--primary-color);
+}
+
+@media (pointer: coarse) {
+    .forma-time-box-list {
+        max-block-size: calc(var(--target-size-touch) * 6);
+    }
+
+    .forma-time-box-option {
+        min-block-size: var(--target-size-touch);
+    }
+}

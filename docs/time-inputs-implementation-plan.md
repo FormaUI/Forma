@@ -14,7 +14,10 @@ to the design.
    Showcase page shows every state, and the data view's property column edits a time with
    it. Gate: tests of each rule, a browser pass in English, Hebrew and Spanish under a fine
    pointer and a coarse one, the combobox's keys and names checked in Chrome, and the
-   screen reader check gaining the time picker's scenario.
+   screen reader check gaining the time picker's scenario. Landed, in review: the picker
+   and its box, and its page. Departure: the
+   field's label is pinned above it, as the date picker's is, since the box wraps the text
+   element the field's floating label reads its state from.
 2. **The date and time picker.** Open. The date picker's control set apart from its field,
    as the time picker's is, then `FormaDateTimePicker` setting the two controls side by side
    under one field with one label, one required state and one value's messages, and the

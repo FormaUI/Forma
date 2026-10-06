@@ -30,9 +30,11 @@ half hours never makes a quarter hour invalid.
 - **Valid times and suggested times are separate.** `Min` and `Max` bound the valid times,
   and an optional `Step` restricts them to whole steps counted from `Min`, or from midnight
   where there is no `Min`; a time off the step is reported, never rounded onto it. The list
-  offers times at its own interval, half an hour by default, from the range's start, and
-  offering a time never makes another one invalid: against a list of half hours, a typed
-  quarter hour is valid unless `Step` says otherwise.
+  offers times at its own interval from the range's start, half an hour by default or each
+  step where there is a step, and offering a time never makes another one invalid: against
+  a list of half hours, a typed quarter hour is valid unless `Step` says otherwise. Every
+  time the list offers is one the field takes, so an interval that is not a whole number of
+  steps is refused.
 - **A range can run across midnight.** `Min` later than `Max` is a range through midnight,
   22:00 to 02:00, inclusive at both ends, and the validation, the step's origin and the list
   all follow it, the list running from `Min` round to `Max`.

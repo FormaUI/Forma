@@ -64,5 +64,16 @@
   "FormaTextArea": {
     "{Characters} of {Allowed} characters": "{Characters} מתוך {Allowed} תווים",
     "[$ plural; one: # character; other: # characters; $]": "[$ plural; one: תו אחד; two: שני תווים; other: # תווים; $]"
+  },
+  "FormaTimeBox": {
+    "Choose a Time": "בחר שעה"
+  },
+  "FormaTimePicker": {
+    "The {Field} field is required.": "השדה {Field} הוא שדה חובה.",
+    "The {Field} field must be a time.": "השדה {Field} חייב להיות שעה.",
+    "The {Field} field must be between {Earliest} and {Latest}.": "השדה {Field} חייב להיות בין {Earliest} ל-{Latest}.",
+    "The {Field} field must be {Earliest} or later.": "השדה {Field} חייב להיות {Earliest} או מאוחר יותר.",
+    "The {Field} field must be {Latest} or earlier.": "השדה {Field} חייב להיות {Latest} או מוקדם יותר.",
+    "The {Field} field must be {Earlier} or {Later}.": "השדה {Field} חייב להיות {Earlier} או {Later}."
   }
 }

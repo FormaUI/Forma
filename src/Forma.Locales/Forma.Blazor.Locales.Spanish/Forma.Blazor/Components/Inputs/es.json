@@ -63,5 +63,16 @@
   "FormaTextArea": {
     "{Characters} of {Allowed} characters": "{Characters} de {Allowed} caracteres",
     "[$ plural; one: # character; other: # characters; $]": "[$ plural; one: # carácter; other: # caracteres; $]"
+  },
+  "FormaTimeBox": {
+    "Choose a Time": "Elegir una Hora"
+  },
+  "FormaTimePicker": {
+    "The {Field} field is required.": "El campo {Field} es obligatorio.",
+    "The {Field} field must be a time.": "El campo {Field} debe ser una hora.",
+    "The {Field} field must be between {Earliest} and {Latest}.": "El campo {Field} debe estar entre {Earliest} y {Latest}.",
+    "The {Field} field must be {Earliest} or later.": "El campo {Field} debe ser {Earliest} o más tarde.",
+    "The {Field} field must be {Latest} or earlier.": "El campo {Field} debe ser {Latest} o más temprano.",
+    "The {Field} field must be {Earlier} or {Later}.": "El campo {Field} debe ser {Earlier} o {Later}."
   }
 }

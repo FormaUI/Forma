@@ -1,0 +1,60 @@
+@namespace Forma.Blazor.Components.Inputs
+@inherits FormaComponentBase
+@using Forma.Blazor.Components.Feedback
+@using Forma.Framework.Browser.Interop.Behaviors
+@using Forma.Blazor.Components.Virtualization
+
+<div class="forma-time-box" @ref="_anchorElement">
+    <input id="@ElementId"
+           data-rid="@OwnerRuntimeId"
+           class="@InputClass"
+           style="@InputStyle"
+           @attributes="InputAttributes"
+           @ref="InputElement"
+           type="text"
+           role="combobox"
+           aria-autocomplete="none"
+           aria-expanded="@(IsOpen ? "true" : "false")"
+           aria-controls="@(IsOpen ? ListId : null)"
+           aria-activedescendant="@ActiveOptionId"
+           aria-required="@(Required ? "true" : null)"
+           autocomplete="off"
+           placeholder="@Placeholder"
+           value="@Text"
+           disabled="@Disabled"
+           readonly="@ReadOnly"
+           @onchange="HandleChangeAsync"
+           @onfocusout="HandleFocusOutAsync" />
+    @* The button opens the list without taking the focus, which stays in the field the keys move the list from. *@
+    <span class="forma-time-box-toggle" @onpointerdown:preventDefault @onmousedown:preventDefault>
+        <FormaButton Variant="ButtonVariant.Ghost"
+                     Size="ButtonSize.Mini"
+                     IconOnly="true"
+                     tabindex="-1"
+                     aria-label="@L["Choose a Time"]"
+                     Disabled="@(Disabled || ReadOnly)"
+                     OnClick="ToggleAsync">
+            <FormaIcon Icon="Glyph.Clock" Size="IconSize.Small" />
+        </FormaButton>
+    </span>
+    <FormaPopover @ref="Popover" Anchor="_anchorElement" Alignment="PopoverAlignment.Start" OnOpenChanged="HandleOpenChanged" OnOpened="HandleOpenedAsync">
+        @* A press on the list keeps the focus in the field, so choosing a time never takes it away. *@
+        <div id="@ListId" class="forma-time-box-list" role="listbox" aria-label="@ListLabel" @onpointerdown:preventDefault @onmousedown:preventDefault>
+            <FormaVirtualize TItem="TimeOption" @ref="Virtualizer" Items="_options" ItemKey="@(option => option.Index)" ItemSize="40" PinnedKeys="PinnedIndexes">
+                <ItemContent Context="option">
+                    <div id="@GetOptionId(option.Index)"
+                         class="@GetOptionClass(option)"
+                         role="option"
+                         aria-selected="@(option.Index == _activeIndex ? "true" : "false")"
+                         @onclick="() => ChooseAsync(option.Time)">
+                        <span class="forma-time-box-option-text">@FormatTime(option.Time)</span>
+                        @if (option.Time == Time)
+                        {
+                            <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" Class="forma-time-box-option-check" aria-hidden="true" />
+                        }
+                    </div>
+                </ItemContent>
+            </FormaVirtualize>
+        </div>
+    </FormaPopover>
+</div>
