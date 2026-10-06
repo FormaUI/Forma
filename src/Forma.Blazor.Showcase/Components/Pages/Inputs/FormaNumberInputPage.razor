@@ -10,7 +10,7 @@
 @inject IStringLocale<FormaNumberInputPage> L
 
 <h1>FormaNumberInput</h1>
-<p class="description">@L["A field for a number, typed the way the reader's culture writes it and stepped with the up and down arrows. A number it cannot read, or one past its limits, is reported under the field and never written, so the model keeps the last number that was."]</p>
+<p class="description">@L["A field for a number, typed the way the formatting culture writes it and stepped with the up and down arrows. A number it cannot read, or one past its limits, is reported under the field and never written, so the model keeps the last number that was."]</p>
 
 <EditForm Model="Model" FormName="number-input-demo" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
@@ -26,7 +26,7 @@
 
     <div class="demo-section">
         <h2>@L["A Fraction in Steps"]</h2>
-        <p class="description">@L["A decimal filled in already, stepped by half a unit and never below zero. It is written with the separators of the reader's culture, and a thousands separator is read only where it groups the digits as the culture does, so 1,234 is taken while 1,5 is reported rather than guessed at."]</p>
+        <p class="description">@L["A decimal filled in already, stepped by half a unit and never below zero. It is written with the separators of the formatting culture, and a thousands separator is read only where it groups the digits as the culture does, so 1,234 is taken while 1,5 is reported rather than guessed at."]</p>
         <div class="demo-box">
             <FormaNumberInput @bind-Value="Model.Price" Label="@L["Price"]" Min="0" Step="0.5m" />
             <p class="demo-note">@L["Value"]: <code>@(Model.Price?.ToString(CultureInfo.CurrentCulture) ?? "null")</code></p>

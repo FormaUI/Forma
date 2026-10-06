@@ -10,7 +10,7 @@ using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A field that edits a number, typed in the reader's culture and stepped with the vertical arrows.</summary>
+/// <summary>A field that edits a number, typed as the formatting culture writes it and stepped with the vertical arrows.</summary>
 /// <typeparam name="TValue">The number the field binds: an <see cref="int"/>, a <see cref="long"/>, a <see cref="short"/>, a <see cref="float"/>, a <see cref="double"/> or a <see cref="decimal"/>, or a nullable one.</typeparam>
 public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 {
