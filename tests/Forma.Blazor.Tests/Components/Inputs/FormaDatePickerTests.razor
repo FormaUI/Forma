@@ -297,4 +297,96 @@
             Assert.Equal(PopoverAlignment.Start, cut.FindComponent<FormaPopover>().Instance.Alignment);
         }
     }
+
+    public sealed class DateThatCannotBeEmpty
+    {
+        private static void PickDay(IRenderedComponent<IComponent> cut, int day)
+        {
+            cut.Find(".forma-date-picker-trigger").Click();
+            cut.FindAll(".forma-calendar-day").First(cell => cell.TextContent.Trim() == day.ToString(CultureInfo.InvariantCulture) && !cell.ClassList.Contains("empty")).Click();
+        }
+
+        [Fact]
+        public void Should_write_the_picked_day_to_the_model()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            var model = new Deadline { Due = new DateOnly(2025, 6, 1) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Due" Label="Due date" />
+            </FakeFormHost>);
+
+            // Act
+            PickDay(cut, 15);
+
+            // Assert
+            Assert.Equal(new DateOnly(2025, 6, 15), model.Due);
+        }
+
+        [Fact]
+        public void Should_keep_the_date_and_report_the_field_when_cleared()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            var model = new Deadline { Due = new DateOnly(2025, 6, 1) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Due" Label="Due date" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-date-picker-clear").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new DateOnly(2025, 6, 1), model.Due),
+                () => Assert.Contains("invalid", cut.Find(".forma-date-picker-trigger").ClassList),
+                () => Assert.Equal("The Due date field is required.", cut.Find(".forma-field-message").TextContent),
+                () => Assert.Contains("placeholder", cut.Find(".forma-date-picker-value").ClassList),
+                () => Assert.Empty(cut.FindAll(".forma-date-picker-clear")));
+        }
+
+        [Fact]
+        public void Should_clear_the_report_once_a_day_is_picked_again()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            var model = new Deadline { Due = new DateOnly(2025, 6, 1) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Due" Label="Due date" />
+            </FakeFormHost>);
+            cut.Find(".forma-date-picker-clear").Click();
+
+            // Act
+            PickDay(cut, 20);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(20, model.Due.Day),
+                () => Assert.DoesNotContain("invalid", cut.Find(".forma-date-picker-trigger").ClassList),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public void Should_refuse_a_value_that_is_not_a_date()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            var model = new Deadline();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Note" Label="Note" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(render);
+        }
+
+        private sealed class Deadline
+        {
+            public DateOnly Due { get; set; }
+
+            public string? Note { get; set; }
+        }
+    }
 }

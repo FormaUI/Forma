@@ -14,7 +14,7 @@
   },
   "FormaDatePicker": {
     "Select Date": "Seleccionar Fecha",
-    "The {Field} field must be a date.": "El campo {Field} debe ser una fecha."
+    "The {Field} field is required.": "El campo {Field} es obligatorio."
   },
   "FormaDateRangePicker": {
     "Select Range": "Seleccionar Intervalo",

@@ -2890,7 +2890,7 @@
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
             // Act — pick through the picker's binding and toggle the box, then save
-            var picker = cut.FindComponent<FormaDatePicker>();
+            var picker = cut.FindComponent<FormaDatePicker<DateOnly>>();
             await cut.InvokeAsync(() => picker.Instance.ValueChanged.InvokeAsync(new DateOnly(2022, 2, 2)));
             cut.Find("tbody input[type=checkbox]").Change(false);
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
@@ -2900,6 +2900,37 @@
                 () => Assert.Equal(new DateOnly(2022, 2, 2), saved!.Hired),
                 () => Assert.False(saved!.IsRemote),
                 () => Assert.Equal(new DateOnly(2020, 1, 6), employees[0].Hired));
+        }
+
+        [Fact]
+        public async Task Should_report_a_cleared_date_that_cannot_be_empty_and_refuse_to_save_the_row()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = CreateEmployees();
+            Employee? saved = null;
+
+            var cut = ctx.Render(
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone" OnRowSave="@((Employee employee) => saved = employee)">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Hired)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.Markup.Contains("2021", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Act
+            cut.Find("tbody .forma-date-picker-clear").Click();
+            await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("invalid", cut.Find("tbody button.forma-date-picker-trigger").ClassList),
+                () => Assert.Null(saved),
+                () => Assert.True(grid.Instance.IsEditing(employees[0])));
         }
 
         [Fact]

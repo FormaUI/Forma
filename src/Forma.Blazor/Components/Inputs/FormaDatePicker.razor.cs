@@ -10,8 +10,12 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A field for picking one date from a calendar that opens under it.</summary>
-public sealed partial class FormaDatePicker : FormaInputBase<DateOnly?>
+/// <typeparam name="TValue">The date the field binds, a <see cref="DateOnly"/> or a nullable one.</typeparam>
+public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
 {
+    // The form a date takes between the picker and the base's parsing, the same in every culture.
+    private const string RoundTripFormat = "yyyy-MM-dd";
+
     /// <summary>The field's label and accessible name.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
@@ -27,7 +31,14 @@ public sealed partial class FormaDatePicker : FormaInputBase<DateOnly?>
     /// <summary>Whether months come from the culture's non-Gregorian calendar, such as the Hebrew calendar for <c>he</c>.</summary>
     [Parameter] public bool UseNonGregorianMonths { get; set; }
 
+    private static readonly bool IsNullable = typeof(TValue) == typeof(DateOnly?);
+
     private ElementReference _anchorElement;
+
+    // A date that cannot be empty keeps its last value when cleared, while the field shows it cleared until a date is picked or given.
+    private bool _isShownCleared;
+    private TValue? _valueWhenCleared;
+
     private FormaPopover Popover { get; set; } = default!;
 
     private bool IsOpen
@@ -37,14 +48,28 @@ public sealed partial class FormaDatePicker : FormaInputBase<DateOnly?>
     private CultureInfo Culture => CultureInfo.CurrentCulture;
 #pragma warning restore CA1822
 
+    private DateOnly? Date
+        => _isShownCleared ? null : ToDate(Value);
+
     private bool HasValue
-        => Value is not null;
+        => Date is not null;
 
     private string DisplayText
-        => Value is { } value ? value.ToDateTime(TimeOnly.MinValue).ToString("d", Culture) : string.Empty;
+        => Date is { } date ? date.ToDateTime(TimeOnly.MinValue).ToString("d", Culture) : string.Empty;
 
     private DateRange? Highlight
-        => Value is { } value ? new DateRange(value, value) : null;
+        => Date is { } date ? new DateRange(date, date) : null;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (typeof(TValue) != typeof(DateOnly) && !IsNullable)
+        {
+            throw new InvalidOperationException($"{nameof(FormaDatePicker<TValue>)} binds a {nameof(DateOnly)} or a nullable one, not a {typeof(TValue).Name}.");
+        }
+
+        base.OnInitialized();
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -55,7 +80,15 @@ public sealed partial class FormaDatePicker : FormaInputBase<DateOnly?>
         {
             throw new ArgumentException($"{nameof(MinDate)} ({MinDate}) must not be greater than {nameof(MaxDate)} ({MaxDate}).");
         }
+
+        if (_isShownCleared && !EqualityComparer<TValue>.Default.Equals(Value, _valueWhenCleared))
+        {
+            _isShownCleared = false;
+        }
     }
+
+    private static DateOnly? ToDate(TValue? value)
+        => (DateOnly?)(object?)value;
 
     private async Task ToggleAsync()
     {
@@ -70,14 +103,18 @@ public sealed partial class FormaDatePicker : FormaInputBase<DateOnly?>
 
     private async Task SelectDayAsync(DateOnly date)
     {
-        CurrentValue = date;
+        _isShownCleared = false;
+        CurrentValueAsString = date.ToString(RoundTripFormat, CultureInfo.InvariantCulture);
         await OnSelectionComplete.InvokeAsync();
         await Popover.CloseAsync();
     }
 
+    // Clearing goes through the base's parsing, so a date that cannot be empty reports its field invalid and keeps its value.
     private async Task HandleClearAsync()
     {
-        CurrentValue = null;
+        _isShownCleared = !IsNullable;
+        _valueWhenCleared = Value;
+        CurrentValueAsString = null;
         await Popover.CloseAsync();
     }
 
@@ -88,26 +125,31 @@ public sealed partial class FormaDatePicker : FormaInputBase<DateOnly?>
             .Add("forma-date-picker-trigger");
 
     /// <inheritdoc />
-    protected override bool TryParseValueFromString(string? value, out DateOnly? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override string? FormatValueAsString(TValue? value)
+        => ToDate(value)?.ToString(RoundTripFormat, CultureInfo.InvariantCulture);
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(value) && IsNullable)
         {
-            result = null;
+            result = default!;
             validationErrorMessage = null;
 
             return true;
         }
 
-        if (DateOnly.TryParse(value, Culture, out var parsed))
+        if (DateOnly.TryParseExact(value, RoundTripFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
         {
-            result = parsed;
+            result = (TValue)(object)parsed;
             validationErrorMessage = null;
 
             return true;
         }
 
-        result = null;
-        validationErrorMessage = L["The {Field} field must be a date.", DisplayName ?? FieldIdentifier.FieldName];
+        // The picker writes only the dates it picks, so what fails is a date that cannot be empty, cleared.
+        result = default!;
+        validationErrorMessage = L["The {Field} field is required.", DisplayName ?? Label];
 
         return false;
     }

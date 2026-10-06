@@ -1,5 +1,6 @@
 @namespace Forma.Blazor.Components.Inputs
-@inherits FormaInputBase<DateOnly?>
+@typeparam TValue
+@inherits FormaInputBase<TValue>
 @using Forma.Framework.Browser.Interop.Behaviors
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" LabelMode="FieldLabelMode.Pinned">

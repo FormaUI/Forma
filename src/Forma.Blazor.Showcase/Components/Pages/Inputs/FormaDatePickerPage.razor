@@ -62,6 +62,14 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["A Date That Cannot Be Empty"]</h2>
+        <p class="description">@L["Bound to a date rather than a nullable one, the field always holds a date: clearing it reports the field and keeps the date it held until another is picked."]</p>
+        <div class="demo-box">
+            <FormaDatePicker @bind-Value="Model.Renewal" Label="@L["Renewal Date"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Inside a Scrolling Container"]</h2>
         <p class="description">@L["The box below scrolls and would clip an ordinary popover. The calendar opens in the top layer instead, so it stays whole, and it follows the trigger as the box scrolls."]</p>
         <div class="demo-box demo-scroll-box">
@@ -78,7 +86,7 @@
     private DatePickerDemoModel Model { get; set; } = default!;
 
     protected override void OnInitialized()
-        => Model = new DatePickerDemoModel(L) { PreFilled = DateOnly.FromDateTime(DateTime.Today) };
+        => Model = new DatePickerDemoModel(L) { PreFilled = DateOnly.FromDateTime(DateTime.Today), Renewal = DateOnly.FromDateTime(DateTime.Today) };
 
     private void HandleSubmit()
         => _submitted = true;
@@ -90,6 +98,7 @@
         public DateOnly? PreFilled { get; set; }
         public DateOnly? HebrewDate { get; set; }
         public DateOnly? Deadline { get; set; }
+        public DateOnly Renewal { get; set; }
         public DateOnly? ScrollableDate { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

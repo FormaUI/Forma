@@ -13,7 +13,7 @@
   },
   "FormaDatePicker": {
     "Select Date": "בחר תאריך",
-    "The {Field} field must be a date.": "השדה {Field} חייב להיות תאריך."
+    "The {Field} field is required.": "השדה {Field} הוא שדה חובה."
   },
   "FormaDateRangePicker": {
     "Select Range": "בחר טווח",
