@@ -21,8 +21,13 @@ Each step is a commit of its own, taken in order.
    busy announcement is removed from the data view.
 3. **The data view's scenarios.** Open. Every announcement in the data view plan's screen reader
    check, and the tree's focus kept while it scrolls and handed on when its node goes away, in
-   English and in Hebrew, with a checkbox announced with its state. Landed: the tree's scenarios,
-   passing in English, and the checkbox's, not yet run to a pass. Gate: every scenario passes, and
-   the data view plan's manual check is retired.
+   English and in Hebrew, with a checkbox announced with its state. Landed: the tree's scenarios
+   and the checkbox's, passing in English and in Hebrew. Departures: a page is acted on only once
+   it is interactive, its heading drawn again, since a step that focused the prerendered checkbox
+   focused markup the interactive render then threw away; and an expected utterance is matched
+   further along the same utterance as well as in a later one, since NVDA speaks a control's name,
+   role and state as one utterance or several. The check also found a tree losing quick presses of
+   the arrows, fixed in the tree. Gate: every scenario passes, and the data view plan's manual
+   check is retired.
 4. **The task script's coverage.** Open. The script keeps the shape the repository's task scripts
    keep and is covered the way the scale check is, and the repository structure document names it.

@@ -86,7 +86,7 @@ foreach (var scenario in scenarios)
         {
             if (step.Act is null)
             {
-                await page.GotoAsync(baseUrl + scenario.Path, new() { WaitUntil = WaitUntilState.Load }).ConfigureAwait(false);
+                await OpenAsync(page, baseUrl + scenario.Path).ConfigureAwait(false);
             }
             else
             {
@@ -180,6 +180,27 @@ static Step[] CheckBoxState(string label)
     ];
 }
 
+// Opens a page once it is interactive. A page is drawn first on the server and drawn again once its circuit starts, which throws
+// away what it drew first, the element a step focused with it, so the page is ready once its heading has been drawn again; a page
+// that is never drawn again is taken as ready once the wait runs out.
+static async Task OpenAsync(IPage page, string url)
+{
+    await page.GotoAsync(url, new() { WaitUntil = WaitUntilState.Load }).ConfigureAwait(false);
+
+    if (await page.QuerySelectorAsync("h1").ConfigureAwait(false) is not { } heading)
+    {
+        return;
+    }
+
+    try
+    {
+        await page.WaitForFunctionAsync("heading => !heading.isConnected", heading, new() { Timeout = 5000 }).ConfigureAwait(false);
+    }
+    catch (TimeoutException)
+    {
+    }
+}
+
 // A node of the tree in a section of the tree tab, by the section's place on the page.
 static ILocator TreeNode(IPage page, int section, string name)
 {
@@ -224,7 +245,8 @@ internal sealed class SpeechLog(string path)
         => Read().Count;
 
     /// <summary>Waits for the expected utterances, in order, among those recorded after the mark.</summary>
-    /// <remarks>Each expected text is matched as whole words an utterance contains, each after the one matched before it, so "9 items" is never matched by "19 items".</remarks>
+    /// <remarks>Each expected text is matched as whole words, after the one matched before it, further along the same utterance or in a later one,
+    /// since NVDA speaks a control's name, role and state as one utterance or several; "9 items" is never matched by "19 items".</remarks>
     public async Task<Outcome> WaitForAsync(int mark, string[] expected, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
@@ -245,19 +267,30 @@ internal sealed class SpeechLog(string path)
 
     private static string? FirstMissing(List<Utterance> heard, string[] expected)
     {
-        var position = 0;
+        var index = 0;
+        var offset = 0;
 
         foreach (var text in expected)
         {
             var words = new Regex($@"(?<!\w){Regex.Escape(text)}(?!\w)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            var found = heard.FindIndex(position, utterance => words.IsMatch(utterance.Text));
+            Match? match = null;
 
-            if (found < 0)
+            for (; index < heard.Count; index++, offset = 0)
+            {
+                match = words.Match(heard[index].Text, offset);
+
+                if (match.Success)
+                {
+                    break;
+                }
+            }
+
+            if (match is not { Success: true })
             {
                 return text;
             }
 
-            position = found + 1;
+            offset = match.Index + match.Length;
         }
 
         return null;
