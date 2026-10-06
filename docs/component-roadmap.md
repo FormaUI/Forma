@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**31 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 23 not yet started, and one in progress stands in the catalog's structure until then.
+**34 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 26 not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -25,8 +25,11 @@ Forma.Blazor/Components/
 │   └── FormaCapacityIndicator
 ├── (1) Files/
 │   └── FormaMediaPicker
-├── (1) Inputs/
-│   └── FormaCurrencyInput
+├── (4) Inputs/
+│   ├── FormaCurrencyInput
+│   ├── FormaDateTimePicker
+│   ├── FormaNumberInput
+│   └── FormaTimePicker
 ├── (3) Media/
 │   ├── FormaDesignPicker
 │   ├── FormaFontPicker
@@ -49,7 +52,7 @@ The components still to build, in the order dependency and reuse suggest.
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaCurrencyInput` | Form inputs, needed before any edit form |
+| 1 | `FormaNumberInput`, `FormaTimePicker`, `FormaDateTimePicker`, `FormaCurrencyInput` | Form inputs, needed before any edit form; the currency input composes the number input, and the data view's property column edits with the other three |
 | 2 | `FormaCapacityIndicator` | Data display, needed for list pages |
 | 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
 | 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
@@ -173,6 +176,15 @@ A row of toggle buttons switching a data view between the views it registered. I
 | **Old pattern** | The explorer's view-mode buttons, which switch its own three views |
 | **Used in** | The explorer's toolbar, and any page that offers one set in several views |
 
+### `FormaDateTimePicker`
+
+A field that edits a date with its time of day.
+
+| | |
+|---|---|
+| **Old pattern** | None — Coi's dates carried no time |
+| **Used in** | Forms taking a moment, and `FormaPropertyColumn`'s editor for a member holding one |
+
 ### `FormaDeleteButton`
 
 An icon button for deleting. Its design is [icon-buttons-design.md](icon-buttons-design.md).
@@ -281,6 +293,15 @@ A dialog holding a text area and a save button.
 | **Old pattern** | Modal with `<textarea>` for admin notes on orders/leads, save button, timestamp display |
 | **Used in** | order detail, lead detail |
 
+### `FormaNumberInput`
+
+A field that edits a number.
+
+| | |
+|---|---|
+| **Old pattern** | `asp:TextBox` in `TextMode="Phone"`, left to right and capped by length, standing in for a number |
+| **Used in** | product (stock), coupons (usage limit), `FormaCurrencyInput`, and `FormaPropertyColumn`'s editor for a numeric member |
+
 ### `FormaPermissionMatrix`
 
 A form choosing a role type and, per permission section, its level.
@@ -325,6 +346,15 @@ An icon button for sharing. Its design is [icon-buttons-design.md](icon-buttons-
 |---|---|
 | **Old pattern** | None |
 | **Used in** | Copying or sending an item's public link, from its editor or its row |
+
+### `FormaTimePicker`
+
+A field that edits a time of day.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | Forms taking a time of day, and `FormaPropertyColumn`'s editor for a member holding one |
 
 ### `FormaUpdateButton`
 
