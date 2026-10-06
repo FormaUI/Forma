@@ -108,7 +108,7 @@
     <p class="description">@L["A select inside a cell of a row-selection grid. While it is open its arrows walk its own options; otherwise the grid's arrows move the selection."]</p>
     <div class="demo-box">
         <EditForm Model="_assignments" FormName="cell-select-demo">
-            <FormaDataView TItem="Assignment" Items="@_assignments.AsQueryable()" PageSize="5" EnableItemSelection="true" AddressOptions='@(new DataViewAddressOptions("cell-select"))' SelectedItems="_assignmentSelection" SelectedItemsChanged="HandleAssignmentSelectionChanged">
+            <FormaDataView TItem="Assignment" Items="_assignmentItems" PageSize="5" EnableItemSelection="true" AddressOptions='@(new DataViewAddressOptions("cell-select"))' SelectedItems="_assignmentSelection" SelectedItemsChanged="HandleAssignmentSelectionChanged">
                 <ChildContent>
                     <FormaDataGrid>
                         <Columns>
@@ -306,8 +306,8 @@
 <div class="demo-section">    <h2>@L["Inline Editing Inside a Form"]</h2>
     <p class="description">@L["FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number, date and a checkbox here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open."]</p>
     <div class="demo-box">
-        <FormaDataView TItem="EditableEmployee" Items="@_editableEmployees.AsQueryable()" EnablePagination="false" AddressOptions='@(new DataViewAddressOptions("editing"))'>
-            <FormaDataGrid TItem="EditableEmployee" @ref="_editGrid" EnableInlineEditing="true" CloneForEdit="CloneEmployee" OnRowSave="SaveEmployee">
+        <FormaDataView TItem="EditableEmployee" @ref="_editDataView" Items="_editableEmployeeItems" EnablePagination="false" AddressOptions='@(new DataViewAddressOptions("editing"))'>
+            <FormaDataGrid TItem="EditableEmployee" @ref="_editGrid" EnableInlineEditing="true" CloneForEdit="CloneEmployee" OnRowSave="SaveEmployeeAsync">
                 <Columns>
                     <FormaPropertyColumn Property="@(e => e.Id)" Editable="false" />
                     <FormaPropertyColumn Property="@(e => e.Name)" Title="@L["Name"]" />
@@ -528,6 +528,10 @@
         new() { Id = 3, Name = "Carol Davis", Department = "Sales", StartDate = new DateOnly(2020, 1, 27), Salary = 81250 },
     ];
 
+    private IQueryable<EditableEmployee> _editableEmployeeItems = default!;
+
+    private FormaDataView<EditableEmployee>? _editDataView;
+
     private FormaDataView<GridItem>? _openingDataView;
 
     private int _scrollTargetRow = 1;
@@ -580,6 +584,8 @@
         new() { Id = 5, Name = "Eve Martinez", Priority = 2 },
     ];
 
+    private IQueryable<Assignment> _assignmentItems = default!;
+
     private IReadOnlyList<Assignment> _assignmentSelection = [];
 
     private IReadOnlyList<SelectOption<int?>> _priorityOptions = [];
@@ -602,6 +608,8 @@
     protected override void OnInitialized()
     {
         _feedItems = _feedList.AsQueryable();
+        _editableEmployeeItems = _editableEmployees.AsQueryable();
+        _assignmentItems = _assignments.AsQueryable();
         _blockGrouping = DataViewGrouping<GridItem>.By(item => (item.Id - 1) / BlockRowCount, block => L["Rows {First:N0} to {Last:N0}", (block * BlockRowCount) + 1, (block + 1) * BlockRowCount].Value);
 
         _limitsOptions = new CheckedSelectionOptions
@@ -738,13 +746,13 @@
             Remote = employee.Remote,
         };
 
-    private void SaveEmployee(EditableEmployee edited)
+    private Task SaveEmployeeAsync(EditableEmployee edited)
     {
         var target = _editableEmployees.Find(employee => employee.Id == edited.Id);
 
         if (target is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         target.Name = edited.Name;
@@ -752,6 +760,8 @@
         target.StartDate = edited.StartDate;
         target.Salary = edited.Salary;
         target.Remote = edited.Remote;
+
+        return _editDataView?.RefreshDataAsync() ?? Task.CompletedTask;
     }
 
     private enum RowAction
