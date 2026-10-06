@@ -37,6 +37,13 @@
         <None Update="FormaDataCard.razor" CssScope="b-forma-data-cards" />
     </ItemGroup>
 
+    <!-- The tree's node is a part of the tree, so it shares the tree's scope. -->
+    <ItemGroup>
+        <None Update="FormaDataTree.razor" CssScope="b-forma-data-tree" />
+        <None Update="FormaDataTree.razor.css" CssScope="b-forma-data-tree" />
+        <None Update="FormaDataTreeNode.razor" CssScope="b-forma-data-tree" />
+    </ItemGroup>
+
     <!-- The product, whose package this one depends on. -->
     <ItemGroup>
         <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />

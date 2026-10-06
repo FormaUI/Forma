@@ -13,6 +13,7 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>A view over a data view drawing the hierarchy as nodes under their parents, each opened, closed and selected from the keyboard, with a busy state while its children load.</summary>
@@ -21,6 +22,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     where TItem : notnull
 {
     private const string ViewKey = "tree";
+
+    // What the tree is given that is not its own: the host's attributes, which never change how a node is drawn.
+    private static readonly string[] _parametersLeftOut = [nameof(Id), nameof(Class), nameof(Style)];
     private const string NextAction = "tree.next";
     private const string PreviousAction = "tree.previous";
     private const string FirstAction = "tree.first";
@@ -58,6 +62,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     private readonly Dictionary<object, ElementReference> _nodeElements = [];
     private readonly Dictionary<object, FormaCheckBox> _nodeMarkers = [];
+    private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
     private InputRegistration _inputRegistration = default!;
     private InputProfile _inputProfile = default!;
     private bool _profileKeepsFocus;
@@ -76,14 +81,23 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private FormaVirtualize<VisibleNode>? _virtualizer;
     private List<VisibleNode> _visibleRows = [];
 
-    // The field a node's box names to the input base as its value expression.
-    private bool NodeSelection { get; }
+    /// <summary>The element each node drew, by the node's key, which the focus is given to.</summary>
+    internal Dictionary<object, ElementReference> NodeElements
+        => _nodeElements;
+
+    /// <summary>The box each node drew, by the node's key, which the focus is given to where boxes carry it.</summary>
+    internal Dictionary<object, FormaCheckBox> NodeMarkers
+        => _nodeMarkers;
+
+    // What every node is drawn by: it changes when the data view or the tree's own parameters changed in a way a node draws differently for.
+    private int NodeRevision
+        => View.Revision + _parameterRevision.Value;
 
     private bool IsActive
         => _isCompanion || View.ActiveViewKey == ViewKey;
 
     // A sidebar's choice is the current node, so its rows carry no marker of the data view's selection.
-    private bool HasSelection
+    internal bool HasSelection
         => !SelectsCurrent && (View.EnableCheckedSelection || View.EnableItemSelection);
 
     // Without a marker to carry the focus, the rows carry it themselves, one of them the tab stop.
@@ -118,6 +132,14 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     /// <inheritdoc />
     ValueTask IDataViewPositions<TItem>.ScrollToPositionAsync(int position, CancellationToken cancellationToken)
         => _virtualizer is { } virtualizer ? new ValueTask(virtualizer.ScrollToIndexAsync(position, cancellationToken: cancellationToken)) : ValueTask.CompletedTask;
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parameterRevision.Observe(parameters);
+
+        return base.SetParametersAsync(parameters);
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -227,7 +249,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private IReadOnlyList<TItem> Admit(IReadOnlyList<TItem> nodes)
         => NodeFilter is { } filter ? [.. nodes.Where(filter)] : nodes;
 
-    private Task ToggleNodeAsync(TItem node)
+    internal Task ToggleNodeAsync(TItem node)
         => View.IsOpen(node) ? Interaction.CloseNodeAsync(node) : Interaction.OpenNodeAsync(node);
 
     // Choosing a node, by a press on its row or Enter, makes it current where the tree drives the other views, and activates it otherwise; a row with a marker leaves both to the selection.
@@ -493,11 +515,35 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     }
 
     // The mark on the element taking the focus from a node that went away: the node's marker where a marker carries the focus, else its row.
-    private string? GetHeirMark(object key, bool marker)
+    internal string? GetHeirMark(object key, bool marker)
         => marker == HasSelection && Equals(_heirKey, key) ? string.Empty : null;
 
-    private string? GetNodeTabIndex(object key)
+    internal string? GetNodeTabIndex(object key)
         => KeepsFocus ? Equals(_tabStopKey, key) ? "0" : "-1" : null;
+
+    // A node is drawn by these, one bit each: the two the other views share, then whether it is the current node, can open, is open, is
+    // loading its children, is the tab stop or a row that is not, and takes the focus when the node holding it goes away, by its row or by its box.
+    internal int GetNodeState(TItem node)
+    {
+        var key = View.ItemKey(node);
+        var canOpen = View.CanOpen(node);
+
+        return DataViewItemGate.GetState(View, node)
+            | (IsCurrent(node) ? 4 : 0)
+            | (canOpen ? 8 : 0)
+            | (canOpen && View.IsOpen(node) ? 16 : 0)
+            | (View.IsLoadingChildren(node) ? 32 : 0)
+            | (KeepsFocus ? Equals(_tabStopKey, key) ? 64 : 128 : 0)
+            | (GetHeirMark(key, marker: false) is not null ? 256 : 0)
+            | (GetHeirMark(key, marker: true) is not null ? 512 : 0);
+    }
+
+    // The tree is the receiver, so a node taking the focus draws the tree again, which pins the node it holds.
+    internal EventCallback<FocusEventArgs> GetNodeFocusInHandler(TItem node)
+        => EventCallback.Factory.Create<FocusEventArgs>(this, () => HandleNodeFocusIn(node));
+
+    internal EventCallback<FocusEventArgs> GetNodeFocusOutHandler()
+        => EventCallback.Factory.Create<FocusEventArgs>(this, () => _focusedNode = default);
 
     private List<TItem> GetVisibleNodes()
         => GetVisibleRows().ConvertAll(row => row.Node);
@@ -583,7 +629,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     /// <summary>A node the tree shows: the node, its level, its place among its siblings, and its place among the visible nodes, where the tree virtualizes.</summary>
     private readonly record struct VisibleNode(TItem Node, int Depth, int? Position, int? SetSize, int? Row);
 
-    private string? GetNodeClass(TItem node)
+    internal string? GetNodeClass(TItem node)
     {
         var builder = new CssClassBuilder();
         builder.Add("forma-data-tree-node");
@@ -600,17 +646,17 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     }
 
     // A node is named by its name alone, its disclosure's label left out of it.
-    private string GetNodeNameId(TItem node)
+    internal string GetNodeNameId(TItem node)
         => $"{ElementId}-node-{View.GetItemToken(node)}";
 
     private string GetNodeChildrenId(TItem node)
         => $"{ElementId}-children-{View.GetItemToken(node)}";
 
-    private static string GetNodeStyle(int depth)
+    internal static string GetNodeStyle(int depth)
         => string.Create(CultureInfo.InvariantCulture, $"--forma-data-tree-depth: {depth - 1}");
 
     // A tree with a selection tells each node's part in it; a sidebar is a single-select tree whose selected node is the current one.
-    private string? GetAriaSelected(TItem node)
+    internal string? GetAriaSelected(TItem node)
         => HasSelection ? View.IsSelected(node) ? "true" : "false"
             : SelectsCurrent ? IsCurrent(node) ? "true" : "false"
             : null;

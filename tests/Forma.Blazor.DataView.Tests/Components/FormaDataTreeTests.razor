@@ -785,6 +785,130 @@
         }
     }
 
+    public sealed class Drawing
+    {
+        // A thumbnail that says each time a node draws it, so what a change draws again can be read.
+        private static int Draw(Dictionary<int, int> drawn, Entry entry)
+        {
+            drawn[entry.Id] = drawn.GetValueOrDefault(entry.Id) + 1;
+
+            return entry.Id;
+        }
+
+        private static IReadOnlyList<int> DrawnSince(Dictionary<int, int> drawn, Dictionary<int, int> before)
+            => [.. drawn.Where(entry => entry.Value != before.GetValueOrDefault(entry.Key)).Select(entry => entry.Key).Order()];
+
+        // Documents opened beneath Pictures: Documents, Reports, Notes.txt and Pictures, in a tree whose boxes check.
+        private static IRenderedComponent<IComponent> RenderOpenDocuments(FormaDataTreeTests ctx, Dictionary<int, int> drawn)
+        {
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry">
+                        <ThumbnailTemplate Context="entry">@Draw(drawn, entry)</ThumbnailTemplate>
+                    </FormaDataTree>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            return cut;
+        }
+
+        [Fact]
+        public async Task Should_draw_again_only_the_node_whose_box_was_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var drawn = new Dictionary<int, int>();
+            var cut = RenderOpenDocuments(ctx, drawn);
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act — Notes.txt is the third node
+            await cut.FindAll("input[type=checkbox]")[2].ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal([4], DrawnSince(drawn, before));
+        }
+
+        [Fact]
+        public void Should_draw_again_only_the_node_that_opened_and_the_nodes_it_showed()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var drawn = new Dictionary<int, int>();
+            var cut = RenderOpenDocuments(ctx, drawn);
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act — Pictures, the fourth node, opens onto Beach.jpg
+            cut.FindAll("button.forma-data-tree-disclosure-button")[2].Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
+
+            // Assert
+            Assert.Equal([2, 5], DrawnSince(drawn, before));
+        }
+
+        [Fact]
+        public void Should_draw_no_node_again_when_the_data_view_renders_with_nothing_changed()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var drawn = new Dictionary<int, int>();
+            var cut = RenderOpenDocuments(ctx, drawn);
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            engine.Render();
+            engine.Render();
+
+            // Assert
+            Assert.Empty(DrawnSince(drawn, before));
+        }
+
+        [Fact]
+        public void Should_draw_every_node_again_when_the_tree_is_given_another_thumbnail()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var drawn = new Dictionary<int, int>();
+            var cut = RenderOpenDocuments(ctx, drawn);
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act
+            RenderFragment<Entry> other = entry => builder => builder.AddContent(0, Draw(drawn, entry));
+            cut.FindComponent<FormaDataTree<Entry>>().Render(parameters => parameters.Add(tree => tree.ThumbnailTemplate, other));
+
+            // Assert
+            Assert.Equal([1, 2, 3, 4], DrawnSince(drawn, before));
+        }
+
+        [Fact]
+        public void Should_make_the_same_script_calls_however_many_nodes_it_draws()
+        {
+            // Arrange
+            using var few = new FormaDataTreeTests();
+            using var many = new FormaDataTreeTests();
+
+            // Act — the same tree over four leaves and over forty, each with a box
+            var fewCut = few.Render(
+                @<FormaDataView Items="CreateLeaves(4)" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            var manyCut = many.Render(
+                @<FormaDataView Items="CreateLeaves(40)" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            fewCut.WaitForState(() => fewCut.FindAll("[role=treeitem]").Count == 4);
+            manyCut.WaitForState(() => manyCut.FindAll("[role=treeitem]").Count == 40);
+
+            // Assert — each kind of observer attached once for the data view, and no call for a node
+            static IEnumerable<string> Calls(FormaDataTreeTests ctx)
+                => ctx.JSInterop.Invocations.GroupBy(invocation => invocation.Identifier).OrderBy(group => group.Key, StringComparer.Ordinal).Select(group => $"{group.Key} x{group.Count()}");
+
+            Assert.Equal(Calls(few), Calls(many));
+        }
+    }
+
     private sealed record Entry(int Id, int? ParentId, string Name, bool IsFolder);
 
     // Documents opened, in a tree whose markers carry the focus.
