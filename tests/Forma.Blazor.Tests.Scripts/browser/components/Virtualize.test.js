@@ -89,6 +89,72 @@ describe('Virtualize', () => {
         expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleViewportAsync', 400, 300, 30);
     });
 
+    // The list drawn again with other items, a hundred pixels apart, where it stood with items twenty apart.
+    const drawOtherItems = () => {
+        const list = document.querySelector('#list');
+        list.querySelectorAll('.item').forEach(item => item.remove());
+        const end = list.querySelector('[data-virtualize-spacer=end]');
+
+        [-300, -200, -100].forEach(top => {
+            const item = document.createElement('div');
+            item.className = 'item';
+            list.insertBefore(item, end);
+            place(item, top, 100);
+        });
+    };
+
+    const sizeList = width => {
+        document.querySelector('#list').getBoundingClientRect = () => ({ top: -300, bottom: 0, height: 300, left: 0, right: width, width, x: 0, y: -300 });
+    };
+
+    it('keeps the size it measured through a render that only changes which items are drawn', () => {
+        attachList();
+        frames.flush();
+
+        drawOtherItems();
+        drawings.latest().deliver([]);
+        frames.flush();
+
+        expect(owner.invokeMethodAsync).toHaveBeenCalledTimes(1);
+    });
+
+    it('measures again once the list is scrolled', () => {
+        attachList();
+        frames.flush();
+        drawOtherItems();
+
+        place(start, -350, 0);
+        scroller.dispatchEvent(new Event('scroll'));
+        frames.flush();
+
+        expect(owner.invokeMethodAsync).toHaveBeenLastCalledWith('HandleViewportAsync', 450, 300, 100);
+    });
+
+    it('measures again once the list changes its width', () => {
+        sizeList(200);
+        attachList();
+        frames.flush();
+        drawOtherItems();
+
+        sizeList(320);
+        resizes.latest().deliver([]);
+        frames.flush();
+
+        expect(owner.invokeMethodAsync).toHaveBeenLastCalledWith('HandleViewportAsync', 400, 300, 100);
+    });
+
+    it('measures again once an item that stays drawn changes its height', () => {
+        attachList();
+        frames.flush();
+
+        place(document.querySelector('#first'), -300, 32);
+        place(document.querySelector('#second'), -268, 20);
+        resizes.latest().deliver([]);
+        frames.flush();
+
+        expect(owner.invokeMethodAsync).toHaveBeenLastCalledWith('HandleViewportAsync', 400, 300, 32);
+    });
+
     it('reports once a frame however many changes arrive in it', () => {
         attachList();
         frames.flush();

@@ -24,6 +24,10 @@ class Virtualize {
     #drawings;
     #frame = 0;
     #reported = '';
+    #measured = 0;
+    #measuredAt = null;
+    #measuredWidth = 0;
+    #heights = new Map();
 
     constructor(start, { owner, spacerAttribute }) {
         this.#start = start;
@@ -103,10 +107,9 @@ class Virtualize {
             return;
         }
 
-        const size = this.#itemSize();
         const offset = Math.round(this.#offset());
         const viewport = Math.round(this.#viewport());
-        const measured = Math.round(size * 10) / 10;
+        const measured = this.#measure(offset);
         const reported = `${offset}|${viewport}|${measured}`;
 
         if (reported === this.#reported) {
@@ -115,6 +118,26 @@ class Virtualize {
 
         this.#reported = reported;
         tell(this.#owner, 'HandleViewportAsync', offset, viewport, measured);
+    }
+
+    /**
+     * The size the owner is told: measured afresh where something the items depend on changed, the list scrolled, its width changed or a
+     * drawn item resized, and otherwise the size already measured. What the owner does with a size is draw other items and size its
+     * spacers, which changes none of those, so a render the report itself caused is never answered with a size of its own making.
+     */
+    #measure(offset) {
+        const width = Math.round(this.#start.parentElement.getBoundingClientRect().width);
+        const heights = new Map(this.#items().map(item => [item, item.getBoundingClientRect().height]));
+        const isResized = [...heights].some(([item, height]) => this.#heights.has(item) && Math.abs(this.#heights.get(item) - height) >= 0.5);
+        this.#heights = heights;
+
+        if (this.#measured === 0 || offset !== this.#measuredAt || width !== this.#measuredWidth || isResized) {
+            this.#measured = Math.round(this.#itemSize() * 10) / 10;
+            this.#measuredAt = offset;
+            this.#measuredWidth = width;
+        }
+
+        return this.#measured;
     }
 
     /** The average room an item takes: from its top to the next drawn item's top, or its own height where no two drawn items stand together. */
