@@ -2830,9 +2830,41 @@
                 () => Assert.Contains("forma-text-box", editors[0].ClassName, StringComparison.Ordinal),
                 () => Assert.Contains("forma-data-grid-editor", editors[0].ClassName, StringComparison.Ordinal),
                 () => Assert.Equal("Name", editors[0].GetAttribute("aria-label")),
-                () => Assert.Equal("number", editors[1].GetAttribute("type")),
-                () => Assert.Contains("forma-text-box", editors[1].ClassName, StringComparison.Ordinal),
+                () => Assert.Equal("spinbutton", editors[1].GetAttribute("role")),
+                () => Assert.Contains("forma-number-input", editors[1].ClassName, StringComparison.Ordinal),
+                () => Assert.Contains("forma-data-grid-editor", editors[1].ClassName, StringComparison.Ordinal),
                 () => Assert.Equal("Salary", editors[1].GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public async Task Should_save_a_number_typed_into_the_library_s_number_input()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            using var culture = new CultureFixture("en-US");
+            var employees = CreateEmployees();
+            Employee? saved = null;
+
+            var cut = ctx.Render(
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone" OnRowSave="@((Employee employee) => saved = employee)">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Salary)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.Markup.Contains("200", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Act
+            cut.Find("tbody input").Change("1,250.5");
+            await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1250.5m, saved!.Salary),
+                () => Assert.Equal(100m, employees[0].Salary));
         }
 
         [Fact]

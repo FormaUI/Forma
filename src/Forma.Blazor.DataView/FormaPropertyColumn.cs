@@ -259,7 +259,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
                 RenderDatePicker(builder, value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.NumberInput:
-                RenderFrameworkInput(builder, typeof(InputNumber<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+                RenderInput(builder, typeof(FormaNumberInput<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.DateInput:
                 RenderFrameworkInput(builder, typeof(InputDate<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
