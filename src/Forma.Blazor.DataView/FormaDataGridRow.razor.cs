@@ -4,14 +4,23 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>One row of a grid: the item's selection control where selection is on, then a cell per column.</summary>
 /// <typeparam name="TItem">The item the row shows.</typeparam>
+/// <remarks>The row draws again only when its item, its place, what the grid draws every row by or its own state changed; a row being edited draws with every render.</remarks>
 public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     where TItem : notnull
 {
+    private DataViewItemGate _gate;
+
     /// <summary>The item the row shows.</summary>
     [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
 
     /// <summary>The item's place in the whole set, where a virtualizing grid draws the row.</summary>
     [Parameter] public int? Position { get; set; }
+
+    /// <summary>The token the selection behavior names the item by, which the grid asks for each time it draws.</summary>
+    [Parameter] public int Token { get; set; }
+
+    /// <summary>What the grid draws every row by.</summary>
+    [Parameter] public int Revision { get; set; }
 
     [CascadingParameter] private FormaDataGrid<TItem> Grid { get; set; } = default!;
 
@@ -43,6 +52,30 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
         {
             throw new InvalidOperationException($"{nameof(FormaDataGridRow<TItem>)} must be rendered inside a {nameof(FormaDataGrid<TItem>)}.");
         }
+
+        // The first draw is not asked about, so what it draws by is recorded here.
+        if (!_gate.IsRecorded)
+        {
+            _gate.Record(Item, Position, Revision, GetState());
+        }
     }
+
+    /// <inheritdoc />
+    protected override bool ShouldRender()
+    {
+        var state = GetState();
+
+        if (!_gate.Differs(Item, Position, Revision, state) && !Grid.IsEditing(Item))
+        {
+            return false;
+        }
+
+        _gate.Record(Item, Position, Revision, state);
+
+        return true;
+    }
+
+    private int GetState()
+        => DataViewItemGate.GetState(View, Item) | (Grid.IsEditing(Item) ? 4 : 0);
 
 }

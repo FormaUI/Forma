@@ -21,7 +21,17 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 {
     private const string ViewKey = "grid";
 
+    // What the grid is given that never changes how a row is drawn: the columns, which are judged by themselves, the header, the
+    // callbacks of an edit, and the host's own attributes.
+    private static readonly string[] _parametersLeftOut =
+    [
+        nameof(Columns), nameof(ShowHeader), nameof(CloneForEdit), nameof(OnRowSave), nameof(OnRowCancel), nameof(Id), nameof(Class), nameof(Style),
+    ];
+
     private readonly List<FormaColumnBase<TItem>> _columns = [];
+    private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
+    private string _rowSignature = string.Empty;
+    private int _rowRevision;
     private readonly Dictionary<FormaColumnBase<TItem>, FormaDataGridColumnHeader<TItem>> _headers = [];
     private readonly RowEditSession<TItem> _editSession = new();
     private readonly Dictionary<string, double> _wantedWidths = [with(StringComparer.Ordinal)];
@@ -360,6 +370,30 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         _rows = new DataViewRows<TItem>(View, () => Table?.Virtualizer, InvokeAsync, StateHasChanged);
         _columnFit = new ColumnFit(Context.JS);
         View.Subscribe(HandleViewChangedAsync);
+    }
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parameterRevision.Observe(parameters);
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    /// <summary>What every row is drawn by, which changes when the data view, the grid's own parameters or a shown column changed in a way a row draws differently for.</summary>
+    /// <returns>A number that is the same until then.</returns>
+    internal int GetRowRevision()
+    {
+        var shown = ShownColumns.Select(column => $"{column.ColumnKey}:{column.Revision}:{GetCellClass(column)}:{GetCellStyle(column)}");
+        var signature = string.Join('|', [View.Revision, _parameterRevision.Value, HasSelectionColumn, HasColumnsMenu, SelectionCellClass, .. shown]);
+
+        if (signature != _rowSignature)
+        {
+            _rowSignature = signature;
+            _rowRevision++;
+        }
+
+        return _rowRevision;
     }
 
     /// <inheritdoc />

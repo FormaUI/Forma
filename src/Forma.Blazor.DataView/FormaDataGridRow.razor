@@ -3,7 +3,7 @@
 @typeparam TItem where TItem : notnull
 
 @* A row being edited carries no token, which takes it out of every press and selection gesture. *@
-<tr class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@(Position + 1)" data-item="@(Grid.IsEditing(Item) ? null : View.GetItemToken(Item))" data-item-position="@Position">
+<tr class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@(Position + 1)" data-item="@(Grid.IsEditing(Item) ? null : Token)" data-item-position="@Position">
     @if (Grid.HasSelectionColumn)
     {
         <td class="@Grid.SelectionCellClass" data-item-control>
@@ -12,7 +12,7 @@
             {
                 <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
                     <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-grid-row-marker")"
-                                   data-row-key="@View.GetItemToken(Item)"
+                                   data-row-key="@Token"
                                    aria-label="@L["Select Row"]"
                                    aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
                                    Value="@View.IsSelected(Item)"
