@@ -146,6 +146,57 @@
         }
 
         [Fact]
+        public async Task Should_step_on_from_each_move_when_keys_arrive_before_the_focus_has_moved()
+        {
+            // Arrange — a sidebar of the folders, Documents open over Reports, its row focused
+            using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+            cut.Find(".forma-data-tree-node").FocusIn();
+
+            // Act — two presses in a burst, the focus the first moves not yet reported back when the second arrives
+            await router.RouteAsync("tree.next", "ArrowDown");
+            await router.RouteAsync("tree.next", "ArrowDown");
+
+            // Assert — Documents, Reports, then Pictures
+            Assert.Equal("Pictures", current!.Name);
+        }
+
+        [Fact]
+        public async Task Should_step_on_from_the_last_move_when_the_report_of_an_earlier_one_arrives_after_it()
+        {
+            // Arrange — a sidebar of the folders, Documents open over Reports, its row focused
+            using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+            cut.Find(".forma-data-tree-node").FocusIn();
+
+            // Act — down to Reports and on to Pictures, then the report of the focus reaching Reports, then up
+            await router.RouteAsync("tree.next", "ArrowDown");
+            await router.RouteAsync("tree.next", "ArrowDown");
+            cut.FindAll(".forma-data-tree-node")[0].FocusOut();
+            cut.FindAll(".forma-data-tree-node")[1].FocusIn();
+            await router.RouteAsync("tree.previous", "ArrowUp");
+
+            // Assert — up from Pictures
+            Assert.Equal("Reports", current!.Name);
+        }
+
+        [Fact]
         public void Should_keep_an_opened_node_open_when_the_data_view_is_given_a_new_source()
         {
             // Arrange

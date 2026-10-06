@@ -67,6 +67,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private InputProfile _inputProfile = default!;
     private bool _profileKeepsFocus;
     private TItem? _focusedNode;
+
+    // The nodes the tree has moved the focus to, in order, whose arrival the browser has yet to report.
+    private readonly List<object> _unreportedMoves = [];
     private bool _isCompanion;
     private bool _areRootsRequested;
     private bool _isRevealing;
@@ -331,6 +334,15 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     // Moving to a node selects it alone where a marker carries the focus, and makes it current in a sidebar; the focus lands on the marker or the row.
     private async Task MoveToAsync(TItem node)
     {
+        // A key pressed before the browser reports the focus this move lands acts from here, as the reader meant it to; a move that
+        // stays where the focus is lands nothing for the browser to report.
+        if (_focusedNode is not { } from || !IsSame(from, node))
+        {
+            _unreportedMoves.Add(View.ItemKey(node));
+        }
+
+        _focusedNode = node;
+
         if (HasSelection)
         {
             await Interaction.SelectItemAsync(node);
@@ -418,6 +430,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
 
         _focusedNode = default;
+        _unreportedMoves.Clear();
 
         if (FindHeir(previous, gone, parent, remaining) is { } heir)
         {
@@ -508,6 +521,16 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     // A marker keeps the tab stop once focused, which the selection behavior leaves on it.
     private void HandleNodeFocusIn(TItem node)
     {
+        // A report of a move a later one has passed is out of date; the last move's, or a focus the reader moved, is where the focus is.
+        var moved = _unreportedMoves.IndexOf(View.ItemKey(node));
+
+        if (moved >= 0 && moved < _unreportedMoves.Count - 1)
+        {
+            _unreportedMoves.RemoveRange(0, moved + 1);
+            return;
+        }
+
+        _unreportedMoves.Clear();
         _focusedNode = node;
         _lastFocusedKey = View.ItemKey(node);
         _holdsFocus = false;
@@ -543,7 +566,16 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         => EventCallback.Factory.Create<FocusEventArgs>(this, () => HandleNodeFocusIn(node));
 
     internal EventCallback<FocusEventArgs> GetNodeFocusOutHandler()
-        => EventCallback.Factory.Create<FocusEventArgs>(this, () => _focusedNode = default);
+        => EventCallback.Factory.Create<FocusEventArgs>(this, HandleNodeFocusOut);
+
+    // A node losing the focus to a move the browser has yet to report leaves the focus where that move sent it.
+    private void HandleNodeFocusOut()
+    {
+        if (_unreportedMoves.Count == 0)
+        {
+            _focusedNode = default;
+        }
+    }
 
     private List<TItem> GetVisibleNodes()
         => GetVisibleRows().ConvertAll(row => row.Node);
@@ -601,15 +633,21 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         var key = View.ItemKey(node);
         _pendingFocusKey = null;
 
-        if (await TryFocusAsync(key) || !IsVirtualizing || _virtualizer is not { } virtualizer)
+        if (await TryFocusAsync(key))
         {
             return;
         }
 
         var index = _visibleRows.FindIndex(row => IsSame(row.Node, node));
 
-        if (index < 0)
+        // A move whose focus lands nowhere leaves nothing for the browser to report.
+        if (!IsVirtualizing || _virtualizer is not { } virtualizer || index < 0)
         {
+            if (_unreportedMoves.LastIndexOf(key) is var unreported and >= 0)
+            {
+                _unreportedMoves.RemoveAt(unreported);
+            }
+
             return;
         }
 
