@@ -177,7 +177,7 @@ A row of toggle buttons switching a data view between the views it registered. I
 
 ### `FormaDateTimePicker`
 
-A field that edits a date with its time of day.
+A field that edits a date with its time of day. Its design is [time-inputs-design.md](time-inputs-design.md).
 
 | | |
 |---|---|
@@ -339,7 +339,7 @@ An icon button for sharing. Its design is [icon-buttons-design.md](icon-buttons-
 
 ### `FormaTimePicker`
 
-A field that edits a time of day.
+A field that edits a time of day. Its design is [time-inputs-design.md](time-inputs-design.md).
 
 | | |
 |---|---|
