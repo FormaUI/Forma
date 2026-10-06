@@ -2863,7 +2863,8 @@
             Assert.Multiple(
                 () => Assert.Equal(2, row.QuerySelectorAll(".forma-date-picker").Length),
                 () => Assert.Contains("forma-data-grid-editor", row.QuerySelector("button.forma-date-picker-trigger")!.ClassName, StringComparison.Ordinal),
-                () => Assert.Equal("Hired", row.QuerySelector("label.forma-field-label")!.TextContent.Trim()),
+                () => Assert.Equal("Hired", row.QuerySelector("label.forma-field-label")!.FirstChild!.TextContent.Trim()),
+                () => Assert.NotNull(row.QuerySelector("label.forma-field-label .forma-field-required")),
                 () => Assert.Single(row.QuerySelectorAll("input[type=checkbox].forma-checkbox.forma-data-grid-editor")),
                 () => Assert.True(row.QuerySelector("input[type=checkbox]")!.HasAttribute("checked")));
         }

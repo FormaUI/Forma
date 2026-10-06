@@ -50,7 +50,7 @@
         <h2>@L["Required in a Form"]</h2>
         <p class="description">@L["A date picker is a form input: submitting without a date shows the validation message under it, and picking one clears it."]</p>
         <div class="demo-box">
-            <FormaDatePicker @bind-Value="Model.Deadline" Label="@L["Deadline"]" />
+            <FormaDatePicker @bind-Value="Model.Deadline" Label="@L["Deadline"]" Required="true" />
             <div class="demo-row">
                 <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
                 @if (_submitted)

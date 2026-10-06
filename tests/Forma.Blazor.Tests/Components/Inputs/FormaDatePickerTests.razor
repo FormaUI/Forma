@@ -367,6 +367,35 @@
         }
 
         [Fact]
+        public void Should_mark_a_date_required_where_it_cannot_be_empty_or_the_host_asks()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            var model = new Deadline();
+            var optionalModel = new FakeModel();
+
+            // Act
+            var optional = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(optionalModel))">
+                <FormaDatePicker @bind-Value="optionalModel.Date" Label="Start date" />
+            </FakeFormHost>);
+            var asked = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(optionalModel))">
+                <FormaDatePicker @bind-Value="optionalModel.Date" Label="Start date" Required="true" />
+            </FakeFormHost>);
+            var inherent = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Due" Label="Due date" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(optional.FindAll(".forma-field-required")),
+                () => Assert.Null(optional.Find("button.forma-date-picker-trigger").GetAttribute("aria-required")),
+                () => Assert.Single(asked.FindAll(".forma-field-required")),
+                () => Assert.Equal("true", asked.Find("button.forma-date-picker-trigger").GetAttribute("aria-required")),
+                () => Assert.Single(inherent.FindAll(".forma-field-required")),
+                () => Assert.Equal("true", inherent.Find("button.forma-date-picker-trigger").GetAttribute("aria-required")));
+        }
+
+        [Fact]
         public void Should_refuse_a_value_that_is_not_a_date()
         {
             // Arrange

@@ -3,7 +3,7 @@
 @inherits FormaInputBase<TValue>
 @using Forma.Framework.Browser.Interop.Behaviors
 
-<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" Required="@IsRequired" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-date-picker">
             <div class="forma-date-picker-trigger-wrapper" @ref="_anchorElement">
@@ -15,6 +15,7 @@
                         @ref="RootElement"
                         type="button"
                         aria-expanded="@(IsOpen ? "true" : "false")"
+                        aria-required="@(IsRequired ? "true" : null)"
                         @onclick="ToggleAsync">
                     <span class="forma-date-picker-arrow">&#9662;</span>
                     <span class="forma-date-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Date"])</span>

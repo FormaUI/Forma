@@ -19,6 +19,9 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
     /// <summary>The field's label and accessible name.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
+    /// <summary>Whether a date that can be empty is marked as required.</summary>
+    [Parameter] public bool Required { get; set; }
+
     /// <summary>The earliest selectable date.</summary>
     [Parameter] public DateOnly? MinDate { get; set; }
 
@@ -43,6 +46,10 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
 
     private bool IsOpen
         => Popover is { IsOpen: true };
+
+    // A date that cannot be empty is required whatever the host says, since clearing it reports the field required.
+    private bool IsRequired
+        => Required || !IsNullable;
 
 #pragma warning disable CA1822 // Intentionally instance — reads ambient CultureInfo per render
     private CultureInfo Culture => CultureInfo.CurrentCulture;
