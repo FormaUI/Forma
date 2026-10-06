@@ -23,6 +23,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 {
     private const string DescendingOrder = "desc";
 
+    // What the host gives that never changes how an item is drawn: the content around the views, the selection the host holds
+    // and reads, and the callbacks.
+    private static readonly string[] _parametersLeftOut =
+    [
+        nameof(ChildContent), nameof(Status), nameof(EmptyContent), nameof(LoadingContent),
+        nameof(SelectedItems), nameof(SelectedItemsChanged), nameof(OnSelectionRejected), nameof(OnItemClick),
+        nameof(ViewChanged), nameof(CurrentItemChanged), nameof(PageChanged), nameof(TotalItemCountChanged),
+        nameof(Id), nameof(Class), nameof(Style),
+    ];
+
     private static readonly TimeSpan LoadingAnnouncementDelay = TimeSpan.FromSeconds(1);
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
@@ -31,6 +41,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     [Inject] private TimeProvider Clock { get; set; } = default!;
 
     private readonly StateNotifier _stateNotifier = new();
+    private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
+    private int _stateRevision;
     private readonly ItemTokenTable<TItem> _itemTokens = new();
     private readonly List<DataViewRegistration> _registrations = [];
     private readonly ParameterState<string?> _viewParameter = new();
@@ -301,6 +313,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     }
 
     /// <inheritdoc />
+    public int Revision
+        => _parameterRevision.Value + _stateRevision;
+
+    /// <inheritdoc />
     public bool HasLoaded
         => _hasLoaded;
 
@@ -423,6 +439,14 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     private int? SliceSize
         => EnablePagination ? PageSize : null;
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parameterRevision.Observe(parameters);
+
+        return base.SetParametersAsync(parameters);
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -572,12 +596,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Folds the group keyed <paramref name="key"/> away under its heading, its items hidden until it opens again.</summary>
     /// <param name="key">The group's key.</param>
     public Task FoldGroupAsync(object? key)
-        => _foldedGroupKeys.Add(key) ? NotifyStateAsync() : Task.CompletedTask;
+        => _foldedGroupKeys.Add(key) ? NotifyStateAsync(isItemStateOnly: true) : Task.CompletedTask;
 
     /// <summary>Opens the group keyed <paramref name="key"/> again, its items shown under its heading.</summary>
     /// <param name="key">The group's key.</param>
     public Task UnfoldGroupAsync(object? key)
-        => _foldedGroupKeys.Remove(key) ? NotifyStateAsync() : Task.CompletedTask;
+        => _foldedGroupKeys.Remove(key) ? NotifyStateAsync(isItemStateOnly: true) : Task.CompletedTask;
 
     /// <summary>Brings the item at <paramref name="index"/> on screen: a paged data view moves to its page, a virtualizing view scrolls it to the start of its viewport.</summary>
     /// <param name="index">The index of the item in the whole set.</param>
@@ -826,7 +850,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         node.Item = parent;
         node.IsLoading = true;
-        await NotifyStateAsync();
+        await NotifyStateAsync(isItemStateOnly: true);
 
         try
         {
@@ -840,7 +864,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             node.IsLoading = false;
         }
 
-        await NotifyStateAsync();
+        await NotifyStateAsync(isItemStateOnly: true);
     }
 
     /// <inheritdoc />
@@ -855,7 +879,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         GetNodeState(node).IsOpen = true;
         await LoadChildrenCoreAsync(node);
-        await NotifyStateAsync();
+        await NotifyStateAsync(isItemStateOnly: true);
     }
 
     /// <inheritdoc />
@@ -870,7 +894,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         state.IsOpen = false;
 
-        return NotifyStateAsync();
+        return NotifyStateAsync(isItemStateOnly: true);
     }
 
     /// <inheritdoc />
@@ -1322,7 +1346,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         _selectedSet = updated;
         IReadOnlyList<TItem> reported = [.. updated];
         await SelectedItemsChanged.InvokeAsync(reported);
-        await NotifyStateAsync();
+        await NotifyStateAsync(isItemStateOnly: true);
     }
 
     private Task RejectSelectionAsync(SelectionBoundary boundary)
@@ -1538,8 +1562,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await TotalItemCountChanged.InvokeAsync(totalItemCount);
     }
 
-    private async Task NotifyStateAsync()
+    // A change of one item's own state, its selection, its being open or loading its children, or a group's folding, leaves the revision as it
+    // was, since each item is drawn by its own state and only the items that changed draw again; any other change counts.
+    private async Task NotifyStateAsync(bool isItemStateOnly = false)
     {
+        if (!isItemStateOnly)
+        {
+            _stateRevision++;
+        }
+
         await _stateNotifier.NotifyAsync();
         StateHasChanged();
     }

@@ -53,7 +53,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     {
         ArgumentNullException.ThrowIfNull(Property);
 
-        var propertyChanged = !ReferenceEquals(_boundProperty, Property);
+        var propertyChanged = _boundProperty is null || !IsSameProperty(_boundProperty, Property);
 
         if (propertyChanged)
         {
@@ -205,6 +205,15 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
 
         return item => ((IFormattable?)getter(item))?.ToString(format, CultureInfo.CurrentCulture);
     }
+
+    /// <inheritdoc />
+    protected override object? ProjectParameter(ParameterValue parameter)
+        => parameter.Name == nameof(Property) && parameter.Value is Expression<Func<TItem, TValue>> property ? (object?)ResolveSortName(property) ?? property : parameter.Value;
+
+    // The same member read again: a path of members is the same by its names, where any other expression is the same only as the one given before,
+    // since the host builds a new expression each time it renders.
+    private static bool IsSameProperty(Expression<Func<TItem, TValue>> bound, Expression<Func<TItem, TValue>> given)
+        => ReferenceEquals(bound, given) || (ResolveSortName(bound) is { } path && path == ResolveSortName(given));
 
     // The property's path, such as Customer.Name, and null for a property that is not a path of members.
     private static string? ResolveSortName(Expression<Func<TItem, TValue>> property)

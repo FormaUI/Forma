@@ -69,6 +69,9 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <param name="node">The node.</param>
     bool IsOpen(TItem node);
 
+    /// <summary>How many times the view has changed in a way that can change how any item is drawn, a change of one item's own state apart: its selection, its being open or loading its children, a group's folding.</summary>
+    int Revision { get; }
+
     /// <summary>Whether the source has answered at least once.</summary>
     bool HasLoaded { get; }
 

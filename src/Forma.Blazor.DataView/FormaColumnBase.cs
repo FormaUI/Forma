@@ -11,6 +11,15 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 public abstract class FormaColumnBase<TItem> : ComponentBase
     where TItem : notnull
 {
+    // What a column is given that only its header or its sort reads, which no cell is drawn by.
+    private static readonly string[] _headerParameters =
+    [
+        nameof(Title), nameof(SortName), nameof(Sortable), nameof(SortBy), nameof(InitialSortDirection), nameof(IsDefaultSortColumn),
+        nameof(HeaderTemplate), nameof(ColumnOptions), nameof(PlaceholderTemplate),
+    ];
+
+    private ParameterRevision? _parameterRevision;
+
     [CascadingParameter] private FormaDataGrid<TItem> Grid { get; set; } = default!;
 
     /// <summary>The title shown in the header cell and read as the column's name.</summary>
@@ -62,6 +71,10 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <summary>The value the grid names the column by in its markup and its measurements, for its own lifetime.</summary>
     internal string ColumnKey { get; } = $"column-{Guid.NewGuid():N}";
 
+    /// <summary>How many times what the column is given has changed in a way that can change what its cells draw.</summary>
+    internal int Revision
+        => _parameterRevision?.Value ?? 0;
+
     /// <summary>Whether the column can be sorted by, from <see cref="Sortable"/> or the column's own default.</summary>
     public bool IsSortable
         => Sortable ?? IsSortableByDefault();
@@ -88,6 +101,21 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <summary>Whether the column sorts by default.</summary>
     protected virtual bool IsSortableByDefault()
         => SortBy is not null;
+
+    /// <summary>What stands for a parameter's value in judging whether the column's cells are drawn differently.</summary>
+    /// <param name="parameter">The parameter the column is given.</param>
+    /// <returns>The value itself, unless it differs each time it is given and means the same.</returns>
+    protected virtual object? ProjectParameter(ParameterValue parameter)
+        => parameter.Value;
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parameterRevision ??= new ParameterRevision(_headerParameters, ProjectParameter);
+        _parameterRevision.Observe(parameters);
+
+        return base.SetParametersAsync(parameters);
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
