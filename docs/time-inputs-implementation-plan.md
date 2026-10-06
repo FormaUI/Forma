@@ -17,7 +17,8 @@ to the design.
    screen reader check gaining the time picker's scenario. Landed, in review: the picker
    and its box, its page, and the property column editing a time with it. Departure: the
    field's label is pinned above it, as the date picker's is, since the box wraps the text
-   element the field's floating label reads its state from.
+   element the field's floating label reads its state from. The screen reader scenario is
+   written and waits on a run.
 2. **The date and time picker.** Open. The date picker's control set apart from its field,
    as the time picker's is, then `FormaDateTimePicker` setting the two controls side by side
    under one field with one label, one required state and one value's messages, and the

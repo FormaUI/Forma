@@ -51,6 +51,8 @@ Scenario[] scenarios =
     new("The tree's focus handed on when its node goes away", "he", "/he/data-view/tree", TreeHandOff(rightToLeft: true)),
     new("A checkbox and its state", "en", "/checkbox", CheckBoxState("Subscribe to updates")),
     new("A checkbox and its state", "he", "/he/checkbox", CheckBoxState("הרשמה לעדכונים")),
+    new("A time picker and its list", "en", "/time-picker", TimePickerList("Starts", "12:00 AM", "12:30 AM")),
+    new("A time picker and its list", "he", "/he/time-picker", TimePickerList("מתחיל", "0:00", "0:30")),
 ];
 
 using var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
@@ -177,6 +179,18 @@ static Step[] CheckBoxState(string label)
         new("focus the box", page => page.Locator("label.forma-checkbox-label").Filter(new() { HasTextString = label }).Locator("input").FocusAsync(), [label, "check box", "not checked"]),
         new("check it", page => page.Keyboard.PressAsync("Space"), ["checked"]),
         new("clear it", page => page.Keyboard.PressAsync("Space"), ["not checked"]),
+    ];
+}
+
+// The first time picker on its page: the field named and announced as a combobox, and the list's first two suggestions announced as
+// the down arrow highlights them.
+static Step[] TimePickerList(string label, string first, string second)
+{
+    return [
+        new("open the page", null, []),
+        new("focus the field", page => page.Locator(".forma-time-box input").First.FocusAsync(), [label, "combo box"]),
+        new("open the list", page => page.Keyboard.PressAsync("ArrowDown"), [first]),
+        new("move down the list", page => page.Keyboard.PressAsync("ArrowDown"), [second]),
     ];
 }
 
