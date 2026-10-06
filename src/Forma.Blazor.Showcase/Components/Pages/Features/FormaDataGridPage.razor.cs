@@ -84,6 +84,8 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private IReadOnlyList<Employee> _rowSelectedEmployees = [];
 
+    private IReadOnlyList<GridItem> _virtualizedSelection = [];
+
     private SelectAllMode _selectAllMode = SelectAllMode.FromMenu;
 
     private CheckedSelectionOptions _selectAllModeOptions = new();
@@ -146,6 +148,9 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private void HandleRowSelectionChanged(IReadOnlyList<Employee> selected)
         => _rowSelectedEmployees = selected;
+
+    private void HandleVirtualizedSelectionChanged(IReadOnlyList<GridItem> selected)
+        => _virtualizedSelection = selected;
 
     private void HandlePickedChanged(IReadOnlyList<Employee> picked)
         => _pickedEmployees = picked;

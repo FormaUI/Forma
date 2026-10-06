@@ -98,7 +98,7 @@ Each phase ends buildable, tested and reviewable, with a showcase page showing e
        | A selection refused at its maximum and at its minimum, reported to the page | States, A Bounded Selection |
        | The captions in place of the master box | The data grid's Selection Limits and Captions |
        | The four select-all modes | The data grid's Select-All Modes |
-       | Item selection over rows, list items and cards | The data grid's Row Selection; the data view's List and Cards tabs |
+       | Item selection over rows, list items and cards, drawn in full and virtualized | The data grid's Row Selection and Virtualized With Row Selection; the data view's List and Cards tabs, with A Hundred Thousand Items, Selected by Row and A Hundred Thousand Thumbnails, Selected by Card |
        | Grouped rows, list items and cards | The data grid's Grouped Rows; the List and Cards tabs |
        | Frozen columns, fitting a width, the headerless dense picker and inline editing | The data grid's Frozen Columns, Fitting a Width, A Picker and Inline Editing Inside a Form |
        | Virtualized over a set and over a provider, opening on an item, and items arriving at the top | The data grid's Virtualized, Virtualized Over a Provider, Opening on a Row and Rows Arriving at the Top |

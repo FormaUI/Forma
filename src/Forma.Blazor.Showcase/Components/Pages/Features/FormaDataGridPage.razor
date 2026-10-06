@@ -372,6 +372,24 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Virtualized With Row Selection"]</h2>
+    <p class="description">@L["A press selects a row, Ctrl or Cmd toggles it and Shift extends a range, and the arrows, Home and End walk the rows. A row scrolled out of the drawn rows keeps the focus and is drawn again beside the arrow that reaches it."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView TItem="GridItem" Items="_hugeItems" ItemKey="@(item => item.Id)" EnablePagination="false" Virtualize="true" EnableItemSelection="true" AddressOptions='@(new DataViewAddressOptions("virtualized-selection"))' SelectedItems="_virtualizedSelection" SelectedItemsChanged="HandleVirtualizedSelectionChanged">
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(item => item.Id)" />
+                        <FormaPropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{Selected} row(s) selected.", _virtualizedSelection.Count]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Grouped and Virtualized"]</h2>
     <p class="description">@L["The same rows in blocks of ten thousand: each heading is a row the virtualization scrolls past with the rest, counts its whole block and folds it, and a folded block's rows are never fetched."]</p>
     <div class="demo-box demo-box-bounded">

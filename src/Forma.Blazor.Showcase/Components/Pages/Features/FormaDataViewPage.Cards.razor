@@ -53,13 +53,41 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["A Hundred Thousand Thumbnails, Selected by Card"]</h2>
+    <p class="description">@L["The same cards with the cards themselves selecting: a press selects, Ctrl or Cmd toggles and Shift extends a range, and the arrows walk the cards across a row and down the rows. Narrowing the box packs fewer cards to a row while the selection stays."]</p>
+    <div class="demo-box demo-row demo-controls">
+        <FormaToggleButton Label="@L["Narrow"]" ShowLabel="true" Pressed="_isNarrow" OnClick="ToggleNarrow" />
+    </div>
+    <div class="@(_isNarrow ? "demo-box demo-box-bounded demo-box-narrow" : "demo-box demo-box-bounded")">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.Many" ItemKey="@(product => product.Id)" EnablePagination="false" Virtualize="true" ItemHeight="160" ItemName="@(product => product.Name)" EnableItemSelection="true" GroupBy="DataViewShowcaseProducts.ByCategory" AddressOptions='@(new DataViewAddressOptions("many-selected"))' SelectedItems="_selectedProducts" SelectedItemsChanged="HandleSelectedChanged">
+            <ChildContent>
+                <FormaDataCards TItem="ShowcaseProduct" Dense="true" CardSize="@CssLength.FromRem(7)">
+                    <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
+                </FormaDataCards>
+            </ChildContent>
+            <Status>@L["{Selected} selected.", _selectedProducts.Count]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
 @code {
     private FormaDataView<ShowcaseProduct>? _dataView;
 
     private IReadOnlyList<ShowcaseProduct> _checkedProducts = [];
 
+    private IReadOnlyList<ShowcaseProduct> _selectedProducts = [];
+
     private string? _lastAction;
+
+    private bool _isNarrow;
 
     private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selected)
         => _checkedProducts = selected;
+
+    private void HandleSelectedChanged(IReadOnlyList<ShowcaseProduct> selected)
+        => _selectedProducts = selected;
+
+    private void ToggleNarrow()
+        => _isNarrow = !_isNarrow;
 }
