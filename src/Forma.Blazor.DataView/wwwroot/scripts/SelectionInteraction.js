@@ -19,7 +19,8 @@
  * focus alone, and Shift extends the range from the anchor, by position where the owner seeks, so an
  * anchor scrolled out of the page still counts. A render that draws the focused item's element afresh
  * drops the focus to nothing; with neither a press nor Tab to explain it, the focus goes back to the item's
- * marker, so Tab still leaves the list, and the page, from its last item.
+ * marker, so Tab still leaves the list, and the page, from its last item. A press or a Tab that a host
+ * handles while keeping the focus where it was explains nothing once it has ended.
  *
  * Enter on an item's marker activates the item, a route like the moves, so the form a host wraps
  * the list in never takes it as a submission. The presses are routes too: where the list selects,
@@ -172,6 +173,7 @@ class SelectionInteraction {
     #listening = new AbortController();
     #held = null;
     #readerMoved = false;
+    #moveStart = null;
 
     constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, positionAttribute = null, seeks = false }) {
         this.#target = target;
@@ -229,14 +231,32 @@ class SelectionInteraction {
 
         // A render may draw the focused item's element afresh, which drops the focus to nothing; with neither a press nor Tab to
         // explain the loss, the focus goes back to the item's marker once the render has drawn it again. Both are observed rather
-        // than routed, so whichever scope owns them still does, a surface keeping Tab inside itself above all.
+        // than routed, so whichever scope owns them still does, a surface keeping Tab inside itself above all. Each ends where
+        // its focus has finished moving: a Tab at its release, a press at its click, where a touch tap's late compatibility press
+        // has moved the focus, or at its release where it raises no click, and a press also at its cancellation.
         const signal = this.#listening.signal;
-        const noteReaderMoved = () => { this.#readerMoved = true; };
+        const ownerDocument = target.ownerDocument;
         target.addEventListener('focusin', event => this.#hold(this.#focusedMarker(event)), { signal });
-        target.ownerDocument.addEventListener('pointerdown', noteReaderMoved, { capture: true, signal });
-        target.ownerDocument.addEventListener('keydown', event => {
+        ownerDocument.addEventListener('pointerdown', () => this.#beginMove(), { capture: true, signal });
+        ownerDocument.addEventListener('pointerup', event => {
+            if (event.button !== 0) {
+                this.#endMove();
+            }
+        }, { capture: true, signal });
+        ownerDocument.addEventListener('pointercancel', () => this.#endMove(), { capture: true, signal });
+        ownerDocument.addEventListener('click', event => {
+            if (event.detail > 0) {
+                this.#endMove();
+            }
+        }, { capture: true, signal });
+        ownerDocument.addEventListener('keydown', event => {
             if (event.key === 'Tab') {
-                noteReaderMoved();
+                this.#beginMove();
+            }
+        }, { capture: true, signal });
+        ownerDocument.addEventListener('keyup', event => {
+            if (event.key === 'Tab') {
+                this.#endMove();
             }
         }, { capture: true, signal });
         target.addEventListener('focusout', event => {
@@ -424,6 +444,22 @@ class SelectionInteraction {
     #hold(marker) {
         this.#held = marker ? { token: this.#tokenOf(marker), position: this.#positionOf(marker) } : null;
         this.#readerMoved = false;
+        this.#moveStart = null;
+    }
+
+    // A press or a Tab may move the focus anywhere while it is handled, so a loss of focus meanwhile is the reader's.
+    #beginMove() {
+        this.#readerMoved = true;
+        this.#moveStart = this.#target.ownerDocument.activeElement;
+    }
+
+    // An input whose handling left the focus on the element it began on moved nothing, so a later loss is not the reader's.
+    #endMove() {
+        if (this.#readerMoved && this.#moveStart !== null && this.#target.ownerDocument.activeElement === this.#moveStart) {
+            this.#readerMoved = false;
+        }
+
+        this.#moveStart = null;
     }
 
     // Whether the focus has fallen to nothing rather than gone to something else.

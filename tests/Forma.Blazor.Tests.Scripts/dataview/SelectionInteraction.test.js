@@ -636,6 +636,57 @@ describe('SelectionInteraction', () => {
             expect(routed).toBe(true);
         });
 
+        // A non-focusable part of the page outside the list, where a press moves nothing the list owns.
+        const elsewhere = () => {
+            const paragraph = document.createElement('p');
+            document.body.append(paragraph);
+
+            return paragraph;
+        };
+        const pointer = (element, type, init) => element.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, ...init }));
+
+        it.each([
+            ['a Tab', () => {
+                press(cellOf(2), 'Tab');
+                cellOf(2).dispatchEvent(new KeyboardEvent('keyup', { key: 'Tab', bubbles: true }));
+            }],
+            ['a press', () => click(elsewhere())],
+            ['a secondary press', () => {
+                const target = elsewhere();
+                pointer(target, 'pointerdown', { button: 2 });
+                pointer(target, 'pointerup', { button: 2 });
+            }],
+            ['a cancelled press', () => {
+                const target = elsewhere();
+                pointer(target, 'pointerdown', { button: 0, pointerType: 'touch' });
+                pointer(target, 'pointercancel', { button: 0, pointerType: 'touch' });
+            }],
+        ])('takes the focus back after %s that a host handled while keeping the focus where it was', async (_, input) => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            input();
+            redraw(2);
+            await nextFrame();
+
+            expect(document.activeElement).toBe(cellOf(2));
+        });
+
+        it('leaves the focus where a tap sent it, the tap moving it only after its release', async () => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+            const target = elsewhere();
+
+            // The browser raises a tap's compatibility press, which moves the focus, between the release and the click.
+            pointer(target, 'pointerdown', { button: 0, pointerType: 'touch' });
+            pointer(target, 'pointerup', { button: 0, pointerType: 'touch' });
+            cellOf(2).blur();
+            target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+            await nextFrame();
+
+            expect(document.activeElement).toBe(document.body);
+        });
+
         it('extends a shift-click by position, so an anchor scrolled out of the page still counts', () => {
             attachSelection(grid, options());
             click(cellOf(1));
