@@ -1,0 +1,49 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaComponentBase
+@typeparam TItem where TItem : notnull
+
+<div class="@Cards.GetCardClass(Item)"
+     role="listitem"
+     aria-selected="@Cards.GetAriaSelected(Item)"
+     aria-setsize="@(Position is null || View.IsGrouped ? null : View.TotalItemCount)"
+     aria-posinset="@(Position is null || View.IsGrouped ? null : Position + 1)"
+     data-item-position="@Position"
+     data-item="@Token">
+    <div class="forma-data-card-thumbnail">
+        @if (Cards.ThumbnailTemplate is { } thumbnail)
+        {
+            @thumbnail(Item)
+        }
+        @if (Cards.HasSelection)
+        {
+            <span class="forma-data-card-lead" data-item-control>
+                <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
+                    <FormaCheckBox class="@(View.EnableCheckedSelection ? "forma-data-card-box" : "forma-data-card-marker")"
+                                   data-row-key="@Token"
+                                   aria-label="@L["Select Item"]"
+                                   aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
+                                   Value="@View.IsSelected(Item)"
+                                   PreventDefault="true"
+                                   OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
+                                   @onfocusin="Cards.GetFocusHandler(Item)"
+                                   ValueExpression="() => ItemSelection" />
+                </label>
+                @if (!View.EnableCheckedSelection && View.IsSelected(Item))
+                {
+                    <span class="forma-data-card-check" aria-hidden="true"><FormaIcon Icon="Glyph.Check" Size="IconSize.Small" /></span>
+                }
+            </span>
+        }
+    </div>
+    <div class="forma-data-card-info">
+        <span class="forma-data-card-name">@View.ItemName(Item)</span>
+        @if (!Cards.Dense && Cards.ItemTemplate is { } detail)
+        {
+            <div class="forma-data-card-detail">@detail(Item)</div>
+        }
+    </div>
+    @if (!Cards.Dense && Cards.ActionsTemplate is { } actions)
+    {
+        <div class="forma-data-card-actions" data-item-control>@actions(Item)</div>
+    }
+</div>

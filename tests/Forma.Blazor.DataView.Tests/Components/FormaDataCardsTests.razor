@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using System.Globalization
+@using Microsoft.AspNetCore.Components.Web
 @using AngleSharp.Dom
 @using Forma.Blazor.Components.Virtualization
 
@@ -320,6 +321,168 @@
 
             static IEnumerable<int> Positions(IRenderedComponent<IComponent> cut)
                 => cut.FindAll("[data-item-position]").Select(card => int.Parse(card.GetAttribute("data-item-position")!, CultureInfo.InvariantCulture));
+        }
+
+        // A thumbnail that says each time a card draws it, so what a change draws again can be read.
+        private static int Draw(Dictionary<int, int> drawn, Product product)
+        {
+            drawn[product.Id] = drawn.GetValueOrDefault(product.Id) + 1;
+
+            return product.Id;
+        }
+
+        private static IReadOnlyList<int> DrawnSince(Dictionary<int, int> drawn, Dictionary<int, int> before)
+            => [.. drawn.Where(entry => entry.Value != before.GetValueOrDefault(entry.Key)).Select(entry => entry.Key).Order()];
+
+        private static IReadOnlyList<int> GetTokens(IRenderedComponent<IComponent> cut)
+            => [.. cut.FindAll("[role=listitem]").Select(row => int.Parse(row.GetAttribute("data-item")!, CultureInfo.InvariantCulture))];
+
+        [Fact]
+        public async Task Should_draw_again_only_the_card_whose_box_was_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            var drawn = new Dictionary<int, int>();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateMany(6)" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product">
+                        <ThumbnailTemplate Context="product">@Draw(drawn, product)</ThumbnailTemplate>
+                    </FormaDataCards>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("input[type=checkbox]").Count == 6);
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act
+            await cut.FindAll("input[type=checkbox]")[2].ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal([3], DrawnSince(drawn, before));
+        }
+
+        [Fact]
+        public async Task Should_draw_again_the_card_a_selection_leaves_and_the_card_it_reaches()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            var drawn = new Dictionary<int, int>();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateMany(6)" EnablePagination="false" EnableItemSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product">
+                        <ThumbnailTemplate Context="product">@Draw(drawn, product)</ThumbnailTemplate>
+                    </FormaDataCards>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 6);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            var tokens = GetTokens(cut);
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], additive: false));
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[4], additive: false));
+
+            // Assert
+            Assert.Equal([2, 5], DrawnSince(drawn, before));
+        }
+
+        [Fact]
+        public void Should_draw_no_card_again_when_the_data_view_renders_with_nothing_changed()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            var drawn = new Dictionary<int, int>();
+            var items = CreateMany(4);
+            var cut = ctx.Render(
+                @<FormaDataView Items="items" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product">
+                        <ThumbnailTemplate Context="product">@Draw(drawn, product)</ThumbnailTemplate>
+                    </FormaDataCards>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            engine.Render();
+            engine.Render();
+
+            // Assert
+            Assert.Empty(DrawnSince(drawn, before));
+        }
+
+        [Fact]
+        public void Should_draw_every_card_again_when_the_cards_are_given_another_thumbnail()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            var drawn = new Dictionary<int, int>();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateMany(4)" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product">
+                        <ThumbnailTemplate Context="product">@Draw(drawn, product)</ThumbnailTemplate>
+                    </FormaDataCards>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act
+            RenderFragment<Product> other = product => builder => builder.AddContent(0, Draw(drawn, product));
+            cut.FindComponent<FormaDataCards<Product>>().Render(parameters => parameters.Add(cards => cards.ThumbnailTemplate, other));
+
+            // Assert
+            Assert.Equal([1, 2, 3, 4], DrawnSince(drawn, before));
+        }
+
+        [Fact]
+        public async Task Should_still_act_on_a_card_that_was_not_drawn_again_through_several_selections()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            IReadOnlyList<Product>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateMany(6)" EnablePagination="false" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> selected) => changedTo = selected)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 6);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            var tokens = GetTokens(cut);
+
+            // Act — the first cards are selected again and again while the sixth is never drawn again
+            foreach (var _ in Enumerable.Range(0, 4))
+            {
+                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[0], additive: false));
+                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], additive: false));
+            }
+
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[5], additive: false));
+
+            // Assert
+            Assert.Equal(6, Assert.Single(changedTo!).Id);
+        }
+
+        [Fact]
+        public void Should_make_the_same_script_calls_however_many_cards_it_draws()
+        {
+            // Arrange
+            using var few = new FormaDataCardsTests();
+            using var many = new FormaDataCardsTests();
+
+            // Act — the same cards over four items and over forty, each with a box
+            var fewCut = few.Render(
+                @<FormaDataView Items="CreateMany(4)" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            var manyCut = many.Render(
+                @<FormaDataView Items="CreateMany(40)" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            fewCut.WaitForState(() => fewCut.FindAll("[role=listitem]").Count == 4);
+            manyCut.WaitForState(() => manyCut.FindAll("[role=listitem]").Count == 40);
+
+            // Assert — each kind of observer attached once for the data view, and no call for an item
+            static IEnumerable<string> Calls(FormaDataCardsTests ctx)
+                => ctx.JSInterop.Invocations.GroupBy(invocation => invocation.Identifier).OrderBy(group => group.Key, StringComparer.Ordinal).Select(group => $"{group.Key} x{group.Count()}");
+
+            Assert.Equal(Calls(few), Calls(many));
         }
 
         private static IQueryable<Product> CreateMany(int count) => Enumerable.Range(1, count)

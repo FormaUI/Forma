@@ -16,6 +16,9 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
 {
     private const string ViewKey = "list";
 
+    // What the list is given that is not its own: the host's attributes, which never change how an item is drawn.
+    private static readonly string[] _parametersLeftOut = [nameof(Id), nameof(Class), nameof(Style)];
+
     /// <summary>The secondary text drawn beside an item's name, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
@@ -29,19 +32,21 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
+    private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
     private CollectionName _collectionName = CollectionName.None;
     private DataViewRows<TItem> _rows = default!;
     private FormaVirtualize<DataViewRow<TItem>>? _virtualizer;
     private bool _isRefreshWanted;
 
-    // The field an item's box names to the input base as its value expression.
-    private bool ItemSelection { get; }
+    internal bool HasSelection
+        => View.EnableCheckedSelection || View.EnableItemSelection;
+
+    // What every item is drawn by: it changes when the data view or the list's own parameters changed in a way an item draws differently for.
+    private int ItemRevision
+        => View.Revision + _parameterRevision.Value;
 
     private bool IsActive
         => View.ActiveViewKey == ViewKey;
-
-    private bool HasSelection
-        => View.EnableCheckedSelection || View.EnableItemSelection;
 
     private bool IsVirtualizing
         => View.Virtualize && !View.EnablePagination;
@@ -75,6 +80,14 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         => ScrollToItemAsync(position, cancellationToken);
 
     /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parameterRevision.Observe(parameters);
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (View is null || Interaction is null)
@@ -106,7 +119,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    private string? GetItemClass(TItem item)
+    internal string? GetItemClass(TItem item)
     {
         var builder = new CssClassBuilder();
         builder.Add("forma-data-list-item");
@@ -121,14 +134,14 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         return builder.ToStringOrNull();
     }
 
-    private string? GetAriaSelected(TItem item)
+    internal string? GetAriaSelected(TItem item)
         => HasSelection ? View.IsSelected(item) ? "true" : "false" : null;
 
     private string GetGroupNameId(int index)
         => $"{ElementId}-group-{index}";
 
     // Only a virtualizing list reads the focus, for the rows it pins, and it draws again only when those change.
-    private EventCallback<FocusEventArgs> GetFocusHandler(TItem item)
+    internal EventCallback<FocusEventArgs> GetFocusHandler(TItem item)
         => IsVirtualizing ? NonRenderingHandler.Create<FocusEventArgs>(() => HandleFocusIn(item), DispatchExceptionAsync) : default;
 
     private void HandleFocusIn(TItem item)

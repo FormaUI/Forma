@@ -6,51 +6,12 @@
 
 @if (IsActive)
 {
-    RenderFragment<(TItem Item, int? Position)> entry = row =>
-    {
-        var item = row.Item;
+    var revision = ItemRevision;
 
-        return @<div class="@GetItemClass(item)"
-                     role="listitem"
-                     aria-selected="@GetAriaSelected(item)"
-                     aria-setsize="@(row.Position is null || View.IsGrouped ? null : View.TotalItemCount)"
-                     aria-posinset="@(row.Position is null || View.IsGrouped ? null : row.Position + 1)"
-                     data-item-position="@row.Position"
-                     data-item="@View.GetItemToken(item)"
-                     @key="View.ItemKey(item)">
-            @if (HasSelection)
-            {
-                <span class="forma-data-list-item-lead" data-item-control>
-                    <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
-                        <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-list-item-marker")"
-                                       data-row-key="@View.GetItemToken(item)"
-                                       aria-label="@L["Select Item"]"
-                                       aria-disabled="@(!View.CanInteractWith(item) ? "true" : null)"
-                                       Value="@View.IsSelected(item)"
-                                       PreventDefault="true"
-                                       OnClick="() => Interaction.ToggleSelectionAsync(item, !View.IsSelected(item))"
-                                       @onfocusin="GetFocusHandler(item)"
-                                       ValueExpression="() => ItemSelection" />
-                    </label>
-                    @if (!View.EnableCheckedSelection && View.IsSelected(item))
-                    {
-                        <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" Class="forma-data-list-item-check" aria-hidden="true" />
-                    }
-                </span>
-            }
-            @if (ThumbnailTemplate is { } thumbnail)
-            {
-                <span class="forma-data-list-item-thumbnail">@thumbnail(item)</span>
-            }
-            <span class="forma-data-list-item-text">
-                <span class="forma-data-list-item-name">@View.ItemName(item)</span>
-                @if (ItemTemplate is { } detail)
-                {
-                    <span class="forma-data-list-item-detail">@detail(item)</span>
-                }
-            </span>
-        </div>;
-    };
+    // An item draws again only when its own state, its place or what every item is drawn by changed, so the list gives it the token the
+    // selection behavior knows it by on every pass, which is what keeps the token from being retired.
+    RenderFragment<(TItem Item, int? Position)> entry = row =>
+        @<FormaDataListItem TItem="TItem" List="this" Item="row.Item" Position="row.Position" Token="View.GetItemToken(row.Item)" Revision="revision" @key="View.ItemKey(row.Item)" />;
 
     <div id="@Id"
          data-rid="@Context.RuntimeId"

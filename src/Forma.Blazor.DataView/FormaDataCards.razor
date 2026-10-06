@@ -6,57 +6,12 @@
 
 @if (IsActive)
 {
-    RenderFragment<(TItem Item, int? Position)> card = entry =>
-    {
-        var item = entry.Item;
+    var revision = CardRevision;
 
-        return @<div class="@GetCardClass(item)"
-                     role="listitem"
-                     aria-selected="@GetAriaSelected(item)"
-                     aria-setsize="@(entry.Position is null || View.IsGrouped ? null : View.TotalItemCount)"
-                     aria-posinset="@(entry.Position is null || View.IsGrouped ? null : entry.Position + 1)"
-                     data-item-position="@entry.Position"
-                     data-item="@View.GetItemToken(item)"
-                     @key="View.ItemKey(item)">
-            <div class="forma-data-card-thumbnail">
-                @if (ThumbnailTemplate is { } thumbnail)
-                {
-                    @thumbnail(item)
-                }
-                @if (HasSelection)
-                {
-                    <span class="forma-data-card-lead" data-item-control>
-                        <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
-                            <FormaCheckBox class="@(View.EnableCheckedSelection ? "forma-data-card-box" : "forma-data-card-marker")"
-                                           data-row-key="@View.GetItemToken(item)"
-                                           aria-label="@L["Select Item"]"
-                                           aria-disabled="@(!View.CanInteractWith(item) ? "true" : null)"
-                                           Value="@View.IsSelected(item)"
-                                           PreventDefault="true"
-                                           OnClick="() => Interaction.ToggleSelectionAsync(item, !View.IsSelected(item))"
-                                           @onfocusin="GetFocusHandler(item)"
-                                           ValueExpression="() => ItemSelection" />
-                        </label>
-                        @if (!View.EnableCheckedSelection && View.IsSelected(item))
-                        {
-                            <span class="forma-data-card-check" aria-hidden="true"><FormaIcon Icon="Glyph.Check" Size="IconSize.Small" /></span>
-                        }
-                    </span>
-                }
-            </div>
-            <div class="forma-data-card-info">
-                <span class="forma-data-card-name">@View.ItemName(item)</span>
-                @if (!Dense && ItemTemplate is { } detail)
-                {
-                    <div class="forma-data-card-detail">@detail(item)</div>
-                }
-            </div>
-            @if (!Dense && ActionsTemplate is { } actions)
-            {
-                <div class="forma-data-card-actions" data-item-control>@actions(item)</div>
-            }
-        </div>;
-    };
+    // A card draws again only when its own state, its place or what every card is drawn by changed, so the cards give it the token the
+    // selection behavior knows it by on every pass, which is what keeps the token from being retired.
+    RenderFragment<(TItem Item, int? Position)> card = entry =>
+        @<FormaDataCard TItem="TItem" Cards="this" Item="entry.Item" Position="entry.Position" Token="View.GetItemToken(entry.Item)" Revision="revision" @key="View.ItemKey(entry.Item)" />;
 
     <div id="@Id"
          data-rid="@Context.RuntimeId"

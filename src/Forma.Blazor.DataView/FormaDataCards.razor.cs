@@ -19,6 +19,9 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 {
     private const string ViewKey = "cards";
 
+    // What the cards are given that is not their own: the host's attributes, which never change how a card is drawn.
+    private static readonly string[] _parametersLeftOut = [nameof(Id), nameof(Class), nameof(Style)];
+
     /// <summary>The information drawn beneath an item's name, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
@@ -38,6 +41,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
+    private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
     private CollectionName _collectionName = CollectionName.None;
     private DataViewRows<TItem> _rows = default!;
     private GridColumns _gridColumns = default!;
@@ -49,14 +53,15 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     private bool _isRefreshWanted;
     private int _initialRowIndex;
 
-    // The field a card's box names to the input base as its value expression.
-    private bool ItemSelection { get; }
+    internal bool HasSelection
+        => View.EnableCheckedSelection || View.EnableItemSelection;
+
+    // What every card is drawn by: it changes when the data view or the cards' own parameters changed in a way a card draws differently for.
+    private int CardRevision
+        => View.Revision + _parameterRevision.Value;
 
     private bool IsActive
         => View.ActiveViewKey == ViewKey;
-
-    private bool HasSelection
-        => View.EnableCheckedSelection || View.EnableItemSelection;
 
     private bool IsVirtualizing
         => View.Virtualize && !View.EnablePagination;
@@ -108,6 +113,14 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
         => ScrollToItemAsync(position, cancellationToken);
 
     /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parameterRevision.Observe(parameters);
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (View is null || Interaction is null)
@@ -155,7 +168,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
         }
     }
 
-    private string? GetCardClass(TItem item)
+    internal string? GetCardClass(TItem item)
     {
         var builder = new CssClassBuilder();
         builder.Add("forma-data-card");
@@ -170,14 +183,14 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
         return builder.ToStringOrNull();
     }
 
-    private string? GetAriaSelected(TItem item)
+    internal string? GetAriaSelected(TItem item)
         => HasSelection ? View.IsSelected(item) ? "true" : "false" : null;
 
     private string GetGroupNameId(int index)
         => $"{ElementId}-group-{index}";
 
     // Only virtualizing cards read the focus, for the rows they pin, and they draw again only when those change.
-    private EventCallback<FocusEventArgs> GetFocusHandler(TItem item)
+    internal EventCallback<FocusEventArgs> GetFocusHandler(TItem item)
         => IsVirtualizing ? NonRenderingHandler.Create<FocusEventArgs>(() => HandleFocusIn(item), DispatchExceptionAsync) : default;
 
     private void HandleFocusIn(TItem item)

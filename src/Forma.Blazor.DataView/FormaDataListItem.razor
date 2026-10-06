@@ -1,0 +1,43 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaComponentBase
+@typeparam TItem where TItem : notnull
+
+<div class="@List.GetItemClass(Item)"
+     role="listitem"
+     aria-selected="@List.GetAriaSelected(Item)"
+     aria-setsize="@(Position is null || View.IsGrouped ? null : View.TotalItemCount)"
+     aria-posinset="@(Position is null || View.IsGrouped ? null : Position + 1)"
+     data-item-position="@Position"
+     data-item="@Token">
+    @if (List.HasSelection)
+    {
+        <span class="forma-data-list-item-lead" data-item-control>
+            <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
+                <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-list-item-marker")"
+                               data-row-key="@Token"
+                               aria-label="@L["Select Item"]"
+                               aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
+                               Value="@View.IsSelected(Item)"
+                               PreventDefault="true"
+                               OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
+                               @onfocusin="List.GetFocusHandler(Item)"
+                               ValueExpression="() => ItemSelection" />
+            </label>
+            @if (!View.EnableCheckedSelection && View.IsSelected(Item))
+            {
+                <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" Class="forma-data-list-item-check" aria-hidden="true" />
+            }
+        </span>
+    }
+    @if (List.ThumbnailTemplate is { } thumbnail)
+    {
+        <span class="forma-data-list-item-thumbnail">@thumbnail(Item)</span>
+    }
+    <span class="forma-data-list-item-text">
+        <span class="forma-data-list-item-name">@View.ItemName(Item)</span>
+        @if (List.ItemTemplate is { } detail)
+        {
+            <span class="forma-data-list-item-detail">@detail(Item)</span>
+        }
+    </span>
+</div>
