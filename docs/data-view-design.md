@@ -157,8 +157,9 @@ and that returns a **page**: the items and the total, or no total where the stor
 count cheaply, in which case the engine drops its pager and pages by the items it
 received. A request superseded by a newer one is canceled rather than ignored, and the
 newest answer is the one shown. `RefreshDataAsync` asks the source again for the items
-being shown, which is how a host reports that the records changed; a page that no longer
-exists, because the last items on it were deleted, gives way to the last page that does.
+being shown, a tree's open nodes among them, which is how a host reports that the records
+changed; a page that no longer exists, because the last items on it were deleted, gives way
+to the last page that does.
 
 While a provider is answering the engine is busy: the items it had stay in place under a
 busy state, and a data view that has never had items shows its loading content instead. A

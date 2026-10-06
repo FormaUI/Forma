@@ -172,6 +172,63 @@
         }
 
         [Fact]
+        public async Task Should_show_what_changed_under_a_held_source_once_the_data_view_is_refreshed()
+        {
+            // Arrange — the queryable reads the list as it is each time it is asked
+            using var ctx = new FormaDataTreeTests();
+            var entries = CreateEntries().ToList();
+            var source = entries.AsQueryable();
+            var cut = ctx.Render(
+                @<FormaDataView Items="source" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            // Act — a file added under the open folder and a folder at the root
+            entries.Add(new Entry(7, 1, "Budget.xlsx", false));
+            entries.Add(new Entry(8, null, "Music", true));
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            await engine.InvokeAsync(() => engine.Instance.RefreshDataAsync());
+
+            // Assert
+            Assert.Equal(["Documents", "Reports", "Notes.txt", "Budget.xlsx", "Pictures", "Music"], cut.FindAll(".forma-data-tree-node-name").Select(name => name.TextContent).ToList());
+        }
+
+        [Fact]
+        public async Task Should_show_what_changed_under_a_held_source_when_the_refresh_gives_the_page_away()
+        {
+            // Arrange — a sidebar beside a grid of the roots, one to a page, on the second page
+            using var ctx = new FormaDataTreeTests();
+            var entries = CreateEntries().ToList();
+            var source = entries.AsQueryable();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="source" PageSize="1" Page="2" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" />
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+
+            // Act — Pictures, the second page's only root, goes, and a file is added under the open folder
+            entries.RemoveAll(entry => entry.Id is 2 or 5);
+            entries.Add(new Entry(7, 1, "Budget.xlsx", false));
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            await engine.InvokeAsync(() => engine.Instance.RefreshDataAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Documents"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList()),
+                () => Assert.Equal(["Documents", "Reports", "Notes.txt", "Budget.xlsx"], cut.FindAll(".forma-data-tree-node-name").Select(name => name.TextContent).ToList()));
+        }
+
+        [Fact]
         public void Should_presume_a_node_opens_until_its_children_come_back_empty()
         {
             // Arrange — no HasChildren, so every node offers to open

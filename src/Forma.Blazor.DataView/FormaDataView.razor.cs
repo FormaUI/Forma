@@ -591,7 +591,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Reads the items being shown again.</summary>
     public Task RefreshDataAsync()
-        => LoadAsync();
+        => LoadAsync(asksNodesAgain: true);
 
     /// <summary>Folds the group keyed <paramref name="key"/> away under its heading, its items hidden until it opens again.</summary>
     /// <param name="key">The group's key.</param>
@@ -1376,7 +1376,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await PageChanged.InvokeAsync(page);
     }
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(bool asksNodesAgain = false)
     {
         // Every load may order the items anew, so a position read against the last order names nothing now.
         _orderVersion++;
@@ -1396,13 +1396,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         _loadedGrouping = GroupBy;
         _loadedParentKey = GetNodeKey(_currentItem);
 
-        // The children a tree keeps were sorted and read from the source as it was, so a new source or sort asks again; the nodes the
-        // reader opened stay open, and their children go on showing until the answer comes. A fresh state per node leaves an answer
-        // still on its way from the old source nowhere to land.
+        // The children a tree keeps were sorted and read from the source as it was, so a refresh, a new source or a new sort asks
+        // again; the nodes the reader opened stay open, and their children go on showing until the answer comes. A fresh state per
+        // node leaves an answer still on its way from the source as it was nowhere to land.
         object sortToken = (_sortName, _sortDirection);
-        var isSourceNew = !ReferenceEquals(_loadedSource, source) || !Equals(_loadedSortToken, sortToken);
+        var areNodesStale = asksNodesAgain || !ReferenceEquals(_loadedSource, source) || !Equals(_loadedSortToken, sortToken);
 
-        if (isSourceNew)
+        if (areNodesStale)
         {
             foreach (var (key, node) in _nodes.ToList())
             {
@@ -1441,7 +1441,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             if (EnablePagination && _page > 1 && _items.Count == 0 && page.TotalCount is { } total)
             {
                 await MoveToPageAsync(Math.Max(1, (total + PageSize - 1) / PageSize));
-                await LoadAsync();
+                await LoadAsync(asksNodesAgain: areNodesStale);
                 return;
             }
         }
@@ -1460,7 +1460,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         AnnounceSettled();
         await NotifyStateAsync();
 
-        if (isSourceNew)
+        if (areNodesStale)
         {
             await RefreshStaleNodesAsync();
         }
