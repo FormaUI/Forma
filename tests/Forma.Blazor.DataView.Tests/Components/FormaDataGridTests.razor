@@ -88,6 +88,33 @@
             Assert.Equal([false, true], selects);
         }
 
+        [Fact]
+        public void Should_attach_selection_again_to_move_among_the_boxes_once_they_are_drawn()
+        {
+            // Arrange — the behavior hands back a handle, so the grid holds it as attached
+            using var ctx = new FormaDataGridTests();
+            var selection = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.DataView/scripts/SelectionInteraction.js");
+            selection.SetupModule("attach", _ => true);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+
+            // Act
+            cut.FindComponent<FormaDataView<GridItem>>().Render(parameters => parameters.Add(view => view.EnableCheckedSelection, true));
+
+            // Assert — attached with no marker to move among, then again to move among the boxes without selecting
+            var attached = selection.Invocations.Where(invocation => invocation.Identifier == "attach")
+                .Select(invocation => invocation.Arguments[1]!)
+                .Select(options => (Selects: (bool)options.GetType().GetProperty("selects")!.GetValue(options)!, Moves: (bool)options.GetType().GetProperty("moves")!.GetValue(options)!))
+                .ToList();
+            Assert.Equal([(false, false), (false, true)], attached);
+        }
+
         private static IQueryable<GridItem> CreateItems(int count) => Enumerable.Range(1, count)
             .Select(id => new GridItem(id, $"Item {id}"))
             .AsQueryable();

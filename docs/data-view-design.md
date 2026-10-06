@@ -528,20 +528,23 @@ compact density, and whatever a template places in an item.
 
 Sorting, selecting, paging, folding, revealing a column, switching views and opening the
 columns menu are all reachable from the keyboard: Tab reaches the header buttons, the item
-markers and the items' own controls, the arrows move focus among the items while pointer
-selection is on, in the directions the view gives them, and the paginator's own keys page.
-Home and End reach the ends of the collection in a view of one column, and a row's ends in
-the cards, where Ctrl+Home and Ctrl+End reach the collection's. Every move keeps the
-selection's rules: plain selects the item reached, the primary modifier moves the focus
-alone, and Shift extends the range from the anchor, with the primary modifier too where the
-move reaches the collection's ends. The ends are the first and the last item the reader can
-reach, across the open groups, within the page where the data view pages, and among the
-visible nodes in the tree. A virtualizing view reaches them however far they lie: the move
-names the end it wants, the view scrolls the item into range, and the focus lands on it once
-it is drawn, so the outcome is the one a view drawing every item gives; a move the reader
-leaves, or one whose order or view changes before it lands, lets the focus go. Over a source
-that cannot count, End reaches the last item the source has answered, and the view reads one
-slice further as it scrolls there.
+markers and the items' own controls, the arrows move focus among the items while either kind
+of selection draws their markers, in the directions the view gives them, and the paginator's
+own keys page. The markers stand as one tab stop, the one last focused or the first drawn
+until one is, and a box in the list, the cards and the tree is named for its item. Home and
+End reach the ends of the collection in a view of one column, and a row's ends in the cards,
+where Ctrl+Home and Ctrl+End reach the collection's. Under checked selection alone the
+markers are the boxes, every move takes the focus alone, and Space checks the box; under
+pointer selection every move keeps the selection's rules: plain selects the item reached,
+the primary modifier moves the focus alone, and Shift extends the range from the anchor,
+with the primary modifier too where the move reaches the collection's ends. The ends are
+the first and the last item the reader can reach, across the open groups, within the page
+where the data view pages, and among the visible nodes in the tree. A virtualizing view
+reaches them however far they lie: the move names the end it wants, the view scrolls the
+item into range, and the focus lands on it once it is drawn, so the outcome is the one a
+view drawing every item gives; a move the reader leaves, or one whose order or view changes
+before it lands, lets the focus go. Over a source that cannot count, End reaches the last
+item the source has answered, and the view reads one slice further as it scrolls there.
 
 Every offset, alignment and border is logical, so the same stylesheet serves both
 directions; a numeric cell reads as a number in either, cards pack from the inline start,

@@ -330,6 +330,106 @@ describe('SelectionInteraction', () => {
         });
     });
 
+    describe('among boxes the reader checks', () => {
+        const options = () => ({ owner, selects: false, moves: true });
+
+        it.each`
+            key            | from | to
+            ${'ArrowDown'} | ${1} | ${2}
+            ${'ArrowUp'}   | ${3} | ${2}
+            ${'Home'}      | ${3} | ${1}
+            ${'End'}       | ${1} | ${4}
+        `('moves the focus alone on $key', ({ key, from, to }) => {
+            attachSelection(grid, options());
+            cellOf(from).focus();
+
+            const event = press(cellOf(from), key);
+
+            expect(document.activeElement).toBe(cellOf(to));
+            expect(event.defaultPrevented).toBe(true);
+            selected().not.toHaveBeenCalled();
+        });
+
+        it('moves the focus alone whatever modifier is held', () => {
+            attachSelection(grid, options());
+            cellOf(1).focus();
+
+            press(cellOf(1), 'ArrowDown', { shiftKey: true });
+            press(cellOf(2), 'ArrowDown', { ctrlKey: true });
+
+            expect(document.activeElement).toBe(cellOf(3));
+            selected().not.toHaveBeenCalled();
+        });
+
+        it('leaves Space to the box', () => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            const event = press(cellOf(2), ' ');
+
+            expect(event.defaultPrevented).toBe(false);
+            selected().not.toHaveBeenCalled();
+        });
+
+        it('asks an owner that seeks for the last item, to move the focus alone', () => {
+            document.body.innerHTML = `<div id="list">${[[1, 10], [2, 11]].map(([key, position]) => `<div class="item" data-item-position="${position}"><span data-row-key="${key}" tabindex="-1">Item</span></div>`).join('')}</div>`;
+            grid = document.querySelector('#list');
+            attachSelection(grid, { ...options(), itemSelector: '.item', positionAttribute: 'data-item-position', seeks: true });
+            cellOf(1).focus();
+
+            press(cellOf(1), 'End', { shiftKey: true });
+
+            selected().toHaveBeenLastCalledWith('HandleSeekAsync', 1, true, 'focus', null);
+        });
+    });
+
+    describe('as one tab stop', () => {
+        const tabIndexes = () => [...grid.querySelectorAll('[data-row-key]')].map(marker => marker.tabIndex);
+        const settle = () => new Promise(resolve => setTimeout(resolve));
+
+        it('makes the first marker the tab stop once attached', () => {
+            attachSelection(grid, { owner, selects: false, moves: true });
+
+            expect(tabIndexes()).toEqual([0, -1, -1, -1]);
+        });
+
+        it('makes a marker taking the focus the tab stop', () => {
+            attachSelection(grid, { owner });
+
+            cellOf(3).focus();
+
+            expect(tabIndexes()).toEqual([-1, -1, 0, -1]);
+        });
+
+        it('draws a marker a render adds out of the tab order', async () => {
+            attachSelection(grid, { owner });
+            cellOf(2).focus();
+
+            grid.querySelector('tbody').insertAdjacentHTML('beforeend', '<tr><td><span data-row-key="5">Row</span></td></tr>');
+            await settle();
+
+            expect(tabIndexes()).toEqual([-1, 0, -1, -1, -1]);
+        });
+
+        it('hands the tab stop to the first marker once the focused one is gone', async () => {
+            attachSelection(grid, { owner });
+            cellOf(3).focus();
+
+            cellOf(3).closest('tr').remove();
+            await settle();
+
+            expect(tabIndexes()).toEqual([0, -1, -1]);
+        });
+
+        it('leaves the tab order alone where the keys move nothing', () => {
+            attachSelection(grid, { owner, selects: false });
+
+            cellOf(3).focus();
+
+            expect(tabIndexes()).toEqual([-1, -1, -1, -1]);
+        });
+    });
+
     describe('across a packed layout', () => {
         const card = key => `<div class="card"><span data-row-key="${key}" tabindex="-1">Card</span></div>`;
         const pack = (columns, { width = 100, height = 100 } = {}) => {

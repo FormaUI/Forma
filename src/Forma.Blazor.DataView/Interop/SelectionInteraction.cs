@@ -16,15 +16,16 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="itemKeyAttribute">The attribute an item carries its token in, where null reads the token from its marker.</param>
     /// <param name="controlSelector">The selector naming the parts of an item that hold its own controls, whose presses leave the item's selection and activation alone.</param>
     /// <param name="selects">Whether a press and the arrows select, where false makes a press activate.</param>
+    /// <param name="moves">Whether the arrows, Home and End move the focus among the markers, which then stand as one tab stop.</param>
     /// <param name="positionAttribute">The attribute an item carries its position in the owner's order in.</param>
     /// <param name="seeks">Whether the owner holds more items than the page draws, so a move to the list's ends is asked of it and a range runs by position.</param>
-    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, string? positionAttribute = null, bool seeks = false)
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false)
         where TOwner : class
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentException.ThrowIfNullOrWhiteSpace(itemSelector);
 
-        return AttachCoreAsync(container, new { owner, itemSelector, itemKeyAttribute, controlSelector, selects, positionAttribute, seeks });
+        return AttachCoreAsync(container, new { owner, itemSelector, itemKeyAttribute, controlSelector, selects, moves, positionAttribute, seeks });
     }
 
     /// <summary>Lands the focus on the item at <paramref name="position"/> once it is drawn, answering the move <paramref name="request"/> named, unless the reader moved on meanwhile.</summary>

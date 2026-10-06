@@ -89,6 +89,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private DotNetObjectReference<FormaDataView<TItem>>? _selfReference;
     private bool _isSelectionAttached;
     private bool _isAttachedToSelect;
+    private bool _isAttachedToMove;
     private bool _isAttachedToSeek;
     private int _orderVersion;
     private SelectionBounds _selectionBounds;
@@ -415,6 +416,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool IsVirtualizing
         => Virtualize && !EnablePagination;
 
+    // Either kind of selection draws a marker on every item, which the keys move among.
+    private bool HasMarkers
+        => EnableItemSelection || EnableCheckedSelection;
+
     // Selecting the page adds what is not yet selected on it to what is selected, on this page or another.
     private bool CanSelectPage
         => _selectionBounds.CanSelectAll(_selectedSet.Count + _items.Count - PageSelectedCount);
@@ -556,9 +561,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         // The behavior answers every press on an item: under item selection a press selects and a double press activates, and
-        // otherwise a press activates, as Enter on an item's marker does either way; a change of selection since it attached lets
-        // it go, so it attaches again as the selection now is.
-        if (_selectionInteraction.IsAttached && (_isAttachedToSelect != EnableItemSelection || _isAttachedToSeek != (ActivePositions is not null)))
+        // otherwise a press activates, as Enter on an item's marker does either way; the keys move among the markers either kind
+        // of selection draws, selecting under item selection alone. A change of selection since it attached lets it go, so it
+        // attaches again as the selection now is.
+        if (_selectionInteraction.IsAttached && (_isAttachedToSelect != EnableItemSelection || _isAttachedToMove != HasMarkers || _isAttachedToSeek != (ActivePositions is not null)))
         {
             await _selectionInteraction.DetachAsync();
             _isSelectionAttached = false;
@@ -569,12 +575,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             // Claimed before the await so a render arriving mid-call cannot re-enter and attach a second listener to the same region.
             _isSelectionAttached = true;
             _isAttachedToSelect = EnableItemSelection;
+            _isAttachedToMove = HasMarkers;
             _isAttachedToSeek = ActivePositions is not null;
             _selfReference ??= DotNetObjectReference.Create(this);
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, PositionAttribute, _isAttachedToSeek);
+            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek);
         }
 
         // Only a paged data view that does not virtualize holds a height for a short page.

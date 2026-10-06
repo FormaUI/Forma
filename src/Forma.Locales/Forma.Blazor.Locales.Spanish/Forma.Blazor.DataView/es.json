@@ -23,15 +23,15 @@
   },
   "FormaDataList": {
     "List": "Lista",
-    "Select Item": "Seleccionar Elemento"
+    "Select {Name}": "Seleccionar {Name}"
   },
   "FormaDataCards": {
     "Cards": "Tarjetas",
-    "Select Item": "Seleccionar Elemento"
+    "Select {Name}": "Seleccionar {Name}"
   },
   "FormaDataTree": {
     "Tree": "Árbol",
-    "Select Item": "Seleccionar Elemento",
+    "Select {Name}": "Seleccionar {Name}",
     "Loading": "Cargando",
     "Open {Name}": "Abrir {Name}",
     "Close {Name}": "Cerrar {Name}"

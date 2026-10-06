@@ -17,8 +17,12 @@
  * position once it is drawn; the focus lands on it then, unless the reader moved on meanwhile. Each
  * move keeps its rules on the way: plain selects the item reached, the primary modifier moves the
  * focus alone, and Shift extends the range from the anchor, by position where the owner seeks, so an
- * anchor scrolled out of the page still counts. A render that draws the focused item's element afresh
- * drops the focus to nothing; with neither a press nor Tab to explain it, the focus goes back to the item's
+ * anchor scrolled out of the page still counts. Where the list moves without selecting, its markers
+ * being boxes the reader checks with Space, every move takes the focus alone.
+ *
+ * Wherever the keys move, the markers stand as one tab stop: the marker last focused, or the first
+ * drawn until one is, so Tab enters the list once and leaves it at once. A render that draws the
+ * focused item's element afresh drops the focus to nothing; with neither a press nor Tab to explain it, the focus goes back to the item's
  * marker, so Tab still leaves the list, and the page, from its last item. A press or a Tab that a host
  * handles while keeping the focus where it was explains nothing once it has ended.
  *
@@ -56,6 +60,7 @@ const SeekPatience = 3000;
  *   itemKeyAttribute?: string | null,
  *   controlSelector?: string | null,
  *   selects?: boolean,
+ *   moves?: boolean,
  *   positionAttribute?: string | null,
  *   seeks?: boolean
  * }} options
@@ -163,8 +168,10 @@ class SelectionInteraction {
     #itemKeyAttribute;
     #controlSelector;
     #positionAttribute;
+    #selects;
     #seeks;
     #registration;
+    #tabStop = null;
     #anchor = null;
     #anchorPosition = null;
     #seeking = null;
@@ -175,7 +182,7 @@ class SelectionInteraction {
     #readerMoved = false;
     #moveStart = null;
 
-    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, positionAttribute = null, seeks = false }) {
+    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, positionAttribute = null, seeks = false }) {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
@@ -184,11 +191,12 @@ class SelectionInteraction {
         this.#itemKeyAttribute = itemKeyAttribute;
         this.#controlSelector = controlSelector;
         this.#positionAttribute = positionAttribute;
+        this.#selects = selects;
         this.#seeks = seeks && positionAttribute !== null;
 
         // Each key moves plain, with Shift extending the range, or with the primary modifier moving alone; one that
         // would move nothing matches nothing, so a press at the end of the list keeps its default.
-        const moves = selects
+        const routes = moves
             ? Moves.map(move => ({
                 action: move.action,
                 bindings: [
@@ -227,7 +235,7 @@ class SelectionInteraction {
             handle: event => this.#activate(event),
         };
 
-        this.#registration = register(target, { routes: [...moves, ...selection, activation] });
+        this.#registration = register(target, { routes: [...routes, ...selection, activation] });
 
         // A render may draw the focused item's element afresh, which drops the focus to nothing; with neither a press nor Tab to
         // explain the loss, the focus goes back to the item's marker once the render has drawn it again. Both are observed rather
@@ -237,6 +245,24 @@ class SelectionInteraction {
         const signal = this.#listening.signal;
         const ownerDocument = target.ownerDocument;
         target.addEventListener('focusin', event => this.#hold(this.#focusedMarker(event)), { signal });
+
+        // Wherever the keys move, a marker taking the focus becomes the tab stop, and every marker a render draws joins the rest.
+        if (moves) {
+            target.addEventListener('focusin', event => {
+                const marker = this.#focusedMarker(event);
+
+                if (marker) {
+                    this.#tabStop = marker;
+                    this.#settleTabStop();
+                }
+            }, { signal });
+
+            const drawing = new MutationObserver(() => this.#settleTabStop());
+            drawing.observe(target, { childList: true, subtree: true });
+            signal.addEventListener('abort', () => drawing.disconnect());
+            this.#settleTabStop();
+        }
+
         ownerDocument.addEventListener('pointerdown', () => this.#beginMove(), { capture: true, signal });
         ownerDocument.addEventListener('pointerup', event => {
             if (event.button !== 0) {
@@ -377,11 +403,27 @@ class SelectionInteraction {
     }
 
     #focusMarker(marker, all) {
+        this.#tabStop = marker;
+
         for (const candidate of all) {
             candidate.tabIndex = candidate === marker ? 0 : -1;
         }
 
         marker.focus();
+    }
+
+    // The marker last focused stays the one tab stop while it is drawn, and the first drawn marker stands in for it otherwise.
+    #settleTabStop() {
+        const all = this.#markers();
+        const stop = this.#tabStop?.isConnected && this.#target.contains(this.#tabStop) ? this.#tabStop : all[0];
+
+        for (const marker of all) {
+            const tabIndex = marker === stop ? 0 : -1;
+
+            if (marker.tabIndex !== tabIndex) {
+                marker.tabIndex = tabIndex;
+            }
+        }
     }
 
     // The position an item carries in the owner's order, where the owner seeks.
@@ -573,9 +615,9 @@ class SelectionInteraction {
         }
 
         // Plain selects the item reached and the primary modifier moves the focus alone; Shift extends the range, with the
-        // primary modifier too where the move reached the whole list's end.
+        // primary modifier too where the move reached the whole list's end. A list that does not select moves the focus alone.
         const primary = event.ctrlKey || event.metaKey;
-        const mode = event.shiftKey && (!primary || plan.whole) ? 'extend' : primary ? 'focus' : 'select';
+        const mode = !this.#selects ? 'focus' : event.shiftKey && (!primary || plan.whole) ? 'extend' : primary ? 'focus' : 'select';
 
         if (plan.edge !== undefined && plan.all === undefined) {
             this.#seek(plan.edge, mode);

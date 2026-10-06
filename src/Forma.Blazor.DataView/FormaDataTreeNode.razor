@@ -53,7 +53,7 @@
                 <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-tree-node-marker")"
                                data-row-key="@Token"
                                data-focus-heir="@Tree.GetHeirMark(key, marker: true)"
-                               aria-label="@L["Select Item"]"
+                               aria-label="@L["Select {Name}", View.ItemName(Item)]"
                                aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
                                Value="@View.IsSelected(Item)"
                                PreventDefault="true"

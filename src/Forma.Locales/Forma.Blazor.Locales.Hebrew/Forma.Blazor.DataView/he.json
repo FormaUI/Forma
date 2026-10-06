@@ -23,15 +23,15 @@
   },
   "FormaDataList": {
     "List": "רשימה",
-    "Select Item": "בחר פריט"
+    "Select {Name}": "בחר את {Name}"
   },
   "FormaDataCards": {
     "Cards": "כרטיסים",
-    "Select Item": "בחר פריט"
+    "Select {Name}": "בחר את {Name}"
   },
   "FormaDataTree": {
     "Tree": "עץ",
-    "Select Item": "בחר פריט",
+    "Select {Name}": "בחר את {Name}",
     "Loading": "טוען",
     "Open {Name}": "פתח את {Name}",
     "Close {Name}": "סגור את {Name}"

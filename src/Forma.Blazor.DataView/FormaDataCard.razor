@@ -20,7 +20,7 @@
                 <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
                     <FormaCheckBox class="@(View.EnableCheckedSelection ? "forma-data-card-box" : "forma-data-card-marker")"
                                    data-row-key="@Token"
-                                   aria-label="@L["Select Item"]"
+                                   aria-label="@L["Select {Name}", View.ItemName(Item)]"
                                    aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
                                    Value="@View.IsSelected(Item)"
                                    PreventDefault="true"
