@@ -1,0 +1,129 @@
+@page "/number-input"
+@attribute [ShowcasePage("FormaNumberInput")]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Inputs
+@using Forma.Framework.Css
+@using System.Globalization
+@inject IStringLocale<FormaNumberInputPage> L
+
+<h1>FormaNumberInput</h1>
+<p class="description">@L["A field for a number, typed the way the reader's culture writes it and stepped with the up and down arrows. A number it cannot read, or one past its limits, is reported under the field and never written, so the model keeps the last number that was."]</p>
+
+<EditForm Model="Model" FormName="number-input-demo" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="demo-section">
+        <h2>@L["Basic"]</h2>
+        <p class="description">@L["A whole number that can be empty. Type one, or press the up and down arrows; a word in place of a number is reported under the field."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.Quantity" Label="@L["Quantity"]" />
+            <p class="demo-note">@L["Value"]: <code>@(Model.Quantity?.ToString(CultureInfo.CurrentCulture) ?? "null")</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["A Fraction in Steps"]</h2>
+        <p class="description">@L["A decimal filled in already, stepped by half a unit and never below zero. It is written with the separators of the reader's culture, and a thousands separator is read only where it groups the digits as the culture does, so 1,234 is taken while 1,5 is reported rather than guessed at."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.Price" Label="@L["Price"]" Min="0" Step="0.5m" />
+            <p class="demo-note">@L["Value"]: <code>@(Model.Price?.ToString(CultureInfo.CurrentCulture) ?? "null")</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["With Limits"]</h2>
+        <p class="description">@L["Between 0 and 100. The arrows stop at either end; a number typed past one is reported, and the model keeps the last number in range."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.Discount" Label="@L["Discount (%)"]" Min="0" Max="100" Step="5" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Required in a Form"]</h2>
+        <p class="description">@L["A number input is a form input: submitting without a number shows the validation message under it, and entering one clears it."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.Seats" Label="@L["Seats"]" Required="true" Min="1" />
+            <div class="demo-row">
+                <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
+                @if (_submitted)
+                {
+                    <span class="demo-note">@L["Submitted."]</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["A Number That Cannot Be Empty"]</h2>
+        <p class="description">@L["Bound to a number rather than a nullable one, the field always holds a number: clearing it reports the field and keeps the number it held until another is entered."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.UsageLimit" Label="@L["Usage Limit"]" Min="0" />
+            <p class="demo-note">@L["Value"]: <code>@Model.UsageLimit.ToString(CultureInfo.CurrentCulture)</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Below Zero"]</h2>
+        <p class="description">@L["With no lower limit a number can be negative, so a phone offers its full keyboard, minus sign included, rather than its keypad of digits."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.Adjustment" Label="@L["Stock Adjustment"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Disabled and Read-Only"]</h2>
+        <div class="demo-box">
+            <div class="demo-stack">
+                <FormaNumberInput @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
+                <FormaNumberInput @bind-Value="Model.Locked" Label="@L["Read-Only"]" ReadOnly="true" />
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+<div class="demo-section">
+    <h2>@L["Without a Label"]</h2>
+    <p class="description">@L["Without a Label the input stands bare and level with a button, as a quantity beside an Add button does, and needs no form around it."]</p>
+    <div class="demo-box">
+        <div class="demo-row">
+            <FormaNumberInput @bind-Value="_bareQuantity" Placeholder="@L["Quantity"]" aria-label="@L["Quantity"]" Min="1" Width="CssLength.FromCh(8)" />
+            <FormaButton Variant="ButtonVariant.Secondary">@L["Add"]</FormaButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _submitted;
+
+    private int? _bareQuantity = 1;
+
+    private NumberInputDemoModel Model { get; set; } = default!;
+
+    protected override void OnInitialized()
+        => Model = new NumberInputDemoModel(L) { Price = 12.5m, UsageLimit = 100, Locked = 42 };
+
+    private void HandleSubmit()
+        => _submitted = true;
+
+    private sealed class NumberInputDemoModel(IStringLocale<FormaNumberInputPage> localizer) : IValidatableObject
+    {
+        public int? Quantity { get; set; }
+        public decimal? Price { get; set; }
+        public int? Discount { get; set; }
+        public int? Seats { get; set; }
+        public int UsageLimit { get; set; }
+        public decimal? Adjustment { get; set; }
+        public int? Locked { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Seats is null)
+            {
+                yield return new ValidationResult(localizer["The number of seats is required."], [nameof(Seats)]);
+            }
+        }
+    }
+}

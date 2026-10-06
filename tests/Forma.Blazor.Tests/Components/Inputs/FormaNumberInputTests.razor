@@ -1,0 +1,534 @@
+@inherits FormaBunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_spin_button_with_its_number_and_limits()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Count = 5 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Min="0" Max="10" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            Assert.Multiple(
+                () => Assert.Equal("spinbutton", input.GetAttribute("role")),
+                () => Assert.Equal("text", input.GetAttribute("type")),
+                () => Assert.Equal("ltr", input.GetAttribute("dir")),
+                () => Assert.Equal("5", input.GetAttribute("value")),
+                () => Assert.Equal("5", input.GetAttribute("aria-valuenow")),
+                () => Assert.Equal("0", input.GetAttribute("aria-valuemin")),
+                () => Assert.Equal("10", input.GetAttribute("aria-valuemax")),
+                () => Assert.Equal("numeric", input.GetAttribute("inputmode")),
+                () => Assert.Equal("In stock", cut.Find("label.forma-field-label").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_offer_the_full_keyboard_where_the_number_can_be_negative()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var unbounded = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="Change" />
+            </FakeFormHost>);
+            var fractional = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Min="0" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("text", unbounded.Find("input").GetAttribute("inputmode")),
+                () => Assert.Equal("decimal", fractional.Find("input").GetAttribute("inputmode")));
+        }
+
+        [Fact]
+        public void Should_read_and_show_a_number_in_the_reader_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("es");
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Precio" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("1234,5");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1234.5m, model.Price),
+                () => Assert.Equal("1234,5", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("1234.5", cut.Find("input").GetAttribute("aria-valuenow")));
+        }
+
+        [Fact]
+        public void Should_empty_a_number_that_can_be_empty_when_cleared()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock { Count = 5 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(string.Empty);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(model.Count),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public void Should_keep_a_number_that_cannot_be_empty_and_report_the_field_when_cleared()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock { Limit = 20 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Limit" Label="Usage limit" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(string.Empty);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(20, model.Limit),
+                () => Assert.Contains("invalid", cut.Find("input").ClassList),
+                () => Assert.Equal("The Usage limit field is required.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_keep_the_last_number_and_report_text_that_is_not_one()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock { Count = 5 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("five");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(5, model.Count),
+                () => Assert.Equal("The In stock field must be a number.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Theory]
+        [InlineData("en-US", "1,234", 1234)]
+        [InlineData("en-US", "-12,345.5", -12345.5)]
+        [InlineData("en-US", "1234.5", 1234.5)]
+        [InlineData("de-DE", "1.234,5", 1234.5)]
+        [InlineData("en-IN", "12,34,567", 1234567)]
+        [InlineData("fr-FR", "1 234,5", 1234.5)]
+        public void Should_read_a_number_grouped_as_the_culture_groups_it(string name, string typed, double expected)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture(name);
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal((decimal)expected, model.Price),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Theory]
+        [InlineData("en-US", "1,5")]
+        [InlineData("en-US", "1,23,456")]
+        [InlineData("en-US", "1234,567")]
+        [InlineData("en-US", "1.234,5")]
+        [InlineData("de-DE", "1.5")]
+        [InlineData("en-IN", "1,234,567")]
+        public void Should_refuse_a_separator_that_does_not_group_as_the_culture_does(string name, string typed)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture(name);
+            var model = new Stock { Price = 2m };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2m, model.Price),
+                () => Assert.Equal("The Price field must be a number.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Theory]
+        [InlineData("-1", "The In stock field must be at least 0.")]
+        [InlineData("11", "The In stock field must be at most 10.")]
+        public void Should_report_a_number_past_a_limit_and_keep_the_last_one(string typed, string message)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Count = 5 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Min="0" Max="10" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(5, model.Count),
+                () => Assert.Equal(message, cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_clear_a_report_once_a_number_is_typed_in_range()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock { Count = 5 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Min="0" Max="10" />
+            </FakeFormHost>);
+            cut.Find("input").Change("11");
+
+            // Act
+            cut.Find("input").Change("7");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(7, model.Count),
+                () => Assert.DoesNotContain("invalid", cut.Find("input").ClassList),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public void Should_mark_a_number_required_where_it_cannot_be_empty_or_the_host_asks()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var optional = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
+            </FakeFormHost>);
+            var asked = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Required="true" />
+            </FakeFormHost>);
+            var inherent = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Limit" Label="Usage limit" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(optional.FindAll(".forma-field-required")),
+                () => Assert.Null(optional.Find("input").GetAttribute("aria-required")),
+                () => Assert.Single(asked.FindAll(".forma-field-required")),
+                () => Assert.Equal("true", asked.Find("input").GetAttribute("aria-required")),
+                () => Assert.Single(inherent.FindAll(".forma-field-required")),
+                () => Assert.Equal("true", inherent.Find("input").GetAttribute("aria-required")));
+        }
+
+        [Fact]
+        public void Should_stand_bare_without_a_label()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Placeholder="Quantity" aria-label="Quantity" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            Assert.Multiple(
+                () => Assert.Contains("forma-text-box", input.ClassList),
+                () => Assert.Equal("Quantity", input.GetAttribute("placeholder")),
+                () => Assert.Empty(cut.FindAll(".forma-field-label")));
+        }
+
+        [Fact]
+        public void Should_refuse_a_value_that_is_not_a_number()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Note" Label="Note" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(render);
+        }
+
+        [Fact]
+        public void Should_refuse_a_fractional_step_for_a_whole_number()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Step="0.5m" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentException>(render);
+        }
+    }
+
+    public sealed class Stepping
+    {
+        [Fact]
+        public void Should_declare_the_vertical_arrows_as_routes_on_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock();
+
+            // Act
+            ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(["number-input.increase:ArrowUp", "number-input.decrease:ArrowDown"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
+        }
+
+        [Fact]
+        public async Task Should_step_the_number_by_the_step_either_way()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Price = 2m };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Step="0.5m" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("number-input.increase", "ArrowUp");
+            await router.RouteAsync("number-input.increase", "ArrowUp");
+            await router.RouteAsync("number-input.decrease", "ArrowDown");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2.5m, model.Price),
+                () => Assert.Equal("2.5", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_show_a_stepped_number_without_the_zeros_a_sum_keeps()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Price = 12.5m };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Step="0.5m" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("number-input.increase", "ArrowUp");
+
+            // Assert
+            Assert.Equal("13", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public async Task Should_stop_a_step_at_the_limits()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Count = 9 };
+            ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Min="0" Max="10" Step="5" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("number-input.increase", "ArrowUp");
+            var afterUp = model.Count;
+            await router.RouteAsync("number-input.decrease", "ArrowDown");
+            await router.RouteAsync("number-input.decrease", "ArrowDown");
+            await router.RouteAsync("number-input.decrease", "ArrowDown");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(10, afterUp),
+                () => Assert.Equal(0, model.Count));
+        }
+
+        [Theory]
+        [InlineData("number-input.increase", "ArrowUp", 3)]
+        [InlineData("number-input.decrease", "ArrowDown", 8)]
+        public async Task Should_start_an_empty_number_from_the_limit_it_moves_away_from(string action, string key, int expected)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock();
+            ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Min="3" Max="8" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync(action, key);
+
+            // Assert
+            Assert.Equal(expected, model.Count);
+        }
+
+        [Fact]
+        public async Task Should_start_an_empty_number_without_limits_from_zero()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock();
+            ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("number-input.decrease", "ArrowDown");
+
+            // Assert
+            Assert.Equal(0, model.Count);
+        }
+
+        [Fact]
+        public async Task Should_clear_a_report_once_a_step_reaches_a_number()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Count = 5 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
+            </FakeFormHost>);
+            cut.Find("input").Change("five");
+
+            // Act
+            await router.RouteAsync("number-input.increase", "ArrowUp");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(6, model.Count),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public async Task Should_stop_a_step_at_the_largest_number_its_type_holds()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Count = int.MaxValue };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("number-input.increase", "ArrowUp");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(int.MaxValue, model.Count),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public async Task Should_show_the_number_a_step_lands_on_in_place_of_text_it_could_not_read()
+        {
+            // Arrange — the number stands at its limit, with a word typed over it
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Count = 10 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Max="10" />
+            </FakeFormHost>);
+            cut.Find("input").Change("ten");
+            var unread = cut.Find("input").GetAttribute("value");
+
+            // Act — a step at the limit lands on the same number
+            await router.RouteAsync("number-input.increase", "ArrowUp");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("ten", unread),
+                () => Assert.Equal(10, model.Count),
+                () => Assert.Equal("10", cut.Find("input").GetAttribute("value")),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public async Task Should_leave_a_read_only_or_disabled_number_alone()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Count = 5, Limit = 5 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" ReadOnly="true" />
+                <FormaNumberInput @bind-Value="model.Limit" Label="Usage limit" Disabled="true" />
+            </FakeFormHost>);
+            var inputs = cut.FindComponents<FormaNumberInput<int?>>().Select(input => input.Instance.RootElement).ToList();
+            var limit = cut.FindComponent<FormaNumberInput<int>>().Instance.RootElement;
+
+            // Act
+            await router.RouteAsync(inputs[0], "number-input.increase", "ArrowUp");
+            await router.RouteAsync(limit, "number-input.increase", "ArrowUp");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(5, model.Count),
+                () => Assert.Equal(5, model.Limit),
+                () => Assert.True(cut.FindAll("input")[0].HasAttribute("readonly")),
+                () => Assert.True(cut.FindAll("input")[1].HasAttribute("disabled")));
+        }
+    }
+
+    private sealed class Stock
+    {
+        public int? Count { get; set; }
+
+        public int Limit { get; set; }
+
+        public decimal? Price { get; set; }
+
+        public string? Note { get; set; }
+    }
+}

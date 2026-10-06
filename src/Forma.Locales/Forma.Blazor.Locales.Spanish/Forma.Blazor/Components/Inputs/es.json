@@ -32,6 +32,12 @@
     "{Selected} selected": "[$ [Selected] plural; one: # seleccionado; other: # seleccionados; $]",
     "Remove {Text}": "Quitar {Text}"
   },
+  "FormaNumberInput": {
+    "The {Field} field is required.": "El campo {Field} es obligatorio.",
+    "The {Field} field must be a number.": "El campo {Field} debe ser un número.",
+    "The {Field} field must be at least {Minimum}.": "El campo {Field} debe ser al menos {Minimum}.",
+    "The {Field} field must be at most {Maximum}.": "El campo {Field} debe ser como máximo {Maximum}."
+  },
   "FormaPasswordBox": {
     "Show Password": "Mostrar Contraseña",
     "Hide Password": "Ocultar Contraseña",

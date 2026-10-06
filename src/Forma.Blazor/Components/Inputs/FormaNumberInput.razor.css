@@ -1,0 +1,30 @@
+/* ============================================================
+   FormaNumberInput — CSS isolation
+   The number input's disabled, read-only and validation states,
+   and its figures of even width; its box comes from forma-input.css.
+   ============================================================ */
+
+.forma-number-input {
+    font-variant-numeric: tabular-nums;
+}
+
+.forma-number-input:disabled {
+    color: var(--forma-input-disabled-color, var(--disabled-text-color));
+    background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
+    cursor: not-allowed;
+}
+
+/* :read-only also matches a disabled input, which has its own treatment above. */
+.forma-number-input:read-only:not(:disabled) {
+    background-color: var(--forma-text-box-readonly-bg-color, var(--hover-bg-color));
+}
+
+/* Valid shows once the value is modified; invalid shows at once, since a submitted untouched
+   field is invalid without being modified. */
+.forma-number-input.modified.valid {
+    border-color: var(--forma-valid-color, var(--success-color));
+}
+
+.forma-number-input.invalid {
+    border-color: var(--forma-invalid-color, var(--danger-color));
+}

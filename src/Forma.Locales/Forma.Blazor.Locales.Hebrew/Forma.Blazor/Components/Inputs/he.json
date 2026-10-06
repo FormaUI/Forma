@@ -32,6 +32,12 @@
     "{Selected} selected": "[$ [Selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]",
     "Remove {Text}": "הסר {Text}"
   },
+  "FormaNumberInput": {
+    "The {Field} field is required.": "השדה {Field} הוא שדה חובה.",
+    "The {Field} field must be a number.": "השדה {Field} חייב להיות מספר.",
+    "The {Field} field must be at least {Minimum}.": "השדה {Field} חייב להיות לפחות {Minimum}.",
+    "The {Field} field must be at most {Maximum}.": "השדה {Field} חייב להיות לכל היותר {Maximum}."
+  },
   "FormaPasswordBox": {
     "Show Password": "הצג סיסמה",
     "Hide Password": "הסתר סיסמה",
