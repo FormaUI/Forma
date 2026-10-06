@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**34 components not yet implemented, 9 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 25 not yet started, and one in progress stands in the catalog's structure until then.
+**33 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 25 not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -51,7 +51,7 @@ The components still to build, in the order dependency and reuse suggest.
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaNumberInput`, `FormaTimePicker`, `FormaDateTimePicker`, `FormaCurrencyInput` | Form inputs, needed before any edit form; the currency input composes the number input, and the data view's property column edits with the other three |
+| 1 | `FormaTimePicker`, `FormaDateTimePicker`, `FormaCurrencyInput` | Form inputs, needed before any edit form; the currency input composes the number input, and the data view's property column edits with the other two |
 | 2 | `FormaCapacityIndicator` | Data display, needed for list pages |
 | 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
 | 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
@@ -291,15 +291,6 @@ A dialog holding a text area and a save button.
 |---|---|
 | **Old pattern** | Modal with `<textarea>` for admin notes on orders/leads, save button, timestamp display |
 | **Used in** | order detail, lead detail |
-
-### `FormaNumberInput`
-
-A field that edits a number.
-
-| | |
-|---|---|
-| **Old pattern** | `asp:TextBox` in `TextMode="Phone"`, left to right and capped by length, standing in for a number |
-| **Used in** | product (stock), coupons (usage limit), `FormaCurrencyInput`, and `FormaPropertyColumn`'s editor for a numeric member |
 
 ### `FormaPermissionMatrix`
 

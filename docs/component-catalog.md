@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**60 components implemented, 9 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**61 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -36,14 +36,14 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaFileUploader
 │   ├── ✅ FormaFileViewer
 │   └── ✅ FormaImagePicker
-├── (13 / 14) Inputs/
+├── (14 / 14) Inputs/
 │   ├── ✅ FormaCalendar
 │   ├── ✅ FormaCheckBox
 │   ├── ✅ FormaColorPicker
 │   ├── ✅ FormaDatePicker
 │   ├── ✅ FormaDateRangePicker
 │   ├── ✅ FormaMultiSelect
-│   ├── ◐ FormaNumberInput
+│   ├── ✅ FormaNumberInput
 │   ├── ✅ FormaPasswordBox
 │   ├── ✅ FormaSearchBox
 │   ├── ✅ FormaSelect
@@ -371,6 +371,15 @@ A form input for several values: a dropdown of checkboxes with search, the chose
 |---|---|
 | **Old pattern** | `.multi-input` with `.tags` + `.multi-dropdown` list. `$('#el').multi()` plugin. Tags display selected items, click X to remove. Dropdown with checkboxes. Optional "add new" button |
 | **Used in** | page editor (categories), product editor (categories), coupons (categories) |
+
+### `FormaNumberInput`
+
+A form input for a number, typed as the formatting culture writes it and stepped with the vertical arrows.
+
+| | |
+|---|---|
+| **Old pattern** | `asp:TextBox` in `TextMode="Phone"`, left to right and capped by length, standing in for a number |
+| **Used in** | product (stock), coupons (usage limit), `FormaCurrencyInput`, and `FormaPropertyColumn`'s editor for a numeric member |
 
 ### `FormaOverflowMenu`
 
