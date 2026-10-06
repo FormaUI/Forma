@@ -386,4 +386,110 @@
 
         private sealed record Product(int Id, string Name);
     }
+
+    public sealed class Source
+    {
+        private static List<Product> CreateProducts(int count)
+            => [.. Enumerable.Range(1, count).Select(id => new Product(id, $"Product {id}"))];
+
+        private static IReadOnlyList<string> GetNames(IRenderedComponent<IComponent> cut)
+            => [.. cut.FindAll(".forma-data-list-item-name").Select(name => name.TextContent)];
+
+        [Fact]
+        public void Should_leave_a_held_query_unasked_when_the_data_view_renders_with_nothing_changed()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var executor = new CountingQueryExecutor();
+            ctx.Services.AddSingleton<IDataViewQueryExecutor>(executor);
+            var query = CreateProducts(3).AsQueryable();
+            var cut = ctx.Render(
+                @<FormaDataView Items="query" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            var reads = executor.Reads;
+
+            // Act
+            engine.Render();
+            engine.Render(parameters => parameters.Add(view => view.Items, query));
+
+            // Assert
+            Assert.Equal(reads, executor.Reads);
+        }
+
+        [Fact]
+        public void Should_ask_a_query_built_again_over_a_changed_captured_value()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var executor = new CountingQueryExecutor();
+            ctx.Services.AddSingleton<IDataViewQueryExecutor>(executor);
+            var products = CreateProducts(4);
+            var minimum = 1;
+            var cut = ctx.Render(
+                @<FormaDataView Items="products.AsQueryable().Where(product => product.Id >= minimum)" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            var reads = executor.Reads;
+
+            // Act
+            minimum = 3;
+            engine.Render(parameters => parameters.Add(view => view.Items, products.AsQueryable().Where(product => product.Id >= minimum)));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(reads + 1, executor.Reads),
+                () => Assert.Equal(["Product 3", "Product 4"], GetNames(cut)));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Should_show_what_changed_under_a_held_query_once_refreshed(bool virtualize)
+        {
+            // Arrange — the queryable reads the list as it is each time it is asked
+            using var ctx = new FormaDataViewTests();
+            var products = CreateProducts(3);
+            var query = products.AsQueryable();
+            var cut = ctx.Render(
+                @<FormaDataView Items="query" EnablePagination="false" Virtualize="virtualize" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            products.RemoveAt(0);
+            products.Add(new Product(4, "Product 4"));
+            await engine.InvokeAsync(() => engine.Instance.RefreshDataAsync());
+
+            // Assert
+            Assert.Equal(["Product 2", "Product 3", "Product 4"], GetNames(cut));
+        }
+
+        // Counts and reads in memory, counting each read it makes.
+        private sealed class CountingQueryExecutor : IDataViewQueryExecutor
+        {
+            public int Reads { get; private set; }
+
+            public bool Supports<TItem>(IQueryable<TItem> query)
+                => true;
+
+            public ValueTask<int> CountAsync<TItem>(IQueryable<TItem> query, CancellationToken cancellationToken)
+                => InMemoryQueryExecutor.Instance.CountAsync(query, cancellationToken);
+
+            public ValueTask<TItem[]> ToArrayAsync<TItem>(IQueryable<TItem> query, CancellationToken cancellationToken)
+            {
+                Reads++;
+
+                return InMemoryQueryExecutor.Instance.ToArrayAsync(query, cancellationToken);
+            }
+        }
+
+        private sealed record Product(int Id, string Name);
+    }
 }

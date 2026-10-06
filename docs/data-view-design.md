@@ -148,7 +148,10 @@ A new `Items` queryable, or a new provider, is a new source, which the engine as
 keeping what the reader did: the selection, the page, the current node, and the nodes
 opened in a tree, whose children go on showing until the new source answers for them. A
 page therefore keeps one queryable across its renders until its set changes; one built in
-markup is asked again on every render of the page.
+markup is asked again on every render of the page. The engine tells two sources apart by
+reference alone, since a comparison of two queries that missed a changed captured value
+would show stale items; a page that builds its query from its own inputs builds it again
+when they change.
 
 `ItemsProvider` is a delegate the engine calls with a **request**, the start index, the
 count, the sort and a cancellation token, which can apply its sort to a queryable the
