@@ -18,7 +18,8 @@
  * move keeps its rules on the way: plain selects the item reached, the primary modifier moves the
  * focus alone, and Shift extends the range from the anchor, by position where the owner seeks, so an
  * anchor scrolled out of the page still counts. A render that draws the focused item's element afresh
- * drops the focus to nothing; with no press to explain it, the focus goes back to the item's marker.
+ * drops the focus to nothing; with neither a press nor Tab to explain it, the focus goes back to the item's
+ * marker, so Tab still leaves the list, and the page, from its last item.
  *
  * Enter on an item's marker activates the item, a route like the moves, so the form a host wraps
  * the list in never takes it as a submission. The presses are routes too: where the list selects,
@@ -170,7 +171,7 @@ class SelectionInteraction {
     #waiting = null;
     #listening = new AbortController();
     #held = null;
-    #pressed = false;
+    #readerMoved = false;
 
     constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, positionAttribute = null, seeks = false }) {
         this.#target = target;
@@ -226,15 +227,22 @@ class SelectionInteraction {
 
         this.#registration = register(target, { routes: [...moves, ...selection, activation] });
 
-        // A render may draw the focused item's element afresh, which drops the focus to nothing; with no press to explain the
-        // loss, the focus goes back to the item's marker once the render has drawn it again.
+        // A render may draw the focused item's element afresh, which drops the focus to nothing; with neither a press nor Tab to
+        // explain the loss, the focus goes back to the item's marker once the render has drawn it again. Both are observed rather
+        // than routed, so whichever scope owns them still does, a surface keeping Tab inside itself above all.
         const signal = this.#listening.signal;
+        const noteReaderMoved = () => { this.#readerMoved = true; };
         target.addEventListener('focusin', event => this.#hold(this.#focusedMarker(event)), { signal });
-        target.ownerDocument.addEventListener('pointerdown', () => { this.#pressed = true; }, { capture: true, signal });
+        target.ownerDocument.addEventListener('pointerdown', noteReaderMoved, { capture: true, signal });
+        target.ownerDocument.addEventListener('keydown', event => {
+            if (event.key === 'Tab') {
+                noteReaderMoved();
+            }
+        }, { capture: true, signal });
         target.addEventListener('focusout', event => {
             const held = this.#held;
 
-            if (event.relatedTarget === null && held && !this.#pressed) {
+            if (event.relatedTarget === null && held && !this.#readerMoved) {
                 requestAnimationFrame(() => this.#restore(held));
             }
         }, { signal });
@@ -415,7 +423,7 @@ class SelectionInteraction {
 
     #hold(marker) {
         this.#held = marker ? { token: this.#tokenOf(marker), position: this.#positionOf(marker) } : null;
-        this.#pressed = false;
+        this.#readerMoved = false;
     }
 
     // Whether the focus has fallen to nothing rather than gone to something else.
@@ -427,7 +435,7 @@ class SelectionInteraction {
 
     // Only a focus that fell to nothing is taken back, onto the held item's marker once the render has drawn it again, by token or by position.
     #restore(held) {
-        if (this.#held !== held || this.#pressed || !this.#isFocusLost() || this.#waiting) {
+        if (this.#held !== held || this.#readerMoved || !this.#isFocusLost() || this.#waiting) {
             return;
         }
 
@@ -435,7 +443,7 @@ class SelectionInteraction {
             ?? (held.position === null ? null : this.#markerAt(held.position));
 
         this.#whenDrawn(find, marker => {
-            if (this.#held === held && !this.#pressed && this.#isFocusLost()) {
+            if (this.#held === held && !this.#readerMoved && this.#isFocusLost()) {
                 this.#focusMarker(marker, this.#markers());
             }
         });

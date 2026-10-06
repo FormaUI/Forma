@@ -606,6 +606,36 @@ describe('SelectionInteraction', () => {
             expect(document.activeElement).not.toBe(cellOf(2));
         });
 
+        it.each([
+            ['Tab', {}],
+            ['Shift+Tab', { shiftKey: true }],
+        ])('leaves the focus where %s sent it, out of the page', async (_, modifiers) => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            // Past the page's last stop the focus goes to the browser, leaving the marker drawn and the page holding nothing.
+            const tab = press(cellOf(2), 'Tab', modifiers);
+            cellOf(2).blur();
+            await nextFrame();
+
+            expect(tab.defaultPrevented).toBe(false);
+            expect(document.activeElement).toBe(document.body);
+        });
+
+        it('leaves Tab to a surface around the list that routes it', () => {
+            const surface = document.createElement('div');
+            grid.replaceWith(surface);
+            surface.append(grid);
+            let routed = false;
+            handles.push(register(surface, { routes: [{ action: 'focus.next', bindings: [{ type: 'keydown', key: 'Tab' }], handle: () => { routed = true; } }] }));
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            press(cellOf(2), 'Tab');
+
+            expect(routed).toBe(true);
+        });
+
         it('extends a shift-click by position, so an anchor scrolled out of the page still counts', () => {
             attachSelection(grid, options());
             click(cellOf(1));
