@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**32 components not yet implemented, 9 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 23 not yet started, and one in progress stands in the catalog's structure until then.
+**31 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 23 not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -49,7 +49,7 @@ The components still to build, in the order dependency and reuse suggest.
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaDateTimePicker`, `FormaCurrencyInput` | Form inputs, needed before any edit form; the currency input composes the number input, and the data view's property column edits with the date and time picker |
+| 1 | `FormaCurrencyInput` | A form input, needed before any edit form; it composes the number input |
 | 2 | `FormaCapacityIndicator` | Data display, needed for list pages |
 | 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
 | 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
@@ -172,15 +172,6 @@ A row of toggle buttons switching a data view between the views it registered. I
 |---|---|
 | **Old pattern** | The explorer's view-mode buttons, which switch its own three views |
 | **Used in** | The explorer's toolbar, and any page that offers one set in several views |
-
-### `FormaDateTimePicker`
-
-A field that edits a date with its time of day. Its design is [time-inputs-design.md](time-inputs-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | None — Coi's dates carried no time |
-| **Used in** | Forms taking a moment, and `FormaPropertyColumn`'s editor for a member holding one |
 
 ### `FormaDeleteButton`
 

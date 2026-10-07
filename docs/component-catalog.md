@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**62 components implemented, 9 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**63 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -36,13 +36,13 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaFileUploader
 │   ├── ✅ FormaFileViewer
 │   └── ✅ FormaImagePicker
-├── (15 / 16) Inputs/
+├── (16 / 16) Inputs/
 │   ├── ✅ FormaCalendar
 │   ├── ✅ FormaCheckBox
 │   ├── ✅ FormaColorPicker
 │   ├── ✅ FormaDatePicker
 │   ├── ✅ FormaDateRangePicker
-│   ├── ◐ FormaDateTimePicker
+│   ├── ✅ FormaDateTimePicker
 │   ├── ✅ FormaMultiSelect
 │   ├── ✅ FormaNumberInput
 │   ├── ✅ FormaPasswordBox
@@ -220,6 +220,15 @@ A form input for a span of days: a trigger opening a two-month calendar with pre
 |---|---|
 | **Old pattern** | The range mode of `FormaDatePicker`, bound through two separate dates |
 | **Used in** | coupons (start/end dates), reports (a period), anywhere a span of days is one value |
+
+### `FormaDateTimePicker`
+
+A form input for a date with its time of day, the date picked from a calendar and the time typed or chosen from a list of suggested times, under one label. Its design is [time-inputs-design.md](time-inputs-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | None — Coi's dates carried no time |
+| **Used in** | Forms taking a moment, and `FormaPropertyColumn`'s editor for a member holding one |
 
 ### `FormaDialog`
 
@@ -601,7 +610,7 @@ A ghost button for a toolbar or a bar of tools: a glyph, a label or both, and fo
 
 ### `FormaTimePicker`
 
-A form input for a time of day, typed as the formatting culture writes it or chosen from a list of suggested times.
+A form input for a time of day, typed as the formatting culture writes it or chosen from a list of suggested times. Its design is [time-inputs-design.md](time-inputs-design.md).
 
 | | |
 |---|---|

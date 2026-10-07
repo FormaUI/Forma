@@ -85,6 +85,11 @@ half hours never makes a quarter hour invalid.
   one value they edit together. Each picker's control therefore stands apart from the
   field that frames it, so the standalone picker frames it in a field of its own and the
   combined picker frames both in one, with no field inside another and no label twice.
+- **Where the label sits.** The time picker's label is pinned above its value, as the date
+  picker's is, since the field's floating label reads its state from a text element the
+  time picker's control wraps. The date and time picker's label stands above its two
+  controls, which sit side by side at an input's own height and wrap one beneath the other
+  where the width runs out, since a label floating inside one box would name only that box.
 - **Read-only.** A read-only time is a read-only text field whose list cannot be opened. A
   read-only date is shown as read-only text named as its trigger is, with no calendar to
   open and nothing to clear, since a button has no read-only state to announce.
