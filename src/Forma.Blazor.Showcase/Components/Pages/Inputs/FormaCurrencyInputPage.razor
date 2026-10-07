@@ -1,0 +1,128 @@
+@page "/currency-input"
+@attribute [ShowcasePage("FormaCurrencyInput")]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaCurrencyInputPage> L
+
+<h1>FormaCurrencyInput</h1>
+<p class="description">@L["A field for an amount in a currency the application names. The amount is typed as the reader's culture writes a number, the currency's symbol stands where that culture writes it, and the currency decides how many decimal places an amount carries."]</p>
+
+<EditForm Model="Model" FormName="currency-input-demo" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="demo-section">
+        <h2>@L["Basic"]</h2>
+        <p class="description">@L["A price in US dollars, shown with two decimal places. A third place is reported rather than rounded."]</p>
+        <div class="demo-box">
+            <FormaCurrencyInput @bind-Value="Model.Price" CurrencyCode="USD" Label="@L["Price"]" />
+            <p class="demo-note">@L["Value"]: <code>@FormatValue(Model.Price)</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Other Currencies"]</h2>
+        <p class="description">@L["The same field in shekels, in yen, which carry no decimal places, and in Bahraini dinars, which carry three. Each symbol is the one the reader's culture writes the currency with."]</p>
+        <div class="demo-box">
+            <div class="demo-stack">
+                <FormaCurrencyInput @bind-Value="Model.Shekels" CurrencyCode="ILS" Label="@L["Shipping"]" />
+                <FormaCurrencyInput @bind-Value="Model.Yen" CurrencyCode="JPY" Label="@L["Cost"]" />
+                <FormaCurrencyInput @bind-Value="Model.Dinars" CurrencyCode="BHD" Label="@L["Deposit"]" />
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Below Zero"]</h2>
+        <p class="description">@L["An amount can be negative, as a refund is, unless the host sets a least amount."]</p>
+        <div class="demo-box">
+            <FormaCurrencyInput @bind-Value="Model.Refund" CurrencyCode="USD" Label="@L["Refund"]" />
+            <p class="demo-note">@L["Value"]: <code>@FormatValue(Model.Refund)</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["More Places or Fewer"]</h2>
+        <p class="description">@L["A rate that needs four decimal places, and a price taken in whole dollars, shown without decimal places."]</p>
+        <div class="demo-box">
+            <div class="demo-stack">
+                <FormaCurrencyInput @bind-Value="Model.Rate" CurrencyCode="USD" Label="@L["Rate per Unit"]" MaxDecimalPlaces="4" />
+                <FormaCurrencyInput @bind-Value="Model.Budget" CurrencyCode="USD" Label="@L["Budget"]" MaxDecimalPlaces="0" Min="0" />
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Required in a Form"]</h2>
+        <p class="description">@L["A currency input is a form input: submitting without an amount shows the validation message under it, and entering one clears it."]</p>
+        <div class="demo-box">
+            <FormaCurrencyInput @bind-Value="Model.MinimumOrder" CurrencyCode="USD" Label="@L["Minimum Order"]" Required="true" Min="0" />
+            <div class="demo-row">
+                <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
+                @if (_submitted)
+                {
+                    <span class="demo-note">@L["Submitted."]</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["An Amount That Cannot Be Empty"]</h2>
+        <p class="description">@L["Bound to an amount rather than a nullable one, the field always holds an amount: clearing it reports the field and keeps the amount it held until another is entered."]</p>
+        <div class="demo-box">
+            <FormaCurrencyInput @bind-Value="Model.FreeShippingFrom" CurrencyCode="USD" Label="@L["Free Shipping From"]" Min="0" />
+            <p class="demo-note">@L["Value"]: <code>@Model.FreeShippingFrom.ToString(CultureInfo.CurrentCulture)</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Disabled and Read-Only"]</h2>
+        <div class="demo-box">
+            <div class="demo-stack">
+                <FormaCurrencyInput @bind-Value="Model.Locked" CurrencyCode="USD" Label="@L["Disabled"]" Disabled="true" />
+                <FormaCurrencyInput @bind-Value="Model.Locked" CurrencyCode="USD" Label="@L["Read-Only"]" ReadOnly="true" />
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private bool _submitted;
+
+    private CurrencyInputDemoModel Model { get; set; } = default!;
+
+    protected override void OnInitialized()
+        => Model = new CurrencyInputDemoModel(L) { Shekels = 30m, Yen = 1200m, Dinars = 12.5m, FreeShippingFrom = 50m, Locked = 19.99m };
+
+    private static string FormatValue(decimal? value)
+        => value?.ToString(CultureInfo.CurrentCulture) ?? "null";
+
+    private void HandleSubmit()
+        => _submitted = true;
+
+    private sealed class CurrencyInputDemoModel(IStringLocale<FormaCurrencyInputPage> localizer) : IValidatableObject
+    {
+        public decimal? Price { get; set; }
+        public decimal? Shekels { get; set; }
+        public decimal? Yen { get; set; }
+        public decimal? Dinars { get; set; }
+        public decimal? Refund { get; set; }
+        public decimal? Rate { get; set; }
+        public decimal? Budget { get; set; }
+        public decimal? MinimumOrder { get; set; }
+        public decimal FreeShippingFrom { get; set; }
+        public decimal? Locked { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (MinimumOrder is null)
+            {
+                yield return new ValidationResult(localizer["A minimum order is required."], [nameof(MinimumOrder)]);
+            }
+        }
+    }
+}

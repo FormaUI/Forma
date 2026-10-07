@@ -1,0 +1,26 @@
+@namespace Forma.Blazor.Components.Inputs
+@typeparam TValue
+@inherits FormaElementBase
+
+<FormaNumberInput TValue="TValue"
+                  @ref="NumberInput"
+                  Id="@Id"
+                  Class="@RootClass"
+                  Style="@RootStyle"
+                  @attributes="AdditionalAttributes"
+                  Value="Value"
+                  ValueChanged="ValueChanged"
+                  ValueExpression="ValueExpression"
+                  DisplayName="@DisplayName"
+                  Label="@Label"
+                  Placeholder="@Placeholder"
+                  Required="@Required"
+                  Disabled="@Disabled"
+                  ReadOnly="@ReadOnly"
+                  Min="Min"
+                  Max="Max"
+                  Step="Step"
+                  Width="Width"
+                  MaxDecimalPlaces="_maxDecimalPlaces"
+                  MinDecimalPlaces="_minDecimalPlaces"
+                  Adornment="_adornment" />

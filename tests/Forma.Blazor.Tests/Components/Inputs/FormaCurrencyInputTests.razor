@@ -1,0 +1,257 @@
+@inherits FormaBunitContext
+@using System.Globalization
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_draw_one_field_with_one_label_one_input_and_one_set_of_messages()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product { Price = 12m };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("1.234");
+
+            // Assert
+            var input = cut.Find("input");
+            var describedBy = input.GetAttribute("aria-describedby")!.Split(' ');
+            Assert.Multiple(
+                () => Assert.Single(cut.FindAll(".forma-field")),
+                () => Assert.Single(cut.FindAll("label")),
+                () => Assert.Single(cut.FindAll("input")),
+                () => Assert.Equal(input.Id, cut.Find("label").GetAttribute("for")),
+                () => Assert.Single(cut.FindAll(".forma-field-message")),
+                () => Assert.Contains(cut.Find(".forma-field-messages").Id, describedBy),
+                () => Assert.Equal(12m, model.Price));
+        }
+
+        [Fact]
+        public void Should_write_the_amount_the_reader_types_to_the_model()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("1,234.5");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1234.5m, model.Price),
+                () => Assert.Equal("1234.50", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public void Should_hand_the_host_surface_to_the_input()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            var model = new Product();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" Id="price" Class="host-price" data-testid="price-field" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            var currency = cut.FindComponent<FormaCurrencyInput<decimal?>>().Instance;
+            var number = cut.FindComponent<FormaNumberInput<decimal?>>().Instance;
+            Assert.Multiple(
+                () => Assert.Equal("price", input.Id),
+                () => Assert.Contains("host-price", input.ClassList),
+                () => Assert.Contains("forma-currency-input", input.ClassList),
+                () => Assert.Equal("price-field", input.GetAttribute("data-testid")),
+                () => Assert.Equal(number.RootElement.Id, currency.RootElement.Id));
+        }
+
+        [Fact]
+        public void Should_take_a_negative_amount_unless_the_host_sets_a_least_one()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Refund" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("-5");
+
+            // Assert
+            Assert.Equal(-5m, model.Price);
+        }
+
+        [Fact]
+        public void Should_refuse_a_code_that_is_not_a_currency_in_use()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            var model = new Product();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="DEM" Label="Price" />
+            </FakeFormHost>));
+        }
+
+        [Fact]
+        public void Should_refuse_an_amount_that_is_not_a_decimal()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            var model = new Product();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Quantity" CurrencyCode="USD" Label="Quantity" />
+            </FakeFormHost>));
+        }
+    }
+
+    public sealed class Symbol
+    {
+        [Theory]
+        [InlineData("en-US", "USD", "$", "start")]
+        [InlineData("en-US", "ILS", "₪", "start")]
+        [InlineData("he-IL", "USD", "$", "end")]
+        [InlineData("he-IL", "ILS", "₪", "end")]
+        [InlineData("es-ES", "USD", "US$", "end")]
+        public void Should_write_the_currency_s_symbol_where_the_culture_s_currency_pattern_puts_it(string name, string currency, string symbol, string side)
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture(name);
+            var model = new Product();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="@currency" Label="Price" />
+            </FakeFormHost>);
+
+            // Assert
+            var adornment = cut.Find(".forma-number-input-adornment");
+            Assert.Multiple(
+                () => Assert.Equal(symbol, adornment.TextContent.Trim()),
+                () => Assert.Contains($"forma-number-input-adornment-{side}", adornment.ClassList));
+        }
+
+        [Fact]
+        public void Should_describe_the_amount_by_its_currency_s_code()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            var model = new Product();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="ILS" Label="Price" />
+            </FakeFormHost>);
+
+            // Assert
+            var describedBy = cut.Find("input").GetAttribute("aria-describedby")!;
+            Assert.Equal("ILS", cut.Find($"[id='{describedBy}']").TextContent.Trim());
+        }
+    }
+
+    public sealed class Precision
+    {
+        [Theory]
+        [InlineData("USD", "12", "12.00")]
+        [InlineData("JPY", "1200", "1200")]
+        [InlineData("BHD", "1.5", "1.500")]
+        public void Should_show_an_amount_with_the_currency_s_minor_units(string currency, string amount, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product { Price = decimal.Parse(amount, CultureInfo.InvariantCulture) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="@currency" Label="Price" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(expected, cut.Find("input").GetAttribute("value"));
+        }
+
+        [Theory]
+        [InlineData("USD", "1.234", "The Price field must have no more than 2 decimal places.")]
+        [InlineData("JPY", "1.5", "The Price field must be a whole number.")]
+        public void Should_report_more_places_than_the_currency_s_minor_units(string currency, string typed, string message)
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product { Price = 1m };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="@currency" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1m, model.Price),
+                () => Assert.Equal(typed, cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(message, cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_take_the_places_the_host_allows_beyond_the_minor_units()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Rate" MaxDecimalPlaces="4" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("0.1234");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0.1234m, model.Price),
+                () => Assert.Equal("0.1234", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public void Should_show_a_whole_amount_where_the_host_takes_no_places()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product { Price = 12m };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" MaxDecimalPlaces="0" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("12", cut.Find("input").GetAttribute("value"));
+        }
+    }
+
+    private sealed class Product
+    {
+        public decimal? Price { get; set; }
+
+        public int? Quantity { get; set; }
+    }
+}

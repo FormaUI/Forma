@@ -55,6 +55,8 @@ Scenario[] scenarios =
     new("A time picker and its list", "he", "/he/time-picker", TimePickerList("מתחיל", "0:00", "0:30")),
     new("A date and a time under one label", "en", "/date-time-picker", DateTimePickerNames("Starts", "Date", "Time")),
     new("A date and a time under one label", "he", "/he/date-time-picker", DateTimePickerNames("מתחיל", "תאריך", "שעה")),
+    new("A currency input and its currency", "en", "/currency-input", CurrencyInputCurrency("Price")),
+    new("A currency input and its currency", "he", "/he/currency-input", CurrencyInputCurrency("מחיר")),
 ];
 
 using var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
@@ -202,6 +204,14 @@ static Step[] DateTimePickerNames(string label, string date, string time)
         new("open the page", null, []),
         new("focus the date", page => page.Locator(".forma-date-time-picker .forma-date-box-trigger").First.FocusAsync(), [label, "grouping", date, "button"]),
         new("move to the time", page => page.Keyboard.PressAsync("Tab"), [time, "combo box"]),
+    ];
+}
+
+static Step[] CurrencyInputCurrency(string label)
+{
+    return [
+        new("open the page", null, []),
+        new("focus the amount", page => page.Locator(".forma-currency-input").First.FocusAsync(), [label, "spin button", "USD"]),
     ];
 }
 

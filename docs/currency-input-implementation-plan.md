@@ -21,11 +21,11 @@ design.
    locale ships. The currencies' localized names would add 254 KB compressed with every locale
    and 167 KB with the modern ones, over twenty times the symbols, so they wait, and the
    accessible description names a currency by its ISO code.
-2. **The number input's adornment and precision.** Open. The adornment at either inline side with
+2. **The number input's adornment and precision.** ✅ The adornment at either inline side with
    its accessible description, `MaxDecimalPlaces` with trailing zeros not counted and an amount
    with more places reported with its text kept, and the fewest places a number is shown with.
    Gate: tests of each, an existing number input unchanged, and the number input's Showcase page
-   showing a percentage and a limited precision. Landed, in review: `NumberAdornment` with its
+   showing a percentage and a limited precision. Landed: `NumberAdornment` with its
    side and description, `MaxDecimalPlaces` and `MinDecimalPlaces`, their messages in Hebrew and
    Spanish, the tests, and the page's percentage and two-place weight. The number reads left to
    right in every culture, so its input reserves the adornment's room on its own left or right,
@@ -37,4 +37,11 @@ design.
    page and its locale files. Gate: tests of each rule, one field with one label, one set of
    messages and one set of ids; a browser pass in English, Hebrew and Spanish under a fine pointer
    and a coarse one, with the US dollar in Hebrew, the shekel in English, a yen amount and a
-   negative amount; and the screen reader check gaining the currency input's scenario.
+   negative amount; and the screen reader check gaining the currency input's scenario. Landed, in
+   review: the currency input of the element tier, handing its binding, label and host surface to
+   the one number input it draws, its symbol from the catalog in the formatting culture, its side
+   from the culture's currency pattern, its places from the currency's minor units or the host's
+   override, and its description the ISO code; its tests, its Showcase page and its locale files;
+   the authoring standard's rule for an input that only specializes another; and the number input
+   reading a sign typed without the directional mark a right-to-left culture writes beside it, so
+   a refund can be typed in Hebrew.
