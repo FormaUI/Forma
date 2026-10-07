@@ -14,6 +14,9 @@ public sealed partial class FormaField : FormaElementBase
     /// <summary>The id of the element the label points at.</summary>
     [Parameter] public string? TargetId { get; set; }
 
+    /// <summary>The id of the label.</summary>
+    [Parameter] public string? LabelId { get; set; }
+
     /// <summary>Whether the field is required, marked beside the label.</summary>
     [Parameter] public bool Required { get; set; }
 

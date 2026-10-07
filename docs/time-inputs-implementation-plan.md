@@ -31,4 +31,5 @@ to the design.
    the calendar beneath it, stands apart from the field the date picker frames it in, as
    the time picker's does. Under a coarse pointer the trigger had been set to the touch
    target's height, below the field's own, and now stands at the field's height as the
-   time picker's does.
+   time picker's does. The date picker's trigger was named by its label alone, so a reader
+   never heard the date it showed, and is now named by its label and then its date.

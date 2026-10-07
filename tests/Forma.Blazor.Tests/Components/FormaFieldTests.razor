@@ -37,6 +37,22 @@
         }
 
         [Fact]
+        public void Should_give_the_label_the_id_it_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" TargetId="fld-7" LabelId="fld-7-label">
+                    <ChildContent><input class="forma-field-input" id="fld-7" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Equal("fld-7-label", cut.Find(".forma-field-label").Id);
+        }
+
+        [Fact]
         public void Should_render_the_label_text()
         {
             // Arrange

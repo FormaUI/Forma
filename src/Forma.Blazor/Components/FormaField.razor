@@ -10,7 +10,7 @@
     @ChildContent
     @if (HasLabel)
     {
-        <label for="@TargetId" class="forma-field-label">
+        <label id="@LabelId" for="@TargetId" class="forma-field-label">
             @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
         </label>
     }

@@ -2,7 +2,7 @@
 @typeparam TValue
 @inherits FormaInputBase<TValue>
 
-<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" MessageContainerId="@MessageContainerId" Required="@IsRequired" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" LabelId="@LabelId" Field="@FieldIdentifier" MessageContainerId="@MessageContainerId" Required="@IsRequired" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <FormaDateBox @ref="Box"
                       ElementId="@ElementId"
@@ -14,6 +14,7 @@
                       OnChoose="SelectDayAsync"
                       OnClear="HandleClear"
                       Required="@IsRequired"
+                      NameId="@LabelId"
                       TriggerClass="@RootClass"
                       TriggerStyle="@RootStyle"
                       TriggerAttributes="AdditionalAttributes"

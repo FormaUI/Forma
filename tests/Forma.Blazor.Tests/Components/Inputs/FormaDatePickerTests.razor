@@ -172,6 +172,23 @@
             Assert.Equal("Start Date", cut.Find(".forma-field-label").TextContent);
         }
 
+        [Fact]
+        public void Should_name_the_trigger_by_its_label_and_the_date_it_shows()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new FakeModel { Date = new DateOnly(2025, 3, 15) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start Date" />
+            </FakeFormHost>);
+
+            // Assert
+            var names = cut.Find(".forma-date-picker-trigger").GetAttribute("aria-labelledby")!.Split(' ').Select(id => cut.Find($"[id='{id}']").FirstChild!.TextContent.Trim());
+            Assert.Equal(["Start Date", "3/15/2025"], names);
+        }
 
         [Fact]
         public void Should_reject_a_blank_label()

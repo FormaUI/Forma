@@ -38,6 +38,9 @@ public sealed partial class FormaDateBox : FormaComponentBase
     /// <summary>Whether the trigger is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
+    /// <summary>The id of the element naming the trigger, read before the date it shows.</summary>
+    [Parameter] public string? NameId { get; set; }
+
     /// <summary>The classes the trigger carries.</summary>
     [Parameter] public string? TriggerClass { get; set; }
 
@@ -65,6 +68,12 @@ public sealed partial class FormaDateBox : FormaComponentBase
 
     private string? TriggerClassList
         => new CssClassBuilder().Add("forma-date-box-trigger").Add(TriggerClass).ToStringOrNull();
+
+    private string ValueId
+        => $"{ElementId}-value";
+
+    private string? LabelledBy
+        => NameId is null ? null : $"{NameId} {ValueId}";
 
     private string DisplayText
         => Date is { } date ? date.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture) : string.Empty;
