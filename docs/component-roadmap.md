@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**33 components not yet implemented, 9 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 24 not yet started, and one in progress stands in the catalog's structure until then.
+**32 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 24 not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -50,7 +50,7 @@ The components still to build, in the order dependency and reuse suggest.
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaTimePicker`, `FormaDateTimePicker`, `FormaCurrencyInput` | Form inputs, needed before any edit form; the currency input composes the number input, and the data view's property column edits with the other two |
+| 1 | `FormaDateTimePicker`, `FormaCurrencyInput` | Form inputs, needed before any edit form; the currency input composes the number input, and the data view's property column edits with the date and time picker |
 | 2 | `FormaCapacityIndicator` | Data display, needed for list pages |
 | 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
 | 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
@@ -335,15 +335,6 @@ An icon button for sharing. Its design is [icon-buttons-design.md](icon-buttons-
 |---|---|
 | **Old pattern** | None |
 | **Used in** | Copying or sending an item's public link, from its editor or its row |
-
-### `FormaTimePicker`
-
-A field that edits a time of day. Its design is [time-inputs-design.md](time-inputs-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | None |
-| **Used in** | Forms taking a time of day, and `FormaPropertyColumn`'s editor for a member holding one |
 
 ### `FormaUpdateButton`
 

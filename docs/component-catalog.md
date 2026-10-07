@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**61 components implemented, 9 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**62 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -36,7 +36,7 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaFileUploader
 │   ├── ✅ FormaFileViewer
 │   └── ✅ FormaImagePicker
-├── (14 / 15) Inputs/
+├── (15 / 15) Inputs/
 │   ├── ✅ FormaCalendar
 │   ├── ✅ FormaCheckBox
 │   ├── ✅ FormaColorPicker
@@ -50,7 +50,7 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaSlider
 │   ├── ✅ FormaTextArea
 │   ├── ✅ FormaTextBox
-│   ├── ◐ FormaTimePicker
+│   ├── ✅ FormaTimePicker
 │   └── ✅ FormaToggleSwitch
 ├── (1 / 1) Interaction/
 │   └── ✅ FormaInputScope
@@ -597,6 +597,15 @@ A ghost button for a toolbar or a bar of tools: a glyph, a label or both, and fo
 |---|---|
 | **Old pattern** | Coi's toolbar buttons, each styled by hand |
 | **Used in** | `FormaToolbar`, `FormaRestArea`, `FormaExplorerToolbar` and `FormaExplorerSelectionBar` |
+
+### `FormaTimePicker`
+
+A form input for a time of day, typed as the formatting culture writes it or chosen from a list of suggested times.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | Forms taking a time of day, and `FormaPropertyColumn`'s editor for a member holding one |
 
 ### `FormaToggleSwitch`
 

@@ -6,7 +6,7 @@ to the design.
 
 ## Steps
 
-1. **The time picker.** Open. `FormaTimePicker` with every rule of the design's decision
+1. **The time picker.** ✅ `FormaTimePicker` with every rule of the design's decision
    summary: the binding and its required state, reading and writing in the formatting
    culture, the range with its step and its overnight form, the precision kept, and the
    editable combobox with its list drawn through the virtualizer, its control standing
@@ -14,7 +14,7 @@ to the design.
    Showcase page shows every state, and the data view's property column edits a time with
    it. Gate: tests of each rule, a browser pass in English, Hebrew and Spanish under a fine
    pointer and a coarse one, the combobox's keys and names checked in Chrome, and the
-   screen reader check gaining the time picker's scenario. Landed, in review: the picker
+   screen reader check gaining the time picker's scenario. Landed: the picker
    and its box, its page, and the property column editing a time with it. Departure: the
    field's label is pinned above it, as the date picker's is, since the box wraps the text
    element the field's floating label reads its state from. The screen reader scenario's
