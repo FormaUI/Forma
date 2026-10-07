@@ -1,4 +1,4 @@
-namespace Forma.Framework.Timing;
+namespace Forma.Framework.Events;
 
 /// <summary>A debouncer that measures its delays on a clock.</summary>
 /// <remarks>The action runs on the thread the delay elapses on, and an <see cref="OperationCanceledException"/> it throws completes the request.</remarks>

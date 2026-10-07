@@ -39,7 +39,6 @@
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Timing\Forma.Framework.Timing.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" PrivateAssets="all" />

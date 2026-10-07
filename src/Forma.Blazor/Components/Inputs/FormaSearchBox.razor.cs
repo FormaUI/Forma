@@ -1,10 +1,10 @@
 namespace Forma.Blazor.Components.Inputs;
 
 using Forma.Framework.Css;
+using Forma.Framework.Events;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
-using Forma.Framework.Timing;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

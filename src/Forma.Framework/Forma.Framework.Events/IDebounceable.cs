@@ -1,4 +1,4 @@
-namespace Forma.Framework.Timing;
+namespace Forma.Framework.Events;
 
 /// <summary>Runs an action once a period of inactivity has passed, a later request superseding one still waiting or running.</summary>
 public interface IDebounceable

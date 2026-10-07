@@ -1,6 +1,6 @@
-namespace Forma.Tests.Timing;
+namespace Forma.Tests.Events;
 
-using Forma.Framework.Timing;
+using Forma.Framework.Events;
 
 /// <summary>A debouncer that runs every action at once and records what it was asked.</summary>
 public sealed class RecordingDebounceable : IDebounceable

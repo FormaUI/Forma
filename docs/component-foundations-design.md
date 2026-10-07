@@ -193,8 +193,8 @@ A dialog base a composite owns derives from `FormaComponentBase` and overrides
 `AddFormaUI` registers all four with `TryAdd`. A host that wants translations calls
 `AddJsonLocalization()` first; a host with its own logging or its
 own runtime has it in place before `AddFormaUI` runs, as ASP.NET Core's are. A feature
-registrar whose services log also `TryAdd`s the logger fallback for them, the way `Timing`
-registers `TimeProvider.System`, so a feature stays usable on its own.
+registrar whose services log also `TryAdd`s the logger fallback for them, the way the
+events registrar registers `TimeProvider.System`, so a feature stays usable on its own.
 
 The runtime's null object throws rather than discards because a component that reaches
 the browser without one is misconfigured, and a clear exception at the first interop

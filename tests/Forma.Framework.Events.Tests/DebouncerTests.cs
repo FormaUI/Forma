@@ -1,4 +1,4 @@
-namespace Forma.Framework.Timing.Tests;
+namespace Forma.Framework.Events.Tests;
 
 using Microsoft.Extensions.Time.Testing;
 

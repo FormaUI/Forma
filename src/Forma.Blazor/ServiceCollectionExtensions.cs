@@ -2,6 +2,7 @@ namespace Forma.Blazor;
 
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Emojis.Unicode;
+using Forma.Framework.Events;
 using Forma.Framework.Feedback;
 using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;
@@ -9,7 +10,6 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 using Forma.Framework.Sanitization;
-using Forma.Framework.Timing;
 using Forma.Framework.Windows;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +36,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IStringLocaleFactory>(NullStringLocaleFactory.Instance);
         services.TryAddSingleton<IJSRuntime>(UnavailableJSRuntime.Instance);
 
-        services.AddFormaTimingServices();
+        services.AddFormaEventServices();
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();

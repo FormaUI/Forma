@@ -20,7 +20,7 @@
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Timing\Forma.Framework.Timing.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />

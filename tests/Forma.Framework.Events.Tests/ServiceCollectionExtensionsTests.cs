@@ -1,4 +1,4 @@
-namespace Forma.Framework.Timing.Tests;
+namespace Forma.Framework.Events.Tests;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
@@ -11,7 +11,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_measure_a_resolved_debouncer_on_the_system_clock()
     {
         // Arrange
-        using var provider = new ServiceCollection().AddFormaTimingServices().BuildServiceProvider();
+        using var provider = new ServiceCollection().AddFormaEventServices().BuildServiceProvider();
 
         // Act
         var debouncer = Assert.IsType<Debouncer>(provider.GetRequiredService<IDebounceable>());
@@ -27,7 +27,7 @@ public sealed class ServiceCollectionExtensionsTests
         var clock = new FakeTimeProvider();
         var services = new ServiceCollection();
         services.AddSingleton<TimeProvider>(clock);
-        using var provider = services.AddFormaTimingServices().BuildServiceProvider();
+        using var provider = services.AddFormaEventServices().BuildServiceProvider();
 
         // Act
         var debouncer = Assert.IsType<Debouncer>(provider.GetRequiredService<IDebounceable>());

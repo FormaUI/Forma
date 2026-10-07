@@ -10,6 +10,7 @@ using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Catalog.Requests;
 using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Css;
+using Forma.Framework.Events;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Actions;
 using Forma.Framework.Explorer.Content;
@@ -20,7 +21,6 @@ using Forma.Framework.Explorer.Selection;
 using Forma.Framework.Files;
 using Forma.Framework.Icons;
 using Forma.Framework.Resources;
-using Forma.Framework.Timing;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
