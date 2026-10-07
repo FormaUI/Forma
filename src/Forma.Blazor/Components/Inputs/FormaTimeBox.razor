@@ -45,6 +45,8 @@
                     <div id="@GetOptionId(option.Index)"
                          class="@GetOptionClass(option)"
                          role="option"
+                         aria-setsize="@_options.Length"
+                         aria-posinset="@(option.Index + 1)"
                          aria-selected="@(option.Index == _activeIndex ? "true" : "false")"
                          @onclick="() => ChooseAsync(option.Time)">
                         <span class="forma-time-box-option-text">@FormatTime(option.Time)</span>

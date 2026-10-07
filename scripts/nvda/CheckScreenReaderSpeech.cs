@@ -189,8 +189,8 @@ static Step[] TimePickerList(string label, string first, string second)
     return [
         new("open the page", null, []),
         new("focus the field", page => page.Locator(".forma-time-box input").First.FocusAsync(), [label, "combo box"]),
-        new("open the list", page => page.Keyboard.PressAsync("ArrowDown"), [first]),
-        new("move down the list", page => page.Keyboard.PressAsync("ArrowDown"), [second]),
+        new("open the list", page => page.Keyboard.PressAsync("ArrowDown"), [first, "1 of 48"]),
+        new("move down the list", page => page.Keyboard.PressAsync("ArrowDown"), [second, "2 of 48"]),
     ];
 }
 

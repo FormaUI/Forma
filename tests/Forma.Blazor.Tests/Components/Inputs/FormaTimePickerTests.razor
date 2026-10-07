@@ -324,6 +324,28 @@
         }
 
         [Fact]
+        public async Task Should_place_each_suggestion_drawn_among_every_suggestion_the_list_holds()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift { End = new TimeOnly(9, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Assert — a day of half hours holds 48 suggestions, and 9:30 AM is the 20th
+            var active = cut.Find(".forma-time-box-option-active");
+            Assert.Multiple(
+                () => Assert.All(cut.FindAll("[role=option]"), option => Assert.Equal("48", option.GetAttribute("aria-setsize"))),
+                () => Assert.Equal("20", active.GetAttribute("aria-posinset")));
+        }
+
+        [Fact]
         public async Task Should_move_through_the_list_with_the_arrows_and_take_the_highlighted_time_on_enter()
         {
             // Arrange

@@ -52,7 +52,8 @@ half hours never makes a quarter hour invalid.
   submits, and text it cannot take is reported, stays in the field for correcting and
   blocks a valid submission. Choosing a suggestion writes it at once and closes the list.
 - **A long list draws only what shows.** The list is drawn through `FormaVirtualize`, so an
-  interval of seconds over a whole day draws only the options near the viewport.
+  interval of seconds over a whole day draws only the options near the viewport, each one
+  still giving its place among every suggestion the list holds.
 - **Two values or one.** A date and a time an application keeps apart are edited with the
   date picker and the time picker, each standing on its own. One value holding both is
   edited with the date and time picker, which sets the date picker's control beside the
