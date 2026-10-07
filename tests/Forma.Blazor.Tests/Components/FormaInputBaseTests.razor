@@ -129,7 +129,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal("name-messages", invalid),
+                () => Assert.Equal(cut.Instance.OwnFieldElementIds.MessageContainerId, invalid),
                 () => Assert.Null(cut.Find("input").GetAttribute("aria-describedby")));
         }
 
@@ -152,7 +152,7 @@
             await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
 
             // Assert
-            Assert.Equal("host-note name-hint name-messages", cut.Find("input").GetAttribute("aria-describedby"));
+            Assert.Equal($"host-note name-hint {cut.Instance.OwnFieldElementIds.MessageContainerId}", cut.Find("input").GetAttribute("aria-describedby"));
         }
 
         [Fact]
@@ -184,6 +184,9 @@
 
         public IComponentContext OwnContext
             => Context;
+
+        public FieldElementIds OwnFieldElementIds
+            => FieldElementIds;
 
         public int AsyncDisposeCalls { get; private set; }
 

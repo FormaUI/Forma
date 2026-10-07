@@ -3,7 +3,7 @@
 @using Forma.Framework.Browser.Interop.Behaviors
 @inherits FormaInputBase<TValue>
 
-<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" MessageContainerId="@MessageContainerId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@Required" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-select-trigger-wrapper" @ref="_anchorElement">
             <button id="@ElementId"

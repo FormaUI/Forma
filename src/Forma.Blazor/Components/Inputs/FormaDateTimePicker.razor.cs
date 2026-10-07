@@ -79,9 +79,6 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     private bool IsRequired
         => Required || !IsNullable;
 
-    private string LabelId
-        => $"{ElementId}-label";
-
     private string DateId
         => $"{ElementId}-date";
 

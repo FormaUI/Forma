@@ -41,15 +41,66 @@
         {
             // Arrange
             using var ctx = new FormaFieldTests();
+            var ids = new FieldElementIds();
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Name" TargetId="fld-7" LabelId="fld-7-label">
+                @<FormaField Label="Name" TargetId="fld-7" ElementIds="ids">
                     <ChildContent><input class="forma-field-input" id="fld-7" /></ChildContent>
                 </FormaField>);
 
             // Assert
-            Assert.Equal("fld-7-label", cut.Find(".forma-field-label").Id);
+            Assert.Equal(ids.LabelId, cut.Find(".forma-field-label").Id);
+        }
+
+        [Fact]
+        public async Task Should_keep_ids_of_its_own_across_renders_when_given_none()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(
+                @<FakeFormHost EditContext="editContext">
+                    <FormaField Label="Name" TargetId="fld-9" Field="@FieldIdentifier.Create(() => model.Text)">
+                        <ChildContent><input class="forma-field-input" id="fld-9" /></ChildContent>
+                    </FormaField>
+                </FakeFormHost>);
+            var messages = new ValidationMessageStore(editContext);
+            messages.Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+            var label = cut.Find(".forma-field-label").Id;
+            var container = cut.Find(".forma-field-messages").Id;
+
+            // Act
+            messages.Add(FieldIdentifier.Create(() => model.Text), "Too short");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+            cut.Render();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(string.IsNullOrWhiteSpace(label)),
+                () => Assert.False(string.IsNullOrWhiteSpace(container)),
+                () => Assert.Equal(label, cut.Find(".forma-field-label").Id),
+                () => Assert.Equal(container, cut.Find(".forma-field-messages").Id));
+        }
+
+        [Fact]
+        public void Should_give_each_field_ids_of_its_own()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<div>
+                    <FormaField Label="First" TargetId="fld-10"><ChildContent><input id="fld-10" /></ChildContent></FormaField>
+                    <FormaField Label="Second" TargetId="fld-11"><ChildContent><input id="fld-11" /></ChildContent></FormaField>
+                </div>);
+
+            // Assert
+            var labels = cut.FindAll(".forma-field-label");
+            Assert.NotEqual(labels[0].Id, labels[1].Id);
         }
 
         [Fact]
@@ -60,7 +111,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Starts" LabelId="fld-8-label" Grouped="true">
+                @<FormaField Label="Starts" Grouped="true">
                     <ChildContent><button id="fld-8-date">Date</button><input id="fld-8-time" /></ChildContent>
                 </FormaField>);
 
@@ -69,26 +120,10 @@
             var label = cut.Find(".forma-field-label");
             Assert.Multiple(
                 () => Assert.Equal("group", field.GetAttribute("role")),
-                () => Assert.Equal("fld-8-label", field.GetAttribute("aria-labelledby")),
-                () => Assert.Equal("fld-8-label", label.Id),
+                () => Assert.False(string.IsNullOrWhiteSpace(label.Id)),
+                () => Assert.Equal(label.Id, field.GetAttribute("aria-labelledby")),
                 () => Assert.Equal("SPAN", label.TagName),
                 () => Assert.Empty(cut.FindAll("label")));
-        }
-
-        [Fact]
-        public void Should_reject_a_blank_label_id_when_grouped()
-        {
-            // Arrange
-            using var ctx = new FormaFieldTests();
-
-            // Act
-            var render = () => ctx.Render(
-                @<FormaField Label="Starts" LabelId="" Grouped="true">
-                    <ChildContent><input /></ChildContent>
-                </FormaField>);
-
-            // Assert
-            Assert.Throws<ArgumentException>(render);
         }
 
         [Fact]
@@ -204,11 +239,12 @@
         {
             // Arrange
             using var ctx = new FormaFieldTests();
+            var ids = new FieldElementIds();
             var model = new FakeModel();
             var editContext = new EditContext(model);
             var cut = ctx.Render(
                 @<FakeFormHost EditContext="editContext">
-                    <FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)" MessageContainerId="fld-1-messages">
+                    <FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)" ElementIds="ids">
                         <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
                     </FormaField>
                 </FakeFormHost>);
@@ -218,7 +254,7 @@
             await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
 
             // Assert
-            Assert.Equal("fld-1-messages", cut.Find(".forma-field-messages").Id);
+            Assert.Equal(ids.MessageContainerId, cut.Find(".forma-field-messages").Id);
         }
 
         [Fact]

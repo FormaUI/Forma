@@ -79,9 +79,8 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
     }
 
-    /// <summary>The id of the element holding the field's validation messages.</summary>
-    protected string MessageContainerId
-        => $"{ElementId}-messages";
+    /// <summary>The ids of the label and validation-message container of the field the input composes.</summary>
+    protected FieldElementIds FieldElementIds { get; } = new();
 
     /// <summary>Whether the input is drawn inside its field container.</summary>
     protected virtual bool HasFieldContainer
@@ -103,7 +102,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
             if (HasFieldContainer && EditContext is { } editContext && editContext.GetValidationMessages(FieldIdentifier).Any())
             {
-                ids.Add(MessageContainerId);
+                ids.Add(FieldElementIds.MessageContainerId);
             }
 
             return ids.Count > 0 ? string.Join(' ', ids) : null;

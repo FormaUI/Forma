@@ -12,19 +12,19 @@
     @ChildContent
     @if (HasLabel && Grouped)
     {
-        <span id="@LabelId" class="forma-field-label">
+        <span id="@EffectiveElementIds.LabelId" class="forma-field-label">
             @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
         </span>
     }
     else if (HasLabel)
     {
-        <label id="@LabelId" for="@TargetId" class="forma-field-label">
+        <label id="@EffectiveElementIds.LabelId" for="@TargetId" class="forma-field-label">
             @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
         </label>
     }
     @if (ValidationMessages is { Count: > 0 } messages)
     {
-        <div id="@MessageContainerId" class="forma-field-messages">
+        <div id="@EffectiveElementIds.MessageContainerId" class="forma-field-messages">
             @foreach (var message in messages)
             {
                 <div class="forma-field-message">@message</div>

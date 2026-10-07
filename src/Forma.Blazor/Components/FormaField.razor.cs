@@ -14,9 +14,6 @@ public sealed partial class FormaField : FormaElementBase
     /// <summary>The id of the element the label points at.</summary>
     [Parameter] public string? TargetId { get; set; }
 
-    /// <summary>The id of the label.</summary>
-    [Parameter] public string? LabelId { get; set; }
-
     /// <summary>Whether the label names the group of controls the field frames.</summary>
     [Parameter] public bool Grouped { get; set; }
 
@@ -36,12 +33,13 @@ public sealed partial class FormaField : FormaElementBase
     /// <summary>The model field whose validation messages render beneath the element.</summary>
     [Parameter] public FieldIdentifier? Field { get; set; }
 
-    /// <summary>The id of the element holding the validation messages.</summary>
-    [Parameter] public string? MessageContainerId { get; set; }
+    /// <summary>The shared ids of the field's label and validation-message container.</summary>
+    [Parameter] public FieldElementIds? ElementIds { get; set; }
 
     [CascadingParameter] private EditContext? EditContext { get; set; }
 
     private EditContext? _observedEditContext;
+    private FieldElementIds? _ownElementIds;
 
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
@@ -49,8 +47,11 @@ public sealed partial class FormaField : FormaElementBase
     private string? GroupRole
         => Grouped ? "group" : null;
 
+    private FieldElementIds EffectiveElementIds
+        => ElementIds ?? (_ownElementIds ??= new FieldElementIds());
+
     private string? GroupLabelId
-        => Grouped && HasLabel ? LabelId : null;
+        => Grouped && HasLabel ? EffectiveElementIds.LabelId : null;
 
     private string? LabelModeClass
         => LabelMode switch
@@ -67,11 +68,7 @@ public sealed partial class FormaField : FormaElementBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (HasLabel && Grouped)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(LabelId);
-        }
-        else if (HasLabel)
+        if (HasLabel && !Grouped)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(TargetId);
         }

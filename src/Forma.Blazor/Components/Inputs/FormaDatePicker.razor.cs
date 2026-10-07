@@ -51,9 +51,6 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
     private bool IsRequired
         => Required || !IsNullable;
 
-    private string LabelId
-        => $"{ElementId}-label";
-
     private DateOnly? Date
         => _isShownCleared ? null : ToDate(Value);
 
