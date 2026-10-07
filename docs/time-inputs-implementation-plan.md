@@ -27,4 +27,8 @@ to the design.
    under one field with one label, one required state and one value's messages, and the
    property column editing a date with a time with it. Gate: as the time picker's, with a
    `DateTime` keeping its kind and a `DateTimeOffset` its offset, and no field nested in
-   another nor any label twice.
+   another nor any label twice. Landed so far: the date picker's control, its trigger and
+   the calendar beneath it, stands apart from the field the date picker frames it in, as
+   the time picker's does. Under a coarse pointer the trigger had been set to the touch
+   target's height, below the field's own, and now stands at the field's height as the
+   time picker's does.

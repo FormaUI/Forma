@@ -12,8 +12,10 @@
     "Alpha": "Alfa",
     "Choose Color": "Elegir Color"
   },
+  "FormaDateBox": {
+    "Select Date": "Seleccionar Fecha"
+  },
   "FormaDatePicker": {
-    "Select Date": "Seleccionar Fecha",
     "The {Field} field is required.": "El campo {Field} es obligatorio."
   },
   "FormaDateRangePicker": {

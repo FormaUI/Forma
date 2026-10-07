@@ -1,24 +1,25 @@
 /* ============================================================
-   FormaDatePicker — a field opening a one-month calendar
+   FormaDateBox — a trigger opening a one-month calendar
+   The trigger's box comes from forma-input.css; the calendar
+   is a panel opening beneath it.
    ============================================================ */
 
 /* ---------- root ---------- */
-.forma-date-picker {
-    --forma-date-picker-primary-color: var(--primary-color);
-    --forma-date-picker-radius: var(--radius-md);
+.forma-date-box {
+    --forma-date-box-primary-color: var(--primary-color);
+    --forma-date-box-radius: var(--radius-md);
 
     position: relative;
     font-size: var(--font-size-sm);
 }
 
 /* ---------- trigger ---------- */
-.forma-date-picker-trigger-wrapper {
+.forma-date-box-trigger-wrapper {
     position: relative;
     display: block;
 }
 
-/* The box comes from .forma-field-input. */
-.forma-date-picker-trigger {
+.forma-date-box-trigger {
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -30,29 +31,29 @@
 }
 
 @media (hover: hover) {
-    .forma-date-picker-trigger:hover {
-        border-color: var(--forma-date-picker-primary-color);
+    .forma-date-box-trigger:hover {
+        border-color: var(--forma-date-box-primary-color);
     }
 }
 
-.forma-date-picker-arrow {
+.forma-date-box-arrow {
     flex-shrink: 0;
     font-size: var(--font-size-xs);
     opacity: 0.55;
 }
 
-.forma-date-picker-value {
+.forma-date-box-value {
     flex: 1;
     white-space: nowrap;
 }
 
-.forma-date-picker-value.placeholder {
+.forma-date-box-value.placeholder {
     color: var(--text-secondary-color);
 }
 
 /* ---------- clear ---------- */
 /* Clear floats at the end of the trigger, in the danger color. */
-::deep .forma-date-picker-clear {
+::deep .forma-date-box-clear {
     --forma-button-ghost-hover-color: var(--danger-color);
     --forma-button-ghost-hover-bg-color: var(--danger-subtle-color);
     position: absolute;
@@ -64,16 +65,10 @@
 
 /* ---------- popover ---------- */
 /* The calendar's surface inside the FormaPopover. */
-.forma-date-picker-popover {
+.forma-date-box-popover {
     display: flex;
     overflow: visible;
     background: var(--input-bg-color);
-    border-radius: var(--forma-date-picker-radius);
+    border-radius: var(--forma-date-box-radius);
     box-shadow: var(--shadow-medium);
-}
-
-@media (pointer: coarse) {
-    .forma-date-picker-trigger {
-        min-block-size: var(--target-size-touch);
-    }
 }

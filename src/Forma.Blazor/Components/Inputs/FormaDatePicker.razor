@@ -1,48 +1,22 @@
 @namespace Forma.Blazor.Components.Inputs
 @typeparam TValue
 @inherits FormaInputBase<TValue>
-@using Forma.Framework.Browser.Interop.Behaviors
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" MessageContainerId="@MessageContainerId" Required="@IsRequired" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        <div class="forma-date-picker">
-            <div class="forma-date-picker-trigger-wrapper" @ref="_anchorElement">
-                <button id="@ElementId"
-                        data-rid="@Context.RuntimeId"
-                        class="@RootClass"
-                        style="@RootStyle"
-                        @attributes="AdditionalAttributes"
-                        @ref="RootElement"
-                        aria-describedby="@DescribedBy"
-                        type="button"
-                        aria-expanded="@(IsOpen ? "true" : "false")"
-                        aria-required="@(IsRequired ? "true" : null)"
-                        @onclick="ToggleAsync">
-                    <span class="forma-date-picker-arrow">&#9662;</span>
-                    <span class="forma-date-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Date"])</span>
-                </button>
-                @if (HasValue)
-                {
-                    <FormaButton Variant="ButtonVariant.Ghost"
-                                 Size="ButtonSize.Mini"
-                                 IconOnly="true"
-                                 class="forma-date-picker-clear"
-                                 aria-label="@L["Clear"]"
-                                 OnClick="HandleClearAsync"
-                                 :stopPropagation>
-                        <FormaIcon Icon="Glyph.Cross" />
-                    </FormaButton>
-                }
-            </div>
-            <FormaPopover @ref="Popover" Alignment="PopoverAlignment.Start" Anchor="_anchorElement" OnOpenChanged="_ => { }">
-                <div class="forma-date-picker-popover">
-                    <FormaCalendar Highlight="Highlight"
-                                   MinDate="MinDate"
-                                   MaxDate="MaxDate"
-                                   UseNonGregorianMonths="UseNonGregorianMonths"
-                                   OnDaySelected="SelectDayAsync" />
-                </div>
-            </FormaPopover>
-        </div>
+        <FormaDateBox @ref="Box"
+                      ElementId="@ElementId"
+                      OwnerRuntimeId="@Context.RuntimeId"
+                      Date="@Date"
+                      MinDate="MinDate"
+                      MaxDate="MaxDate"
+                      UseNonGregorianMonths="UseNonGregorianMonths"
+                      OnChoose="SelectDayAsync"
+                      OnClear="HandleClear"
+                      Required="@IsRequired"
+                      TriggerClass="@RootClass"
+                      TriggerStyle="@RootStyle"
+                      TriggerAttributes="AdditionalAttributes"
+                      TriggerDescribedBy="@DescribedBy" />
     </ChildContent>
 </FormaField>

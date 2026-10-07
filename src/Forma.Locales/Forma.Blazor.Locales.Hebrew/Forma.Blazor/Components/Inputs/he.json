@@ -11,8 +11,10 @@
     "Alpha": "שקיפות",
     "Choose Color": "בחר צבע"
   },
+  "FormaDateBox": {
+    "Select Date": "בחר תאריך"
+  },
   "FormaDatePicker": {
-    "Select Date": "בחר תאריך",
     "The {Field} field is required.": "השדה {Field} הוא שדה חובה."
   },
   "FormaDateRangePicker": {

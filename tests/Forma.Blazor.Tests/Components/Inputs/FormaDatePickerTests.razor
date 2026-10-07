@@ -35,7 +35,7 @@
 
             // Assert
             var expected = model.Date!.Value.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture);
-            Assert.Equal(expected, cut.Find(".forma-date-picker-value").TextContent);
+            Assert.Equal(expected, cut.Find(".forma-date-box-value").TextContent);
         }
 
         [Fact]
@@ -49,7 +49,7 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
             </FakeFormHost>);
-            var value = cut.Find(".forma-date-picker-value");
+            var value = cut.Find(".forma-date-box-value");
 
             // Assert
             Assert.NotEmpty(value.TextContent.Trim());
@@ -71,7 +71,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.NotNull(cut.Find(".forma-date-picker-popover")),
+                () => Assert.NotNull(cut.Find(".forma-date-box-popover")),
                 () => Assert.Single(cut.FindAll(".forma-calendar-month")),
                 () => Assert.Equal("manual", cut.Find(".forma-popover").GetAttribute("popover")));
         }
@@ -93,7 +93,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Empty(cut.FindAll(".forma-date-picker-popover")),
+                () => Assert.Empty(cut.FindAll(".forma-date-box-popover")),
                 () => Assert.Equal("false", cut.Find(".forma-date-picker-trigger").GetAttribute("aria-expanded")));
         }
 
@@ -113,7 +113,7 @@
             await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-date-picker-popover"));
+            Assert.Empty(cut.FindAll(".forma-date-box-popover"));
         }
 
         [Fact]
@@ -135,7 +135,7 @@
             Assert.Multiple(
                 () => Assert.Equal(15, model.Date!.Value.Day),
                 () => Assert.Equal(1, completed),
-                () => Assert.Empty(cut.FindAll(".forma-date-picker-popover")));
+                () => Assert.Empty(cut.FindAll(".forma-date-box-popover")));
         }
 
         [Fact]
@@ -172,6 +172,7 @@
             Assert.Equal("Start Date", cut.Find(".forma-field-label").TextContent);
         }
 
+
         [Fact]
         public void Should_reject_a_blank_label()
         {
@@ -203,8 +204,8 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Single(withValue.FindAll(".forma-date-picker-clear")),
-                () => Assert.Empty(withoutValue.FindAll(".forma-date-picker-clear")));
+                () => Assert.Single(withValue.FindAll(".forma-date-box-clear")),
+                () => Assert.Empty(withoutValue.FindAll(".forma-date-box-clear")));
         }
 
         [Fact]
@@ -218,7 +219,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find(".forma-date-picker-clear").Click();
+            cut.Find(".forma-date-box-clear").Click();
 
             // Assert
             Assert.Null(model.Date);
@@ -334,15 +335,15 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find(".forma-date-picker-clear").Click();
+            cut.Find(".forma-date-box-clear").Click();
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(new DateOnly(2025, 6, 1), model.Due),
                 () => Assert.Contains("invalid", cut.Find(".forma-date-picker-trigger").ClassList),
                 () => Assert.Equal("The Due date field is required.", cut.Find(".forma-field-message").TextContent),
-                () => Assert.Contains("placeholder", cut.Find(".forma-date-picker-value").ClassList),
-                () => Assert.Empty(cut.FindAll(".forma-date-picker-clear")));
+                () => Assert.Contains("placeholder", cut.Find(".forma-date-box-value").ClassList),
+                () => Assert.Empty(cut.FindAll(".forma-date-box-clear")));
         }
 
         [Fact]
@@ -354,7 +355,7 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDatePicker @bind-Value="model.Due" Label="Due date" />
             </FakeFormHost>);
-            cut.Find(".forma-date-picker-clear").Click();
+            cut.Find(".forma-date-box-clear").Click();
 
             // Act
             PickDay(cut, 20);

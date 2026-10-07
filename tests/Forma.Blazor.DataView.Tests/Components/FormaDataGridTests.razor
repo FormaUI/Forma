@@ -2929,7 +2929,7 @@
             // Assert
             var row = cut.FindAll("tbody tr")[0];
             Assert.Multiple(
-                () => Assert.Equal(2, row.QuerySelectorAll(".forma-date-picker").Length),
+                () => Assert.Equal(2, row.QuerySelectorAll(".forma-date-box").Length),
                 () => Assert.Contains("forma-data-grid-editor", row.QuerySelector("button.forma-date-picker-trigger")!.ClassName, StringComparison.Ordinal),
                 () => Assert.Equal("Hired", row.QuerySelector("label.forma-field-label")!.FirstChild!.TextContent.Trim()),
                 () => Assert.NotNull(row.QuerySelector("label.forma-field-label .forma-field-required")),
@@ -2992,7 +2992,7 @@
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
             // Act
-            cut.Find("tbody .forma-date-picker-clear").Click();
+            cut.Find("tbody .forma-date-box-clear").Click();
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert

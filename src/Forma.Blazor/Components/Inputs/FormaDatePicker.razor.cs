@@ -3,8 +3,6 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-using Forma.Blazor.Components.Feedback;
-using Forma.Blazor.Models;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -36,36 +34,25 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
 
     private static readonly bool IsNullable = typeof(TValue) == typeof(DateOnly?);
 
-    private ElementReference _anchorElement;
-
     // A date that cannot be empty keeps its last value when cleared, while the field shows it cleared until a date is picked or given.
     private bool _isShownCleared;
     private TValue? _valueWhenCleared;
 
-    private FormaPopover Popover { get; set; } = default!;
+    private FormaDateBox? Box { get; set; }
 
-    private bool IsOpen
-        => Popover is { IsOpen: true };
+    /// <inheritdoc />
+    public override ElementReference RootElement
+    {
+        get => Box?.TriggerElement ?? default;
+        protected set { }
+    }
 
     // A date that cannot be empty is required whatever the host says, since clearing it reports the field required.
     private bool IsRequired
         => Required || !IsNullable;
 
-#pragma warning disable CA1822 // Intentionally instance — reads ambient CultureInfo per render
-    private CultureInfo Culture => CultureInfo.CurrentCulture;
-#pragma warning restore CA1822
-
     private DateOnly? Date
         => _isShownCleared ? null : ToDate(Value);
-
-    private bool HasValue
-        => Date is not null;
-
-    private string DisplayText
-        => Date is { } date ? date.ToDateTime(TimeOnly.MinValue).ToString("d", Culture) : string.Empty;
-
-    private DateRange? Highlight
-        => Date is { } date ? new DateRange(date, date) : null;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -97,32 +84,19 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
     private static DateOnly? ToDate(TValue? value)
         => (DateOnly?)(object?)value;
 
-    private async Task ToggleAsync()
-    {
-        if (IsOpen)
-        {
-            await Popover.CloseAsync();
-            return;
-        }
-
-        await Popover.OpenAsync(RootElement);
-    }
-
     private async Task SelectDayAsync(DateOnly date)
     {
         _isShownCleared = false;
         CurrentValueAsString = date.ToString(RoundTripFormat, CultureInfo.InvariantCulture);
         await OnSelectionComplete.InvokeAsync();
-        await Popover.CloseAsync();
     }
 
     // Clearing goes through the base's parsing, so a date that cannot be empty reports its field invalid and keeps its value.
-    private async Task HandleClearAsync()
+    private void HandleClear()
     {
         _isShownCleared = !IsNullable;
         _valueWhenCleared = Value;
         CurrentValueAsString = null;
-        await Popover.CloseAsync();
     }
 
     /// <inheritdoc />
