@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**64 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**65 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -24,7 +24,8 @@ Forma.Blazor/Components/
 │   └── ✅ FormaSortableList
 ├── (1 / 1) Debugging/InputInspector/
 │   └── ✅ FormaInputInspector
-├── (6 / 6) Feedback/
+├── (7 / 7) Feedback/
+│   ├── ✅ FormaCapacityIndicator
 │   ├── ✅ FormaConfirmDialog
 │   ├── ✅ FormaDialog
 │   ├── ✅ FormaPopover
@@ -140,6 +141,15 @@ One or two months of days with month and year selectors, drawing whatever highli
 |---|---|
 | **Old pattern** | The month panels inside `FormaDatePicker` |
 | **Used in** | `FormaDatePicker` with one month, `FormaDateRangePicker` with two |
+
+### `FormaCapacityIndicator`
+
+A readout of how much of a limit is used, as the count against the limit and optionally a bar, nearly full once the count reaches 80% of the limit or a share the host sets, at that share as well as above it, full at the limit, over it past the limit, and full from the start where the limit is zero.
+
+| | |
+|---|---|
+| **Old pattern** | `<b>קיבולת:</b> <span dir="ltr">X / Y</span>` — shows used vs. allowed count, red at or past the limit and orange above 80% with fewer than 60 left |
+| **Used in** | pages, products, images, orders, leads, users (6 pages) |
 
 ### `FormaCheckBox`
 

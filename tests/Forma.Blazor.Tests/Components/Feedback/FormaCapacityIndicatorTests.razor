@@ -1,0 +1,220 @@
+@inherits FormaBunitContext
+@using System.Globalization
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_expose_a_meter_of_the_count_against_the_limit()
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+            using var culture = new CultureFixture("en-US");
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="120" Limit="200" />);
+
+            // Assert
+            var meter = cut.Find(".forma-capacity-indicator");
+            Assert.Multiple(
+                () => Assert.Equal("meter", meter.GetAttribute("role")),
+                () => Assert.Equal("0", meter.GetAttribute("aria-valuemin")),
+                () => Assert.Equal("200", meter.GetAttribute("aria-valuemax")),
+                () => Assert.Equal("120", meter.GetAttribute("aria-valuenow")),
+                () => Assert.Equal("120 of 200", meter.GetAttribute("aria-valuetext")),
+                () => Assert.Equal("Capacity", cut.Find($"[id='{meter.GetAttribute("aria-labelledby")}']").TextContent));
+        }
+
+        [Fact]
+        public void Should_name_the_meter_by_the_host_s_label()
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="3" Limit="10" Label="Products" />);
+
+            // Assert
+            var meter = cut.Find(".forma-capacity-indicator");
+            Assert.Equal("Products", cut.Find($"[id='{meter.GetAttribute("aria-labelledby")}']").TextContent);
+        }
+
+        [Theory]
+        [InlineData("en-US", "1,234 / 2,000")]
+        [InlineData("de-DE", "1.234 / 2.000")]
+        public void Should_write_the_count_as_the_culture_groups_it_reading_left_to_right(string name, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+            using var culture = new CultureFixture(name);
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="1234" Limit="2000" />);
+
+            // Assert
+            var count = cut.Find(".forma-capacity-indicator-count");
+            Assert.Multiple(
+                () => Assert.Equal(expected, count.TextContent),
+                () => Assert.Equal("ltr", count.GetAttribute("dir")));
+        }
+
+        [Fact]
+        public void Should_describe_the_meter_by_its_note()
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="3" Limit="10" Note="Old ones are deleted automatically." />);
+
+            // Assert
+            var meter = cut.Find(".forma-capacity-indicator");
+            Assert.Equal("Old ones are deleted automatically.", cut.Find($"[id='{meter.GetAttribute("aria-describedby")}']").TextContent);
+        }
+
+        [Fact]
+        public void Should_describe_nothing_without_a_note()
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="3" Limit="10" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(cut.Find(".forma-capacity-indicator").HasAttribute("aria-describedby")),
+                () => Assert.Empty(cut.FindAll(".forma-capacity-indicator-note")));
+        }
+
+        [Fact]
+        public void Should_write_the_host_surface_on_the_meter()
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="3" Limit="10" Id="products-capacity" Class="host-capacity" data-testid="capacity" />);
+
+            // Assert
+            var meter = cut.Find(".forma-capacity-indicator");
+            Assert.Multiple(
+                () => Assert.Equal("products-capacity", meter.Id),
+                () => Assert.Contains("host-capacity", meter.ClassList),
+                () => Assert.Equal("capacity", meter.GetAttribute("data-testid")),
+                () => Assert.Equal("products-capacity-label", meter.GetAttribute("aria-labelledby")));
+        }
+
+        [Theory]
+        [InlineData(-1, 10, "0.8")]
+        [InlineData(1, -10, "0.8")]
+        [InlineData(1, 10, "0")]
+        [InlineData(1, 10, "1.5")]
+        public void Should_refuse_a_negative_count_or_limit_and_a_ratio_outside_zero_to_one(int used, int limit, string share)
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+            var ratio = decimal.Parse(share, CultureInfo.InvariantCulture);
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaCapacityIndicator Used="used" Limit="limit" NearLimitRatio="ratio" />));
+        }
+    }
+
+    public sealed class State
+    {
+        [Theory]
+        [InlineData(100, 200, null, "100 of 200", null)]
+        [InlineData(160, 200, "Nearly Full", "160 of 200, nearly full", "forma-capacity-indicator-near")]
+        [InlineData(200, 200, "Full", "200 of 200, full", "forma-capacity-indicator-full")]
+        [InlineData(210, 200, "Over the Limit", "210 of 200, over the limit", "forma-capacity-indicator-full")]
+        [InlineData(0, 0, "Full", "0 of 0, full", "forma-capacity-indicator-full")]
+        public void Should_name_the_state_in_words_once_the_limit_nears(int used, int limit, string? state, string valueText, string? toneClass)
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+            using var culture = new CultureFixture("en-US");
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="used" Limit="limit" />);
+
+            // Assert
+            var meter = cut.Find(".forma-capacity-indicator");
+            var badges = cut.FindAll(".forma-capacity-indicator-state");
+            Assert.Multiple(
+                () => Assert.Equal(valueText, meter.GetAttribute("aria-valuetext")),
+                () => Assert.Equal(state, badges.SingleOrDefault()?.TextContent),
+                () => Assert.Equal(toneClass, meter.ClassList.SingleOrDefault(name => name is "forma-capacity-indicator-near" or "forma-capacity-indicator-full")));
+        }
+
+        [Theory]
+        [InlineData(159, 200, "0.8", false)]
+        [InlineData(160, 200, "0.8", true)]
+        [InlineData(6, 10, "0.7", false)]
+        [InlineData(7, 10, "0.7", true)]
+        [InlineData(9_499, 10_000, "0.95", false)]
+        [InlineData(9_500, 10_000, "0.95", true)]
+        public void Should_count_the_limit_near_at_the_ratio_as_well_as_above_it(int used, int limit, string share, bool isNear)
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+            var ratio = decimal.Parse(share, CultureInfo.InvariantCulture);
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="used" Limit="limit" NearLimitRatio="ratio" />);
+
+            // Assert
+            Assert.Equal(isNear, cut.Find(".forma-capacity-indicator").ClassList.Contains("forma-capacity-indicator-near"));
+        }
+
+        [Fact]
+        public void Should_hold_the_meter_s_value_at_the_limit_past_it()
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="210" Limit="200" />);
+
+            // Assert
+            Assert.Equal("200", cut.Find(".forma-capacity-indicator").GetAttribute("aria-valuenow"));
+        }
+    }
+
+    public sealed class Bar
+    {
+        [Fact]
+        public void Should_show_no_bar_unless_asked()
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="50" Limit="200" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-capacity-indicator-track")),
+                () => Assert.Null(cut.Find(".forma-capacity-indicator").GetAttribute("style")));
+        }
+
+        [Theory]
+        [InlineData(50, 200, "25%")]
+        [InlineData(210, 200, "100%")]
+        [InlineData(0, 0, "100%")]
+        [InlineData(1, 3, "33.3333%")]
+        public void Should_fill_the_bar_to_the_share_of_the_limit_used(int used, int limit, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="used" Limit="limit" ShowBar="true" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(cut.FindAll(".forma-capacity-indicator-fill")),
+                () => Assert.Equal($"--forma-capacity-indicator-used-size: {expected};", cut.Find(".forma-capacity-indicator").GetAttribute("style")));
+        }
+    }
+}

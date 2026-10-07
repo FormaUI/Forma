@@ -1,0 +1,35 @@
+@namespace Forma.Blazor.Components.Feedback
+@inherits FormaElementBase
+
+<div id="@Id"
+     data-rid="@Context.RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     role="meter"
+     aria-labelledby="@LabelId"
+     aria-describedby="@DescribedBy"
+     aria-valuemin="0"
+     aria-valuemax="@Limit"
+     aria-valuenow="@ValueNow"
+     aria-valuetext="@ValueText">
+    <div class="forma-capacity-indicator-readout">
+        <span id="@LabelId" class="forma-capacity-indicator-label">@LabelText</span>
+        <span class="forma-capacity-indicator-count" dir="ltr">@CountText</span>
+        @if (StateText is { } stateText)
+        {
+            <FormaStatusBadge Class="forma-capacity-indicator-state" Text="@stateText" />
+        }
+    </div>
+    @if (ShowBar)
+    {
+        <span class="forma-capacity-indicator-track">
+            <span class="forma-capacity-indicator-fill"></span>
+        </span>
+    }
+    @if (Note is not null)
+    {
+        <span id="@NoteId" class="forma-capacity-indicator-note">@Note</span>
+    }
+</div>

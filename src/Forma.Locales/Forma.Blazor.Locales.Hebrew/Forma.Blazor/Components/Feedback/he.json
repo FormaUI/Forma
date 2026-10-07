@@ -1,5 +1,15 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaCapacityIndicator": {
+    "Capacity": "קיבולת",
+    "{Used} of {Limit}": "{Used} מתוך {Limit}",
+    "{Used} of {Limit}, nearly full": "{Used} מתוך {Limit}, כמעט מלא",
+    "{Used} of {Limit}, full": "{Used} מתוך {Limit}, מלא",
+    "{Used} of {Limit}, over the limit": "{Used} מתוך {Limit}, מעבר למגבלה",
+    "Nearly Full": "כמעט מלא",
+    "Full": "מלא",
+    "Over the Limit": "מעבר למגבלה"
+  },
   "FormaDialog": {
     "Close": "סגור",
     "Cancel": "ביטול",

@@ -1,0 +1,99 @@
+@page "/capacity-indicator"
+@attribute [ShowcasePage("FormaCapacityIndicator")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Feedback
+@inject IStringLocale<FormaCapacityIndicatorPage> L
+
+<h1>FormaCapacityIndicator</h1>
+<p class="description">@L["A readout of how much of a limit is used: the count against the limit, a bar where the host asks for one, and the state named in words once the limit nears, so the state never rests on color alone."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic"]</h2>
+    <p class="description">@L["The count against the limit, under the label the readout gives itself."]</p>
+    <div class="demo-box">
+        <FormaCapacityIndicator Used="120" Limit="200" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Bar and a Note"]</h2>
+    <p class="description">@L["The host names what is counted, asks for a bar and adds a line saying where the limit comes from."]</p>
+    <div class="demo-box">
+        <FormaCapacityIndicator Used="1240" Limit="3500" Label="@L["Products"]" ShowBar="true" Note="@L["According to your hosting package."]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Nearing the Limit"]</h2>
+    <p class="description">@L["From 80% of the limit, at that share as well as above it, the bar takes a warning tone and the readout says the limit is nearly reached."]</p>
+    <div class="demo-box">
+        <FormaCapacityIndicator Used="1600" Limit="2000" Label="@L["Images"]" ShowBar="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Full"]</h2>
+    <p class="description">@L["At the limit, the bar takes a danger tone and the readout says it is full."]</p>
+    <div class="demo-box">
+        <FormaCapacityIndicator Used="900" Limit="900" Label="@L["Leads"]" ShowBar="true" Note="@L["Old ones are deleted automatically."]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Over the Limit"]</h2>
+    <p class="description">@L["A count can pass its limit, as when a plan with a lower limit replaces a larger one, and the readout says so."]</p>
+    <div class="demo-box">
+        <FormaCapacityIndicator Used="3" Limit="2" Label="@L["Users"]" ShowBar="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Limit of Zero"]</h2>
+    <p class="description">@L["Where nothing is allowed, the readout is full from the start."]</p>
+    <div class="demo-box">
+        <FormaCapacityIndicator Used="0" Limit="0" Label="@L["Users"]" ShowBar="true" Note="@L["Your package does not include more users."]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["An Earlier Warning"]</h2>
+    <p class="description">@L["The host decides the share of the limit that counts as near; at half, 50 of 100 already warns."]</p>
+    <div class="demo-box">
+        <FormaCapacityIndicator Used="50" Limit="100" Label="@L["Pages"]" ShowBar="true" NearLimitRatio="0.5m" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Later Warning"]</h2>
+    <p class="description">@L["On a large limit, 80% can leave plenty of room, so the host can raise the share; at 95%, 9,000 of 10,000 does not warn yet."]</p>
+    <div class="demo-box">
+        <FormaCapacityIndicator Used="9000" Limit="10000" Label="@L["Images"]" ShowBar="true" NearLimitRatio="0.95m" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Adding Up to the Limit"]</h2>
+    <p class="description">@L["Add and remove items to watch the readout change its state. The page stops adding at the limit, as an application would."]</p>
+    <div class="demo-box">
+        <div class="demo-stack">
+            <FormaCapacityIndicator Used="_items" Limit="ItemLimit" Label="@L["Products"]" ShowBar="true" />
+            <div class="demo-row">
+                <FormaButton Disabled="_items >= ItemLimit" OnClick="AddItem">@L["Add"]</FormaButton>
+                <FormaButton Disabled="_items == 0" OnClick="RemoveItem">@L["Remove"]</FormaButton>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private const int ItemLimit = 10;
+
+    private int _items = 6;
+
+    private void AddItem()
+        => _items++;
+
+    private void RemoveItem()
+        => _items--;
+}

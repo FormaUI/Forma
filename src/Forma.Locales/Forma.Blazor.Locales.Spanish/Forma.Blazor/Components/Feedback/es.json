@@ -1,5 +1,15 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaCapacityIndicator": {
+    "Capacity": "Capacidad",
+    "{Used} of {Limit}": "{Used} de {Limit}",
+    "{Used} of {Limit}, nearly full": "{Used} de {Limit}, casi lleno",
+    "{Used} of {Limit}, full": "{Used} de {Limit}, lleno",
+    "{Used} of {Limit}, over the limit": "{Used} de {Limit}, por encima del límite",
+    "Nearly Full": "Casi Lleno",
+    "Full": "Lleno",
+    "Over the Limit": "Por Encima del Límite"
+  },
   "FormaDialog": {
     "Close": "Cerrar",
     "Cancel": "Cancelar",

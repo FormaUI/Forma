@@ -1,0 +1,72 @@
+/* ============================================================
+   FormaCapacityIndicator — CSS isolation
+   A count against a limit, over an optional bar and a note. Only
+   the bar and the state badge take the tone, so the label and the
+   count keep text contrast and the badge names the state in words.
+   ============================================================ */
+
+.forma-capacity-indicator {
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    max-inline-size: 100%;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-prose);
+    color: var(--text-primary-color);
+}
+
+.forma-capacity-indicator-near {
+    --forma-status-badge-bg-color: var(--forma-capacity-indicator-near-badge-bg-color, var(--warning-subtle-color));
+    --forma-status-badge-fg-color: var(--forma-capacity-indicator-near-badge-fg-color, var(--text-primary-color));
+}
+
+.forma-capacity-indicator-full {
+    --forma-status-badge-bg-color: var(--forma-capacity-indicator-full-badge-bg-color, var(--danger-subtle-color));
+    --forma-status-badge-fg-color: var(--forma-capacity-indicator-full-badge-fg-color, var(--danger-emphasis-color));
+}
+
+.forma-capacity-indicator-readout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+}
+
+.forma-capacity-indicator-label {
+    font-weight: 600;
+}
+
+.forma-capacity-indicator-count {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* ---------- bar ---------- */
+.forma-capacity-indicator-track {
+    display: block;
+    block-size: var(--space-1);
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--forma-capacity-indicator-track-color, var(--border-color));
+}
+
+.forma-capacity-indicator-fill {
+    display: block;
+    block-size: 100%;
+    inline-size: var(--forma-capacity-indicator-used-size);
+    border-radius: inherit;
+    background: var(--forma-capacity-indicator-within-color, var(--primary-color));
+}
+
+.forma-capacity-indicator-near .forma-capacity-indicator-fill {
+    background: var(--forma-capacity-indicator-near-color, var(--warning-color));
+}
+
+.forma-capacity-indicator-full .forma-capacity-indicator-fill {
+    background: var(--forma-capacity-indicator-full-color, var(--danger-color));
+}
+
+.forma-capacity-indicator-note {
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-xs);
+}
