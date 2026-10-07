@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Inputs;
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
@@ -26,6 +27,9 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             new InputRoute(DecreaseAction, new KeyBinding("ArrowDown")),
         ],
     };
+
+    // The left-to-right, right-to-left and Arabic letter marks.
+    private static readonly SearchValues<char> DirectionalMarks = SearchValues.Create("\u200E\u200F\u061C");
 
     /// <summary>The floating label of the field the input sits in.</summary>
     [Parameter] public string? Label { get; set; }
@@ -263,38 +267,38 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     {
         const NumberStyles Whole = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowLeadingSign;
         const NumberStyles Fractional = Whole | NumberStyles.AllowDecimalPoint;
-        var culture = CultureInfo.CurrentCulture;
+        var format = GetReadingFormat(CultureInfo.CurrentCulture.NumberFormat);
         object? number = null;
         result = default!;
 
-        if (Ungroup(text, culture.NumberFormat) is not { } ungrouped)
+        if (Ungroup(RemoveDirectionalMarks(text), format) is not { } ungrouped)
         {
             return false;
         }
 
         text = ungrouped;
 
-        if (NumberType == typeof(int) && int.TryParse(text, Whole, culture, out var whole))
+        if (NumberType == typeof(int) && int.TryParse(text, Whole, format, out var whole))
         {
             number = whole;
         }
-        else if (NumberType == typeof(long) && long.TryParse(text, Whole, culture, out var wide))
+        else if (NumberType == typeof(long) && long.TryParse(text, Whole, format, out var wide))
         {
             number = wide;
         }
-        else if (NumberType == typeof(short) && short.TryParse(text, Whole, culture, out var narrow))
+        else if (NumberType == typeof(short) && short.TryParse(text, Whole, format, out var narrow))
         {
             number = narrow;
         }
-        else if (NumberType == typeof(decimal) && decimal.TryParse(text, Fractional, culture, out var exact))
+        else if (NumberType == typeof(decimal) && decimal.TryParse(text, Fractional, format, out var exact))
         {
             number = exact;
         }
-        else if (NumberType == typeof(double) && double.TryParse(text, Fractional, culture, out var binary) && double.IsFinite(binary))
+        else if (NumberType == typeof(double) && double.TryParse(text, Fractional, format, out var binary) && double.IsFinite(binary))
         {
             number = binary;
         }
-        else if (NumberType == typeof(float) && float.TryParse(text, Fractional, culture, out var single) && float.IsFinite(single))
+        else if (NumberType == typeof(float) && float.TryParse(text, Fractional, format, out var single) && float.IsFinite(single))
         {
             number = single;
         }
@@ -303,6 +307,30 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
         return number is not null;
     }
+
+    // The culture's number format with its signs as a reader types them. A right-to-left culture writes a directional mark beside its
+    // signs, which no keyboard types with them, so in Hebrew -5 is read as the culture's own sign followed by five.
+    private static NumberFormatInfo GetReadingFormat(NumberFormatInfo format)
+    {
+        var negativeSign = RemoveDirectionalMarks(format.NegativeSign);
+        var positiveSign = RemoveDirectionalMarks(format.PositiveSign);
+
+        if (negativeSign == format.NegativeSign && positiveSign == format.PositiveSign)
+        {
+            return format;
+        }
+
+        var reading = (NumberFormatInfo)format.Clone();
+        reading.NegativeSign = negativeSign;
+        reading.PositiveSign = positiveSign;
+
+        return reading;
+    }
+
+    private static string RemoveDirectionalMarks(string text)
+        => text.AsSpan().ContainsAny(DirectionalMarks)
+            ? string.Concat(text.Where(character => !DirectionalMarks.Contains(character)))
+            : text;
 
     // The text without its group separators, or null where they do not group the whole part as the culture does: every group but the
     // first holds exactly the culture's count of digits for its place, the first holds no more than that, and no separator falls past the

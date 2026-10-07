@@ -158,6 +158,32 @@
         }
 
         [Theory]
+        [InlineData("he-IL", "-5", -5)]
+        [InlineData("he-IL", "\u200E-5", -5)]
+        [InlineData("he-IL", "+5", 5)]
+        [InlineData("ar-SA", "-5", -5)]
+        [InlineData("fa-IR", "-5", -5)]
+        [InlineData("ur-PK", "-12", -12)]
+        public void Should_read_a_sign_typed_without_the_directional_mark_a_right_to_left_culture_writes_beside_it(string name, string typed, double expected)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture(name);
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal((decimal)expected, model.Price),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Theory]
         [InlineData("en-US", "1,5")]
         [InlineData("en-US", "1,23,456")]
         [InlineData("en-US", "1234,567")]
