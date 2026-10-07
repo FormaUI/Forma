@@ -6,14 +6,14 @@ design.
 
 ## Steps
 
-1. **The currency catalog.** Open. `Forma.Framework.Currencies` with `CurrencyCatalog`, its
+1. **The currency catalog.** ✅ `Forma.Framework.Currencies` with `CurrencyCatalog`, its
    snapshot generated from CLDR by an update script beside the plural rules', and its tests: a
    currency's minor units, its symbol in a culture through locale inheritance, and the ISO code
    where no locale has one. Gate: the snapshot's size measured with every locale and with CLDR's
    modern ones before deciding which locales the first release ships, and the compressed cost of
    the currencies' localized names measured apart, so they ship with the catalog where the cost
    is small and wait where it is not; and the build, the tests and the update script's own case
-   passing. Landed, in review: the assembly with `CurrencyCatalog` and its snapshot of CLDR 48.2.0,
+   passing. Landed: the assembly with `CurrencyCatalog` and its snapshot of CLDR 48.2.0,
    the update script with its task-script cases, and the tests. The snapshot holds the currencies
    CLDR records as tender today, 153 of them, their minor units where they differ from CLDR's
    default, and each locale's symbols where they differ from what the locale inherits. Its
