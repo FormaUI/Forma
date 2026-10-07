@@ -103,7 +103,7 @@ The drop-down menu's panel opened as a context menu, a shortcut to actions reach
 
 ### `FormaCurrencyInput`
 
-A number input with the currency symbol beside it.
+A number input with the currency symbol beside it. Its design is [currency-input-design.md](currency-input-design.md).
 
 | | |
 |---|---|
