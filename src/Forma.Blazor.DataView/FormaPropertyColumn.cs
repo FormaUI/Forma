@@ -128,7 +128,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         builder.AddContent(1, _displayTextSelector(draft));
     }
 
-    // The library's input for the value's type where it has one, else the framework's in the library's look.
+    // The library's input for the value's type.
     private static EditorKind ResolveEditorKind()
     {
         var type = typeof(TValue);
@@ -157,7 +157,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
 
         if (underlying == typeof(DateTime) || underlying == typeof(DateTimeOffset))
         {
-            return EditorKind.DateInput;
+            return EditorKind.DateTimePicker;
         }
 
         if (underlying == typeof(int) || underlying == typeof(long) || underlying == typeof(short)
@@ -269,8 +269,8 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             case EditorKind.NumberInput:
                 RenderInput(builder, typeof(FormaNumberInput<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
                 break;
-            case EditorKind.DateInput:
-                RenderFrameworkInput(builder, typeof(InputDate<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+            case EditorKind.DateTimePicker:
+                RenderPicker(builder, typeof(FormaDateTimePicker<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
                 break;
             default:
                 throw new InvalidOperationException($"'{_editorKind}' is not a known {nameof(EditorKind)}.");
@@ -298,18 +298,6 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         builder.AddComponentParameter(18, "ValueExpression", valueExpression);
         builder.AddComponentParameter(19, "Label", Title);
         builder.AddComponentParameter(20, "Class", EditorClass);
-        builder.CloseComponent();
-    }
-
-    // A framework input wears the text box's look.
-    private void RenderFrameworkInput(RenderTreeBuilder builder, Type inputType, object? value, object valueChanged, object valueExpression)
-    {
-        builder.OpenComponent(9, inputType);
-        builder.AddComponentParameter(10, "Value", value);
-        builder.AddComponentParameter(11, "ValueChanged", valueChanged);
-        builder.AddComponentParameter(12, "ValueExpression", valueExpression);
-        builder.AddComponentParameter(13, "class", $"forma-text-box {EditorClass}");
-        builder.AddComponentParameter(14, "aria-label", Title);
         builder.CloseComponent();
     }
 
@@ -345,6 +333,6 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         DatePicker,
         TimePicker,
         NumberInput,
-        DateInput,
+        DateTimePicker,
     }
 }

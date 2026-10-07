@@ -313,6 +313,8 @@
                     <FormaPropertyColumn Property="@(e => e.Name)" Title="@L["Name"]" />
                     <FormaPropertyColumn Property="@(e => e.Department)" Title="@L["Department"]" />
                     <FormaPropertyColumn Property="@(e => e.StartDate)" Title="@L["Start date"]" Format="d" />
+                    <FormaPropertyColumn Property="@(e => e.ShiftStart)" Title="@L["Shift start"]" Format="t" />
+                    <FormaPropertyColumn Property="@(e => e.NextReview)" Title="@L["Next review"]" Format="g" />
                     <FormaPropertyColumn Property="@(e => e.Salary)" Title="@L["Salary"]" Format="N0" />
                     <FormaPropertyColumn Property="@(e => e.Remote)" Title="@L["Remote"]" />
                     <FormaTemplateColumn Title="@L["Actions"]">
@@ -523,9 +525,9 @@
 
     private readonly List<EditableEmployee> _editableEmployees =
     [
-        new() { Id = 1, Name = "Alice Johnson", Department = "Engineering", StartDate = new DateOnly(2019, 4, 2), Salary = 92000 },
-        new() { Id = 2, Name = "Bob Smith", Department = "Marketing", StartDate = new DateOnly(2021, 9, 13), Salary = 74500 },
-        new() { Id = 3, Name = "Carol Davis", Department = "Sales", StartDate = new DateOnly(2020, 1, 27), Salary = 81250 },
+        new() { Id = 1, Name = "Alice Johnson", Department = "Engineering", StartDate = new DateOnly(2019, 4, 2), ShiftStart = new TimeOnly(9, 0), NextReview = new DateTime(2026, 11, 3, 10, 0, 0), Salary = 92000 },
+        new() { Id = 2, Name = "Bob Smith", Department = "Marketing", StartDate = new DateOnly(2021, 9, 13), ShiftStart = new TimeOnly(8, 30), NextReview = new DateTime(2026, 11, 10, 14, 30, 0), Salary = 74500 },
+        new() { Id = 3, Name = "Carol Davis", Department = "Sales", StartDate = new DateOnly(2020, 1, 27), ShiftStart = new TimeOnly(10, 0), NextReview = new DateTime(2026, 12, 1, 9, 0, 0), Salary = 81250 },
     ];
 
     private IQueryable<EditableEmployee> _editableEmployeeItems = default!;
@@ -742,6 +744,8 @@
             Name = employee.Name,
             Department = employee.Department,
             StartDate = employee.StartDate,
+            ShiftStart = employee.ShiftStart,
+            NextReview = employee.NextReview,
             Salary = employee.Salary,
             Remote = employee.Remote,
         };
@@ -758,6 +762,8 @@
         target.Name = edited.Name;
         target.Department = edited.Department;
         target.StartDate = edited.StartDate;
+        target.ShiftStart = edited.ShiftStart;
+        target.NextReview = edited.NextReview;
         target.Salary = edited.Salary;
         target.Remote = edited.Remote;
 
@@ -797,6 +803,10 @@
         public string Department { get; set; } = string.Empty;
 
         public DateOnly StartDate { get; set; }
+
+        public TimeOnly ShiftStart { get; set; }
+
+        public DateTime NextReview { get; set; }
 
         [Range(0, 1_000_000)]
         public decimal Salary { get; set; }

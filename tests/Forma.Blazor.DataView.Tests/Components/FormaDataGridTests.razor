@@ -2733,7 +2733,7 @@
         ];
 
         private static Employee Clone(Employee employee)
-            => new() { Id = employee.Id, Name = employee.Name, Salary = employee.Salary, Hired = employee.Hired, Reviewed = employee.Reviewed, ShiftStart = employee.ShiftStart, IsRemote = employee.IsRemote };
+            => new() { Id = employee.Id, Name = employee.Name, Salary = employee.Salary, Hired = employee.Hired, Reviewed = employee.Reviewed, ShiftStart = employee.ShiftStart, NextShift = employee.NextShift, IsRemote = employee.IsRemote };
 
         [Fact]
         public void Should_throw_when_inline_editing_is_enabled_without_a_clone()
@@ -2901,6 +2901,42 @@
                 () => Assert.Contains("forma-data-grid-editor", editorClass, StringComparison.Ordinal),
                 () => Assert.Equal(new TimeOnly(10, 15), saved!.ShiftStart),
                 () => Assert.Equal(new TimeOnly(9, 0), employees[0].ShiftStart));
+        }
+
+        [Fact]
+        public async Task Should_edit_a_date_with_a_time_with_the_library_s_date_and_time_picker()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = CreateEmployees();
+            Employee? saved = null;
+
+            var cut = ctx.Render(
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone" OnRowSave="@((Employee employee) => saved = employee)">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" Editable="false" />
+                            <FormaPropertyColumn Property="@(employee => employee.NextShift)" Title="Next shift" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Act
+            var group = cut.Find("tbody [role=group]");
+            var groupName = cut.Find($"[id='{group.GetAttribute("aria-labelledby")}']").FirstChild!.TextContent.Trim();
+            var groupClass = group.ClassName;
+            cut.Find("tbody input[role=combobox]").Change("10:15");
+            await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Next shift", groupName),
+                () => Assert.Contains("forma-data-grid-editor", groupClass, StringComparison.Ordinal),
+                () => Assert.Equal(new DateTime(2026, 3, 16, 10, 15, 0), saved!.NextShift),
+                () => Assert.Equal(new DateTime(2026, 3, 16, 9, 0, 0), employees[0].NextShift));
         }
 
         [Fact]
@@ -3272,6 +3308,8 @@
             public DateOnly? Reviewed { get; set; }
 
             public TimeOnly ShiftStart { get; set; } = new(9, 0);
+
+            public DateTime NextShift { get; set; } = new(2026, 3, 16, 9, 0, 0);
 
             public bool IsRemote { get; set; }
         }

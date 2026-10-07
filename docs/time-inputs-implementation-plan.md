@@ -30,8 +30,9 @@ to the design.
    another nor any label twice. Landed, in review: the date picker's control, its trigger
    and the calendar beneath it, stands apart from the field the date picker frames it in,
    as the time picker's does; `FormaDateTimePicker` with the design's bounds, halves, kinds
-   and offsets and its one label over two controls; its Showcase page; and the screen
-   reader check gaining its scenario, which hears the group, then "Date" and "Time". The focus behavior gained an owner it
+   and offsets and its one label over two controls; its Showcase page; the property column
+   editing a date with a time with it; and the screen reader check gaining its scenario,
+   which hears the group, then "Date" and "Time". The focus behavior gained an owner it
    tells when the focus leaves its surface, which reports a half the reader left missing.
    Departures: the field's label stands above the two controls, which sit side by side at
    an input's own height, since a label floating inside one box would name only that box;
