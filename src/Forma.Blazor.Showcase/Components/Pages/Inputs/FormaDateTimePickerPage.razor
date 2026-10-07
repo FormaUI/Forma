@@ -77,9 +77,12 @@
     </div>
 
     <div class="demo-section">
-        <h2>@L["Disabled"]</h2>
+        <h2>@L["Disabled and Read-Only"]</h2>
         <div class="demo-box">
-            <FormaDateTimePicker @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
+            <div class="demo-stack">
+                <FormaDateTimePicker @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
+                <FormaDateTimePicker @bind-Value="Model.Locked" Label="@L["Read-Only"]" ReadOnly="true" />
+            </div>
         </div>
     </div>
 </EditForm>

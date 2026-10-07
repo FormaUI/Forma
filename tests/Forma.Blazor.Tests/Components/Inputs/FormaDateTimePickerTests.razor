@@ -73,6 +73,32 @@
         }
 
         [Fact]
+        public void Should_show_a_read_only_value_as_text_with_nothing_to_open_or_clear()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 30, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" ReadOnly="true" />
+            </FakeFormHost>);
+
+            // Act
+            var date = cut.Find("input.forma-date-box-trigger");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Throws<MissingEventHandlerException>(() => date.Click()),
+                () => Assert.True(date.HasAttribute("readonly")),
+                () => Assert.Equal("3/15/2026", date.GetAttribute("value")),
+                () => Assert.Equal("Date", cut.Find($"[id='{date.GetAttribute("aria-labelledby")}']").TextContent.Trim()),
+                () => Assert.True(GetTime(cut).HasAttribute("readonly")),
+                () => Assert.Empty(cut.FindAll(".forma-date-box-clear")),
+                () => Assert.Empty(cut.FindAll(".forma-date-box-popover")),
+                () => Assert.Equal(new DateTime(2026, 3, 15, 9, 30, 0), model.Starts));
+        }
+
+        [Fact]
         public void Should_pass_the_dates_of_its_bounds_to_the_calendar()
         {
             // Arrange

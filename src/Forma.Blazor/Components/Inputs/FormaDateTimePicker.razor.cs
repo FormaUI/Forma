@@ -31,6 +31,9 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Whether the field is read-only.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
     /// <summary>The earliest date with a time the field accepts.</summary>
     [Parameter] public TValue? Min { get; set; }
 

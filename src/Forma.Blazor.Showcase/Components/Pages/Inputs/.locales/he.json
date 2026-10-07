@@ -72,6 +72,8 @@
     "A campaign period is required.": "יש לבחור תקופת קמפיין."
   },
   "FormaDateTimePickerPage": {
+    "Disabled and Read-Only": "מושבת ולקריאה בלבד",
+    "Read-Only": "לקריאה בלבד",
     "A field for one value holding a date and its time: the date picked from a calendar, the time typed or chosen from a list of suggested times, under one label. Either half entered alone is held until the other comes, and reported once the focus leaves the field.": "שדה לערך אחד שמחזיק תאריך ושעה: התאריך נבחר מלוח שנה, והשעה מוקלדת או נבחרת מרשימת שעות מוצעות, תחת תווית אחת. חצי שמוזן לבדו נשמר עד שהחצי השני מגיע, ומדווח כשהמיקוד עוזב את השדה.",
     "A date with a time that can be empty. Pick a date and leave the field without a time, and the field says the time is missing.": "תאריך עם שעה שיכול להיות ריק. בחרו תאריך ועזבו את השדה בלי שעה, והשדה יודיע שהשעה חסרה.",
     "Starts": "מתחיל",

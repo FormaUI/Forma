@@ -41,6 +41,9 @@ public sealed partial class FormaDateBox : FormaComponentBase
     /// <summary>Whether the trigger is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Whether the date is shown without a way to change it.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
     /// <summary>The id of the element naming the trigger, read before the date it shows.</summary>
     [Parameter] public string? NameId { get; set; }
 

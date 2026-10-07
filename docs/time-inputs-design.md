@@ -85,6 +85,9 @@ half hours never makes a quarter hour invalid.
   one value they edit together. Each picker's control therefore stands apart from the
   field that frames it, so the standalone picker frames it in a field of its own and the
   combined picker frames both in one, with no field inside another and no label twice.
+- **Read-only.** A read-only time is a read-only text field whose list cannot be opened. A
+  read-only date is shown as read-only text named as its trigger is, with no calendar to
+  open and nothing to clear, since a button has no read-only state to announce.
 - **One label over two controls.** A field either labels the one control it frames, its
   label pointing at that control, or names a group of the controls it frames, the group
   taking its label as its name. The date and time picker's field names a group: the group

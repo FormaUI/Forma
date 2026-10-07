@@ -5,23 +5,43 @@
 
 <div class="forma-date-box">
     <div class="forma-date-box-trigger-wrapper" @ref="_anchorElement">
-        <button id="@ElementId"
-                data-rid="@OwnerRuntimeId"
-                class="@TriggerClassList"
-                style="@TriggerStyle"
-                @attributes="TriggerAttributes"
-                @ref="TriggerElement"
-                type="button"
-                aria-expanded="@(IsOpen ? "true" : "false")"
-                aria-required="@(Required ? "true" : null)"
-                aria-labelledby="@LabelledBy"
-                aria-describedby="@TriggerDescribedBy"
-                disabled="@Disabled"
-                @onclick="ToggleAsync">
-            <span class="forma-date-box-arrow" aria-hidden="true">&#9662;</span>
-            <span id="@ValueId" class="forma-date-box-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Date"])</span>
-        </button>
-        @if (HasValue && !Disabled)
+        @if (ReadOnly)
+        {
+            @* A date the reader cannot change reads as text, named as the trigger is, with nothing to open or clear. *@
+            <input id="@ElementId"
+                   data-rid="@OwnerRuntimeId"
+                   class="@TriggerClassList"
+                   style="@TriggerStyle"
+                   @attributes="TriggerAttributes"
+                   @ref="TriggerElement"
+                   type="text"
+                   readonly
+                   value="@DisplayText"
+                   aria-required="@(Required ? "true" : null)"
+                   aria-labelledby="@NameId"
+                   aria-describedby="@TriggerDescribedBy"
+                   disabled="@Disabled" />
+        }
+        else
+        {
+            <button id="@ElementId"
+                    data-rid="@OwnerRuntimeId"
+                    class="@TriggerClassList"
+                    style="@TriggerStyle"
+                    @attributes="TriggerAttributes"
+                    @ref="TriggerElement"
+                    type="button"
+                    aria-expanded="@(IsOpen ? "true" : "false")"
+                    aria-required="@(Required ? "true" : null)"
+                    aria-labelledby="@LabelledBy"
+                    aria-describedby="@TriggerDescribedBy"
+                    disabled="@Disabled"
+                    @onclick="ToggleAsync">
+                <span class="forma-date-box-arrow" aria-hidden="true">&#9662;</span>
+                <span id="@ValueId" class="forma-date-box-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Date"])</span>
+            </button>
+        }
+        @if (HasValue && !Disabled && !ReadOnly)
         {
             <FormaButton Variant="ButtonVariant.Ghost"
                          Size="ButtonSize.Mini"
