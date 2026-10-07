@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach, focusablesIn } from '#browser/behaviors/Focus.js';
 import { configure, resolve } from '#input/InputRouter.js';
 
@@ -524,5 +524,155 @@ describe('Focus handing on from an element that goes away', () => {
         focus('first');
 
         expect(tab().defaultPrevented).toBe(false);
+    });
+});
+
+describe('Focus telling its owner the focus left', () => {
+    let surface;
+
+    /** An owner that records each time it is told. */
+    function owner() {
+        const told = [];
+
+        return { told, invokeMethodAsync: name => { told.push(name); return Promise.resolve(); } };
+    }
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+        document.body.innerHTML = '<div id="surface"><button id="first">First</button><button id="second">Second</button><span id="label">Label</span></div><button id="after">After</button><p id="page">Page</p>';
+        surface = document.querySelector('#surface');
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.useRealTimers();
+    });
+
+    it('tells the owner when the focus moves to an element outside the surface', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+
+        focus('after');
+
+        expect(target.told).toEqual(['HandleFocusLeaveAsync']);
+    });
+
+    it('tells the owner nothing while the focus moves inside the surface', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+
+        focus('second');
+        vi.runAllTimers();
+
+        expect(target.told).toEqual([]);
+    });
+
+    it('tells the owner once a focus that fell to the page has settled there', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+
+        document.querySelector('#first').blur();
+        const before = [...target.told];
+        vi.runAllTimers();
+
+        expect(before).toEqual([]);
+        expect(target.told).toEqual(['HandleFocusLeaveAsync']);
+    });
+
+    it('tells the owner nothing when the focus goes with an element a render takes away', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+
+        const first = document.querySelector('#first');
+        first.blur();
+        first.remove();
+        vi.runAllTimers();
+
+        expect(target.told).toEqual([]);
+    });
+
+    it('tells the owner nothing when the focus leaves the window with the reader', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+        vi.spyOn(document, 'hasFocus').mockReturnValue(false);
+
+        document.querySelector('#first').blur();
+        vi.runAllTimers();
+
+        expect(target.told).toEqual([]);
+    });
+
+    /** A press on an element, as the browser raises it before the focus moves. */
+    const press = id => document.querySelector(`#${id}`).dispatchEvent(new Event('pointerdown', { bubbles: true }));
+
+    it('tells the owner nothing when a press inside the surface drops the focus to the page', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+
+        press('label');
+        document.querySelector('#first').blur();
+        vi.runAllTimers();
+
+        expect(target.told).toEqual([]);
+    });
+
+    it('tells the owner once the reader presses outside after a press inside dropped the focus', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+        press('label');
+        document.querySelector('#first').blur();
+        vi.runAllTimers();
+
+        press('page');
+
+        expect(target.told).toEqual(['HandleFocusLeaveAsync']);
+    });
+
+    it('tells the owner once the focus lands outside after a press inside dropped it', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+        press('label');
+        document.querySelector('#first').blur();
+        vi.runAllTimers();
+
+        focus('after');
+
+        expect(target.told).toEqual(['HandleFocusLeaveAsync']);
+    });
+
+    it('tells the owner nothing when the focus comes back inside after a press inside dropped it', () => {
+        const target = owner();
+        attachSurface(surface, { owner: target });
+        focus('first');
+        press('label');
+        document.querySelector('#first').blur();
+        vi.runAllTimers();
+
+        press('second');
+        focus('second');
+        press('page');
+
+        expect(target.told).toEqual([]);
+    });
+
+    it('tells the owner nothing once disposed', () => {
+        const target = owner();
+        const handle = attachSurface(surface, { owner: target });
+        focus('first');
+
+        document.querySelector('#first').blur();
+        handle.dispose();
+        focus('after');
+        vi.runAllTimers();
+
+        expect(target.told).toEqual([]);
     });
 });

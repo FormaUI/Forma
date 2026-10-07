@@ -5,7 +5,7 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Decides where the focus goes inside a surface: Tab wrapping among its controls, visiting named regions first and leaving past either end, or roving among its controls as one Tab stop; and the element the focus passes to when the one holding it goes away.</summary>
+/// <summary>Decides where the focus goes inside a surface: Tab wrapping among its controls, visiting named regions first and leaving past either end, or roving among its controls as one Tab stop; the element the focus passes to when the one holding it goes away; and the owner told when the focus leaves.</summary>
 public sealed class Focus(IJSEnvironment js)
     : JSInterop(js, "./_content/forma/browser/scripts/behaviors/Focus.js")
 {
@@ -16,13 +16,32 @@ public sealed class Focus(IJSEnvironment js)
     /// <param name="roving">The axis the arrow keys move focus along in a roving surface, one Tab stop for all its controls.</param>
     /// <param name="heir">The attribute marking the element that takes the focus when the element holding it goes away.</param>
     public ValueTask<bool> AttachAsync(ElementReference target, bool wrap = false, IReadOnlyList<string>? order = null, FocusOrientation? roving = null, string? heir = null)
+        => AttachCoreAsync(target, Describe<object>(wrap, order, roving, heir, null));
+
+    /// <summary>Attaches to the surface, telling the owner each time the focus leaves it through <c>HandleFocusLeaveAsync</c>.</summary>
+    /// <param name="target">The surface.</param>
+    /// <param name="owner">The owner told each time the focus leaves the surface.</param>
+    /// <param name="wrap">Whether Tab wraps among the surface's controls.</param>
+    /// <param name="order">The selectors of the regions whose controls Tab visits in turn before the rest of the surface.</param>
+    /// <param name="roving">The axis the arrow keys move focus along in a roving surface, one Tab stop for all its controls.</param>
+    /// <param name="heir">The attribute marking the element that takes the focus when the element holding it goes away.</param>
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference target, DotNetObjectReference<TOwner> owner, bool wrap = false, IReadOnlyList<string>? order = null, FocusOrientation? roving = null, string? heir = null)
+        where TOwner : class
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+
+        return AttachCoreAsync(target, Describe(wrap, order, roving, heir, owner));
+    }
+
+    private static object Describe<TOwner>(bool wrap, IReadOnlyList<string>? order, FocusOrientation? roving, string? heir, DotNetObjectReference<TOwner>? owner)
+        where TOwner : class
     {
         if (heir is not null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(heir);
         }
 
-        return AttachCoreAsync(target, new { wrap, order = order ?? [], roving = roving is { } orientation ? GetOrientationName(orientation) : null, heir });
+        return new { wrap, order = order ?? [], roving = roving is { } orientation ? GetOrientationName(orientation) : null, heir, owner };
     }
 
     private static string GetOrientationName(FocusOrientation orientation)

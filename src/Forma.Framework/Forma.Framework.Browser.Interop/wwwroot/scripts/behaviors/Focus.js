@@ -18,10 +18,17 @@
  * the focus moves to the marked element, so the browser reports one move of the focus rather
  * than its fall to the page and then the element. Only a focus that fell to nothing is
  * handed on: one the reader moved elsewhere stays where it went.
+ *
+ * A surface with an owner tells it each time the reader takes the focus out of the surface:
+ * to an element outside it, or to the page itself. A focus that goes with its element as a
+ * render takes the element away, or leaves the window with the reader, has not left, and
+ * neither has one a press inside the surface dropped to the page, as a press on a label or
+ * a gap does; that leave is told once the next press or focus lands outside the surface.
  */
 
 import { Controls } from '../../../core/scripts/Controls.js';
 import { Direction } from '../../../core/scripts/Direction.js';
+import { tell } from '../../../core/scripts/Owner.js';
 import { register } from '../../../input/scripts/InputRouter.js';
 
 /** The actions the surface's keys are routed as. */
@@ -34,7 +41,7 @@ const Actions = {
 
 /**
  * @param {HTMLElement} target The surface whose focus is decided.
- * @param {{ wrap?: boolean, order?: string[], roving?: 'horizontal' | 'vertical' | null, heir?: string | null }} options Whether Tab wraps inside the surface, the selectors of the regions visited first, the axis the arrow keys rove along, and the attribute marking the element that takes the focus when the one holding it goes away.
+ * @param {{ wrap?: boolean, order?: string[], roving?: 'horizontal' | 'vertical' | null, heir?: string | null, owner?: import('../../../core/scripts/Owner.js').Owner | null }} options Whether Tab wraps inside the surface, the selectors of the regions visited first, the axis the arrow keys rove along, the attribute marking the element that takes the focus when the one holding it goes away, and the owner told through HandleFocusLeaveAsync when the focus leaves the surface.
  */
 export function attach(target, options = {}) {
     const controller = new AbortController();
@@ -81,13 +88,17 @@ export class Focus {
     #parked = new Map();
     /** The element inside the surface that last took the focus, while the surface still holds it. */
     #held = null;
+    /** Whether the last press on the page landed inside the surface. */
+    #pressedInside = false;
+    /** Whether a press inside the surface dropped the focus to the page, so its leave waits for the reader's next move. */
+    #fellInside = false;
 
     /**
      * @param {HTMLElement} target The surface whose focus is decided.
-     * @param {{ wrap?: boolean, order?: string[], roving?: 'horizontal' | 'vertical' | null, heir?: string | null }} options
+     * @param {{ wrap?: boolean, order?: string[], roving?: 'horizontal' | 'vertical' | null, heir?: string | null, owner?: import('../../../core/scripts/Owner.js').Owner | null }} options
      * @param {AbortSignal} signal Ends the handling.
      */
-    constructor(target, { wrap = false, order = [], roving = null, heir = null } = {}, signal) {
+    constructor(target, { wrap = false, order = [], roving = null, heir = null, owner = null } = {}, signal) {
         this.#target = target;
         this.#wrap = wrap;
         this.#order = order;
@@ -101,6 +112,10 @@ export class Focus {
 
         if (heir) {
             this.#keepHeld(signal);
+        }
+
+        if (owner) {
+            this.#tellLeaving(owner, signal);
         }
 
         if (roving) {
@@ -232,6 +247,62 @@ export class Focus {
         const observer = new MutationObserver(() => this.#handOn());
         observer.observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: [this.#heir] });
         signal.addEventListener('abort', () => observer.disconnect(), { once: true });
+    }
+
+    /** Tells the owner each time the reader takes the focus out of the surface. */
+    #tellLeaving(owner, signal) {
+        const target = this.#target;
+        const page = target.ownerDocument;
+        const leave = () => {
+            this.#fellInside = false;
+            tell(owner, 'HandleFocusLeaveAsync');
+        };
+
+        // A press inside the surface on something that takes no focus, a label or a gap, drops the focus to the page with the reader
+        // still in the surface, so the leave waits for the next press or focus to land outside it.
+        page.addEventListener('pointerdown', event => {
+            this.#pressedInside = target.contains(event.target);
+
+            if (this.#fellInside && !this.#pressedInside) {
+                leave();
+            }
+        }, { signal, capture: true });
+
+        page.addEventListener('focusin', event => {
+            if (this.#fellInside) {
+                if (target.contains(event.target)) {
+                    this.#fellInside = false;
+                } else {
+                    leave();
+                }
+            }
+        }, { signal, capture: true });
+
+        target.addEventListener('focusout', event => {
+            if (event.relatedTarget !== null) {
+                if (!target.contains(event.relatedTarget)) {
+                    leave();
+                }
+
+                return;
+            }
+
+            // A focus going nowhere fell to the page, went with its element, or left the window, and only the first is a leave;
+            // which it was shows once the move has settled.
+            const element = event.target;
+
+            setTimeout(() => {
+                if (signal.aborted || !element.isConnected || !page.hasFocus() || target.contains(page.activeElement)) {
+                    return;
+                }
+
+                if (this.#pressedInside) {
+                    this.#fellInside = true;
+                } else {
+                    leave();
+                }
+            });
+        }, { signal });
     }
 
     /** Moves a focus that fell to nothing with the element holding it to the element marked as heir. */
