@@ -30,7 +30,9 @@ the reader's culture decides only how the number and the symbol are written.
   root, starting from the nearest of the cultures the formatting culture derives from that CLDR
   has a locale for, so `zh-TW` starts from `zh-Hant` rather than from `zh`.
   The data is a versioned snapshot of CLDR, generated ahead of time by an update script and shipped
-  with the assembly; nothing is fetched at run time. The catalog states facts: it neither
+  with the assembly; nothing is fetched at run time. It holds every locale's symbols, which
+  compress to a few kilobytes, and no currency's localized name, since the names would cost over
+  twenty times as much. The catalog states facts: it neither
   validates, rounds, steps nor converts an amount, and a host reads it directly, with no contract
   standing in for it.
 - **The symbol is the currency's in the reader's culture.** A symbol identifies a currency only
@@ -44,7 +46,8 @@ the reader's culture decides only how the number and the symbol are written.
   after is its inline end, so the side follows reading order rather than being placed and then
   mirrored, and a Hebrew reader pricing in dollars and an English reader pricing in shekels each
   see the order their own culture writes. The number's own text keeps the direction the number
-  input gives it.
+  input gives it, left to right in every culture, so the input reserves the symbol's room on its
+  own left or right, chosen from the symbol's side and the culture's direction.
 - **The adornment is not the number.** The symbol stands outside the editable text, so selecting,
   typing and reading the number never meet it, and the field's accessible description names the
   currency, since a symbol alone can stand for several currencies: by its name in the formatting
@@ -52,7 +55,8 @@ the reader's culture decides only how the number and the symbol are written.
 - **Negative amounts are amounts.** The field takes a negative amount unless the host sets a
   `Min`; a price that must not be negative says so through `Min`, never through the field. The
   sign belongs to the number, and the symbol keeps the side the culture's positive pattern gives
-  it.
+  it. A reader types the sign as a keyboard writes it, without the directional mark a
+  right-to-left culture writes beside it.
 - **Precision permitted and precision shown are separate.** The most decimal places an amount
   takes default to the currency's minor units, two for the US dollar and none for the yen, and
   `MaxDecimalPlaces` overrides them for a price or a rate that needs more. An amount with more

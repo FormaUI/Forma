@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**31 components not yet implemented, 9 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 22 not yet started, and one in progress stands in the catalog's structure until then.
+**30 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 22 not yet started, and one in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -47,19 +47,18 @@ The components still to build, in the order dependency and reuse suggest.
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaCurrencyInput` | A form input, needed before any edit form; it composes the number input |
-| 2 | `FormaCapacityIndicator` | Data display, needed for list pages |
-| 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
-| 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
-| 5 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
-| 6 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
-| 7 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
-| 8 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
-| 9 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
-| 10 | `FormaVirtualize` | Forma's virtualization; the data view's views move onto it, so it comes before the data view is finished — see [the virtualization design](virtualization-design.md) |
-| 11 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch` | The engine every collection surface shares, with its views and controls; the explorer adopts it and the gallery is built on it, so it comes before the gallery — see [the data view design](data-view-design.md) |
-| 12 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
-| 13 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
+| 1 | `FormaCapacityIndicator` | Data display, needed for list pages |
+| 2 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
+| 3 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
+| 4 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
+| 5 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
+| 6 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
+| 7 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
+| 8 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
+| 9 | `FormaVirtualize` | Forma's virtualization; the data view's views move onto it, so it comes before the data view is finished — see [the virtualization design](virtualization-design.md) |
+| 10 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch` | The engine every collection surface shares, with its views and controls; the explorer adopts it and the gallery is built on it, so it comes before the gallery — see [the data view design](data-view-design.md) |
+| 11 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
+| 12 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
 
 ## Components
 
@@ -98,15 +97,6 @@ The drop-down menu's panel opened as a context menu, a shortcut to actions reach
 |---|---|
 | **Old pattern** | None |
 | **Used in** | Grid rows and media tiles, as a shortcut to the actions the overflow menu already lists |
-
-### `FormaCurrencyInput`
-
-A number input with the currency symbol beside it. Its design is [currency-input-design.md](currency-input-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | `.form-addon` wrapping input with currency symbol overlay |
-| **Used in** | product (price, sale price, cost), store-settings (min order, shipping), coupons (discount amount) |
 
 ### `FormaDataCards`
 

@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**63 components implemented, 9 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**64 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -36,11 +36,11 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaFileUploader
 │   ├── ✅ FormaFileViewer
 │   └── ✅ FormaImagePicker
-├── (16 / 17) Inputs/
+├── (17 / 17) Inputs/
 │   ├── ✅ FormaCalendar
 │   ├── ✅ FormaCheckBox
 │   ├── ✅ FormaColorPicker
-│   ├── ◐ FormaCurrencyInput
+│   ├── ✅ FormaCurrencyInput
 │   ├── ✅ FormaDatePicker
 │   ├── ✅ FormaDateRangePicker
 │   ├── ✅ FormaDateTimePicker
@@ -203,6 +203,15 @@ A yes-or-no dialog answering the caller with the reader's choice.
 |---|---|
 | **Old pattern** | `AreYouSure(this, 'message')` — custom confirm that returns bool. Used on delete buttons, destructive actions |
 | **Used in** | Every page with delete/remove actions (list pages bulk delete, individual row delete, design change, template swap) |
+
+### `FormaCurrencyInput`
+
+A form input for an amount of money in a currency the application names, typed as the reader's culture writes a number beside the symbol it writes the currency with. Its design is [currency-input-design.md](currency-input-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | `.form-addon` wrapping input with currency symbol overlay |
+| **Used in** | product (price, sale price, cost), store-settings (min order, shipping), coupons (discount amount) |
 
 ### `FormaDatePicker`
 
