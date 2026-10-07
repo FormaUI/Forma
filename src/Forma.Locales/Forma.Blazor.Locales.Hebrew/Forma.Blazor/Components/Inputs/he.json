@@ -25,6 +25,18 @@
     "This Month": "החודש",
     "Last Month": "חודש שעבר"
   },
+  "FormaDateTimePicker": {
+    "Date": "תאריך",
+    "Time": "שעה",
+    "The {Field} field is required.": "השדה {Field} הוא שדה חובה.",
+    "The {Field} field must be a time.": "השדה {Field} חייב להיות שעה.",
+    "The {Field} field needs a date.": "בשדה {Field} חסר תאריך.",
+    "The {Field} field needs a time.": "בשדה {Field} חסרה שעה.",
+    "The {Field} field must be between {Earliest} and {Latest}.": "השדה {Field} חייב להיות בין {Earliest} ל-{Latest}.",
+    "The {Field} field must be {Earliest} or later.": "השדה {Field} חייב להיות {Earliest} או מאוחר יותר.",
+    "The {Field} field must be {Latest} or earlier.": "השדה {Field} חייב להיות {Latest} או מוקדם יותר.",
+    "The {Field} field must be {Earlier} or {Later}.": "השדה {Field} חייב להיות {Earlier} או {Later}."
+  },
   "FormaMultiSelect": {
     "Search": "חיפוש",
     "No matches": "אין תוצאות",

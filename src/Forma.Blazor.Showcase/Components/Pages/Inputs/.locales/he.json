@@ -71,6 +71,28 @@
     "Campaign": "קמפיין",
     "A campaign period is required.": "יש לבחור תקופת קמפיין."
   },
+  "FormaDateTimePickerPage": {
+    "A field for one value holding a date and its time: the date picked from a calendar, the time typed or chosen from a list of suggested times, under one label. Either half entered alone is held until the other comes, and reported once the focus leaves the field.": "שדה לערך אחד שמחזיק תאריך ושעה: התאריך נבחר מלוח שנה, והשעה מוקלדת או נבחרת מרשימת שעות מוצעות, תחת תווית אחת. חצי שמוזן לבדו נשמר עד שהחצי השני מגיע, ומדווח כשהמיקוד עוזב את השדה.",
+    "A date with a time that can be empty. Pick a date and leave the field without a time, and the field says the time is missing.": "תאריך עם שעה שיכול להיות ריק. בחרו תאריך ועזבו את השדה בלי שעה, והשדה יודיע שהשעה חסרה.",
+    "Starts": "מתחיל",
+    "Within Bounds": "בתוך גבולות",
+    "From today at 14:00 to the day after tomorrow at 11:00. Today takes 14:00 and later, tomorrow any time, and the last day 11:00 and earlier; the list offers only the times the date allows.": "מהיום ב-14:00 עד מחרתיים ב-11:00. היום מקבל 14:00 ואילך, מחר כל שעה, והיום האחרון עד 11:00; הרשימה מציעה רק את השעות שהתאריך מתיר.",
+    "Appointment": "פגישה",
+    "Every Quarter Hour": "כל רבע שעה",
+    "Only whole quarter hours are times the field takes. A time between two is reported with the quarter hours either side of it, rather than rounded onto one.": "השדה מקבל רק רבעי שעה שלמים. שעה שבין שניים מדווחת עם רבעי השעה משני צדיה, במקום שתעוגל לאחד מהם.",
+    "Slot": "משבצת",
+    "With an Offset": "עם היסט",
+    "A date with a time and its offset. A new value takes the offset the host gives, here +03:00, and a value that has one keeps it, here +05:30. The offset is how the entry is read, never a conversion.": "תאריך עם שעה וההיסט שלו. ערך חדש מקבל את ההיסט שהמארח נותן, כאן +03:00, וערך שיש לו היסט שומר עליו, כאן +05:30. ההיסט הוא האופן שבו הקלט נקרא, ולעולם אינו המרה.",
+    "Departure": "יציאה",
+    "Arrival": "הגעה",
+    "A date and time picker is a form input: submitting without a value shows the validation message under it, and submitting with one half missing reports that half.": "בוחר תאריך ושעה הוא שדה טופס: שליחה בלי ערך מציגה מתחתיו את הודעת האימות, ושליחה כשחצי אחד חסר מדווחת על החצי הזה.",
+    "Delivery": "משלוח",
+    "A delivery date and time are required.": "יש להזין תאריך ושעת משלוח.",
+    "A Value That Cannot Be Empty": "ערך שאינו יכול להיות ריק",
+    "Bound to a date with a time rather than a nullable one, the field always holds a value: clearing a half reports it and keeps the value until the half is entered again.": "כשהשדה קשור לתאריך עם שעה ולא לערך שיכול להיות ריק, השדה תמיד מחזיק ערך: ניקוי של חצי מדווח עליו ושומר את הערך עד שהחצי מוזן שוב.",
+    "Reminder": "תזכורת",
+    "Disabled": "מושבת"
+  },
   "FormaMultiSelectPage": {
     "A chip-style multi-select with a searchable checkbox-list popover. Selected values render as removable tags; the popover stays anchored to its trigger wherever the page scrolls.": "בורר רב-ערכי בסגנון תגיות עם חלונית קופצת הניתנת לחיפוש עם תיבות סימון. הערכים שנבחרו מוצגים כתגיות הניתנות להסרה; החלונית נשארת מעוגנת לכפתור המפעיל אותה בכל מקום שהדף גולל אליו.",
     "With Label and Placeholder": "עם תווית וטקסט מציין מקום",

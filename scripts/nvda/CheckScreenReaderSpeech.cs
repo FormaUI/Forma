@@ -53,6 +53,8 @@ Scenario[] scenarios =
     new("A checkbox and its state", "he", "/he/checkbox", CheckBoxState("הרשמה לעדכונים")),
     new("A time picker and its list", "en", "/time-picker", TimePickerList("Starts", "12:00 AM", "12:30 AM")),
     new("A time picker and its list", "he", "/he/time-picker", TimePickerList("מתחיל", "0:00", "0:30")),
+    new("A date and a time under one label", "en", "/date-time-picker", DateTimePickerNames("Starts", "Date", "Time")),
+    new("A date and a time under one label", "he", "/he/date-time-picker", DateTimePickerNames("מתחיל", "תאריך", "שעה")),
 ];
 
 using var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
@@ -191,6 +193,15 @@ static Step[] TimePickerList(string label, string first, string second)
         new("focus the field", page => page.Locator(".forma-time-box input").First.FocusAsync(), [label, "combo box"]),
         new("open the list", page => page.Keyboard.PressAsync("ArrowDown"), [first, "1 of 48"]),
         new("move down the list", page => page.Keyboard.PressAsync("ArrowDown"), [second, "2 of 48"]),
+    ];
+}
+
+static Step[] DateTimePickerNames(string label, string date, string time)
+{
+    return [
+        new("open the page", null, []),
+        new("focus the date", page => page.Locator(".forma-date-time-picker .forma-date-box-trigger").First.FocusAsync(), [label, "grouping", date, "button"]),
+        new("move to the time", page => page.Keyboard.PressAsync("Tab"), [time, "combo box"]),
     ];
 }
 

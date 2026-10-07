@@ -6,9 +6,17 @@
      class="@RootClass"
      style="@RootStyle"
      @attributes="AdditionalAttributes"
-     @ref="RootElement">
+     @ref="RootElement"
+     role="@GroupRole"
+     aria-labelledby="@GroupLabelId">
     @ChildContent
-    @if (HasLabel)
+    @if (HasLabel && Grouped)
+    {
+        <span id="@LabelId" class="forma-field-label">
+            @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
+        </span>
+    }
+    else if (HasLabel)
     {
         <label id="@LabelId" for="@TargetId" class="forma-field-label">
             @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}

@@ -136,6 +136,18 @@
     margin-block-end: var(--space-2);
 }
 
+/* A static label stands outside the box, so an input it labels stands at an input's own height. */
+.forma-field-label-above ::deep .forma-field-input {
+    min-block-size: var(--target-size-md);
+    padding-block: var(--space-1);
+}
+
+@media (pointer: coarse) {
+    .forma-field-label-above ::deep .forma-field-input {
+        min-block-size: var(--target-size-touch);
+    }
+}
+
 /* Breaks the messages below the row. */
 .forma-field-label-inline .forma-field-messages {
     flex-basis: 100%;

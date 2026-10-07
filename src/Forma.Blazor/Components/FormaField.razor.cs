@@ -17,6 +17,9 @@ public sealed partial class FormaField : FormaElementBase
     /// <summary>The id of the label.</summary>
     [Parameter] public string? LabelId { get; set; }
 
+    /// <summary>Whether the label names the group of controls the field frames.</summary>
+    [Parameter] public bool Grouped { get; set; }
+
     /// <summary>Whether the field is required, marked beside the label.</summary>
     [Parameter] public bool Required { get; set; }
 
@@ -43,6 +46,12 @@ public sealed partial class FormaField : FormaElementBase
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
 
+    private string? GroupRole
+        => Grouped ? "group" : null;
+
+    private string? GroupLabelId
+        => Grouped && HasLabel ? LabelId : null;
+
     private string? LabelModeClass
         => LabelMode switch
         {
@@ -58,7 +67,11 @@ public sealed partial class FormaField : FormaElementBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (HasLabel)
+        if (HasLabel && Grouped)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(LabelId);
+        }
+        else if (HasLabel)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(TargetId);
         }

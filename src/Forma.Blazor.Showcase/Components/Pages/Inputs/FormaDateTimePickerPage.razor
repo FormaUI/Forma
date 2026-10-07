@@ -1,0 +1,130 @@
+@page "/date-time-picker"
+@attribute [ShowcasePage("FormaDateTimePicker")]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaDateTimePickerPage> L
+
+<h1>FormaDateTimePicker</h1>
+<p class="description">@L["A field for one value holding a date and its time: the date picked from a calendar, the time typed or chosen from a list of suggested times, under one label. Either half entered alone is held until the other comes, and reported once the focus leaves the field."]</p>
+
+<EditForm Model="Model" FormName="date-time-picker-demo" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="demo-section">
+        <h2>@L["Basic"]</h2>
+        <p class="description">@L["A date with a time that can be empty. Pick a date and leave the field without a time, and the field says the time is missing."]</p>
+        <div class="demo-box">
+            <FormaDateTimePicker @bind-Value="Model.Start" Label="@L["Starts"]" />
+            <p class="demo-note">@L["Value"]: <code>@FormatValue(Model.Start)</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Within Bounds"]</h2>
+        <p class="description">@L["From today at 14:00 to the day after tomorrow at 11:00. Today takes 14:00 and later, tomorrow any time, and the last day 11:00 and earlier; the list offers only the times the date allows."]</p>
+        <div class="demo-box">
+            <FormaDateTimePicker @bind-Value="Model.Appointment" Label="@L["Appointment"]" Min="_earliest" Max="_latest" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Every Quarter Hour"]</h2>
+        <p class="description">@L["Only whole quarter hours are times the field takes. A time between two is reported with the quarter hours either side of it, rather than rounded onto one."]</p>
+        <div class="demo-box">
+            <FormaDateTimePicker @bind-Value="Model.Slot" Label="@L["Slot"]" Step="TimeSpan.FromMinutes(15)" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["With an Offset"]</h2>
+        <p class="description">@L["A date with a time and its offset. A new value takes the offset the host gives, here +03:00, and a value that has one keeps it, here +05:30. The offset is how the entry is read, never a conversion."]</p>
+        <div class="demo-box">
+            <div class="demo-stack">
+                <FormaDateTimePicker @bind-Value="Model.Departure" Label="@L["Departure"]" Offset="TimeSpan.FromHours(3)" />
+                <p class="demo-note">@L["Value"]: <code>@FormatValue(Model.Departure)</code></p>
+                <FormaDateTimePicker @bind-Value="Model.Arrival" Label="@L["Arrival"]" Offset="TimeSpan.FromHours(3)" />
+                <p class="demo-note">@L["Value"]: <code>@FormatValue(Model.Arrival)</code></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Required in a Form"]</h2>
+        <p class="description">@L["A date and time picker is a form input: submitting without a value shows the validation message under it, and submitting with one half missing reports that half."]</p>
+        <div class="demo-box">
+            <FormaDateTimePicker @bind-Value="Model.Delivery" Label="@L["Delivery"]" Required="true" />
+            <div class="demo-row">
+                <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
+                @if (_submitted)
+                {
+                    <span class="demo-note">@L["Submitted."]</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["A Value That Cannot Be Empty"]</h2>
+        <p class="description">@L["Bound to a date with a time rather than a nullable one, the field always holds a value: clearing a half reports it and keeps the value until the half is entered again."]</p>
+        <div class="demo-box">
+            <FormaDateTimePicker @bind-Value="Model.Reminder" Label="@L["Reminder"]" />
+            <p class="demo-note">@L["Value"]: <code>@Model.Reminder.ToString("g", CultureInfo.CurrentCulture)</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Disabled"]</h2>
+        <div class="demo-box">
+            <FormaDateTimePicker @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private readonly DateTime _earliest = DateTime.Today.AddHours(14);
+    private readonly DateTime _latest = DateTime.Today.AddDays(2).AddHours(11);
+    private bool _submitted;
+
+    private DateTimePickerDemoModel Model { get; set; } = default!;
+
+    protected override void OnInitialized()
+        => Model = new DateTimePickerDemoModel(L)
+        {
+            Arrival = new DateTimeOffset(DateOnly.FromDateTime(DateTime.Today).ToDateTime(new TimeOnly(9, 30)), TimeSpan.FromHours(5.5)),
+            Reminder = DateTime.Today.AddHours(8),
+            Locked = DateTime.Today.AddHours(12),
+        };
+
+    private static string FormatValue(DateTime? value)
+        => value?.ToString("o", CultureInfo.InvariantCulture) ?? "null";
+
+    private static string FormatValue(DateTimeOffset? value)
+        => value?.ToString("o", CultureInfo.InvariantCulture) ?? "null";
+
+    private void HandleSubmit()
+        => _submitted = true;
+
+    private sealed class DateTimePickerDemoModel(IStringLocale<FormaDateTimePickerPage> localizer) : IValidatableObject
+    {
+        public DateTime? Start { get; set; }
+        public DateTime? Appointment { get; set; }
+        public DateTime? Slot { get; set; }
+        public DateTimeOffset? Departure { get; set; }
+        public DateTimeOffset? Arrival { get; set; }
+        public DateTime? Delivery { get; set; }
+        public DateTime Reminder { get; set; }
+        public DateTime? Locked { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Delivery is null)
+            {
+                yield return new ValidationResult(localizer["A delivery date and time are required."], [nameof(Delivery)]);
+            }
+        }
+    }
+}

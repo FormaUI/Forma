@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**62 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**62 components implemented, 9 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -36,12 +36,13 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaFileUploader
 │   ├── ✅ FormaFileViewer
 │   └── ✅ FormaImagePicker
-├── (15 / 15) Inputs/
+├── (15 / 16) Inputs/
 │   ├── ✅ FormaCalendar
 │   ├── ✅ FormaCheckBox
 │   ├── ✅ FormaColorPicker
 │   ├── ✅ FormaDatePicker
 │   ├── ✅ FormaDateRangePicker
+│   ├── ◐ FormaDateTimePicker
 │   ├── ✅ FormaMultiSelect
 │   ├── ✅ FormaNumberInput
 │   ├── ✅ FormaPasswordBox

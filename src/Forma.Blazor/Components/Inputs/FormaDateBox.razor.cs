@@ -38,6 +38,9 @@ public sealed partial class FormaDateBox : FormaComponentBase
     /// <summary>Whether the trigger is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
+    /// <summary>Whether the trigger is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
     /// <summary>The id of the element naming the trigger, read before the date it shows.</summary>
     [Parameter] public string? NameId { get; set; }
 

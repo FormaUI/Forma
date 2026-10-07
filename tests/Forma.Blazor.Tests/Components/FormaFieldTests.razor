@@ -53,6 +53,45 @@
         }
 
         [Fact]
+        public void Should_name_the_group_of_its_controls_by_its_label_when_grouped()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Starts" LabelId="fld-8-label" Grouped="true">
+                    <ChildContent><button id="fld-8-date">Date</button><input id="fld-8-time" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            var field = cut.Find(".forma-field");
+            var label = cut.Find(".forma-field-label");
+            Assert.Multiple(
+                () => Assert.Equal("group", field.GetAttribute("role")),
+                () => Assert.Equal("fld-8-label", field.GetAttribute("aria-labelledby")),
+                () => Assert.Equal("fld-8-label", label.Id),
+                () => Assert.Equal("SPAN", label.TagName),
+                () => Assert.Empty(cut.FindAll("label")));
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_label_id_when_grouped()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var render = () => ctx.Render(
+                @<FormaField Label="Starts" LabelId="" Grouped="true">
+                    <ChildContent><input /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Throws<ArgumentException>(render);
+        }
+
+        [Fact]
         public void Should_render_the_label_text()
         {
             // Arrange

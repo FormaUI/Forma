@@ -27,9 +27,17 @@ to the design.
    under one field with one label, one required state and one value's messages, and the
    property column editing a date with a time with it. Gate: as the time picker's, with a
    `DateTime` keeping its kind and a `DateTimeOffset` its offset, and no field nested in
-   another nor any label twice. Landed so far: the date picker's control, its trigger and
-   the calendar beneath it, stands apart from the field the date picker frames it in, as
-   the time picker's does. Under a coarse pointer the trigger had been set to the touch
-   target's height, below the field's own, and now stands at the field's height as the
-   time picker's does. The date picker's trigger was named by its label alone, so a reader
-   never heard the date it showed, and is now named by its label and then its date.
+   another nor any label twice. Landed, in review: the date picker's control, its trigger
+   and the calendar beneath it, stands apart from the field the date picker frames it in,
+   as the time picker's does; `FormaDateTimePicker` with the design's bounds, halves, kinds
+   and offsets and its one label over two controls; its Showcase page; and the screen
+   reader check gaining its scenario, which hears the group, then "Date" and "Time". The focus behavior gained an owner it
+   tells when the focus leaves its surface, which reports a half the reader left missing.
+   Departures: the field's label stands above the two controls, which sit side by side at
+   an input's own height, since a label floating inside one box would name only that box;
+   under a coarse pointer the date picker's trigger had been set to the touch target's
+   height, below the field's own, and now stands at the field's height; and the date
+   picker's trigger was named by its label alone, so a reader never heard the date it
+   showed, and is now named by its label and then its date. The browser pass held in
+   English, Hebrew and Spanish under either pointer, and the screen reader check in English
+   and Hebrew.

@@ -1,0 +1,50 @@
+@namespace Forma.Blazor.Components.Inputs
+@typeparam TValue
+@inherits FormaInputBase<TValue>
+
+<FormaField @ref="FieldContainer"
+            Id="@Id"
+            Class="@RootClass"
+            Style="@RootStyle"
+            @attributes="AdditionalAttributes"
+            Label="@Label"
+            LabelId="@LabelId"
+            Grouped="true"
+            Field="@FieldIdentifier"
+            MessageContainerId="@MessageContainerId"
+            Required="@IsRequired"
+            LabelMode="FieldLabelMode.Above">
+    <ChildContent>
+        <div class="forma-date-time-picker-controls">
+            <span id="@DateNameId" class="forma-date-time-picker-name" aria-hidden="true">@L["Date"]</span>
+            <FormaDateBox ElementId="@DateId"
+                          OwnerRuntimeId="@Context.RuntimeId"
+                          Date="@_date"
+                          MinDate="@MinDate"
+                          MaxDate="@MaxDate"
+                          UseNonGregorianMonths="UseNonGregorianMonths"
+                          OnChoose="HandleChooseDate"
+                          OnClear="HandleClearDate"
+                          Required="@IsRequired"
+                          Disabled="@Disabled"
+                          NameId="@DateNameId"
+                          TriggerClass="@ControlClass"
+                          TriggerAttributes="DateAttributes"
+                          TriggerDescribedBy="@DescribedBy" />
+            <FormaTimeBox ElementId="@TimeId"
+                          OwnerRuntimeId="@Context.RuntimeId"
+                          Text="@TimeText"
+                          Time="@_time"
+                          Suggestions="_suggestions"
+                          FormatTime="FormatTime"
+                          ListLabel="@L["Time"]"
+                          OnChange="HandleChangeTime"
+                          OnChoose="HandleChooseTime"
+                          Required="@IsRequired"
+                          Disabled="@Disabled"
+                          InputClass="@ControlClass"
+                          InputAttributes="TimeAttributes"
+                          InputDescribedBy="@DescribedBy" />
+        </div>
+    </ChildContent>
+</FormaField>

@@ -74,6 +74,28 @@
     "Campaign": "Campaña",
     "A campaign period is required.": "Se requiere un periodo de campaña."
   },
+  "FormaDateTimePickerPage": {
+    "A field for one value holding a date and its time: the date picked from a calendar, the time typed or chosen from a list of suggested times, under one label. Either half entered alone is held until the other comes, and reported once the focus leaves the field.": "Un campo para un valor que contiene una fecha y su hora: la fecha elegida en un calendario y la hora escrita o elegida de una lista de horas sugeridas, bajo una sola etiqueta. Una mitad introducida sola se guarda hasta que llega la otra, y se informa cuando el foco sale del campo.",
+    "A date with a time that can be empty. Pick a date and leave the field without a time, and the field says the time is missing.": "Una fecha con hora que puede quedar vacía. Elige una fecha y sal del campo sin una hora, y el campo indica que falta la hora.",
+    "Starts": "Empieza",
+    "Within Bounds": "Dentro de los Límites",
+    "From today at 14:00 to the day after tomorrow at 11:00. Today takes 14:00 and later, tomorrow any time, and the last day 11:00 and earlier; the list offers only the times the date allows.": "Desde hoy a las 14:00 hasta pasado mañana a las 11:00. Hoy admite las 14:00 y después, mañana cualquier hora, y el último día hasta las 11:00; la lista ofrece solo las horas que la fecha permite.",
+    "Appointment": "Cita",
+    "Every Quarter Hour": "Cada Cuarto de Hora",
+    "Only whole quarter hours are times the field takes. A time between two is reported with the quarter hours either side of it, rather than rounded onto one.": "Solo los cuartos de hora enteros son horas que el campo toma. Una hora entre dos se informa con los cuartos de hora a cada lado, en lugar de redondearse a uno.",
+    "Slot": "Turno",
+    "With an Offset": "Con un Desfase",
+    "A date with a time and its offset. A new value takes the offset the host gives, here +03:00, and a value that has one keeps it, here +05:30. The offset is how the entry is read, never a conversion.": "Una fecha con hora y su desfase. Un valor nuevo toma el desfase que da el anfitrión, aquí +03:00, y un valor que ya tiene uno lo conserva, aquí +05:30. El desfase es cómo se lee la entrada, nunca una conversión.",
+    "Departure": "Salida",
+    "Arrival": "Llegada",
+    "Required in a Form": "Obligatorio en un Formulario",
+    "A date and time picker is a form input: submitting without a value shows the validation message under it, and submitting with one half missing reports that half.": "Un selector de fecha y hora es un campo de formulario: enviar sin un valor muestra el mensaje de validación debajo, y enviar con una mitad ausente informa esa mitad.",
+    "Delivery": "Entrega",
+    "A delivery date and time are required.": "Se requieren la fecha y la hora de entrega.",
+    "A Value That Cannot Be Empty": "Un Valor que No Puede Quedar Vacío",
+    "Bound to a date with a time rather than a nullable one, the field always holds a value: clearing a half reports it and keeps the value until the half is entered again.": "Vinculado a una fecha con hora en lugar de una que admite vacío, el campo siempre tiene un valor: borrar una mitad la informa y conserva el valor hasta que se vuelve a introducir.",
+    "Reminder": "Recordatorio"
+  },
   "FormaMultiSelectPage": {
     "A chip-style multi-select with a searchable checkbox-list popover. Selected values render as removable tags; the popover stays anchored to its trigger wherever the page scrolls.": "Un selector múltiple con etiquetas y un menú emergente con casillas de verificación con búsqueda. Los valores seleccionados se muestran como etiquetas que se pueden quitar; el menú se mantiene anclado a su disparador sin importar el desplazamiento de la página.",
     "With Label and Placeholder": "Con Etiqueta y Marcador",
