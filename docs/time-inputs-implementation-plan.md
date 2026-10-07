@@ -20,7 +20,8 @@ to the design.
    element the field's floating label reads its state from. The screen reader scenario's
    first run found the list's suggestions counted among those drawn, "1 of 7" in a day of
    48, since the list draws only what it shows; each suggestion now carries its place among
-   all of them, which the scenario hears as "1 of 48".
+   all of them, which the scenario hears as "1 of 48". The browser pass held in English,
+   Hebrew and Spanish under either pointer.
 2. **The date and time picker.** Open. The date picker's control set apart from its field,
    as the time picker's is, then `FormaDateTimePicker` setting the two controls side by side
    under one field with one label, one required state and one value's messages, and the

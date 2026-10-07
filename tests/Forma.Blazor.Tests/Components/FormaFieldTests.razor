@@ -140,8 +140,30 @@
             var children = cut.Find(".forma-field").Children;
             Assert.Multiple(
                 () => Assert.Equal("LABEL", children[1].TagName),
-                () => Assert.Contains("forma-field-message", children[2].ClassList),
+                () => Assert.Contains("forma-field-messages", children[2].ClassList),
                 () => Assert.Equal(["Required", "Too short"], cut.FindAll(".forma-field-message").Select(message => message.TextContent)));
+        }
+
+        [Fact]
+        public async Task Should_give_the_messages_the_id_it_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(
+                @<FakeFormHost EditContext="editContext">
+                    <FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)" MessageContainerId="fld-1-messages">
+                        <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                    </FormaField>
+                </FakeFormHost>);
+
+            // Act
+            new ValidationMessageStore(editContext).Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.Equal("fld-1-messages", cut.Find(".forma-field-messages").Id);
         }
 
         [Fact]

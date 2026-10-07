@@ -79,6 +79,37 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
     }
 
+    /// <summary>The id of the element holding the field's validation messages.</summary>
+    protected string MessageContainerId
+        => $"{ElementId}-messages";
+
+    /// <summary>Whether the input is drawn inside its field container.</summary>
+    protected virtual bool HasFieldContainer
+        => true;
+
+    /// <summary>The space-separated element IDs used for the input's aria-describedby attribute.</summary>
+    protected string? DescribedBy
+    {
+        get
+        {
+            List<string> ids = [];
+
+            if (AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString() is { } host && !string.IsNullOrWhiteSpace(host))
+            {
+                ids.Add(host);
+            }
+
+            BuildDescribedBy(ids);
+
+            if (HasFieldContainer && EditContext is { } editContext && editContext.GetValidationMessages(FieldIdentifier).Any())
+            {
+                ids.Add(MessageContainerId);
+            }
+
+            return ids.Count > 0 ? string.Join(' ', ids) : null;
+        }
+    }
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
@@ -102,6 +133,11 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     /// <summary>Adds the declarations the component gives its root element in its current state.</summary>
     protected virtual void BuildRootStyle(CssStyleBuilder builder)
+    {
+    }
+
+    /// <summary>Adds the IDs of elements rendered by this component that describe the input.</summary>
+    protected virtual void BuildDescribedBy(ICollection<string> ids)
     {
     }
 

@@ -136,8 +136,8 @@
     margin-block-end: var(--space-2);
 }
 
-/* Breaks the message below the row. */
-.forma-field-label-inline .forma-field-message {
+/* Breaks the messages below the row. */
+.forma-field-label-inline .forma-field-messages {
     flex-basis: 100%;
 }
 

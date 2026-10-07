@@ -135,20 +135,6 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     private string AdviceId
         => $"{ElementId}-advice";
 
-    // The caller's own aria-describedby joined with the advice, since the explicit attribute overwrites the caller's.
-    private string? DescribedBy
-    {
-        get
-        {
-            var caller = AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString();
-            var own = _advice.Count > 0 ? AdviceId : null;
-
-            return string.IsNullOrWhiteSpace(caller) ? own
-                : string.IsNullOrEmpty(own) ? caller
-                : $"{caller} {own}";
-        }
-    }
-
     // Every criterion the built-in rating still withholds.
     private IEnumerable<string> Advise(string value)
     {
@@ -318,6 +304,15 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
         => builder
             .Add("forma-field-input")
             .Add("forma-password-box");
+
+    /// <inheritdoc />
+    protected override void BuildDescribedBy(ICollection<string> ids)
+    {
+        if (_advice.Count > 0)
+        {
+            ids.Add(AdviceId);
+        }
+    }
 
     /// <inheritdoc />
     protected override void Dispose(bool disposing)

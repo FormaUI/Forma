@@ -30,6 +30,9 @@ public sealed partial class FormaField : FormaElementBase
     /// <summary>The model field whose validation messages render beneath the element.</summary>
     [Parameter] public FieldIdentifier? Field { get; set; }
 
+    /// <summary>The id of the element holding the validation messages.</summary>
+    [Parameter] public string? MessageContainerId { get; set; }
+
     [CascadingParameter] private EditContext? EditContext { get; set; }
 
     private EditContext? _observedEditContext;
@@ -46,8 +49,8 @@ public sealed partial class FormaField : FormaElementBase
             _ => null,
         };
 
-    private IEnumerable<string> ValidationMessages
-        => Field is { } identifier && EditContext is { } editContext ? editContext.GetValidationMessages(identifier) : [];
+    private IReadOnlyList<string> ValidationMessages
+        => Field is { } identifier && EditContext is { } editContext ? [.. editContext.GetValidationMessages(identifier)] : [];
 
     /// <inheritdoc />
     protected override void OnParametersSet()

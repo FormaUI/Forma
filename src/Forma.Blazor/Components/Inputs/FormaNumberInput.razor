@@ -10,6 +10,7 @@
                 style="@RootStyle"
                 @attributes="AdditionalAttributes"
                 @ref="RootElement"
+                aria-describedby="@DescribedBy"
                 type="text"
                 dir="ltr"
                 role="spinbutton"
@@ -28,7 +29,7 @@
 
 @if (HasLabel)
 {
-    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" Required="@IsRequired" style="@FieldStyle">
+    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" MessageContainerId="@MessageContainerId" Required="@IsRequired" style="@FieldStyle">
         <ChildContent>
             @box
         </ChildContent>

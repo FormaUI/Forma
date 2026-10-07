@@ -20,6 +20,46 @@
         }
 
         [Fact]
+        public async Task Should_be_described_by_the_message_its_field_shows()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@editContext">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" />
+            </FakeFormHost>);
+
+            // Act
+            new ValidationMessageStore(editContext).Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.Equal(cut.Find(".forma-field-messages").Id, cut.Find("input").GetAttribute("aria-describedby"));
+        }
+
+        [Fact]
+        public async Task Should_not_be_described_by_a_message_while_no_label_draws_its_field()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@editContext">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            // Act
+            new ValidationMessageStore(editContext).Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid")),
+                () => Assert.Null(cut.Find("input").GetAttribute("aria-describedby")));
+        }
+
+        [Fact]
         public void Should_render_a_text_type()
         {
             // Arrange

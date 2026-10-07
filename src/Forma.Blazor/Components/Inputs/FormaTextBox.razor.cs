@@ -37,6 +37,10 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
 
+    /// <inheritdoc />
+    protected override bool HasFieldContainer
+        => HasLabel;
+
     // The floating label takes the placeholder's place over a labeled box.
     private string? EffectivePlaceholder
         => HasLabel ? " " : Placeholder;

@@ -139,6 +139,23 @@
                 () => Assert.Equal("The Ends field must be a time.", cut.Find(".forma-field-message").TextContent));
         }
 
+        [Fact]
+        public void Should_describe_the_time_by_the_message_it_reports()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift { End = new TimeOnly(17, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("teatime");
+
+            // Assert
+            Assert.Equal(cut.Find(".forma-field-messages").Id, cut.Find("input").GetAttribute("aria-describedby"));
+        }
+
         [Theory]
         [InlineData("09:00", "17:00", "18:00", "The Ends field must be between 9:00 AM and 5:00 PM.")]
         [InlineData("09:00", null, "08:00", "The Ends field must be 9:00 AM or later.")]

@@ -80,6 +80,10 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
 
+    /// <inheritdoc />
+    protected override bool HasFieldContainer
+        => HasLabel;
+
     // A number that cannot be empty is required whatever the host says, since clearing it reports the field required.
     private bool IsRequired
         => Required || !IsNullable;

@@ -106,10 +106,82 @@
             Assert.Equal(2, cut.RenderCount);
             Assert.Equal(before, cut.Instance.OwnContext.RuntimeId);
         }
+
+        [Fact]
+        public async Task Should_be_described_by_the_fields_messages_while_it_shows_any()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render<Field>(parameters => parameters
+                .AddCascadingValue(editContext)
+                .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
+                .Add(field => field.Id, "name"));
+            var messages = new ValidationMessageStore(editContext);
+
+            // Act
+            messages.Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+            var invalid = cut.Find("input").GetAttribute("aria-describedby");
+            messages.Clear();
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("name-messages", invalid),
+                () => Assert.Null(cut.Find("input").GetAttribute("aria-describedby")));
+        }
+
+        [Fact]
+        public async Task Should_be_described_by_the_hosts_ids_then_its_parts_then_the_fields_messages()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render<Field>(parameters => parameters
+                .AddCascadingValue(editContext)
+                .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
+                .Add(field => field.Id, "name")
+                .Add(field => field.PartId, "name-hint")
+                .AddUnmatched("aria-describedby", "host-note"));
+
+            // Act
+            new ValidationMessageStore(editContext).Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.Equal("host-note name-hint name-messages", cut.Find("input").GetAttribute("aria-describedby"));
+        }
+
+        [Fact]
+        public async Task Should_not_be_described_by_messages_no_field_shows()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render<Field>(parameters => parameters
+                .AddCascadingValue(editContext)
+                .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
+                .Add(field => field.OutsideField, true));
+
+            // Act
+            new ValidationMessageStore(editContext).Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.Null(cut.Find("input").GetAttribute("aria-describedby"));
+        }
     }
 
     public sealed class Field : FormaInputBase<string?>
     {
+        [Parameter] public string? PartId { get; set; }
+
+        [Parameter] public bool OutsideField { get; set; }
+
         public IComponentContext OwnContext
             => Context;
 
@@ -117,8 +189,19 @@
 
         public int FrameworkDisposeCalls { get; private set; }
 
+        protected override bool HasFieldContainer
+            => !OutsideField;
+
         protected override void BuildRootClass(CssClassBuilder builder)
             => builder.Add("fake-field");
+
+        protected override void BuildDescribedBy(ICollection<string> ids)
+        {
+            if (PartId is not null)
+            {
+                ids.Add(PartId);
+            }
+        }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -128,7 +211,8 @@
             builder.AddAttribute(3, "style", RootStyle);
             builder.AddAttribute(4, "value", CurrentValueAsString);
             builder.AddMultipleAttributes(5, AdditionalAttributes);
-            builder.AddElementReferenceCapture(6, element => RootElement = element);
+            builder.AddAttribute(6, "aria-describedby", DescribedBy);
+            builder.AddElementReferenceCapture(7, element => RootElement = element);
             builder.CloseElement();
         }
 

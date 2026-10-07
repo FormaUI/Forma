@@ -50,20 +50,6 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
         }
     }
 
-    // The caller's own aria-describedby joined with the count, since the explicit attribute overwrites the caller's.
-    private string? DescribedBy
-    {
-        get
-        {
-            var caller = AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString();
-            var own = ShowCharacterCount ? CountId : null;
-
-            return string.IsNullOrWhiteSpace(caller) ? own
-                : string.IsNullOrEmpty(own) ? caller
-                : $"{caller} {own}";
-        }
-    }
-
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -82,6 +68,15 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
             .Add("forma-field-input")
             .Add("forma-textarea")
             .Add("forma-textarea-counting", ShowCharacterCount);
+
+    /// <inheritdoc />
+    protected override void BuildDescribedBy(ICollection<string> ids)
+    {
+        if (ShowCharacterCount)
+        {
+            ids.Add(CountId);
+        }
+    }
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)

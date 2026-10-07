@@ -85,6 +85,9 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     /// <summary>The attributes the field's text element carries.</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? InputAttributes { get; set; }
 
+    /// <summary>The space-separated element IDs used for the text element's aria-describedby attribute.</summary>
+    [Parameter] public string? InputDescribedBy { get; set; }
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private InputRegistration _inputRegistration = default!;

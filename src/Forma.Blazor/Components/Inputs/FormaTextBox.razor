@@ -9,6 +9,7 @@
                 style="@RootStyle"
                 @attributes="AdditionalAttributes"
                 @ref="RootElement"
+                aria-describedby="@DescribedBy"
                 type="@TypeValue"
                 placeholder="@EffectivePlaceholder"
                 value="@CurrentValueAsString"
@@ -28,7 +29,7 @@
 
 @if (HasLabel)
 {
-    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" Required="@Required" style="@FieldStyle">
+    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" MessageContainerId="@MessageContainerId" Required="@Required" style="@FieldStyle">
         <ChildContent>
             @box
         </ChildContent>
