@@ -13,7 +13,14 @@ design.
    modern ones before deciding which locales the first release ships, and the compressed cost of
    the currencies' localized names measured apart, so they ship with the catalog where the cost
    is small and wait where it is not; and the build, the tests and the update script's own case
-   passing.
+   passing. Landed, in review: the assembly with `CurrencyCatalog` and its snapshot of CLDR 48.2.0,
+   the update script with its task-script cases, and the tests. The snapshot holds the currencies
+   CLDR records as tender today, 153 of them, their minor units where they differ from CLDR's
+   default, and each locale's symbols where they differ from what the locale inherits. Its
+   symbols compress to 7.5 KB with every locale and 3.8 KB with CLDR's modern ones, so every
+   locale ships. The currencies' localized names would add 254 KB compressed with every locale
+   and 167 KB with the modern ones, over twenty times the symbols, so they wait, and the
+   accessible description names a currency by its ISO code.
 2. **The number input's adornment and precision.** Open. The adornment at either inline side with
    its accessible description, `MaxDecimalPlaces` with trailing zeros not counted and an amount
    with more places reported with its text kept, and the fewest places a number is shown with.

@@ -23,9 +23,12 @@ the reader's culture decides only how the number and the symbol are written.
   writes and reads the number and decides where the symbol stands and which symbol it is; it
   never chooses the currency.
 - **Currency metadata is its own concern.** `Forma.Framework.Currencies` holds what is known about
-  a currency apart from any culture, through `CurrencyCatalog`: the ISO 4217 codes, each
-  currency's usual minor units, and its symbol in a given formatting culture, found through CLDR's
-  locale inheritance, `he-IL` to `he` to the root, with the ISO code where no locale has a symbol.
+  a currency apart from any culture, through `CurrencyCatalog`: the ISO 4217 codes of the
+  currencies in use, each one's usual minor units, and its symbol in a given formatting culture,
+  with the ISO code where no locale has a symbol. A retired code is not a currency in use, and the
+  catalog refuses it. The symbol is found through CLDR's locale inheritance, `he-IL` to `he` to the
+  root, starting from the nearest of the cultures the formatting culture derives from that CLDR
+  has a locale for, so `zh-TW` starts from `zh-Hant` rather than from `zh`.
   The data is a versioned snapshot of CLDR, generated ahead of time by an update script and shipped
   with the assembly; nothing is fetched at run time. The catalog states facts: it neither
   validates, rounds, steps nor converts an amount, and a host reads it directly, with no contract

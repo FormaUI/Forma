@@ -169,6 +169,14 @@ Test-Case -Name 'a release version that is not semantic is refused' -Script 'pub
 Test-Case -Name 'a release to a feed nobody named is refused' -Script 'publish.ps1' `
     -Arguments @('-Source', 'Elsewhere', '-Version', '1.0.0', '-WhatIf') -Fails
 
+# The currency data is read from the network and rewrites a checked-in asset, so what runs here is what it
+# describes and what it refuses.
+Test-Case -Name 'the currency data update describes the snapshot it would write' -Script 'Update-CurrencyData.ps1' `
+    -Arguments @('-CldrVersion', '48.2.0', '-WhatIf') -Expect @('CLDR 48.2.0', 'currencies.json')
+
+Test-Case -Name 'a CLDR release that is not a version is refused' -Script 'Update-CurrencyData.ps1' `
+    -Arguments @('-CldrVersion', 'forty-eight', '-WhatIf') -Fails
+
 Test-Case -Name 'the Showcase describes the start it would make' -Script 'Start-Showcase.ps1' `
     -Arguments @('-Port', "$free", '-WhatIf') -Expect @('dotnet run', "$free")
 

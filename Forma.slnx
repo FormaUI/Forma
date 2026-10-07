@@ -28,6 +28,7 @@
     <Project Path="src\Forma.Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Catalog\Forma.Framework.Catalog.csproj" />
+    <Project Path="src\Forma.Framework\Forma.Framework.Currencies\Forma.Framework.Currencies.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
     <Project Path="src\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
     <Project Path="src\Forma.AddOns\Forma.AddOns.Composer.Plugins.Explorer\Forma.AddOns.Composer.Plugins.Explorer.csproj" />
@@ -49,6 +50,7 @@
     <Project Path="tests\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Windows.Tests\Forma.Framework.Windows.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Timing.Tests\Forma.Framework.Timing.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Currencies.Tests\Forma.Framework.Currencies.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Events.Tests\Forma.Framework.Events.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Input.Tests\Forma.Framework.Input.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Input.Interop.Tests\Forma.Framework.Input.Interop.Tests.csproj" />
