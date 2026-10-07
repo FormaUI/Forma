@@ -25,7 +25,13 @@ design.
    its accessible description, `MaxDecimalPlaces` with trailing zeros not counted and an amount
    with more places reported with its text kept, and the fewest places a number is shown with.
    Gate: tests of each, an existing number input unchanged, and the number input's Showcase page
-   showing a percentage and a limited precision.
+   showing a percentage and a limited precision. Landed, in review: `NumberAdornment` with its
+   side and description, `MaxDecimalPlaces` and `MinDecimalPlaces`, their messages in Hebrew and
+   Spanish, the tests, and the page's percentage and two-place weight. The number reads left to
+   right in every culture, so its input reserves the adornment's room on its own left or right,
+   chosen from the adornment's side and the formatting culture's direction. The browser pass held
+   in English, Hebrew and Spanish under either pointer: the adornment on the side reading order
+   gives it, clear of the typed text and on its line, and the number described by it.
 3. **The currency input.** Open. `FormaCurrencyInput` composing the number input under one field,
    its symbol, side and precision taken from the catalog and the formatting culture, its Showcase
    page and its locale files. Gate: tests of each rule, one field with one label, one set of

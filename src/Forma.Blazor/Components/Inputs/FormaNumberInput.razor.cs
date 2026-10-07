@@ -51,6 +51,15 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     /// <summary>How far the vertical arrows move the number.</summary>
     [Parameter] public decimal Step { get; set; } = 1;
 
+    /// <summary>The most decimal places a number the field accepts carries.</summary>
+    [Parameter] public int? MaxDecimalPlaces { get; set; }
+
+    /// <summary>The fewest decimal places a number is shown with.</summary>
+    [Parameter] public int MinDecimalPlaces { get; set; }
+
+    /// <summary>The text standing beside the number, such as a currency symbol or a unit.</summary>
+    [Parameter] public NumberAdornment? Adornment { get; set; }
+
     /// <summary>How wide the input stands, where null fills the space it is given.</summary>
     [Parameter] public CssLength? Width { get; set; }
 
@@ -92,10 +101,10 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     private string? EffectivePlaceholder
         => HasLabel ? " " : Placeholder;
 
-    // A keyboard of digits where the number can be neither negative nor, for a whole number, fractional; the full keyboard otherwise, since a
-    // phone's keypad of digits offers no minus sign.
+    // A keyboard of digits where the number can be neither negative nor, for a whole number or one taking no decimal places, fractional; the
+    // full keyboard otherwise, since a phone's keypad of digits offers no minus sign.
     private string InputModeValue
-        => Min is not { } min || min < 0 ? "text" : IsWhole ? "numeric" : "decimal";
+        => Min is not { } min || min < 0 ? "text" : IsWhole || MaxDecimalPlaces == 0 ? "numeric" : "decimal";
 
     private string? ValueNow
         => CurrentValue is { } value ? Convert.ToString(value, CultureInfo.InvariantCulture) : null;
@@ -105,6 +114,35 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     private string FieldName
         => DisplayName ?? (HasLabel ? Label! : FieldIdentifier.FieldName);
+
+    // A label floating where the adornment stands would cover it, so a field with an adornment pins its label above the number.
+    private FieldLabelMode LabelMode
+        => Adornment is null ? FieldLabelMode.Floating : FieldLabelMode.Pinned;
+
+    private string AdornmentDescriptionId
+        => $"{ElementId}-adornment";
+
+    private string? AdornmentClass
+        => Adornment is { } adornment
+            ? new CssClassBuilder()
+                .Add("forma-number-input-adornment")
+                .Add("forma-number-input-adornment-start", adornment.Side is AdornmentSide.Start)
+                .Add("forma-number-input-adornment-end", adornment.Side is AdornmentSide.End)
+                .ToStringOrNull()
+            : null;
+
+    // The number reads left to right whatever the culture, so the side of the input that makes room for the adornment is its own left
+    // where the adornment stands at the start of a left-to-right culture or the end of a right-to-left one, and its own right otherwise.
+    private string? AdornmentRoomClass
+        => Adornment is { } adornment
+            ? (adornment.Side is AdornmentSide.Start) != CultureInfo.CurrentCulture.TextInfo.IsRightToLeft
+                ? "forma-number-input-room-start"
+                : "forma-number-input-room-end"
+            : null;
+
+    // The number written to at least the places the field shows it with, and to every place it holds beyond them.
+    private string? DisplayFormat
+        => MinDecimalPlaces > 0 ? $"0.{new string('0', MinDecimalPlaces)}{new string('#', 28 - MinDecimalPlaces)}" : null;
 
     // A labeled input's width sizes the field wrapper, which is what occupies the row.
     private string? FieldStyle
@@ -135,6 +173,25 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         if (Min.HasValue && Max.HasValue && Min.Value > Max.Value)
         {
             throw new ArgumentException($"{nameof(Min)} ({Min}) must not be greater than {nameof(Max)} ({Max}).");
+        }
+
+        ArgumentOutOfRangeException.ThrowIfNegative(MinDecimalPlaces);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(MinDecimalPlaces, 28);
+
+        if (MaxDecimalPlaces is { } maxDecimalPlaces)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(maxDecimalPlaces, nameof(MaxDecimalPlaces));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(MinDecimalPlaces, maxDecimalPlaces);
+        }
+
+        if (IsWhole && MinDecimalPlaces > 0)
+        {
+            throw new ArgumentException($"{nameof(MinDecimalPlaces)} ({MinDecimalPlaces}) must be zero for a {NumberType.Name}, which holds no decimal places.", nameof(MinDecimalPlaces));
+        }
+
+        if (Adornment is { } adornment)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(adornment.Text, nameof(Adornment));
         }
 
         if (_unreadText is not null && !EqualityComparer<TValue>.Default.Equals(Value, _valueWhenUnread))
@@ -297,6 +354,17 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             ? [format.NumberGroupSeparator, " ", " ", " "]
             : [format.NumberGroupSeparator];
 
+    // The decimal places the text writes, past the culture's decimal separator, with trailing zeros left out.
+    private static int CountDecimalPlaces(string text)
+    {
+        var trimmed = text.Trim();
+        var decimalAt = trimmed.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
+
+        return decimalAt < 0
+            ? 0
+            : trimmed[(decimalAt + CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator.Length)..].TrimEnd('0').Count(char.IsAsciiDigit);
+    }
+
     private static string? FormatLimit(decimal? limit)
         => limit?.ToString(CultureInfo.InvariantCulture);
 
@@ -311,7 +379,8 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         => builder
             .Add("forma-field-input", HasLabel)
             .Add("forma-text-box", !HasLabel)
-            .Add("forma-number-input");
+            .Add("forma-number-input")
+            .Add(AdornmentRoomClass);
 
     /// <inheritdoc />
     protected override void BuildRootStyle(CssStyleBuilder builder)
@@ -320,11 +389,27 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         {
             builder.Add("inline-size", Width);
         }
+
+        if (Adornment is { } adornment)
+        {
+            builder.Add("--forma-number-input-adornment-size", CssLength.FromCh(adornment.Text.Length));
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void BuildDescribedBy(ICollection<string> ids)
+    {
+        if (Adornment is { Description: not null })
+        {
+            ids.Add(AdornmentDescriptionId);
+        }
     }
 
     /// <inheritdoc />
     protected override string? FormatValueAsString(TValue? value)
-        => BindConverter.FormatValue(value, CultureInfo.CurrentCulture)?.ToString();
+        => DisplayFormat is { } format && value is IFormattable number
+            ? number.ToString(format, CultureInfo.CurrentCulture)
+            : BindConverter.FormatValue(value, CultureInfo.CurrentCulture)?.ToString();
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -355,6 +440,13 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         if (!TryParseNumber(value, out var parsed))
         {
             return L["The {Field} field must be a number.", FieldName];
+        }
+
+        if (MaxDecimalPlaces is { } places && CountDecimalPlaces(value) > places)
+        {
+            return places == 0
+                ? L["The {Field} field must be a whole number.", FieldName]
+                : L["The {Field} field must have no more than {Places} [$ [Places] plural; one: decimal place; other: decimal places; $].", FieldName, places];
         }
 
         if (Min is { } min && CompareToLimit(parsed, min) < 0)

@@ -50,7 +50,9 @@
     "The {Field} field is required.": "El campo {Field} es obligatorio.",
     "The {Field} field must be a number.": "El campo {Field} debe ser un número.",
     "The {Field} field must be at least {Minimum}.": "El campo {Field} debe ser al menos {Minimum}.",
-    "The {Field} field must be at most {Maximum}.": "El campo {Field} debe ser como máximo {Maximum}."
+    "The {Field} field must be at most {Maximum}.": "El campo {Field} debe ser como máximo {Maximum}.",
+    "The {Field} field must be a whole number.": "El campo {Field} debe ser un número entero.",
+    "The {Field} field must have no more than {Places} [$ [Places] plural; one: decimal place; other: decimal places; $].": "El campo {Field} debe tener como máximo {Places} [$ [Places] plural; one: decimal; other: decimales; $]."
   },
   "FormaPasswordBox": {
     "Show Password": "Mostrar Contraseña",

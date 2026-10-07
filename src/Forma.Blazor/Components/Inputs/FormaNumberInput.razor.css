@@ -1,7 +1,8 @@
 /* ============================================================
    FormaNumberInput — CSS isolation
    The number input's disabled, read-only and validation states,
-   and its figures of even width; its box comes from forma-input.css.
+   its figures of even width, and the adornment standing in its box;
+   the box comes from forma-input.css.
    ============================================================ */
 
 .forma-number-input {
@@ -27,4 +28,47 @@
 
 .forma-number-input.invalid {
     border-color: var(--forma-invalid-color, var(--danger-color));
+}
+
+/* ---------- adornment ---------- */
+.forma-number-input-box {
+    position: relative;
+    display: block;
+}
+
+/* The adornment takes the block room the number's text takes, so the two stand on one line. */
+.forma-number-input-adornment {
+    position: absolute;
+    inset-block: 0;
+    display: flex;
+    align-items: center;
+    padding-block: var(--forma-field-padding-block-start, var(--space-1)) var(--forma-field-padding-block-end, var(--space-1));
+    border-block: 1px solid transparent;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-prose);
+    color: var(--text-secondary-color);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* A disabled number's adornment is disabled with it. */
+.forma-number-input:disabled ~ .forma-number-input-adornment {
+    color: var(--forma-input-disabled-color, var(--disabled-text-color));
+}
+
+.forma-number-input-adornment-start {
+    inset-inline-start: var(--space-3);
+}
+
+.forma-number-input-adornment-end {
+    inset-inline-end: var(--space-3);
+}
+
+/* The number reads left to right, so the input names the side its own direction gives the room. */
+.forma-number-input-room-start {
+    padding-inline-start: calc(var(--space-3) + var(--forma-number-input-adornment-size) + var(--space-2));
+}
+
+.forma-number-input-room-end {
+    padding-inline-end: calc(var(--space-3) + var(--forma-number-input-adornment-size) + var(--space-2));
 }

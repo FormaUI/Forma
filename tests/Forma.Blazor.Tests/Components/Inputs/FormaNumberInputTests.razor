@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Globalization
 
 @code {
     public sealed class Component
@@ -518,6 +519,219 @@
                 () => Assert.Equal(5, model.Limit),
                 () => Assert.True(cut.FindAll("input")[0].HasAttribute("readonly")),
                 () => Assert.True(cut.FindAll("input")[1].HasAttribute("disabled")));
+        }
+    }
+
+    public sealed class Precision
+    {
+        [Theory]
+        [InlineData(2, "1.234", "The Price field must have no more than 2 decimal places.")]
+        [InlineData(1, "1.25", "The Price field must have no more than 1 decimal place.")]
+        [InlineData(0, "1.5", "The Price field must be a whole number.")]
+        public void Should_report_more_decimal_places_than_the_field_takes_and_keep_the_text(int places, string typed, string message)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Price = 1m };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" MaxDecimalPlaces="places" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1m, model.Price),
+                () => Assert.Equal(typed, cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(message, cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_not_count_trailing_zeros_against_the_places_the_field_takes()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" MaxDecimalPlaces="2" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("1.2300");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1.23m, model.Price),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public void Should_take_any_number_of_places_where_the_field_sets_no_limit()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("1.23456789");
+
+            // Assert
+            Assert.Equal(1.23456789m, model.Price);
+        }
+
+        [Theory]
+        [InlineData("en-US", "12", "12.00")]
+        [InlineData("en-US", "12.345", "12.345")]
+        [InlineData("es-ES", "12.5", "12,50")]
+        public void Should_show_a_number_with_at_least_the_fewest_places(string name, string price, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture(name);
+            var model = new Stock { Price = decimal.Parse(price, CultureInfo.InvariantCulture) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" MinDecimalPlaces="2" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(expected, cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_offer_a_keypad_of_digits_where_the_number_takes_no_decimal_places_and_cannot_be_negative()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Min="0" MaxDecimalPlaces="0" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("numeric", cut.Find("input").GetAttribute("inputmode"));
+        }
+
+        [Fact]
+        public void Should_refuse_more_places_shown_than_the_field_takes()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" MinDecimalPlaces="3" MaxDecimalPlaces="2" />
+            </FakeFormHost>));
+        }
+
+        [Fact]
+        public void Should_refuse_decimal_places_shown_for_a_whole_number()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" MinDecimalPlaces="2" />
+            </FakeFormHost>));
+        }
+    }
+
+    public sealed class Adornment
+    {
+        [Fact]
+        public void Should_stand_the_adornment_beside_the_number_pin_the_label_and_describe_the_number_by_it()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Price = 12m };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Adornment="@(new NumberAdornment("$", AdornmentSide.Start, "USD"))" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            var adornment = cut.Find(".forma-number-input-adornment");
+            Assert.Multiple(
+                () => Assert.Equal("$", adornment.TextContent.Trim()),
+                () => Assert.Equal("true", adornment.GetAttribute("aria-hidden")),
+                () => Assert.Contains("forma-number-input-adornment-start", adornment.ClassList),
+                () => Assert.Contains("forma-number-input-room-start", input.ClassList),
+                () => Assert.Contains("--forma-number-input-adornment-size: 1ch", input.GetAttribute("style") ?? string.Empty, StringComparison.Ordinal),
+                () => Assert.Contains("forma-field-label-pinned", cut.Find(".forma-field").ClassList),
+                () => Assert.Equal("USD", cut.Find($"[id='{input.GetAttribute("aria-describedby")}']").TextContent.Trim()),
+                () => Assert.Equal("12", input.GetAttribute("value")));
+        }
+
+        [Theory]
+        [InlineData("he-IL", AdornmentSide.Start, "forma-number-input-room-end")]
+        [InlineData("he-IL", AdornmentSide.End, "forma-number-input-room-start")]
+        [InlineData("en-US", AdornmentSide.End, "forma-number-input-room-end")]
+        public void Should_make_room_on_the_side_of_the_left_to_right_number_where_the_adornment_stands(string name, AdornmentSide side, string room)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture(name);
+            var model = new Stock();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Adornment="@(new NumberAdornment("$", side))" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Contains(room, cut.Find("input").ClassList);
+        }
+
+        [Fact]
+        public void Should_describe_the_number_by_nothing_where_the_adornment_has_no_description()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Share" Adornment="@(new NumberAdornment("%", AdornmentSide.End))" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Null(cut.Find("input").GetAttribute("aria-describedby"));
+        }
+
+        [Fact]
+        public void Should_keep_the_number_and_its_adornment_in_one_box_without_a_label()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Adornment="@(new NumberAdornment("kg", AdornmentSide.End))" />
+            </FakeFormHost>);
+
+            // Assert
+            var box = cut.Find(".forma-number-input-box");
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-field")),
+                () => Assert.NotNull(box.QuerySelector("input")),
+                () => Assert.NotNull(box.QuerySelector(".forma-number-input-adornment")));
         }
     }
 

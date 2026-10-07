@@ -42,6 +42,23 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["A Percentage"]</h2>
+        <p class="description">@L["A number with a percent sign standing where the number ends, outside the text the reader types; assistive technology hears it described as a percentage."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.Share" Label="@L["Share"]" Min="0" Max="100" Adornment="@(new NumberAdornment("%", AdornmentSide.End, L["percent"]))" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Two Decimal Places"]</h2>
+        <p class="description">@L["At most two decimal places, and always shown with two, so 12 reads 12.00. A third place is reported with the text kept as typed, never rounded, and trailing zeros do not count."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.Weight" Label="@L["Weight"]" Min="0" MaxDecimalPlaces="2" MinDecimalPlaces="2" Adornment="@(new NumberAdornment(L["kg"], AdornmentSide.End, L["kilograms"]))" />
+            <p class="demo-note">@L["Value"]: <code>@(Model.Weight?.ToString(CultureInfo.InvariantCulture) ?? "null")</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Required in a Form"]</h2>
         <p class="description">@L["A number input is a form input: submitting without a number shows the validation message under it, and entering one clears it."]</p>
         <div class="demo-box">
@@ -77,8 +94,8 @@
         <h2>@L["Disabled and Read-Only"]</h2>
         <div class="demo-box">
             <div class="demo-stack">
-                <FormaNumberInput @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
-                <FormaNumberInput @bind-Value="Model.Locked" Label="@L["Read-Only"]" ReadOnly="true" />
+                <FormaNumberInput @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" Adornment="@(new NumberAdornment("%", AdornmentSide.End, L["percent"]))" />
+                <FormaNumberInput @bind-Value="Model.Locked" Label="@L["Read-Only"]" ReadOnly="true" Adornment="@(new NumberAdornment("%", AdornmentSide.End, L["percent"]))" />
             </div>
         </div>
     </div>
@@ -116,6 +133,8 @@
         public int? Seats { get; set; }
         public int UsageLimit { get; set; }
         public decimal? Adjustment { get; set; }
+        public decimal? Share { get; set; }
+        public decimal? Weight { get; set; }
         public int? Locked { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

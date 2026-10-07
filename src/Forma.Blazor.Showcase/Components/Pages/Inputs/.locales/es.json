@@ -113,6 +113,15 @@
     "Playlists": "Listas de reproducción"
   },
   "FormaNumberInputPage": {
+    "A Percentage": "Un Porcentaje",
+    "A number with a percent sign standing where the number ends, outside the text the reader types; assistive technology hears it described as a percentage.": "Un número con el signo de porcentaje donde termina el número, fuera del texto que el lector escribe; la tecnología de asistencia lo oye descrito como un porcentaje.",
+    "Share": "Participación",
+    "percent": "por ciento",
+    "Two Decimal Places": "Dos Decimales",
+    "At most two decimal places, and always shown with two, so 12 reads 12.00. A third place is reported with the text kept as typed, never rounded, and trailing zeros do not count.": "Como máximo dos decimales, y siempre se muestra con dos, así que 12 se lee 12,00. Un tercer decimal se informa conservando el texto tal como se escribió, sin redondear, y los ceros finales no cuentan.",
+    "Weight": "Peso",
+    "kg": "kg",
+    "kilograms": "kilogramos",
     "Required in a Form": "Obligatorio en un Formulario",
     "A field for a number, typed the way the formatting culture writes it and stepped with the up and down arrows. A number it cannot read, or one past its limits, is reported under the field and never written, so the model keeps the last number that was.": "Un campo para un número, escrito como lo escribe la cultura de formato y ajustado con las flechas arriba y abajo. Un número que no puede leer, o uno fuera de sus límites, se informa debajo del campo y nunca se escribe, así que el modelo conserva el último número válido.",
     "A whole number that can be empty. Type one, or press the up and down arrows; a word in place of a number is reported under the field.": "Un número entero que puede quedar vacío. Escribe uno, o pulsa las flechas arriba y abajo; una palabra en lugar de un número se informa debajo del campo.",

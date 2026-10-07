@@ -111,6 +111,15 @@
     "Disabled": "מושבת"
   },
   "FormaNumberInputPage": {
+    "A Percentage": "אחוז",
+    "A number with a percent sign standing where the number ends, outside the text the reader types; assistive technology hears it described as a percentage.": "מספר שסימן האחוז עומד בסופו, מחוץ לטקסט שהקורא מקליד; טכנולוגיה מסייעת שומעת אותו מתואר כאחוז.",
+    "Share": "נתח",
+    "percent": "אחוז",
+    "Two Decimal Places": "שתי ספרות אחרי הנקודה",
+    "At most two decimal places, and always shown with two, so 12 reads 12.00. A third place is reported with the text kept as typed, never rounded, and trailing zeros do not count.": "לכל היותר שתי ספרות אחרי הנקודה העשרונית, ותמיד מוצג עם שתיים, כך ש-12 נקרא 12.00. ספרה שלישית מדווחת והטקסט נשמר כפי שהוקלד, בלי עיגול, ואפסים בסוף אינם נספרים.",
+    "Weight": "משקל",
+    "kg": "ק״ג",
+    "kilograms": "קילוגרמים",
     "A field for a number, typed the way the formatting culture writes it and stepped with the up and down arrows. A number it cannot read, or one past its limits, is reported under the field and never written, so the model keeps the last number that was.": "שדה למספר, שמוקלד כפי שתרבות העיצוב כותבת אותו ומשתנה בצעדים בחצים למעלה ולמטה. מספר שהשדה אינו מצליח לקרוא, או מספר שחורג מהגבולות, מדווח מתחת לשדה ולעולם אינו נכתב, כך שהמודל שומר את המספר התקין האחרון.",
     "A whole number that can be empty. Type one, or press the up and down arrows; a word in place of a number is reported under the field.": "מספר שלם שיכול להיות ריק. הקלידו מספר, או לחצו על החצים למעלה ולמטה; מילה במקום מספר מדווחת מתחת לשדה.",
     "Quantity": "כמות",

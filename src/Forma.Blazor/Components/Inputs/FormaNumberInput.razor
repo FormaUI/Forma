@@ -3,7 +3,7 @@
 @inherits FormaInputBase<TValue>
 
 @{
-    RenderFragment box =
+    RenderFragment number =
         @<input id="@ElementId"
                 data-rid="@Context.RuntimeId"
                 class="@RootClass"
@@ -25,11 +25,31 @@
                 aria-valuemin="@FormatLimit(Min)"
                 aria-valuemax="@FormatLimit(Max)"
                 @onchange="HandleChange" />;
+
+    // The adornment stands in the number's box, outside the text the reader edits.
+    RenderFragment box =
+        @<text>
+            @if (Adornment is { } adornment)
+            {
+                <span class="forma-number-input-box">
+                    @number
+                    <span class="@AdornmentClass" aria-hidden="true">@adornment.Text</span>
+                    @if (adornment.Description is { } description)
+                    {
+                        <span id="@AdornmentDescriptionId" hidden>@description</span>
+                    }
+                </span>
+            }
+            else
+            {
+                @number
+            }
+        </text>;
 }
 
 @if (HasLabel)
 {
-    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@IsRequired" style="@FieldStyle">
+    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@IsRequired" LabelMode="LabelMode" style="@FieldStyle">
         <ChildContent>
             @box
         </ChildContent>

@@ -50,7 +50,9 @@
     "The {Field} field is required.": "השדה {Field} הוא שדה חובה.",
     "The {Field} field must be a number.": "השדה {Field} חייב להיות מספר.",
     "The {Field} field must be at least {Minimum}.": "השדה {Field} חייב להיות לפחות {Minimum}.",
-    "The {Field} field must be at most {Maximum}.": "השדה {Field} חייב להיות לכל היותר {Maximum}."
+    "The {Field} field must be at most {Maximum}.": "השדה {Field} חייב להיות לכל היותר {Maximum}.",
+    "The {Field} field must be a whole number.": "השדה {Field} חייב להיות מספר שלם.",
+    "The {Field} field must have no more than {Places} [$ [Places] plural; one: decimal place; other: decimal places; $].": "השדה {Field} מקבל לכל היותר [$ [Places] plural; one: ספרה אחת אחרי הנקודה העשרונית; two: שתי ספרות אחרי הנקודה העשרונית; other: {Places} ספרות אחרי הנקודה העשרונית; $]."
   },
   "FormaPasswordBox": {
     "Show Password": "הצג סיסמה",

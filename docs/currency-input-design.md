@@ -65,7 +65,9 @@ the reader's culture decides only how the number and the symbol are written.
   capabilities general to numbers, which a percentage or a unit uses as a currency does: an
   adornment at either inline side of the number, with an accessible description, and
   `MaxDecimalPlaces`, unrestricted unless a host sets it, beside the fewest places a number is
-  shown with. A number input that sets none of them behaves as it did.
+  shown with. A labeled number input with an adornment pins its label above the number, since a
+  label floating over an empty field would cover a symbol at its start. A number input that sets
+  none of them behaves as it did.
 - **One field, one input.** The currency input specializes the number input by composition: it
   is not an input of its own but hands its value, its binding, its label and its host surface to
   the one number input it draws. There is one input component under one field, so one label, one
