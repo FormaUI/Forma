@@ -8,7 +8,7 @@ Spanish.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Blazor.Locales.Spanish
+dotnet add package formaui-net.Blazor.Locales.Spanish
 ```
 
 Reference the pack from the application itself. The package records the pack in the application

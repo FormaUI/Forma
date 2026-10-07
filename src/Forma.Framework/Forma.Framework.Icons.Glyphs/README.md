@@ -7,7 +7,7 @@ assembly and draws as inline SVG, so icons need only this package.
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Icons.Glyphs
+dotnet add package formaui-net.Framework.Icons.Glyphs
 ```
 
 ```csharp

@@ -7,7 +7,7 @@ permits and removes the rest, and it depends on nothing beyond .NET itself.
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Sanitization
+dotnet add package formaui-net.Framework.Sanitization
 ```
 
 ```csharp

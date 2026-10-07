@@ -8,12 +8,12 @@ it accepts.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Share
+dotnet add package formaui-net.Framework.Share
 ```
 
-`FormaUI.NET-Blazor` depends on this package, so a host with Forma installed already has it.
+`formaui-net.Blazor` depends on this package, so a host with Forma installed already has it.
 Ready-made targets for the social networks and account-backed destinations ship in
-`FormaUI.NET-AddOns.Share.Targets`.
+`formaui-net.AddOns.Share.Targets`.
 
 ## Use it
 

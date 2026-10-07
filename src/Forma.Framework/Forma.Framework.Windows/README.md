@@ -7,7 +7,7 @@ built on it, and a host uses it to drive those windows from its own code.
 
 ## Use it
 
-The assembly ships inside the `FormaUI.NET-Blazor` package. `AddFormaUI()` registers the
+The assembly ships inside the `formaui-net.Blazor` package. `AddFormaUI()` registers the
 workspace through `AddFormaWindowServices()`, which adds `WindowManager` scoped, one workspace per
 circuit, with `TryAdd`, so a manager the host registered first is the one used.
 

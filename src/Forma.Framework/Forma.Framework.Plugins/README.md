@@ -8,7 +8,7 @@ constructor arguments resolved, and disposing what it built.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Plugins
+dotnet add package formaui-net.Framework.Plugins
 ```
 
 | Type | What it is |

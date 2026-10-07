@@ -8,7 +8,7 @@ contracts with a registrar of its own, and joins the menu for the items it accep
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-AddOns.Share.Targets
+dotnet add package formaui-net.AddOns.Share.Targets
 ```
 
 ## Register

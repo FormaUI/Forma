@@ -8,7 +8,7 @@ footnotes and the rest of that set render.
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-AddOns.Resources.Markdown
+dotnet add package formaui-net.AddOns.Resources.Markdown
 ```
 
 ```csharp

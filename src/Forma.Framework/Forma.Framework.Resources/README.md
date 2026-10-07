@@ -9,7 +9,7 @@ so the implementations can live in any class library.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Resources
+dotnet add package formaui-net.Framework.Resources
 ```
 
 ## Resources
@@ -78,8 +78,8 @@ builder.Services.AddScoped<IResourceContentReader>(_ => new UploadFolderReader(u
 builder.Services.AddScoped<IResourceProvider, MarkdownResourceProvider>();
 ```
 
-[`FormaUI.NET-AddOns.Resources.Markdown`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Markdown/README.md)
-and [`FormaUI.NET-AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md)
+[`formaui-net.AddOns.Resources.Markdown`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Markdown/README.md)
+and [`formaui-net.AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md)
 provide `MarkdownResourceProvider` and `OfficeResourceProvider`, which convert documents to a
 `MarkupResourceInfo` through the host's `IResourceContentReader`.
 

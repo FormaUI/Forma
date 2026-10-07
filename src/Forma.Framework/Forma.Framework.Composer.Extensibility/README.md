@@ -8,11 +8,11 @@ a plugin that draws something names its component as a `Type`, and the composer 
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Composer.Extensibility
+dotnet add package formaui-net.Framework.Composer.Extensibility
 ```
 
 A host running the composer installs
-[`FormaUI.NET-Blazor.Composer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Composer/README.md),
+[`formaui-net.Blazor.Composer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Composer/README.md),
 which brings this package with it.
 
 ## Writing a plugin

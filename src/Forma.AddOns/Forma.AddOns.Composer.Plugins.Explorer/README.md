@@ -14,7 +14,7 @@ with it.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-AddOns.Composer.Plugins.Explorer
+dotnet add package formaui-net.AddOns.Composer.Plugins.Explorer
 ```
 
 ## Register

@@ -8,7 +8,7 @@ its provider against these contracts once, and every surface that browses a cata
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Catalog
+dotnet add package formaui-net.Framework.Catalog
 ```
 
 The package builds on `Forma.Framework.Resources` alone, so items and providers can live in a plain

@@ -8,8 +8,8 @@ direction, and draws from one set of design tokens a host can retheme.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Blazor
-dotnet add package FormaUI.NET-Framework.Localization.Json
+dotnet add package formaui-net.Blazor
+dotnet add package formaui-net.Framework.Localization.Json
 ```
 
 The first package is the library, and the Framework packages it builds on restore beside it. The
@@ -17,8 +17,8 @@ second is the JSON localization backend the components read their strings throug
 strings are English, and each other language is a locale pack of its own:
 
 ```pwsh
-dotnet add package FormaUI.NET-Blazor.Locales.Hebrew
-dotnet add package FormaUI.NET-Blazor.Locales.Spanish
+dotnet add package formaui-net.Blazor.Locales.Hebrew
+dotnet add package formaui-net.Blazor.Locales.Spanish
 ```
 
 ## Set up a host
@@ -164,7 +164,7 @@ and `FormaEmojiPicker` browses the set an `IEmojiCatalog` describes. The
 supplies both:
 
 ```pwsh
-dotnet add package FormaUI.NET-AddOns.Emojis.Twemoji
+dotnet add package formaui-net.AddOns.Emojis.Twemoji
 ```
 
 ```csharp
@@ -257,7 +257,7 @@ takes the request culture from the first URL segment, `/he/orders`, and gives ev
 address per culture:
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Globalization
+dotnet add package formaui-net.Framework.Globalization
 ```
 
 ```csharp
@@ -284,15 +284,15 @@ Each package's README covers installing, registering and using it.
 
 | Package | What it adds |
 |---------|--------------|
-| [`FormaUI.NET-Blazor.DataView`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.DataView/README.md) | `FormaDataView`, the collection component, with grid, list, card and tree views |
-| [`FormaUI.NET-Blazor.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Explorer/README.md) | `FormaExplorer`, a file manager over the files a site holds |
-| [`FormaUI.NET-Blazor.Composer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Composer/README.md) | `FormaComposer`, a rich text editor assembled from plugins |
-| [`FormaUI.NET-AddOns.Composer.Plugins.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md) | Inserting a stored file into `FormaComposer` through `FormaExplorer` |
-| [`FormaUI.NET-AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md) | Twemoji artwork and catalog for `FormaEmoji` and `FormaEmojiPicker` |
-| [`FormaUI.NET-AddOns.Resources.Markdown`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Markdown/README.md) | Markdown documents rendered as pages in `FormaFileViewer` |
-| [`FormaUI.NET-AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md) | Word, Excel and PowerPoint documents rendered as pages in `FormaFileViewer` |
-| [`FormaUI.NET-AddOns.Share.Targets`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Share.Targets/README.md) | Social networks, messengers and cloud drives for `FormaShareMenu` |
-| [`FormaUI.NET-Framework.Globalization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization/README.md) | The culture in the URL |
+| [`formaui-net.Blazor.DataView`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.DataView/README.md) | `FormaDataView`, the collection component, with grid, list, card and tree views |
+| [`formaui-net.Blazor.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Explorer/README.md) | `FormaExplorer`, a file manager over the files a site holds |
+| [`formaui-net.Blazor.Composer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Composer/README.md) | `FormaComposer`, a rich text editor assembled from plugins |
+| [`formaui-net.AddOns.Composer.Plugins.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md) | Inserting a stored file into `FormaComposer` through `FormaExplorer` |
+| [`formaui-net.AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md) | Twemoji artwork and catalog for `FormaEmoji` and `FormaEmojiPicker` |
+| [`formaui-net.AddOns.Resources.Markdown`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Markdown/README.md) | Markdown documents rendered as pages in `FormaFileViewer` |
+| [`formaui-net.AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md) | Word, Excel and PowerPoint documents rendered as pages in `FormaFileViewer` |
+| [`formaui-net.AddOns.Share.Targets`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Share.Targets/README.md) | Social networks, messengers and cloud drives for `FormaShareMenu` |
+| [`formaui-net.Framework.Globalization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization/README.md) | The culture in the URL |
 
 ## Contributing
 

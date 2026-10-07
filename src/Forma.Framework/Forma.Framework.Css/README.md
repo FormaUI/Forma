@@ -7,7 +7,7 @@ what an element carries and render it as one `class` or `style` attribute value.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Css
+dotnet add package formaui-net.Framework.Css
 ```
 
 Every type is created directly; there is nothing to register.

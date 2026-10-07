@@ -7,7 +7,7 @@ A resource provider that converts Word, Excel and PowerPoint documents into sani
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-AddOns.Resources.Office
+dotnet add package formaui-net.AddOns.Resources.Office
 ```
 
 ```csharp

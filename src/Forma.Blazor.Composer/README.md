@@ -10,12 +10,12 @@ in, and it holds every HTML document to the library's sanitizer on the way in an
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Blazor.Composer
+dotnet add package formaui-net.Blazor.Composer
 ```
 
-The package depends on [`FormaUI.NET-Blazor`](https://github.com/FormaUI/Forma/blob/main/README.md),
+The package depends on [`formaui-net.Blazor`](https://github.com/FormaUI/Forma/blob/main/README.md),
 the library it is built on, and on
-[`FormaUI.NET-Framework.Composer.Extensibility`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Composer.Extensibility/README.md),
+[`formaui-net.Framework.Composer.Extensibility`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Composer.Extensibility/README.md),
 the contracts a plugin is written against.
 
 ## Register
@@ -209,7 +209,7 @@ The video placeholder holds a link to the address, so it reads as a link where i
 
 The composer's strings localize through the library's localization, with `AddJsonLocalization()`.
 Each language is a locale pack the application references, such as
-`FormaUI.NET-Blazor.Locales.Hebrew` or `FormaUI.NET-Blazor.Locales.Spanish`.
+`formaui-net.Blazor.Locales.Hebrew` or `formaui-net.Blazor.Locales.Spanish`.
 
 ## Extending
 

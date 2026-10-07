@@ -4,7 +4,7 @@ The options and state behind `FormaExplorer`: the records a host configures an e
 the view and interaction contracts through which the explorer's parts, its toolbar, sidebar, address
 bar and content views, read its state and ask it for changes.
 
-The assembly ships inside the `FormaUI.NET-Blazor.Explorer` package, so a host installs that
+The assembly ships inside the `formaui-net.Blazor.Explorer` package, so a host installs that
 package and uses these types from it. The items, providers and requests an explorer works with are
 [`Forma.Framework.Catalog`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Catalog/README.md)'s,
 and the component's parameters and callbacks are documented in

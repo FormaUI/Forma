@@ -15,9 +15,9 @@
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
-    <!-- A package is named under the reserved prefix for its project without the product's own, FormaUI.NET-Blazor for Forma.Blazor; the assembly, its namespace and its asset path keep the plain name, and so does a project that ships inside another's package, whose assets that package finds by it. -->
+    <!-- A package is named under the reserved prefix for its project without the product's own, formaui-net.Blazor for Forma.Blazor; the assembly, its namespace and its asset path keep the plain name, and so does a project that ships inside another's package, whose assets that package finds by it. -->
     <PropertyGroup Condition="'$(PackageId)' == '' and '$(IsPackable)' != 'false' and $(MSBuildProjectName.StartsWith('Forma.'))">
-        <PackageId>FormaUI.NET-$(MSBuildProjectName.Substring(6))</PackageId>
+        <PackageId>formaui-net.$(MSBuildProjectName.Substring(6))</PackageId>
     </PropertyGroup>
 
     <!-- Every project is licensed under Apache 2.0 and ships the root license and notice if it gets packed. -->

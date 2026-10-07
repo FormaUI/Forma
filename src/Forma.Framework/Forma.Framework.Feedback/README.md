@@ -7,7 +7,7 @@ surface, placed once in a layout, follows it.
 
 ## Use it
 
-The assembly ships inside the `FormaUI.NET-Blazor` package. `AddFormaUI()` registers its services
+The assembly ships inside the `formaui-net.Blazor` package. `AddFormaUI()` registers its services
 through `AddFormaFeedbackServices()`:
 
 | Service | Registered as |

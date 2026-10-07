@@ -8,7 +8,7 @@ emoji `FormaEmojiPicker` offers.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Emojis
+dotnet add package formaui-net.Framework.Emojis
 ```
 
 ## Naming an emoji
@@ -125,9 +125,9 @@ builder.Services.AddSingleton<IEmojiCatalog, TeamEmojiCatalog>();
 
 ## Related packages
 
-- [`FormaUI.NET-Framework.Emojis.Unicode`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Emojis.Unicode/README.md)
+- [`formaui-net.Framework.Emojis.Unicode`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Emojis.Unicode/README.md)
   is the default provider, drawing every emoji with the reader's own emoji font.
-- [`FormaUI.NET-AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md)
+- [`formaui-net.AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md)
   supplies Twemoji artwork and a catalog.
 
 ## License

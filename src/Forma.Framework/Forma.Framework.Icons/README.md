@@ -8,7 +8,7 @@ icons with a set of your own, or to name icons in a library of your own.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Icons
+dotnet add package formaui-net.Framework.Icons
 ```
 
 ## Naming an icon
@@ -141,7 +141,7 @@ if (provider.TryGetArtwork(Glyph.Delete, IconSize.Small, out var artwork))
 
 ## Related packages
 
-[`FormaUI.NET-Framework.Icons.Glyphs`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Icons.Glyphs/README.md)
+[`formaui-net.Framework.Icons.Glyphs`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Icons.Glyphs/README.md)
 is Forma's own icon set and the default provider.
 
 ## License

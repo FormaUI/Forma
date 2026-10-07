@@ -8,7 +8,7 @@ bookmarked and indexed per language.
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Globalization
+dotnet add package formaui-net.Framework.Globalization
 ```
 
 ```csharp

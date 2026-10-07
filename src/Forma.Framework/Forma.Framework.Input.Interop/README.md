@@ -5,7 +5,7 @@ owner, and the C# a component registers its elements through. It carries the pol
 described in `Forma.Framework.Input` to each circuit's document and delivers the actions and
 dismissals it resolves back to their owners.
 
-The assembly ships inside `FormaUI.NET-Blazor`, and `AddFormaUI` registers the router through
+The assembly ships inside `formaui-net.Blazor`, and `AddFormaUI` registers the router through
 `AddFormaInputRouter(options)`: the policy as a singleton `InputRouterOptions` and `InputRouter` as a
 scoped service, one per circuit. Its scripts are served from `_content/forma/input/scripts/`.
 

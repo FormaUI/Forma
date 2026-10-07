@@ -7,7 +7,7 @@ renders straight from text, in the style of the reader's platform.
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Emojis.Unicode
+dotnet add package formaui-net.Framework.Emojis.Unicode
 ```
 
 ```csharp
@@ -35,7 +35,7 @@ var artwork = provider.GetArtwork("😀");   // EmojiArtwork.Unicode
 
 For one artwork on every platform, and a catalog for `FormaEmojiPicker` to browse, install an
 artwork pack such as
-[`FormaUI.NET-AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md).
+[`formaui-net.AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md).
 
 ## License
 

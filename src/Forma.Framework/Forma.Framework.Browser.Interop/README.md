@@ -5,7 +5,7 @@ wrapper beside it: behaviors that attach to an element for a lifetime, such as r
 zone; operations that make a single call, such as writing to the clipboard; and the browser side of
 components such as `FormaDialog` and `FormaWindow`.
 
-The assembly ships inside `FormaUI.NET-Blazor`. Its wrappers are built on
+The assembly ships inside `formaui-net.Blazor`. Its wrappers are built on
 `Forma.Framework.JavaScript.Interop` and sit in the `Behaviors`, `Operations` and `Components`
 namespaces under `Forma.Framework.Browser.Interop`; their scripts are served from
 `_content/forma/browser/scripts/`.

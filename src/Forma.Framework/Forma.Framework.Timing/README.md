@@ -7,7 +7,7 @@ The delay is measured on a `TimeProvider`, so a test advances a fake clock to tr
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Timing
+dotnet add package formaui-net.Framework.Timing
 ```
 
 ```csharp

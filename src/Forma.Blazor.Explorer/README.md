@@ -11,10 +11,10 @@ and uploads go into the host's `IFileStore`.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Blazor.Explorer
+dotnet add package formaui-net.Blazor.Explorer
 ```
 
-The package depends on `FormaUI.NET-Blazor` and `FormaUI.NET-Framework.Catalog`, which restore
+The package depends on `formaui-net.Blazor` and `formaui-net.Framework.Catalog`, which restore
 beside it. The component is in the `Forma.Blazor.Components.Explorer` namespace; the items, provider
 and requests it works with are
 [`Forma.Framework.Catalog`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Catalog/README.md)'s,

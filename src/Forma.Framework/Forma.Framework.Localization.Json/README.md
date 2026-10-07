@@ -7,7 +7,7 @@ references, and from the host's own `.locales` folder, and serves them through `
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Localization.Json
+dotnet add package formaui-net.Framework.Localization.Json
 ```
 
 ```csharp

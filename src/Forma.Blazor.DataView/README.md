@@ -12,10 +12,10 @@ them.
 ## Install and register
 
 ```pwsh
-dotnet add package FormaUI.NET-Blazor.DataView
+dotnet add package formaui-net.Blazor.DataView
 ```
 
-The package depends on `FormaUI.NET-Blazor`, which restores beside it. Its components are in the
+The package depends on `formaui-net.Blazor`, which restores beside it. Its components are in the
 `Forma.Blazor.Components.DataView` namespace.
 
 ```csharp

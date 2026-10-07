@@ -11,14 +11,14 @@ project a locale pack.
 A library that looks strings up references the contract alone:
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Localization
+dotnet add package formaui-net.Framework.Localization
 ```
 
 An application registers a backend to read the translations. `Forma.Framework.Localization.Json`
 is the one Forma ships, reading JSON locale files:
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Localization.Json
+dotnet add package formaui-net.Framework.Localization.Json
 ```
 
 ```csharp
@@ -190,7 +190,7 @@ and referencing this package, whose build does the rest:
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FormaUI.NET-Framework.Localization" Version="1.0.0-preview" />
+        <PackageReference Include="formaui-net.Framework.Localization" Version="1.0.0-preview" />
     </ItemGroup>
 
 </Project>

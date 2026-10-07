@@ -8,7 +8,7 @@ addresses its own way.
 
 ## Use it
 
-The assembly ships inside the `FormaUI.NET-Blazor` package, with the contract in the
+The assembly ships inside the `formaui-net.Blazor` package, with the contract in the
 `Forma.Framework.Media` namespace and the bundled providers in `Forma.Framework.Media.Providers`.
 The bundled providers need no registration; a host registers each of its own as an
 `IPlayerProvider`, and they are asked in registration order before any bundled one:

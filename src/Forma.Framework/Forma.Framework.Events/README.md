@@ -7,7 +7,7 @@ callbacks a service keeps and invokes after each change.
 ## Install
 
 ```pwsh
-dotnet add package FormaUI.NET-Framework.Events
+dotnet add package formaui-net.Framework.Events
 ```
 
 Both types are used directly; there is nothing to register.
