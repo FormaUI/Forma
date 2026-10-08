@@ -5,7 +5,7 @@
 import { RegistrationTable } from './RegistrationTable.mjs';
 import { StateDelivery } from './StateDelivery.mjs';
 
-/** @typedef {import('./DomElement.mjs').DomElement} DomElement */
+/** @typedef {import('./DomElements.mjs').DomElements} DomElements */
 /** @typedef {{ invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }} Receiver */
 /** @typedef {{ token: string, generation: number, capability: string, target: Element, options: object }} Request */
 
@@ -17,16 +17,16 @@ const Observers = {
 
 export class DomWatcher {
     #runtimeKey;
-    #elementOf;
+    #elements;
     #registrations = new RegistrationTable();
 
     /**
      * @param {string} runtimeKey The owner's runtime key.
-     * @param {(target: Element) => DomElement} elementOf The session's DomElement for a native element.
+     * @param {DomElements} elements The owner's DomElements.
      */
-    constructor(runtimeKey, elementOf) {
+    constructor(runtimeKey, elements) {
         this.#runtimeKey = runtimeKey;
-        this.#elementOf = elementOf;
+        this.#elements = elements;
     }
 
     /**
@@ -55,7 +55,7 @@ export class DomWatcher {
             state => receiver.invokeMethodAsync('NotifyAsync', token, generation, state),
             error => console.error(`Forma: the ${capability} state of owner ${this.#runtimeKey}, registration ${token}.${generation}, could not be delivered; delivery waits for a refresh.`, error));
         const observer = new Observer(target, options, state => delivery.offer(state));
-        const hold = this.#elementOf(target).hold(() => this.#registrations.remove(token, generation));
+        const hold = this.#elements.get(target).hold(() => this.#registrations.remove(token, generation));
 
         this.#registrations.install(token, generation, {
             observer,

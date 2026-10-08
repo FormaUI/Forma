@@ -2,16 +2,15 @@
  * DomSession — an owner's watcher, its engine, and the elements they share
  */
 
-import { DomElement } from './DomElement.mjs';
+import { DomElements } from './DomElements.mjs';
 import { DomWatcher } from './DomWatcher.mjs';
 
 /** @typedef {{ dispose(): void }} Part */
-/** @typedef {new (elementOf: (target: Element) => DomElement) => Part} EngineClass */
+/** @typedef {new (elements: DomElements) => Part} EngineClass */
 
 export class DomSession {
     #runtimeKey;
-    /** @type {Map<Element, DomElement>} */
-    #elements = new Map();
+    #elements = new DomElements();
     /** @type {DomWatcher | null} */
     #watcher = null;
     /** @type {Part | null} */
@@ -36,7 +35,7 @@ export class DomSession {
 
     /** Opens the owner's watcher. */
     openWatcher() {
-        return this.#watcher ??= new DomWatcher(this.#runtimeKey, target => this.#elementOf(target));
+        return this.#watcher ??= new DomWatcher(this.#runtimeKey, this.#elements);
     }
 
     /**
@@ -44,7 +43,7 @@ export class DomSession {
      * @param {EngineClass} Engine The engine's class.
      */
     openEngine(Engine) {
-        return this.#engine ??= new Engine(target => this.#elementOf(target));
+        return this.#engine ??= new Engine(this.#elements);
     }
 
     /** Releases the owner's engine. */
@@ -57,21 +56,6 @@ export class DomSession {
         this.releaseEngine();
         this.#watcher?.dispose();
         this.#watcher = null;
-
-        // Disposing an element removes it from the map.
-        for (const element of [...this.#elements.values()]) {
-            element.dispose();
-        }
-    }
-
-    #elementOf(target) {
-        let element = this.#elements.get(target);
-
-        if (!element) {
-            element = new DomElement(target, () => this.#elements.delete(target));
-            this.#elements.set(target, element);
-        }
-
-        return element;
+        this.#elements.dispose();
     }
 }

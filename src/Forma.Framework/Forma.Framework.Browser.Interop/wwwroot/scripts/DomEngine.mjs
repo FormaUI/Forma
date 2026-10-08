@@ -4,7 +4,7 @@
 
 import { RegistrationTable } from './RegistrationTable.mjs';
 
-/** @typedef {import('./DomElement.mjs').DomElement} DomElement */
+/** @typedef {import('./DomElements.mjs').DomElements} DomElements */
 /** @typedef {{ token: string, generation: number, capability: string, target: Element, options: object }} Request */
 
 /** The interaction each capability attaches. */
@@ -13,14 +13,14 @@ const Interactions = {
 };
 
 export class DomEngine {
-    #elementOf;
+    #elements;
     #registrations = new RegistrationTable();
 
     /**
-     * @param {(target: Element) => DomElement} elementOf The session's DomElement for a native element.
+     * @param {DomElements} elements The owner's DomElements.
      */
-    constructor(elementOf) {
-        this.#elementOf = elementOf;
+    constructor(elements) {
+        this.#elements = elements;
     }
 
     /**
@@ -45,7 +45,7 @@ export class DomEngine {
         }
 
         const interaction = new Interaction(target, options);
-        const hold = this.#elementOf(target).hold(() => this.#registrations.remove(token, generation));
+        const hold = this.#elements.get(target).hold(() => this.#registrations.remove(token, generation));
 
         return this.#registrations.install(token, generation, {
             dispose() {
