@@ -1544,7 +1544,7 @@
             var runtimeId = pane.Find(".forma-freeze-pane").GetAttribute("data-rid")!;
 
             // The pane asks for its viewport's extent once its frozen edge is to be drawn.
-            await probe.ReportAsync(runtimeId, new ScrollState(false, true, 240, 38, null));
+            await probe.ReportAsync(runtimeId, new ScrollState(false, true, 240, 38));
             await probe.ReportAsync(runtimeId, new ScrollState(false, true, 240, 38, 600));
 
             // Act

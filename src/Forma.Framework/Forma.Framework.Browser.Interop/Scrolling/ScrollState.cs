@@ -6,4 +6,4 @@ namespace Forma.Framework.Browser.Interop.Scrolling;
 /// <param name="FrozenExtent">How far the frozen parts reach in from the start along the axis, in pixels.</param>
 /// <param name="CornerExtent">How far the frozen corner reaches across the axis, in pixels.</param>
 /// <param name="ViewportExtent">The container's visible extent along the axis, in pixels; null is unmeasured.</param>
-public sealed record ScrollState(bool CanScrollBack, bool CanScrollForward, double FrozenExtent, double CornerExtent, double? ViewportExtent);
+public sealed record ScrollState(bool CanScrollBack, bool CanScrollForward, double FrozenExtent, double CornerExtent, double? ViewportExtent = null);

@@ -16,7 +16,7 @@ public sealed class DomScrollTests
     private static FakeDomBrowser CreateBrowser(bool isMoving = true)
         => new((path, identifier, _) => (path, identifier) switch
         {
-            (FakeDomBrowser.WatcherPath, "attach") => new ScrollState(false, false, 0, 0, null),
+            (FakeDomBrowser.WatcherPath, "attach") => new ScrollState(false, false, 0, 0),
             (FakeDomBrowser.EnginePath, "attach") => true,
             (FakeDomBrowser.EnginePath, "run") => isMoving,
             _ => null,

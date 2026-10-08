@@ -20,7 +20,7 @@ public sealed class DomCircuitHandlerTests
     private static FakeDomBrowser CreateBrowser()
         => new((path, identifier, _) => (path, identifier) switch
         {
-            (FakeDomBrowser.WatcherPath, "attach") => new ScrollState(false, true, 0, 0, null),
+            (FakeDomBrowser.WatcherPath, "attach") => new ScrollState(false, true, 0, 0),
             _ => null,
         });
 

@@ -67,7 +67,7 @@ public sealed class DomObservationTests
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
-            var fits = new ScrollState(false, false, 0, 0, null);
+            var fits = new ScrollState(false, false, 0, 0);
             var browser = CreateBrowser(() => fits);
             await using var watcher = CreateWatcher(browser, loggerFactory);
             var handled = new List<ScrollState>();
