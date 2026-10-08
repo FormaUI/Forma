@@ -1,7 +1,7 @@
 namespace Forma.Framework.Browser.Interop;
 
-/// <summary>A browser entry module an owner's registrations and commands are made through.</summary>
-/// <param name="Name">The entry's name, which diagnostics identify it by.</param>
+/// <summary>A browser entry module.</summary>
+/// <param name="Name">The entry's name.</param>
 /// <param name="Path">The entry's path under the content root.</param>
 internal sealed record DomRoot(string Name, string Path)
 {

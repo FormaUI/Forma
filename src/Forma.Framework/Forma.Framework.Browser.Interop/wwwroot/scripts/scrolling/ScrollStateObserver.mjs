@@ -1,9 +1,5 @@
 /**
  * ScrollStateObserver — watches a scroll container's state and publishes each change
- *
- * Scrolling, a size change of the container or of a child, and a child added or removed each schedule
- * one measurement for the next frame. Each measurement is a snapshot the container takes, compared
- * whole with the last one published, and only a snapshot that differs is published.
  */
 
 import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
@@ -29,7 +25,7 @@ export class ScrollStateObserver {
      * @param {HTMLElement} track The scroll container.
      * @param {{ axis?: 'inline' | 'block', frozen?: string | null, viewportExtent?: boolean }} options
      *   The axis it scrolls along, the selector of its frozen parts, and whether its visible extent is measured.
-     * @param {(state: ScrollState) => void} publish Takes each state that differs from the last.
+     * @param {(state: ScrollState) => void} publish Publishes each changed state.
      */
     constructor(track, { axis = 'inline', frozen = null, viewportExtent = false } = {}, publish) {
         this.#track = track;
@@ -49,14 +45,14 @@ export class ScrollStateObserver {
         this.#mutations.observe(track, { childList: true });
     }
 
-    /** Measures the container now, taking the snapshot as the last state published. */
+    /** Measures the container's state now. */
     read() {
         this.#last = this.#container.measure(this.#measuring);
 
         return this.#last;
     }
 
-    /** Measures again on the next frame, publishing the snapshot even where it equals the last. */
+    /** Measures and publishes the container's state again. */
     refresh() {
         this.#last = null;
         this.#schedule();

@@ -1,9 +1,5 @@
 /**
  * ScrollContainer — a scroll container along one axis: where its content stands, and moving it
- *
- * Offsets are logical, counted from the content's start. A right-to-left container counts scrollLeft
- * downward from zero, so an inline offset is read through Math.abs and an inline position is mirrored.
- * Every measurement and every movement reads the element as it is when it runs.
  */
 
 import { Direction } from '../../../core/scripts/Direction.js';
@@ -28,14 +24,13 @@ export class ScrollContainer {
         this.#isBlock = axis === 'block';
     }
 
-    /** Whether the content overflows the container along its axis; a sub-pixel container size leaves a remainder below one pixel. */
+    /** Whether the content overflows the container along its axis. */
     get isScrollable() {
         return this.#slack() > 1;
     }
 
     /**
-     * Measures where the content stands: whether it can still move toward the start and the end, how far the
-     * parts matching the frozen selector reach in and across, and, where asked for, the visible extent.
+     * Measures where the content stands.
      * @param {{ frozen?: string | null, viewportExtent?: boolean }} options
      * @returns {ScrollState}
      */
@@ -54,8 +49,7 @@ export class ScrollContainer {
     }
 
     /**
-     * Moves one step, smoothly, and reports whether it started moving: to the next stop drawn up to the frozen
-     * parts, past the last stop to the end, or by most of a page where no stop is marked.
+     * Moves the content one step in the direction and returns whether it started moving.
      * @param {-1 | 1} direction -1 toward the start, 1 toward the end.
      * @param {{ stops?: string | null, frozen?: string | null }} options The selectors of the stops and of the frozen parts.
      */
@@ -86,7 +80,7 @@ export class ScrollContainer {
     }
 
     /**
-     * Moves the content by the distance at once, stopping at either end, and reports whether it moved.
+     * Moves the content by the distance and returns whether it moved.
      * @param {number} distance Pixels toward the end, or toward the start where negative.
      */
     moveBy(distance) {
@@ -135,7 +129,7 @@ export class ScrollContainer {
         this.#element.scrollBy({ left: this.#isMirrored() ? -distance : distance, behavior: 'smooth' });
     }
 
-    /** The distinct starts of the stops, measured along the axis from the content's start, sorted. */
+    /** The distinct starts of the stops along the axis, sorted. */
     #stopPositions(selector) {
         const box = this.#element.getBoundingClientRect();
         const offset = this.#offset();
@@ -151,11 +145,7 @@ export class ScrollContainer {
         return [...starts].sort((first, second) => first - second);
     }
 
-    /**
-     * How far the frozen parts reach: the extent is the far edge along the axis of the part reaching furthest in from
-     * the start; the corner is the nearest far edge across the axis, where the part in the start corner ends. A
-     * right-to-left container is measured from its right edge, across the axis as along it.
-     */
+    /** How far the frozen parts reach along the axis and across it. */
     #frozenRegion(selector) {
         const box = this.#element.getBoundingClientRect();
         const isRightToLeft = Direction.isRightToLeft(this.#element);

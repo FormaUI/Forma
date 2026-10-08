@@ -4,11 +4,11 @@ using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>What an owner observes of its elements, with the observations it holds released together.</summary>
-/// <remarks>Disposing the watcher releases every observation and interaction made through it or an engine borrowing it, in one call to the browser, and ends the engine's use.</remarks>
+/// <summary>What an owner observes of its elements.</summary>
+/// <remarks>Disposing the watcher releases every observation and interaction made through it or an engine borrowing it, in one call to the browser.</remarks>
 public sealed class DomWatcher : IAsyncDisposable
 {
-    /// <summary>Creates the watcher of the owner whose log and identity <paramref name="js"/> carries, importing through <paramref name="bridge"/>, or through a bridge of its own where none is given.</summary>
+    /// <summary>Creates the watcher of the owner whose environment is <paramref name="js"/>, importing through <paramref name="bridge"/>.</summary>
     public DomWatcher(IJSEnvironment js, DomBridge? bridge = null)
     {
         ArgumentNullException.ThrowIfNull(js);

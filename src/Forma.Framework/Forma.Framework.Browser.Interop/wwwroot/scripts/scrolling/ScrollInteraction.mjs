@@ -1,16 +1,12 @@
 /**
- * ScrollInteraction — what moves a scroll container while it is attached
- *
- * A vertical wheel turned over the container moves it along its axis at once, as a route on the input
- * router under the action the options name, answered while the container can scroll and consumed at
- * either end too, so the host can remap it. The step buttons step it. Both run in the browser.
+ * ScrollInteraction — what moves a scroll container
  */
 
 import { register } from '../../../input/scripts/InputRouter.js';
 import { ScrollButtons } from './ScrollButtons.mjs';
 import { ScrollContainer } from './ScrollContainer.mjs';
 
-/** Pixels a line is taken to be, for a wheel that reports in lines. */
+/** Pixels in one line of a wheel turn. */
 const LineHeight = 16;
 
 /**
@@ -19,8 +15,8 @@ const LineHeight = 16;
  *   wheel?: string | null,
  *   buttons?: { container: HTMLElement } & import('./ScrollButtons.mjs').ScrollButtonOptions | null,
  * }} ScrollInteractionOptions
- *   The axis the container moves along, the selectors of its stops and frozen parts a step draws up to, the
- *   action a wheel turn is routed as, and the step buttons.
+ *   The axis the container moves along, the selectors of its stops and frozen parts, the action a wheel turn
+ *   is routed as, and the step buttons.
  */
 
 export class ScrollInteraction {

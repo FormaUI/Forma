@@ -6,8 +6,7 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-/// <summary>The browser entry modules of one JS runtime scope, imported once each and shared by every watcher and engine made through it.</summary>
-/// <remarks>Concurrent owners share an import in flight. An import that failed is dropped, so the next owner to need the entry imports it again. Disposal refuses later imports and releases each entry's reference, one arriving late included.</remarks>
+/// <summary>The browser entry modules one JS runtime scope shares.</summary>
 public sealed class DomBridge : IAsyncDisposable, IDisposable
 {
     private readonly IJSEnvironment _environment;
@@ -15,7 +14,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
     private readonly HashSet<DomSession> _liveSessions = [];
     private bool _isDisposed;
 
-    /// <summary>Creates the bridge for one JS runtime scope, configuring routed interactions through <paramref name="inputRouter"/>.</summary>
+    /// <summary>Creates the bridge for one JS runtime scope, with <paramref name="inputRouter"/> as its input router.</summary>
     public DomBridge(IJSRuntime js, ILogger<DomBridge> logger, InputRouter? inputRouter = null)
         : this(new JSEnvironment(js, logger, Guid.CreateVersion7()), inputRouter)
     {
@@ -29,7 +28,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
         InputRouter = inputRouter;
     }
 
-    /// <summary>The router whose policy reaches the browser before an interaction declares a route.</summary>
+    /// <summary>The JS runtime scope's input router.</summary>
     internal InputRouter? InputRouter { get; }
 
     /// <inheritdoc />
@@ -50,19 +49,19 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
         _modules.Clear();
     }
 
-    /// <summary>Releases the managed state alone, refusing later imports.</summary>
+    /// <inheritdoc />
+    /// <remarks>Releases the managed state alone; the browser's modules are released by <see cref="DisposeAsync"/>.</remarks>
     public void Dispose()
     {
         _isDisposed = true;
         _modules.Clear();
     }
 
-    /// <summary>Starts asking the browser, in one call, to measure afresh and deliver anew every established observation of the sessions that reached it through the bridge, as after its connection to the browser was restored.</summary>
+    /// <summary>Starts refreshing every established observation of the bridge's sessions, in one call.</summary>
     /// <remarks>
-    /// Each observation is named by its owner, token and current generation, taken when the refresh starts, so one released or replaced since
-    /// makes nothing in the browser, and nothing is called while no session holds an established observation. The call is started rather than
-    /// awaited: a circuit handles one invocation from the browser at a time, so the reply, and the states the refresh delivers, wait for the
-    /// connection that asked for the refresh to finish coming up. A failed call is logged under the bridge.
+    /// Each observation is named by its owner, token and generation at the start of the refresh, and the browser refreshes nothing for one
+    /// released or replaced since. The reply, and the states the refresh delivers, reach a circuit only after the connection that asked for the
+    /// refresh has finished coming up.
     /// </remarks>
     internal void BeginRefresh()
     {
@@ -83,7 +82,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
     internal void Track(DomSession session)
         => _liveSessions.Add(session);
 
-    /// <summary>Forgets a session once it has been released.</summary>
+    /// <summary>Forgets <paramref name="session"/>.</summary>
     internal void Untrack(DomSession session)
         => _liveSessions.Remove(session);
 

@@ -2,7 +2,7 @@ namespace Forma.Framework.Browser.Interop;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>The log messages of an owner's watcher and engine: an entry that could not be reached, a call that failed, and a handler that threw.</summary>
+/// <summary>The browser interop's log messages: an entry that could not be reached, a call that failed, and a handler that threw.</summary>
 internal static partial class DomLog
 {
     [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while {Operation} reached {Root} for {RuntimeId}.")]

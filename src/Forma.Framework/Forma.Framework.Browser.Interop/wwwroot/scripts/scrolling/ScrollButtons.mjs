@@ -1,10 +1,5 @@
 /**
  * ScrollButtons — the buttons among a container's children that step a scroll target back and forward
- *
- * Each button present is a scope on the input router with a click route under the action its kind
- * names, so the button stays a native button: a click, Enter and Space each press it once, a disabled
- * one presses nothing, and the host can remap the action. A button that joins the container is routed
- * as it arrives, and one that leaves is released.
  */
 
 import { register } from '../../../input/scripts/InputRouter.js';
@@ -77,7 +72,7 @@ export class ScrollButtons {
         }
     }
 
-    // The host's remap replaces the binding, so a disabled button is checked here rather than in a predicate.
+    // A host's remap drops the binding's check of a disabled button.
     #press(button, direction) {
         if (!button.matches(':disabled')) {
             this.#step(direction);

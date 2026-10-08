@@ -2,8 +2,8 @@ namespace Forma.Framework.Browser.Interop.Scrolling;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The buttons that step a scroll container, found among the children of <see cref="Container"/> and each routed on the input router under its action.</summary>
-/// <remarks>Each button stays a native button: a click, Enter and Space each press it once, a disabled one presses nothing, and the host can remap its action. A button rendered later is routed as it arrives.</remarks>
+/// <summary>The buttons that step a scroll container.</summary>
+/// <remarks>The buttons are found among the children of <see cref="Container"/>, including those rendered later, and each is routed on the input router under its action, which the host can remap. A click, Enter and Space each press a button once, and a disabled one presses nothing.</remarks>
 public sealed record ScrollButtons
 {
     /// <summary>The element whose children the buttons are.</summary>

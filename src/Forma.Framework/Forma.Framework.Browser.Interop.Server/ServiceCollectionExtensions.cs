@@ -7,9 +7,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// <summary>Registers the browser services an Interactive Server host needs.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers the browser services, and the circuit handler that refreshes a circuit's observations once its connection is restored.</summary>
+    /// <summary>Registers the browser services and the circuit handler that refreshes a circuit's observations.</summary>
     /// <param name="services">The collection to register into.</param>
-    /// <returns>The same collection, for chaining.</returns>
+    /// <returns>The same collection.</returns>
     public static IServiceCollection AddFormaDomServerServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

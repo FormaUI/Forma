@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>An interaction the browser runs on an element, kept in step with the target and options its owner last gave it.</summary>
 /// <typeparam name="TOptions">The options the interaction takes.</typeparam>
-/// <remarks>An interaction that declares routes on the input router carries the host's input policy to the browser before it is attached, so the host's remapping reaches its routes.</remarks>
 public sealed class DomInteraction<TOptions> : IAsyncDisposable, IDomRegistrationHost<TOptions>
     where TOptions : notnull
 {
@@ -39,7 +38,7 @@ public sealed class DomInteraction<TOptions> : IAsyncDisposable, IDomRegistratio
     {
         var capability = _registration.Capability;
 
-        // The routes are declared by the browser, so the host's policy reaches the router first.
+        // The host's input policy must reach the browser before the attach declares the routes.
         if (capability.DeclaresRoutes(options) && _session.Bridge.InputRouter is { } inputRouter)
         {
             await inputRouter.ConfigureAsync();

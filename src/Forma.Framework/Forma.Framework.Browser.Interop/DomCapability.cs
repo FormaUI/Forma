@@ -1,6 +1,6 @@
 namespace Forma.Framework.Browser.Interop;
 
-/// <summary>A capability's registrations: the entry they are made through, the name the entry knows them by, and how their options reach the browser.</summary>
+/// <summary>A capability of a browser entry.</summary>
 /// <typeparam name="TOptions">The options a registration of the capability takes.</typeparam>
 /// <param name="Root">The entry the registrations are made through.</param>
 /// <param name="Name">The capability's name in the entry.</param>

@@ -3,7 +3,6 @@ namespace Forma.Framework.Browser.Interop.Scrolling;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>An element's scrolling: observing how far it can still move, moving it a step, and the interaction that moves it in the browser.</summary>
-/// <remarks>Observing needs only the watcher; attaching the interaction and stepping need the element got from an engine.</remarks>
 public sealed class DomScroll : IDomScrollObservation
 {
     private static readonly DomCapability<ScrollWatchOptions> Watching = new(DomRoot.Watcher, "scroll", DescribeWatch);
@@ -38,7 +37,7 @@ public sealed class DomScroll : IDomScrollObservation
 
     /// <summary>Attaches the interaction that moves the element with <paramref name="options"/>, held while <paramref name="shouldEnable"/>.</summary>
     /// <exception cref="ArgumentException">The options route a wheel along the block axis.</exception>
-    /// <exception cref="InvalidOperationException">The element was got from a watcher, which cannot act on it.</exception>
+    /// <exception cref="InvalidOperationException">The element was got from a watcher.</exception>
     public async Task<DomInteraction<ScrollInteractionOptions>> AttachAsync(ScrollInteractionOptions options, bool shouldEnable = true)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -53,8 +52,8 @@ public sealed class DomScroll : IDomScrollObservation
     }
 
     /// <summary>Moves the element one step in <paramref name="direction"/>, as <paramref name="options"/> say, and reports whether it started moving.</summary>
-    /// <remarks>The step scrolls smoothly, so its completion says that the movement began, not that it finished.</remarks>
-    /// <exception cref="InvalidOperationException">The element was got from a watcher, which cannot act on it.</exception>
+    /// <remarks>The step scrolls smoothly, and the task completes as the movement begins.</remarks>
+    /// <exception cref="InvalidOperationException">The element was got from a watcher.</exception>
     public async ValueTask<bool> StepAsync(ScrollDirection direction, ScrollStepOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);

@@ -10,6 +10,6 @@ public sealed record ScrollStepOptions
     /// <summary>The selector of the parts a step comes to rest on.</summary>
     public string? StopSelector { get; init; }
 
-    /// <summary>The selector of the parts that stay at the container's start, which a stop is drawn up to.</summary>
+    /// <summary>The selector of the parts that stay at the container's start.</summary>
     public string? FrozenSelector { get; init; }
 }

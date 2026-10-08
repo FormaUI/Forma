@@ -14,7 +14,8 @@ public sealed class DomReceiver
         _session = session;
     }
 
-    /// <summary>Delivers the state the observation holding <paramref name="token"/> measured under <paramref name="generation"/>, completing once the observation has taken it.</summary>
+    /// <summary>Delivers the state the observation holding <paramref name="token"/> measured under <paramref name="generation"/>.</summary>
+    /// <returns>A task that completes as the observation takes the state.</returns>
     [JSInvokable]
     public Task NotifyAsync(string token, int generation, JsonElement state)
         => _session.DeliverAsync(token, generation, state);

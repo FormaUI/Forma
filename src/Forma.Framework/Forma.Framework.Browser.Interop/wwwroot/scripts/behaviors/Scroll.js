@@ -1,7 +1,5 @@
 /**
  * Scroll — moving a container to its center
- *
- * A right-to-left container counts scrollLeft downward from zero, so its inline middle is mirrored.
  */
 
 import { Direction } from '../../../core/scripts/Direction.js';

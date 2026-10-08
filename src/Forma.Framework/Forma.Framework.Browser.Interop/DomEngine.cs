@@ -2,8 +2,8 @@ namespace Forma.Framework.Browser.Interop;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>What an owner does to its elements, through the watcher it borrows.</summary>
-/// <remarks>Disposing the engine releases the interactions made through it, in one call to the browser, and leaves the watcher's observations; disposing the watcher ends the engine's use.</remarks>
+/// <summary>What an owner does to its elements.</summary>
+/// <remarks>Disposing the engine releases the interactions made through it, in one call to the browser.</remarks>
 public sealed class DomEngine : IAsyncDisposable
 {
     private readonly DomWatcher _watcher;

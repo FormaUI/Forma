@@ -162,17 +162,18 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         if (firstRender)
         {
             await LoadNextSheetAsync();
+
+            // The observation starts inactive, so _sentinel holds it before its first state arrives.
             _sentinel = await Context.DomWatcher.GetElement(_sentinelElement).Intersection.WatchAsync(HandleSentinelAsync, SentinelOptions, shouldObserve: false);
         }
 
-        // The observation is made inactive, so the field holds it before its first state arrives; this sync starts it, and brings it in step after each render.
         if (_sentinel is { } sentinel)
         {
             await sentinel.SyncAsync(_sentinelElement, SentinelOptions, HasMoreToLoad);
         }
     }
 
-    // The next sheet loads as the sentinel below the loaded cells comes into view; the state arrives off the renderer.
+    // The state arrives off the renderer.
     private Task HandleSentinelAsync(IntersectionState state)
         => state.IsIntersecting ? InvokeAsync(LoadNextSheetAsync) : Task.CompletedTask;
 
@@ -243,7 +244,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
             StateHasChanged();
         }
 
-        // The observation reports changes alone, and a sheet's cells can leave the sentinel in view, so it is measured afresh.
+        // The observation reports changes alone, and a sheet's cells can leave the sentinel in view.
         if (_sentinel is { } sentinel)
         {
             await sentinel.RefreshAsync();

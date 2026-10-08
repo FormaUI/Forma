@@ -1,8 +1,5 @@
 /**
  * Wheel — what a surface does with a wheel turned over it
- *
- * A turn tells an owner which way it turned, as a route on the input router declared on the
- * surface under the action the surface names.
  */
 
 import { tell } from '../../../core/scripts/Owner.js';
@@ -22,14 +19,13 @@ const Modifiers = { ctrl: 'control', alt: 'alt', shift: 'shift' };
 /**
  * @param {HTMLElement} target The surface the wheel is turned over.
  * @param {{ action: string, owner: Owner, modifier?: 'ctrl' | 'alt' | 'shift' }} options
- *   The action the turn is routed as; the owner told the direction through HandleWheelAsync; and
- *   the modifier key held for the turn to be answered.
+ *   The action the turn is routed as, the owner told its direction, and the modifier key the turn is gated on.
  */
 export function attach(target, options) {
     return new Wheel(target, options);
 }
 
-/** Answers a wheel turned over the target by telling an owner its direction. */
+/** Tells an owner the direction of a wheel turned over the target. */
 class Wheel {
     #registration;
 
@@ -47,7 +43,7 @@ class Wheel {
     }
 }
 
-/** Tells an owner which way the wheel moved: every notch of a wheel, and each gesture of a trackpad once. */
+/** Tells an owner which way the wheel moved, once for each notch and once for each trackpad gesture. */
 class DirectionSink {
     #owner;
     #lastAt = Number.NEGATIVE_INFINITY;
@@ -57,12 +53,12 @@ class DirectionSink {
         this.#owner = owner;
     }
 
-    /** A turn on either axis that moved at all. */
+    /** Describes the binding of a wheel turn on either axis. */
     describeBinding(modifiers) {
         return { type: 'wheel', modifiers, when: event => DirectionSink.#deltaOf(event) !== 0 };
     }
 
-    // The delta is checked again, since a host's remap of the action replaces the binding and its predicate with it.
+    // A host's remap drops the binding's check of the delta.
     move(event) {
         const delta = DirectionSink.#deltaOf(event);
 

@@ -1,12 +1,5 @@
 /**
  * StateDelivery — one observation's state on its way to its owner
- *
- * One sample is in flight at a time and the latest measured since waits behind it, so a slow owner
- * holds at most two. The first sample is held until a task after the observation's attach returns,
- * so the attach result reaches the owner first. A send that fails is reported and suspends delivery,
- * keeping the latest sample, until the owner resumes it. Resuming also gives up on a send still
- * outstanding, since a call made while the circuit was down is never answered, and an answer that
- * arrives for a send given up on changes nothing.
  */
 
 export class StateDelivery {
@@ -30,12 +23,12 @@ export class StateDelivery {
         this.#report = report;
     }
 
-    /** Whether delivery is suspended after a failed send. */
+    /** Whether delivery is suspended. */
     get isSuspended() {
         return this.#isSuspended;
     }
 
-    /** Starts sending a task from now, once the attach that made the observation has returned. */
+    /** Starts delivery. */
     open() {
         if (this.#isOpen || this.#opening !== null || this.#isClosed) {
             return;
@@ -48,7 +41,7 @@ export class StateDelivery {
         }, 0);
     }
 
-    /** Takes a newly measured sample, replacing any still waiting. */
+    /** Takes the latest sample, replacing any still waiting. */
     offer(state) {
         if (this.#isClosed) {
             return;
@@ -59,7 +52,7 @@ export class StateDelivery {
         this.#flush();
     }
 
-    /** Resumes delivery after a failed send or one never answered, starting with the latest sample. */
+    /** Resumes delivery. */
     resume() {
         this.#isSuspended = false;
         this.#isInFlight = false;
@@ -67,7 +60,7 @@ export class StateDelivery {
         this.#flush();
     }
 
-    /** Stops delivery, dropping the sample waiting. */
+    /** Stops delivery. */
     close() {
         this.#isClosed = true;
         this.#pending = null;
@@ -107,7 +100,7 @@ export class StateDelivery {
 
                 this.#isInFlight = false;
 
-                // The sample that failed is the latest the owner has not received, unless a newer one arrived meanwhile.
+                // A failed sample is kept unless a newer one waits.
                 if (!this.#hasPending) {
                     this.#pending = state;
                     this.#hasPending = true;

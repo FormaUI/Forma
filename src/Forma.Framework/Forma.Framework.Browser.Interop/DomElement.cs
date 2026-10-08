@@ -4,8 +4,7 @@ using Forma.Framework.Browser.Interop.Scrolling;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>An element an owner observes and acts on.</summary>
-/// <remarks>An element got from a watcher observes alone; acting on it needs one got from an engine.</remarks>
+/// <summary>An element an owner observes and can act on.</summary>
 public sealed class DomElement : IDomElementObservation
 {
     private readonly DomWatcher _watcher;

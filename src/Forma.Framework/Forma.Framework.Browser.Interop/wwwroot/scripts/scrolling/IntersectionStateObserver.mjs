@@ -1,10 +1,5 @@
 /**
  * IntersectionStateObserver — watches whether a target is in view of a root and publishes each change
- *
- * The state is read at once from the boxes of the target and the root, the root grown by its margin,
- * since the native observer reports only later; each report the observer then makes is compared with
- * the last state published, and only one that differs is published, so a reading the observer
- * corrects is published as a change. A target with no box, as when it is not displayed, is out of view.
  */
 
 import { IntersectionObserverPool } from '../IntersectionObserverPool.mjs';
@@ -23,7 +18,7 @@ export class IntersectionStateObserver {
     /**
      * @param {Element} target The element watched.
      * @param {{ root?: Element | null, rootMargin?: number }} options The root it comes into view of, null for the viewport, and the margin around the root in pixels.
-     * @param {(state: IntersectionState) => void} publish Takes each state that differs from the last.
+     * @param {(state: IntersectionState) => void} publish Publishes each changed state.
      */
     constructor(target, { root = null, rootMargin = 0 } = {}, publish) {
         this.#target = target;
@@ -33,14 +28,14 @@ export class IntersectionStateObserver {
         this.#subscription = IntersectionObserverPool.observe(target, { root, rootMargin }, entry => this.#take(entry.isIntersecting));
     }
 
-    /** Reads whether the target is in view now, taking the reading as the last state published. */
+    /** Reads whether the target is in view now. */
     read() {
         this.#last = { isIntersecting: this.#isIntersecting() };
 
         return this.#last;
     }
 
-    /** Has the native observer report the target afresh, publishing its report even where it equals the last. */
+    /** Measures and publishes whether the target is in view again. */
     refresh() {
         this.#last = null;
         this.#subscription.remeasure();

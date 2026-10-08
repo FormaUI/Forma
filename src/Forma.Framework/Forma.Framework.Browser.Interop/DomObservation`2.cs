@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Components;
 /// <remarks>
 /// Establishing the observation returns its first state, which becomes <see cref="Current"/> and is handed to the handler before any state
 /// measured later; a state arriving before the first is held until it has been taken, and only the latest so held is kept. The handler is
-/// called once at a time, in the order the states were measured, and a handler that throws is logged under the owner and the registration.
-/// A state that crosses while the handler is still busy waits in the browser, which keeps only the latest.
+/// called once at a time, in the order the states were measured. A state that crosses while the handler is still busy waits in the browser,
+/// which keeps only the latest.
 /// </remarks>
 public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomRegistrationHost<TOptions>
     where TOptions : notnull
@@ -34,7 +34,7 @@ public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomReg
         session.AddStateTarget(_registration.Token, DeliverAsync);
     }
 
-    /// <summary>The state the browser last measured, while the observation is established.</summary>
+    /// <summary>The state the browser last measured.</summary>
     public TState? Current { get; private set; }
 
     /// <summary>Whether the observation is established and its first state taken.</summary>
@@ -136,7 +136,7 @@ public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomReg
             return;
         }
 
-        // A state from a generation whose attach never succeeded has no first state to follow.
+        // A state can arrive for a generation whose attach failed.
         if (!IsCurrent(generation) || !IsActive)
         {
             return;
@@ -176,7 +176,7 @@ public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomReg
     private bool IsCurrent(int generation)
         => !IsDisposed && _registration.Generation == generation;
 
-    /// <summary>Holds what the browser delivers for a generation until its attach result has been taken.</summary>
+    /// <summary>Holds the deliveries for a generation that arrive ahead of its first state.</summary>
     private sealed class EstablishmentBarrier(int generation)
     {
         private TaskCompletionSource<bool>? _held;
@@ -185,7 +185,7 @@ public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomReg
 
         public TState? Baseline { get; set; }
 
-        /// <summary>Holds a delivery, dropping one held before it; completes with whether it is to be taken.</summary>
+        /// <summary>Holds a delivery, returning whether it is to be taken.</summary>
         public Task<bool> HoldAsync()
         {
             _held?.TrySetResult(false);

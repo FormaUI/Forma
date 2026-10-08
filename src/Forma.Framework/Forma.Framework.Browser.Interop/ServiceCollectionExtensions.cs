@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 /// <summary>Registers the browser services this package ships.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers the bridge each JS runtime scope's watchers and engines share their imports through.</summary>
+    /// <summary>Registers the bridge of each JS runtime scope.</summary>
     /// <param name="services">The collection to register into.</param>
-    /// <returns>The same collection, for chaining.</returns>
+    /// <returns>The same collection.</returns>
     public static IServiceCollection AddFormaDomServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

@@ -84,11 +84,10 @@ public sealed partial class FormaFreezePane : FormaElementBase
     private Glyph ForwardGlyph
         => IsBlockAxis ? Glyph.ChevronDown : Glyph.ChevronRight;
 
-    // The viewport's extent bounds the frozen edge, so it is asked for only while the edge is drawn.
     private ScrollWatchOptions WatchOptions
         => new() { Axis = Options.Axis, FrozenSelector = $".{FrozenClass}", ReportsViewportExtent = ShowsFrozenEdge };
 
-    // The arrows are looked for whether or not they are drawn, so drawing them changes nothing the browser was given.
+    // The arrows are given whether or not they are drawn.
     private ScrollInteractionOptions InteractionOptions
         => new()
         {
@@ -128,7 +127,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
             _scrolling = await attaching;
         }
 
-        // A render made while the first requests were settling is caught up here; a request that changed nothing makes no call.
+        // A render made while the first requests were settling is caught up here.
         if (_scrollState is { } scrollState && _scrolling is { } scrolling)
         {
             await Task.WhenAll(
@@ -137,7 +136,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
         }
     }
 
-    // The state arrives off the renderer, so the rerender is marshalled back onto it.
+    // The state arrives off the renderer.
     private Task HandleScrollStateAsync(ScrollState state)
     {
         if (_state == state)
