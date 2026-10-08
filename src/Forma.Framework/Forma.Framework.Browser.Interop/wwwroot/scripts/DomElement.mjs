@@ -1,7 +1,7 @@
 /**
- * DomElement — a native element a watcher's owner registers on, and the registrations held on it
+ * DomElement — a native element an owner registers on, and the registrations held on it
  *
- * One stands for each native element per watcher. The element's size is watched through the
+ * The owner's session keeps one for each native element. The element's size is watched through the
  * document's shared resize observer, since a rendered element's size changes as it leaves the
  * document, and a frame after each change the element is checked: one moved within the document is
  * back in it by then, while one taken out of it has left, which releases every registration held on

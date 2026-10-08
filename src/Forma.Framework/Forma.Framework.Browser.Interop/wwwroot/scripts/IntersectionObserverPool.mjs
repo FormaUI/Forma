@@ -69,17 +69,6 @@ export class IntersectionObserverPool {
         };
     }
 
-    /** The number of native observers the document holds. */
-    static get size() {
-        let count = 0;
-
-        for (const pools of poolsByRoot.values()) {
-            count += pools.size;
-        }
-
-        return count;
-    }
-
     static #deliver(listenersByTarget, entries) {
         for (const entry of entries) {
             // A listener can dispose another, so each target's listeners are copied before any runs.

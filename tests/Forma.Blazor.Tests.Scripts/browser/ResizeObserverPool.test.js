@@ -77,7 +77,6 @@ describe('ResizeObserverPool', () => {
         subscriptions[0].dispose();
 
         expect(resizes.latest().targets).toEqual([second]);
-        expect(ResizeObserverPool.size).toBe(1);
     });
 
     it('disconnects the observer once nothing is observed, and makes another when needed', () => {

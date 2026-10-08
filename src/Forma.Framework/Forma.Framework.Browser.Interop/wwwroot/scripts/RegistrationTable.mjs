@@ -13,22 +13,6 @@ export class RegistrationTable {
     #entries = new Map();
     #isDisposed = false;
 
-    /** Whether the registrations have been released. */
-    get isDisposed() {
-        return this.#isDisposed;
-    }
-
-    /** The number of registrations holding a resource. */
-    get size() {
-        let count = 0;
-
-        for (const entry of this.#entries.values()) {
-            count += entry.resource ? 1 : 0;
-        }
-
-        return count;
-    }
-
     /**
      * Records the generation as the token's latest and releases what an earlier one holds; false when the
      * generation is already behind, or the registrations have been released.

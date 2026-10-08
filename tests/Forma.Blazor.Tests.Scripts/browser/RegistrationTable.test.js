@@ -19,7 +19,6 @@ describe('RegistrationTable', () => {
 
         expect(isInstalled).toBe(true);
         expect(registrations.get('1')).toBe(held);
-        expect(registrations.size).toBe(1);
     });
 
     it('releases what an earlier generation holds as a later one begins', () => {
@@ -68,7 +67,7 @@ describe('RegistrationTable', () => {
         registrations.remove('1', 1);
 
         expect(held.dispose).toHaveBeenCalledOnce();
-        expect(registrations.size).toBe(0);
+        expect(registrations.get('1')).toBeNull();
     });
 
     it('leaves a later generation alone when an earlier one is removed', () => {

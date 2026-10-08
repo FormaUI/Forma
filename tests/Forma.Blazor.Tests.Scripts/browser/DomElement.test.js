@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { DomElement } from '#browser/DomElement.mjs';
-import { ResizeObserverPool } from '#browser/ResizeObserverPool.mjs';
 import { stubAnimationFrames, stubResizeObserver } from '#support/platform.js';
 
 describe('DomElement', () => {
@@ -87,7 +86,7 @@ describe('DomElement', () => {
         frames.flush();
 
         expect(forget).toHaveBeenCalledOnce();
-        expect(ResizeObserverPool.size).toBe(0);
+        expect(resizes.latest().isConnected).toBe(false);
     });
 
     it('lets a registration go without releasing it', () => {
@@ -114,10 +113,10 @@ describe('DomElement', () => {
         hold.dispose();
 
         expect(forget).toHaveBeenCalledOnce();
-        expect(ResizeObserverPool.size).toBe(0);
+        expect(resizes.latest().isConnected).toBe(false);
     });
 
-    it('leaves another watcher\'s element on the same native element watching', () => {
+    it('leaves another session\'s element on the same native element watching', () => {
         const disposed = createElement();
         const kept = createElement();
         const release = vi.fn();

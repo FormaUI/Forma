@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach, detach, release, releaseEngine, run } from '#browser/DomEngine.js';
-import { attach as watch } from '#browser/DomWatcher.js';
-import { DomSessionRegistry } from '#browser/DomSessionRegistry.mjs';
+import { attach as watch, detach as unwatch, refresh } from '#browser/DomWatcher.js';
 import { describe as describeScope } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 import { sizeScroller, stubAnimationFrames, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
@@ -40,6 +39,13 @@ describe('DomEngine', () => {
 
     const buttons = () => ({ container: pane, back: '.back', forward: '.forward', backAction: 'pane.scroll-back', forwardAction: 'pane.scroll-forward' });
     const request = (generation = 1, options = { wheel: 'pane.scroll', buttons: buttons() }, target = viewport) => ({ token: '1', generation, capability: 'scroll', target, options });
+    const observation = () => ({ token: '2', generation: 1, capability: 'scroll', target: viewport, options: {} });
+
+    const leave = () => {
+        pane.remove();
+        resizes.latest().deliver([{ target: viewport }]);
+        frames.flush();
+    };
 
     it('attaches the interaction the request names', async () => {
         const isAttached = await attach(runtimeKey, request());
@@ -95,32 +101,43 @@ describe('DomEngine', () => {
     it('releases an interaction whose target left the document', async () => {
         await attach(runtimeKey, request());
 
-        pane.remove();
-        resizes.latest().deliver([{ target: viewport }]);
-        frames.flush();
+        leave();
 
-        expect(DomSessionRegistry.find(runtimeKey).engine.size).toBe(0);
         expect(describeScope(viewport)).toBeNull();
     });
 
-    it('releases its engine alone, leaving the owner\'s observations', async () => {
-        await watch(runtimeKey, fakeOwner(), { token: '2', generation: 1, capability: 'scroll', target: viewport, options: {} });
+    it('keeps an interaction running, and its target\'s leaving noticed, once an observation of the same target is released', async () => {
+        await watch(runtimeKey, fakeOwner(), observation());
+        await attach(runtimeKey, request());
+
+        unwatch(runtimeKey, '2', 1);
+        expect(describeScope(viewport).routes.map(route => route.action)).toEqual(['pane.scroll']);
+
+        leave();
+        expect(describeScope(viewport)).toBeNull();
+    });
+
+    it('releases its engine alone, leaving the owner\'s observations, and their target\'s leaving noticed', async () => {
+        await watch(runtimeKey, fakeOwner(), observation());
         await attach(runtimeKey, request());
 
         releaseEngine(runtimeKey);
-
         expect(describeScope(viewport)).toBeNull();
-        expect(DomSessionRegistry.find(runtimeKey).watcher.size).toBe(1);
+        expect(refresh(runtimeKey, '2', 1)).toBe(true);
+
+        leave();
+        expect(refresh(runtimeKey, '2', 1)).toBe(false);
     });
 
     it('releases the engine and the watcher together for the owner\'s release', async () => {
-        await watch(runtimeKey, fakeOwner(), { token: '2', generation: 1, capability: 'scroll', target: viewport, options: {} });
+        await watch(runtimeKey, fakeOwner(), observation());
         await attach(runtimeKey, request());
 
         release(runtimeKey);
 
         expect(describeScope(viewport)).toBeNull();
-        expect(DomSessionRegistry.find(runtimeKey)).toBeNull();
+        expect(refresh(runtimeKey, '2', 1)).toBe(false);
+        expect(resizes.latest().isConnected).toBe(false);
     });
 
     describe('run', () => {

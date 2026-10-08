@@ -41,11 +41,6 @@ export class ResizeObserverPool {
         };
     }
 
-    /** The number of elements the pool observes. */
-    static get size() {
-        return listenersByTarget.size;
-    }
-
     static #deliver(entries) {
         for (const entry of entries) {
             // A listener can dispose another, so each target's listeners are copied before any runs.

@@ -51,7 +51,6 @@ describe('IntersectionObserverPool', () => {
         observe(first, { root: panel, rootMargin: 200, threshold: 0.5 });
 
         expect(observers.instances).toHaveLength(4);
-        expect(IntersectionObserverPool.size).toBe(4);
     });
 
     it('calls each listener of the target an entry reports, and no other', () => {
@@ -77,13 +76,15 @@ describe('IntersectionObserverPool', () => {
         expect(listener).toHaveBeenCalledOnce();
     });
 
-    it('disconnects an observer once its last target is let go', () => {
+    it('disconnects an observer once its last target is let go, and makes another when needed', () => {
         const { subscription } = observe(first, { root: panel });
+        const observer = observers.latest();
 
         subscription.dispose();
+        observe(first, { root: panel });
 
-        expect(observers.latest().isConnected).toBe(false);
-        expect(IntersectionObserverPool.size).toBe(0);
+        expect(observer.isConnected).toBe(false);
+        expect(observers.instances).toHaveLength(2);
     });
 
     it('observes the target afresh when asked to remeasure it', () => {

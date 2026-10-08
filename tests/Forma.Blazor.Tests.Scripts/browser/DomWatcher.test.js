@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach, detach, refresh, refreshAll, release } from '#browser/DomWatcher.js';
-import { DomSessionRegistry } from '#browser/DomSessionRegistry.mjs';
-import { ResizeObserverPool } from '#browser/ResizeObserverPool.mjs';
 import { fakeOwner } from '#support/owner.js';
 import { sizeScroller, stubAnimationFrames, stubIntersectionObserver, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
@@ -47,6 +45,9 @@ describe('DomWatcher', () => {
 
     // Lets the task after an attach run, which opens its delivery.
     const nextTask = () => vi.advanceTimersByTimeAsync(0);
+
+    // The elements the resize observers watch.
+    const watchedSizes = () => resizes.instances.filter(observer => observer.isConnected).flatMap(observer => observer.targets);
 
     const scrollTo = offset => {
         track.scrollLeft = offset;
@@ -180,7 +181,8 @@ describe('DomWatcher', () => {
 
         expect(await overtaken).toBeNull();
         expect(await latest).not.toBeNull();
-        expect(DomSessionRegistry.find(runtimeKey).watcher.size).toBe(1);
+        expect(refresh(runtimeKey, '1', 1)).toBe(false);
+        expect(refresh(runtimeKey, '1', 2)).toBe(true);
     });
 
     it('drops an attach that a detach overtook while its capability loaded', async () => {
@@ -189,7 +191,8 @@ describe('DomWatcher', () => {
         detach(runtimeKey, '1', 2);
 
         expect(await overtaken).toBeNull();
-        expect(DomSessionRegistry.find(runtimeKey).watcher.size).toBe(0);
+        expect(refresh(runtimeKey, '1', 1)).toBe(false);
+        expect(watchedSizes()).toEqual([]);
     });
 
     it('drops an attach that the owner\'s release overtook while its capability loaded', async () => {
@@ -198,7 +201,7 @@ describe('DomWatcher', () => {
         release(runtimeKey);
 
         expect(await overtaken).toBeNull();
-        expect(ResizeObserverPool.size).toBe(0);
+        expect(watchedSizes()).toEqual([]);
     });
 
     it('observes whether a target is in view of its root, sending each change the native observer reports', async () => {
@@ -238,7 +241,7 @@ describe('DomWatcher', () => {
         scrollTo(300);
 
         expect(receiver.invokeMethodAsync).not.toHaveBeenCalled();
-        expect(ResizeObserverPool.size).toBe(0);
+        expect(watchedSizes()).toEqual([]);
     });
 
     it('releases an observation whose target left the document', async () => {
@@ -248,8 +251,8 @@ describe('DomWatcher', () => {
         resizes.latest().deliver([{ target: track }]);
         frames.flush();
 
-        expect(DomSessionRegistry.find(runtimeKey).watcher.size).toBe(0);
-        expect(ResizeObserverPool.size).toBe(0);
+        expect(refresh(runtimeKey, '1', 1)).toBe(false);
+        expect(watchedSizes()).toEqual([]);
     });
 
     it('keeps each owner\'s observations apart', async () => {
@@ -271,8 +274,9 @@ describe('DomWatcher', () => {
 
         release(runtimeKey);
 
-        expect(DomSessionRegistry.find(runtimeKey)).toBeNull();
-        expect(ResizeObserverPool.size).toBe(0);
+        expect(refresh(runtimeKey, '1', 1)).toBe(false);
+        expect(refresh(runtimeKey, '2', 1)).toBe(false);
+        expect(watchedSizes()).toEqual([]);
         expect(mutations.instances.every(instance => !instance.isConnected)).toBe(true);
     });
 });
