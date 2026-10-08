@@ -300,7 +300,7 @@ Browser.Interop's shared code keeps its foundation at the root and gives each ca
 | Area | Contents |
 | --- | --- |
 | Root | `DomWatcher`, `DomEngine`, the element and its views, the registrations, sessions and state delivery they share, and the clipboard, downloads, printing and sharing |
-| Scrolling | Scroll state, frozen geometry, stepping, wheel movement and panning |
+| Scrolling | Scroll state, intersection with a root and margin, frozen geometry, stepping, wheel movement and panning |
 | Virtualization | The virtualizer's measurement, rendered range and scrolling contract |
 | Focus | Focus observations and interactions |
 | Placement | Anchors, bounds, movement and resizing |
