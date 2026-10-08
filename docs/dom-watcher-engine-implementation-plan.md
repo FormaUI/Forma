@@ -4,7 +4,7 @@ The plan for building what [the DOM watcher and engine design](dom-watcher-engin
 
 ## Status
 
-No step has landed. Step 0 is next, and it proceeds independently of the rest.
+No step has landed. A probe has measured the freeze pane's baseline and the order in which a notification and an attach result reach C#, recorded under the first slice. Step 0 is next, and it proceeds independently of the rest.
 
 ## Measure of success
 
@@ -14,8 +14,8 @@ The first measure of success is removing `FormaFreezePane`'s custom synchronizat
 
 Each step is independently reviewable. The context-lifetime change stands alone; a larger consumer slice can use several cohesive commits, with its gate met before that slice is declared complete.
 
-0. **Context lifetime.** Open. `ComponentContext` becomes asynchronously disposable, and `FormaComponentBase` teardown disposes an already-created context after derived cleanup, as the design's component context section states. The step is confined to context ownership and disposal, with no DOM capability and no input dependency. Gate: an uncreated context stays uncreated; repeated disposal is safe; a failing derived cleanup still releases the context; concurrent creation and disposal cannot leak or recreate services; each with its own tests.
-1. **The freeze pane slice.** Open. The runtime-scoped shared-import bridge, the lazy watcher and engine roots, the shared target views, the common reconciliation, one receiver, the scroll boundary and frozen-geometry observation, the step command and the wheel interaction, with `FormaFreezePane` converted in the same step. The design's crossing rules hold from this step: one cached import per used root and runtime scope, creating and attaching together after import, the baseline in the result, no call for an unchanged applied request, and one owner-resource release. Cold imports, input configuration and framework reference releases are counted separately. Gate: the quality bar, the first slice's measurements and verification below, and no foundation subsystem the slice does not use.
+0. **Context lifetime.** Open. `ComponentContext` becomes asynchronously disposable, and `FormaComponentBase` teardown disposes an already-created context after derived cleanup, as the design's component context section states. The step is confined to context ownership and disposal, with no DOM capability and no input dependency. Gate: teardown creates no context; repeated disposal is safe; a failing derived cleanup still releases the context; each with its own tests. The checks that need resources the context owns, the watcher and the engine, are the deferred context checks of step 1. Landed, in review: `ComponentContext` is asynchronously disposable and says whether it has been disposed, and both component bases release an already-created context after their own cleanup, in a `finally` so a failing cleanup still releases it; the input base also runs the framework's own cleanup when the component's fails. Tests cover the three checks for both bases and the context's repeated disposal.
+1. **The freeze pane slice.** Open. The runtime-scoped shared-import bridge, the lazy watcher and engine roots, the shared target views, the common reconciliation, one receiver, the scroll boundary and frozen-geometry observation, the step command and the wheel interaction, with `FormaFreezePane` converted in the same step. The design's crossing rules hold from this step: one cached import per used root and runtime scope, creating and attaching together after import, the baseline in the result, no call for an unchanged applied request, and one owner-resource release. Cold imports, input configuration and framework reference releases are counted separately. The arrows step in the browser through the input router's click handling, as the first slice's scope states. Gate: the quality bar, the first slice's measurements and verification below, the deferred context checks below, and no foundation subsystem the slice does not use.
 2. **An observation-only consumer.** Open. An existing consumer that needs only observation migrates its concern, validating the observation interfaces, module independence, and sharing where it is actually needed. The consumer is named when this step is planned in detail. Gate: no engine or input imports and no routes; disposing one subscriber leaves another running; no second callback or lifetime implementation.
 3. **Focus and anchored presentation.** Open. Focus and anchored surfaces move onto typed objects over their existing algorithms. Gate: mutation-time continuity, deliberate departure, nested scopes, native editing, wrapping, RTL, placement under scrolling and resizing, and host-style ownership.
 4. **Gestures, files and reordering.** Open. The gesture algorithms are reused, and panning, drops, previews and reordering migrate by concern, with typed occurrences and bounded occurrence delivery arriving here as the first consumers of them. Gate: input ownership, touch hold, cancellation, capture, one accepted result, URL cleanup and keyboard parity.
@@ -42,7 +42,9 @@ Each converted consumer is held to the design's principles, with the specialized
 
 The first slice consists of scrolling, a small watcher, the shared synchronization and failure reporting. It starts from the existing scroll measurement, equality and wheel behavior, extracting shared ownership around those proven algorithms. The freeze pane requests one combined report of its boundaries and its frozen, corner and viewport extents, and unrequested numeric scroll offsets stay in the browser.
 
-The component keeps its rendering, CSS variables, labels, options, frozen-edge callbacks and application state. The engine owns scroll movement and the qualified wheel route, and the watcher measures. Step execution reads fresh frozen geometry in JavaScript.
+The component keeps its rendering, CSS variables, labels, options, frozen-edge callbacks and application state. The engine owns scroll movement, the qualified wheel route and the arrows' step, and the watcher measures. Step execution reads fresh frozen geometry in JavaScript.
+
+An arrow requests a local action: the arrow buttons stay native buttons, and their activation reaches the step through the input router's click handling, so Enter and Space activate them as a click does, a disabled arrow does nothing, the host can remap the action, and one activation runs one step. The managed click handler goes, so an activation cannot step twice. C# receives the boundary state its rendering needs.
 
 The observation and the wheel interaction both use latest-request settlement, following `InputRegistration`'s requested-against-applied discipline. Its `SyncAsync` returns at once when another settle is underway; the new shared helper instead defines awaitable settlement, so every caller joins settlement of the latest known request; intermediate configurations can be superseded without being applied. `InputRegistration` itself is left unchanged in this migration.
 
@@ -63,6 +65,38 @@ One internal registration identifier and generation reject obsolete callbacks an
 
 Removed plumbing lines are recorded separately from new shared code, beside the handles retained, the actual interop calls, notifications, bytes and component renders. The same scenarios are compared before and after: initial render, midrange scrolling, boundary transitions, a wheel gesture, an option change and removal. The slice succeeds with less repeated component infrastructure and no unexplained increase in traffic. Any additional call must have a correctness or lifecycle reason recorded and reviewed at the gate; performance gains are established from measurements. Measure cold setup and warmed-root reuse separately, including actual browser module requests, and measure hot-path allocations rather than assuming zero allocation.
 
+### Baseline
+
+Measured on Blazor Server by counting the circuit's messages for each scenario on a page of freeze panes in arrows mode with wheel paging; each scenario is counted once the circuit has gone quiet. Crossings are calls in either direction; their completions are not counted, and neither are the Showcase layout's own calls.
+
+| Scenario | C# to browser | Browser to C# | Render batches |
+| --- | --- | --- | --- |
+| First pane on a new circuit | Imports of the scroll, wheel and input router modules, the router's configuration and host registration, and an attach for the scroll and the wheel | Two boundary reports | 4, including the page's own first render |
+| A second pane on the same circuit | Two imports and two attaches | Two boundary reports and the click that added it | 3 |
+| Fifty panes added at once | 100 imports and 100 attaches | 100 boundary reports | 23 to 33 across runs |
+| Scrolling within the middle, and wheel turns | None | None | None |
+| Start to the middle | None | One report | 1 |
+| Middle to the end | None | Two reports | 2 |
+| End to the start | None | Three reports | 3 |
+| Each arrow press | One step call | The click | 3 |
+| Arrows switched off or on | None | The click and one report | 2 |
+| Wheel paging switched off | The wheel's disposal and its reference release | The click | 1 |
+| Wheel paging switched on | One attach | The click | 1 |
+| One pane removed | Two disposals and four reference releases | The click | 1 |
+
+The browser already keeps midrange scrolling and wheel paging local, and suppresses equal reports. The baseline shows four improvements for the first slice:
+
+- **Follow-up reports.** A pane's report carries the viewport extent, which changes whenever an arrow appears or disappears, so a new pane reports twice and a boundary change up to three times. The component reads that extent only for the frozen-edge splitter, so the pane requests it only while the splitter is shown, and each creation and boundary change then reports once.
+- **Arrow presses.** Each press crosses twice, the click to C# and the step back to the browser, and renders three times. A step run in the browser takes the press to no command round trip; a press that changes a boundary still produces a notification and a render, and one that does not produces neither.
+- **Imports.** Each pane makes two import calls of its own. Through the bridge, each used root is imported once per runtime scope and shared, so a pane on a circuit that has already imported its roots makes none.
+- **Removal.** Removing a pane makes six calls. One owner release is the ordinary teardown target; cleanup of a late attachment and the framework's reference disposal are counted separately.
+
+### Notification ordering
+
+A notification the browser sends during an attach call, or in a microtask after it, reached C# before that call's result in every one of 2,400 attaches, sequential and concurrent alike; one sent in a later task arrived after the result in all 1,200. Overtaking is therefore the normal case for anything an attach reports synchronously, so the establishment barrier is required, not a guard against a rare race.
+
+The first slice has the browser defer a registration's first sample until a task after its attach returns, folding anything measured meanwhile into one latest sample. That is an optimization: on Blazor Server the result then usually reaches C# first, so the barrier usually holds nothing, but the observed ordering is not a guarantee. The barrier stays independently correct: a failed attachment, a disposal and an obsolete generation each release any delivery it holds, without deadlock, whatever the deferral did.
+
 ### Verification
 
 | Risk | Verification |
@@ -80,6 +114,8 @@ Removed plumbing lines are recorded separately from new shared code, beside the 
 | Independence | A watcher-only consumer imports no engine or input code, creates no input registration, and observes successfully. |
 | Recovery | Known-inactive state retries on sync. Explicit refresh restores browser-side suspended reporting even when managed options are equal, without replaying commands. Retained circuits reuse objects and new owners attach normally. |
 | Import scope | Concurrent owners share one in-flight import per root; watcher-only use leaves the engine unloaded. Check Server and WebAssembly lifetimes, prerender deferral, transient import failure, owner-specific diagnostics and disposal during import. |
+| Deferred context checks | A context created and disposed concurrently with a watcher or an engine leaks no browser session and recreates none; a disposed context's `DomWatcher` and `DomEngine` create nothing; the context's release reaches every owned session even when one release fails. |
+| Arrow activation | A click, Enter and Space on an arrow each step once; a disabled arrow does not step; a remapped action steps; no managed click handler remains. |
 | Owner release | Several settled registrations release in one owner-resource call. Disposal racing attachment rejects stale results and releases late resources, counting any compensating calls. Disposing one owner preserves another's session and shared imports. Count object-reference bookkeeping separately. |
 | Loading and allocation | Direct commands load their capability without requiring an interaction first. Published `.mjs` assets load with the correct MIME type; cold-fetch counts and hot-path allocations are measured. |
 
