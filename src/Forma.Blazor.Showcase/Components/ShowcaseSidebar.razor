@@ -1,24 +1,35 @@
 @using Forma.Framework.Globalization
+@using Forma.Framework.JavaScript.Interop
 @using Forma.Blazor.Showcase
+@using Forma.Blazor.Showcase.Interop
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
 @inject CultureRouter Router
 @inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+@inject ILogger<ShowcaseSidebar> Logger
 
+@* The header stays in view while the page list below it scrolls. *@
 <nav class="showcase-sidebar">
-    <a class="showcase-brand" href="@Router.GetPath(Current, "/")"><img src="/logo.svg" alt="Forma" /></a>
-    <div class="culture-switcher">
-        @foreach (var route in Router.Routes.Where(route => Labels.ContainsKey(route.Token)))
+    <div class="showcase-sidebar-header">
+        <a class="showcase-brand" href="@Router.GetPath(Current, "/")"><img src="/logo.svg" alt="Forma" /></a>
+        <div class="culture-switcher">
+            @foreach (var route in Router.Routes.Where(route => Labels.ContainsKey(route.Token)))
+            {
+                <a href="@LinkTo(route)" data-enhance-nav="false" class="@(IsCurrent(route) ? "active" : "")">@GetLabel(route)</a>
+            }
+        </div>
+    </div>
+    <div class="showcase-sidebar-pages" @ref="_pagesElement">
+        @foreach (var group in ShowcaseCatalog.Sidebar)
         {
-            <a href="@LinkTo(route)" data-enhance-nav="false" class="@(IsCurrent(route) ? "active" : "")">@GetLabel(route)</a>
+            <h3>@group.Key</h3>
+            @foreach (var entry in group)
+            {
+                <NavLink href="@Router.GetPath(Current, entry.Route)" Match="NavLinkMatch.Prefix">@entry.Title</NavLink>
+            }
         }
     </div>
-    @foreach (var group in ShowcaseCatalog.Sidebar)
-    {
-        <h3>@group.Key</h3>
-        @foreach (var entry in group)
-        {
-            <NavLink href="@Router.GetPath(Current, entry.Route)" Match="NavLinkMatch.Prefix">@entry.Title</NavLink>
-        }
-    }
 </nav>
 
 @code {
@@ -29,7 +40,53 @@
         ["es"] = "Es"
     };
 
+    private ElementReference _pagesElement;
+
+    private ReadingPlace? _readingPlace;
+
+    private bool _hasNavigated;
+
     private CultureRoute Current => Router.CurrentRoute;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+        => Nav.LocationChanged += HandleLocationChanged;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // A language link reloads the page, so the reader's place is kept for the page it leads to, and the list shows this page's entry.
+        if (firstRender)
+        {
+            _readingPlace = new ReadingPlace(new JSEnvironment(JSRuntime, Logger, Guid.NewGuid()));
+            await _readingPlace.AttachAsync(_pagesElement, ".culture-switcher a", ".demo-section", ":scope > a.active");
+        }
+        else if (_hasNavigated && _readingPlace is not null)
+        {
+            // A page reached without the list, through a card or a tab, may have its entry out of view.
+            _hasNavigated = false;
+            await _readingPlace.RevealAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        Nav.LocationChanged -= HandleLocationChanged;
+
+        if (_readingPlace is not null)
+        {
+            await _readingPlace.DisposeAsync();
+        }
+    }
+
+    // The layout outlives a navigation, so the language links are drawn again to lead to the page now shown, and the list
+    // brings that page's entry into view once drawn.
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _hasNavigated = true;
+        _ = InvokeAsync(StateHasChanged);
+    }
 
     private static string GetLabel(CultureRoute route)
         => Labels.GetValueOrDefault(route.Token, route.Token);

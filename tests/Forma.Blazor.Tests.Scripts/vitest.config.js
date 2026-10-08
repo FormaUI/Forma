@@ -16,6 +16,7 @@ const scripts = {
     composer: getProductScriptsPath('Composer'),
     dataview: getProductScriptsPath('DataView'),
     explorer: getProductScriptsPath('Explorer'),
+    showcase: getProductScriptsPath('Showcase'),
 };
 
 // One alias per assembly that ships scripts, pointing at its scripts root, and one per assembly resolving a

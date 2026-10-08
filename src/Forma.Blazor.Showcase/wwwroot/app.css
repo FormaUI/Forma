@@ -8,22 +8,37 @@ body {
 }
 
 .showcase-layout {
+    --showcase-sidebar-size: 15rem;
+
     display: flex;
     min-block-size: 100vh;
 }
 
-/* The page list: a viewport-tall column that scrolls on its own. */
+/* The sidebar: a viewport-tall column whose header, the brand and the languages, stays in view while
+   the page list below it scrolls on its own. */
 .showcase-sidebar {
     position: sticky;
     inset-block-start: 0;
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
     box-sizing: border-box;
-    inline-size: 15rem;
+    inline-size: var(--showcase-sidebar-size);
     block-size: 100vh;
-    padding: var(--space-5) 0;
-    overflow-y: auto;
+    padding-block-start: var(--space-5);
     background: var(--input-bg-color);
     border-inline-end: 1px solid var(--border-color);
+}
+
+.showcase-sidebar-header {
+    flex-shrink: 0;
+}
+
+.showcase-sidebar-pages {
+    flex: 1;
+    min-block-size: 0;
+    padding-block-end: var(--space-5);
+    overflow-y: auto;
 }
 
 /* The brand: the wordmark heads the page list and links home, filling the width between the sidebar's insets. */
@@ -68,7 +83,6 @@ body {
 .culture-switcher {
     display: flex;
     gap: var(--space-1);
-    margin-block-end: var(--space-4);
     padding: var(--space-3) var(--space-5) var(--space-4);
     border-block-end: 1px solid var(--border-color);
 }
@@ -103,6 +117,10 @@ body {
 
 /* The page list stands beside the content where there is room for both, and becomes a drawer
    behind a toggle where there is not. */
+.showcase-nav {
+    flex-shrink: 0;
+}
+
 .showcase-nav-toggle {
     display: none;
 }
@@ -112,14 +130,30 @@ body {
         flex-direction: column;
     }
 
+    /* A slim bar holding the toggle stays at the top of the window, so the drawer, and the languages
+       in its header, open from anywhere on the page. Its height is the toggle's target and the gap
+       around it. */
+    .showcase-nav {
+        --showcase-bar-size: calc(var(--target-size-touch) + (2 * var(--space-2)));
+
+        position: sticky;
+        inset-block-start: 0;
+        z-index: var(--z-index-popover);
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        block-size: var(--showcase-bar-size);
+        padding-inline: var(--space-2);
+        background: var(--input-bg-color);
+        border-block-end: 1px solid var(--border-color);
+    }
+
     .showcase-nav-toggle {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        align-self: start;
-        min-inline-size: 44px;
-        min-block-size: 44px;
-        margin: var(--space-2);
+        min-inline-size: var(--target-size-touch);
+        min-block-size: var(--target-size-touch);
         border: 1px solid var(--border-color);
         border-radius: var(--radius-sm);
         background: var(--input-bg-color);
@@ -132,18 +166,29 @@ body {
         outline-offset: 2px;
     }
 
+    /* The drawer opens over the page below the bar, so the page keeps its place behind it, and keeps
+       the sidebar's own shape: the header in view, the page list scrolling below it. */
     .showcase-sidebar {
         display: none;
-        position: static;
+        position: fixed;
+        inset-block: var(--showcase-bar-size) 0;
+        inset-inline: 0;
         inline-size: auto;
         block-size: auto;
-        overflow-y: visible;
         border-inline-end: none;
-        border-block-end: 1px solid var(--border-color);
+    }
+
+    .showcase-sidebar-pages {
+        overscroll-behavior: contain;
+    }
+
+    /* The wordmark keeps the width it has beside the content rather than filling the drawer. */
+    .showcase-sidebar .showcase-brand {
+        max-inline-size: calc(var(--showcase-sidebar-size) - (2 * var(--space-5)));
     }
 
     .showcase-nav-toggle[aria-expanded="true"] + .showcase-sidebar {
-        display: block;
+        display: flex;
     }
 
     .showcase-main {
