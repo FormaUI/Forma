@@ -1,28 +1,28 @@
 # Forma DOM Watcher and Engine Design
 
-`DomWatcher` observes document, browser window and element state. `DomEngine` uses the watcher and provides object APIs for DOM actions and ongoing interactions. Together they give browser integrations a shared registration lifetime and notification path, so a component calls typed capabilities instead of repeating attachment loops, callback references and error handling.
+`DomEngine` and `DomWatcher` are the bridge between C# components and the browser. A component goes through them whenever it calls a browser function, asks how the document looks, listens for something that happened, or establishes behavior that runs on in the browser: it says "do this", "tell me the current state" or "let me know when this happens", whichever capability carries out the work. Shared imports, registrations, callbacks and resource management sit beneath that one model, so no component repeats them.
 
-The [implementation plan](dom-watcher-engine-implementation-plan.md) holds the delivery order, the first consumer's scope, the measurements and the gates.
+The [implementation plan](dom-watcher-engine-implementation-plan.md) holds the delivery order, the measurements and the gates.
 
 ## Scope
 
 | Decision | Contract |
 | --- | --- |
-| Two entry points | `DomWatcher` observes; `DomEngine` acts and borrows the watcher. |
+| One bridge | Every browser need of a component, input routing and virtualization included, goes through the engine and the watcher; no capability keeps a component-facing interop wrapper of its own. |
+| Two entry points | `DomWatcher` reads, watches and listens; `DomEngine` acts and establishes behavior, and borrows the watcher. |
+| One request model | A component names its targets and the facts it needs of them, and one snapshot answers, read once or watched. |
+| Typed requests | Facts, occurrences, actions and behaviors are typed, and so are their results; nothing dispatches on strings, and no single method takes every request. |
 | Independent watcher | Watcher-only use loads neither the engine's modules nor input, and configures no input. |
-| One target model | Observation interfaces and full capability interfaces share one target identity and one observation implementation. |
-| Object API | Typed capability methods hide module paths and individual exports from components. |
-| Shared lifetime | Persistent observations and interactions reconcile requested state against successfully applied state. |
-| One notification channel | One callback receiver per owner dispatches notifications and surfaces failures. |
-| Existing specialist systems | `InputRouter.js`, its registration contracts, and `Virtualize.js` with its wrapper keep their responsibilities and public contracts. |
+| Shared lifetime | Watches and behaviors reconcile requested state against successfully applied state. |
+| One notification channel | One callback receiver per owner delivers snapshots and occurrences and surfaces failures. |
 | Managed ownership | Blazor keeps rendering, application state, collections, validation and workspace policy. |
 | Packaging | The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
 
-The watcher and the engine provide concrete browser capabilities and a small set of compositional contracts. Each capability arrives with a consumer that needs it.
+The watcher and the engine provide concrete browser capabilities through that model. Each capability arrives with a consumer that needs it.
 
 ## Principles
 
-The watcher and the engine are the shared browser foundation for components whose capabilities they cover, alongside the specialized input router, virtualizer and product integrations. They hold to these principles.
+The watcher and the engine hold to these principles.
 
 - **At least as good as today.** A conversion preserves the existing behavior contract and takes directly related improvements: a missed edge case, a redundant listener, a needless crossing. Deliberate behavior corrections are documented and verified alongside the preserved behavior.
 - **Fewest round trips.** Work that can finish in the browser finishes there, and each crossing carries the related work its timing and contract allow, as the section on crossing sets out.
@@ -32,60 +32,75 @@ The watcher and the engine are the shared browser foundation for components whos
 
 ## Responsibilities and dependencies
 
-A **target** is a live element, the document or the browser window. A **capability** is a concern such as scrolling or focus. An **observation** retains requested state and its listeners. An **interaction registration** retains an ongoing action and its resources. Observations and interactions share one private lifetime discipline.
+A **target** is a live element, the document or the browser window. A **fact** is one piece of browser state about a target, such as an element's scroll boundaries or whether the reader is within it. A **query** names targets and the facts it needs of each, and a **snapshot** is the browser's answer, its facts captured together. A **watch** keeps a query running, delivering a first snapshot and each changed one after it. An **occurrence** is something that happened, such as an input action or an accepted drop. An **action** is a request the browser carries out once, returning its result, and a **behavior** is one that runs on in the browser until it changes or is released. A **capability** is an area, such as scrolling or focus, contributing its facts, occurrences, actions and behaviors to the one model.
 
-`DomWatcher` only observes: it reads state and reports it. `DomEngine` moves focus and writes the DOM properties its capabilities own through explicit contracts. Its input interactions participate in the existing router's ownership and cancellation rules. The engine consumes watcher observations directly in JavaScript where managed reporting is unnecessary.
+`DomWatcher` reads and reports: queries, watches and occurrence subscriptions. `DomEngine` moves focus, writes the DOM properties its capabilities own through explicit contracts, runs actions and establishes behaviors. Browser work that needs immediate handling, such as routing input, canceling a native event or moving during a gesture, stays in the browser, and C# hears only the results, snapshots and occurrences it asked for. The engine consumes watcher state directly in JavaScript where no managed report is needed.
 
-`InputRouter` remains the authority over input ownership; the [input router design](input-router-design.md) defines it. Engine interactions register through its existing API, and a watcher's event observation confers no input ownership. The virtualizer keeps its measurement, rendered-range, pinning, scrolling and callback algorithms, as the [virtualization design](virtualization-design.md) states them.
+`InputRouter` remains the browser's authority over input ownership, as the [input router design](input-router-design.md) defines it. Components establish routes through the engine and receive the actions they asked for as occurrences through the watcher, and the router's component-facing registration moves behind them. The virtualizer keeps its measurement, rendered-range, pinning and scrolling algorithms, as the [virtualization design](virtualization-design.md) states them; components configure its browser work through the engine, and read and watch what it measures through the watcher.
 
 ## Public object model
 
-### One target and capability model
+### Targets and facts
 
-The watcher exposes `Document`, `BrowserWindow` and `GetElement(elementReference)` through observation-only interfaces. The engine exposes the same target model with its actions. An element has one `DomElement` implementation, backed by one owner-scoped target record, with read-only interface projections for the watcher. Capabilities are accessed through `GetElement`, a local call that makes no crossing.
+A target is an element, the document or the browser window. A fact is a typed descriptor of something a component needs to know about a target, carrying the options that shape it, such as the axis scroll boundaries are measured along, and naming the type of its value. Each capability contributes its facts, and a component composes any of them, across capabilities and targets, into one query. Composing a query makes no crossing and installs nothing.
 
-`IDomElementObservation.Scroll` exposes `WatchAsync`; the engine's `DomElement.Scroll` exposes `WatchAsync` and `StepAsync`. Capability objects share their observation implementation, and document and browser-window capabilities follow the same rule. The interfaces express authority over one observation graph.
+An element target refers to that exact element; a watch moves to a replacement element only through an explicit synchronization. Targets belong to the current document, and a cross-document target is rejected. Shadow-root internals are reached only through a target given explicitly.
 
-The shared target implementation belongs to the observation foundation and imports no engine code. The engine binds action adapters lazily, so obtaining a watcher interface never initializes them, and an action call requires a live engine binding whatever view the caller holds. Getting a target or a capability property installs no observation.
+### Reading and watching
 
-An element view refers to that exact element; a persistent registration moves to a replacement element only through an explicit synchronization. Targets belong to the current document, and a cross-document target is rejected. Shadow-root internals are reached only through a target given explicitly.
-
-Browser-wide facilities, such as `Clipboard` and `Downloads`, are engine properties.
-
-### Watching and acting
+The same query is read once or watched. A read makes one crossing and returns one snapshot. A watch returns its first snapshot with its establishment and delivers each changed snapshot after it. A snapshot answers each fact the query named with its value or with its unavailability, so a missing value is never mistaken for zero, false or an empty string.
 
 ```csharp
-// Watcher-only use.
-_scroll = await Context.DomWatcher.GetElement(_viewport)
-    .Scroll.WatchAsync(HandleScrollChangedAsync, observationOptions);
+// One query: the viewport's scroll boundaries and whether the reader is within it.
+var query = new DomQuery();
+var boundaries = query.Select(_viewport, ScrollFacts.Boundaries(ScrollAxis.Inline));
+var within = query.Select(_viewport, FocusFacts.Within);
 
-// The engine's element exposes observation and actions together.
-var viewport = Context.DomEngine.GetElement(_viewport);
-await viewport.Scroll.StepAsync(direction, stepOptions);
+// Read it once.
+var snapshot = await Context.DomWatcher.ReadAsync(query);
+
+// Or watch it: the first snapshot, then each change.
+_watch = await Context.DomWatcher.WatchAsync(query, HandleSnapshotAsync);
+
+private Task HandleSnapshotAsync(DomSnapshot snapshot)
+    => snapshot[boundaries] is { IsAvailable: true, Value: var value } ? ShowAsync(value) : Task.CompletedTask;
 ```
 
-`WatchAsync` registers its asynchronous handler before browser establishment begins. A successful establishment provides an initial snapshot and an initial notification, including when every measured value is zero or false. The callback reads its immutable argument, so it works before the field receiving the returned observation is assigned. Components marshal rendered changes through `InvokeAsync`.
+The sketch shows the shape. A selection names the type of its value, so reading it from a snapshot needs no cast and no key string.
 
-A `DomObservation<TState>` has a nullable `Current`, `IsActive`, `IsDisposed`, `SyncAsync`, `RefreshAsync` and `DisposeAsync`. `IsActive` means an established subscription with an accepted baseline. `Current` is absent before establishment and is cleared on disabling, retargeting, known detachment or known loss of reporting. These are local facts; they make no synchronous claim about the connection's health.
+`WatchAsync` registers its handler before browser establishment begins, and the handler reads its immutable snapshot, so it works before the field receiving the watch is assigned. A watch has a nullable `Current`, `IsActive`, `IsDisposed`, `SyncAsync`, `RefreshAsync` and `DisposeAsync`. `IsActive` means an established watch with an accepted first snapshot. `Current` is absent before establishment and is cleared on disabling, retargeting, known detachment or known loss of reporting. These are local facts; they make no synchronous claim about the connection's health.
 
-An unavailable establishment leaves the retained observation inactive and retryable on the next synchronization. Invalid options and unexpected failures are surfaced. A specific status or result is added when a consumer needs to tell it apart.
+`SyncAsync` records the latest desired query and whether it should run, and behaviors follow the same pattern. Call and await it after each relevant render, with the current targets. The registration handles overlapping calls and reconciles the latest request; the component needs no synchronization guard. Disabling releases native resources, and enabling again delivers a fresh first snapshot. An unavailable establishment leaves the watch inactive and retryable on the next synchronization; invalid requests and unexpected failures are surfaced.
 
-`SyncAsync(element, options, shouldObserve)` records the latest desired observation; interaction registrations use the same pattern with `shouldEnable`. Call and await `SyncAsync` after each relevant render, passing the current target, options and enabled state. The registration handles overlapping calls and reconciles the latest request; the component needs no synchronization guard. Disabling releases native resources, and enabling again establishes a fresh baseline. Setup begins once a valid element reference exists.
+### Occurrences
 
-### Notifications and occurrences
+An occurrence answers what happened, and stays meaningful when the state before and after it is the same, so no snapshot replaces it. A component subscribes to the occurrences it wants, and a subscription receives only occurrences after it began. An occurrence can carry a snapshot of the facts its subscription names, captured at the moment its contract defines, such as before or after the browser action it reports, so the component never reads a later state in its place.
 
-Handlers return `Task`. The initial `WatchAsync` handler and additional listeners use one asynchronous notification mechanism, and adding a listener returns a disposable subscription. An observation's lifetime is separate from any one listener's. A new state listener receives the current baseline before later changes; an occurrence listener receives only occurrences after it subscribed.
+Occurrences keep their order and are never coalesced the way a watch's snapshots are, as the section on delivery sets out.
 
-State and occurrences differ in meaning. Scroll boundaries are state; a native close or an accepted drop is an occurrence. Occurrences are delivered through typed subscriptions, one per kind of occurrence.
+### Actions and behaviors
 
-## What the watcher observes
+An action is a typed request the browser carries out once, with a typed result whose meaning its contract defines. A behavior is established on a target with typed options and runs on in the browser until it is synchronized to new options or released: a focus interaction, input routes, anchored placement, the virtualizer's browser work. A behavior can offer occurrences, as input routes offer the actions they matched.
 
-Observation is explicit: a capability installs listeners only when something observes it.
+```csharp
+// An action and its result.
+var started = await Context.DomEngine.RunAsync(_viewport, ScrollActions.Step(ScrollDirection.Forward, steps));
 
-| Capability | State or notification | Observation and boundaries |
+// A behavior, and the occurrences it offers.
+_routes = await Context.DomEngine.EstablishAsync(RootElement, new InputRoutes(bindings));
+_actions = await Context.DomWatcher.ListenAsync(_routes.Actions, HandleActionAsync);
+```
+
+Handlers return `Task`. Snapshot and occurrence handlers share the one notification mechanism, and adding a listener returns a disposable subscription whose lifetime is separate from its watch's or behavior's. Browser-wide facilities, such as the clipboard and downloads, are engine actions that take no element target.
+
+## Facts and occurrences by capability
+
+A capability installs listeners only while a read or a watch asks for its facts or a subscription for its occurrences.
+
+| Capability | Facts and occurrences | Observation and boundaries |
 | --- | --- | --- |
 | Document | Visibility, document focus, readiness | Native document and browser events; visibility and focus are separate facts. |
-| Browser window | Layout viewport dimensions, scroll, device pixel ratio when requested | Resize, scroll and media-query invalidation. Visual viewport data is a separate requested projection. |
+| Browser window | Layout viewport dimensions, scroll, device pixel ratio when requested | Resize, scroll and media-query invalidation. The visual viewport's data is a fact of its own. |
 | Element connection | Connected or detached | Removal checks and scoped mutation observation. A hidden element remains connected. |
 | Geometry | Size, or a rectangle in a declared coordinate space | Resize observations plus the invalidation sources position requires. |
 | Intersection | Intersection with a declared root and margin | Intersection observer semantics; intersecting does not mean unobscured. |
@@ -95,14 +110,16 @@ Observation is explicit: a capability installs listeners only when something obs
 | Presentation | Native dialog and popover open state, and close and toggle occurrences | Native events plus direct reads after engine actions. Workspace activation remains managed state. |
 | Media | Requested playback state | Native media events and property reads. |
 | Attributes or structure | An explicitly named attribute set or subtree change | Narrow mutation observations, each scoped to what its consumer names. |
+| Input | The actions and dismissals an owner's routes matched, as occurrences | The input router's ownership and matching rules, decided in the browser. |
+| Virtualization | The rendered range and the measurements its owner needs | The virtualizer's own measurement of what scrolls it and what it draws. |
 
-### Meaning of state
+### Meaning of a snapshot
 
-C# state is the last accepted browser snapshot, an asynchronous report of what the browser measured. Unknown state is absent, never a fabricated zero, empty string or false.
+A snapshot is what the browser measured when it answered, delivered asynchronously; it is no live DOM object and no promise that the browser has not changed since. The facts of one query are captured in one browser task, so a snapshot never mixes moments. An unavailable fact is reported as unavailable, never as a fabricated zero, empty string or false.
 
-Each state projection has a documented unit and meaning. Geometry uses CSS pixels; text offsets use the native text-entry selection units. Client rectangles are relative to the layout viewport; document coordinates and visual viewport offsets are separate values. Logical scrolling normalizes direction, while geometry keeps explicitly physical coordinates. The existing `ScrollAxis` and start and end vocabulary carry over.
+Each fact has a documented unit and meaning. Geometry uses CSS pixels; text offsets use the native text-entry selection units. Client rectangles are relative to the layout viewport; document coordinates and visual viewport offsets are separate values. Logical scrolling normalizes direction, while geometry keeps explicitly physical coordinates. The existing `ScrollAxis` and start and end vocabulary carry over.
 
-A boundary-only projection compares boundary values, so movement through the middle alone produces no notification. A combined projection still reports changes to any of its requested extents or other fields. A geometry projection compares its requested measurements within an explicit tolerance. Document and Boolean state compare exactly. Consumers choose a named projection; JavaScript evaluates only the projections it defines.
+A watch reports a snapshot when one of its facts changes. Scroll boundaries compare their boundary values, so movement through the middle alone reports nothing; geometry compares its measurements within an explicit tolerance; document and Boolean facts compare exactly. JavaScript evaluates only the facts a query names.
 
 ### Observation and position
 
@@ -123,14 +140,14 @@ The browser watcher keeps document-level infrastructure only while subscribers n
 A managed-to-browser invocation on Blazor Server normally waits for a network response. Browser-to-managed notifications and module fetches are counted separately, so optimizing one does not hide the cost of another.
 
 - **One cached import per used root and runtime scope.** The bridge shares the successful import and any in-flight import for each root. Watcher use loads only `DomWatcher.js`; the first action also loads `DomEngine.js`. The scope is a circuit on Server and the client application's service lifetime on WebAssembly. Browser-local capability imports are separate network fetches, not additional managed interop invocations.
-- **Create and attach together.** Once its required root is imported, a registration call creates the owner's browser session if needed and attaches that registration. Subsequent registrations reuse it. Concurrent first requests share session creation, and a standalone command can create the session on first use as well. Required input-policy configuration remains visible in the crossing count.
-- **The baseline in the result.** Establishment returns its initial snapshot with the attach result. The managed side delivers the initial notification from that snapshot, with the ordering barrier described below, saving a separate initial callback.
+- **Create and attach together.** Once its required root is imported, a registration call creates the owner's browser session if needed and attaches that registration. Subsequent registrations reuse it. Concurrent first requests share session creation, and a standalone action or read can create the session on first use as well. Required input-policy configuration remains visible in the crossing count.
+- **The first snapshot in the result.** A read is one invocation returning its snapshot. A watch's establishment returns its first snapshot with the attach result, and the managed side delivers the first notification from it, with the ordering barrier described below, saving a separate initial callback.
 - **No call for an unchanged, applied request.** `SyncAsync` compares target and options against successfully applied state. An equal request still retries inactive or known-invalid state. `RefreshAsync` explicitly requests a browser read and restores suspended reporting even when options are equal; local equality cannot prove browser health.
-- **Combined snapshots.** Related projections a consumer reads together travel as one snapshot, as scroll boundaries and frozen extents do.
-- **Local interaction.** Input routes, gestures, panning, wheel movement, button-requested actions such as a scroll step, and placement run in the browser, and C# hears only the outcomes it requested. A local action makes no command round trip; a state change it causes still reaches C# as a notification.
+- **One snapshot per query.** The facts a component needs together travel together, as one query's snapshot.
+- **Local interaction.** Input routes, gestures, panning, wheel movement, button-requested actions such as a scroll step, and placement run in the browser, and C# hears only the outcomes it requested. A local action makes no round trip of its own; a state change it causes still reaches C# as a notification.
 - **One owner-resource release in ordinary teardown.** Context teardown marks all registrations disposed locally, then makes one browser call to release the owner's resources, engine before watcher. It uses this aggregate path rather than calling each child's public disposal method. An individual registration or borrowed engine still supports independent release. Compensating releases for late setup results and framework object-reference disposal calls are counted separately; correctness takes precedence over the ordinary-path call count.
 
-Private registration tokens identify browser-owned objects under the owner session; a separate managed JavaScript object reference per registration is unnecessary. The bridge's dispatch surface remains private and finite, and the public C# and JavaScript APIs remain typed capability objects.
+Private registration tokens identify browser-owned objects under the owner session; a separate managed JavaScript object reference per registration is unnecessary. The bridge's dispatch surface remains private and finite, and the public API remains typed requests.
 
 Interop crossings are counted per scenario by the opt-in diagnostics. Counts distinguish cold initialization, warmed-root registration, input-policy setup, ordinary synchronization, notifications and teardown.
 
@@ -146,7 +163,7 @@ The browser sends a registration's first sample no sooner than a task after its 
 
 Each registration has an internal identifier and a configuration generation. Replacing or disabling a target invalidates the previous generation immediately, and messages from obsolete generations are rejected. Delivery within a generation is serialized; a sequence number is added only where the transport needs one to enforce that order, and stays private.
 
-Changes from separate subscriptions carry no global order. A capability that needs an atomic combined result supplies one snapshot, as scrolling and frozen-region measurement do together.
+Separate watches and subscriptions carry no global order. Facts that must agree belong to one query, and an occurrence carries the snapshot it needs.
 
 ### Timing each capability preserves
 
@@ -154,7 +171,7 @@ Changes from separate subscriptions carry no global order. A capability that nee
 | --- | --- | --- |
 | Synchronous browser handling | Input ownership, cancellation, capture, action preconditions | Runs in the browser handler without waiting for C#. |
 | Mutation-time browser handling | Recovery after a focused node is removed | Runs at mutation delivery, before deferred reporting, in the browser. |
-| Scheduled state | Geometry and scroll measurements | Coalesces invalidations and reports changed requested projections. |
+| Scheduled state | Geometry and scroll measurements | Coalesces invalidations and reports changed requested facts. |
 | Ordered occurrences | Close, accepted drop, completed reorder | Preserves accepted occurrences and their order while delivery is healthy. |
 
 These are constraints on each capability's implementation. Local watcher subscriptions keep the timing their consumers require; managed observations are asynchronous snapshots.
@@ -163,22 +180,24 @@ These are constraints on each capability's implementation. Local watcher subscri
 
 The owner has one managed callback reference and one typed receiver, shared by watcher and engine notifications. Subscriptions dispatch independently, and no lock is held across application code.
 
-For state, each subscription keeps one delivery in flight and one latest pending sample, with the initial baseline protected. The interop invocation can stay outstanding until that subscription's handler work completes; establishment, commands and unrelated subscriptions proceed meanwhile. Several listeners on one observation are awaited deliberately, each failure isolated and logged.
+Each watch keeps one delivery in flight and one latest pending snapshot, with the first snapshot protected. The interop invocation can stay outstanding until that watch's handler work completes; establishment, actions and unrelated subscriptions proceed meanwhile. Several listeners on one watch are awaited deliberately, each failure isolated and logged.
 
 A rejected application handler is reported with the owner, capability and registration identity. A transport failure is reported locally in the browser and suspends managed delivery; bounded state is retained, and delivery resumes through explicit resynchronization. Every failure is reported: a shared helper never swallows a rejection the way `.catch(() => {})` does, and failure reporting never runs through the channel that failed.
 
 Occurrences are delivered through a bounded ordered queue per consumer, with an explicit failure on overflow, and are never coalesced into state. Ordering applies while delivery is healthy; an occurrence whose delivery becomes uncertain on disconnection is not automatically replayed. State recovery uses a new snapshot, while occurrence recovery follows the capability's contract.
 
-### Commands and notifications
+### Actions and snapshots
 
-An action can invalidate a watcher observation, and the watcher publishes the measured resulting state with its normal comparisons. A command never fabricates a successful observation.
+An action can invalidate a watch, and the watcher publishes the measured resulting snapshot with its normal comparisons. An action never fabricates a snapshot.
 
-## Engine capabilities
+## Actions and behaviors by capability
 
-The engine is a facade over concern-specific objects, each composing ordinary classes with typed options and collaborators.
+The engine runs each capability's actions and establishes its behaviors through concern-specific objects, each composing ordinary classes with typed options and collaborators.
 
-| Concern | Capability |
+| Capability | Actions and behaviors |
 | --- | --- |
+| Input routing | Routes, the input policy they follow, and dismissal |
+| Virtualization | The rendered range's browser work, and scrolling to an offset or an item |
 | Scrolling | Step, reveal, offsets, wheel movement, panning, edge scrolling |
 | Focus | Focus, memory, restoration, roving traversal, wrapping, mutation-time recovery |
 | Placement | Anchoring, bounds, movement, resizing |
@@ -191,9 +210,9 @@ The engine is a facade over concern-specific objects, each composing ordinary cl
 
 Composition lives in classes: anchored presentation combines placement and focus, and panning combines gestures and scrolling. A combination is expressed as a class with typed options, never as a serialized description of actions.
 
-`Scroll.AttachAsync(options)` returns a persistent scroll interaction, and `Scroll.WatchAsync(...)` returns its requested state projection; both use the shared synchronization. Input policy is configured lazily before a qualified wheel route attaches. Movement stays local, and the component receives only its requested projection.
+Scrolling shows the model whole: its boundaries and frozen extents are facts, a step is an action, and its wheel route and step buttons are a behavior. Input policy is configured lazily before a qualified route attaches, movement stays local, and the component receives only the facts it asked for.
 
-A browser-only caller, such as a component's own script, reaches a capability through its area's classes directly rather than through an owner's session, and owns and disposes the listeners and observers those classes create. Capability loading is awaited before synchronous input handlers are installed, so such handlers call already-loaded local methods. A browser-only caller needs no managed callback reference.
+A component reaches the browser only through the engine and the watcher; a component's own script becomes the implementation of the actions and behaviors its component requests. Inside the browser, a capability's implementation composes its area's classes, and code implementing another capability may compose them too, owning and disposing the listeners and observers it creates. Capability loading is awaited before synchronous input handlers are installed, so such handlers call already-loaded local methods.
 
 Event dispatch distinguishes native event constructors from custom JSON detail. It reports synchronous cancellation, which is complete when dispatch returns; asynchronous managed handlers run later. Synthetic dispatch creates no trusted input and grants no user activation ([dispatch semantics](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent), [user activation](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/User_activation)). Setting a property and dispatching an event are separate actions: the file-drop composition assigns the accepted files and then raises its one change event.
 
@@ -203,7 +222,7 @@ The browser mechanics of dialogs, frames and windows become compositions of the 
 
 ### Native dialogs
 
-A native dialog element uses the engine's native dialog presentation object and the watcher's close and open observation. Native modality and the dialog element remain intact. Input dismissal is still routed through the component's existing input registration.
+A native dialog element uses the engine's native dialog presentation object and the watcher's close and open observation. Native modality and the dialog element remain intact. Input dismissal arrives as an occurrence of the dialog's input routes.
 
 The component owns its `Opened` parameter, its confirmation and cancellation callbacks, and its close policy. A browser close can originate from a routed request, a dialog form or native behavior; these paths converge on one component close transition, so `OnClose` is raised once. The engine never interprets a native close as approval of an application-level confirmation.
 
@@ -213,7 +232,7 @@ A frame uses a placement registration over an explicitly designated box, which m
 
 Movement and resizing stay local through a gesture, with a placement result at completion. A bounds change can also report a corrected placement. Gesture cancellation retains and reports the position reached, as the frame does today; a rollback policy is a separate API decision.
 
-The component retains `Placement`, `Maximized`, `Locked`, its disabled state, handles, labels and callbacks. Frame geometry carries no workspace identity or stacking policy. Its arrow actions are ordinary routes through the existing router API.
+The component retains `Placement`, `Maximized`, `Locked`, its disabled state, handles, labels and callbacks. Frame geometry carries no workspace identity or stacking policy. Its arrow keys are input routes established through the engine.
 
 ### Windows
 
@@ -229,7 +248,7 @@ Focus recovery uses the watcher locally at mutation time. The owner chooses the 
 
 Focus memory, Tab wrapping, arranged regions, roving traversal and recovery remain distinct options of the focus interaction, each selectable alone or with the others. Native controls, nested scopes, disabled elements, reading direction and the router's ownership rules keep their behavior. Recovery stays in the browser, because a focus-change callback sent to C# would lose the timing it needs.
 
-The focus observation reports whether the reader is within a surface. Focus inside the surface's DOM subtree is within, a popover rendered inside it included, and so is focus that goes away with an element a render removes, that leaves the browser window, or that a press inside the surface drops to the page. Focus leaving is a reported change from within to not within; a first state of not within is no leave. States coalesce as every observation's do: a leave and a return before the next report produce no reported change, while a return after not within was reported is a change of its own.
+Focus's within fact reports whether the reader is within a surface. Focus inside the surface's DOM subtree is within, a popover rendered inside it included, and so is focus that goes away with an element a render removes, that leaves the browser window, or that a press inside the surface drops to the page. Focus leaving is a reported change from within to not within; a first state of not within is no leave. Snapshots coalesce as every watch's do: a leave and a return before the next report produce no reported change, while a return after not within was reported is a change of its own.
 
 ## Identity, ownership and lifetime
 
@@ -241,7 +260,7 @@ A private bridge is registered with `TryAddScoped` through the browser interop r
 
 Prerendering creates no browser session and performs no import. Concurrent requests share an in-flight import. A rejected managed import attempt is cleared for a later explicit retry; unexpected module evaluation failures remain visible and are not retried in a loop. Disposing the bridge prevents new imports and releases any reference arriving from a late import. Owners never dispose shared module references. Application-resolved watchers use the registered bridge. Directly constructed watchers own a private bridge; only the registered construction path promises import reuse between owners.
 
-Targets are cheap managed views. Observations and interactions own resource leases and release them independently. Private identifiers are tokens, never HTML ids. The bridge and its owners use the same interactive runtime scope; process-wide state never captures a Server circuit's `IJSRuntime`. Independent use constructs a watcher from an `IJSEnvironment`; the caller owns it and any engine it creates.
+Targets are cheap managed views. Watches, subscriptions and behaviors own resource leases and release them independently. Private identifiers are tokens, never HTML ids. The bridge and its owners use the same interactive runtime scope; process-wide state never captures a Server circuit's `IJSRuntime`. Independent use constructs a watcher from an `IJSEnvironment`; the caller owns it and any engine it creates.
 
 ### Component context
 
@@ -251,11 +270,11 @@ Targets are cheap managed views. Observations and interactions own resource leas
 
 ### Synchronization and racing renders
 
-Every observation and interaction separates desired state from successfully applied state. `SyncAsync` records the latest target and value-compared options, and one settling loop applies changes until the latest request is settled, following the discipline `InputRegistration` established.
+Every watch and behavior separates desired state from successfully applied state. `SyncAsync` records the latest target and value-compared options, and one settling loop applies changes until the latest request is settled, following the discipline `InputRegistration` established.
 
 A request arriving during an interop call remains pending. A late attachment made obsolete by replacement or disposal is released. Failed setup is never recorded as applied. Every caller joins the active settling task. Completion means the loop has processed the latest request known at settlement; intermediate requests can be superseded without being applied. A Boolean establishment result, where one is needed, describes current application, not proof that each caller's original configuration ran. A later call can begin a new settlement. The existing `InputRegistration` keeps its current await semantics; the new helper applies to DOM registrations.
 
-Configuration is latest-wins; commands are each kept. Two explicit dispatches or downloads remain two requests, invocation order within a capability is preserved, and asynchronous completion is documented separately. Cancellation or supersession happens only where a method's contract defines it.
+Configuration is latest-wins; actions are each kept. Two explicit dispatches or downloads remain two requests, invocation order within a capability is preserved, and asynchronous completion is documented separately. Cancellation or supersession happens only where a method's contract defines it.
 
 Generation invalidation guards every registration, because setup, parameter changes and disposal race. It is a private guard. Disposal invalidates queued work immediately, and a disposed registration never comes back.
 
@@ -269,11 +288,11 @@ A failed transport suspends reporting with bounded pending state. A connection i
 
 Disposal from inside a notification invalidates the registration immediately and schedules the remaining release after dispatch unwinds, never awaiting the notification's own completion. Native handlers are removed before callback references are released. Managed release is best-effort when the transport is unavailable; local target cleanup remains effective.
 
-## Command outcomes and freshness
+## Action outcomes and freshness
 
-A command documents what its completion means. Focusing can confirm where focus landed. Starting smooth scrolling does not establish that the scroll finished. A download confirms that the request was issued, not that a file reached disk. Printing cannot confirm that the reader printed anything.
+An action documents what its completion means. Focusing can confirm where focus landed. Starting smooth scrolling does not establish that the scroll finished. A download confirms that the request was issued, not that a file reached disk. Printing cannot confirm that the reader printed anything.
 
-Each command returns the smallest typed result its consumer needs. A Boolean expresses applied or unavailable where that distinction suffices; event dispatch returns its cancellation, and sharing can report that the user canceled. Existing wrappers keep their contracts until their consumers move.
+Each action returns the smallest typed result its consumer needs. A Boolean expresses applied or unavailable where that distinction suffices; event dispatch returns its cancellation, and sharing can report that the user canceled. Existing wrappers keep their contracts until their consumers move.
 
 Invalid arguments and incompatible options fail validation before any mutation. Expected unavailability, browser rejection and unexpected script failure stay distinguishable wherever they change a caller's behavior or diagnosis. An unexpected failure is never turned into a successful no-op or an empty observation.
 
@@ -295,16 +314,17 @@ Observers read after the DOM changes, and engine writes invalidate the observati
 
 ## Implementation boundaries
 
-The API builds on `IJSEnvironment` and `JSModule`, adding a focused object-reference invocation helper where the roots need one, beside the existing `JSInterop` wrappers. The managed receiver dispatches private typed messages, and public callers use capability methods, so a component declares no `[JSInvokable]` method per capability.
+The API builds on `IJSEnvironment` and `JSModule`, adding a focused object-reference invocation helper where the roots need one, beside the existing `JSInterop` wrappers. The managed receiver dispatches private typed messages, and public callers make typed requests, so a component declares no `[JSInvokable]` method and holds no callback reference.
 
 Browser.Interop's shared code keeps its foundation at the root and gives each capability area a folder of its own, with matching managed and browser implementation areas. A folder exists for an area a reader recognizes, never for a mechanism the root's types share:
 
 | Area | Contents |
 | --- | --- |
-| Root | `DomWatcher`, `DomEngine`, the element and its views, the registrations, sessions and state delivery they share, and the clipboard, downloads, printing and sharing |
+| Root | `DomWatcher`, `DomEngine`, targets, queries, snapshots and occurrence subscriptions, the registrations, sessions and delivery they share, and the clipboard, downloads, printing and sharing |
+| Input | Input routes and the occurrences they offer, over the input router |
 | Scrolling | Scroll state, intersection with a root and margin, frozen geometry, stepping, wheel movement and panning |
 | Virtualization | The virtualizer's measurement, rendered range and scrolling contract |
-| Focus | Focus observations and interactions |
+| Focus | Focus facts, actions and behaviors |
 | Placement | Anchors, bounds, movement and resizing |
 | Presentation | Native dialogs and manual popovers |
 | DragDrop | Drag gestures, drops and reordering |
@@ -326,11 +346,11 @@ The composer's rich-text editor is the model. Its entry class composes concept c
 - `DomWatcher.js` and `DomEngine.js` are the entries. Each composes its concept classes and holds no capability's mechanics of its own.
 - Each concern folder holds one concept per `.mjs` module, as a class: a scroll container, the observer of its state, the buttons that step it. A calculation belongs to the concept whose state it reads, as a member, rather than to a class of its own; the class boundary follows responsibility rather than the count of API methods.
 - What one document needs once, such as the measure-then-write frame scheduler, the shared native observer pools and the delegated document listeners, is a small service module with module-level state, installed on first use and removed with its last user.
-- The watcher's entry statically imports its observation core and keeps optional observation concerns lazy. The engine loads a concern's modules with a dynamic `import()` when its first command or interaction needs them, and awaits them before installing any synchronous handler. Getting a managed capability property remains local.
+- The watcher's entry statically imports its observation core and keeps optional observation concerns lazy. The engine loads a concern's modules with a dynamic `import()` when its first action or behavior needs them, and awaits them before installing any synchronous handler. Getting a managed capability property remains local.
 - Imports stay shallow and are declared statically within a loaded concern where they are always needed. The entry does not eagerly import every observation concern: observation modules are also loaded on first use. Shallow dependency graphs limit discovery delays.
 
 The input router shows both sides. What it does well carries over: document listeners installed on the first registration and removed after the last, decisions made in the browser with no crossing, and constant tables naming its rules. Its single file, holding binding matching, native-control claims, scopes, ambient dismissal and click suppression together, is the shape these modules avoid.
 
-Behavioral concepts are testable through their constructor's collaborators; script tests cover their contracts, and integration tests cover composition. The built-in module-loading path serves `.mjs` files with a JavaScript MIME type from the published static assets. `InputRouter` keeps its paths and contracts, and `Virtualize` keeps its contract in the Virtualization area. Product-owned editor and data-view scripts keep their ownership, and third-party embedding adapters stay outside the generic DOM contracts in the Integrations area. Browser.Interop can depend on Input.Interop and never the reverse, and the watcher's JavaScript import graph excludes the input and engine modules.
+Behavioral concepts are testable through their constructor's collaborators; script tests cover their contracts, and integration tests cover composition. The built-in module-loading path serves `.mjs` files with a JavaScript MIME type from the published static assets. The input router's and the virtualizer's browser implementations keep their algorithms, and their component-facing contracts move behind the engine and the watcher. Product-owned editor and data-view scripts keep their ownership, and third-party embedding adapters stay outside the generic DOM contracts in the Integrations area. Browser.Interop can depend on Input.Interop and never the reverse, and the watcher's JavaScript import graph excludes the input and engine modules.
 
 Diagnostics identify the owner's `RuntimeId`, the capability, the registration generation and the operation. Small opt-in counters measure registrations, notifications and crossings, and record no text, clipboard or file contents.

@@ -86,10 +86,10 @@ wrappers at the assembly root, a service's script beside the wrapper that owns i
 
 ## The DOM watcher and engine
 
-The browser interop assembly's DOM watcher and engine are the shared browser foundation for the
-capabilities they cover: an owner observes its elements through the watcher and acts on them through
-the engine, with one lifetime, one notification path and one release for everything it holds. They
-are organized by concern rather than by kind.
+The browser interop assembly's DOM watcher and engine are the one bridge between components and the
+browser: a component reads, watches and listens through the watcher, and acts and establishes behavior
+through the engine, with one lifetime, one notification path and one release for everything it holds.
+Their capabilities are organized by concern rather than by kind.
 
 - Do put a capability the watcher or the engine offers in a folder for its area under the assembly's `wwwroot/scripts/`, such as `scrolling/`, one concept per `.mjs` module written as a class taking its collaborators once, and its C# in the matching folder and namespace.
 - Do keep the foundation the capabilities share, the element, the registrations and the sessions, at the root beside `DomWatcher.js` and `DomEngine.js`; a folder is for an area a reader recognizes, never a home for the mechanisms its neighbors share.
@@ -99,11 +99,11 @@ are organized by concern rather than by kind.
 - Do let the session own what its watcher and engine share, the owner's elements among them, and make its parts itself, handing each its collaborators through its constructor; the engine's class reaches the session from the engine's entry, so observing never loads it.
 - Do share what the document needs once, such as the resize observer, as a small module with module-level state, installed with its first user and removed with its last.
 - Do keep the watcher's import graph free of the engine and the input router, so observing loads neither.
-- Do give a capability its C# as a typed object on the element an owner gets, `GetElement(element).Scroll`, made through the owner's session; a component declares no `[JSInvokable]` method and holds no `DotNetObjectReference` for it.
+- Do give a capability its C# as the typed facts, occurrences, actions and behaviors a component requests through the watcher and the engine; a component declares no `[JSInvokable]` method and holds no `DotNetObjectReference` for it.
 - Do send each state through the owner's receiver with one sample in flight and only the latest waiting, and report a failed send in the browser, under the owner, the capability and the registration.
 - Do route an input an interaction acts on through the input router, so the host's remapping reaches it and a native control keeps its own activation.
 - Do convert a script in a kind folder by replacing it and its wrapper with its area's concepts, never by relocating it first; move a script as it is only where it survives unchanged, as the virtualizer's and the embedding adapter's do, and only when there is reason to work on it.
-- Do leave the input router and a product's own scripts out of this organization; they keep their own assemblies.
+- Do keep the input router's and a product's own scripts in their own assemblies; a component reaches the router through the engine and the watcher, never through a registration of its own.
 - Do move a concern with its consumers and remove the old entries it replaces; an older wrapper its remaining consumers still use keeps only what they use, and no algorithm exists in two copies.
 - Don't discard a rejection with `.catch(() => {})` in this foundation; a failure is reported where it happens and never through the channel that failed.
 

@@ -4,7 +4,7 @@ The plan for building what [the DOM watcher and engine design](dom-watcher-engin
 
 ## Status
 
-Steps 0 to 4 have landed: `FormaFreezePane` runs on the watcher and the engine, with its crossings measured before and after under the first slice; the explorer's and the emoji picker's sentinels are intersection observations; the browser session owns what an owner's watcher and engine share; and focus runs on the watcher and the engine. Step 5, anchored presentation, is next.
+Steps 0 to 4 have landed the shared machinery the request model stands on, and the first capabilities in a shape organized by capability: `FormaFreezePane` runs on the watcher and the engine, with its crossings measured before and after under the first slice; the explorer's and the emoji picker's sentinels are intersection observations; the browser session owns what an owner's watcher and engine share; and focus runs on the watcher and the engine. Step 5, the request model the design now sets out, is next, and the later conversions follow it.
 
 ## Measure of success
 
@@ -34,14 +34,17 @@ Each step is independently reviewable. The context-lifetime change stands alone;
    - The focus observation takes options with no members, so it keeps the shape every observation shares.
 
    Breaking changes, while unreleased: the `Focus` behavior was removed, `FocusOrientation` moved to the focus area, and `FormaDateTimePicker.HandleFocusLeaveAsync` was removed.
-5. **Anchored presentation.** Open. Anchored surfaces move onto placement and presentation objects composed with focus, with the invalidation coverage the design's observation and position section requires, and `FormaPopover` converts. Gate: placement under scrolling and resizing, focus returned to the trigger, Tab wrapping inside, and host-style ownership.
-6. **Gestures, files and reordering.** Open. The gesture algorithms are reused, and panning, drops, previews and reordering migrate by concern, with typed occurrences and bounded occurrence delivery arriving here as the first consumers of them. Gate: input ownership, touch hold, cancellation, capture, one accepted result, URL cleanup and keyboard parity.
-7. **Dialog, frame and window.** Open. These compose presentation, placement and focus objects and keep their managed policy and domain state. Gate: a native close raised once, frame bounds and placement, deferred raise, scrim and focus order, and `WindowManager`'s decisions unchanged.
-8. **Remaining commands.** Open. Text, controls, media and browser facilities convert one at a time as consumers use them. Gate: correct capability-specific outcomes, activation requirements, resource cleanup and no automatic replay.
+5. **The request model.** Open. The public model the design's opening sets out: queries read once or watched, snapshots, occurrence subscriptions with their ordering and capacity, actions and behaviors. One slice proves it with all four: `FormaFreezePane` and `FormaDateTimePicker` read and watch scroll and focus facts through queries, the toolbar's roving is a behavior, and one input-routing consumer establishes its routes through the engine and receives its actions as occurrences. The slice settles how a component names facts with full typing, whether as fact descriptors or as query records, how a watch's query takes the targets of a new render, and the occurrence queue's capacity, overflow failure and disconnection limits. The scroll, intersection and focus capabilities then move onto the model, and their per-capability observation and interaction API is retired. Gate: a query's facts captured in one browser task; an unavailable fact distinct from zero or false; a read making one crossing; occurrences kept in order and never coalesced; the watcher's import graph free of the engine and input; and no component-facing interop wrapper or callback reference left for a converted capability.
+6. **Input routing.** Open. Components establish routes through the engine and receive the actions and dismissals they matched as occurrences through the watcher, and the input registration each component holds today, with its callback reference and `[JSInvokable]` handlers, is retired. The router's browser algorithms stay as the input router design states them. Gate: input ownership, native-control claims, scopes, remapping and dismissal unchanged, and the router's existing script tests passing.
+7. **Anchored presentation.** Open. Anchored surfaces move onto placement and presentation objects composed with focus, with the invalidation coverage the design's observation and position section requires, and `FormaPopover` converts. Gate: placement under scrolling and resizing, focus returned to the trigger, Tab wrapping inside, and host-style ownership.
+8. **Virtualization.** Open. Components configure the virtualizer's browser work through the engine, and read and watch its rendered range and measurements through the watcher; its wrapper and callback are retired. Gate: the virtualization design's contracts unchanged.
+9. **Gestures, files and reordering.** Open. The gesture algorithms are reused, and panning, drops, previews and reordering migrate by concern, delivering their outcomes as occurrences. Gate: input ownership, touch hold, cancellation, capture, one accepted result, URL cleanup and keyboard parity.
+10. **Dialog, frame and window.** Open. These compose presentation, placement and focus objects and keep their managed policy and domain state. Gate: a native close raised once, frame bounds and placement, deferred raise, scrim and focus order, and `WindowManager`'s decisions unchanged.
+11. **Remaining actions.** Open. Text, controls, media and browser facilities convert one at a time as consumers use them. Gate: correct capability-specific outcomes, activation requirements, resource cleanup and no automatic replay.
 
-Every conversion step, 1, 2 and 4 through 8, passes the quality bar below.
+Every conversion step, 1, 2 and 4 through 11, passes the quality bar below.
 
-Steps 6 to 8 can be reordered by consumer need, after focus and anchored presentation, which the later compositions build on. Each concern finishes with its old entry points removed and its documentation updated, rather than leaving retirement to a final cleanup. `InputRouter` and `Virtualize` are exclusions, not later steps.
+Steps 6 to 11 follow the request model and can be reordered by consumer need, with anchored presentation ahead of the compositions built on it. Each concern finishes with its old entry points removed and its documentation updated, rather than leaving retirement to a final cleanup.
 
 ## The quality bar for every conversion
 
@@ -171,7 +174,6 @@ Each of these is added when its evidence or first consumer arrives.
 | --- | --- |
 | Additional observer pools | The first scroll slice shares the native sources it uses across compatible requests, including several test consumers. New capability pools arrive with their own consumers, with one subscriber's disposal shown to leave another's source running. |
 | Cross-subscription batching | Counters showing channel overhead worth addressing, kept within per-subscription timing and bounds. |
-| Typed ordered occurrences | A dialog close, a drop or a completed reorder, with queue capacity, overflow failure and disconnection limits defined. |
 | Additional public statuses or results | A real caller that branches differently on them. |
 | Removal detection beyond resize notifications | A consumer whose targets are removed without disposal or retargeting and without a resize notification, with the cost of observing the document's child list measured. |
 | Protocol epochs | An owner or session replacement that could confuse messages despite the registration lifetime guards. |
@@ -231,7 +233,7 @@ Existing names remain until each replacement's behavior is verified and its API 
 | `Dialog.js` | A native dialog presentation object | Native modality, focus target, scrim behavior, native close integration |
 | `Frame.js` | A placement registration | Own or presenter box, movement, resizing, limits, bounds, final placement, keyboard parity |
 | `Window.js` | Top-layer presentation and focus memory | Scrim order, presented state, deferred raise, focus restoration, no focus on raise alone |
-| `Virtualize.js` | Kept as it is | Its specialized measurement, rendering and scroll contract |
+| `Virtualize.js` | Its browser algorithms kept, configured through the engine and read and watched through the watcher | Its specialized measurement, rendering and scroll contract |
 | `Asset.js` | An engine asset object | Document-wide load deduplication, failed-load retry, sprite host recreation and symbol deduplication |
 | `CheckBox.js` | An element checkbox capability | The native `indeterminate` property, separate from checked and validation state |
 | `Clipboard.js` | An engine clipboard object | Native permission and activation rules, and the actual write result |
@@ -242,7 +244,7 @@ Existing names remain until each replacement's behavior is verified and its API 
 | `Print.js` | An engine printing object | Page and markup modes, styles, frame lifetime, completion limits, and the sanitization boundary |
 | `Share.js` | An engine native sharing object | Capability availability and a canceled or rejected share outcome |
 | `TextEntry.js` | An element text capability | Read and clear, native selection ranges, no implicit input event |
-| `InputRouter.js` | Kept as it is | Input precedence, native control ownership, remapping, active scopes, the query API |
+| `InputRouter.js` | Its browser algorithms kept, with routes established through the engine and matched actions as occurrences | Input precedence, native control ownership, remapping, active scopes, the query API |
 
 Frozen-region measurement is a named geometry projection composed with scrolling, requested only by the scroll subscriptions that need it. Engine-only consumers use that projection locally, and C# receives the extents only where it needs them for rendered layout.
 
