@@ -77,7 +77,7 @@ public sealed class DomCircuitHandlerTests
             // Assert
             var refresh = Assert.Single(browser.Watcher.Recorder.GetCalls("refreshAll"));
             Assert.Equal(
-                $$"""[{"owner":"{{first}}","registrations":[{"token":"1","generation":1},{"token":"2","generation":1}]},{"owner":"{{second}}","registrations":[{"token":"1","generation":1}]}]""",
+                $$"""[{"runtimeKey":"{{first}}","registrations":[{"token":"1","generation":1},{"token":"2","generation":1}]},{"runtimeKey":"{{second}}","registrations":[{"token":"1","generation":1}]}]""",
                 JsonSerializer.Serialize(refresh.Arguments[0]));
         }
 
@@ -89,8 +89,8 @@ public sealed class DomCircuitHandlerTests
             var browser = CreateBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var owner = Guid.CreateVersion7();
-            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory, owner), scope.ServiceProvider.GetRequiredService<DomBridge>());
+            var runtimeId = Guid.CreateVersion7();
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory, runtimeId), scope.ServiceProvider.GetRequiredService<DomBridge>());
             var replaced = await watcher.GetElement(Viewport).Scroll.WatchAsync(_ => Task.CompletedTask, new ScrollWatchOptions());
             var released = await watcher.GetElement(new ElementReference("other")).Scroll.WatchAsync(_ => Task.CompletedTask, new ScrollWatchOptions());
             await replaced.SyncAsync(Viewport, new ScrollWatchOptions { Axis = ScrollAxis.Block });
@@ -101,7 +101,7 @@ public sealed class DomCircuitHandlerTests
 
             // Assert
             var refresh = Assert.Single(browser.Watcher.Recorder.GetCalls("refreshAll"));
-            Assert.Equal($$"""[{"owner":"{{owner}}","registrations":[{"token":"1","generation":2}]}]""", JsonSerializer.Serialize(refresh.Arguments[0]));
+            Assert.Equal($$"""[{"runtimeKey":"{{runtimeId}}","registrations":[{"token":"1","generation":2}]}]""", JsonSerializer.Serialize(refresh.Arguments[0]));
         }
 
         [Fact]

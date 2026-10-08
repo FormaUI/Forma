@@ -64,7 +64,7 @@ public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomReg
             return;
         }
 
-        await _registration.TryInvokeAsync<bool>("refresh", createsState: false, _session.OwnerKey, _registration.Token, _registration.Generation);
+        await _registration.TryInvokeAsync<bool>("refresh", createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation);
     }
 
     /// <inheritdoc />
@@ -76,7 +76,7 @@ public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomReg
     {
         var barrier = _barrier = new EstablishmentBarrier(generation);
         var capability = _registration.Capability;
-        var baseline = await _registration.TryInvokeAsync<TState>("attach", createsState: true, _session.OwnerKey, _session.Receiver, new
+        var baseline = await _registration.TryInvokeAsync<TState>("attach", createsState: true, _session.RuntimeKey, _session.Receiver, new
         {
             token = _registration.Token,
             generation,

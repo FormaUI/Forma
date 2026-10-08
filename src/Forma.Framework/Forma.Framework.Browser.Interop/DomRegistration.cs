@@ -159,7 +159,7 @@ internal sealed class DomRegistration<TOptions> : IDomRegistration
     }
 
     private async Task DetachAsync(int generation)
-        => await _session.TryInvokeAsync<object>(Root, "detach", FormatOperation("detach", generation), static () => true, createsState: false, _session.OwnerKey, Token, generation);
+        => await _session.TryInvokeAsync<object>(Root, "detach", FormatOperation("detach", generation), static () => true, createsState: false, _session.RuntimeKey, Token, generation);
 
     // A new generation drops whatever the current one had established, and any result or state still arriving for it.
     private int Invalidate()

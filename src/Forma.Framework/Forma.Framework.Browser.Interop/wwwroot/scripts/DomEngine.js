@@ -109,25 +109,25 @@ export async function run(capability, command, target, ...args) {
 }
 
 /** Attaches an interaction for the owner, making the owner's watcher and engine on its first. */
-export function attach(owner, request) {
-    const session = DomSessionRegistry.open(owner);
-    session.watcher ??= new DomWatcher(owner);
+export function attach(runtimeKey, request) {
+    const session = DomSessionRegistry.open(runtimeKey);
+    session.watcher ??= new DomWatcher(runtimeKey);
     session.engine ??= new DomEngine(session.watcher);
 
     return session.engine.attach(request);
 }
 
 /** Releases one of the owner's interactions. */
-export function detach(owner, token, generation) {
-    DomSessionRegistry.find(owner)?.engine?.detach(token, generation);
+export function detach(runtimeKey, token, generation) {
+    DomSessionRegistry.find(runtimeKey)?.engine?.detach(token, generation);
 }
 
 /** Releases the owner's engine, leaving its watcher. */
-export function releaseEngine(owner) {
-    DomSessionRegistry.releaseEngine(owner);
+export function releaseEngine(runtimeKey) {
+    DomSessionRegistry.releaseEngine(runtimeKey);
 }
 
 /** Releases everything the owner holds, its engine before its watcher. */
-export function release(owner) {
-    DomSessionRegistry.release(owner);
+export function release(runtimeKey) {
+    DomSessionRegistry.release(runtimeKey);
 }

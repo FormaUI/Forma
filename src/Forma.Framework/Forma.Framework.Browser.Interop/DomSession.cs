@@ -30,8 +30,8 @@ internal sealed class DomSession
         _sharedBridge = bridge;
     }
 
-    /// <summary>The owner's runtime identity, which the browser keeps the owner's registrations under.</summary>
-    public string OwnerKey
+    /// <summary>The text form of <see cref="RuntimeId"/>.</summary>
+    public string RuntimeKey
         => _js.RuntimeId.ToString();
 
     /// <summary>The owner's runtime identity.</summary>
@@ -89,7 +89,7 @@ internal sealed class DomSession
             .Select(registration => new { token = registration.Token, generation = registration.Generation })
             .ToList();
 
-        return observations.Count == 0 ? null : new { owner = OwnerKey, registrations = observations };
+        return observations.Count == 0 ? null : new { runtimeKey = RuntimeKey, registrations = observations };
     }
 
     /// <summary>Delivers a state the browser measured to the registration holding <paramref name="token"/>.</summary>
@@ -184,7 +184,7 @@ internal sealed class DomSession
 
         if (module is not null)
         {
-            await TryInvokeCoreAsync<object>(module, root, identifier, identifier, [OwnerKey]);
+            await TryInvokeCoreAsync<object>(module, root, identifier, identifier, [RuntimeKey]);
         }
     }
 

@@ -24,16 +24,16 @@ const Observers = {
 };
 
 export class DomWatcher {
-    #owner;
+    #runtimeKey;
     #registrations = new RegistrationTable();
     /** @type {Map<Element, DomElement>} */
     #elements = new Map();
 
     /**
-     * @param {string} owner The owner's runtime id, which failures are reported under.
+     * @param {string} runtimeKey The owner's runtime id, which failures are reported under.
      */
-    constructor(owner) {
-        this.#owner = owner;
+    constructor(runtimeKey) {
+        this.#runtimeKey = runtimeKey;
     }
 
     /** The number of observations the watcher holds. */
@@ -78,7 +78,7 @@ export class DomWatcher {
 
         const delivery = new StateDelivery(
             state => receiver.invokeMethodAsync('NotifyAsync', token, generation, state),
-            error => console.error(`Forma: the ${capability} state of owner ${this.#owner}, registration ${token}.${generation}, could not be delivered; delivery waits for a refresh.`, error));
+            error => console.error(`Forma: the ${capability} state of owner ${this.#runtimeKey}, registration ${token}.${generation}, could not be delivered; delivery waits for a refresh.`, error));
         const observer = new Observer(target, options, state => delivery.offer(state));
         const hold = this.element(target).hold(() => this.#registrations.remove(token, generation));
 
@@ -128,35 +128,35 @@ export class DomWatcher {
 
 /**
  * Starts an observation for the owner, making the owner's watcher on its first.
- * @param {string} owner
+ * @param {string} runtimeKey
  * @param {Receiver} receiver
  * @param {Request} request
  */
-export function attach(owner, receiver, request) {
-    const session = DomSessionRegistry.open(owner);
-    session.watcher ??= new DomWatcher(owner);
+export function attach(runtimeKey, receiver, request) {
+    const session = DomSessionRegistry.open(runtimeKey);
+    session.watcher ??= new DomWatcher(runtimeKey);
 
     return session.watcher.watch(request, receiver);
 }
 
 /** Releases one of the owner's observations. */
-export function detach(owner, token, generation) {
-    DomSessionRegistry.find(owner)?.watcher?.unwatch(token, generation);
+export function detach(runtimeKey, token, generation) {
+    DomSessionRegistry.find(runtimeKey)?.watcher?.unwatch(token, generation);
 }
 
 /** Resumes one of the owner's observations and measures it afresh. */
-export function refresh(owner, token, generation) {
-    return DomSessionRegistry.find(owner)?.watcher?.refresh(token, generation) ?? false;
+export function refresh(runtimeKey, token, generation) {
+    return DomSessionRegistry.find(runtimeKey)?.watcher?.refresh(token, generation) ?? false;
 }
 
 /**
  * Resumes and measures afresh each observation named, under its owner, token and generation, as after the
  * owners' circuit reconnected; one that is no longer current is left alone.
- * @param {Array<{ owner: string, registrations: Array<{ token: string, generation: number }> }>} owners
+ * @param {Array<{ runtimeKey: string, registrations: Array<{ token: string, generation: number }> }>} owners
  */
 export function refreshAll(owners) {
-    for (const { owner, registrations } of owners) {
-        const watcher = DomSessionRegistry.find(owner)?.watcher;
+    for (const { runtimeKey, registrations } of owners) {
+        const watcher = DomSessionRegistry.find(runtimeKey)?.watcher;
 
         for (const { token, generation } of registrations) {
             watcher?.refresh(token, generation);
@@ -165,6 +165,6 @@ export function refreshAll(owners) {
 }
 
 /** Releases everything the owner holds. */
-export function release(owner) {
-    DomSessionRegistry.release(owner);
+export function release(runtimeKey) {
+    DomSessionRegistry.release(runtimeKey);
 }

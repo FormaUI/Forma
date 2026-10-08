@@ -18,7 +18,7 @@ describe('DomEngine', () => {
     /** @type {HTMLElement} */
     let viewport;
 
-    const owner = 'owner-1';
+    const runtimeKey = 'owner-1';
 
     beforeEach(() => {
         frames = stubAnimationFrames();
@@ -32,7 +32,7 @@ describe('DomEngine', () => {
     });
 
     afterEach(() => {
-        release(owner);
+        release(runtimeKey);
         frames.restore();
         resizes.restore();
         mutations.restore();
@@ -42,7 +42,7 @@ describe('DomEngine', () => {
     const request = (generation = 1, options = { wheel: 'pane.scroll', buttons: buttons() }, target = viewport) => ({ token: '1', generation, capability: 'scroll', target, options });
 
     it('attaches the interaction the request names', async () => {
-        const isAttached = await attach(owner, request());
+        const isAttached = await attach(runtimeKey, request());
 
         expect(isAttached).toBe(true);
         expect(describeScope(viewport).routes.map(route => route.action)).toEqual(['pane.scroll']);
@@ -50,7 +50,7 @@ describe('DomEngine', () => {
     });
 
     it('steps the target from its button with no call to its owner', async () => {
-        await attach(owner, request());
+        await attach(runtimeKey, request());
 
         pane.querySelector('.forward').dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
 
@@ -58,69 +58,69 @@ describe('DomEngine', () => {
     });
 
     it('replaces the interaction the token holds with a later generation', async () => {
-        await attach(owner, request(1));
+        await attach(runtimeKey, request(1));
 
-        await attach(owner, request(2, { buttons: buttons() }));
+        await attach(runtimeKey, request(2, { buttons: buttons() }));
 
         expect(describeScope(viewport)).toBeNull();
         expect(describeScope(pane.querySelector('.back'))).not.toBeNull();
     });
 
     it('drops an attach that a detach overtook while its capability loaded', async () => {
-        const overtaken = attach(owner, request(1));
+        const overtaken = attach(runtimeKey, request(1));
 
-        detach(owner, '1', 2);
+        detach(runtimeKey, '1', 2);
 
         expect(await overtaken).toBe(false);
         expect(describeScope(viewport)).toBeNull();
     });
 
     it('answers a target that has gone with no interaction', async () => {
-        expect(await attach(owner, request(1, {}, null))).toBe(false);
+        expect(await attach(runtimeKey, request(1, {}, null))).toBe(false);
     });
 
     it('refuses a capability it has no interaction for', async () => {
-        await expect(attach(owner, { ...request(), capability: 'weather' })).rejects.toThrow("The capability 'weather' has no interaction.");
+        await expect(attach(runtimeKey, { ...request(), capability: 'weather' })).rejects.toThrow("The capability 'weather' has no interaction.");
     });
 
     it('releases the interaction once detached', async () => {
-        await attach(owner, request());
+        await attach(runtimeKey, request());
 
-        detach(owner, '1', 2);
+        detach(runtimeKey, '1', 2);
 
         expect(describeScope(viewport)).toBeNull();
         expect(describeScope(pane.querySelector('.forward'))).toBeNull();
     });
 
     it('releases an interaction whose target left the document', async () => {
-        await attach(owner, request());
+        await attach(runtimeKey, request());
 
         pane.remove();
         resizes.latest().deliver([{ target: viewport }]);
         frames.flush();
 
-        expect(DomSessionRegistry.find(owner).engine.size).toBe(0);
+        expect(DomSessionRegistry.find(runtimeKey).engine.size).toBe(0);
         expect(describeScope(viewport)).toBeNull();
     });
 
     it('releases its engine alone, leaving the owner\'s observations', async () => {
-        await watch(owner, fakeOwner(), { token: '2', generation: 1, capability: 'scroll', target: viewport, options: {} });
-        await attach(owner, request());
+        await watch(runtimeKey, fakeOwner(), { token: '2', generation: 1, capability: 'scroll', target: viewport, options: {} });
+        await attach(runtimeKey, request());
 
-        releaseEngine(owner);
+        releaseEngine(runtimeKey);
 
         expect(describeScope(viewport)).toBeNull();
-        expect(DomSessionRegistry.find(owner).watcher.size).toBe(1);
+        expect(DomSessionRegistry.find(runtimeKey).watcher.size).toBe(1);
     });
 
     it('releases the engine and the watcher together for the owner\'s release', async () => {
-        await watch(owner, fakeOwner(), { token: '2', generation: 1, capability: 'scroll', target: viewport, options: {} });
-        await attach(owner, request());
+        await watch(runtimeKey, fakeOwner(), { token: '2', generation: 1, capability: 'scroll', target: viewport, options: {} });
+        await attach(runtimeKey, request());
 
-        release(owner);
+        release(runtimeKey);
 
         expect(describeScope(viewport)).toBeNull();
-        expect(DomSessionRegistry.find(owner)).toBeNull();
+        expect(DomSessionRegistry.find(runtimeKey)).toBeNull();
     });
 
     describe('run', () => {

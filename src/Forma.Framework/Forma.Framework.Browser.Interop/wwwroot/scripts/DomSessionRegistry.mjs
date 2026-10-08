@@ -13,38 +13,38 @@ const sessions = new Map();
 
 export class DomSessionRegistry {
     /** The owner's session, made on its first use. */
-    static open(owner) {
-        let session = sessions.get(owner);
+    static open(runtimeKey) {
+        let session = sessions.get(runtimeKey);
 
         if (!session) {
             session = { watcher: null, engine: null };
-            sessions.set(owner, session);
+            sessions.set(runtimeKey, session);
         }
 
         return session;
     }
 
     /** The owner's session, or null where it has none. */
-    static find(owner) {
-        return sessions.get(owner) ?? null;
+    static find(runtimeKey) {
+        return sessions.get(runtimeKey) ?? null;
     }
 
     /** Releases the owner's session, its engine before its watcher. */
-    static release(owner) {
-        const session = sessions.get(owner);
+    static release(runtimeKey) {
+        const session = sessions.get(runtimeKey);
 
         if (!session) {
             return;
         }
 
-        sessions.delete(owner);
+        sessions.delete(runtimeKey);
         session.engine?.dispose();
         session.watcher?.dispose();
     }
 
     /** Releases the owner's engine alone, leaving its watcher. */
-    static releaseEngine(owner) {
-        const session = sessions.get(owner);
+    static releaseEngine(runtimeKey) {
+        const session = sessions.get(runtimeKey);
 
         if (!session?.engine) {
             return;
@@ -54,7 +54,7 @@ export class DomSessionRegistry {
         session.engine = null;
 
         if (!session.watcher) {
-            sessions.delete(owner);
+            sessions.delete(runtimeKey);
         }
     }
 
