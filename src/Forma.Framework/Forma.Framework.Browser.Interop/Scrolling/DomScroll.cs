@@ -25,13 +25,13 @@ public sealed class DomScroll : IDomScrollObservation
     }
 
     /// <inheritdoc />
-    public async Task<DomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(Func<ScrollState, Task> handler, ScrollWatchOptions options)
+    public async Task<DomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(Func<ScrollState, Task> handler, ScrollWatchOptions options, bool shouldObserve = true)
     {
         ArgumentNullException.ThrowIfNull(handler);
         ArgumentNullException.ThrowIfNull(options);
 
         var observation = new DomObservation<ScrollWatchOptions, ScrollState>(_watcher.Session, Watching, handler);
-        await observation.SyncAsync(_element, options);
+        await observation.SyncAsync(_element, options, shouldObserve);
 
         return observation;
     }

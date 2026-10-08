@@ -7,6 +7,7 @@
 @using Forma.Framework.Files
 @using Forma.Framework.Explorer
 @using Forma.Framework.Browser.Interop.Scrolling
+@using Microsoft.AspNetCore.Components.Web
 
 @code {
     /// <summary>Drops what is being dragged on the row, as the sidebar's drop zone tells it from the row's key.</summary>
@@ -2155,6 +2156,31 @@
             Assert.Empty(cut.FindAll(".forma-spinner"));
         }
 
+        [Fact]
+        public async Task Should_load_the_next_page_as_the_sentinel_comes_into_view_and_measure_it_afresh()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var probe = new DomProbe<IntersectionState>(ctx);
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/a.jpg"),
+                new ImageResourceInfo("https://example.com/b.jpg"),
+                new ImageResourceInfo("https://example.com/c.jpg")
+            ];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
+                                                PageSize="2"
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />);
+
+            // Act — the page can leave the sentinel in view, which the observation alone would never report.
+            await probe.ReportAsync(new IntersectionState(IsIntersecting: true));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(3, cut.FindAll(".forma-explorer-item").Count),
+                () => Assert.Single(probe.Watcher.Invocations, invocation => invocation.Identifier == "refresh"));
+        }
+
         // A press turned away renders nothing, so its task, not a render, says it has settled.
         [Fact(Timeout = 10_000)]
         public async Task Should_ignore_a_second_load_while_the_first_page_is_still_arriving()
@@ -2179,9 +2205,8 @@
                                                 OnPageChanged="@(page => { pages.Add(page); requested.TrySetResult(); return pending.Task; })" />);
 
             // Act - a second press lands while the host is still fetching the first
-            var contentArea = cut.FindComponent<FormaExplorerContentArea>().Instance;
-            var first = cut.InvokeAsync(contentArea.HandleReachedAsync);
-            var second = cut.InvokeAsync(contentArea.HandleReachedAsync);
+            var first = cut.Find(".forma-explorer-load-more-button").ClickAsync(new MouseEventArgs());
+            var second = cut.Find(".forma-explorer-load-more-button").ClickAsync(new MouseEventArgs());
             await requested.Task;
             await second;
 
@@ -2193,7 +2218,7 @@
             // Act
             pending.SetResult();
             await first;
-            await cut.InvokeAsync(contentArea.HandleReachedAsync);
+            await cut.Find(".forma-explorer-load-more-button").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal([2, 3], pages);

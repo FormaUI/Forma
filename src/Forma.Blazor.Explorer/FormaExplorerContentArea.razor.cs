@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Catalog.Navigation;
 using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer;
@@ -9,7 +10,6 @@ using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Navigation;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>The view switch, infinite scroll, and pagination for the items an explorer shows.</summary>
 public sealed partial class FormaExplorerContentArea : FormaComponentBase
@@ -28,7 +28,10 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
     protected override Type LocalizationSourceType
         => typeof(FormaExplorer);
 
-    private SentinelObserver<FormaExplorerContentArea> _sentinel = default!;
+    // How far ahead of the scroll container the next page is asked for, in pixels.
+    private const double SentinelReach = 200;
+
+    private DomObservation<IntersectionWatchOptions, IntersectionState>? _sentinel;
 
     private ElementReference _sentinelElement;
 
@@ -39,6 +42,13 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
     private bool IsInfiniteScrolling
         => Configuration.Options.InfiniteScroll != ExplorerInfiniteScrollMode.Off;
 
+    // Only automatic infinite scroll watches the sentinel; the manual mode loads on the button.
+    private bool WatchesSentinel
+        => Configuration.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic && View.Paging.HasMorePages;
+
+    private IntersectionWatchOptions SentinelOptions
+        => new() { Root = _scrollElement, RootMarginPixels = SentinelReach };
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -46,35 +56,35 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerContentArea)} must be rendered inside a {nameof(FormaExplorer)}.");
         }
-
-        _sentinel = new SentinelObserver<FormaExplorerContentArea>(Context.JS);
     }
 
     /// <inheritdoc />
-    protected override Task OnAfterRenderAsync(bool firstRender)
-        => SyncSentinelAsync();
-
-    private Task SyncSentinelAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Only automatic infinite scroll watches the sentinel; the manual mode loads on the button.
-        var wantsSentinel = Configuration.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic && View.Paging.HasMorePages;
+        if (firstRender)
+        {
+            _sentinel = await Context.DomWatcher.GetElement(_sentinelElement).Intersection.WatchAsync(HandleSentinelAsync, SentinelOptions, shouldObserve: false);
+        }
 
-        return _sentinel.SyncAsync(this, wantsSentinel, _sentinelElement, _scrollElement);
+        // The observation is made inactive, so the field holds it before its first state arrives; this sync starts it, and brings it in step after each render.
+        if (_sentinel is { } sentinel)
+        {
+            await sentinel.SyncAsync(_sentinelElement, SentinelOptions, WatchesSentinel);
+        }
     }
 
-    /// <summary>Appends the next page of items.</summary>
-    [JSInvokable]
-    public async Task HandleReachedAsync()
+    // The state arrives off the renderer, so the load is marshalled back onto it.
+    private Task HandleSentinelAsync(IntersectionState state)
+        => state.IsIntersecting ? InvokeAsync(LoadNextPageAsync) : Task.CompletedTask;
+
+    private async Task LoadNextPageAsync()
     {
         if (_isLoadingPage || !IsInfiniteScrolling || !View.Paging.HasMorePages)
         {
             return;
         }
 
-        // The observer reports crossings alone, so it is re-armed to keep filling a viewport the new page leaves short.
-        _sentinel.Invalidate();
         _isLoadingPage = true;
-
         await InvokeAsync(StateHasChanged);
 
         try
@@ -86,16 +96,16 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
             _isLoadingPage = false;
         }
 
+        // The new page renders before the sentinel is measured afresh, since the observation reports changes alone and the page can leave the viewport short.
         await InvokeAsync(StateHasChanged);
+
+        if (_sentinel is { } sentinel)
+        {
+            await sentinel.RefreshAsync();
+        }
     }
 
     private Task HandlePageChangedAsync(int page)
         => Interaction.ChangePageAsync(page);
 
-    /// <inheritdoc />
-    protected override async ValueTask DisposeAsyncCore()
-    {
-        await _sentinel.DisposeAsync();
-        await base.DisposeAsyncCore();
-    }
 }

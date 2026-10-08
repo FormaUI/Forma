@@ -20,6 +20,7 @@ import { StateDelivery } from './StateDelivery.mjs';
 /** The observer each capability observes through, loaded on its first observation. */
 const Observers = {
     scroll: () => import('./scrolling/ScrollStateObserver.mjs').then(module => module.ScrollStateObserver),
+    intersection: () => import('./scrolling/IntersectionStateObserver.mjs').then(module => module.IntersectionStateObserver),
 };
 
 export class DomWatcher {

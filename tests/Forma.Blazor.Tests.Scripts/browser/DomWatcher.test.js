@@ -3,7 +3,7 @@ import { attach, detach, refresh, refreshAll, release } from '#browser/DomWatche
 import { DomSessionRegistry } from '#browser/DomSessionRegistry.mjs';
 import { ResizeObserverPool } from '#browser/ResizeObserverPool.mjs';
 import { fakeOwner } from '#support/owner.js';
-import { sizeScroller, stubAnimationFrames, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
+import { sizeScroller, stubAnimationFrames, stubIntersectionObserver, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
 describe('DomWatcher', () => {
     /** @type {ReturnType<typeof stubAnimationFrames>} */
@@ -199,6 +199,27 @@ describe('DomWatcher', () => {
 
         expect(await overtaken).toBeNull();
         expect(ResizeObserverPool.size).toBe(0);
+    });
+
+    it('observes whether a target is in view of its root, sending each change the native observer reports', async () => {
+        const intersections = stubIntersectionObserver();
+        track.getBoundingClientRect = () => ({ top: 0, bottom: 300, left: 0, right: 300 });
+        const sentinel = document.createElement('div');
+        track.appendChild(sentinel);
+        sentinel.getBoundingClientRect = () => ({ top: 500, bottom: 510, left: 0, right: 300 });
+        sentinel.getClientRects = () => [{}];
+
+        try {
+            const baseline = await attach(owner, receiver, { token: '2', generation: 1, capability: 'intersection', target: sentinel, options: { root: track, rootMargin: 0 } });
+            await nextTask();
+            intersections.latest().deliver([{ target: sentinel, isIntersecting: true }]);
+
+            expect(baseline).toEqual({ isIntersecting: false });
+            expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '2', 1, { isIntersecting: true });
+        } finally {
+            release(owner);
+            intersections.restore();
+        }
     });
 
     it('answers a target that has gone with no state', async () => {

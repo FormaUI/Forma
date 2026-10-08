@@ -12,4 +12,7 @@ public interface IDomElementObservation
 
     /// <summary>The element's scrolling, as an owner observes it.</summary>
     IDomScrollObservation Scroll { get; }
+
+    /// <summary>Whether the element is in view of its root, as an owner observes it.</summary>
+    IDomIntersectionObservation Intersection { get; }
 }

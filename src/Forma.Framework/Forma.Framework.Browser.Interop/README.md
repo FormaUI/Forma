@@ -67,6 +67,7 @@ it started moving.
 
 | Capability | Watcher | Engine |
 | --- | --- | --- |
+| `Intersection` | `WatchAsync`: whether the element is in view of its root, or of the viewport, grown by a margin | |
 | `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
 
 A host registers the bridge the watchers and engines of one circuit share their imports through with
@@ -130,8 +131,7 @@ A wrapper's calls report whether they ran, so a component carries on when its ci
 | `Focus` | Decides where the focus goes inside a surface: Tab wrapping among its controls, visiting named regions first, or roving as one Tab stop; and the element its owner marks taking the focus when the one holding it goes away. |
 | `PanGesture` | Drags a scroll container's contents with the pointer. |
 | `ReorderInteraction` | Moves an item to a new position in its list by dragging or by keyboard, telling its owner through `HandleReorderAsync`. |
-| `Scroll` | Tells its owner when a sentinel comes into view, and moves a container to its center. |
-| `SentinelObserver<TOwner>` | Watches a sentinel element through `Scroll` while it is wanted. |
+| `Scroll` | Moves a container to its center. |
 | `Wheel` | Answers a wheel turned over a surface by telling its owner the direction through `HandleWheelAsync`. |
 
 `DragGesture.js`, the press, move and release of a drag, is composed by other scripts and has no

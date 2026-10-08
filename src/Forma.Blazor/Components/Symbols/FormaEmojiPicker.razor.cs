@@ -6,14 +6,14 @@ using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Interaction;
 using Forma.Blazor.Features.Emojis;
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A categorized emoji palette with search, recently used entries, and a tab per category.</summary>
 /// <param name="registeredCatalog">The host's registered catalog, or null to browse nothing.</param>
@@ -59,12 +59,15 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         [RecentGroupId] = Glyph.History,
     };
 
+    // How far ahead of the panel's edge the next sheet is asked for, in pixels.
+    private const double SentinelReach = 200;
+
     private readonly SpriteSheetLoadTracker _sheetLoadTracker = new();
     private readonly Dictionary<string, ElementReference> _tabButtons = [];
     private string _searchQuery = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
-    private SentinelObserver<FormaEmojiPicker> _sentinel = default!;
+    private DomObservation<IntersectionWatchOptions, IntersectionState>? _sentinel;
     private ElementReference _sentinelElement;
     private ElementReference _panelElement;
 
@@ -138,10 +141,6 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         => Options.Search.Placeholder is null ? Options.Search with { Placeholder = L["Search Emoji"].Value } : Options.Search;
 
     /// <inheritdoc />
-    protected override void OnInitialized()
-        => _sentinel = new SentinelObserver<FormaEmojiPicker>(Context.JS);
-
-    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Options);
@@ -163,27 +162,24 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         if (firstRender)
         {
             await LoadNextSheetAsync();
+            _sentinel = await Context.DomWatcher.GetElement(_sentinelElement).Intersection.WatchAsync(HandleSentinelAsync, SentinelOptions, shouldObserve: false);
         }
 
-        await WatchSentinelAsync();
+        // The observation is made inactive, so the field holds it before its first state arrives; this sync starts it, and brings it in step after each render.
+        if (_sentinel is { } sentinel)
+        {
+            await sentinel.SyncAsync(_sentinelElement, SentinelOptions, HasMoreToLoad);
+        }
     }
 
-    /// <summary>Loads the next sprite sheet as the sentinel below the loaded cells comes into view.</summary>
-    [JSInvokable]
-    public async Task HandleReachedAsync()
-        => await LoadNextSheetAsync();
+    // The next sheet loads as the sentinel below the loaded cells comes into view; the state arrives off the renderer.
+    private Task HandleSentinelAsync(IntersectionState state)
+        => state.IsIntersecting ? InvokeAsync(LoadNextSheetAsync) : Task.CompletedTask;
 
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder.Add("forma-emoji-picker");
-
-    /// <inheritdoc />
-    protected override async ValueTask DisposeAsyncCore()
-    {
-        await _sentinel.DisposeAsync();
-        await base.DisposeAsyncCore();
-    }
 
     private string GetTabElementId(string groupId)
         => $"{ElementId}-tab-{groupId}";
@@ -210,8 +206,8 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private bool IsCompleted(string sheet)
         => _sheetLoadTracker.IsCompleted(sheet);
 
-    private Task WatchSentinelAsync()
-        => _sentinel.SyncAsync(this, HasMoreToLoad, _sentinelElement, _panelElement);
+    private IntersectionWatchOptions SentinelOptions
+        => new() { Root = _panelElement, RootMarginPixels = SentinelReach };
 
     private async Task LoadNextSheetAsync()
     {
@@ -246,13 +242,18 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
             InvalidateView();
             StateHasChanged();
         }
+
+        // The observation reports changes alone, and a sheet's cells can leave the sentinel in view, so it is measured afresh.
+        if (_sentinel is { } sentinel)
+        {
+            await sentinel.RefreshAsync();
+        }
     }
 
     private async Task RestartSheetLoadingAsync()
     {
         // A sheet that failed is asked for again the next time its group is shown.
         _sheetLoadTracker.ClearFailures();
-        _sentinel.Invalidate();
         InvalidateView();
         await LoadNextSheetAsync();
     }

@@ -25,7 +25,15 @@ public sealed class DomElement : IDomElementObservation
     public DomScroll Scroll
         => field ??= new DomScroll(_watcher, _engine, Element);
 
+    /// <summary>Whether the element is in view of its root.</summary>
+    public DomIntersection Intersection
+        => field ??= new DomIntersection(_watcher, Element);
+
     /// <inheritdoc />
     IDomScrollObservation IDomElementObservation.Scroll
         => Scroll;
+
+    /// <inheritdoc />
+    IDomIntersectionObservation IDomElementObservation.Intersection
+        => Intersection;
 }

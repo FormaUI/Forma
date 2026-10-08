@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Browser.Interop.Scrolling
 @using Forma.Framework.Emojis.Twemoji
 @using Forma.Blazor.Components.Interaction
 @using Forma.Framework.Input
@@ -88,15 +89,30 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var probe = new DomProbe<IntersectionState>(ctx);
             var cut = ctx.Render(@<FormaEmojiPicker />);
             var before = cut.FindAll(".forma-emoji-picker-emoji").Count;
 
             // Act
-            var picker = cut.FindComponent<FormaEmojiPicker>().Instance;
-            await cut.InvokeAsync(() => picker.HandleReachedAsync());
+            await probe.ReportAsync(new IntersectionState(IsIntersecting: true));
 
             // Assert
             Assert.True(cut.FindAll(".forma-emoji-picker-emoji").Count > before);
+        }
+
+        [Fact]
+        public async Task Should_measure_the_sentinel_afresh_once_the_sheet_it_asked_for_has_loaded()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var probe = new DomProbe<IntersectionState>(ctx);
+            ctx.Render(@<FormaEmojiPicker />);
+
+            // Act — the sheet's cells can leave the sentinel in view, which the observation alone would never report.
+            await probe.ReportAsync(new IntersectionState(IsIntersecting: true));
+
+            // Assert
+            Assert.Single(probe.Watcher.Invocations, invocation => invocation.Identifier == "refresh");
         }
 
         [Fact]
