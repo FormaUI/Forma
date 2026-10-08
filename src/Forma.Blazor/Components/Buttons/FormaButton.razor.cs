@@ -45,6 +45,10 @@ public sealed partial class FormaButton : FormaElementBase
 
     private string DataBusy => Busy ? "true" : "false";
 
+    // A button no one handles a click of leaves its clicks in the browser.
+    private EventCallback<MouseEventArgs> ClickCallback
+        => OnClick.HasDelegate ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleClickAsync) : default;
+
     private Task HandleClickAsync(MouseEventArgs args)
         => Busy ? Task.CompletedTask : OnClick.InvokeAsync(args);
 

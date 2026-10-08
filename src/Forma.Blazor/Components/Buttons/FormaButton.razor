@@ -12,7 +12,7 @@
         data-busy="@DataBusy"
         aria-disabled="@AriaDisabled"
         aria-busy="@AriaBusy"
-        @onclick="HandleClickAsync"
+        @onclick="ClickCallback"
         @onclick:preventDefault="Busy">@if (BusyText is null)
     {
         @ChildContent

@@ -110,6 +110,19 @@
         }
 
         [Fact]
+        public void Should_leave_its_clicks_in_the_browser_while_nothing_handles_them()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
+
+            // Assert
+            Assert.False(cut.Find(".forma-button").HasAttribute("blazor:onclick"));
+        }
+
+        [Fact]
         public void Should_disable_the_button_when_disabled()
         {
             // Arrange
