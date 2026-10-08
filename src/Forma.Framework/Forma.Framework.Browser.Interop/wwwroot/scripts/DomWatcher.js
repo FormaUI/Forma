@@ -148,6 +148,21 @@ export function refresh(owner, token, generation) {
     return DomSessionRegistry.find(owner)?.watcher?.refresh(token, generation) ?? false;
 }
 
+/**
+ * Resumes and measures afresh each observation named, under its owner, token and generation, as after the
+ * owners' circuit reconnected; one that is no longer current is left alone.
+ * @param {Array<{ owner: string, registrations: Array<{ token: string, generation: number }> }>} owners
+ */
+export function refreshAll(owners) {
+    for (const { owner, registrations } of owners) {
+        const watcher = DomSessionRegistry.find(owner)?.watcher;
+
+        for (const { token, generation } of registrations) {
+            watcher?.refresh(token, generation);
+        }
+    }
+}
+
 /** Releases everything the owner holds. */
 export function release(owner) {
     DomSessionRegistry.release(owner);

@@ -10,6 +10,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Forma.Framework.Browser.Interop.Server" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
         <ProjectReference Include="..\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
     </ItemGroup>

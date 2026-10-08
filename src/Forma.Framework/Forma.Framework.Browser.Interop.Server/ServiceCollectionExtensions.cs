@@ -1,0 +1,22 @@
+namespace Forma.Framework.Browser.Interop.Server;
+
+using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+/// <summary>Registers the browser services an Interactive Server host needs.</summary>
+public static class ServiceCollectionExtensions
+{
+    /// <summary>Registers the browser services, and the circuit handler that refreshes a circuit's observations once its connection is restored.</summary>
+    /// <param name="services">The collection to register into.</param>
+    /// <returns>The same collection, for chaining.</returns>
+    public static IServiceCollection AddFormaDomServerServices(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddFormaDomServices();
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, DomCircuitHandler>(provider => new DomCircuitHandler(provider.GetRequiredService<DomBridge>())));
+
+        return services;
+    }
+}

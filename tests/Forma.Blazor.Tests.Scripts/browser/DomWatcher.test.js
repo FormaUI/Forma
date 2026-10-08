@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach, detach, refresh, release } from '#browser/DomWatcher.js';
+import { attach, detach, refresh, refreshAll, release } from '#browser/DomWatcher.js';
 import { DomSessionRegistry } from '#browser/DomSessionRegistry.mjs';
 import { ResizeObserverPool } from '#browser/ResizeObserverPool.mjs';
 import { fakeOwner } from '#support/owner.js';
@@ -133,6 +133,29 @@ describe('DomWatcher', () => {
         frames.flush();
 
         expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 1, expect.objectContaining({ canScrollForward: true }));
+    });
+
+    it('refreshes the observations named for each owner after a reconnection, sending their state unchanged or not', async () => {
+        const other = fakeOwner();
+        await attach(owner, receiver, request());
+        await attach('owner-2', other, request());
+        await nextTask();
+
+        refreshAll([{ owner, registrations: [{ token: '1', generation: 1 }] }, { owner: 'owner-2', registrations: [{ token: '1', generation: 1 }] }]);
+        frames.flush();
+
+        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 1, expect.objectContaining({ canScrollForward: true }));
+        expect(other.invokeMethodAsync).toHaveBeenCalledOnce();
+    });
+
+    it('leaves alone an observation named under a generation it no longer holds, and an owner it does not know', async () => {
+        await attach(owner, receiver, request(2));
+        await nextTask();
+
+        refreshAll([{ owner, registrations: [{ token: '1', generation: 1 }] }, { owner: 'owner-gone', registrations: [{ token: '1', generation: 1 }] }]);
+        frames.flush();
+
+        expect(receiver.invokeMethodAsync).not.toHaveBeenCalled();
     });
 
     it('refreshes nothing for a generation it no longer holds', async () => {

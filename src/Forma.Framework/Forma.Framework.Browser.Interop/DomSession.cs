@@ -81,6 +81,17 @@ internal sealed class DomSession
         _stateTargets.Remove(registration.Token);
     }
 
+    /// <summary>Describes the owner's established observations for the browser to measure afresh, each under its token and current generation; <see langword="null"/> where it has none.</summary>
+    public object? DescribeObservations()
+    {
+        var observations = _registrations
+            .Where(registration => registration.Root == DomRoot.Watcher && registration.IsActive)
+            .Select(registration => new { token = registration.Token, generation = registration.Generation })
+            .ToList();
+
+        return observations.Count == 0 ? null : new { owner = OwnerKey, registrations = observations };
+    }
+
     /// <summary>Delivers a state the browser measured to the registration holding <paramref name="token"/>.</summary>
     public Task DeliverAsync(string token, int generation, JsonElement state)
         => _stateTargets.TryGetValue(token, out var deliverAsync) ? deliverAsync(generation, state) : Task.CompletedTask;
@@ -104,6 +115,7 @@ internal sealed class DomSession
         if (createsState)
         {
             _reachedRoots.Add(root);
+            _sharedBridge?.Track(this);
         }
 
         return await TryInvokeCoreAsync<TResult>(module, root, identifier, operation, args);
@@ -118,6 +130,7 @@ internal sealed class DomSession
         }
 
         IsReleased = true;
+        _sharedBridge?.Untrack(this);
         ReleaseRegistrations(_ => true);
 
         try

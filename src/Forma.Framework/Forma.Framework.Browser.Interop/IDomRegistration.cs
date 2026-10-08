@@ -9,6 +9,12 @@ internal interface IDomRegistration
     /// <summary>The entry the registration is made through.</summary>
     DomRoot Root { get; }
 
+    /// <summary>The generation the registration is under.</summary>
+    int Generation { get; }
+
+    /// <summary>Whether the browser holds the registration as last requested.</summary>
+    bool IsActive { get; }
+
     /// <summary>Marks the registration released, making no call; the session's own release reaches the browser.</summary>
     void Release();
 }

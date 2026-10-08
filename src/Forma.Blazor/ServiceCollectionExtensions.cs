@@ -1,7 +1,7 @@
 namespace Forma.Blazor;
 
 using Forma.Blazor.Features.Emojis;
-using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Server;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Events;
 using Forma.Framework.Feedback;
@@ -48,7 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddFormaGlyphServices();
 
         services.AddFormaInputRouter(inputRouting);
-        services.AddFormaDomServices();
+        services.AddFormaDomServerServices();
 
         return services;
     }
