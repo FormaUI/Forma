@@ -10,6 +10,7 @@ import { RegistrationTable } from './RegistrationTable.mjs';
 /** The interaction each capability attaches. */
 const Interactions = {
     scroll: () => import('./scrolling/ScrollInteraction.mjs').then(module => module.ScrollInteraction),
+    focus: () => import('./focus/FocusInteraction.mjs').then(module => module.FocusInteraction),
 };
 
 export class DomEngine {

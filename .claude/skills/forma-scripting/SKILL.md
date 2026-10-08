@@ -70,7 +70,7 @@ wrappers at the assembly root, a service's script beside the wrapper that owns i
 - Do split a component script that has grown past one concern into `{Name}/*.mjs` modules behind a `{Name}.js` entry point beside them; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.
 - Do shape each such module as one concept expressed as a class — a formatter, a memory, an inspector — taking its collaborators once in the constructor, with `#`-private mechanics; not a bag of exported functions threaded the same context parameter.
 - Do give a family of pure helpers a named class with static members rather than loose exports, so a caller imports the concept, not stray functions.
-- Do name a behavior for what the target can do while it is attached: `DropZone`, `DragGesture`, `Focus`, `Scroll`, `Breakpoint`, `AnchoredPopover`.
+- Do name a behavior for what the target can do while it is attached: `DropZone`, `DragGesture`, `Scroll`, `Breakpoint`, `AnchoredPopover`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
 - Do name an operation module for the browser concern it serves: `TextEntry.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
 - Do lift a capability out of a component script into a behavior or an operation once a second component uses it; a component script is for what only its own component wants.

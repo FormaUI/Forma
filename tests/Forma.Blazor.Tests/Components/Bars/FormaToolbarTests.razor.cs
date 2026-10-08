@@ -6,12 +6,8 @@ public sealed partial class FormaToolbarTests
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Router = JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
-        Focus = JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/Focus.js");
     }
 
     /// <summary>The input router module, which records the toolbar's registrations.</summary>
     internal BunitJSModuleInterop Router { get; }
-
-    /// <summary>The focus module, which records the toolbar's attachment.</summary>
-    internal BunitJSModuleInterop Focus { get; }
 }

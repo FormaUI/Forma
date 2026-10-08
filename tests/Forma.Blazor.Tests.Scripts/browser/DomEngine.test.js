@@ -55,6 +55,13 @@ describe('DomEngine', () => {
         expect(describeScope(pane.querySelector('.forward')).routes.map(route => route.action)).toEqual(['pane.scroll-forward']);
     });
 
+    it('attaches a focus interaction the request names', async () => {
+        const isAttached = await attach(runtimeKey, { token: '2', generation: 1, capability: 'focus', target: pane, options: { roving: 'horizontal' } });
+
+        expect(isAttached).toBe(true);
+        expect(describeScope(pane).routes.map(route => route.action)).toEqual(['focus.next', 'focus.previous', 'focus.first', 'focus.last']);
+    });
+
     it('steps the target from its button with no call to its owner', async () => {
         await attach(runtimeKey, request());
 

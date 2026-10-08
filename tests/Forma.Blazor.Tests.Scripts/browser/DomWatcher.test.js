@@ -204,6 +204,21 @@ describe('DomWatcher', () => {
         expect(watchedSizes()).toEqual([]);
     });
 
+    it('observes whether the reader is within a target, sending each change', async () => {
+        const inside = document.createElement('button');
+        track.appendChild(inside);
+        const after = document.createElement('button');
+        document.body.appendChild(after);
+        inside.focus();
+
+        const baseline = await attach(runtimeKey, receiver, { token: '2', generation: 1, capability: 'focus', target: track, options: {} });
+        await nextTask();
+        after.focus();
+
+        expect(baseline).toEqual({ isWithin: true });
+        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '2', 1, { isWithin: false });
+    });
+
     it('observes whether a target is in view of its root, sending each change the native observer reports', async () => {
         const intersections = stubIntersectionObserver();
         track.getBoundingClientRect = () => ({ top: 0, bottom: 300, left: 0, right: 300 });

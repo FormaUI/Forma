@@ -67,6 +67,7 @@ it started moving.
 
 | Capability | Watcher | Engine |
 | --- | --- | --- |
+| `Focus` | `WatchAsync`: whether the reader is within the element | `AttachAsync`: where the focus goes inside the element, from Tab wrapping, regions Tab visits first, one roving Tab stop and the element taking the focus when the one holding it goes away, each selectable alone |
 | `Intersection` | `WatchAsync`: whether the element is in view of its root, or of the viewport, grown by a margin | |
 | `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
 
@@ -79,30 +80,29 @@ observations recover through `RefreshAsync`.
 ## Using a wrapper
 
 A component builds a wrapper from its `Context.JS`, attaches a behavior from `OnAfterRenderAsync`,
-and disposes it from `DisposeAsyncCore`. A toolbar that moves focus among its buttons with the arrow
-keys, as one Tab stop:
+and disposes it from `DisposeAsyncCore`. A text box that marks a value the browser filled in:
 
 ```csharp
 using Forma.Framework.Browser.Interop.Behaviors;
 
-public sealed partial class FormaToolbar : FormaElementBase
+public sealed partial class FormaTextBox : FormaInputBase<string?>
 {
-    private Focus _focus = default!;
+    private AutofillTracker _autofill = default!;
 
     protected override void OnInitialized()
-        => _focus = new Focus(Context.JS);
+        => _autofill = new AutofillTracker(Context.JS);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await _focus.AttachAsync(RootElement, roving: FocusOrientation.Horizontal);
+            await _autofill.AttachAsync(RootElement);
         }
     }
 
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _focus.DisposeAsync();
+        await _autofill.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }
@@ -128,7 +128,6 @@ A wrapper's calls report whether they ran, so a component carries on when its ci
 | `DropZone` | A drag-and-drop target, telling its owner through `HandleDropAsync` which of its targets took the drop. |
 | `FileDropZone` | Hands dropped files to the file input inside an element. |
 | `FilePreview` | Renders thumbnails of a file input's selected files into a container's images. |
-| `Focus` | Decides where the focus goes inside a surface: Tab wrapping among its controls, visiting named regions first, or roving as one Tab stop; and the element its owner marks taking the focus when the one holding it goes away. |
 | `PanGesture` | Drags a scroll container's contents with the pointer. |
 | `ReorderInteraction` | Moves an item to a new position in its list by dragging or by keyboard, telling its owner through `HandleReorderAsync`. |
 | `Scroll` | Moves a container to its center. |

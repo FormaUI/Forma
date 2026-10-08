@@ -5,7 +5,8 @@
  * together for as long as the popover is open.
  */
 
-import { Focus } from './Focus.js';
+import { FocusSurface } from '../focus/FocusSurface.mjs';
+import { TabOrder } from '../focus/TabOrder.mjs';
 import { Direction } from '../../../core/scripts/Direction.js';
 import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
 
@@ -69,7 +70,8 @@ class AnchoredPopover {
         this.#resizeObserver.observe(this.#popover);
 
         if (this.#keepsFocus) {
-            new Focus(this.#popover, { wrap: true }, signal);
+            const tabOrder = new TabOrder(new FocusSurface(this.#popover), { wrap: true });
+            signal.addEventListener('abort', () => tabOrder.dispose(), { once: true });
         }
 
         this.#position();

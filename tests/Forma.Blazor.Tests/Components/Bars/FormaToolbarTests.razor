@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Browser.Interop.Focus
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
 @code {
@@ -714,15 +715,15 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
+            var probe = new DomProbe<FocusState>(ctx);
             var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
-            var invocation = Assert.Single(ctx.Focus.Invocations, invocation => invocation.Identifier == "attach");
-            var options = invocation.Arguments[1]!;
-            Assert.Equal("horizontal", options.GetType().GetProperty("roving")!.GetValue(options));
+            var attach = Assert.Single(probe.Interactions, attach => DomProbe<FocusState>.GetRequestField(attach, "capability") is "focus");
+            Assert.Equal("horizontal", DomProbe<FocusState>.GetOption(attach, "roving"));
         }
 
         [Fact]

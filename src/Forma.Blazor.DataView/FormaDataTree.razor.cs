@@ -4,7 +4,8 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Virtualization;
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -80,7 +81,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private bool _holdsFocus;
     private bool _focusesSelf;
     private object? _heirKey;
-    private Focus _focus = default!;
+    private static readonly FocusInteractionOptions RecoveryOptions = new() { HeirAttribute = HeirAttribute };
+
+    private DomInteraction<FocusInteractionOptions>? _recovery;
     private FormaVirtualize<VisibleNode>? _virtualizer;
     private List<VisibleNode> _visibleRows = [];
 
@@ -154,7 +157,6 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         _isCompanion = SelectsCurrent;
         _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
-        _focus = new Focus(Context.JS);
         Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Tree"], Glyph.FolderTree, this) { IsCompanion = _isCompanion });
         View.Subscribe(HandleViewChangedAsync);
     }
@@ -206,13 +208,14 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: IsActive);
 
         // The hand-off watches the tree while it shows, and lets go of a root the tree no longer draws.
-        if (IsActive && !_focus.IsAttached)
+        if (firstRender)
         {
-            await _focus.AttachAsync(RootElement, heir: HeirAttribute);
+            _recovery = await Context.DomEngine.GetElement(RootElement).Focus.AttachAsync(RecoveryOptions, IsActive);
         }
-        else if (!IsActive && _focus.IsAttached)
+
+        if (_recovery is { } recovery)
         {
-            await _focus.DetachAsync();
+            await recovery.SyncAsync(RootElement, RecoveryOptions, IsActive);
         }
 
         if (_pendingFocusKey is { } pending && await TryFocusAsync(pending))
@@ -772,7 +775,6 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         View.Unsubscribe(HandleViewChangedAsync);
         Interaction.UnregisterView(ViewKey);
         await _inputRegistration.DisposeAsync();
-        await _focus.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

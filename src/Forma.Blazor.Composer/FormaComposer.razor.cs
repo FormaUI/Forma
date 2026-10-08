@@ -6,7 +6,8 @@ using Forma.Blazor.Components.Composer.Assets;
 using Forma.Blazor.Components.Composer.PlainTextEditor;
 using Forma.Blazor.Components.Composer.Plugins;
 using Forma.Blazor.Components.Feedback;
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Documents;
@@ -42,7 +43,7 @@ public sealed partial class FormaComposer(
     private ComposerKeyBindingCatalog _keyBindingCatalog = ComposerKeyBindingCatalog.Empty;
     private DotNetObjectReference<FormaComposer>? _selfReference;
     private InputScope? _inputScope;
-    private Focus _focus = default!;
+    private static readonly FocusInteractionOptions TabOrderOptions = new() { RegionSelectors = [".forma-composer-canvas"] };
     private JSComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
     private readonly IComposerSyntaxHighlighter _syntaxHighlighter = syntaxHighlighter ?? NullSyntaxHighlighter.Instance;
@@ -153,7 +154,6 @@ public sealed partial class FormaComposer(
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _focus = new Focus(Context.JS);
         _assetLoader = new JSComposerAssetLoader(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
 
@@ -297,7 +297,7 @@ public sealed partial class FormaComposer(
         // The shortcuts route through the composer's scope; the active editor also registers them on its editable element, ahead of the native control.
         _inputScope = await InputRouter.RegisterAsync(RootElement, new InputProfile { InputRoutes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
-        await _focus.AttachAsync(RootElement, order: [".forma-composer-canvas"]);
+        await Context.DomEngine.GetElement(RootElement).Focus.AttachAsync(TabOrderOptions);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
     }
 
@@ -639,7 +639,6 @@ public sealed partial class FormaComposer(
 
         _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();
-        await _focus.DisposeAsync();
         await _ownPlugins.DisposeAsync();
         await base.DisposeAsyncCore();
     }

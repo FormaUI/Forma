@@ -1,4 +1,4 @@
-namespace Forma.Framework.Browser.Interop.Behaviors;
+namespace Forma.Framework.Browser.Interop.Focus;
 
 /// <summary>The axis a roving surface's arrow keys move focus along.</summary>
 public enum FocusOrientation

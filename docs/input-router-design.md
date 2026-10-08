@@ -322,7 +322,7 @@ visible.
 The router does not consult `defaultPrevented`: its document and scope listeners run in
 the capture phase, before anything could have set it, and rival claims inside one scope
 are settled by specificity, priority, and the reported tie rather than by who ran first.
-A nested surface routes Tab on its own scope, and `Focus.js` routes as well; nothing
+A nested surface routes Tab on its own scope, and the focus interaction routes as well; nothing
 relies on `defaultPrevented` as the protection against an ancestor, least of all where
 capture-phase or document listeners run first.
 
@@ -365,8 +365,8 @@ so a press on it toggles rather than dismisses.
 
 ## Focus and Tab
 
-The router decides which scope owns Tab; it does not replace focus behavior. `Focus.js`
-declares the keys it answers as routes on the surface it is attached to, `focus.next`,
+The router decides which scope owns Tab; it does not replace focus behavior. The focus
+interaction declares the keys it answers as routes on the surface it is attached to, `focus.next`,
 `focus.previous`, `focus.first` and `focus.last`: Tab and Shift+Tab on a wrapping or
 arranged surface, and the arrows along the axis, Home and End on a roving one, each matching
 only where the surface has a control to send focus to, so a Tab past the end of an arranged
@@ -473,7 +473,7 @@ is the one thing the router is there to decide.
 
 ## Non-goals
 
-The router does not implement what an action does inside a component, replace `Focus.js`,
-`DragGesture`, `PanGesture`, or selection behavior, turn every DOM event into a .NET
+The router does not implement what an action does inside a component, replace the focus
+interaction, `DragGesture`, `PanGesture`, or selection behavior, turn every DOM event into a .NET
 callback, reimplement native dialog modality or focus trapping, or promise visual order
 for DOM it does not manage.

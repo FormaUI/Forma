@@ -1,6 +1,7 @@
 @inherits FormaBunitContext
 @using System.Globalization
 @using AngleSharp.Dom
+@using Forma.Framework.Browser.Interop.Focus
 
 @code {
     public sealed class Component
@@ -198,15 +199,17 @@
             // Arrange
             using var ctx = new FormaDateTimePickerTests();
             using var culture = new CultureFixture("en-US");
+            var probe = new DomProbe<FocusState>(ctx);
             var model = new Booking();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
             </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
             GetTime(cut).Change("2:30 PM");
             var whileBetween = cut.FindAll(".forma-field-message").Count;
 
             // Act
-            await cut.FindComponent<FormaDateTimePicker<DateTime?>>().Instance.HandleFocusLeaveAsync();
+            await probe.ReportAsync(new FocusState(IsWithin: false));
 
             // Assert
             Assert.Multiple(
@@ -263,21 +266,43 @@
         }
 
         [Fact]
+        public async Task Should_take_a_first_state_outside_the_field_as_no_leave()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var probe = new DomProbe<FocusState>(ctx);
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Change("2:30 PM");
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-field-message"));
+        }
+
+        [Fact]
         public async Task Should_keep_the_value_bound_while_a_cleared_half_is_reported()
         {
             // Arrange
             using var ctx = new FormaDateTimePickerTests();
             using var culture = new CultureFixture("en-US");
+            var probe = new DomProbe<FocusState>(ctx);
             var bound = new DateTime(2026, 3, 15, 9, 30, 0);
             var model = new Booking { Starts = bound };
             var editContext = new EditContext(model);
             var cut = ctx.Render(@<FakeFormHost EditContext="@editContext">
                 <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
             </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
 
             // Act
             GetTime(cut).Change(string.Empty);
-            await cut.FindComponent<FormaDateTimePicker<DateTime?>>().Instance.HandleFocusLeaveAsync();
+            await probe.ReportAsync(new FocusState(IsWithin: false));
             var isValid = await cut.InvokeAsync(() => editContext.ValidateAsync());
 
             // Assert

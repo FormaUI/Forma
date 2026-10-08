@@ -3,12 +3,12 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
 
 /// <summary>A field for a date with its time, the date picked from a calendar and the time typed or chosen from a list of suggested times, under one label.</summary>
 /// <typeparam name="TValue">The value the field binds, a <see cref="DateTime"/> or a <see cref="DateTimeOffset"/>, or a nullable one.</typeparam>
@@ -55,8 +55,10 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     private static readonly Type UnderlyingType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
     private static readonly bool IsNullable = Nullable.GetUnderlyingType(typeof(TValue)) is not null;
 
-    private Focus? _focus;
-    private DotNetObjectReference<FormaDateTimePicker<TValue>>? _selfReference;
+    private static readonly FocusWatchOptions FocusOptions = new();
+
+    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
+    private bool _isWithin;
 
     // What the reader has entered, each half held apart until both are there; the time as read, or the text that could not be.
     private DateOnly? _date;
@@ -167,7 +169,6 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
             throw new InvalidOperationException($"{nameof(FormaDateTimePicker<TValue>)} binds a {nameof(DateTime)} or a {nameof(DateTimeOffset)}, or a nullable one, not a {typeof(TValue).Name}.");
         }
 
-        _focus = new Focus(Context.JS);
         EditContext?.OnValidationRequested += HandleValidationRequested;
 
         base.OnInitialized();
@@ -213,24 +214,39 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focus is { IsAttached: false } focus && FieldContainer is { } fieldContainer)
+        if (FieldContainer is not { } fieldContainer)
         {
-            _selfReference ??= DotNetObjectReference.Create(this);
-            await focus.AttachAsync(fieldContainer.RootElement, _selfReference);
+            return;
+        }
+
+        if (firstRender)
+        {
+            _focusState = await Context.DomWatcher.GetElement(fieldContainer.RootElement).Focus.WatchAsync(HandleFocusStateAsync);
+        }
+
+        if (_focusState is { } focusState)
+        {
+            await focusState.SyncAsync(fieldContainer.RootElement, FocusOptions);
         }
     }
 
-    /// <summary>Reports a half the reader left missing once the focus has left the field.</summary>
-    [JSInvokable]
-    public Task HandleFocusLeaveAsync()
-        => InvokeAsync(() =>
+    // A first state is no leave, so a half the reader left missing is reported once the reader leaves the field after being within it.
+    private Task HandleFocusStateAsync(FocusState state)
+    {
+        var hasLeft = _isWithin && !state.IsWithin;
+        _isWithin = state.IsWithin;
+
+        return hasLeft ? InvokeAsync(CommitHalfEntry) : Task.CompletedTask;
+    }
+
+    private void CommitHalfEntry()
+    {
+        if (IsHalfEntered)
         {
-            if (IsHalfEntered)
-            {
-                Commit();
-                StateHasChanged();
-            }
-        });
+            Commit();
+            StateHasChanged();
+        }
+    }
 
     // A bound value's own clock: a DateTime as it reads, a DateTimeOffset at its own offset.
     private static DateTime? GetValueClock(TValue? value)
@@ -457,12 +473,6 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     {
         EditContext?.OnValidationRequested -= HandleValidationRequested;
 
-        if (_focus is not null)
-        {
-            await _focus.DisposeAsync();
-        }
-
-        _selfReference?.Dispose();
         await base.DisposeAsyncCore();
     }
 }

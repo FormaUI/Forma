@@ -60,8 +60,8 @@ component of the host's own.
   `OnCommand` with the action's command as a click does, and is refused when the toolbar's
   `Disabled` or the action's `IsDisabled` says so, or when the state it requires is absent.
   `Hidden` releases the routes even while `Target` stays set.
-- **The toolbar is one Tab stop.** Whichever element is the root composes the shared
-  `Focus` behavior roving horizontally, as `role="toolbar"` obliges: Left and Right,
+- **The toolbar is one Tab stop.** Whichever element is the root takes the DOM
+  engine's focus interaction roving horizontally, as `role="toolbar"` obliges: Left and Right,
   mirrored under a right-to-left direction, move among the enabled controls and wrap at
   either end, Home and End reach the ends, and the control focused last keeps the stop
   while the rest are parked at tabindex -1, so Tab leaves the toolbar on its own and a

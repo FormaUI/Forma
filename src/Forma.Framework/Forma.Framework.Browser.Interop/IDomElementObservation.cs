@@ -1,5 +1,6 @@
 namespace Forma.Framework.Browser.Interop;
 
+using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Browser.Interop.Scrolling;
 
 using Microsoft.AspNetCore.Components;
@@ -15,4 +16,7 @@ public interface IDomElementObservation
 
     /// <summary>Whether the element is in view of its root, as an owner observes it.</summary>
     IDomIntersectionObservation Intersection { get; }
+
+    /// <summary>The element's focus, as an owner observes it.</summary>
+    IDomFocusObservation Focus { get; }
 }

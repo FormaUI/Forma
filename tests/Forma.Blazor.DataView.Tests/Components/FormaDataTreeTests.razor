@@ -1,6 +1,7 @@
 @inherits FormaBunitContext
 @using System.Globalization
 @using AngleSharp.Dom
+@using Forma.Framework.Browser.Interop.Focus
 @using Microsoft.AspNetCore.Components.Web
 
 @code {
@@ -741,6 +742,7 @@
         {
             // Arrange — Reports focused under the open Documents
             using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
             var cut = RenderOpenDocuments(ctx);
             cut.FindAll(".forma-data-tree-node")[1].FocusIn();
 
@@ -751,7 +753,7 @@
             // Assert — the focus is attached once with its heir, and Notes.txt's marker carries the mark it focuses
             var marked = cut.FindAll("[data-focus-heir]");
             Assert.Multiple(
-                () => Assert.Single(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "attach" && invocation.Arguments is [_, { } options] && options.GetType().GetProperty("heir")?.GetValue(options) is "data-focus-heir"),
+                () => Assert.Single(probe.Interactions, attach => DomProbe<FocusState>.GetRequestField(attach, "capability") is "focus" && DomProbe<FocusState>.GetOption(attach, "heir") is "data-focus-heir"),
                 () => Assert.Equal("INPUT", Assert.Single(marked).TagName),
                 () => Assert.Equal("Notes.txt", marked[0].Closest(".forma-data-tree-node")!.QuerySelector(".forma-data-tree-node-name")!.TextContent));
 

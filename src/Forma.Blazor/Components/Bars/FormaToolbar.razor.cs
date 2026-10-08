@@ -2,7 +2,8 @@ namespace Forma.Blazor.Components.Bars;
 
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Layout;
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -26,8 +27,9 @@ public sealed partial class FormaToolbar : FormaElementBase
     private InputScope? _inputScope;
     private IReadOnlyList<(string Command, string Shortcut)> _registeredShortcuts = [];
     private string? _registeredTargetId;
-    private Focus _focus = default!;
-    private string? _rovingRootId;
+    private static readonly FocusInteractionOptions RovingOptions = new() { RovingOrientation = FocusOrientation.Horizontal };
+
+    private DomInteraction<FocusInteractionOptions>? _roving;
 
     /// <summary>The accessible name of the toolbar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -82,13 +84,6 @@ public sealed partial class FormaToolbar : FormaElementBase
         => Items.SelectMany(GetLeaves).OfType<ToolbarAction>();
 
     /// <inheritdoc />
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        _focus = new Focus(Context.JS);
-    }
-
-    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -111,7 +106,7 @@ public sealed partial class FormaToolbar : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await RoveAsync();
+        await RoveAsync(firstRender);
 
         // Target lies outside the toolbar, so hiding the toolbar releases its shortcuts here.
         // An unrendered @ref still arrives as a non-null ElementReference carrying no id, and registering it fails silently.
@@ -190,26 +185,20 @@ public sealed partial class FormaToolbar : FormaElementBase
     {
         await ReleaseAsync();
         _selfReference?.Dispose();
-        await _focus.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 
     /// <summary>Makes the root one Tab stop whose arrow keys move among the controls.</summary>
-    private async Task RoveAsync()
+    private async Task RoveAsync(bool firstRender)
     {
-        var root = RootElement;
-
-        if (root.Id is not { Length: > 0 } || root.Id == _rovingRootId)
+        if (firstRender)
         {
-            return;
+            _roving = await Context.DomEngine.GetElement(RootElement).Focus.AttachAsync(RovingOptions);
         }
 
-        // The host's policy reaches the router before the roving keys the script declares as routes.
-        await InputRouter.ConfigureAsync();
-
-        if (await _focus.AttachAsync(root, roving: FocusOrientation.Horizontal))
+        if (_roving is { } roving)
         {
-            _rovingRootId = root.Id;
+            await roving.SyncAsync(RootElement, RovingOptions);
         }
     }
 

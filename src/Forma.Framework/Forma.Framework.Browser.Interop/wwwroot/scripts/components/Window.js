@@ -4,7 +4,8 @@
  * where focus was inside it and takes focus back.
  */
 
-import { Focus, focusablesIn } from '../behaviors/Focus.js';
+import { FocusSurface } from '../focus/FocusSurface.mjs';
+import { TabOrder } from '../focus/TabOrder.mjs';
 
 /**
  * @param {HTMLElement} target The window element, a manual popover.
@@ -45,7 +46,8 @@ class Window {
         globalThis.addEventListener('blur', () => this.#handleRelease(), { signal });
 
         if (modal) {
-            new Focus(window, { wrap: true }, signal);
+            const tabOrder = new TabOrder(new FocusSurface(window), { wrap: true });
+            signal.addEventListener('abort', () => tabOrder.dispose(), { once: true });
         }
 
         if (presented) {
@@ -74,7 +76,7 @@ class Window {
         const remembered = this.#lastFocused;
         const target = remembered?.isConnected && this.#window.contains(remembered)
             ? remembered
-            : focusablesIn(this.#window)[0] ?? this.#window;
+            : new FocusSurface(this.#window).controls()[0] ?? this.#window;
 
         target.focus();
     }

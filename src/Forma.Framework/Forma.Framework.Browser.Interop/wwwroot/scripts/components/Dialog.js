@@ -5,7 +5,7 @@
  * than on its content is a scrim click.
  */
 
-import { focusablesIn } from '../behaviors/Focus.js';
+import { FocusSurface } from '../focus/FocusSurface.mjs';
 
 /**
  * @param {HTMLDialogElement} target
@@ -65,7 +65,7 @@ class Dialog {
 
     #focusWithin(selector) {
         const part = selector ? this.#dialog.querySelector(selector) : null;
-        const [first] = part ? focusablesIn(part) : [];
+        const [first] = part ? new FocusSurface(part).controls() : [];
 
         first?.focus();
     }

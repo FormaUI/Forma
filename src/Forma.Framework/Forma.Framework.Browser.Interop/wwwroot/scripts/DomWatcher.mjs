@@ -13,6 +13,7 @@ import { StateDelivery } from './StateDelivery.mjs';
 const Observers = {
     scroll: () => import('./scrolling/ScrollStateObserver.mjs').then(module => module.ScrollStateObserver),
     intersection: () => import('./scrolling/IntersectionStateObserver.mjs').then(module => module.IntersectionStateObserver),
+    focus: () => import('./focus/FocusStateObserver.mjs').then(module => module.FocusStateObserver),
 };
 
 export class DomWatcher {

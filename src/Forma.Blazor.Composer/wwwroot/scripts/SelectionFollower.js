@@ -7,7 +7,8 @@
  */
 
 import { attach as attachDragGesture } from '../../forma/browser/scripts/behaviors/DragGesture.js';
-import { Focus } from '../../forma/browser/scripts/behaviors/Focus.js';
+import { FocusSurface } from '../../forma/browser/scripts/focus/FocusSurface.mjs';
+import { TabOrder } from '../../forma/browser/scripts/focus/TabOrder.mjs';
 import { FrameScheduler } from '../../forma/core/scripts/FrameScheduler.js';
 import { register } from '../../forma/input/scripts/InputRouter.js';
 
@@ -63,7 +64,8 @@ class SelectionFollower {
 
         const { signal } = this.#controller;
 
-        new Focus(target, { wrap: true }, signal);
+        const tabOrder = new TabOrder(new FocusSurface(target), { wrap: true });
+        signal.addEventListener('abort', () => tabOrder.dispose(), { once: true });
         target.addEventListener('keydown', event => this.#handleKeyDown(event), { signal });
 
         // Active from focus-in to focus-out, and only with an owner to return focus to.

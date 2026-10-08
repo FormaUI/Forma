@@ -193,7 +193,7 @@ Composition lives in classes: anchored presentation combines placement and focus
 
 `Scroll.AttachAsync(options)` returns a persistent scroll interaction, and `Scroll.WatchAsync(...)` returns its requested state projection; both use the shared synchronization. Input policy is configured lazily before a qualified wheel route attaches. Movement stays local, and the component receives only its requested projection.
 
-JavaScript callers create a watcher with `DomWatcher.create()` and an engine with `DomEngine.create(watcher)`, then obtain target objects; the modules export these classes. Targets are supplied to each observation. Capability loading is awaited before synchronous input handlers are installed, so such handlers call already-loaded local methods. A JavaScript-only watcher needs no managed callback reference.
+A browser-only caller, such as a component's own script, reaches a capability through its area's classes directly rather than through an owner's session, and owns and disposes the listeners and observers those classes create. Capability loading is awaited before synchronous input handlers are installed, so such handlers call already-loaded local methods. A browser-only caller needs no managed callback reference.
 
 Event dispatch distinguishes native event constructors from custom JSON detail. It reports synchronous cancellation, which is complete when dispatch returns; asynchronous managed handlers run later. Synthetic dispatch creates no trusted input and grants no user activation ([dispatch semantics](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent), [user activation](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/User_activation)). Setting a property and dispatching an event are separate actions: the file-drop composition assigns the accepted files and then raises its one change event.
 
@@ -227,7 +227,9 @@ Native dialogs and manual popovers are separate presentation modes, each with it
 
 Focus recovery uses the watcher locally at mutation time. The owner chooses the successor and marks it in the same render that removes the focused node. Recovery proceeds only when the old node has disappeared and focus has fallen away, so focus the reader moved elsewhere stays where they put it.
 
-Focus memory, Tab wrapping and roving traversal remain distinct options. Native controls, nested scopes, disabled elements, reading direction and the router's ownership rules keep their behavior. Recovery stays in the browser, because a focus-change callback sent to C# would lose the timing it needs.
+Focus memory, Tab wrapping, arranged regions, roving traversal and recovery remain distinct options of the focus interaction, each selectable alone or with the others. Native controls, nested scopes, disabled elements, reading direction and the router's ownership rules keep their behavior. Recovery stays in the browser, because a focus-change callback sent to C# would lose the timing it needs.
+
+The focus observation reports whether the reader is within a surface. Focus inside the surface's DOM subtree is within, a popover rendered inside it included, and so is focus that goes away with an element a render removes, that leaves the browser window, or that a press inside the surface drops to the page. Focus leaving is a reported change from within to not within; a first state of not within is no leave. States coalesce as every observation's do: a leave and a return before the next report produce no reported change, while a return after not within was reported is a change of its own.
 
 ## Identity, ownership and lifetime
 
