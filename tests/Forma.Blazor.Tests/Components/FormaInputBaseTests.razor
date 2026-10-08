@@ -6,14 +6,82 @@
 @code {
     public sealed class Component
     {
-        private static IRenderedComponent<Field> RenderField(FormaInputBaseTests ctx, FakeModel model, string? hostClass = null)
+        private static IRenderedComponent<Field> RenderField(FormaInputBaseTests ctx, FakeModel model, string? hostClass = null, bool failsOnDispose = false, bool frameworkFailsOnDispose = false)
         {
             var editContext = new EditContext(model);
 
             return ctx.Render<Field>(parameters => parameters
                 .AddCascadingValue(editContext)
                 .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
-                .Add(field => field.Class, hostClass));
+                .Add(field => field.Class, hostClass)
+                .Add(field => field.FailsOnDispose, failsOnDispose)
+                .Add(field => field.FrameworkFailsOnDispose, frameworkFailsOnDispose));
+        }
+
+        [Fact]
+        public async Task Should_release_its_context_even_when_the_frameworks_cleanup_fails()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var field = RenderField(ctx, new FakeModel(), frameworkFailsOnDispose: true).Instance;
+            _ = field.OwnContext.RuntimeId;
+
+            // Act
+            await Assert.ThrowsAsync<InvalidOperationException>(() => field.DisposeAsync().AsTask());
+
+            // Assert
+            Assert.True(((ComponentContext)field.OwnContext).IsDisposed);
+        }
+
+        [Fact]
+        public async Task Should_release_its_context_after_its_own_cleanup_and_the_frameworks()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var field = RenderField(ctx, new FakeModel()).Instance;
+            _ = field.OwnContext.RuntimeId;
+
+            // Act
+            await field.DisposeAsync();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(field.ContextDisposedDuringCleanup),
+                () => Assert.False(field.ContextDisposedDuringFrameworkCleanup),
+                () => Assert.Equal(1, field.FrameworkDisposeCalls),
+                () => Assert.True(((ComponentContext)field.OwnContext).IsDisposed));
+        }
+
+        [Fact]
+        public async Task Should_create_no_context_while_it_is_disposed()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var field = RenderField(ctx, new FakeModel()).Instance;
+
+            // Act
+            await field.DisposeAsync();
+
+            // Assert: a context made during teardown would have been released with it.
+            Assert.False(((ComponentContext)field.OwnContext).IsDisposed);
+        }
+
+        [Fact]
+        public async Task Should_release_its_context_and_run_the_frameworks_cleanup_even_when_its_own_cleanup_fails()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var field = RenderField(ctx, new FakeModel(), failsOnDispose: true).Instance;
+            _ = field.OwnContext.RuntimeId;
+
+            // Act
+            await Assert.ThrowsAsync<InvalidOperationException>(() => field.DisposeAsync().AsTask());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(field.IsDisposed),
+                () => Assert.Equal(1, field.FrameworkDisposeCalls),
+                () => Assert.True(((ComponentContext)field.OwnContext).IsDisposed));
         }
 
         [Fact]
@@ -182,8 +250,19 @@
 
         [Parameter] public bool OutsideField { get; set; }
 
+        [Parameter] public bool FailsOnDispose { get; set; }
+
+        [Parameter] public bool FrameworkFailsOnDispose { get; set; }
+
+        private IComponentContext? _readContext;
+
+        public bool? ContextDisposedDuringCleanup { get; private set; }
+
+        public bool? ContextDisposedDuringFrameworkCleanup { get; private set; }
+
+        // The context a test read, so the cleanup can look at it without reading the context itself.
         public IComponentContext OwnContext
-            => Context;
+            => _readContext = Context;
 
         public FieldElementIds OwnFieldElementIds
             => FieldElementIds;
@@ -230,13 +309,21 @@
         protected override ValueTask DisposeAsyncCore()
         {
             AsyncDisposeCalls++;
+            ContextDisposedDuringCleanup = (_readContext as ComponentContext)?.IsDisposed;
 
-            return ValueTask.CompletedTask;
+            return FailsOnDispose ? throw new InvalidOperationException("The cleanup failed.") : ValueTask.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)
         {
             FrameworkDisposeCalls++;
+            ContextDisposedDuringFrameworkCleanup = (_readContext as ComponentContext)?.IsDisposed;
+
+            if (FrameworkFailsOnDispose)
+            {
+                throw new InvalidOperationException("The framework's cleanup failed.");
+            }
+
             base.Dispose(disposing);
         }
     }

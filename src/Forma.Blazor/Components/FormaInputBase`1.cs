@@ -31,6 +31,8 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
 
+    private ComponentContext? _context;
+
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }
 
@@ -43,7 +45,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     /// <summary>The component's context: its identity, its strings, its log and its JS environment.</summary>
     protected IComponentContext Context
-        => field ??= new ComponentContext(
+        => _context ??= new ComponentContext(
             () => JSRuntime,
             () => LocaleFactory.Create(LocalizationSourceType),
             () => LoggerFactory.CreateLogger(GetType()));
@@ -118,10 +120,28 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
 
         IsDisposed = true;
-        await DisposeAsyncCore();
 
-        // The renderer calls only DisposeAsync on a component that implements it, so the framework's own cleanup runs from here.
-        Dispose(disposing: true);
+        try
+        {
+            await DisposeAsyncCore();
+        }
+        finally
+        {
+            try
+            {
+                // The renderer calls only DisposeAsync on a component that implements it, so the framework's own cleanup runs from here.
+                Dispose(disposing: true);
+            }
+            finally
+            {
+                // The component's own cleanup can still use its context, and a component that never read one has none to release.
+                if (_context is not null)
+                {
+                    await _context.DisposeAsync();
+                }
+            }
+        }
+
         GC.SuppressFinalize(this);
     }
 

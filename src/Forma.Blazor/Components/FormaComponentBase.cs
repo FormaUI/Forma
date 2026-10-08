@@ -14,6 +14,8 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
 
+    private ComponentContext? _context;
+
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }
 
@@ -23,7 +25,7 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
 
     /// <summary>The component's context: its identity, its strings, its log and its JS environment.</summary>
     protected IComponentContext Context
-        => field ??= new ComponentContext(
+        => _context ??= new ComponentContext(
             () => JSRuntime,
             () => LocaleFactory.Create(LocalizationSourceType),
             () => LoggerFactory.CreateLogger(GetType()));
@@ -41,7 +43,20 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
         }
 
         IsDisposed = true;
-        await DisposeAsyncCore();
+
+        try
+        {
+            await DisposeAsyncCore();
+        }
+        finally
+        {
+            // The component's own cleanup can still use its context, and a component that never read one has none to release.
+            if (_context is not null)
+            {
+                await _context.DisposeAsync();
+            }
+        }
+
         GC.SuppressFinalize(this);
     }
 

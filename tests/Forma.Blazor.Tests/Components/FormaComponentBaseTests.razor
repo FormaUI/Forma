@@ -135,9 +135,60 @@
         }
     }
 
+    public sealed class Teardown
+    {
+        [Fact]
+        public async Task Should_release_its_context_after_its_own_cleanup()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            var announcer = ctx.Render<Announcer>().Instance;
+
+            // Act
+            await announcer.DisposeAsync();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(announcer.ContextDisposedDuringCleanup),
+                () => Assert.True(((ComponentContext)announcer.OwnContext).IsDisposed));
+        }
+
+        [Fact]
+        public async Task Should_create_no_context_while_it_is_disposed()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            var silent = ctx.Render<Silent>().Instance;
+
+            // Act
+            await silent.DisposeAsync();
+
+            // Assert: a context made during teardown would have been released with it.
+            Assert.False(((ComponentContext)silent.OwnContext).IsDisposed);
+        }
+
+        [Fact]
+        public async Task Should_release_its_context_even_when_its_own_cleanup_fails()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            var failing = ctx.Render<Failing>().Instance;
+
+            // Act
+            await Assert.ThrowsAsync<InvalidOperationException>(() => failing.DisposeAsync().AsTask());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(failing.IsDisposed),
+                () => Assert.True(((ComponentContext)failing.OwnContext).IsDisposed));
+        }
+    }
+
     public sealed class Announcer : FormaComponentBase
     {
         public int DisposeCalls { get; private set; }
+
+        public bool? ContextDisposedDuringCleanup { get; private set; }
 
         public IComponentContext OwnContext
             => Context;
@@ -154,9 +205,28 @@
         protected override ValueTask DisposeAsyncCore()
         {
             DisposeCalls++;
+            ContextDisposedDuringCleanup = ((ComponentContext)Context).IsDisposed;
 
             return ValueTask.CompletedTask;
         }
+    }
+
+    public sealed class Silent : FormaComponentBase
+    {
+        public IComponentContext OwnContext
+            => Context;
+    }
+
+    public sealed class Failing : FormaComponentBase
+    {
+        public IComponentContext OwnContext
+            => Context;
+
+        protected override void OnInitialized()
+            => _ = Context.RuntimeId;
+
+        protected override ValueTask DisposeAsyncCore()
+            => throw new InvalidOperationException("The cleanup failed.");
     }
 
     public sealed class Borrower : FormaComponentBase

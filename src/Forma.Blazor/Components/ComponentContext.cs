@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 /// <summary>A component's context: its identity, its strings, its log and its JS environment.</summary>
-public sealed class ComponentContext : IComponentContext
+public sealed class ComponentContext : IComponentContext, IAsyncDisposable
 {
     private readonly Lazy<IStringLocale> _locale;
     private readonly Lazy<ILogger> _logger;
@@ -39,4 +39,15 @@ public sealed class ComponentContext : IComponentContext
     /// <inheritdoc />
     public IJSEnvironment JS
         => _js.Value;
+
+    /// <summary>Whether the context has been disposed.</summary>
+    public bool IsDisposed { get; private set; }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        IsDisposed = true;
+
+        return ValueTask.CompletedTask;
+    }
 }
