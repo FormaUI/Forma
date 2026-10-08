@@ -46,11 +46,12 @@ Every assembly's static assets are served under one content root, each assembly 
 `scripts/`. A script reaches another assembly's script by climbing to that root, so the import
 stays relative to the module and survives a host path base.
 
-The browser interop assembly serves many concepts, so it sorts by kind: a script lives in
-`wwwroot/scripts/behaviors/`, `operations/` or `components/`, and its wrapper in the matching
-`Behaviors/`, `Operations/` or `Components/` folder. A feature interop assembly is named for its
-one concept, so its scripts sit directly under `wwwroot/scripts/` and its wrappers at the assembly
-root, a service's script beside the wrapper that owns it.
+The browser interop assembly is organized by area, under its DOM watcher and engine, as the section on
+them below sets out. Its kind folders, `wwwroot/scripts/behaviors/`, `operations/` and `components/`
+with their wrappers in the matching `Behaviors/`, `Operations/` and `Components/` folders, hold the
+scripts no area has replaced yet, and are retired as conversions empty them. A feature interop
+assembly is named for its one concept, so its scripts sit directly under `wwwroot/scripts/` and its
+wrappers at the assembly root, a service's script beside the wrapper that owns it.
 
 | Kind | What it is | Script | C# wrapper |
 |---|---|---|---|
@@ -82,6 +83,28 @@ root, a service's script beside the wrapper that owns it.
 - Don't name a shared behavior or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, so the next component that needs one writes it again.
 - Don't place a script beside the component that uses it; a project's scripts live under its `wwwroot/scripts/`, never in a component's folder.
 - Don't group unrelated capabilities in one file because one component happens to use both.
+
+## The DOM watcher and engine
+
+The browser interop assembly's DOM watcher and engine are the shared browser foundation for the
+capabilities they cover: an owner observes its elements through the watcher and acts on them through
+the engine, with one lifetime, one notification path and one release for everything it holds. They
+are organized by concern rather than by kind.
+
+- Do put a capability the watcher or the engine offers in a folder for its area under the assembly's `wwwroot/scripts/`, such as `scrolling/`, one concept per `.mjs` module written as a class taking its collaborators once, and its C# in the matching folder and namespace.
+- Do keep the foundation the capabilities share, the element, the registrations and the sessions, at the root beside `DomWatcher.js` and `DomEngine.js`; a folder is for an area a reader recognizes, never a home for the mechanisms its neighbors share.
+- Do make a calculation a member of the concept whose state it reads, as stepping and measuring belong to the scroll container, rather than a class of its own holding one static method.
+- Do keep `DomWatcher.js` and `DomEngine.js` to composing: each loads a concern's modules on first use, holds an owner's registrations by the token and generation its C# minted, and exports the private surface its C# calls; a capability's mechanics stay in its concern.
+- Do keep each owner's session at module level under its runtime identity, as a service keeps its registrations, so one call releases everything the owner holds, its engine before its watcher.
+- Do share what the document needs once, such as the resize observer, as a small module with module-level state, installed with its first user and removed with its last.
+- Do keep the watcher's import graph free of the engine and the input router, so observing loads neither.
+- Do give a capability its C# as a typed object on the element an owner gets, `GetElement(element).Scroll`, made through the owner's session; a component declares no `[JSInvokable]` method and holds no `DotNetObjectReference` for it.
+- Do send each state through the owner's receiver with one sample in flight and only the latest waiting, and report a failed send in the browser, under the owner, the capability and the registration.
+- Do route an input an interaction acts on through the input router, so the host's remapping reaches it and a native control keeps its own activation.
+- Do convert a script in a kind folder by replacing it and its wrapper with its area's concepts, never by relocating it first; move a script as it is only where it survives unchanged, as the virtualizer's and the embedding adapter's do, and only when there is reason to work on it.
+- Do leave the input router and a product's own scripts out of this organization; they keep their own assemblies.
+- Do move a concern with its consumers and remove the old entries it replaces; an older wrapper its remaining consumers still use keeps only what they use, and no algorithm exists in two copies.
+- Don't discard a rejection with `.catch(() => {})` in this foundation; a failure is reported where it happens and never through the channel that failed.
 
 ## Behavior contract
 
@@ -144,7 +167,7 @@ export function resolve(event) { … }
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JSModule` and `JSInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do construct a wrapper from the context's `JS`, `new Wrapper(Context.JS)`, and dispose it from the component's `DisposeAsyncCore`; `Context.JS` is the component's `IJSEnvironment`, the runtime carrying the component's log and identity, so the wrapper logs under the component and names it. A service that owns a wrapper builds its own `JSEnvironment` from the runtime and the `ILogger<T>` it takes, minting an identity for the instance.
-- Do import through the content root of the assembly that ships the script, with the kind folder in the path where the assembly sorts by kind, so the wrapper names the assembly that ships the script.
+- Do import through the content root of the assembly that ships the script, with the script's area or kind folder in the path, so the wrapper names the assembly that ships the script.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.

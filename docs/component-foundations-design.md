@@ -66,9 +66,10 @@ that fails to load, reaches a host through the log the host already configures.
   framework's name, because `InputBase<TValue>` fixes it and the two tiers must read the
   same.
 - **One context per component, handed down whole.** `IComponentContext` is what a
-  component is given: its identity, its strings, its log and its JS environment. The
-  base builds it once and forwards nothing but `L`, so a component reads
-  `Context.RuntimeId`, `Context.Logger` and `Context.JS`, and a new thing every component
+  component is given: its identity, its strings, its log, its JS environment, and the DOM
+  watcher and engine its browser work goes through. The base builds it once and forwards
+  nothing but `L`, so a component reads `Context.RuntimeId`, `Context.Logger`,
+  `Context.JS`, `Context.DomWatcher` and `Context.DomEngine`, and a new thing every component
   needs is added to the context once rather than to a base twice or to every constructor
   that passes it on. `Context` is reserved for it: anything else context-like a component
   holds is named for its subject alone, `Composer` for `FormaComposer`'s parts' cascaded state
@@ -99,9 +100,12 @@ that fails to load, reaches a host through the log the host already configures.
 
 `FormaComponentBase` injects the runtime, the logger factory and the locale factory, all
 required, and builds the component's context once from them and its
-`LocalizationSourceType`. It gives the component its strings as `L`, reports whether it is
-disposed, and runs `DisposeAsyncCore` once on disposal. The context carries the component's
-identity, strings, log and JS environment.
+`LocalizationSourceType`, finding the circuit's DOM bridge where one is registered. It
+gives the component its strings as `L`, reports whether it is disposed, and runs
+`DisposeAsyncCore` once on disposal, then releases a context it built, so the component's
+own cleanup can still use it. The context carries the component's identity, strings, log
+and JS environment, and the DOM watcher and engine it makes on first use, whose
+observations and interactions its release ends in one call to the browser.
 
 The context builds its JS environment once from the runtime, its logger and its identity,
 so the environment's identity and log are the context's by construction. The environment
@@ -168,7 +172,7 @@ are the extension points, and the composition rule is the base's.
 the other two do: the injections, the context and `L`, the disposal, and the host surface,
 with `AdditionalAttributes` the framework's own and the field's validation class following
 the component's and the host's classes on the root. Its disposal runs `InputBase`'s
-`Dispose(true)` after `DisposeAsyncCore`.
+`Dispose(true)` after `DisposeAsyncCore`, then releases the context.
 
 C# has one base slot, so the input base repeats what the other two carry rather than
 deriving from them. The context carries what both can share, the identity, the strings,

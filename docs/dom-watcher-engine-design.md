@@ -295,33 +295,40 @@ Observers read after the DOM changes, and engine writes invalidate the observati
 
 The API builds on `IJSEnvironment` and `JSModule`, adding a focused object-reference invocation helper where the roots need one, beside the existing `JSInterop` wrappers. The managed receiver dispatches private typed messages, and public callers use capability methods, so a component declares no `[JSInvokable]` method per capability.
 
-Browser.Interop's shared code is organized by concern, with matching managed and browser implementation areas:
+Browser.Interop's shared code keeps its foundation at the root and gives each capability area a folder of its own, with matching managed and browser implementation areas. A folder exists for an area a reader recognizes, never for a mechanism the root's types share:
 
 | Area | Contents |
 | --- | --- |
-| Root | `DomWatcher`, `DomEngine`, target interfaces and views |
-| Observation | Source lifetime, state notification, private synchronization support |
-| Scrolling | Scroll state, frozen geometry projection, commands, wheel and panning |
+| Root | `DomWatcher`, `DomEngine`, the element and its views, the registrations, sessions and state delivery they share, and the clipboard, downloads, printing and sharing |
+| Scrolling | Scroll state, frozen geometry, stepping, wheel movement and panning |
+| Virtualization | The virtualizer's measurement, rendered range and scrolling contract |
 | Focus | Focus observations and interactions |
 | Placement | Anchors, bounds, movement and resizing |
-| Presentation | Native dialog and manual-popover mechanics |
-| Pointer, Events, Text, Files, Media | The corresponding typed capabilities and adapters |
-| Assets, Clipboard, Downloads, Printing, Sharing | The corresponding browser-wide facilities |
+| Presentation | Native dialogs and manual popovers |
+| DragDrop | Drag gestures, drops and reordering |
+| Pointer | Pointer capture and release |
+| Files | File previews and the temporary resources they own |
+| Forms | The native state of form controls, such as a checkbox's indeterminate state |
+| Text | Text entry: its selection, reading and clearing it, and autofill |
+| Events | Native and custom event dispatch |
+| Media | Playback |
+| Assets | Modules, scripts, stylesheets and sprites, each loaded once per page |
+| Integrations | Third-party SDK adapters, such as embedding |
 
-This organization governs shared Browser.Interop code; the rest of the repository keeps the scripting guide's behavior, operation, component and service taxonomy.
+This organization governs all of Browser.Interop; the rest of the repository keeps the scripting guide's behavior, operation, component and service taxonomy.
 
 ### Module structure
 
 The composer's rich-text editor is the model. Its entry class composes concept classes, each in a `.mjs` module of its own, each taking its collaborators once in its constructor and keeping its mechanics `#private`, with listeners grouped under an `AbortController` for each owning lifetime. Observers, frames and other resources retain their own explicit cleanup. The watcher and the engine are built the same way:
 
 - `DomWatcher.js` and `DomEngine.js` are the entries. Each composes its concept classes and holds no capability's mechanics of its own.
-- Each concern folder holds one concept per `.mjs` module, as a class: a scroll boundary source, scroll commands, a wheel interaction. Cohesive stateless helpers may stay in their concern's module; the class boundary follows responsibility rather than the count of API methods.
+- Each concern folder holds one concept per `.mjs` module, as a class: a scroll container, the observer of its state, the buttons that step it. A calculation belongs to the concept whose state it reads, as a member, rather than to a class of its own; the class boundary follows responsibility rather than the count of API methods.
 - What one document needs once, such as the measure-then-write frame scheduler, the shared native observer pools and the delegated document listeners, is a small service module with module-level state, installed on first use and removed with its last user.
 - The watcher's entry statically imports its observation core and keeps optional observation concerns lazy. The engine loads a concern's modules with a dynamic `import()` when its first command or interaction needs them, and awaits them before installing any synchronous handler. Getting a managed capability property remains local.
 - Imports stay shallow and are declared statically within a loaded concern where they are always needed. The entry does not eagerly import every observation concern: observation modules are also loaded on first use. Shallow dependency graphs limit discovery delays.
 
 The input router shows both sides. What it does well carries over: document listeners installed on the first registration and removed after the last, decisions made in the browser with no crossing, and constant tables naming its rules. Its single file, holding binding matching, native-control claims, scopes, ambient dismissal and click suppression together, is the shape these modules avoid.
 
-Behavioral concepts are testable through their constructor's collaborators; script tests cover their contracts, and integration tests cover composition. The built-in module-loading path serves `.mjs` files with a JavaScript MIME type from the published static assets. `InputRouter` and `Virtualize` keep their paths and contracts. Product-owned editor and data-view scripts and third-party embedding adapters keep their ownership. Browser.Interop can depend on Input.Interop and never the reverse, and the watcher's JavaScript import graph excludes the input and engine modules.
+Behavioral concepts are testable through their constructor's collaborators; script tests cover their contracts, and integration tests cover composition. The built-in module-loading path serves `.mjs` files with a JavaScript MIME type from the published static assets. `InputRouter` keeps its paths and contracts, and `Virtualize` keeps its contract in the Virtualization area. Product-owned editor and data-view scripts keep their ownership, and third-party embedding adapters stay outside the generic DOM contracts in the Integrations area. Browser.Interop can depend on Input.Interop and never the reverse, and the watcher's JavaScript import graph excludes the input and engine modules.
 
 Diagnostics identify the owner's `RuntimeId`, the capability, the registration generation and the operation. Small opt-in counters measure registrations, notifications and crossings, and record no text, clipboard or file contents.
