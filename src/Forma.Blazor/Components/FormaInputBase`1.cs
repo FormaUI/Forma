@@ -1,11 +1,13 @@
 namespace Forma.Blazor.Components;
 
+using Forma.Framework.Browser.Interop;
 using Forma.Framework.Css;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -30,6 +32,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
     private ComponentContext? _context;
 
@@ -48,7 +51,8 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         => _context ??= new ComponentContext(
             () => JSRuntime,
             () => LocaleFactory.Create(LocalizationSourceType),
-            () => LoggerFactory.CreateLogger(GetType()));
+            () => LoggerFactory.CreateLogger(GetType()),
+            () => Services.GetService<DomBridge>());
 
     /// <summary>The component's strings, in the reader's culture.</summary>
     protected IStringLocale L

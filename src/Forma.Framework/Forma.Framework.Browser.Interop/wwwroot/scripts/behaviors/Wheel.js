@@ -1,17 +1,12 @@
 /**
  * Wheel — what a surface does with a wheel turned over it
  *
- * A vertical turn moves a track along its inline axis, or a turn tells an owner which way it
- * turned. Either is a route on the input router, declared on the surface under the action the
- * surface names.
+ * A turn tells an owner which way it turned, as a route on the input router declared on the
+ * surface under the action the surface names.
  */
 
-import { Direction } from '../../../core/scripts/Direction.js';
 import { tell } from '../../../core/scripts/Owner.js';
 import { register } from '../../../input/scripts/InputRouter.js';
-
-/** Pixels a line is taken to be, for a wheel that reports in lines. */
-const LineHeight = 16;
 
 /** Milliseconds between events that still belong to one gesture. */
 const GestureGap = 150;
@@ -26,21 +21,20 @@ const Modifiers = { ctrl: 'control', alt: 'alt', shift: 'shift' };
 
 /**
  * @param {HTMLElement} target The surface the wheel is turned over.
- * @param {{ action: string, track?: HTMLElement, owner?: Owner, modifier?: 'ctrl' | 'alt' | 'shift' }} options
- *   The action the turn is routed as; the track the wheel moves, the target when none is named;
- *   the owner told the direction through HandleWheelAsync; and the modifier key held for the turn
- *   to be answered.
+ * @param {{ action: string, owner: Owner, modifier?: 'ctrl' | 'alt' | 'shift' }} options
+ *   The action the turn is routed as; the owner told the direction through HandleWheelAsync; and
+ *   the modifier key held for the turn to be answered.
  */
 export function attach(target, options) {
     return new Wheel(target, options);
 }
 
-/** Answers a wheel turned over the target: a track moves by it, or an owner is told its direction. */
+/** Answers a wheel turned over the target by telling an owner its direction. */
 class Wheel {
     #registration;
 
-    constructor(target, { action, track, owner, modifier }) {
-        const sink = owner ? new DirectionSink(owner) : new TrackSink(track ?? target);
+    constructor(target, { action, owner, modifier }) {
+        const sink = new DirectionSink(owner);
         const modifiers = modifier ? { [Modifiers[modifier]]: true } : {};
 
         this.#registration = register(target, {
@@ -50,40 +44,6 @@ class Wheel {
 
     dispose() {
         this.#registration.dispose();
-    }
-}
-
-/** Scrolls a track by the movement until it reaches either end. */
-class TrackSink {
-    #track;
-
-    constructor(track) {
-        this.#track = track;
-    }
-
-    /** A vertical turn while the track can scroll, consumed at either end too. */
-    describeBinding(modifiers) {
-        return { type: 'wheel', axis: 'vertical', modifiers, when: () => this.#slack() > 1 };
-    }
-
-    move(event) {
-        const slack = this.#slack();
-        const isRightToLeft = Direction.isRightToLeft(this.#track);
-        const distance = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaY * LineHeight : event.deltaY;
-        const offset = this.#track.scrollLeft;
-        const wanted = offset + (isRightToLeft ? -distance : distance);
-        const next = isRightToLeft ? Math.min(0, Math.max(-slack, wanted)) : Math.max(0, Math.min(slack, wanted));
-
-        if (Math.abs(next - offset) < 1) {
-            return;
-        }
-
-        this.#track.scrollTo({ left: next, behavior: 'instant' });
-    }
-
-    /** How far the track can scroll; a sub-pixel track width leaves a fractional remainder below one pixel. */
-    #slack() {
-        return this.#track.scrollWidth - this.#track.clientWidth;
     }
 }
 

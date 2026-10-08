@@ -1,5 +1,5 @@
 @inherits FormaBunitContext
-@using Forma.Framework.Browser.Interop.Behaviors
+@using Forma.Framework.Browser.Interop.Scrolling
 @code {
     public sealed class Component
     {
@@ -94,123 +94,121 @@
         }
 
         [Fact]
-        public void Should_render_both_arrows_once_the_commands_overflow()
+        public async Task Should_render_both_arrows_once_the_commands_overflow()
         {
             // Arrange
             using var ctx = new FormaCommandBarTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(
                 @<FormaCommandBar>
                     <button>Upload</button>
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, true, 0, 0, 0));
+            await probe.ReportAsync(new ScrollState(true, true, 0, 0, null));
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".forma-freeze-pane-arrow").Count));
+            Assert.Equal(2, cut.FindAll(".forma-freeze-pane-arrow").Count);
         }
 
         [Fact]
-        public void Should_show_only_the_forward_arrow_at_the_start_of_the_bar()
+        public async Task Should_show_only_the_forward_arrow_at_the_start_of_the_bar()
         {
             // Arrange
             using var ctx = new FormaCommandBarTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(
                 @<FormaCommandBar>
                     <button>Upload</button>
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(false, true, 0, 0, 0));
+            await probe.ReportAsync(new ScrollState(false, true, 0, 0, null));
 
             // Assert
-            cut.WaitForAssertion(() =>
-            {
-                Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow-back"));
-                Assert.NotNull(cut.Find(".forma-freeze-pane-arrow-forward"));
-            });
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow-back")),
+                () => Assert.NotNull(cut.Find(".forma-freeze-pane-arrow-forward")));
         }
 
         [Fact]
-        public void Should_show_only_the_back_arrow_at_the_end_of_the_bar()
+        public async Task Should_show_only_the_back_arrow_at_the_end_of_the_bar()
         {
             // Arrange
             using var ctx = new FormaCommandBarTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(
                 @<FormaCommandBar>
                     <button>Upload</button>
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, false, 0, 0, 0));
+            await probe.ReportAsync(new ScrollState(true, false, 0, 0, null));
 
             // Assert
-            cut.WaitForAssertion(() =>
-            {
-                Assert.NotNull(cut.Find(".forma-freeze-pane-arrow-back"));
-                Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow-forward"));
-            });
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-freeze-pane-arrow-back")),
+                () => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow-forward")));
         }
 
         [Fact]
-        public void Should_drop_the_arrows_again_once_the_bar_fits()
+        public async Task Should_drop_the_arrows_again_once_the_bar_fits()
         {
             // Arrange
             using var ctx = new FormaCommandBarTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(
                 @<FormaCommandBar>
                     <button>Upload</button>
                 </FormaCommandBar>);
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, true, 0, 0, 0));
-            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-freeze-pane-arrow")));
+            await probe.ReportAsync(new ScrollState(true, true, 0, 0, null));
+            Assert.NotEmpty(cut.FindAll(".forma-freeze-pane-arrow"));
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(false, false, 0, 0, 0));
+            await probe.ReportAsync(new ScrollState(false, false, 0, 0, null));
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow")));
+            Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow"));
         }
 
         [Fact]
-        public void Should_name_the_arrows_from_the_localizer()
+        public async Task Should_name_the_arrows_from_the_localizer()
         {
             // Arrange
             using var ctx = new FormaCommandBarTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(
                 @<FormaCommandBar>
                     <button>Upload</button>
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, true, 0, 0, 0));
+            await probe.ReportAsync(new ScrollState(true, true, 0, 0, null));
 
             // Assert
-            cut.WaitForAssertion(() =>
-            {
-                Assert.Equal("Scroll Commands Back", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label"));
-                Assert.Equal("Scroll Commands Forward", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label"));
-            });
+            Assert.Multiple(
+                () => Assert.Equal("Scroll Commands Back", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label")),
+                () => Assert.Equal("Scroll Commands Forward", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label")));
         }
 
         [Fact]
-        public void Should_let_the_caller_name_the_arrows()
+        public async Task Should_let_the_caller_name_the_arrows()
         {
             // Arrange
             using var ctx = new FormaCommandBarTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(
                 @<FormaCommandBar Options="@(new FreezePaneOptions { ScrollBackLabel = "Earlier filters", ScrollForwardLabel = "Later filters" })">
                     <button>Upload</button>
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, true, 0, 0, 0));
+            await probe.ReportAsync(new ScrollState(true, true, 0, 0, null));
 
             // Assert
-            cut.WaitForAssertion(() =>
-            {
-                Assert.Equal("Earlier filters", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label"));
-                Assert.Equal("Later filters", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label"));
-            });
+            Assert.Multiple(
+                () => Assert.Equal("Earlier filters", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label")),
+                () => Assert.Equal("Later filters", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label")));
         }
 
         [Fact]

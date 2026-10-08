@@ -1,4 +1,4 @@
-namespace Forma.Framework.Browser.Interop.Behaviors;
+namespace Forma.Framework.Browser.Interop.Scrolling;
 
 /// <summary>The axis a scroll container moves along.</summary>
 public enum ScrollAxis

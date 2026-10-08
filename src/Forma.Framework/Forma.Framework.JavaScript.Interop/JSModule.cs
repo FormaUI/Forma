@@ -110,7 +110,9 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
-    private Task<IJSObjectReference> ImportAsync()
+    /// <summary>Imports the module and returns its reference.</summary>
+    /// <remarks>The first call starts the import and every later call shares it, so an import that failed fails every caller.</remarks>
+    public Task<IJSObjectReference> ImportAsync()
         => _import ??= js.InvokeAsync<IJSObjectReference>("import", path).AsTask();
 
     /// <summary>Tries to import the module.</summary>

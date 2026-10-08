@@ -6,7 +6,7 @@
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
 @using Forma.Framework.Explorer
-@using Forma.Framework.Browser.Interop.Behaviors
+@using Forma.Framework.Browser.Interop.Scrolling
 
 @code {
     /// <summary>Drops what is being dragged on the row, as the sidebar's drop zone tells it from the row's key.</summary>
@@ -1535,11 +1535,16 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var router = new InputRouterProbe(ctx);
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
             var pane = cut.FindComponents<FormaFreezePane>().Last();
-            await cut.InvokeAsync(() => pane.Instance.HandleOverflowAsync(new ScrollBoundaryReport(false, true, 240, 38, 600)));
+            var runtimeId = pane.Find(".forma-freeze-pane").GetAttribute("data-rid")!;
+
+            // The pane asks for its viewport's extent once its frozen edge is to be drawn.
+            await probe.ReportAsync(runtimeId, new ScrollState(false, true, 240, 38, null));
+            await probe.ReportAsync(runtimeId, new ScrollState(false, true, 240, 38, 600));
 
             // Act
             var edge = pane.FindComponent<FormaSplitter>();

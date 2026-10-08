@@ -1,30 +1,18 @@
 @inherits FormaBunitContext
-@using Forma.Framework.Browser.Interop.Behaviors
+@using Forma.Framework.Browser.Interop.Scrolling
 @using Forma.Framework.Input.Keyboard
 @code {
     private static readonly FreezePaneOptions BlockArrows = new() { Axis = ScrollAxis.Block, Navigation = ScrollNavigation.Arrows };
 
-    private static Task Report<TComponent>(IRenderedComponent<TComponent> cut, bool canScrollBack, bool canScrollForward, double frozenExtent = 0, double cornerExtent = 0, double viewportExtent = 600)
+    private static Task Report(DomProbe<ScrollState> probe, bool canScrollBack, bool canScrollForward, double frozenExtent = 0, double cornerExtent = 0, double? viewportExtent = null)
+        => probe.ReportAsync(new ScrollState(canScrollBack, canScrollForward, frozenExtent, cornerExtent, viewportExtent));
+
+    private static Task Report<TComponent>(DomProbe<ScrollState> probe, IRenderedComponent<TComponent> cut, bool canScrollBack, bool canScrollForward, double frozenExtent = 0, double cornerExtent = 0, double? viewportExtent = null)
         where TComponent : class, IComponent
-        => cut.InvokeAsync(() => cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(canScrollBack, canScrollForward, frozenExtent, cornerExtent, viewportExtent)));
+        => probe.ReportAsync(cut.Find(".forma-freeze-pane").GetAttribute("data-rid")!, new ScrollState(canScrollBack, canScrollForward, frozenExtent, cornerExtent, viewportExtent));
 
     public sealed class Component
     {
-        [Fact]
-        public void Should_answer_the_wheel_as_its_own_scroll_action()
-        {
-            // Arrange
-            using var ctx = new FormaFreezePaneTests();
-            var wheel = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/Wheel.js");
-
-            // Act
-            ctx.Render(@<FormaFreezePane><button>One</button></FormaFreezePane>);
-
-            // Assert
-            var options = Assert.Single(wheel.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
-            Assert.Equal("freeze-pane.scroll", options.GetType().GetProperty("action")!.GetValue(options));
-        }
-
         [Fact]
         public void Should_render_the_content_in_an_inline_scrollbar_viewport_by_default()
         {
@@ -48,10 +36,11 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane><button>One</button></FormaFreezePane>);
 
             // Act
-            await Report(cut, canScrollBack: true, canScrollForward: true);
+            await Report(probe, canScrollBack: true, canScrollForward: true);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow"));
@@ -77,10 +66,11 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
 
             // Act
-            await Report(cut, canScrollBack: false, canScrollForward: true);
+            await Report(probe, canScrollBack: false, canScrollForward: true);
 
             // Assert
             Assert.Multiple(
@@ -93,10 +83,11 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
 
             // Act
-            await Report(cut, canScrollBack: true, canScrollForward: true);
+            await Report(probe, canScrollBack: true, canScrollForward: true);
 
             // Assert
             Assert.Equal(2, cut.FindAll(".forma-freeze-pane-arrow").Count);
@@ -107,10 +98,11 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
 
             // Act
-            await Report(cut, canScrollBack: true, canScrollForward: false);
+            await Report(probe, canScrollBack: true, canScrollForward: false);
 
             // Assert
             Assert.Multiple(
@@ -123,14 +115,30 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
-            await Report(cut, canScrollBack: true, canScrollForward: true);
+            await Report(probe, canScrollBack: true, canScrollForward: true);
 
             // Act
-            await Report(cut, canScrollBack: false, canScrollForward: false);
+            await Report(probe, canScrollBack: false, canScrollForward: false);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow"));
+        }
+
+        [Fact]
+        public async Task Should_leave_its_arrows_presses_in_the_browser()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(probe, canScrollBack: true, canScrollForward: true);
+
+            // Assert
+            Assert.All(cut.FindAll(".forma-freeze-pane-arrow"), arrow => Assert.False(arrow.HasAttribute("blazor:onclick")));
         }
 
         [Fact]
@@ -138,10 +146,11 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
 
             // Act
-            await Report(cut, canScrollBack: true, canScrollForward: true);
+            await Report(probe, canScrollBack: true, canScrollForward: true);
 
             // Assert
             Assert.Multiple(
@@ -154,10 +163,11 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane Options="BlockArrows"><button>One</button></FormaFreezePane>);
 
             // Act
-            await Report(cut, canScrollBack: true, canScrollForward: true);
+            await Report(probe, canScrollBack: true, canScrollForward: true);
 
             // Assert
             Assert.Multiple(
@@ -171,11 +181,12 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var options = new FreezePaneOptions { Navigation = ScrollNavigation.Arrows, ScrollBackLabel = "Earlier", ScrollForwardLabel = "Later" };
             var cut = ctx.Render(@<FormaFreezePane Options="options"><button>One</button></FormaFreezePane>);
 
             // Act
-            await Report(cut, canScrollBack: true, canScrollForward: true);
+            await Report(probe, canScrollBack: true, canScrollForward: true);
 
             // Assert
             Assert.Multiple(
@@ -188,10 +199,11 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
 
             // Act
-            await Report(cut, canScrollBack: true, canScrollForward: true, frozenExtent: 120.5, cornerExtent: 32);
+            await Report(probe, canScrollBack: true, canScrollForward: true, frozenExtent: 120.5, cornerExtent: 32);
 
             // Assert
             var root = cut.Find(".forma-freeze-pane");
@@ -201,15 +213,16 @@
         }
 
         [Fact]
-        public async Task Should_mark_itself_measured_once_the_first_report_arrives()
+        public async Task Should_mark_itself_measured_once_the_first_state_arrives()
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var cut = ctx.Render(@<FormaFreezePane><button>One</button></FormaFreezePane>);
             Assert.DoesNotContain("is-measured", cut.Find(".forma-freeze-pane").ClassList);
 
             // Act
-            await Report(cut, canScrollBack: false, canScrollForward: false);
+            await Report(probe, canScrollBack: false, canScrollForward: false);
 
             // Assert
             Assert.Contains("is-measured", cut.Find(".forma-freeze-pane").ClassList);
@@ -220,14 +233,16 @@
         {
             // Arrange
             using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
             var router = new InputRouterProbe(ctx);
             var asked = new List<double>();
             var silent = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
             var answering = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows" FrozenExtentChanged="@(extent => asked.Add(extent))"><button>One</button></FormaFreezePane>);
 
-            // Act
-            await Report(silent, canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 32);
-            await Report(answering, canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 32, viewportExtent: 500);
+            // Act - the answering pane asks for its viewport's extent once its edge is to be drawn
+            await Report(probe, silent, canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 32);
+            await Report(probe, answering, canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 32);
+            await Report(probe, answering, canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 32, viewportExtent: 500);
 
             // Assert
             Assert.Multiple(
@@ -240,6 +255,111 @@
 
             // Assert
             Assert.Equal([128], asked);
+        }
+
+        [Fact]
+        public async Task Should_ask_for_the_viewport_extent_only_while_the_frozen_edge_is_drawn()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
+            var cut = ctx.Render(@<FormaFreezePane FrozenExtentChanged="@((double _) => { })"><button>One</button></FormaFreezePane>);
+            var first = Assert.Single(probe.Observations);
+
+            // Act
+            await Report(probe, canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 32);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(false, DomProbe<ScrollState>.GetOption(first, "viewportExtent")),
+                () => Assert.Equal(true, DomProbe<ScrollState>.GetOption(probe.Observations[^1], "viewportExtent")),
+                () => Assert.Equal(2, probe.Observations.Count));
+        }
+
+        [Fact]
+        public void Should_observe_its_axis_and_frozen_parts()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
+
+            // Act
+            ctx.Render(@<FormaFreezePane Options="BlockArrows"><button>One</button></FormaFreezePane>);
+
+            // Assert
+            var observation = Assert.Single(probe.Observations);
+            Assert.Multiple(
+                () => Assert.Equal("scroll", DomProbe<ScrollState>.GetRequestField(observation, "capability")),
+                () => Assert.Equal("block", DomProbe<ScrollState>.GetOption(observation, "axis")),
+                () => Assert.Equal(".forma-freeze-pane-frozen", DomProbe<ScrollState>.GetOption(observation, "frozen")));
+        }
+
+        [Fact]
+        public void Should_answer_the_wheel_as_its_own_scroll_action()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
+
+            // Act
+            ctx.Render(@<FormaFreezePane><button>One</button></FormaFreezePane>);
+
+            // Assert
+            Assert.Equal("freeze-pane.scroll", DomProbe<ScrollState>.GetOption(Assert.Single(probe.Interactions), "wheel"));
+        }
+
+        [Fact]
+        public void Should_leave_the_wheel_to_the_browser_along_the_block_axis()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
+
+            // Act
+            ctx.Render(@<FormaFreezePane Options="BlockArrows"><button>One</button></FormaFreezePane>);
+
+            // Assert
+            Assert.Null(DomProbe<ScrollState>.GetOption(Assert.Single(probe.Interactions), "wheel"));
+        }
+
+        [Fact]
+        public void Should_step_to_its_stops_by_its_arrows_in_the_browser()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
+
+            // Act
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Assert
+            var interaction = Assert.Single(probe.Interactions);
+            var buttons = DomProbe<ScrollState>.GetOption(interaction, "buttons")!;
+            object? GetButtonOption(string name) => buttons.GetType().GetProperty(name)!.GetValue(buttons);
+            Assert.Multiple(
+                () => Assert.Equal(".forma-freeze-pane-stop", DomProbe<ScrollState>.GetOption(interaction, "stops")),
+                () => Assert.Equal(".forma-freeze-pane-frozen", DomProbe<ScrollState>.GetOption(interaction, "frozen")),
+                () => Assert.Equal(cut.FindComponent<FormaFreezePane>().Instance.RootElement.Id, ((ElementReference)GetButtonOption("container")!).Id),
+                () => Assert.Equal(".forma-freeze-pane-arrow-back", GetButtonOption("back")),
+                () => Assert.Equal(".forma-freeze-pane-arrow-forward", GetButtonOption("forward")),
+                () => Assert.Equal("freeze-pane.scroll-back", GetButtonOption("backAction")),
+                () => Assert.Equal("freeze-pane.scroll-forward", GetButtonOption("forwardAction")));
+        }
+
+        [Fact]
+        public void Should_attach_no_interaction_while_neither_arrows_nor_the_wheel_move_it()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
+
+            // Act
+            ctx.Render(@<FormaFreezePane Options="@(new FreezePaneOptions { PageOnWheelGesture = false })"><button>One</button></FormaFreezePane>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(probe.Interactions),
+                () => Assert.Single(probe.Observations));
         }
 
         [Fact]

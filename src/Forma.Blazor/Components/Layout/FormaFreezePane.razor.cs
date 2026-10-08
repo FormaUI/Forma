@@ -1,12 +1,11 @@
 namespace Forma.Blazor.Components.Layout;
 
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
-using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A scroll box whose content moves along one axis while the parts marked <see cref="FrozenClass"/> stay at its start.</summary>
 /// <remarks>
@@ -36,34 +35,33 @@ public sealed partial class FormaFreezePane : FormaElementBase
     private const double FrozenEdgeKeyStep = 8;
 
     private const string ScrollAction = "freeze-pane.scroll";
+    private const string ScrollBackAction = "freeze-pane.scroll-back";
+    private const string ScrollForwardAction = "freeze-pane.scroll-forward";
+    private const string BackArrowClass = "forma-freeze-pane-arrow-back";
+    private const string ForwardArrowClass = "forma-freeze-pane-arrow-forward";
 
-    private static readonly ScrollBoundaryReport Unmeasured = new(false, false, 0, 0, 0);
-
-    [Inject] private InputRouter InputRouter { get; set; } = default!;
-
-    private Scroll _scroll = default!;
-    private Wheel _wheel = default!;
-    private DotNetObjectReference<FormaFreezePane>? _selfReference;
     private ElementReference _viewport;
-    private bool _isMeasured;
-    private ScrollBoundaryReport _report = Unmeasured;
-    private ScrollBehaviors? _attached;
-    private bool _isSyncing;
+    private DomObservation<ScrollWatchOptions, ScrollState>? _scrollState;
+    private DomInteraction<ScrollInteractionOptions>? _scrolling;
+    private ScrollState? _state;
+
+    private bool IsMeasured
+        => _state is not null;
 
     private bool ShowsArrows
         => Options.Navigation == ScrollNavigation.Arrows;
 
     private bool CanScrollBack
-        => _report.CanScrollBack;
+        => _state?.CanScrollBack ?? false;
 
     private bool CanScrollForward
-        => _report.CanScrollForward;
+        => _state?.CanScrollForward ?? false;
 
     private double FrozenExtent
-        => _report.FrozenExtent;
+        => _state?.FrozenExtent ?? 0;
 
     private double CornerExtent
-        => _report.CornerExtent;
+        => _state?.CornerExtent ?? 0;
 
     private bool ShowsFrozenEdge
         => !IsBlockAxis && FrozenExtent > 0 && FrozenExtentChanged.HasDelegate;
@@ -86,37 +84,32 @@ public sealed partial class FormaFreezePane : FormaElementBase
     private Glyph ForwardGlyph
         => IsBlockAxis ? Glyph.ChevronDown : Glyph.ChevronRight;
 
-    private ScrollBehaviors Behaviors
-        => new() { Boundary = new ScrollBoundary(Options.Axis, $".{FrozenClass}") };
+    // The viewport's extent bounds the frozen edge, so it is asked for only while the edge is drawn.
+    private ScrollWatchOptions WatchOptions
+        => new() { Axis = Options.Axis, FrozenSelector = $".{FrozenClass}", ReportsViewportExtent = ShowsFrozenEdge };
+
+    // The arrows are looked for whether or not they are drawn, so drawing them changes nothing the browser was given.
+    private ScrollInteractionOptions InteractionOptions
+        => new()
+        {
+            Steps = new ScrollStepOptions { Axis = Options.Axis, StopSelector = $".{StopClass}", FrozenSelector = $".{FrozenClass}" },
+            Buttons = new ScrollButtons
+            {
+                Container = RootElement,
+                BackSelector = $".{BackArrowClass}",
+                ForwardSelector = $".{ForwardArrowClass}",
+                BackAction = ScrollBackAction,
+                ForwardAction = ScrollForwardAction,
+            },
+            WheelAction = WantsWheel ? ScrollAction : null,
+        };
 
     // The wheel moves inline content only; along the block axis the browser already scrolls by it.
     private bool WantsWheel
         => !IsBlockAxis && Options.PageOnWheelGesture;
 
-    /// <summary>Takes how far the content can still move each way, how far its frozen parts reach and how much of the viewport is in view.</summary>
-    [JSInvokable]
-    public Task HandleOverflowAsync(ScrollBoundaryReport report)
-    {
-        ArgumentNullException.ThrowIfNull(report);
-
-        if (_isMeasured && _report == report)
-        {
-            return Task.CompletedTask;
-        }
-
-        _isMeasured = true;
-        _report = report;
-
-        // The report arrives off the renderer, so the rerender has to be marshalled back onto it.
-        return InvokeAsync(StateHasChanged);
-    }
-
-    /// <inheritdoc />
-    protected override void OnInitialized()
-    {
-        _scroll = new Scroll(Context.JS);
-        _wheel = new Wheel(Context.JS);
-    }
+    private bool WantsInteraction
+        => WantsWheel || ShowsArrows;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -125,52 +118,37 @@ public sealed partial class FormaFreezePane : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_isSyncing)
+        if (firstRender)
         {
-            return;
+            var scroll = Context.DomEngine.GetElement(_viewport).Scroll;
+            var watching = scroll.WatchAsync(HandleScrollStateAsync, WatchOptions);
+            var attaching = scroll.AttachAsync(InteractionOptions, WantsInteraction);
+
+            _scrollState = await watching;
+            _scrolling = await attaching;
         }
 
-        _isSyncing = true;
-
-        try
+        // A render made while the first requests were settling is caught up here; a request that changed nothing makes no call.
+        if (_scrollState is { } scrollState && _scrolling is { } scrolling)
         {
-            // The options can change again while an attach is in flight, so the loop re-reads them after each one.
-            for (var behaviors = Behaviors; behaviors != _attached; behaviors = Behaviors)
-            {
-                if (!await AttachAsync(behaviors))
-                {
-                    return;
-                }
-
-                _attached = behaviors;
-            }
-
-            if (WantsWheel && !_wheel.IsAttached)
-            {
-                // The turn is a route the script declares itself, so the host's policy reaches the router before it does.
-                await InputRouter.ConfigureAsync();
-                await _wheel.AttachAsync(_viewport, ScrollWheel.MovesTarget(ScrollAction));
-            }
-            else if (!WantsWheel && _wheel.IsAttached)
-            {
-                await _wheel.DetachAsync();
-            }
-        }
-        finally
-        {
-            _isSyncing = false;
+            await Task.WhenAll(
+                scrollState.SyncAsync(_viewport, WatchOptions),
+                scrolling.SyncAsync(_viewport, InteractionOptions, WantsInteraction));
         }
     }
 
-    private async ValueTask<bool> AttachAsync(ScrollBehaviors behaviors)
+    // The state arrives off the renderer, so the rerender is marshalled back onto it.
+    private Task HandleScrollStateAsync(ScrollState state)
     {
-        _selfReference ??= DotNetObjectReference.Create(this);
+        if (_state == state)
+        {
+            return Task.CompletedTask;
+        }
 
-        return await _scroll.AttachAsync(_viewport, behaviors, _selfReference);
+        _state = state;
+
+        return InvokeAsync(StateHasChanged);
     }
-
-    private async Task ScrollAsync(int direction)
-        => await _scroll.StepAsync(_viewport, direction, Options.Axis, new ScrollStops($".{StopClass}", FrozenExtent));
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
@@ -179,7 +157,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
             .Add(IsBlockAxis ? "forma-freeze-pane-block" : "forma-freeze-pane-inline")
             .Add(ShowsArrows ? "forma-freeze-pane-arrows" : "forma-freeze-pane-scrollbar")
             .Add("forma-freeze-pane-cross-axis", Options.ScrollsCrossAxis)
-            .Add("is-measured", _isMeasured)
+            .Add("is-measured", IsMeasured)
             .Add("has-frozen", FrozenExtent > 0)
             .Add("is-scrolled", CanScrollBack);
 
@@ -192,14 +170,5 @@ public sealed partial class FormaFreezePane : FormaElementBase
                 .Add("--forma-freeze-pane-frozen-extent", CssLength.FromPx(FrozenExtent))
                 .Add("--forma-freeze-pane-corner-extent", CssLength.FromPx(CornerExtent));
         }
-    }
-
-    /// <inheritdoc />
-    protected override async ValueTask DisposeAsyncCore()
-    {
-        await _scroll.DisposeAsync();
-        await _wheel.DisposeAsync();
-        _selfReference?.Dispose();
-        await base.DisposeAsyncCore();
     }
 }

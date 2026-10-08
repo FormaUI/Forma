@@ -9,11 +9,13 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />

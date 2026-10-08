@@ -1,14 +1,77 @@
 # Forma.Framework.Browser.Interop
 
-The browser capabilities Forma's components reach through JavaScript, each a script with a typed C#
-wrapper beside it: behaviors that attach to an element for a lifetime, such as roving focus or a drop
-zone; operations that make a single call, such as writing to the clipboard; and the browser side of
-components such as `FormaDialog` and `FormaWindow`.
+The browser capabilities Forma's components reach through JavaScript. The DOM watcher and engine give
+an owner typed objects for what it observes of its elements and what it does to them, with one
+lifetime and one notification path for all of them. Beside them, scripts with typed C# wrappers:
+behaviors that attach to an element for a lifetime, such as roving focus or a drop zone; operations
+that make a single call, such as writing to the clipboard; and the browser side of components such as
+`FormaDialog` and `FormaWindow`.
 
-The assembly ships inside `formaui-net.Blazor`. Its wrappers are built on
-`Forma.Framework.JavaScript.Interop` and sit in the `Behaviors`, `Operations` and `Components`
-namespaces under `Forma.Framework.Browser.Interop`; their scripts are served from
+The assembly ships inside `formaui-net.Blazor`. It is built on `Forma.Framework.JavaScript.Interop`.
+The watcher and engine sit at the root of the `Forma.Framework.Browser.Interop` namespace with the
+registrations they make, and each capability area has a namespace beneath it, such as `Scrolling`.
+The wrappers sit in `Behaviors`, `Operations` and `Components`. The scripts are served from
 `_content/forma/browser/scripts/`.
+
+## The DOM watcher and engine
+
+A component reaches its watcher and engine as `Context.DomWatcher` and `Context.DomEngine`; its
+context makes them on first use and releases everything they hold when the component is disposed, in
+one call to the browser. The engine acts through the watcher it borrows, so an element got from the
+engine both observes and acts, and one got from the watcher only observes.
+
+An observation hands each state the browser measures to its handler, the first one included, and
+an interaction keeps running in the browser. Each is created once and brought in step with the
+component after every render; a request equal to the one the browser holds makes no call, and
+overlapping calls join one settle. A freeze pane that reports how far its content can move and
+steps it with its arrows:
+
+```csharp
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Scrolling;
+
+private DomObservation<ScrollWatchOptions, ScrollState>? _scrollState;
+private DomInteraction<ScrollInteractionOptions>? _scrolling;
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
+    {
+        var scroll = Context.DomEngine.GetElement(_viewport).Scroll;
+        var watching = scroll.WatchAsync(HandleScrollStateAsync, WatchOptions);
+        var attaching = scroll.AttachAsync(InteractionOptions, WantsInteraction);
+
+        _scrollState = await watching;
+        _scrolling = await attaching;
+    }
+
+    if (_scrollState is { } scrollState && _scrolling is { } scrolling)
+    {
+        await Task.WhenAll(
+            scrollState.SyncAsync(_viewport, WatchOptions),
+            scrolling.SyncAsync(_viewport, InteractionOptions, WantsInteraction));
+    }
+}
+
+// The state arrives off the renderer, so the render is marshalled back onto it.
+private Task HandleScrollStateAsync(ScrollState state)
+{
+    _state = state;
+
+    return InvokeAsync(StateHasChanged);
+}
+```
+
+A one-off action is a method on the element: `Scroll.StepAsync` moves it a step and reports whether
+it started moving.
+
+| Capability | Watcher | Engine |
+| --- | --- | --- |
+| `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
+
+A host registers the bridge the watchers and engines of one circuit share their imports through with
+`AddFormaDomServices`, which `AddFormaUI` calls. A watcher made with no bridge imports through one of
+its own.
 
 ## Using a wrapper
 
@@ -65,9 +128,9 @@ A wrapper's calls report whether they ran, so a component carries on when its ci
 | `Focus` | Decides where the focus goes inside a surface: Tab wrapping among its controls, visiting named regions first, or roving as one Tab stop; and the element its owner marks taking the focus when the one holding it goes away. |
 | `PanGesture` | Drags a scroll container's contents with the pointer. |
 | `ReorderInteraction` | Moves an item to a new position in its list by dragging or by keyboard, telling its owner through `HandleReorderAsync`. |
-| `Scroll` | Tells its owner how far a surface can still scroll and when a sentinel comes into view, and moves a container one step or to its center. |
+| `Scroll` | Tells its owner when a sentinel comes into view, and moves a container to its center. |
 | `SentinelObserver<TOwner>` | Watches a sentinel element through `Scroll` while it is wanted. |
-| `Wheel` | Answers a wheel turned over a surface by moving a track, or by telling its owner the direction through `HandleWheelAsync`. |
+| `Wheel` | Answers a wheel turned over a surface by telling its owner the direction through `HandleWheelAsync`. |
 
 `DragGesture.js`, the press, move and release of a drag, is composed by other scripts and has no
 wrapper.

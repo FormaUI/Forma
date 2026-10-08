@@ -12,9 +12,8 @@
         <FormaButton Variant="ButtonVariant.Ghost"
                      Size="ButtonSize.Mini"
                      IconOnly="true"
-                     class="forma-freeze-pane-arrow forma-freeze-pane-arrow-back"
-                     aria-label="@BackLabel"
-                     OnClick="() => ScrollAsync(-1)">
+                     class="@($"forma-freeze-pane-arrow {BackArrowClass}")"
+                     aria-label="@BackLabel">
             <FormaIcon Icon="@BackGlyph" />
         </FormaButton>
     }
@@ -23,14 +22,14 @@
         @ChildContent
     </div>
 
-    @if (ShowsFrozenEdge)
+    @if (ShowsFrozenEdge && _state?.ViewportExtent is { } viewportExtent)
     {
         <FormaSplitter Class="forma-freeze-pane-edge"
                        Label="@FrozenEdgeLabel"
                        Value="FrozenExtent"
                        ValueChanged="FrozenExtentChanged"
                        Min="0"
-                       Max="_report.ViewportExtent"
+                       Max="viewportExtent"
                        Step="FrozenEdgeKeyStep"
                        PixelsPerUnit="1" />
     }
@@ -40,9 +39,8 @@
         <FormaButton Variant="ButtonVariant.Ghost"
                      Size="ButtonSize.Mini"
                      IconOnly="true"
-                     class="forma-freeze-pane-arrow forma-freeze-pane-arrow-forward"
-                     aria-label="@ForwardLabel"
-                     OnClick="() => ScrollAsync(1)">
+                     class="@($"forma-freeze-pane-arrow {ForwardArrowClass}")"
+                     aria-label="@ForwardLabel">
             <FormaIcon Icon="@ForwardGlyph" />
         </FormaButton>
     }
