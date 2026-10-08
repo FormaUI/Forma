@@ -1,5 +1,5 @@
 /**
- * ResizeObserverPool — the document's one resize observer, shared by every observation that watches a size
+ * ResizeObserverPool — the document's one resize observer
  */
 
 /** @typedef {(entry: ResizeObserverEntry) => void} SizeListener */
@@ -12,7 +12,7 @@ const listenersByTarget = new Map();
 
 export class ResizeObserverPool {
     /**
-     * Calls the listener whenever the target's size changes, until the returned subscription is disposed.
+     * Subscribes the listener to the target's size changes.
      * @param {Element} target
      * @param {SizeListener} listener
      */
@@ -43,7 +43,7 @@ export class ResizeObserverPool {
 
     static #deliver(entries) {
         for (const entry of entries) {
-            // A listener can dispose another, so each target's listeners are copied before any runs.
+            // A listener can dispose another.
             for (const listener of [...(listenersByTarget.get(entry.target) ?? [])]) {
                 listener(entry);
             }

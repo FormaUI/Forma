@@ -50,7 +50,7 @@ public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomReg
     public Task SyncAsync(ElementReference element, TOptions options, bool shouldObserve = true)
         => _registration.SyncAsync(element, options, shouldObserve);
 
-    /// <summary>Asks the browser to measure the observation afresh and to resume a delivery that failed, or establishes it again where it is not established.</summary>
+    /// <summary>Measures the observation afresh and resumes its delivery.</summary>
     public async Task RefreshAsync()
     {
         if (IsDisposed)

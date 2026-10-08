@@ -1,9 +1,5 @@
 /**
  * IntersectionObserverPool — the document's intersection observers, one for each root, margin and threshold
- *
- * Subscribers asking for the same root, margin and threshold share one native observer, which observes
- * each of their targets once; a subscriber with any of the three different gets an observer of its own.
- * An observer is disconnected once its last target is let go.
  */
 
 /** @typedef {(entry: IntersectionObserverEntry) => void} IntersectionListener */
@@ -14,7 +10,7 @@ const poolsByRoot = new Map();
 
 export class IntersectionObserverPool {
     /**
-     * Calls the listener with each intersection change of the target against the root, until the returned subscription is disposed.
+     * Subscribes the listener to the target's intersection changes against the root.
      * @param {Element} target
      * @param {{ root?: Element | null, rootMargin?: number, threshold?: number }} options The root, null for the viewport; the margin around it in pixels; and the threshold.
      * @param {IntersectionListener} listener
@@ -51,7 +47,7 @@ export class IntersectionObserverPool {
         let isDisposed = false;
 
         return {
-            /** Has the observer report the target afresh, as it does when it starts observing it. */
+            /** Has the observer report the target afresh. */
             remeasure() {
                 if (!isDisposed) {
                     pool.observer.unobserve(target);
@@ -71,7 +67,7 @@ export class IntersectionObserverPool {
 
     static #deliver(listenersByTarget, entries) {
         for (const entry of entries) {
-            // A listener can dispose another, so each target's listeners are copied before any runs.
+            // A listener can dispose another.
             for (const listener of [...(listenersByTarget.get(entry.target) ?? [])]) {
                 listener(entry);
             }

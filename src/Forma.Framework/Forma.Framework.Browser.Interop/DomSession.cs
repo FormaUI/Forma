@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 /// <summary>An owner's side of the browser: its registrations, its receiver, and the calls made for it, under its own log and identity.</summary>
-/// <remarks>The owner's registrations live in the browser under its runtime identity, made on its first registration there. Releasing the session marks every registration released before one call releases what the browser holds for the owner, made through the engine's entry where the owner used it, since that entry releases the engine before the watcher.</remarks>
 internal sealed class DomSession
 {
     private readonly IJSEnvironment _js;
@@ -21,7 +20,7 @@ internal sealed class DomSession
     private DotNetObjectReference<DomReceiver>? _receiver;
     private int _lastToken;
 
-    /// <summary>Creates the session of the owner whose log and identity <paramref name="js"/> carries, importing through <paramref name="bridge"/>, or through a bridge of its own where none is given.</summary>
+    /// <summary>Creates the session of the owner whose environment is <paramref name="js"/>, importing through <paramref name="bridge"/>.</summary>
     public DomSession(IJSEnvironment js, DomBridge? bridge)
     {
         ArgumentNullException.ThrowIfNull(js);
@@ -45,11 +44,11 @@ internal sealed class DomSession
     /// <summary>Whether the session has been released.</summary>
     public bool IsReleased { get; private set; }
 
-    /// <summary>The bridge the owner imports through, which routed interactions reach the input router by.</summary>
+    /// <summary>The bridge the owner imports through.</summary>
     public DomBridge Bridge
         => _sharedBridge ?? (_ownBridge ??= new DomBridge(_js, inputRouter: null));
 
-    /// <summary>The reference the browser delivers the owner's state through.</summary>
+    /// <summary>The reference to the owner's receiver.</summary>
     public DotNetObjectReference<DomReceiver> Receiver
         => _receiver ??= DotNetObjectReference.Create(new DomReceiver(this));
 
@@ -57,7 +56,7 @@ internal sealed class DomSession
     public string CreateToken()
         => (++_lastToken).ToString(CultureInfo.InvariantCulture);
 
-    /// <summary>Takes <paramref name="registration"/> into the session; false once the session has been released.</summary>
+    /// <summary>Takes <paramref name="registration"/> into the session, returning whether the session took it.</summary>
     public bool Add(IDomRegistration registration)
     {
         if (IsReleased)
@@ -81,7 +80,7 @@ internal sealed class DomSession
         _stateTargets.Remove(registration.Token);
     }
 
-    /// <summary>Describes the owner's established observations for the browser to measure afresh, each under its token and current generation; <see langword="null"/> where it has none.</summary>
+    /// <summary>The owner's established observations, each by its token and current generation.</summary>
     public object? DescribeObservations()
     {
         var observations = _registrations

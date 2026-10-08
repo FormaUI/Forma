@@ -1,9 +1,5 @@
 /**
- * RegistrationTable — an owner's registrations by token, each held under the latest generation its owner asked for
- *
- * The .NET side mints a registration's token and each generation of it. A generation is recorded when an
- * attach for it begins, so the registration it replaces is released at once, and an attach that a later
- * one, a detach or a release overtook while it loaded its capability is dropped when it lands.
+ * RegistrationTable — an owner's registrations by token and generation
  */
 
 /** @typedef {{ dispose(): void }} Resource */
@@ -13,10 +9,7 @@ export class RegistrationTable {
     #entries = new Map();
     #isDisposed = false;
 
-    /**
-     * Records the generation as the token's latest and releases what an earlier one holds; false when the
-     * generation is already behind, or the registrations have been released.
-     */
+    /** Begins the token's generation, returning whether it began. */
     begin(token, generation) {
         if (this.#isDisposed) {
             return false;
@@ -39,7 +32,7 @@ export class RegistrationTable {
         return !this.#isDisposed && this.#entries.get(token)?.generation === generation;
     }
 
-    /** Holds the resource under the generation; false, with the resource released, when the generation is no longer the latest. */
+    /** Holds the resource under the generation, returning whether it is held. */
     install(token, generation, resource) {
         if (!this.isCurrent(token, generation)) {
             resource.dispose();
@@ -56,7 +49,7 @@ export class RegistrationTable {
         return this.#entries.get(token)?.resource ?? null;
     }
 
-    /** Records the generation as the token's latest and releases what the token holds. */
+    /** Releases what the token holds. */
     remove(token, generation) {
         const entry = this.#entries.get(token);
 
@@ -66,11 +59,11 @@ export class RegistrationTable {
 
         entry?.resource?.dispose();
 
-        // The token is kept, under the generation, so an attach for an earlier one still loading is dropped when it lands.
+        // The token keeps the generation it was removed under.
         this.#entries.set(token, { generation, resource: null });
     }
 
-    /** Releases every resource and refuses any later registration. */
+    /** Releases every resource. */
     dispose() {
         this.#isDisposed = true;
 

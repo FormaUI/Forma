@@ -1,12 +1,5 @@
 /**
  * DomElement — a native element an owner registers on, and the registrations held on it
- *
- * The owner's session keeps one for each native element. The element's size is watched through the
- * document's shared resize observer, since a rendered element's size changes as it leaves the
- * document, and a frame after each change the element is checked: one moved within the document is
- * back in it by then, while one taken out of it has left, which releases every registration held on
- * it. A release frees the registration's browser resources and leaves its token free for a later
- * generation.
  */
 
 import { FrameScheduler } from '../../core/scripts/FrameScheduler.js';
@@ -23,7 +16,7 @@ export class DomElement {
 
     /**
      * @param {Element} element The native element.
-     * @param {() => void} forget Called once nothing is held on the element any longer.
+     * @param {() => void} forget The callback that forgets the element.
      */
     constructor(element, forget) {
         this.#element = element;
@@ -37,9 +30,8 @@ export class DomElement {
     }
 
     /**
-     * Holds a registration on the element, calling its release should the element leave the document;
-     * the returned hold lets the registration go without calling it.
-     * @param {() => void} release
+     * Holds a registration on the element.
+     * @param {() => void} release The registration's release.
      */
     hold(release) {
         this.#releases.add(release);
@@ -78,7 +70,7 @@ export class DomElement {
             return;
         }
 
-        // Each release lets its hold go, which can dispose the element before the loop ends.
+        // A release can dispose the element.
         for (const release of [...this.#releases]) {
             release();
         }
