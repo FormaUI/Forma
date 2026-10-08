@@ -61,17 +61,19 @@
                 new FakeBrowserFile("next.txt", "second")
             ];
 
-            // Act
-            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" />);
-            var uploader = cut.FindComponent<FormaFileUploader>();
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { AutoStart = false })" />);
+            var uploader = cut.FindComponent<FormaFileUploader>().Instance;
 
+            // Act
+            var upload = cut.InvokeAsync(() => uploader.StartAsync());
             await store.Saving;
-            uploader.Instance.Cancel();
+            uploader.Cancel();
+            await upload;
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal(
+            Assert.Equal(
                 ["Canceled", "Canceled"],
-                cut.FindAll(".forma-file-uploader-state").Select(element => element.TextContent)));
+                cut.FindAll(".forma-file-uploader-state").Select(element => element.TextContent));
         }
 
         [Fact]
