@@ -118,6 +118,7 @@ A query parsed without a type is a `DomqlQuery`, read as a `DomqlSnapshot` with 
 
 C# keeps each watch's cached state, applies every change set the browser sends to it, and maps a new snapshot that reuses the unchanged parts of the last, so `Current` never changes under its holder. A typed query maps its snapshot onto `T`: its fields onto constructor parameters by name regardless of case, a nested shape onto a nested type, a list onto a read-only list, and an unavailable fact onto a nullable member. A mapping that does not fit is a failure, reported through the watcher's failure path and never filled with a default value:
 
+- Two fields whose names differ only in case, which a mapping that matches names regardless of case cannot tell apart.
 - A field with no constructor parameter of its name, or a constructor parameter with no field.
 - A null, whether a fact, a list item, a nested shape or the whole answer, meeting a destination that cannot hold null.
 - A number meeting an integral destination it does not fit exactly.
@@ -190,18 +191,18 @@ A capability installs listeners only while a read or a watch asks for its facts 
 | A freeze pane's scroll state | `@viewport.scroll(axis: "inline") { canScrollBack, canScrollForward, frozen: frozenExtent(".forma-freeze-pane-frozen"), viewportExtent }` |
 | A date-time picker's focus | `@picker.focus.within` |
 | A sentinel near the end of a scrolling panel | `@sentinel.intersects(root: @panel, margin: 200)` |
-| The explorer header's layout tier | `@header.computedStyle("--forma-explorer-header-layout")` |
+| The explorer header's layout tier | `@header.computedstyle-of "--forma-explorer-header-layout"` |
 | The data cards' column count | `@ruler.grid.columns.count` |
 | A table's tallest row | `@table.all("tbody tr").max(rect.height)` |
 | The virtualizer's viewport | `@spacer.virtualizer { offset, viewport, itemSize }` |
 | A text field's selection | `@field.selection { start, end }` |
-| Whether sharing is available | `@page.supports("share")` |
+| Whether sharing is available | `@window.supports("share")` |
 | Input actions and wheel turns | `@scope.input.actions { action, key: input.key }` |
 | Dismissal | `@scope.input.dismissals { action, reason }` |
-| The key of a drop's target | `@zone.input.drops { key: target.closest("[data-drop-target]").attribute("data-drop-key") }` |
+| The key of a drop's target | `@zone.input.drops { key: target.closest("[data-drop-target]").attribute-of("data-drop-key") }` |
 | A frame's placement | `@frame.placement.changes { rect }` |
 | A reorder | `@list.reorder.moves { from, to, after }` |
-| A data view's selection | `@view.dataView.selects { item: target.attribute("data-key"), additive }` |
+| A data view's selection | `@view.dataView.selects { item: target.attribute-of("data-key"), additive }` |
 | Rich text's selection and content | `@canvas.richText.selection { start, end, collapsed, blockType, styles }` and `@canvas.richText.changes { html }` |
 
 A data grid's column fit measures at intrinsic widths under a temporary class, so it is an engine action returning its measurement, or a behavior keeping one that `@table.columnFit { available, columns { key, width } }` reads.
