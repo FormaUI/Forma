@@ -17,7 +17,7 @@ The [implementation plan](dom-watcher-engine-implementation-plan.md) holds the d
 | Shared lifetime | Watches and behaviors reconcile requested state against successfully applied state. |
 | One notification channel | One callback receiver per owner delivers snapshots and occurrences and surfaces failures. |
 | Managed ownership | Blazor keeps rendering, application state, collections, validation and workspace policy. |
-| Packaging | DOMQL lives in `Forma.DOMQL`, in the sibling [Forma.DOMQL](https://github.com/FormaUI/Forma.DOMQL) repository, served from `_content/Forma.DOMQL`, and references neither interop assembly. The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
+| Packaging | DOMQL is a JavaScript library in the sibling [Forma.DOMQL](https://github.com/FormaUI/Forma.DOMQL) repository, published as the package `formaui-net.DOMQL`, which carries it as one bundled file served from `_content/DOMQL/domql.js`, and references neither interop assembly. The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
 
 The watcher and the engine provide concrete browser capabilities through that model. Each capability arrives with a consumer that needs it.
 
@@ -49,7 +49,7 @@ The browser foundation stands on five pillars, each one architectural responsibi
 | --- | --- |
 | `DomWatcher.js` | Reads, watches and listens: runs queries, keeps watches current, and delivers snapshots and occurrences |
 | `DomEngine.js` | Runs actions and establishes behaviors |
-| `Domql.js` | Defines requests, queries, actions and behaviors: parsing, definitions, validation and evaluation, over the vocabulary and the modules that extend it |
+| `domql.js` | Defines requests, queries, actions and behaviors: parsing, definitions, validation and evaluation, over the vocabulary and the modules that extend it |
 | `Virtualizer.js` | Virtualization's browser measurement, rendered range, pinning and scrolling |
 | `InputRouter.js` | Input ownership, route matching, and the actions and dismissals routes report |
 
@@ -66,16 +66,16 @@ The input router and the virtualizer stay independently usable, each with its ow
 
 DOMQL describes these requests and validates them against the module's declarations, the watcher and the engine carry them out through the module, and the router and the virtualizer keep ownership of their algorithms. A module lives beside the capability it exposes, or in an integration package for it, and depends on DOMQL's extension contracts alone, so neither DOMQL nor the watcher needs the input assembly to discover or query input. A C# consumer naming input-specific types references the package that declares them. The composer, the explorer and other libraries contribute their capabilities through modules the same way, without the foundation knowing their implementations in advance.
 
-### DOMQL's assembly
+### DOMQL's package
 
-`Forma.DOMQL` holds DOMQL itself, in a repository of its own, checked out beside this one and referenced by project until it ships as the `formaui-net.DOMQL` package: parsing, fluent construction and the shared definition; vocabulary registration and validation; the contracts for state, occurrences, actions and behaviors; and the abstract execution context those contracts take. Browser-specific implementations, the managed interop transport, component ownership and the concrete watcher and engine stay outside it, and its contracts name none of them, so every dependency points toward it.
+`formaui-net.DOMQL` holds DOMQL itself, a JavaScript library in a repository of its own, referenced here by its package project from a checkout beside this one until the package is on a feed: parsing, fluent construction and the shared definition; vocabulary registration and validation; the contracts for state, occurrences, actions and behaviors; and the abstract execution context those contracts take. Browser-specific implementations, the managed interop transport, component ownership and the concrete watcher and engine stay outside it, and its contracts name none of them, so every dependency points toward it.
 
-| Assembly | References |
+| Project | References |
 | --- | --- |
-| `Forma.DOMQL` | Neither interop assembly |
-| `Forma.Framework.Input.Interop` | `Forma.DOMQL` |
-| `Forma.Framework.Browser.Interop` | `Forma.DOMQL` and `Forma.Framework.Input.Interop` |
-| A product's integration | `Forma.DOMQL` and the capabilities it uses |
+| `formaui-net.DOMQL` | Neither interop assembly |
+| `Forma.Framework.Input.Interop` | `formaui-net.DOMQL` |
+| `Forma.Framework.Browser.Interop` | `formaui-net.DOMQL` and `Forma.Framework.Input.Interop` |
+| A product's integration | `formaui-net.DOMQL` and the capabilities it uses |
 
 `InputRouterDomqlModule` lives beside the router in the input assembly and implements DOMQL's contracts without referencing the browser interop assembly. The assembly graph and the import graph are separate: the module is a JavaScript module of its own, so using the router alone never loads DOMQL. The registry holds definitions alone; component instances, circuit references and subscriptions stay in the sessions that own them. A library that should carry no DOMQL dependency at all exposes its capabilities through an integration package instead, and one such package can serve several capabilities.
 
