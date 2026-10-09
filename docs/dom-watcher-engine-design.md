@@ -17,7 +17,7 @@ The [implementation plan](dom-watcher-engine-implementation-plan.md) holds the d
 | Shared lifetime | Watches and behaviors reconcile requested state against successfully applied state. |
 | One notification channel | One callback receiver per owner delivers snapshots and occurrences and surfaces failures. |
 | Managed ownership | Blazor keeps rendering, application state, collections, validation and workspace policy. |
-| Packaging | DOMQL lives in `Forma.Framework.Domql`, served from `_content/forma/domql`, which references neither interop assembly. The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
+| Packaging | DOMQL lives in `Forma.DOMQL`, in the sibling [Forma.DOMQL](https://github.com/FormaUI/Forma.DOMQL) repository, served from `_content/Forma.DOMQL`, and references neither interop assembly. The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
 
 The watcher and the engine provide concrete browser capabilities through that model. Each capability arrives with a consumer that needs it.
 
@@ -35,7 +35,7 @@ The watcher and the engine hold to these principles.
 
 ## Responsibilities and dependencies
 
-A **target** is a live element, the document or the browser window. A **fact** is one piece of browser state about a target, such as an element's scroll boundaries or whether the reader is within it. A **query** is a [DOMQL](domql-specification.md) query naming targets and the facts it needs of each, and a **snapshot** is the browser's answer, its facts read in one evaluation. A **watch** keeps a query running, delivering a first snapshot and each changed one after it. An **occurrence** is something that happened, such as an input action or an accepted drop. An **action** is a request the browser carries out once, returning its result, and a **behavior** is one that runs on in the browser until it changes or is released. A **capability** is an area, such as scrolling or focus, contributing its facts, occurrences, actions and behaviors to the one model.
+A **target** is a live element, the document or the browser window. A **fact** is one piece of browser state about a target, such as an element's scroll boundaries or whether the reader is within it. A **query** is a [DOMQL](https://github.com/FormaUI/Forma.DOMQL/blob/main/docs/domql-specification.md) query naming targets and the facts it needs of each, and a **snapshot** is the browser's answer, its facts read in one evaluation. A **watch** keeps a query running, delivering a first snapshot and each changed one after it. An **occurrence** is something that happened, such as an input action or an accepted drop. An **action** is a request the browser carries out once, returning its result, and a **behavior** is one that runs on in the browser until it changes or is released. A **capability** is an area, such as scrolling or focus, contributing its facts, occurrences, actions and behaviors to the one model.
 
 `DomWatcher` reads and reports: queries, watches and occurrence subscriptions. `DomEngine` moves focus, writes the DOM properties its capabilities own through explicit contracts, runs actions and establishes behaviors. Browser work that needs immediate handling, such as routing input, canceling a native event or moving during a gesture, stays in the browser, and C# hears only the results, snapshots and occurrences it asked for. The engine consumes watcher state directly in JavaScript where no managed report is needed.
 
@@ -68,14 +68,14 @@ DOMQL describes these requests and validates them against the module's declarati
 
 ### DOMQL's assembly
 
-`Forma.Framework.Domql` holds DOMQL itself: parsing, fluent construction and the shared definition; vocabulary registration and validation; the contracts for state, occurrences, actions and behaviors; and the abstract execution context those contracts take. Browser-specific implementations, the managed interop transport, component ownership and the concrete watcher and engine stay outside it, and its contracts name none of them, so every dependency points toward it.
+`Forma.DOMQL` holds DOMQL itself, in a repository of its own, checked out beside this one and referenced by project until it ships as the `formaui-net.DOMQL` package: parsing, fluent construction and the shared definition; vocabulary registration and validation; the contracts for state, occurrences, actions and behaviors; and the abstract execution context those contracts take. Browser-specific implementations, the managed interop transport, component ownership and the concrete watcher and engine stay outside it, and its contracts name none of them, so every dependency points toward it.
 
 | Assembly | References |
 | --- | --- |
-| `Forma.Framework.Domql` | Neither interop assembly |
-| `Forma.Framework.Input.Interop` | `Forma.Framework.Domql` |
-| `Forma.Framework.Browser.Interop` | `Forma.Framework.Domql` and `Forma.Framework.Input.Interop` |
-| A product's integration | `Forma.Framework.Domql` and the capabilities it uses |
+| `Forma.DOMQL` | Neither interop assembly |
+| `Forma.Framework.Input.Interop` | `Forma.DOMQL` |
+| `Forma.Framework.Browser.Interop` | `Forma.DOMQL` and `Forma.Framework.Input.Interop` |
+| A product's integration | `Forma.DOMQL` and the capabilities it uses |
 
 `InputRouterDomqlModule` lives beside the router in the input assembly and implements DOMQL's contracts without referencing the browser interop assembly. The assembly graph and the import graph are separate: the module is a JavaScript module of its own, so using the router alone never loads DOMQL. The registry holds definitions alone; component instances, circuit references and subscriptions stay in the sessions that own them. A library that should carry no DOMQL dependency at all exposes its capabilities through an integration package instead, and one such package can serve several capabilities.
 
@@ -91,7 +91,7 @@ An element target refers to that exact element; a watch moves to a replacement e
 
 The same query is read once or watched. A read makes one crossing and returns one snapshot. A watch returns its first snapshot with its establishment and delivers each changed snapshot after it. A snapshot answers each fact the query named with its value, or with null where it is unavailable, so a missing value is never mistaken for zero, false or an empty string.
 
-A query is written in [DOMQL](domql-specification.md), with its targets as parameters, and the browser evaluates it for C# and JavaScript alike, so both get one meaning.
+A query is written in [DOMQL](https://github.com/FormaUI/Forma.DOMQL/blob/main/docs/domql-specification.md), with its targets as parameters, and the browser evaluates it for C# and JavaScript alike, so both get one meaning.
 
 A component writes its query as DOMQL text and names the snapshot's type, so reading and watching name no type again:
 

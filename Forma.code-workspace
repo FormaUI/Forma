@@ -2,6 +2,10 @@
 	"folders": [
         {
             "path": "."
+        },
+        {
+            "name": "Forma.DOMQL",
+            "path": "../formaui-net.DOMQL"
         }
     ],
     "settings": {}
