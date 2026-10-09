@@ -17,7 +17,7 @@ The [implementation plan](dom-watcher-engine-implementation-plan.md) holds the d
 | Shared lifetime | Watches and behaviors reconcile requested state against successfully applied state. |
 | One notification channel | One callback receiver per owner delivers snapshots and occurrences and surfaces failures. |
 | Managed ownership | Blazor keeps rendering, application state, collections, validation and workspace policy. |
-| Packaging | DOMQL is a JavaScript library in the sibling [Forma.DOMQL](https://github.com/FormaUI/Forma.DOMQL) repository, published as the package `formaui-net.DOMQL`, which carries it as one bundled file served from `_content/DOMQL/domql.js`, and references neither interop assembly. The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
+| Packaging | DOMQL is a JavaScript library in the sibling [Forma.DOMQL](https://github.com/FormaUI/Forma.DOMQL) repository, published as the package `formaui-net.DOMQL`, which carries it as one bundled file served from `_content/domql/domql.js`, and references neither interop assembly. The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
 
 The watcher and the engine provide concrete browser capabilities through that model. Each capability arrives with a consumer that needs it.
 
