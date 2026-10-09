@@ -1,6 +1,6 @@
 ---
 name: forma-documenting
-description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, a README what its project is and how to use it, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, design document, implementation plan, catalog or roadmap entry, and when deciding whether a code change should touch any prose at all.
+description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a specification the contract of a language, format or protocol, a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, a README what its project is and how to use it, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, specification, design document, implementation plan, catalog or roadmap entry, and when deciding whether a code change should touch any prose at all.
 ---
 
 # Documentation
@@ -11,6 +11,7 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 |---|---|---|
 | A summary or comment | What the thing is or does | How it does it, why it was chosen, what came before, what it does not do, what may or might happen, how it is to be used |
 | A `<remarks>` block | How a non-trivial thing works | Why it was designed that way, what was tried |
+| A specification | A language, format or protocol: its syntax, semantics, validity rules and observable guarantees, with examples that make the contract precise | Implementation architecture, delivery, resource management, usage walkthroughs |
 | A design document | The design | The state of the code, what has been built, what changed since |
 | An implementation plan | The steps, their gates, what landed and where it departed from the design, what is still open | The design itself, restated |
 | The component catalog | Which components exist or are in progress, one line saying what each is, and the structure they live in | Parameters, options, approach, technical design, anything not yet started |
@@ -62,6 +63,14 @@ A design document states a design: the concepts, their names, how they relate, a
 - Don't record the state of the code in a design document: no status paragraph, no "built" markers, no list of what departed from a sketch and why, no commit references.
 - Don't carry technical detail that belongs in the code and its summaries — signatures, member lists, file names, test names, counts.
 - Don't restate the design in the implementation plan; the plan refers to the design's sections and says what was done about them.
+
+## Specifications
+
+A specification states what an implementation must guarantee, and the design beside it states how the implementation achieves that guarantee.
+
+- Do define a language's, format's or protocol's syntax, semantics, validity rules and observable guarantees, evaluation order, null propagation, observation semantics and error behavior among them, with examples wherever they make the contract precise.
+- Do give a specification its own document, `{area}-specification.md`, beside the design of the area that implements it, each linking to the other.
+- Don't put implementation architecture, delivery order, resource management or usage walkthroughs in a specification; they belong to the design and the implementation plan.
 
 ## The component catalog and roadmap
 

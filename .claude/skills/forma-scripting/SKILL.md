@@ -89,8 +89,14 @@ wrappers at the assembly root, a service's script beside the wrapper that owns i
 The browser interop assembly's DOM watcher and engine are the one bridge between components and the
 browser: a component reads, watches and listens through the watcher, and acts and establishes behavior
 through the engine, with one lifetime, one notification path and one release for everything it holds.
-Their capabilities are organized by concern rather than by kind.
+Their capabilities are organized by concern rather than by kind. They stand with DOMQL, the query
+language, the input router and the virtualizer as the five pillars of the browser foundation.
 
+- Do build a component's browser integration on the five pillars, `DomWatcher`, `DomEngine`, `Domql`, `InputRouter` and `Virtualizer`, reusing their interop transport, subscriptions, ownership, cleanup and failure handling rather than a mechanism of its own; the input router and the virtualizer stay independently usable and take full part in the unified interface through the DOMQL modules registered for them.
+- Do keep a component's own algorithms in its own scripts, and when they need to expose state, occurrences, actions or behaviors through the foundation, contribute them as a DOMQL module beside the capability, registered with `Domql.registerModule`; extend an existing pillar where the work fits it, and introduce another only for a distinct architectural responsibility none of them holds.
+- Do keep DOMQL's contracts free of the concrete watcher, engine, transport and ownership types, so every dependency points toward DOMQL, and keep a capability's DOMQL module in a JavaScript module of its own, so using the capability alone never loads DOMQL.
+- Do keep a module's registration apart from the instances it creates: the document's registry holds declarations, while instances, subscriptions and owner state are scoped to their callers, and releasing an instance leaves its module registered.
+- Do write the language's name as DOMQL in prose and `Domql` in code, its entry `Domql.js` and a module `{Capability}DomqlModule`, as `VirtualizerDomqlModule`.
 - Do put a capability the watcher or the engine offers in a folder for its area under the assembly's `wwwroot/scripts/`, such as `scrolling/`, one concept per `.mjs` module written as a class taking its collaborators once, and its C# in the matching folder and namespace.
 - Do keep the foundation the capabilities share, the element, the registrations and the sessions, at the root beside `DomWatcher.js` and `DomEngine.js`; a folder is for an area a reader recognizes, never a home for the mechanisms its neighbors share.
 - Do make a calculation a member of the concept whose state it reads, as stepping and measuring belong to the scroll container, rather than a class of its own holding one static method.
@@ -98,11 +104,11 @@ Their capabilities are organized by concern rather than by kind.
 - Do keep each owner's session at module level under its runtime identity, as a service keeps its registrations, so one call releases everything the owner holds, its engine, then its watcher, then the elements they share.
 - Do let the session own what its watcher and engine share, the owner's elements among them, and make its parts itself, handing each its collaborators through its constructor; the engine's class reaches the session from the engine's entry, so observing never loads it.
 - Do share what the document needs once, such as the resize observer, as a small module with module-level state, installed with its first user and removed with its last.
-- Do keep the watcher's import graph free of the engine and the input router, so observing loads neither.
-- Do give a capability its C# as the typed facts, occurrences, actions and behaviors a component requests through the watcher and the engine; a component declares no `[JSInvokable]` method and holds no `DotNetObjectReference` for it.
+- Do load only the capabilities a request requires: an observation request that names no input loads no input integration, querying or subscribing to input loads the input integration it requires, observing alone establishes no routing behavior, and watcher-only requests leave the engine unloaded.
+- Do give a capability its C# as the typed actions and behaviors a component requests through the engine, and its facts and occurrences as DOMQL vocabulary that a component's text queries name, with no C# type standing for each; a component declares no `[JSInvokable]` method and holds no `DotNetObjectReference` for it.
 - Do send each state through the owner's receiver with one sample in flight and only the latest waiting, and report a failed send in the browser, under the owner, the capability and the registration.
 - Do route an input an interaction acts on through the input router, so the host's remapping reaches it and a native control keeps its own activation.
-- Do convert a script in a kind folder by replacing it and its wrapper with its area's concepts, never by relocating it first; move a script as it is only where it survives unchanged, as the virtualizer's and the embedding adapter's do, and only when there is reason to work on it.
+- Do convert a script in a kind folder by replacing it and its wrapper with its area's concepts, never by relocating it first; move a script as it is only where it survives unchanged, as the embedding adapter's does, and only when there is reason to work on it.
 - Do keep the input router's and a product's own scripts in their own assemblies; a component reaches the router through the engine and the watcher, never through a registration of its own.
 - Do move a concern with its consumers and remove the old entries it replaces; an older wrapper its remaining consumers still use keeps only what they use, and no algorithm exists in two copies.
 - Don't discard a rejection with `.catch(() => {})` in this foundation; a failure is reported where it happens and never through the channel that failed.

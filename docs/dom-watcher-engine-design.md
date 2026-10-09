@@ -9,14 +9,15 @@ The [implementation plan](dom-watcher-engine-implementation-plan.md) holds the d
 | Decision | Contract |
 | --- | --- |
 | One bridge | Every browser need of a component, input routing and virtualization included, goes through the engine and the watcher; no capability keeps a component-facing interop wrapper of its own. |
+| Five pillars | The watcher, the engine, DOMQL, the virtualizer and the input router are the foundation every component's browser work builds on. |
 | Two entry points | `DomWatcher` reads, watches and listens; `DomEngine` acts and establishes behavior, and borrows the watcher. |
-| One request model | A component names its targets and the facts it needs of them, and one snapshot answers, read once or watched. |
-| Typed requests | Facts, occurrences, actions and behaviors are typed, and so are their results; nothing dispatches on strings, and no single method takes every request. |
-| Independent watcher | Watcher-only use loads neither the engine's modules nor input, and configures no input. |
+| One request model | A component names its targets and the facts it needs of them in one DOMQL query, and one snapshot answers, read once or watched. |
+| Typed requests | Actions and behaviors are typed, and so are their results; a snapshot maps onto a type the component names, and no single method takes every request. |
+| Loading by request | A consumer loads only the capabilities its requests require. Observation requests that do not name input load no input integration, and querying or subscribing to input loads the input integration it requires. Observation alone establishes no routing behavior, and watcher-only requests leave the engine unloaded. |
 | Shared lifetime | Watches and behaviors reconcile requested state against successfully applied state. |
 | One notification channel | One callback receiver per owner delivers snapshots and occurrences and surfaces failures. |
 | Managed ownership | Blazor keeps rendering, application state, collections, validation and workspace policy. |
-| Packaging | The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
+| Packaging | DOMQL lives in `Forma.Framework.Domql`, served from `_content/forma/domql`, which references neither interop assembly. The API lives in `Forma.Framework.Browser.Interop`, served from `_content/forma/browser`; `Forma.Framework.Browser.Interop.Server` connects a Server circuit's reconnection to it. |
 
 The watcher and the engine provide concrete browser capabilities through that model. Each capability arrives with a consumer that needs it.
 
@@ -28,67 +29,136 @@ The watcher and the engine hold to these principles.
 - **Fewest round trips.** Work that can finish in the browser finishes there, and each crossing carries the related work its timing and contract allow, as the section on crossing sets out.
 - **Built to scale.** Resource use follows active targets and requested capabilities. Compatible native observers are pooled, document listeners are shared where event semantics allow delegation, and unused capabilities install nothing. Pooling reduces observer instances; each active target still requires bookkeeping.
 - **Current platform, current language.** The code targets the repository's supported evergreen browsers and .NET version, using ES modules, classes with `#private` members and `AbortSignal` lifetimes without a polyfill or a JavaScript bundling/transpilation step. Optional browser facilities report capability availability. Hot paths avoid redundant allocations, and allocation measurements include serialization and immutable notification records.
+- **Measured performance.** Execution time, allocations, interop round trips and transferred data are kept to a minimum from the start: compatible observations are reused, parsed and prepared queries and other reusable resources are cached, and unchanged work is not repeated. Every cache states what keeps an entry valid and when it is released, and every performance improvement is shown by measurement. Parsed definitions and prepared execution state depend on different things and are cached apart, so sharing a parsed definition never shares an owner's bindings, subscriptions or resources. Queries that resolve the same members can share that resolution, and each keeps the field spelling it requested, as `Width: rect.width` and `width: rect.width` do.
+- **Diagnosable at low cost.** Logging makes failures and lifecycle problems diagnosable while costing little on frequently executed paths. Detailed diagnostics are configurable; with them disabled, frequent paths do no diagnostic formatting, construct no diagnostic payloads and make no diagnostic allocations, behind a cheap check of whether they are enabled. Failures stay diagnosable with their owner, capability, registration and operation, and disabling detailed diagnostics never suppresses required failure reporting.
 - **Small modules, one concept each.** Every concept is a class in a module of its own, taking its collaborators once, and entry modules compose them. No module becomes the place concerns accumulate.
 
 ## Responsibilities and dependencies
 
-A **target** is a live element, the document or the browser window. A **fact** is one piece of browser state about a target, such as an element's scroll boundaries or whether the reader is within it. A **query** names targets and the facts it needs of each, and a **snapshot** is the browser's answer, its facts captured together. A **watch** keeps a query running, delivering a first snapshot and each changed one after it. An **occurrence** is something that happened, such as an input action or an accepted drop. An **action** is a request the browser carries out once, returning its result, and a **behavior** is one that runs on in the browser until it changes or is released. A **capability** is an area, such as scrolling or focus, contributing its facts, occurrences, actions and behaviors to the one model.
+A **target** is a live element, the document or the browser window. A **fact** is one piece of browser state about a target, such as an element's scroll boundaries or whether the reader is within it. A **query** is a [DOMQL](domql-specification.md) query naming targets and the facts it needs of each, and a **snapshot** is the browser's answer, its facts read in one evaluation. A **watch** keeps a query running, delivering a first snapshot and each changed one after it. An **occurrence** is something that happened, such as an input action or an accepted drop. An **action** is a request the browser carries out once, returning its result, and a **behavior** is one that runs on in the browser until it changes or is released. A **capability** is an area, such as scrolling or focus, contributing its facts, occurrences, actions and behaviors to the one model.
 
 `DomWatcher` reads and reports: queries, watches and occurrence subscriptions. `DomEngine` moves focus, writes the DOM properties its capabilities own through explicit contracts, runs actions and establishes behaviors. Browser work that needs immediate handling, such as routing input, canceling a native event or moving during a gesture, stays in the browser, and C# hears only the results, snapshots and occurrences it asked for. The engine consumes watcher state directly in JavaScript where no managed report is needed.
 
 `InputRouter` remains the browser's authority over input ownership, as the [input router design](input-router-design.md) defines it. Components establish routes through the engine and receive the actions they asked for as occurrences through the watcher, and the router's component-facing registration moves behind them. The virtualizer keeps its measurement, rendered-range, pinning and scrolling algorithms, as the [virtualization design](virtualization-design.md) states them; components configure its browser work through the engine, and read and watch what it measures through the watcher.
 
+### The pillars
+
+The browser foundation stands on five pillars, each one architectural responsibility, and each composed of as many focused modules as its work needs, its entry composing them:
+
+| Pillar | Responsibility |
+| --- | --- |
+| `DomWatcher.js` | Reads, watches and listens: runs queries, keeps watches current, and delivers snapshots and occurrences |
+| `DomEngine.js` | Runs actions and establishes behaviors |
+| `Domql.js` | Defines requests, queries, actions and behaviors: parsing, definitions, validation and evaluation, over the vocabulary and the modules that extend it |
+| `Virtualizer.js` | Virtualization's browser measurement, rendered range, pinning and scrolling |
+| `InputRouter.js` | Input ownership, route matching, and the actions and dismissals routes report |
+
+C# reaches the foundation through the engine and the watcher, and JavaScript uses it directly. Every component's browser interop and C#–JavaScript communication goes through it, reusing its transport, subscriptions, resource management and failure handling rather than a mechanism of its own. A component can still own scripts for its own algorithms, as the composer's rich-text editor does; they build on the pillars wherever they apply, and contribute an extension where they need a capability the foundation does not yet offer. The pillars grow as requirements arrive, and a new pillar takes a distinct responsibility that fits none of the existing ones.
+
+The input router and the virtualizer stay independently usable, each with its own API and its own algorithms, and take full part in the unified interface through a DOMQL module that exposes them: `InputRouterDomqlModule` and `VirtualizerDomqlModule`, registered with `Domql.registerModule`. A module exposes four kinds of capability:
+
+| Capability | Exposes |
+| --- | --- |
+| State | What DOMQL can query and the watcher can observe |
+| Occurrences | What the watcher can subscribe to |
+| Actions | What the engine can run |
+| Behaviors | The configurations and registrations the engine can establish, update and release |
+
+DOMQL describes these requests and validates them against the module's declarations, the watcher and the engine carry them out through the module, and the router and the virtualizer keep ownership of their algorithms. A module lives beside the capability it exposes, or in an integration package for it, and depends on DOMQL's extension contracts alone, so neither DOMQL nor the watcher needs the input assembly to discover or query input. A C# consumer naming input-specific types references the package that declares them. The composer, the explorer and other libraries contribute their capabilities through modules the same way, without the foundation knowing their implementations in advance.
+
+### DOMQL's assembly
+
+`Forma.Framework.Domql` holds DOMQL itself: parsing, fluent construction and the shared definition; vocabulary registration and validation; the contracts for state, occurrences, actions and behaviors; and the abstract execution context those contracts take. Browser-specific implementations, the managed interop transport, component ownership and the concrete watcher and engine stay outside it, and its contracts name none of them, so every dependency points toward it.
+
+| Assembly | References |
+| --- | --- |
+| `Forma.Framework.Domql` | Neither interop assembly |
+| `Forma.Framework.Input.Interop` | `Forma.Framework.Domql` |
+| `Forma.Framework.Browser.Interop` | `Forma.Framework.Domql` and `Forma.Framework.Input.Interop` |
+| A product's integration | `Forma.Framework.Domql` and the capabilities it uses |
+
+`InputRouterDomqlModule` lives beside the router in the input assembly and implements DOMQL's contracts without referencing the browser interop assembly. The assembly graph and the import graph are separate: the module is a JavaScript module of its own, so using the router alone never loads DOMQL. The registry holds definitions alone; component instances, circuit references and subscriptions stay in the sessions that own them. A library that should carry no DOMQL dependency at all exposes its capabilities through an integration package instead, and one such package can serve several capabilities.
+
 ## Public object model
 
 ### Targets and facts
 
-A target is an element, the document or the browser window. A fact is a typed descriptor of something a component needs to know about a target, carrying the options that shape it, such as the axis scroll boundaries are measured along, and naming the type of its value. Each capability contributes its facts, and a component composes any of them, across capabilities and targets, into one query. Composing a query makes no crossing and installs nothing.
+A target is an element, the document or the browser window. A fact is a member of DOMQL's vocabulary, something a component needs to know about a target, with the arguments that shape it, such as the axis scroll boundaries are measured along. Each capability contributes its facts as a DOMQL extension, and a component composes any of them, across capabilities and targets, into one query. Composing a query makes no crossing and installs nothing.
 
 An element target refers to that exact element; a watch moves to a replacement element only through an explicit synchronization. Targets belong to the current document, and a cross-document target is rejected. Shadow-root internals are reached only through a target given explicitly.
 
 ### Reading and watching
 
-The same query is read once or watched. A read makes one crossing and returns one snapshot. A watch returns its first snapshot with its establishment and delivers each changed snapshot after it. A snapshot answers each fact the query named with its value or with its unavailability, so a missing value is never mistaken for zero, false or an empty string.
+The same query is read once or watched. A read makes one crossing and returns one snapshot. A watch returns its first snapshot with its establishment and delivers each changed snapshot after it. A snapshot answers each fact the query named with its value, or with null where it is unavailable, so a missing value is never mistaken for zero, false or an empty string.
+
+A query is written in [DOMQL](domql-specification.md), with its targets as parameters, and the browser evaluates it for C# and JavaScript alike, so both get one meaning.
+
+A component writes its query as DOMQL text and names the snapshot's type, so reading and watching name no type again:
 
 ```csharp
-// One query: the viewport's scroll boundaries and whether the reader is within it.
-var query = new DomQuery();
-var boundaries = query.Select(_viewport, ScrollFacts.Boundaries(ScrollAxis.Inline));
-var within = query.Select(_viewport, FocusFacts.Within);
+private sealed record ViewportState(double? Width, bool? HasFocus);
+
+var query = Domql.Parse<ViewportState>(
+    """
+    @viewport {
+        width: size.width,
+        hasFocus: focus.within
+    }
+    """,
+    ("viewport", _viewport));
 
 // Read it once.
-var snapshot = await Context.DomWatcher.ReadAsync(query);
+ViewportState state = await Context.DomWatcher.ReadAsync(query);
 
 // Or watch it: the first snapshot, then each change.
-_watch = await Context.DomWatcher.WatchAsync(query, HandleSnapshotAsync);
-
-private Task HandleSnapshotAsync(DomSnapshot snapshot)
-    => snapshot[boundaries] is { IsAvailable: true, Value: var value } ? ShowAsync(value) : Task.CompletedTask;
+_watch = await Context.DomWatcher.WatchAsync(query, HandleStateAsync);
 ```
 
-The sketch shows the shape. A selection names the type of its value, so reading it from a snapshot needs no cast and no key string.
+A query parsed without a type is a `DomqlQuery`, read as a `DomqlSnapshot` with structured access to its values, and `Domql.Create` and `Domql.TryParse` complete the set, as DOMQL defines. The definition is what crosses to the browser, and an element target is bound as an `ElementReference` through the bridge, beside the definition and never inside it.
 
-`WatchAsync` registers its handler before browser establishment begins, and the handler reads its immutable snapshot, so it works before the field receiving the watch is assigned. A watch has a nullable `Current`, `IsActive`, `IsDisposed`, `SyncAsync`, `RefreshAsync` and `DisposeAsync`. `IsActive` means an established watch with an accepted first snapshot. `Current` is absent before establishment and is cleared on disabling, retargeting, known detachment or known loss of reporting. These are local facts; they make no synchronous claim about the connection's health.
+C# keeps each watch's cached state, applies every change set the browser sends to it, and maps a new snapshot that reuses the unchanged parts of the last, so `Current` never changes under its holder. A typed query maps its snapshot onto `T`: its fields onto constructor parameters by name regardless of case, a nested shape onto a nested type, a list onto a read-only list, and an unavailable fact onto a nullable member. A mapping that does not fit is a failure, reported through the watcher's failure path and never filled with a default value:
 
-`SyncAsync` records the latest desired query and whether it should run, and behaviors follow the same pattern. Call and await it after each relevant render, with the current targets. The registration handles overlapping calls and reconciles the latest request; the component needs no synchronization guard. Disabling releases native resources, and enabling again delivers a fresh first snapshot. An unavailable establishment leaves the watch inactive and retryable on the next synchronization; invalid requests and unexpected failures are surfaced.
+- A field with no constructor parameter of its name, or a constructor parameter with no field.
+- A null, whether a fact, a list item, a nested shape or the whole answer, meeting a destination that cannot hold null.
+- A number meeting an integral destination it does not fit exactly.
+
+
+A script reads, watches and listens to a query through the browser watcher directly, with no managed bridge and no callback reference:
+
+```js
+const query = Domql
+    .from(viewport)
+    .select(view => ({ width: view.size.width, hasFocus: view.focus.within }));
+
+const snapshot = await watcher.read(query);
+const watch = await watcher.watch(query, snapshot => update(snapshot));
+```
+
+`WatchAsync` registers its handler before browser establishment begins, and the handler reads its immutable snapshot, so it works before the field receiving the watch is assigned. A watch has a nullable `Current`, `IsActive`, `IsDisposed`, `SyncAsync`, `RefreshAsync` and `DisposeAsync`. `IsActive` means an established watch with an accepted first snapshot. `Current` is the last accepted snapshot, so a snapshot whose answer is null is distinct from a `Current` of null; it is absent before establishment and is cleared on disabling, retargeting or known loss of reporting. A watch lasts until its owner disables or disposes it, or until a lifetime anchor the owner names leaves the document. An element the query reads leaving the document changes the snapshot, as DOMQL defines, and the watch runs on. These are local facts; they make no synchronous claim about the connection's health.
+
+`SyncAsync` records the latest desired query and whether it should run, and behaviors follow the same pattern. Call and await it after each relevant render, with the current targets. The registration handles overlapping calls and reconciles the latest request; the component needs no synchronization guard. Disabling releases native resources, and enabling again delivers a fresh first snapshot. A watch's options belong to the watch call, `{ allowPartialObservation: true }` in JavaScript and `DomWatchOptions` in C#, and carry its schedule and whether it accepts partial observation, which a query over a partly observable fact requires, as DOMQL defines. An unavailable establishment leaves the watch inactive and retryable on the next synchronization; invalid requests and unexpected failures are surfaced.
 
 ### Occurrences
 
-An occurrence answers what happened, and stays meaningful when the state before and after it is the same, so no snapshot replaces it. A component subscribes to the occurrences it wants, and a subscription receives only occurrences after it began. An occurrence can carry a snapshot of the facts its subscription names, captured at the moment its contract defines, such as before or after the browser action it reports, so the component never reads a later state in its place.
+An occurrence answers what happened, and stays meaningful when the state before and after it is the same, so no snapshot replaces it. A component subscribes to the occurrences it wants, and a subscription receives only occurrences after it began. An occurrence source a behavior offers reports the owner's own behavior on that target: an owner holds one behavior of each kind on a target, so establishing that kind again replaces the one it held, and a subscription outlives the behavior's replacement and release, hearing occurrences whenever the owner's behavior is established. A subscription is a DOMQL query ending in an occurrence source. The browser evaluates its shape as the source delivers each occurrence, at the moment the source's contract defines, such as before or after the browser action it reports, and queues the evaluated answer, immutable data, for the subscriber, so a handler that runs later still reads what the shape read then. The subscription owns the leases its shapes acquire, as DOMQL defines, and releasing it releases them.
 
 Occurrences keep their order and are never coalesced the way a watch's snapshots are, as the section on delivery sets out.
 
+DOMQL's native events observe what reaches an element. A component that needs the input router's decisions, its ownership, cancellation and matched actions, listens to its routes' occurrences instead.
+
 ### Actions and behaviors
 
-An action is a typed request the browser carries out once, with a typed result whose meaning its contract defines. A behavior is established on a target with typed options and runs on in the browser until it is synchronized to new options or released: a focus interaction, input routes, anchored placement, the virtualizer's browser work. A behavior can offer occurrences, as input routes offer the actions they matched.
+Actions and behavior requests are DOMQL requests of their own kinds, which the engine carries out through the module declaring them, and a typed C# action or behavior is one underneath. An action is a typed request the browser carries out once, with a typed result whose meaning its contract defines. A behavior is established on a target with typed options and runs on in the browser until it is synchronized to new options or released: a focus interaction, input routes, anchored placement, the virtualizer's browser work. A behavior can offer occurrences, as input routes offer the actions they matched.
 
 ```csharp
 // An action and its result.
 var started = await Context.DomEngine.RunAsync(_viewport, ScrollActions.Step(ScrollDirection.Forward, steps));
 
-// A behavior, and the occurrences it offers.
+// A behavior, and the occurrences it offers, listened to through a query naming its target.
 _routes = await Context.DomEngine.EstablishAsync(RootElement, new InputRoutes(bindings));
-_actions = await Context.DomWatcher.ListenAsync(_routes.Actions, HandleActionAsync);
+_actions = await Context.DomWatcher.ListenAsync(
+    Domql.Parse<InputAction>("@scope.input.actions { action, key: input.key }", ("scope", RootElement)),
+    HandleActionAsync);
 ```
 
 Handlers return `Task`. Snapshot and occurrence handlers share the one notification mechanism, and adding a listener returns a disposable subscription whose lifetime is separate from its watch's or behavior's. Browser-wide facilities, such as the clipboard and downloads, are engine actions that take no element target.
@@ -101,7 +171,7 @@ A capability installs listeners only while a read or a watch asks for its facts 
 | --- | --- | --- |
 | Document | Visibility, document focus, readiness | Native document and browser events; visibility and focus are separate facts. |
 | Browser window | Layout viewport dimensions, scroll, device pixel ratio when requested | Resize, scroll and media-query invalidation. The visual viewport's data is a fact of its own. |
-| Element connection | Connected or detached | Removal checks and scoped mutation observation. A hidden element remains connected. |
+| Element attachment | Attached or detached, including through a shadow root | Removal checks and scoped mutation observation. A hidden element remains attached. |
 | Geometry | Size, or a rectangle in a declared coordinate space | Resize observations plus the invalidation sources position requires. |
 | Intersection | Intersection with a declared root and margin | Intersection observer semantics; intersecting does not mean unobscured. |
 | Scroll | Logical offset, available extent, viewport extent, start and end boundaries | Scroll, size and relevant content changes. Numeric offsets are optional where the consumer needs only boundaries. |
@@ -113,9 +183,32 @@ A capability installs listeners only while a read or a watch asks for its facts 
 | Input | The actions and dismissals an owner's routes matched, as occurrences | The input router's ownership and matching rules, decided in the browser. |
 | Virtualization | The rendered range and the measurements its owner needs | The virtualizer's own measurement of what scrolls it and what it draws. |
 
+### Forma's needs as queries
+
+| Need | Query |
+| --- | --- |
+| A freeze pane's scroll state | `@viewport.scroll(axis: "inline") { canScrollBack, canScrollForward, frozen: frozenExtent(".forma-freeze-pane-frozen"), viewportExtent }` |
+| A date-time picker's focus | `@picker.focus.within` |
+| A sentinel near the end of a scrolling panel | `@sentinel.intersects(root: @panel, margin: 200)` |
+| The explorer header's layout tier | `@header.computedStyle("--forma-explorer-header-layout")` |
+| The data cards' column count | `@ruler.grid.columns.count` |
+| A table's tallest row | `@table.all("tbody tr").max(rect.height)` |
+| The virtualizer's viewport | `@spacer.virtualizer { offset, viewport, itemSize }` |
+| A text field's selection | `@field.selection { start, end }` |
+| Whether sharing is available | `@page.supports("share")` |
+| Input actions and wheel turns | `@scope.input.actions { action, key: input.key }` |
+| Dismissal | `@scope.input.dismissals { action, reason }` |
+| The key of a drop's target | `@zone.input.drops { key: target.closest("[data-drop-target]").attribute("data-drop-key") }` |
+| A frame's placement | `@frame.placement.changes { rect }` |
+| A reorder | `@list.reorder.moves { from, to, after }` |
+| A data view's selection | `@view.dataView.selects { item: target.attribute("data-key"), additive }` |
+| Rich text's selection and content | `@canvas.richText.selection { start, end, collapsed, blockType, styles }` and `@canvas.richText.changes { html }` |
+
+A data grid's column fit measures at intrinsic widths under a temporary class, so it is an engine action returning its measurement, or a behavior keeping one that `@table.columnFit { available, columns { key, width } }` reads.
+
 ### Meaning of a snapshot
 
-A snapshot is what the browser measured when it answered, delivered asynchronously; it is no live DOM object and no promise that the browser has not changed since. The facts of one query are captured in one browser task, so a snapshot never mixes moments. An unavailable fact is reported as unavailable, never as a fabricated zero, empty string or false.
+A snapshot is what the browser measured when it answered, delivered asynchronously; it is no live DOM object and no promise that the browser has not changed since. A query evaluates without yielding, and each fact is a fresh read, a maintained sample or a captured one, as DOMQL defines; facts that must describe one measurement come from one structured value. An unavailable fact is reported as unavailable, never as a fabricated zero, empty string or false.
 
 Each fact has a documented unit and meaning. Geometry uses CSS pixels; text offsets use the native text-entry selection units. Client rectangles are relative to the layout viewport; document coordinates and visual viewport offsets are separate values. Logical scrolling normalizes direction, while geometry keeps explicitly physical coordinates. The existing `ScrollAxis` and start and end vocabulary carry over.
 
@@ -139,7 +232,7 @@ The browser watcher keeps document-level infrastructure only while subscribers n
 
 A managed-to-browser invocation on Blazor Server normally waits for a network response. Browser-to-managed notifications and module fetches are counted separately, so optimizing one does not hide the cost of another.
 
-- **One cached import per used root and runtime scope.** The bridge shares the successful import and any in-flight import for each root. Watcher use loads only `DomWatcher.js`; the first action also loads `DomEngine.js`. The scope is a circuit on Server and the client application's service lifetime on WebAssembly. Browser-local capability imports are separate network fetches, not additional managed interop invocations.
+- **One cached import per used root and runtime scope.** The bridge shares the successful import and any in-flight import for each root. Watcher use imports only the `DomWatcher.js` root, which loads DOMQL in the browser; the first action also imports `DomEngine.js`. The scope is a circuit on Server and the client application's service lifetime on WebAssembly. Browser-local capability imports are separate network fetches, not additional managed interop invocations.
 - **Create and attach together.** Once its required root is imported, a registration call creates the owner's browser session if needed and attaches that registration. Subsequent registrations reuse it. Concurrent first requests share session creation, and a standalone action or read can create the session on first use as well. Required input-policy configuration remains visible in the crossing count.
 - **The first snapshot in the result.** A read is one invocation returning its snapshot. A watch's establishment returns its first snapshot with the attach result, and the managed side delivers the first notification from it, with the ordering barrier described below, saving a separate initial callback.
 - **No call for an unchanged, applied request.** `SyncAsync` compares target and options against successfully applied state. An equal request still retries inactive or known-invalid state. `RefreshAsync` explicitly requests a browser read and restores suspended reporting even when options are equal; local equality cannot prove browser health.
@@ -155,7 +248,7 @@ Interop crossings are counted per scenario by the opt-in diagnostics. Counts dis
 
 ### Initial state and ordering
 
-After capability loading, establishment installs listeners and captures a baseline in one browser task. The managed observation exists before that work starts. The managed side mints the registration's token and generation before the call and passes them with the attach request; the browser stamps every sample with them, and the attach result returns the baseline under the same identity. The managed receiver holds any early sample behind an establishment barrier, retaining only the latest pending state until that result is accepted. It installs `Current` and queues the initial notification before releasing later samples. A late result for an obsolete generation is discarded and its browser registration released.
+After capability loading, establishment installs listeners and evaluates the query for its baseline, waiting for its maintained facts' first samples as a DOMQL read does. The managed observation exists before that work starts. The managed side mints the registration's token and generation before the call and passes them with the attach request; the browser stamps every sample with them, and the attach result returns the baseline under the same identity. The managed receiver holds any early sample behind an establishment barrier, retaining only the latest pending state until that result is accepted. It installs `Current` and queues the initial notification before releasing later samples. A late result for an obsolete generation is discarded and its browser registration released.
 
 The browser attach path never awaits a managed notification, and the barrier opens before application handlers run. Establishment completes once the baseline is accepted, independently of callback completion. A failed establishment cancels its barrier, completes any delivery it was holding as discarded, so the browser's in-flight slot is free for a retry, and clears pending samples. This orders the returned baseline and asynchronous callbacks without a separate acknowledgement call.
 
@@ -174,13 +267,13 @@ Separate watches and subscriptions carry no global order. Facts that must agree 
 | Scheduled state | Geometry and scroll measurements | Coalesces invalidations and reports changed requested facts. |
 | Ordered occurrences | Close, accepted drop, completed reorder | Preserves accepted occurrences and their order while delivery is healthy. |
 
-These are constraints on each capability's implementation. Local watcher subscriptions keep the timing their consumers require; managed observations are asynchronous snapshots.
+These are constraints on each capability's implementation. Invalidation, evaluation and delivery keep separate schedules: a local watch evaluates immediately where its timing requires, as focus recovery does at mutation delivery, while ordinary watches evaluate once a frame and managed delivery stays asynchronous and coalesced.
 
 ### Bounded delivery and visible failure
 
 The owner has one managed callback reference and one typed receiver, shared by watcher and engine notifications. Subscriptions dispatch independently, and no lock is held across application code.
 
-Each watch keeps one delivery in flight and one latest pending snapshot, with the first snapshot protected. The interop invocation can stay outstanding until that watch's handler work completes; establishment, actions and unrelated subscriptions proceed meanwhile. Several listeners on one watch are awaited deliberately, each failure isolated and logged.
+Each watch keeps one delivery in flight and its pending changes coalesced into one change set, computed against the state the delivery in flight establishes once accepted, with the first snapshot protected as a complete baseline; after the baseline, a notification carries only what changed, through the same channel. Recovery follows DOMQL's ordering: once a fresh baseline is accepted, an abandoned delivery and its late completion change neither the state nor the delivery slot, which the registration's generation, or a private delivery revision beside it, enforces; the envelope carrying them is the implementation's. The interop invocation can stay outstanding until that watch's handler work completes; establishment, actions and unrelated subscriptions proceed meanwhile. Several listeners on one watch are awaited deliberately, each failure isolated and logged.
 
 A rejected application handler is reported with the owner, capability and registration identity. A transport failure is reported locally in the browser and suspends managed delivery; bounded state is retained, and delivery resumes through explicit resynchronization. Every failure is reported: a shared helper never swallows a rejection the way `.catch(() => {})` does, and failure reporting never runs through the channel that failed.
 
@@ -280,11 +373,11 @@ Generation invalidation guards every registration, because setup, parameter chan
 
 ### Cleanup and reconnection
 
-Registrations release their listeners, observers, scheduled frames, gestures, temporary URLs and helper frames. Disposal and retargeting release registrations. Browser-side removal detection provides additional cleanup when a resize notification exposes that a target has left the document, following [Blazor's DOM cleanup guidance](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/?view=aspnetcore-10.0#dom-cleanup-tasks-during-component-disposal): the target is checked a frame after the notification, so an element moved within the document is still the same target. It does not guarantee detection of every removal; a target whose observed box was already zero-sized reports no change as it leaves. A later attachment comes through synchronization.
+Registrations release their listeners, observers, scheduled frames, gestures, temporary URLs and helper frames. Disposal and retargeting release registrations. Browser-side removal detection provides additional cleanup when a resize notification exposes that a target has left the document, following [Blazor's DOM cleanup guidance](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/?view=aspnetcore-10.0#dom-cleanup-tasks-during-component-disposal): the target is checked a frame after the notification, so an element moved within the document is still the same target. It does not guarantee detection of every removal; a target whose observed box was already zero-sized reports no change as it leaves. A later attachment comes through synchronization. A watch is the exception: an element its query reads leaving the document releases what observes that element and changes the snapshot, the watch runs on, and whether it is attached is observed through the document's structure while the watch reads it.
 
 A document or browser-window subscription is released by explicit owner disposal, since no element removal marks its owner's end. A cleanup anchor beyond that is an explicit lifetime option. DOM cleanup cannot detect every disconnected or abandoned circuit.
 
-A failed transport suspends reporting with bounded pending state. A connection interruption alone leaves the current page's JavaScript objects in place ([Blazor SignalR and reconnection](https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/signalr)): a resumed circuit refreshes the same registrations, and a new circuit creates new component owners. On Server, when a circuit's connection is restored, its bridge asks the browser in one call to measure afresh and deliver anew each established observation of the sessions that reached the browser through it, naming each by owner, token and current generation. A state delivered while the connection was down is replaced, even where the new measurement equals it, and a released or replaced registration is not revived. The hook belongs to the Server integration, and the bridge keeps the sessions and the refresh. The hook starts the refresh and never awaits the browser: a circuit handles one invocation from the browser at a time, so a reply awaited while the connection is coming up would queue behind the very invocation awaiting it. A watcher with a bridge of its own recovers through `RefreshAsync`. Non-idempotent actions are never repeated on reconnect.
+A failed transport suspends reporting with bounded pending state. A connection interruption alone leaves the current page's JavaScript objects in place ([Blazor SignalR and reconnection](https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/signalr)): a resumed circuit refreshes the same registrations, and a new circuit creates new component owners. On Server, when a circuit's connection is restored, its bridge asks the browser in one call to measure afresh and deliver anew each established observation of the sessions that reached the browser through it, naming each by owner, token and current generation. A state delivered while the connection was down is replaced by a complete baseline, even where the new measurement equals it, and a released or replaced registration is not revived. The hook belongs to the Server integration, and the bridge keeps the sessions and the refresh. The hook starts the refresh and never awaits the browser: a circuit handles one invocation from the browser at a time, so a reply awaited while the connection is coming up would queue behind the very invocation awaiting it. A watcher with a bridge of its own recovers through `RefreshAsync`. Non-idempotent actions are never repeated on reconnect.
 
 Disposal from inside a notification invalidates the registration immediately and schedules the remaining release after dispatch unwinds, never awaiting the notification's own completion. Native handlers are removed before callback references are released. Managed release is best-effort when the transport is unavailable; local target cleanup remains effective.
 
