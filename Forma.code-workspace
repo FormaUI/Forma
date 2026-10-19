@@ -5,6 +5,9 @@
         },
         {
             "path": "../formaui-net.DOMQL"
+        },
+        {
+            "path": "../formaui-net.Lexica"
         }
     ],
     "settings": {}
