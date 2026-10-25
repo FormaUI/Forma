@@ -65,8 +65,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private readonly Dictionary<object, FormaCheckBox> _nodeMarkers = [];
     private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
     private InputRegistration _inputRegistration = default!;
-    private InputProfile _inputProfile = default!;
+    private InputProfile? _inputProfile;
     private bool _profileKeepsFocus;
+    private bool _profileIsRightToLeft;
     private TItem? _focusedNode;
 
     // The nodes the tree has moved the focus to, in order, whose arrival the browser has yet to report.
@@ -171,22 +172,30 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         {
             throw new InvalidOperationException($"{nameof(SelectsCurrent)} cannot change once {nameof(FormaDataTree<TItem>)} has registered.");
         }
+    }
 
-        if (_inputProfile is null || _profileKeepsFocus != KeepsFocus)
+    // The profile is made again for a focus mode or a reading direction other than the one it was made for.
+    private InputProfile GetInputProfile()
+    {
+        var isRightToLeft = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
+
+        if (_inputProfile is null || _profileKeepsFocus != KeepsFocus || _profileIsRightToLeft != isRightToLeft)
         {
             _profileKeepsFocus = KeepsFocus;
-            _inputProfile = CreateInputProfile();
+            _profileIsRightToLeft = isRightToLeft;
+            _inputProfile = CreateInputProfile(isRightToLeft);
         }
+
+        return _inputProfile;
     }
 
     // The inline arrows and type-ahead are the tree's in either mode, the arrows bound by the reading direction; the vertical keys, Home, End, Enter and a press on a row are its own only where its rows carry the focus, and the selection's where a marker does.
-    private InputProfile CreateInputProfile()
+    private InputProfile CreateInputProfile(bool isRightToLeft)
     {
-        var rightToLeft = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
         List<InputRoute> routes =
         [
-            new InputRoute(OpenAction, new KeyBinding(rightToLeft ? "ArrowLeft" : "ArrowRight")),
-            new InputRoute(CloseAction, new KeyBinding(rightToLeft ? "ArrowRight" : "ArrowLeft")),
+            new InputRoute(OpenAction, new KeyBinding(isRightToLeft ? "ArrowLeft" : "ArrowRight")),
+            new InputRoute(CloseAction, new KeyBinding(isRightToLeft ? "ArrowRight" : "ArrowLeft")),
             new InputRoute(FindAction, new TypingBinding()),
         ];
 
@@ -205,7 +214,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: IsActive);
+        await _inputRegistration.SyncAsync(RootElement, GetInputProfile(), wanted: IsActive);
 
         // The hand-off watches the tree while it shows, and lets go of a root the tree no longer draws.
         if (firstRender)

@@ -236,5 +236,31 @@
                 () => Assert.Contains("אדר א׳", months),
                 () => Assert.Contains("אדר ב׳", months));
         }
+
+        [Fact]
+        public void Should_draw_a_shown_month_by_the_calendar_in_force_after_the_culture_changes()
+        {
+            // Arrange
+            using var culture = new CultureFixture("en-US");
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2026, 8, 3), new DateOnly(2026, 8, 3));
+            var cut = ctx.Render<FormaCalendar>(parameters => parameters
+                .Add(p => p.Highlight, highlight)
+                .Add(p => p.UseNonGregorianMonths, true));
+
+            // Act
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he-IL");
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he-IL");
+            cut.Render();
+            var fresh = ctx.Render<FormaCalendar>(parameters => parameters
+                .Add(p => p.Highlight, highlight)
+                .Add(p => p.UseNonGregorianMonths, true));
+
+            // Assert
+            Assert.Equal(GetDrawnDays(fresh), GetDrawnDays(cut));
+        }
+
+        private static string[] GetDrawnDays(IRenderedComponent<FormaCalendar> cut)
+            => [.. cut.FindAll(".forma-calendar-day").Where(day => !day.ClassList.Contains("empty")).Select(day => day.TextContent.Trim())];
     }
 }

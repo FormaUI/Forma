@@ -24,7 +24,6 @@ public sealed partial class FormaInputInspector : FormaElementBase
     private readonly List<InputDecision> _history = [];
     private Inspector _inspector = default!;
     private DotNetObjectReference<FormaInputInspector> _selfReference = default!;
-    private IReadOnlyList<ToolbarItem> _tools = [];
     private bool _paused;
 
     /// <summary>The latest decision.</summary>
@@ -61,7 +60,6 @@ public sealed partial class FormaInputInspector : FormaElementBase
     {
         _inspector = new Inspector(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
-        _tools = BuildTools();
     }
 
     /// <inheritdoc />
@@ -112,7 +110,6 @@ public sealed partial class FormaInputInspector : FormaElementBase
         {
             case PauseCommand:
                 _paused = !_paused;
-                _tools = BuildTools();
                 break;
             case ClearCommand:
                 _history.Clear();

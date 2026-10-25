@@ -513,7 +513,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
         if (!column.IsSortable || column.SortBy is not { } sort)
         {
-            throw new InvalidOperationException($"The column '{column.Title}' is not sortable.");
+            throw new InvalidOperationException($"The column '{column.EffectiveTitle}' is not sortable.");
         }
 
         return Interaction.SortByAsync(column.SortName!, sort, direction);

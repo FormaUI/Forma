@@ -3200,6 +3200,45 @@
         }
 
         [Fact]
+        public void Should_title_a_column_from_its_resource_backed_display_name_in_the_culture_it_renders_in()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            using var culture = new CultureFixture("en");
+            var shifts = new[] { new Shift { Name = "Morning" } }.AsQueryable();
+            var cut = ctx.Render(
+                @<FormaDataView Items="shifts" PageSize="10">
+                    <FormaDataGrid TItem="Shift">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(shift => shift.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.Markup.Contains("Morning", StringComparison.Ordinal));
+
+            // Act
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he");
+            cut.FindComponent<FormaDataGridColumnHeader<Shift>>().Render();
+
+            // Assert
+            Assert.Contains("משמרת", cut.Find("thead").TextContent, StringComparison.Ordinal);
+        }
+
+        /// <summary>The resource a shift's display name is read from, named in the culture in force.</summary>
+        public static class ShiftTitles
+        {
+            /// <summary>The name of a shift.</summary>
+            public static string ShiftName
+                => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "he" ? "משמרת" : "Shift";
+        }
+
+        private sealed class Shift
+        {
+            [Display(Name = nameof(ShiftTitles.ShiftName), ResourceType = typeof(ShiftTitles))]
+            public string Name { get; set; } = string.Empty;
+        }
+
+        [Fact]
         public void Should_format_the_displayed_value()
         {
             // Arrange

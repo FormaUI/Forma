@@ -103,9 +103,13 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private IReadOnlyList<EmojiGroup> Tabs
         => _tabs ??= Recent.Count == 0
             ? [.. Groups]
-            : [new EmojiGroup { Id = RecentGroupId, Title = L["Recently Used"] }, .. Groups];
+            : [new EmojiGroup { Id = RecentGroupId, Title = "Recently Used" }, .. Groups];
 
     private string ActiveGroupId => _activeGroupId ?? Tabs[0].Id;
+
+    // A group's title is its localization key, looked up as the group is drawn, a caller's group's among them.
+    private string FormatGroupTitle(EmojiGroup group)
+        => group.Id == RecentGroupId ? L["Recently Used"] : L[group.Title];
 
     private IReadOnlyList<EmojiInfo> MatchingEmojis
         => _matchingEmojis ??= IsSearching ? _catalog.Find(_searchQuery)
@@ -115,7 +119,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private string HeadingText
         => IsSearching
             ? L["Search Results"]
-            : Tabs.FirstOrDefault(tab => tab.Id == ActiveGroupId)?.Title ?? string.Empty;
+            : Tabs.FirstOrDefault(tab => tab.Id == ActiveGroupId) is { } activeTab ? FormatGroupTitle(activeTab) : string.Empty;
 
     // The sheets the matching emoji draw from, in render order, so the loaded sheets form a prefix of it.
     private IReadOnlyList<string> RequiredSheets

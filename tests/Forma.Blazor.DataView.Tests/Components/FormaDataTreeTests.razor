@@ -2,6 +2,8 @@
 @using System.Globalization
 @using AngleSharp.Dom
 @using Forma.Framework.Browser.Interop.Focus
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
 @using Microsoft.AspNetCore.Components.Web
 
 @code {
@@ -374,6 +376,30 @@
             {
                 CultureInfo.CurrentCulture = previous;
             }
+        }
+
+        [Fact]
+        public void Should_bind_the_inline_arrows_again_when_the_reading_direction_changes()
+        {
+            // Arrange
+            using var culture = new CultureFixture("en");
+            using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
+            var registration = router.Module.SetupModule("register", _ => true);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Act
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he");
+            cut.FindComponent<FormaDataTree<Entry>>().Render();
+
+            // Assert
+            var update = Assert.Single(registration.Invocations, invocation => invocation.Identifier == "update");
+            var routes = Assert.IsType<InputProfile>(update.Arguments[0]).InputRoutes;
+            Assert.Equal(["ArrowLeft", "ArrowRight"], routes.Take(2).Select(route => Assert.IsType<KeyBinding>(route.Bindings[0]).Key));
         }
 
         [Fact]

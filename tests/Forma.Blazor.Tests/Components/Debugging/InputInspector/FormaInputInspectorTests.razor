@@ -1,7 +1,11 @@
 @inherits FormaBunitContext
+@using System.Globalization
 @using Forma.Blazor.Components.Debugging.InputInspector
 @using Forma.Framework.Input.Keyboard
 @using Forma.Framework.Input.Wheel
+@using Forma.Framework.Localization
+@using Forma.Tests.Localization
+@using Microsoft.Extensions.DependencyInjection
 @code {
     private static InputDecision CreateRoutedDecision()
         => new()
@@ -48,6 +52,27 @@
                 () => Assert.Equal("Nothing active", cut.Find(".forma-input-inspector-empty-small").TextContent),
                 () => Assert.Null(cut.FindComponent<FormaInputInspector>().Instance.Decision),
                 () => Assert.Empty(cut.FindAll(".forma-input-inspector-history")));
+        }
+
+        [Fact]
+        public void Should_name_its_tools_in_the_culture_it_renders_in()
+        {
+            // Arrange
+            using var ctx = new FormaInputInspectorTests();
+            using var culture = new CultureFixture("en");
+            var translations = new CultureTranslationDictionary(new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                ["he"] = new Dictionary<string, string> { ["Pause"] = "השהה" },
+            });
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(translations));
+            var cut = ctx.Render(@<FormaInputInspector />);
+
+            // Act
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he");
+            cut.FindComponent<FormaInputInspector>().Render();
+
+            // Assert
+            Assert.Equal("השהה", cut.Find(".forma-toolbar [aria-pressed]").GetAttribute("aria-label"));
         }
 
         [Fact]

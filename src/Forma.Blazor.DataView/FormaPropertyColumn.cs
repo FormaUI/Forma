@@ -25,6 +25,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     private DataViewSort<TItem>? _derivedSort;
     private Func<TItem, TValue> _getter = default!;
     private Func<TItem, string?> _displayTextSelector = default!;
+    private Func<string?> _defaultTitleSelector = static () => null;
     private Action<TItem, TValue>? _setter;
     private TItem? _cachedDraft;
     private Expression<Func<TValue>>? _cachedValueExpression;
@@ -59,7 +60,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             _getter = Property.Compile();
             _setter = BuildSetter(Property);
 
-            Title ??= ResolveTitle(Property);
+            _defaultTitleSelector = CreateDefaultTitleSelector(Property);
             SortName ??= ResolveSortName(Property);
 
             // Only a sort the column derived itself is replaced; a caller's sort is kept, and a property with no path derives none.
@@ -105,6 +106,10 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     /// <inheritdoc />
     protected override bool IsSortableByDefault()
         => SortBy is not null;
+
+    /// <inheritdoc />
+    protected override string? GetDefaultTitle()
+        => _defaultTitleSelector();
 
     private void EditingContent(RenderTreeBuilder builder, TItem draft)
     {
@@ -235,16 +240,19 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         return string.Join('.', names);
     }
 
-    private static string? ResolveTitle(Expression<Func<TItem, TValue>> property)
+    // The attributes are found once and read each time, so a resource-backed name follows the culture in force.
+    private static Func<string?> CreateDefaultTitleSelector(Expression<Func<TItem, TValue>> property)
     {
-        if (property.Body is not MemberExpression member)
+        if (property.Body is not MemberExpression { Member: var member })
         {
-            return null;
+            return static () => null;
         }
 
-        return member.Member.GetCustomAttribute<DisplayAttribute>()?.Name
-            ?? member.Member.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName
-            ?? member.Member.Name;
+        var display = member.GetCustomAttribute<DisplayAttribute>();
+        var displayName = member.GetCustomAttribute<DisplayNameAttribute>();
+        var memberName = member.Name;
+
+        return () => display?.GetName() ?? displayName?.DisplayName ?? memberName;
     }
 
     private void RenderEditor(RenderTreeBuilder builder, TItem draft, Action<TItem, TValue> setter)
@@ -285,7 +293,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         builder.AddComponentParameter(5, "ValueChanged", valueChanged);
         builder.AddComponentParameter(6, "ValueExpression", valueExpression);
         builder.AddComponentParameter(7, "Class", EditorClass);
-        builder.AddComponentParameter(8, "aria-label", Title);
+        builder.AddComponentParameter(8, "aria-label", EffectiveTitle);
         builder.CloseComponent();
     }
 
@@ -296,7 +304,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         builder.AddComponentParameter(16, "Value", value);
         builder.AddComponentParameter(17, "ValueChanged", valueChanged);
         builder.AddComponentParameter(18, "ValueExpression", valueExpression);
-        builder.AddComponentParameter(19, "Label", Title);
+        builder.AddComponentParameter(19, "Label", EffectiveTitle);
         builder.AddComponentParameter(20, "Class", EditorClass);
         builder.CloseComponent();
     }

@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
+using System.Globalization;
+
 using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
@@ -31,6 +33,7 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
     [Inject] private InputRouterOptions InputRouterOptions { get; set; } = default!;
 
     private IReadOnlyList<ShortcutRow> _rows = [];
+    private CultureInfo? _rowsUICulture;
 
     private ComposerPluginLocalizer Localizer
         => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
@@ -45,10 +48,30 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
         base.OnParametersSet();
     }
 
-    // The rows are built once, as the dialog opens, since the modal holds the surface while it is open.
+    // The rows are built as the dialog opens, since the modal holds the surface while it is open, and again for a UI culture
+    // other than the one they were built in; a dialog never opened has none.
+    private IReadOnlyList<ShortcutRow> Rows
+    {
+        get
+        {
+            if (_rowsUICulture is not null && !Equals(_rowsUICulture, CultureInfo.CurrentUICulture))
+            {
+                RefreshRows();
+            }
+
+            return _rows;
+        }
+    }
+
     /// <inheritdoc />
     private protected override void OnOpen()
-        => _rows = BuildRows();
+        => RefreshRows();
+
+    private void RefreshRows()
+    {
+        _rows = BuildRows();
+        _rowsUICulture = CultureInfo.CurrentUICulture;
+    }
 
     // A command is titled as the toolbar titles it, and undo and redo as the composer does; a binding whose command no
     // item titles, or one a host's preemptive route claims, is left out.

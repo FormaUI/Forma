@@ -79,6 +79,10 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     public bool IsSortable
         => Sortable ?? IsSortableByDefault();
 
+    /// <summary>The title the column shows and is named by, from <see cref="Title"/> or the column's own default.</summary>
+    public string? EffectiveTitle
+        => Title ?? GetDefaultTitle();
+
     /// <summary>The content of the header cell: the template where the caller gave one, else the title.</summary>
     protected internal virtual RenderFragment HeaderContent
         => builder =>
@@ -89,7 +93,7 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
             }
             else
             {
-                builder.AddContent(1, Title);
+                builder.AddContent(1, EffectiveTitle);
             }
         };
 
@@ -101,6 +105,10 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     /// <summary>Whether the column sorts by default.</summary>
     protected virtual bool IsSortableByDefault()
         => SortBy is not null;
+
+    /// <summary>The column's default title, in the culture in force.</summary>
+    protected virtual string? GetDefaultTitle()
+        => null;
 
     /// <summary>What stands for a parameter's value in judging whether the column's cells are drawn differently.</summary>
     /// <param name="parameter">The parameter the column is given.</param>
@@ -131,7 +139,7 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     {
         if (IsSortable && string.IsNullOrWhiteSpace(SortName))
         {
-            throw new InvalidOperationException($"{GetType().Name} '{Title}' sorts, so it needs a {nameof(SortName)}: the name its sort goes by in the address, the same in every culture.");
+            throw new InvalidOperationException($"{GetType().Name} '{EffectiveTitle}' sorts, so it needs a {nameof(SortName)}: the name its sort goes by in the address, the same in every culture.");
         }
 
         Grid.AddColumn(this);

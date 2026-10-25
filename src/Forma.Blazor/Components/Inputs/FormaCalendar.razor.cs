@@ -60,6 +60,26 @@ public sealed partial class FormaCalendar : FormaComponentBase
         {
             ShowHighlightedMonths();
         }
+        else
+        {
+            ReckonShownMonths();
+        }
+    }
+
+    // A month kept from an earlier render is the one holding it in the calendar now in force, whose months may begin on other days.
+    private void ReckonShownMonths()
+    {
+        _leftMonth = GetMonthStart(_leftMonth);
+
+        if (ShowsTwoMonths)
+        {
+            _rightMonth = GetMonthStart(_rightMonth);
+
+            if (_leftMonth >= _rightMonth)
+            {
+                _rightMonth = _calendarMonthRange.AddMonths(_leftMonth, 1);
+            }
+        }
     }
 
     // The months first shown: the highlight's last day on the right and its first day on the left, or today.

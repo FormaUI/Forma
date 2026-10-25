@@ -4,6 +4,8 @@
 @using Forma.Blazor.Components.Interaction
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
+@using Forma.Framework.Localization
+@using Forma.Tests.Localization
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 
@@ -143,6 +145,26 @@
 
             // Assert
             Assert.Equal(GroupCount, cut.FindAll("[role='tab']").Count);
+        }
+
+        [Fact]
+        public void Should_name_each_group_by_its_title_looked_up_as_its_localization_key()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(new Dictionary<string, string> { ["Smileys & Emotion"] = "רגשות" }));
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            var tab = cut.FindAll("[role='tab']")[0];
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("רגשות", tab.GetAttribute("aria-label"));
+                Assert.Equal("רגשות", tab.GetAttribute("title"));
+                Assert.Equal("רגשות", cut.Find(".forma-emoji-picker-heading").TextContent);
+            });
         }
 
         [Fact]

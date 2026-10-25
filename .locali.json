@@ -14,6 +14,8 @@
   "ignoreDiagnostics": {
     // The page shows a hit and a miss side by side, so its miss is a sentence no file translates; it demonstrates a plural that omits 'other' on purpose; and its tables read each key from the row that lists it.
     "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0204", "LOC0207", "LOC0208"],
+    // The emoji picker reads a group's title from the group, whose title is its localization key.
+    "src/Forma.Blazor/Components/Symbols/FormaEmojiPicker.razor.cs": ["LOC0208"],
     // The galleries read a group's or a section's title from the catalog that lists it.
     "src/Forma.Blazor.Showcase/Components/Pages/Symbols/EmojiCatalogGallery.razor": ["LOC0208"],
     "src/Forma.Blazor.Showcase/Components/Pages/Symbols/FormaIconPage.razor": ["LOC0208"],

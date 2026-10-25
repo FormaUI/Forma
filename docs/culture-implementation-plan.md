@@ -5,7 +5,7 @@ landed.
 
 ## Status
 
-Nothing has landed. Step 1 is next.
+Step 1 is under way.
 
 ## Where Forma stood
 
@@ -43,16 +43,16 @@ What breaks when the culture changes in place:
 The output step 1 brings under the design's rule, that nothing depending on the culture outlives a render
 unless it is keyed by the culture:
 
-- `FormaPropertyColumn`'s title, taken once, and from `DisplayAttribute.Name` as written, where
+- ✅ `FormaPropertyColumn`'s title, taken once, and from `DisplayAttribute.Name` as written, where
   `GetName()` resolves a resource-backed display name.
-- `FormaEmojiPicker`'s nine default group titles, English text rendered as they are.
+- ✅ `FormaEmojiPicker`'s nine default group titles, English text rendered as they are.
 - The data view's view-switch names, which each view registers once as it initializes.
 - The data view's group names, built when the view loads, by the default namer in the culture of that
   load.
-- `FormaInputInspector`'s tools, built once as it initializes.
-- `FormaComposerShortcutsDialog`'s rows, built as it opens and kept while it is open.
-- `FormaCalendar`'s shown months, whose boundaries are kept from the calendar they were reckoned in.
-- `FormaDataTree`'s input profile, whose open and close arrows are bound by the direction it read once.
+- ✅ `FormaInputInspector`'s tools, built once as it initializes.
+- ✅ `FormaComposerShortcutsDialog`'s rows, built as it opens and kept while it is open.
+- ✅ `FormaCalendar`'s shown months, whose boundaries are kept from the calendar they were reckoned in.
+- ✅ `FormaDataTree`'s input profile, whose open and close arrows are bound by the direction it read once.
 - The anchored popover's script, which keeps the direction it read when the popover opened.
 - The file viewer's office conversions, whose localized text is written into the converted document once
   per source.

@@ -6,6 +6,10 @@
 @using Forma.Framework.Composer.Dialogs
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
+@using System.Globalization
+@using Forma.Blazor.Components.Composer.Dialogs
+@using Forma.Framework.Localization
+@using Forma.Tests.Localization
 @using Microsoft.Extensions.DependencyInjection
 
 @code {
@@ -1461,6 +1465,35 @@
                 () => Assert.Equal(["Ctrl", "Shift", "L"], rows["Bulleted List"]),
                 () => Assert.Equal(["Ctrl", "Alt", "4"], rows["Heading 4"]),
                 () => Assert.Equal(["Ctrl", "/"], rows["Keyboard Shortcuts"]));
+        }
+
+        [Fact]
+        public void Should_title_the_shortcuts_in_the_ui_culture_the_open_reference_renders_in()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            using var culture = new CultureFixture("en");
+            var translations = new CultureTranslationDictionary(new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                ["he"] = new Dictionary<string, string> { ["Redo"] = "בצע שוב" },
+            });
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(translations));
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
+                .TryAddDefaultPlugins());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Keyboard Shortcuts']")));
+            cut.Find("button[aria-label='Keyboard Shortcuts']").Click();
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-shortcuts")));
+
+            // Act
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he");
+            cut.FindComponent<FormaComposerShortcutsDialog>().Render();
+
+            // Assert
+            var titles = cut.FindAll(".forma-composer-shortcuts tbody th").Select(title => title.TextContent).ToList();
+            Assert.Contains("בצע שוב", titles);
         }
 
         [Fact]
