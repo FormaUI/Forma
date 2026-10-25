@@ -262,16 +262,16 @@ the file format.
 
 ## Culture in the URL
 
-[`Forma.Framework.Globalization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization/README.md)
+[`Forma.Framework.Globalization.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization.AspNetCore/README.md)
 takes the request culture from the first URL segment, `/he/orders`, and gives every page one
 address per culture:
 
 ```pwsh
-dotnet add package formaui-net.Framework.Globalization
+dotnet add package formaui-net.Framework.Globalization.AspNetCore
 ```
 
 ```csharp
-using Forma.Framework.Globalization;
+using Forma.Framework.Globalization.AspNetCore;
 
 builder.Services.AddCultureRouting(new CultureRouterOptions
 {
@@ -303,7 +303,7 @@ Each package's README covers installing, registering and using it.
 | [`formaui-net.AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md) | Word, Excel and PowerPoint documents rendered as pages in `FormaFileViewer` |
 | [`formaui-net.AddOns.Share.Targets`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Share.Targets/README.md) | Social networks, messengers and cloud drives for `FormaShareMenu` |
 | [`formaui-net.Framework.Currencies`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Currencies/README.md) | Currency codes, their minor units, and the symbol each culture writes them with |
-| [`formaui-net.Framework.Globalization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization/README.md) | The culture in the URL |
+| [`formaui-net.Framework.Globalization.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization.AspNetCore/README.md) | The culture in the URL |
 
 ## Contributing
 

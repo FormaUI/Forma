@@ -1,4 +1,4 @@
-namespace Forma.Framework.Globalization.Tests;
+namespace Forma.Framework.Globalization.AspNetCore.Tests;
 
 
 public sealed class CultureRouteTests

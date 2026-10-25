@@ -1,4 +1,4 @@
-namespace Forma.Framework.Globalization.Tests;
+namespace Forma.Framework.Globalization.AspNetCore.Tests;
 
 using System.Globalization;
 

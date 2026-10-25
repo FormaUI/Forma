@@ -9,7 +9,7 @@ using Forma.Framework.Css;
 using Forma.Framework.Emojis.Twemoji;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Feedback;
-using Forma.Framework.Globalization;
+using Forma.Framework.Globalization.AspNetCore;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;

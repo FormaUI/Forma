@@ -1,4 +1,4 @@
-namespace Forma.Framework.Globalization;
+namespace Forma.Framework.Globalization.AspNetCore;
 
 /// <summary>Where a culture token appears in a URL.</summary>
 public enum CulturePrefix

@@ -1,4 +1,4 @@
-# Forma.Framework.Globalization
+# Forma.Framework.Globalization.AspNetCore
 
 Culture routing for ASP.NET Core: the first segment of the URL path selects the request culture,
 as in `/he/about`, every page has one canonical address per culture, and `CultureRouter` builds
@@ -8,11 +8,11 @@ bookmarked and indexed per language.
 ## Install and register
 
 ```pwsh
-dotnet add package formaui-net.Framework.Globalization
+dotnet add package formaui-net.Framework.Globalization.AspNetCore
 ```
 
 ```csharp
-using Forma.Framework.Globalization;
+using Forma.Framework.Globalization.AspNetCore;
 
 builder.Services.AddCultureRouting(new CultureRouterOptions
 {
@@ -89,7 +89,7 @@ A page or component injects `CultureRouter` to address a culture:
 | `HasConsecutiveCultures(path)` | Whether a path names cultures in two consecutive segments. |
 
 ```razor
-@using Forma.Framework.Globalization
+@using Forma.Framework.Globalization.AspNetCore
 @inject CultureRouter Router
 @inject NavigationManager Navigation
 

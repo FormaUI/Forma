@@ -1,4 +1,4 @@
-namespace Forma.Framework.Globalization;
+namespace Forma.Framework.Globalization.AspNetCore;
 
 using Microsoft.AspNetCore.Http;
 
