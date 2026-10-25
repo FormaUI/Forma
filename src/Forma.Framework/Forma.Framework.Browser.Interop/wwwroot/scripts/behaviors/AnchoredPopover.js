@@ -36,8 +36,8 @@ class AnchoredPopover {
     #trigger = null;
     #placement = null;
     #resizeObserver = null;
+    #directionObserver = null;
     #scheduler = new FrameScheduler();
-    #isRightToLeft = false;
 
     constructor(popover, { anchor, keepsFocus = false, align = 'auto' }) {
         this.#popover = popover;
@@ -59,15 +59,16 @@ class AnchoredPopover {
         const { signal } = this.#placement;
         const place = () => this.#schedule();
 
-        // The anchor's direction holds for as long as the popover is open.
-        this.#isRightToLeft = Direction.isRightToLeft(this.#anchor);
-
         // Captured, since scroll events from the anchor's scrolling ancestors do not bubble.
         addEventListener('scroll', place, { capture: true, passive: true, signal });
         addEventListener('resize', place, { passive: true, signal });
 
         this.#resizeObserver = new ResizeObserver(place);
         this.#resizeObserver.observe(this.#popover);
+
+        // A direction can change while the popover is open with nothing resized or scrolled, so a change to any dir attribute places it again.
+        this.#directionObserver = new MutationObserver(place);
+        this.#directionObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['dir'], subtree: true });
 
         if (this.#keepsFocus) {
             const tabOrder = new TabOrder(new FocusSurface(this.#popover), { wrap: true });
@@ -89,6 +90,8 @@ class AnchoredPopover {
         this.#placement = null;
         this.#resizeObserver?.disconnect();
         this.#resizeObserver = null;
+        this.#directionObserver?.disconnect();
+        this.#directionObserver = null;
 
         if (this.#popover.hidePopover && this.#popover.matches(':popover-open')) {
             this.#popover.hidePopover();
@@ -108,7 +111,7 @@ class AnchoredPopover {
         const width = this.#popover.offsetWidth;
         const height = this.#popover.offsetHeight;
 
-        const preferredInlineStart = this.#hangsFromLeftEdge(anchor) ? anchor.left : anchor.right - width;
+        const preferredInlineStart = this.#hangsFromLeftEdge(anchor, Direction.isRightToLeft(this.#anchor)) ? anchor.left : anchor.right - width;
         const inlineStart = Math.max(Gap, Math.min(preferredInlineStart, innerWidth - width - Gap));
 
         const below = anchor.bottom + Gap;
@@ -122,20 +125,20 @@ class AnchoredPopover {
     /**
      * Whether the popover's left edge meets the anchor's left edge, extending rightward, or its right edge meets
      * the anchor's right edge, extending leftward. The reading-start and reading-end edges mirror in right-to-left
-     * text; the automatic choice extends toward the wider side of the viewport, and from dead center toward the
-     * reading start.
+     * text, the anchor's computed direction read at each placement; the automatic choice extends toward the wider side
+     * of the viewport, and from dead center toward the reading start.
      */
-    #hangsFromLeftEdge(anchorBounds) {
+    #hangsFromLeftEdge(anchorBounds, isRightToLeft) {
         switch (this.#align) {
             case 'start':
-                return !this.#isRightToLeft;
+                return !isRightToLeft;
             case 'end':
-                return this.#isRightToLeft;
+                return isRightToLeft;
             default: {
                 const anchorCenter = (anchorBounds.left + anchorBounds.right) / 2;
                 const viewportCenter = innerWidth / 2;
 
-                return anchorCenter === viewportCenter ? this.#isRightToLeft : anchorCenter < viewportCenter;
+                return anchorCenter === viewportCenter ? isRightToLeft : anchorCenter < viewportCenter;
             }
         }
     }

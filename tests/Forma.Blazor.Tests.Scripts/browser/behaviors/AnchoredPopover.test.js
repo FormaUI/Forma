@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#browser/behaviors/AnchoredPopover.js';
-import { stubAnimationFrames, stubResizeObserver } from '#support/platform.js';
+import { stubAnimationFrames, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
 describe('AnchoredPopover', () => {
     /** @type {ReturnType<typeof stubResizeObserver>} */
     let resizes;
+    /** @type {ReturnType<typeof stubMutationObserver>} */
+    let mutations;
     /** @type {ReturnType<typeof stubAnimationFrames>} */
     let frames;
     /** @type {HTMLElement} */
@@ -22,6 +24,7 @@ describe('AnchoredPopover', () => {
 
     beforeEach(() => {
         resizes = stubResizeObserver();
+        mutations = stubMutationObserver();
         frames = stubAnimationFrames();
         document.body.innerHTML = '<button id="anchor">Open</button><div id="popover"></div>';
         anchor = document.querySelector('#anchor');
@@ -39,6 +42,7 @@ describe('AnchoredPopover', () => {
 
     afterEach(() => {
         resizes.restore();
+        mutations.restore();
         frames.restore();
     });
 
@@ -211,6 +215,45 @@ describe('AnchoredPopover', () => {
         handle.close();
 
         expect(document.activeElement.id).toBe('inside');
+    });
+
+    it('places the popover again when the direction changes while it is open, with nothing resized or scrolled', () => {
+        setAnchorRect({ top: 100, bottom: 130, left: 600, right: 640, width: 40, height: 30 });
+        const handle = attach(popover, { anchor, align: 'start' });
+        handle.open();
+        expect(popover.style.left).toBe('600px');
+
+        anchor.style.direction = 'rtl';
+        mutations.latest().deliver([{ type: 'attributes', attributeName: 'dir', target: document.documentElement }]);
+        frames.flush();
+
+        expect(popover.style.left).toBe('440px');
+    });
+
+    it('reads the direction of the anchor itself over that of the document', () => {
+        setAnchorRect({ top: 100, bottom: 130, left: 600, right: 640, width: 40, height: 30 });
+        document.documentElement.style.direction = 'rtl';
+        anchor.style.direction = 'ltr';
+
+        try {
+            attach(popover, { anchor, align: 'start' }).open();
+
+            expect(popover.style.left).toBe('600px');
+        } finally {
+            document.documentElement.style.direction = '';
+        }
+    });
+
+    it('watches every dir attribute while open, and stops once closed', () => {
+        const handle = attach(popover, { anchor });
+        handle.open();
+        const observer = mutations.latest();
+        expect(observer.targets).toEqual([document.documentElement]);
+
+        handle.close();
+
+        expect(observer.targets).toEqual([]);
+        expect(observer.isConnected).toBe(false);
     });
 
     it('repositions when the browser window scrolls or resizes', () => {
