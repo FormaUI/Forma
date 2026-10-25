@@ -51,6 +51,7 @@ public interface ICultureState
 {
     CultureInfo Culture { get; }
     CultureInfo UICulture { get; }
+    bool IsRightToLeft { get; }
     int Revision { get; }
     event Action? Changed;
     void Change(CultureInfo culture, CultureInfo? uiCulture = null);
@@ -60,6 +61,7 @@ public interface ICultureState
 Its rules:
 
 - An omitted UI culture is the culture.
+- `IsRightToLeft` is whether the UI culture is written right to left.
 - A change to the pair already held is no change: it neither notifies nor advances the revision.
 - The state holds read-only cultures, `CultureInfo.ReadOnly` of what it is given, so no caller can alter
   a culture behind it.
@@ -71,8 +73,9 @@ Its rules:
 - `Change` applies the new cultures to its calling flow before it advances the revision and notifies, so
   the renders it schedules inherit them.
 
-Components depend on the abstraction, and the library registers its default with `TryAdd`, so a host
-that registers its own first still wins. The state knows nothing of navigation or addresses.
+Components depend on the abstraction, and the library registers its default, `DefaultCultureState`, one
+per user scope with `TryAddScoped`, so every component resolves a state and a host that registers its own
+first still wins. The state knows nothing of navigation or addresses.
 
 ## Output takes its culture from the state
 
@@ -82,19 +85,15 @@ through `InvokeAsync(StateHasChanged)` or a parameter it sets. Whatever began it
 in the state's cultures, because the component reads them from the state rather than from the ambient
 culture of the flow that rendered it.
 
-Both component bases expose the state's cultures, and a component formats, parses, compares, sorts and
-lays out by them:
+Both component bases inject the state as `CultureState`, and a component formats, parses, compares, sorts
+and lays out by its cultures and its direction:
 
 ```csharp
-protected CultureInfo Culture => CultureState.Culture;
-
-protected CultureInfo UICulture => CultureState.UICulture;
-
-protected bool IsRightToLeft => UICulture.TextInfo.IsRightToLeft;
+[Inject] protected ICultureState CultureState { get; set; } = default!;
 ```
 
 ```razor
-<span>@date.ToString("d", Culture)</span>
+<span>@date.ToString("d", CultureState.Culture)</span>
 ```
 
 An edit in progress parses in the culture it retained, as [editing](#an-edit-in-progress-keeps-its-culture)
@@ -118,12 +117,12 @@ into .NET, through the circuit's inbound activity handler
 applies the new cultures to its calling flow before it notifies. Work begun before a switch finishes in the
 culture it captured, which is the platform's rule, while the render it asks for reads the state.
 
-The bases read the culture explicitly because they can't wrap a render. `ComponentBase` keeps its render
-delegate private, that delegate calls the component's own `BuildRenderTree`, which a component written in
-Razor overrides without calling a base's, and `ShouldRender` decides whether a render is queued rather than
-surrounding it, and never sees the first one. A culture scope written around a component's markup would
-have to be authored in each component, and a fragment it creates may run after the scope has ended, so the
-explicit read is the one approach that holds for every component.
+Components read the culture explicitly because the bases can't wrap a render. `ComponentBase` keeps its
+render delegate private, that delegate calls the component's own `BuildRenderTree`, which a component
+written in Razor overrides without calling a base's, and `ShouldRender` decides whether a render is queued
+rather than surrounding it, and never sees the first one. A culture scope written around a component's
+markup would have to be authored in each component, and a fragment it creates may run after the scope has
+ended, so the explicit read is the one approach that holds for every component.
 
 ## Components follow the state
 

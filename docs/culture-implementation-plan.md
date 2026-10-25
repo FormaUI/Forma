@@ -129,13 +129,14 @@ Each step is built, reviewed and committed on its own.
    - a second circuit of the same host stayed English throughout;
    - the state followed the address through enhanced navigation to `/he/example` and back to `/example`,
      and through Back and Forward.
-4. **The culture state and the component bases.** The scoped state; both component bases subscribing to it
-   and exposing its cultures; components reading them for their output; the localization layer looking
-   strings up in a given UI culture, and the bases' strings in the state's; ambient-culture APIs and
-   callbacks run in the bounded scope; every render gate counting the revision; work a component resolves or
-   loads in a culture, the file viewer's resolution among it, started again on a change, which sets no
-   parameter; and the cascaded culture retired. Gate: a change renders an input, a component on the base and a gated grid row again, each in
-   the new cultures, and a bounded scope restores the caller's cultures.
+4. **The culture state and the component bases.** The scoped state, `DefaultCultureState` its default; both
+   component bases injecting it as `CultureState` and subscribing to it; components reading its cultures and
+   its direction for their output; the localization layer looking strings up in a given UI culture, and the
+   bases' strings in the state's; ambient-culture APIs and callbacks run in the bounded scope; every render
+   gate counting the revision; work a component resolves or loads in a culture, the file viewer's resolution
+   among it, started again on a change, which sets no parameter; and the cascaded culture retired. Gate: a
+   change renders an input, a component on the base and a gated grid row again, each in the new cultures,
+   and a bounded scope restores the caller's cultures.
 5. **The server.** The circuit handler applies the culture before every inbound activity. Gate: a test of
    the handler around an inbound activity, and an event after a switch rendering in the new culture.
 6. **The document.** The ASP.NET Core integration keeps `<html lang dir>` in step, again after each
