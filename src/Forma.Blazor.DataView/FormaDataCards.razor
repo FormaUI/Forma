@@ -48,7 +48,7 @@
                             @if (row.Group is { } group)
                             {
                                 <div class="forma-data-cards-heading-row" role="listitem" @key="group.Key">
-                                    <FormaDataGroupHeading TItem="TItem" Group="group" Grouping="View.Grouping!" IsFolded="View.IsFolded(group)" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                                    <FormaDataGroupHeading TItem="TItem" Group="group" IsFolded="View.IsFolded(group)" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
                                 </div>
                             }
                             else
@@ -81,7 +81,7 @@
                     var nameId = GetGroupNameId(index);
 
                     <section class="forma-data-cards-group" @key="group.Key">
-                        <FormaDataGroupHeading TItem="TItem" Group="group" Grouping="View.Grouping!" NameId="@nameId" IsFolded="isFolded" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                        <FormaDataGroupHeading TItem="TItem" Group="group" NameId="@nameId" IsFolded="isFolded" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
                         @if (!isFolded)
                         {
                             <div class="forma-data-cards-pack" role="list" aria-labelledby="@nameId">

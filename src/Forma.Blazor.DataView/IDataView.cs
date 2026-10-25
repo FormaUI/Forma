@@ -25,9 +25,6 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>Whether the items on screen stand under group headings.</summary>
     bool IsGrouped { get; }
 
-    /// <summary>The grouping the groups on screen were made by, which names their headings.</summary>
-    DataViewGrouping<TItem>? Grouping { get; }
-
     /// <summary>Whether <paramref name="group"/> is folded, its items hidden under its heading.</summary>
     /// <param name="group">The group.</param>
     bool IsFolded(DataViewGroup<TItem> group);

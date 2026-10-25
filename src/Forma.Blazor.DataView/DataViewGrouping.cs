@@ -9,14 +9,14 @@ public sealed class DataViewGrouping<TItem>
 {
     private readonly DataViewSort<TItem> _order;
     private readonly Func<TItem, object?> _key;
-    private readonly Func<object?, string> _name;
+    private readonly Func<object?, string> _nameSelector;
     private readonly Func<IQueryable<TItem>, IQueryable<DataViewGroupSize>> _count;
 
-    private DataViewGrouping(DataViewSort<TItem> order, Func<TItem, object?> key, Func<object?, string> name, Func<IQueryable<TItem>, IQueryable<DataViewGroupSize>> count)
+    private DataViewGrouping(DataViewSort<TItem> order, Func<TItem, object?> key, Func<object?, string> nameSelector, Func<IQueryable<TItem>, IQueryable<DataViewGroupSize>> count)
     {
         _order = order;
         _key = key;
-        _name = name;
+        _nameSelector = nameSelector;
         _count = count;
     }
 
@@ -57,14 +57,11 @@ public sealed class DataViewGrouping<TItem>
     public object? GetKey(TItem item)
         => _key(item);
 
-    /// <summary>The display name a group's heading shows for <paramref name="key"/>.</summary>
-    /// <remarks>
-    /// A heading asks for it each time it renders, so the grouping's name callback runs once for each heading shown on every
-    /// render, synchronously, and gives the name in the culture in force when it runs.
-    /// </remarks>
-    /// <param name="key">The group's key.</param>
-    public string GetDisplayName(object? key)
-        => _name(key);
+    /// <summary>Creates the group of <paramref name="key"/> over <paramref name="items"/>, which names itself by this grouping's name callback.</summary>
+    /// <param name="key">The key the group's items share.</param>
+    /// <param name="items">The group's items on screen.</param>
+    internal DataViewGroup<TItem> CreateGroup(object? key, IReadOnlyList<TItem> items)
+        => new(key, _nameSelector, items);
 
     private static DataViewGrouping<TItem> Create<TValue>(Expression<Func<TItem, TValue>> key, DataViewSort<TItem> order, Func<TValue, string>? name, bool descending)
     {

@@ -70,10 +70,11 @@ Each step is built, reviewed and committed on its own.
    - **The view names.** A view's registration produces its name when asked, through `GetName()`, in place
      of the string it held; each view resolves the name from its own locale section, and the view switch
      asks for it as it renders.
-   - **The group names.** `DataViewGroup` keeps its key, its items and its count, and no name; a heading
-     asks the grouping for its text as it renders, `grouping.GetDisplayName(group.Key)`, the grouping's
-     `GetName` renamed, its key parameter and the host's `Func<TValue, string>` callback unchanged. The
-     callback may run once per heading shown on each render, and suits repeated synchronous calls.
+   - **The group names.** `DataViewGroup` holds no name; the grouping makes its groups, each holding the
+     grouping's name callback, and a group's `DisplayName` names the group each time it is read, so a heading
+     reads the name as it renders. The grouping's `GetName` is gone, since a group needn't be handed its own
+     key, and the host's `Func<TValue, string>` callback is unchanged. The callback may run once per heading
+     shown on each render, and suits repeated synchronous calls.
    - **The popover's direction.** Every reposition reads the anchor's computed direction, so a local `dir`
      or a style override is respected, and a change of direction schedules a reposition once it reaches the
      document, even where the anchor's size and position stay the same, which a resize observer would not
