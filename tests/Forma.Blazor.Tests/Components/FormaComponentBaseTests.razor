@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Globalization
 @using Forma.Framework.JavaScript.Interop
 @using Forma.Tests.Localization
 @using Microsoft.Extensions.Logging
@@ -95,6 +96,26 @@
             // Assert
             Assert.Equal(2, cut.RenderCount);
             Assert.Equal(before, cut.Instance.OwnContext.RuntimeId);
+        }
+
+        [Fact]
+        public void Should_render_again_when_a_cascaded_culture_changes()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            RenderFragment content = @<Announcer />;
+            var cut = ctx.Render<CascadingValue<CultureInfo>>(parameters => parameters
+                .Add(p => p.Value, CultureInfo.GetCultureInfo("en-US"))
+                .AddChildContent(content));
+            var before = cut.FindComponent<Announcer>().RenderCount;
+
+            // Act
+            cut.Render(parameters => parameters
+                .Add(p => p.Value, CultureInfo.GetCultureInfo("es-419"))
+                .AddChildContent(content));
+
+            // Assert
+            Assert.Equal(before + 1, cut.FindComponent<Announcer>().RenderCount);
         }
 
         [Fact]

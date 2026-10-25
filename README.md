@@ -244,6 +244,16 @@ The folder reaches the output as content:
 </ItemGroup>
 ```
 
+A host that changes the culture without a new request, switching language in place, sets the
+culture in force and cascades it from where it renders only on that change, its root, and every
+component renders again in it:
+
+```razor
+<CascadingValue Value="CultureInfo.CurrentUICulture">
+    <Router AppAssembly="typeof(Program).Assembly">...</Router>
+</CascadingValue>
+```
+
 A host's file overrides the library's and the pack's for the keys it holds.
 [`Forma.Framework.Localization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Localization/README.md)
 documents the lookup, the plural syntax and every place a file may sit, and

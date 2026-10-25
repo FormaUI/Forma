@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components;
 
+using System.Globalization;
+
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
@@ -18,6 +20,15 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
     private ComponentContext? _context;
+
+    /// <summary>The culture a host cascades where it changes the culture without a new request.</summary>
+    /// <remarks>
+    /// Each render of the cascading value renders the component again, even one whose parameters are unchanged, so its
+    /// strings and formats follow a new culture; a host therefore cascades it from where it renders only when the culture
+    /// changes, such as its root. The component writes in the culture in force, which the host sets; this only tells it
+    /// when that changed, and is <see langword="null"/> where the host cascades none.
+    /// </remarks>
+    [CascadingParameter] protected CultureInfo? CascadedCulture { get; set; }
 
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }

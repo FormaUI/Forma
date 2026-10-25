@@ -107,6 +107,14 @@ own cleanup can still use it. The context carries the component's identity, stri
 and JS environment, and the DOM watcher and engine it makes on first use, whose
 observations and interactions its release ends in one call to the browser.
 
+A component writes in the culture in force, which a request sets. A host that changes the
+culture without a new request, switching language in place, cascades a `CultureInfo` from
+where it renders only on that change, its root; the base takes it as `CascadedCulture`, and
+each render of the cascade renders every component under it again, even one whose
+parameters are unchanged, so a date a box formats or a string it looks up follows the new
+culture. A host that cascades none loses nothing, and the component reads the culture in
+force either way, never the cascaded value.
+
 The context builds its JS environment once from the runtime, its logger and its identity,
 so the environment's identity and log are the context's by construction. The environment
 carries the runtime's asynchronous calls, which are the ones every Forma wrapper makes. A

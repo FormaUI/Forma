@@ -39,6 +39,40 @@
         }
 
         [Fact]
+        public void Should_write_the_date_in_a_culture_the_host_changes_to_in_place()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            var model = new FakeModel { Date = new DateOnly(2025, 3, 15) };
+            var previous = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+            try
+            {
+                var editContext = new EditContext(model);
+                RenderFragment picker = @<FakeFormHost EditContext="editContext">
+                    <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+                </FakeFormHost>;
+                var cut = ctx.Render<CascadingValue<CultureInfo>>(parameters => parameters
+                    .Add(p => p.Value, CultureInfo.CurrentCulture)
+                    .AddChildContent(picker));
+
+                // Act
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("es-419");
+                cut.Render(parameters => parameters
+                    .Add(p => p.Value, CultureInfo.CurrentCulture)
+                    .AddChildContent(picker));
+
+                // Assert
+                Assert.Equal("15/3/2025", cut.Find(".forma-date-box-value").TextContent);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = previous;
+            }
+        }
+
+        [Fact]
         public void Should_show_a_placeholder_when_there_is_no_value()
         {
             // Arrange
