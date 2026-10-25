@@ -3,6 +3,7 @@ namespace Forma.Blazor.Tests;
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
+using Forma.Framework.Globalization;
 using Forma.Framework.Icons;
 using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;
@@ -27,6 +28,17 @@ public sealed class ServiceCollectionExtensionsTests
         Assert.Multiple(
             () => Assert.Equal(typeof(EmojiSpriteLoader), descriptor.ImplementationType),
             () => Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime));
+    }
+
+    [Fact]
+    public void Should_register_one_culture_state_per_circuit()
+    {
+        // Act
+        var services = new ServiceCollection().AddFormaUI();
+
+        // Assert
+        var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState));
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
     }
 
     [Fact]

@@ -134,11 +134,14 @@ Each step is built, reviewed and committed on its own.
    its direction for their output; the localization layer looking strings up in a given UI culture, and the
    bases' strings in the state's; ambient-culture APIs and callbacks run in the bounded scope; every render
    gate counting the revision; work a component resolves or loads in a culture, the file viewer's resolution
-   among it, started again on a change, which sets no parameter; and the cascaded culture retired. It begins
-   with a commit of its own:
+   among it, started again on a change, which sets no parameter; and the cascaded culture retired. Its parts
+   land one commit at a time:
    - ✅ The routing assembly becomes `Forma.Framework.Globalization.AspNetCore`, its namespace, README and
      tests with it, so the name `Forma.Framework.Globalization` passes to the platform-neutral state, as C1
      sets out.
+   - ✅ The state: `ICultureState`, announcing its changes through `INotifyStateChanged`, and
+     `DefaultCultureState`, registered once per user scope by the feature's registrar, which `AddFormaUI`
+     calls, in a platform-neutral `Forma.Framework.Globalization`.
 
    Gate: a change renders an input, a component on the base and a gated grid row again, each in the new
    cultures, and a bounded scope restores the caller's cultures.
