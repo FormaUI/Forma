@@ -142,6 +142,9 @@ Each step is built, reviewed and committed on its own.
    - ✅ The state: `ICultureState`, announcing its changes through `INotifyStateChanged`, and
      `DefaultCultureState`, registered once per user scope by the feature's registrar, which `AddFormaUI`
      calls, in a platform-neutral `Forma.Framework.Globalization`.
+   - ✅ The bounded scope: `AmbientCulture.Run` runs a synchronous operation in the cultures it is given and
+     restores the caller's in a `finally`, and the state's `Run` runs one in the state's cultures; an
+     operation that returns a task is refused, since the scope spans no asynchronous work.
 
    Gate: a change renders an input, a component on the base and a gated grid row again, each in the new
    cultures, and a bounded scope restores the caller's cultures.

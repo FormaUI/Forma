@@ -65,6 +65,20 @@ registers a callback run after every change, and `Unsubscribe` removes it.
 }
 ```
 
+## Running in the state's cultures
+
+An operation that reads the ambient culture and takes none of its own, such as
+`DisplayAttribute.GetName()`, runs in the state's cultures through `Run`, which applies them, runs the
+operation and restores the caller's cultures afterward, whether it returns or throws:
+
+```csharp
+var title = CultureState.Run(() => display.GetName());
+```
+
+`AmbientCulture.Run(culture, uiCulture, operation)` does the same in cultures given to it, such as the
+ones a piece of work captured as it started. The operation is synchronous, and one that returns a task or
+a value task is refused, since the cultures would be restored at its first await.
+
 ## License
 
 Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).
