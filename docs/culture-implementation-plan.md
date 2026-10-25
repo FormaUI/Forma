@@ -5,7 +5,7 @@ landed.
 
 ## Status
 
-Step 1 is under way.
+Steps 1 and 2 have landed. Step 3 is next.
 
 ## Where Forma stood
 
@@ -53,7 +53,7 @@ unless it is keyed by the culture:
 - ✅ `FormaComposerShortcutsDialog`'s rows, built as it opens and kept while it is open.
 - ✅ `FormaCalendar`'s shown months, whose boundaries are kept from the calendar they were reckoned in.
 - ✅ `FormaDataTree`'s input profile, whose open and close arrows are bound by the direction it read once.
-- The anchored popover's script, which keeps the direction it read when the popover opened.
+- ✅ The anchored popover's script, which keeps the direction it read when the popover opened.
 - ✅ The file viewer's office conversions, whose localized text is written into the converted document once
   per source.
 
@@ -64,7 +64,7 @@ stays out of step 1, as the design's exception for it sets out.
 
 Each step is built, reviewed and committed on its own.
 
-1. **Output that follows the culture.** Every item the survey lists produces its output when it renders,
+1. **Output that follows the culture.** ✅ Every item the survey lists produces its output when it renders,
    and caches nothing that depends on the culture unless the cache is keyed by it; each fix is correct
    under any switching model. The last four items take these approaches:
    - **The view names.** A view's registration produces its name when asked, through `GetName()`, in place
@@ -92,7 +92,7 @@ Each step is built, reviewed and committed on its own.
    component test for rendered names and formats, a script test and a browser check for the popover's
    direction and its reposition, a conversion test for the converted document's labels, and an
    asynchronous test for a conversion that completes after a switch.
-2. **What the platform does today.** Taken alongside step 1's last items, since its probes depend on none
+2. **What the platform does today.** ✅ Taken alongside step 1's last items, since its probes depend on none
    of them; each records its configuration and what it observed, and the results choose how culture
    addresses follow the state:
    - whether the cultures an event handler assigns reach the circuit's next event, `CurrentCulture` and
@@ -149,12 +149,22 @@ Each step is built, reviewed and committed on its own.
 
 ## To verify
 
-Step 2 settles each:
+Step 2 settled each, on a probe host of its own: Forma's culture routing with `CulturePrefix.ExceptDefault`,
+English as the default and Hebrew, under .NET 11 release candidate 1 in the Development environment, run once
+with an interactive `Routes` and once statically with islands and enhanced navigation, each driven in Chrome.
 
-- That a culture an event handler assigns doesn't reach the circuit's next event, which the circuit's
-  host, setting no culture of its own, implies.
-- Whether interactive route matching, under global interactivity, finds a page at a culture-prefixed
-  address.
-- Whether an enhanced navigation updates the `<html>` element's own attributes, or undoes a dynamic change
-  to them.
-- Whether location changes reach every interactive island on an enhanced navigation.
+- ✅ A culture an event handler assigns doesn't reach the circuit's next event: the event that set both cultures
+  to Hebrew read `he/he`, and the next event read `en/en`.
+- ✅ Interactive route matching, under global interactivity, doesn't find a page at a culture-prefixed address,
+  so culture addresses don't work under global interactivity today. A navigation within the application to
+  `/he/other` reached the router's not-found content; a full load of `/he/other` rendered the document in
+  Hebrew, `lang=he dir=rtl`, through the middleware, and the interactive router, once the circuit started,
+  routed the browser's address, `/he/other`, found no page and replaced the one rendered. The Showcase, whose
+  routes are static with islands, doesn't meet it. Step 7 makes route matching understand the culture segment.
+- ✅ An enhanced navigation sets the `<html>` element's attributes from the server's response, undoing a
+  dynamic change to them: a document set to `lang=xx dir=rtl` returned to `lang=en dir=ltr` on a navigation
+  within the same culture, and took `lang=he dir=rtl` on a navigation to `/he/about`.
+- ✅ Location changes reach an interactive island that an enhanced navigation keeps, the layout's and a page's
+  island of one type at one place alike, Back among them; an island the navigation creates sees
+  the location changes after it, and never the one that created it, so it reads the current address as it
+  starts.
