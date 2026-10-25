@@ -25,6 +25,9 @@ public sealed partial class FormaTab : FormaElementBase
     /// <summary>The tab's panel content.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
+    // What the parent's strip shows for this tab, as of the last parameters it was given.
+    private (string Title, Icon? Icon, bool Trailing)? _header;
+
     /// <summary>The identifier the tab is selected by.</summary>
     internal string EffectiveTabId => TabId ?? Context.RuntimeId.ToString("N");
 
@@ -39,8 +42,21 @@ public sealed partial class FormaTab : FormaElementBase
         Parent.RegisterTab(this);
     }
 
+    // The parent draws the strip before its panels, so the tabs' new parameters reach them after it is drawn; a header
+    // that changed, such as a title in a newly chosen language, asks the parent to draw the strip again.
     /// <inheritdoc />
-    protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Title);
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(Title);
+
+        var header = (Title, Icon, Trailing);
+        if (_header is { } shown && !shown.Equals(header))
+        {
+            Parent.UpdateTab();
+        }
+
+        _header = header;
+    }
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

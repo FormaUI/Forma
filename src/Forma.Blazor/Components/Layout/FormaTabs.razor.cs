@@ -93,6 +93,9 @@ public sealed partial class FormaTabs : FormaElementBase
         }
     }
 
+    internal void UpdateTab()
+        => StateHasChanged();
+
     internal void UnregisterTab(FormaTab tab)
     {
         _tabs.Remove(tab);

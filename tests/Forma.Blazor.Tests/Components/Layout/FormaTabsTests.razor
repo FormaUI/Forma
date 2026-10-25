@@ -76,6 +76,25 @@
         }
 
         [Fact]
+        public void Should_show_a_title_that_changes_once_the_strip_is_drawn()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            var title = "Settings";
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="@title">Content</FormaTab>
+                </FormaTabs>);
+
+            // Act
+            title = "Configuración";
+            cut.FindComponent<FormaTabs>().Render();
+
+            // Assert
+            Assert.Contains("Configuración", cut.Find(".forma-tab-button").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void Should_render_a_glyph_when_icon_is_set()
         {
             // Arrange
