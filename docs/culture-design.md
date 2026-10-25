@@ -44,17 +44,17 @@ sets out.
 A user scope is a circuit, and each holds one culture state: the culture, which formats dates, numbers
 and collation, and the UI culture, which chooses strings and direction, kept apart as the platform keeps
 them so that a host can show English text with German formats. The state starts from the culture in
-force when the scope is created, the request's, and announces each change.
+force when the scope is created, the request's, and announces each change through `INotifyStateChanged`,
+as every Forma service a component follows does.
 
 ```csharp
-public interface ICultureState
+public interface ICultureState : INotifyStateChanged
 {
     CultureInfo Culture { get; }
     CultureInfo UICulture { get; }
     bool IsRightToLeft { get; }
     int Revision { get; }
-    event Action? Changed;
-    void Change(CultureInfo culture, CultureInfo? uiCulture = null);
+    Task ChangeAsync(CultureInfo culture, CultureInfo? uiCulture = null);
 }
 ```
 
@@ -67,11 +67,14 @@ Its rules:
   a culture behind it.
 - The revision is the state's, advanced once per change, and the one source every component base and
   render gate reads.
-- `Change` updates the state synchronously and schedules what follows: each component's notification
-  dispatches its render through its renderer, and the document's update goes through the browser, so a
-  return from `Change` means the state has changed, not that the browser shows it.
-- `Change` applies the new cultures to its calling flow before it advances the revision and notifies, so
-  the renders it schedules inherit them.
+- `ChangeAsync` changes the state before it returns its task, which completes once every subscriber has
+  been notified: each component's notification dispatches its render through its renderer, and the
+  document's update goes through the browser, so a completed change means the state has changed and its
+  renders are scheduled, not that the browser shows them.
+- `ChangeAsync` applies the new cultures to its calling flow before it advances the revision and notifies,
+  so the renders it schedules inherit them.
+- A change takes no cancellation: once the state has changed, every subscriber is notified, so no
+  component is left showing the culture before it.
 
 Components depend on the abstraction, and the library registers its default, `DefaultCultureState`, one
 per user scope with `TryAddScoped`, so every component resolves a state and a host that registers its own
@@ -79,7 +82,7 @@ first still wins. The state knows nothing of navigation or addresses.
 
 ## Output takes its culture from the state
 
-A render can begin in three ways: the event that calls `Change`, an event from the browser, and work
+A render can begin in three ways: the event that calls `ChangeAsync`, an event from the browser, and work
 begun before a switch, a task started in the old culture that finishes after it and asks for a render
 through `InvokeAsync(StateHasChanged)` or a parameter it sets. Whatever began it, a component's output is
 in the state's cultures, because the component reads them from the state rather than from the ambient
@@ -113,7 +116,7 @@ never assumes that a parent's render renders its children within it.
 The ambient culture is kept in step too, for whatever reads it outside Forma's output. The circuit handler
 sets both cultures from the state before every inbound activity, every UI event and every call from script
 into .NET, through the circuit's inbound activity handler
-([circuit activity](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr)), and `Change`
+([circuit activity](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr)), and `ChangeAsync`
 applies the new cultures to its calling flow before it notifies. Work begun before a switch finishes in the
 culture it captured, which is the platform's rule, while the render it asks for reads the state.
 
@@ -168,7 +171,7 @@ navigation.
 
 A host with culture addresses switches through `CultureRouter`, which owns the switch: the integration's
 entry point navigates to the other culture's address, and the state follows the address, never the
-reverse, so an address and the culture it shows never disagree. Calling `Change` directly is for a host
+reverse, so an address and the culture it shows never disagree. Calling `ChangeAsync` directly is for a host
 without culture addresses.
 
 The state follows the address in every way a navigation happens:
