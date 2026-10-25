@@ -366,7 +366,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             throw new InvalidOperationException($"{nameof(FormaDataGrid<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Grid"], Glyph.DetailsView, this));
+        Interaction.RegisterView(new DataViewRegistration(ViewKey, () => L["Grid"], Glyph.DetailsView, this));
         _rows = new DataViewRows<TItem>(View, () => Table?.Virtualizer, InvokeAsync, StateHasChanged);
         _columnFit = new ColumnFit(Context.JS);
         View.Subscribe(HandleViewChangedAsync);

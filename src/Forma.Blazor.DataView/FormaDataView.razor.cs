@@ -63,6 +63,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private HashSet<TItem> _selectedSet = [];
     private IReadOnlyList<TItem> _items = [];
     private List<DataViewGroup<TItem>> _groups = [];
+    private DataViewGrouping<TItem>? _grouping;
     private int? _totalItemCount;
     private bool _hasLoaded;
     private bool _isBusy;
@@ -304,6 +305,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public bool IsGrouped
         => _groups.Count > 0;
+
+    /// <inheritdoc />
+    DataViewGrouping<TItem>? IDataView<TItem>.Grouping
+        => _grouping;
 
     /// <inheritdoc />
     public bool IsFolded(DataViewGroup<TItem> group)
@@ -1315,7 +1320,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // A virtualizing view fetches the items as it scrolls, so its groups are the whole set's, known by their sizes alone.
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<DataViewGroupSize>? sizes)
         => GroupBy is { } grouping && sizes is not null
-            ? [.. sizes.Where(size => size.Count > 0).Select(size => new DataViewGroup<TItem>(size.Key, grouping.GetName(size.Key), []) { Count = size.Count })]
+            ? [.. sizes.Where(size => size.Count > 0).Select(size => new DataViewGroup<TItem>(size.Key, []) { Count = size.Count })]
             : [];
 
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)
@@ -1335,7 +1340,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
             if (!Equals(itemKey, key))
             {
-                groups.Add(new DataViewGroup<TItem>(key, grouping.GetName(key), members));
+                groups.Add(new DataViewGroup<TItem>(key, members));
                 members = [];
                 key = itemKey;
             }
@@ -1343,7 +1348,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             members.Add(item);
         }
 
-        groups.Add(new DataViewGroup<TItem>(key, grouping.GetName(key), members));
+        groups.Add(new DataViewGroup<TItem>(key, members));
 
         return groups;
     }
@@ -1434,6 +1439,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             }
 
             _items = page.Items;
+            // The grouping is kept beside the groups it made, so a heading is named by its own grouping while another loads.
+            _grouping = GroupBy;
             _groups = IsVirtualizing ? CreateGroups(page.GroupSizes) : CreateGroups(page.Items);
             _hasLoaded = true;
             await SetTotalItemCountAsync(page.TotalCount);

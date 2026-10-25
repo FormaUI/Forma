@@ -10,6 +10,9 @@ public sealed partial class FormaDataGroupHeading<TItem> : FormaComponentBase
     /// <summary>The group the heading stands over.</summary>
     [Parameter, EditorRequired] public DataViewGroup<TItem> Group { get; set; } = default!;
 
+    /// <summary>The grouping that made the group, which names its heading.</summary>
+    [Parameter, EditorRequired] public DataViewGrouping<TItem> Grouping { get; set; } = default!;
+
     /// <summary>The id the group's name carries.</summary>
     [Parameter] public string? NameId { get; set; }
 
@@ -21,5 +24,8 @@ public sealed partial class FormaDataGroupHeading<TItem> : FormaComponentBase
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Group);
+    {
+        ArgumentNullException.ThrowIfNull(Group);
+        ArgumentNullException.ThrowIfNull(Grouping);
+    }
 }

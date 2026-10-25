@@ -57,9 +57,13 @@ public sealed class DataViewGrouping<TItem>
     public object? GetKey(TItem item)
         => _key(item);
 
-    /// <summary>The name a group's heading shows for <paramref name="key"/>.</summary>
+    /// <summary>The display name a group's heading shows for <paramref name="key"/>.</summary>
+    /// <remarks>
+    /// A heading asks for it each time it renders, so the grouping's name callback runs once for each heading shown on every
+    /// render, synchronously, and gives the name in the culture in force when it runs.
+    /// </remarks>
     /// <param name="key">The group's key.</param>
-    public string GetName(object? key)
+    public string GetDisplayName(object? key)
         => _name(key);
 
     private static DataViewGrouping<TItem> Create<TValue>(Expression<Func<TItem, TValue>> key, DataViewSort<TItem> order, Func<TValue, string>? name, bool descending)

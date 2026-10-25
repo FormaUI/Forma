@@ -1,6 +1,10 @@
 @inherits FormaBunitContext
 @using AngleSharp.Dom
+@using System.Globalization
+@using Forma.Framework.Localization
+@using Forma.Tests.Localization
 @using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.DependencyInjection
 
 @code {
     public sealed class Component
@@ -43,6 +47,28 @@
                 () => Assert.Single(cut.FindAll("table.forma-data-grid")),
                 () => Assert.Empty(cut.FindAll(".forma-data-list")),
                 () => Assert.Empty(cut.FindAll(".forma-data-cards")));
+        }
+
+        [Fact]
+        public void Should_name_each_view_in_the_ui_culture_the_switch_renders_in()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewSwitchTests();
+            using var culture = new CultureFixture("en");
+            var translations = new CultureTranslationDictionary(new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                ["he"] = new Dictionary<string, string> { ["Grid"] = "טבלה", ["List"] = "רשימה", ["Cards"] = "כרטיסים" },
+            });
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(translations));
+            var cut = ctx.Render(CreateThreeViews());
+            cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
+
+            // Act
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he");
+            cut.FindComponent<FormaDataViewSwitch>().Render();
+
+            // Assert
+            Assert.Equal(["טבלה", "רשימה", "כרטיסים"], cut.FindAll(".forma-data-view-switch button").Select(button => button.TextContent.Trim()).ToList());
         }
 
         [Fact]

@@ -96,7 +96,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         }
 
         _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
-        Interaction.RegisterView(new DataViewRegistration(ViewKey, L["List"], Glyph.List, this));
+        Interaction.RegisterView(new DataViewRegistration(ViewKey, () => L["List"], Glyph.List, this));
         View.Subscribe(HandleViewChangedAsync);
     }
 

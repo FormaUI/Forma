@@ -12,7 +12,7 @@
     @foreach (var view in Views.Views.Where(view => !view.IsCompanion))
     {
         <FormaToggleButton Icon="@view.Glyph"
-                           Label="@view.Name"
+                           Label="@view.GetName()"
                            ShowLabel="true"
                            class="forma-data-view-switch-button"
                            Pressed="@(view.Key == Views.ActiveViewKey)"

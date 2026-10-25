@@ -46,8 +46,8 @@ unless it is keyed by the culture:
 - ✅ `FormaPropertyColumn`'s title, taken once, and from `DisplayAttribute.Name` as written, where
   `GetName()` resolves a resource-backed display name.
 - ✅ `FormaEmojiPicker`'s nine default group titles, English text rendered as they are.
-- The data view's view-switch names, which each view registers once as it initializes.
-- The data view's group names, built when the view loads, by the default namer in the culture of that
+- ✅ The data view's view-switch names, which each view registers once as it initializes.
+- ✅ The data view's group names, built when the view loads, by the default namer in the culture of that
   load.
 - ✅ `FormaInputInspector`'s tools, built once as it initializes.
 - ✅ `FormaComposerShortcutsDialog`'s rows, built as it opens and kept while it is open.

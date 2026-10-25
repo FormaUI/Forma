@@ -130,7 +130,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
         _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
         _gridColumns = new GridColumns(Context.JS);
-        Interaction.RegisterView(new DataViewRegistration(ViewKey, L["Cards"], Glyph.GridView, this));
+        Interaction.RegisterView(new DataViewRegistration(ViewKey, () => L["Cards"], Glyph.GridView, this));
         View.Subscribe(HandleViewChangedAsync);
     }
 

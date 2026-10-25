@@ -186,6 +186,27 @@
         }
 
         [Fact]
+        public void Should_name_a_group_s_heading_in_the_culture_it_renders_in()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+            using var culture = new CultureFixture("en-US");
+            var byMonth = DataViewGrouping<Product>.By(product => 3, month => CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month));
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" GroupBy="byMonth">
+                    <FormaDataList TItem="Product" aria-label="Products" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-group").Count == 1);
+
+            // Act
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he-IL");
+            cut.FindComponent<FormaDataGroupHeading<Product>>().Render();
+
+            // Assert
+            Assert.Equal("מרץ", cut.Find(".forma-data-group-name").TextContent);
+        }
+
+        [Fact]
         public void Should_fold_a_group_from_its_heading()
         {
             // Arrange

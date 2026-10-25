@@ -19,7 +19,7 @@
             <th scope="rowgroup" colspan="@Grid.ColumnCount" class="forma-data-grid-group-cell">
                 <FormaButton Variant="ButtonVariant.Ghost" class="forma-data-grid-group-heading" aria-expanded="@(isFolded ? "false" : "true")" OnClick="() => Interaction.ToggleGroupAsync(group)">
                     <FormaIcon Icon="@(isFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-grid-group-chevron" />
-                    <span class="forma-data-grid-group-name">@group.Name</span>
+                    <span class="forma-data-grid-group-name">@View.Grouping!.GetDisplayName(group.Key)</span>
                     <span class="forma-data-grid-group-count">@group.Count.ToString("N0", CultureInfo.CurrentCulture)</span>
                 </FormaButton>
             </th>
