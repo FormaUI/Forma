@@ -64,46 +64,90 @@ stays out of step 1, as the design's exception for it sets out.
 
 Each step is built, reviewed and committed on its own.
 
-1. **Output that follows the culture.** Every item the survey lists renders from the culture in force,
+1. **Output that follows the culture.** Every item the survey lists produces its output when it renders,
    and caches nothing that depends on the culture unless the cache is keyed by it; each fix is correct
-   under any switching model. Gate: a component test for each item, rendering it under one culture and
-   again under another, shows the second culture's output.
-2. **What the platform does today.** Establish whether interactive route matching, under global
-   interactivity, finds a page at a culture-prefixed address, and settle the [items to
-   verify](#to-verify), before choosing how culture addresses follow the state.
-3. **The working example.** A small working example that proves the runtime behavior the design rests on:
-   - an immediate switch, whose scheduled renders are already in the new culture;
-   - a delayed completion, a task begun in the old culture whose render shows the new one;
-   - two isolated scopes in different cultures;
-   - navigation, enhanced and interactive, Back and Forward among them;
-   - culture application reaching real Razor rendering through both component bases, the input base's
-     path among them;
-   - a render in the new culture leaving the culture of the older work unchanged afterward, when the
-     render throws too.
+   under any switching model. The last four items take these approaches:
+   - **The view names.** A view's registration produces its name when asked, through `GetName()`, in place
+     of the string it held; each view resolves the name from its own locale section, and the view switch
+     asks for it as it renders.
+   - **The group names.** `DataViewGroup` keeps its key, its items and its count, and no name; a heading
+     asks the grouping for its text as it renders, `grouping.GetDisplayName(group.Key)`, the grouping's
+     `GetName` renamed, its key parameter and the host's `Func<TValue, string>` callback unchanged. The
+     callback may run once per heading shown on each render, and suits repeated synchronous calls.
+   - **The popover's direction.** Every reposition reads the anchor's computed direction, so a local `dir`
+     or a style override is respected, and a change of direction schedules a reposition once it reaches the
+     document, even where the anchor's size and position stay the same, which a resize observer would not
+     report.
+   - **The office conversions.** The file viewer's resolution is keyed by the source, the UI culture and,
+     where the converted output depends on it, the formatting culture, each captured as the conversion
+     starts and given to it; a conversion that completes after another request began is discarded, so an
+     English conversion finishing after a switch to Hebrew never replaces the Hebrew one.
+
+   Departure until step 4: a heading's call and a view's name run in the ambient culture as the heading or
+   the switch renders; once the state exists, they run in the bounded scope the design sets out, in the
+   view's cultures.
+
+   Gate: each item shown under one culture and again under another, by the test its behavior takes: a
+   component test for rendered names and formats, a script test and a browser check for the popover's
+   direction and its reposition, a conversion test for the converted document's labels, and an
+   asynchronous test for a conversion that completes after a switch.
+2. **What the platform does today.** Taken alongside step 1's last items, since its probes depend on none
+   of them; each records its configuration and what it observed, and the results choose how culture
+   addresses follow the state:
+   - whether the cultures an event handler assigns reach the circuit's next event, `CurrentCulture` and
+     `CurrentUICulture` each recorded;
+   - whether a navigation under global interactivity, with an interactive `Routes`, finds a page declaring
+     `/about` at `/he/about`; the Showcase's islands can't establish it;
+   - whether an enhanced navigation updates `<html lang dir>`, and whether it replaces a dynamic change to
+     them;
+   - whether location changes reach the interactive runtimes holding the page's islands, an island that
+     survives the navigation apart from one created by it.
+3. **The working example.** A small working example of explicit culture reads and bounded scopes, through
+   real Razor components on both component bases, the input base among them:
+   - the first render in the intended cultures;
+   - an immediate switch, whose scheduled output is in the new cultures;
+   - a delayed operation begun in the old culture, whose output is in the state's;
+   - two isolated scopes, each in its own cultures;
+   - a gated row rendering again when the revision changes;
+   - strings, formats and direction following the state;
+   - a host's ambient-culture callback running in the intended cultures;
+   - a bounded scope restoring both of the caller's cultures, on success and when the operation throws;
+   - enhanced and interactive navigation, Back and Forward among them, as the design requires.
 
    Gate: each case behaves as the design states, or the design changes before step 4.
-4. **The culture state and the component bases.** The state, both component bases subscribing to it and
-   applying it for each render as step 3 proved, and every render gate counting its revision; the
-   cascaded culture retired. Gate: a change renders an input, a component on the base and a gated grid row
-   again, each in the new culture.
+4. **The culture state and the component bases.** The scoped state; both component bases subscribing to it
+   and exposing its cultures; components reading them for their output; the localization layer looking
+   strings up in a given UI culture, and the bases' strings in the state's; ambient-culture APIs and
+   callbacks run in the bounded scope; every render gate counting the revision; and the cascaded culture
+   retired. Gate: a change renders an input, a component on the base and a gated grid row again, each in
+   the new cultures, and a bounded scope restores the caller's cultures.
 5. **The server.** The circuit handler applies the culture before every inbound activity. Gate: a test of
    the handler around an inbound activity, and an event after a switch rendering in the new culture.
 6. **The document.** The ASP.NET Core integration keeps `<html lang dir>` in step, again after each
    enhanced navigation. Gate: a script test of the operation, and a browser check of both attributes
    after a switch and after an enhanced navigation.
 7. **Culture addresses.** The switching entry point, reconciliation when the integration starts,
-   interactive routing, Back and Forward, and the cookie; and `Forma.Framework.Browser.Interop.Server`
-   renamed `Forma.Framework.Browser.Interop.AspNetCore`. Gate: a browser check of each navigation, and of
-   a new tab opening in the culture last chosen.
-8. **The Showcase.** The Showcase switches language in place, keeping the user's work, with the new load
+   interactive routing, Back and Forward, and the cookie, as step 2's results choose. Gate: a browser check
+   of each navigation, and of a new tab opening in the culture last chosen. The rename of
+   `Forma.Framework.Browser.Interop.Server` to `Forma.Framework.Browser.Interop.AspNetCore` is a commit of
+   its own, apart from the culture addresses.
+8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
+   cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
+   culture, a committed or cancelled edit takes the current culture, a committed value formatted again
+   keeps its value and stays unmodified, focus alone is no edit, and the field's labels, accessible names
+   and direction follow the new UI culture throughout. Gate: a component test of each rule, and a browser
+   check of an edit across a switch.
+9. **The Showcase.** The Showcase switches language in place, keeping the user's work, with the new load
    still supported; the README, the globalization READMEs and the localization and authoring rules follow.
    Gate, in a browser: switching between English and Hebrew in place lays the page out right to left and
    keeps it there on the next click, an edit in progress keeps its text and its parsing culture, and a
    popover already open takes the new direction.
-9. **WebAssembly and Hybrid,** each when Forma supports its render mode, Hybrid after its ownership is
-   chosen.
+10. **WebAssembly and Hybrid,** each when Forma supports its render mode, Hybrid after its ownership is
+    chosen.
 
 ## To verify
+
+Step 2 settles each:
 
 - That a culture an event handler assigns doesn't reach the circuit's next event, which the circuit's
   host, setting no culture of its own, implies.
@@ -112,10 +156,3 @@ Each step is built, reviewed and committed on its own.
 - Whether an enhanced navigation updates the `<html>` element's own attributes, or undoes a dynamic change
   to them.
 - Whether location changes reach every interactive island on an enhanced navigation.
-
-## Open
-
-- **Where a component base wraps a render** (C7). The design requires a boundary that covers a Razor
-  component's `BuildRenderTree` and a component's first render, and saves and restores both cultures; step
-  3 finds it, and the design adopts the temporary application across the components only once the working
-  example proves it.

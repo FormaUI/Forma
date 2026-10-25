@@ -74,25 +74,56 @@ Its rules:
 Components depend on the abstraction, and the library registers its default with `TryAdd`, so a host
 that registers its own first still wins. The state knows nothing of navigation or addresses.
 
-## Every render runs in the state's culture
+## Output takes its culture from the state
 
-A render can begin in three ways, and each takes its culture from the state:
+A render can begin in three ways: the event that calls `Change`, an event from the browser, and work
+begun before a switch, a task started in the old culture that finishes after it and asks for a render
+through `InvokeAsync(StateHasChanged)` or a parameter it sets. Whatever began it, a component's output is
+in the state's cultures, because the component reads them from the state rather than from the ambient
+culture of the flow that rendered it.
 
-- **The switch itself.** The event that calls `Change` continues in the new cultures, which `Change`
-  applies to its calling flow on purpose, so the renders it schedules are already in them.
-- **An event from the browser.** The circuit handler sets both cultures from the state before every
-  inbound activity, every UI event and every call from script into .NET, through the circuit's inbound
-  activity handler ([circuit activity](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr)).
-- **Work begun before the switch.** A task started in the old culture may finish after the switch and ask
-  for a render, through `InvokeAsync(StateHasChanged)` or a parameter it sets. The task finishes in the
-  culture it captured, which is the platform's rule; its render shows the state's culture.
+Both component bases expose the state's cultures, and a component formats, parses, compares, sorts and
+lays out by them:
 
-A render therefore applies the state's culture temporarily: it sets both cultures from the state as the
-component renders and restores the caller's afterward, whether the render completes or throws, so the
-culture of the work that asked for the render is unchanged once the render returns. That differs from
-what `Change` does, which changes its calling flow for good. The boundary a component base wraps is one
-that covers a component written in Razor, whose `BuildRenderTree` a base's own override does not wrap,
-and a component's first render, which `ShouldRender` never sees.
+```csharp
+protected CultureInfo Culture => CultureState.Culture;
+
+protected CultureInfo UICulture => CultureState.UICulture;
+
+protected bool IsRightToLeft => UICulture.TextInfo.IsRightToLeft;
+```
+
+```razor
+<span>@date.ToString("d", Culture)</span>
+```
+
+An edit in progress parses in the culture it retained, as [editing](#an-edit-in-progress-keeps-its-culture)
+sets out.
+
+Strings follow the same rule. The localization layer looks a string up in a UI culture it is given, and a
+component's strings are looked up in the state's UI culture, directly or through a scoped locale that takes
+it from the state. The file cache stays shared and keyed by culture, so no singleton depends on one user's
+state.
+
+An operation that reads the ambient culture and takes no culture of its own, such as
+`DisplayAttribute.GetName()` or a callback a host supplies, runs in a bounded synchronous scope: it saves
+`CurrentCulture` and `CurrentUICulture`, applies the cultures the output is for, runs the operation, and
+restores both in a `finally`. The scope surrounds the operation alone; it spans no asynchronous work and
+never assumes that a parent's render renders its children within it.
+
+The ambient culture is kept in step too, for whatever reads it outside Forma's output. The circuit handler
+sets both cultures from the state before every inbound activity, every UI event and every call from script
+into .NET, through the circuit's inbound activity handler
+([circuit activity](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr)), and `Change`
+applies the new cultures to its calling flow before it notifies. Work begun before a switch finishes in the
+culture it captured, which is the platform's rule, while the render it asks for reads the state.
+
+The bases read the culture explicitly because they can't wrap a render. `ComponentBase` keeps its render
+delegate private, that delegate calls the component's own `BuildRenderTree`, which a component written in
+Razor overrides without calling a base's, and `ShouldRender` decides whether a render is queued rather than
+surrounding it, and never sees the first one. A culture scope written around a component's markup would
+have to be authored in each component, and a fragment it creates may run after the scope has ended, so the
+explicit read is the one approach that holds for every component.
 
 ## Components follow the state
 
@@ -168,9 +199,9 @@ its render mode.
   culture can't serve the second, since it applies across the application domain and never overrides a
   culture an execution context has assigned
   ([`CultureInfo.DefaultThreadCurrentCulture`](https://learn.microsoft.com/dotnet/api/system.globalization.cultureinfo.defaultthreadcurrentculture)),
-  and a native window is not the scope its Blazor components resolve services from. A render's temporary
-  application lets scopes differ in what they render, but it covers rendering only, not a native
-  callback, a lifecycle operation or a parse outside a render.
+  and a native window is not the scope its Blazor components resolve services from. Output that reads
+  its scope's state lets scopes differ in what they show, but it covers Forma's output only, not a native
+  callback, a lifecycle operation or a parse that reads the ambient culture.
 
 ## Assemblies and registration
 
@@ -196,4 +227,4 @@ single service.
 | C4 | Does the Showcase switch in place? | Yes, keeping the user's work, with the new load still supported |
 | C5 | Does every ASP.NET Core half take the platform's name? | Yes: the DOM's server half is `Forma.Framework.Browser.Interop.AspNetCore` |
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
-| C7 | How does a render take the state's culture? | A component base applies it for the render and restores the caller's afterward, as [rendering](#every-render-runs-in-the-states-culture) sets out |
+| C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
