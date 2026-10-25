@@ -54,7 +54,7 @@ unless it is keyed by the culture:
 - ✅ `FormaCalendar`'s shown months, whose boundaries are kept from the calendar they were reckoned in.
 - ✅ `FormaDataTree`'s input profile, whose open and close arrows are bound by the direction it read once.
 - The anchored popover's script, which keeps the direction it read when the popover opened.
-- The file viewer's office conversions, whose localized text is written into the converted document once
+- ✅ The file viewer's office conversions, whose localized text is written into the converted document once
   per source.
 
 Text an event produces, an announcement, a notice, a refusal, a validation message or a dialog's message,
@@ -118,8 +118,9 @@ Each step is built, reviewed and committed on its own.
 4. **The culture state and the component bases.** The scoped state; both component bases subscribing to it
    and exposing its cultures; components reading them for their output; the localization layer looking
    strings up in a given UI culture, and the bases' strings in the state's; ambient-culture APIs and
-   callbacks run in the bounded scope; every render gate counting the revision; and the cascaded culture
-   retired. Gate: a change renders an input, a component on the base and a gated grid row again, each in
+   callbacks run in the bounded scope; every render gate counting the revision; work a component resolves or
+   loads in a culture, the file viewer's resolution among it, started again on a change, which sets no
+   parameter; and the cascaded culture retired. Gate: a change renders an input, a component on the base and a gated grid row again, each in
    the new cultures, and a bounded scope restores the caller's cultures.
 5. **The server.** The circuit handler applies the culture before every inbound activity. Gate: a test of
    the handler around an inbound activity, and an event after a switch rendering in the new culture.

@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Globalization
 @using Forma.Tests.Resources
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
@@ -224,6 +225,26 @@
 
             // Assert
             Assert.Equal(2, provider.Calls);
+        }
+
+        [Fact]
+        public void Should_resolve_the_source_again_in_the_culture_it_renders_in()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            using var culture = new CultureFixture("en");
+            var provider = new FakeResourceProvider(".pptx", source => new MarkupResourceInfo(source, CultureInfo.CurrentUICulture.Name == "he" ? "<p>שקופית 1</p>" : "<p>Slide 1</p>"));
+            ctx.Services.AddScoped<IResourceProvider>(_ => provider);
+            var cut = ctx.Render(@<FormaFileViewer Source="/media/deck.pptx" />);
+
+            // Act
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he");
+            cut.FindComponent<FormaFileViewer>().Render(parameters => parameters.Add(viewer => viewer.Source, "/media/deck.pptx"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, provider.Calls),
+                () => Assert.Equal("שקופית 1", cut.Find(".forma-file-viewer-html p").TextContent));
         }
 
         [Fact]
@@ -630,6 +651,29 @@
             Assert.Multiple(
                 () => Assert.Equal("current.bin", cut.Find(".forma-file-viewer-metadata-name").TextContent),
                 () => Assert.Equal("512 B", cut.Find(".forma-file-viewer-metadata-size").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_ignore_a_resolve_that_finished_after_the_culture_changed()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            using var culture = new CultureFixture("en");
+            var provider = new FakeGatedResourceProvider();
+            ctx.Services.AddScoped<IResourceProvider>(_ => provider);
+            var cut = ctx.Render(@<FormaFileViewer Source="/media/deck.pptx" />);
+
+            // Act
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he");
+            cut.FindComponent<FormaFileViewer>().Render(parameters => parameters.Add(viewer => viewer.Source, "/media/deck.pptx"));
+            await cut.ReleaseAsync(() =>
+            {
+                provider.Complete("/media/deck.pptx", "he", new MarkupResourceInfo("/media/deck.pptx", "<p>שקופית 1</p>"));
+                provider.Complete("/media/deck.pptx", "en", new MarkupResourceInfo("/media/deck.pptx", "<p>Slide 1</p>"));
+            });
+
+            // Assert
+            Assert.Equal("שקופית 1", cut.Find(".forma-file-viewer-html p").TextContent);
         }
     }
 }

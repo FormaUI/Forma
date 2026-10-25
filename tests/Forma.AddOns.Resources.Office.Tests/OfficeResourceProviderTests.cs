@@ -167,6 +167,27 @@ public sealed class OfficeResourceProviderTests
     }
 
     [Fact]
+    public async Task Should_name_a_slide_in_the_ui_culture_the_conversion_runs_in()
+    {
+        // Arrange
+        using var fixture = new CultureFixture("he");
+        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.CreatePptx(presentation =>
+        {
+            var slide = presentation.AddSlide();
+
+            slide.AddTitleInches("   ", 1, 0.5, 8, 1);
+            slide.AddTextBoxInches("Body copy", 1, 2, 8, 1);
+        }));
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
+
+        // Act
+        var resource = await provider.GetResourceAsync("/media/deck.pptx", TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Contains("<h2>שקופית 1</h2>", Assert.IsType<MarkupResourceInfo>(resource).Html, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Should_escape_markup_a_workbook_cell_contains()
     {
         // Arrange

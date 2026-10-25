@@ -70,7 +70,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
 
     private ElementReference _imageFrameElement;
 
-    private string? _resolvedSource;
+    private ResolutionRequest? _resolvedRequest;
 
     private CancellationTokenSource? _resolveCancellation;
 
@@ -113,28 +113,35 @@ public sealed partial class FormaFileViewer : FormaElementBase
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Source);
 
-        // Resolves once per address.
-        if (_resolvedSource == Source)
+        // Resolves once per address and cultures, since a provider may convert a document into text in the culture it resolves in.
+        var request = new ResolutionRequest(Source, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+
+        if (request == _resolvedRequest)
         {
             return;
         }
 
-        var requested = Source;
+        var isNewSource = _resolvedRequest?.Source != request.Source;
 
-        _zoom.Reset();
-        _isDragAttached = false;
-        _isWheelAttached = false;
-        _resolvedSource = requested;
+        _resolvedRequest = request;
 
-        // The address alone gives the name and extension while the source resolves or when no provider claims it.
-        Resource = new ResourceInfo(requested);
+        // A new address starts the view afresh; the same one in another culture keeps the reader's zoom and what is shown until its new resolve arrives.
+        if (isNewSource)
+        {
+            _zoom.Reset();
+            _isDragAttached = false;
+            _isWheelAttached = false;
+
+            // The address alone gives the name and extension while the source resolves or when no provider claims it.
+            Resource = new ResourceInfo(request.Source);
+        }
 
         var token = StartResolving();
 
         try
         {
-            // A slower resolve for an address the reader has already left must not replace the current one.
-            if (await ResolveResourceAsync(requested, token) is { } resolved && _resolvedSource == requested)
+            // A slower resolve for an address or cultures the reader has already left must not replace the current one.
+            if (await ResolveResourceAsync(request.Source, token) is { } resolved && _resolvedRequest == request)
             {
                 Resource = resolved;
             }
@@ -298,4 +305,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
 
         await base.DisposeAsyncCore();
     }
+
+    // What a resolve was started for: the address and the cultures it runs in, which the providers convert into.
+    private sealed record ResolutionRequest(string Source, CultureInfo Culture, CultureInfo UICulture);
 }
