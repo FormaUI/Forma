@@ -5,7 +5,7 @@ landed.
 
 ## Status
 
-Steps 1 and 2 have landed. Step 3 is next.
+Steps 1 to 3 have landed. Step 4 is next.
 
 ## Where Forma stood
 
@@ -103,7 +103,7 @@ Each step is built, reviewed and committed on its own.
      them;
    - whether location changes reach the interactive runtimes holding the page's islands, an island that
      survives the navigation apart from one created by it.
-3. **The working example.** A small working example of explicit culture reads and bounded scopes, through
+3. **The working example.** ✅ A small working example of explicit culture reads and bounded scopes, through
    real Razor components on both component bases, the input base among them:
    - the first render in the intended cultures;
    - an immediate switch, whose scheduled output is in the new cultures;
@@ -116,6 +116,19 @@ Each step is built, reviewed and committed on its own.
    - enhanced and interactive navigation, Back and Forward among them, as the design requires.
 
    Gate: each case behaves as the design states, or the design changes before step 4.
+
+   Each case behaved as the design states, on step 2's probe host, with islands and with an interactive
+   `Routes`, driven in Chrome, through a probe state and probe bases standing in for step 4's:
+   - the first render was English, and a switch to Hebrew rendered the text, its direction, the input's
+     value and the gated row in Hebrew at once; the row rendered again once on the revision, and not when
+     its parent rendered again with the same data;
+   - a delayed operation begun in English finished after the switch with its own flow still `en/en`, and
+     its output, read from the state, was Hebrew;
+   - a callback reading the ambient culture, run in a bounded scope from that English flow, produced
+     Hebrew and left the caller's `en/en` in place, on success and when it threw;
+   - a second circuit of the same host stayed English throughout;
+   - the state followed the address through enhanced navigation to `/he/example` and back to `/example`,
+     and through Back and Forward.
 4. **The culture state and the component bases.** The scoped state; both component bases subscribing to it
    and exposing its cultures; components reading them for their output; the localization layer looking
    strings up in a given UI culture, and the bases' strings in the state's; ambient-culture APIs and
