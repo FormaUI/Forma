@@ -5,7 +5,7 @@ landed.
 
 ## Status
 
-Steps 1 to 5 have landed. Step 6 is next.
+Steps 1 to 6 have landed. Step 7 is next.
 
 ## Where Forma stood
 
@@ -183,12 +183,40 @@ Each step is built, reviewed and committed on its own.
    with an interactive `Routes` and again with islands: the switching event read `he/he`, the next event and
    the one after it read `he/he` where step 2 recorded `en/en`, and a second circuit of the same host read
    `en/en`.
-6. **The document.** The ASP.NET Core integration keeps `<html lang dir>` in step, again after each
-   enhanced navigation. Gate: a script test of the operation, and a browser check of both attributes
-   after a switch and after an enhanced navigation.
+6. **The document.** ✅ The document language keeps `<html lang dir>` on the state, again after each
+   enhanced page update, as the design's document section sets out. Gate: a script test of the operation,
+   and a browser check of both attributes after a switch and after an enhanced navigation.
+
+   `Forma.Framework.Globalization.Interop` ships the script, its initializer and the service, and every
+   Framework assembly became a package first, so this package could build on the JavaScript interop
+   floor. The culture's circuit handler starts the document language as each connection comes up.
+
+   On step 2's probe host, driven in Chrome with islands and again under global interactivity:
+   - a switch to Hebrew set `he/rtl`, which held through an enhanced navigation within the culture and
+     through a streaming page's update;
+   - five rapid switches ending in English ended on `en/ltr`;
+   - a switch landing while the browser was offline left the document `en/ltr` until the connection
+     returned, and `he/rtl` after;
+   - after a pause and a resume, the client reported the old circuit closed and a new one opened, the
+     resumed state started from the request's culture, and the document followed it and the next switch;
+   - with islands, a page without them kept `he/rtl` while the circuit lived and showed its served `en/ltr`
+     once the client closed the circuit, about two seconds later under the default inactivity timeout,
+     and the next islands page's circuit registered and switched;
+   - a host installing `Forma.Framework.Globalization.AspNetCore` alone received the five assemblies it
+     needs and the page listed the package's initializer.
+
+   Departure until step 7: navigation to another culture's address does not update the culture state.
+   While the existing registration remains live, the document continues to follow that state: a
+   navigation to `/he/about` from an English state, with islands, left the document `en/ltr` over a page
+   the server rendered in Hebrew.
 7. **Culture addresses.** The switching entry point, reconciliation when the integration starts,
    interactive routing, Back and Forward, and the cookie, as step 2's results choose. Gate: a browser check
    of each navigation, and of a new tab opening in the culture last chosen.
+   The switching entry point changes the culture state through its own navigation, so the document follows
+   the state; what a cancelled or failed navigation leaves the state in is decided there, and the browser
+   check looks for a flash on the switch, on a plain link and on Back and Forward. A resumed circuit's state
+   starts from the culture of its connection, so an in-place switch is lost across a pause; the cookie and
+   the reconciliation take it up.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again

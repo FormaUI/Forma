@@ -1,12 +1,14 @@
 namespace Forma.Framework.Globalization.AspNetCore.Tests;
 
+using Forma.Framework.Globalization.Interop;
+
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
 
 public sealed class ServiceCollectionExtensionsTests
 {
     [Fact]
-    public void Should_register_the_circuit_handler_beside_the_culture_state()
+    public void Should_register_the_circuit_handler_beside_the_culture_state_and_the_document_language()
     {
         // Act
         var services = new ServiceCollection().AddFormaGlobalizationServices().AddFormaGlobalizationServices();
@@ -14,6 +16,7 @@ public sealed class ServiceCollectionExtensionsTests
         // Assert
         Assert.Multiple(
             () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(CircuitHandler)).Lifetime),
+            () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(DocumentLanguage)).Lifetime),
             () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime));
     }
 }
