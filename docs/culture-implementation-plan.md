@@ -188,9 +188,7 @@ Each step is built, reviewed and committed on its own.
    after a switch and after an enhanced navigation.
 7. **Culture addresses.** The switching entry point, reconciliation when the integration starts,
    interactive routing, Back and Forward, and the cookie, as step 2's results choose. Gate: a browser check
-   of each navigation, and of a new tab opening in the culture last chosen. The rename of
-   `Forma.Framework.Browser.Interop.Server` to `Forma.Framework.Browser.Interop.AspNetCore` is a commit of
-   its own, apart from the culture addresses.
+   of each navigation, and of a new tab opening in the culture last chosen.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again

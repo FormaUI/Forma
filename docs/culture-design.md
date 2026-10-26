@@ -209,14 +209,15 @@ its render mode.
 
 ## Assemblies and registration
 
-The culture state is platform-neutral, and every ASP.NET Core half takes the platform's name, as an
-integration with ASP.NET Core does across .NET:
+The culture state is platform-neutral. A half serving a render mode takes the render mode's name, as
+`Microsoft.AspNetCore.Components.Server` does, and a half serving the HTTP pipeline takes the platform's,
+whatever render mode it serves beside it, as an integration with ASP.NET Core does across .NET:
 
 | Assembly | Holds |
 | --- | --- |
 | `Forma.Framework.Globalization` | The culture state's abstraction, its default and its registrar, with no dependency on ASP.NET Core or navigation |
 | `Forma.Framework.Globalization.AspNetCore` | The routing middleware, `CultureRouter`, the switching entry point, the circuit handler that applies the culture, the address reconciliation, the cookie and the document's attributes |
-| `Forma.Framework.Browser.Interop.AspNetCore` | The DOM's circuit handler |
+| `Forma.Framework.Browser.Interop.Server` | The DOM's circuit handler |
 
 The product's aggregate registrar registers them, so a host makes its one call and can still override any
 single service.
@@ -229,6 +230,6 @@ single service.
 | C2 | What is the state called? | `ICultureState`, which says what it holds and that it changes |
 | C3 | Who keeps `<html lang dir>` in step? | The ASP.NET Core integration, so a switch is complete by default |
 | C4 | Does the Showcase switch in place? | Yes, keeping the user's work, with the new load still supported |
-| C5 | Does every ASP.NET Core half take the platform's name? | Yes: the DOM's server half is `Forma.Framework.Browser.Interop.AspNetCore` |
+| C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Interop.Server` does, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Globalization.AspNetCore` does with a circuit handler beside its middleware |
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
