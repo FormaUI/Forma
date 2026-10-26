@@ -11,7 +11,7 @@
     // An item draws again only when its own state, its place or what every item is drawn by changed, so the list gives it the token the
     // selection behavior knows it by on every pass, which is what keeps the token from being retired.
     RenderFragment<(TItem Item, int? Position)> entry = row =>
-        @<FormaDataListItem TItem="TItem" List="this" Item="row.Item" Position="row.Position" Token="View.GetItemToken(row.Item)" Revision="revision" @key="View.ItemKey(row.Item)" />;
+        @<FormaDataListItem TItem="TItem" List="this" Item="row.Item" Position="row.Position" Token="View.GetItemToken(row.Item)" ViewRevision="revision" @key="View.ItemKey(row.Item)" />;
 
     <div id="@Id"
          data-rid="@Context.RuntimeId"

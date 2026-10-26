@@ -150,6 +150,10 @@ Each step is built, reviewed and committed on its own.
      value that takes no culture of its own among them; an unbound locale keeps reading the current cultures.
      Both bases inject the state as `CultureState`, moved forward from the bases' part since their strings
      need it, and their `L` is one locale that binds again on each revision of the state.
+   - ✅ Following the state: both bases subscribe to it with their first parameters, render again on each
+     change unless disposed, and unsubscribe as they are disposed; the data view's four item gates count
+     the state's revision beside their own, so an item whose data is unchanged draws again in a new
+     culture; and the cascaded culture is retired.
 
    Gate: a change renders an input, a component on the base and a gated grid row again, each in the new
    cultures, and a bounded scope restores the caller's cultures.

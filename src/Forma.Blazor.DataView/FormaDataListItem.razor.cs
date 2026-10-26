@@ -23,7 +23,7 @@ public sealed partial class FormaDataListItem<TItem> : FormaComponentBase
     [Parameter] public int Token { get; set; }
 
     /// <summary>What the list draws every item by.</summary>
-    [Parameter] public int Revision { get; set; }
+    [Parameter] public int ViewRevision { get; set; }
 
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;
 
@@ -49,7 +49,7 @@ public sealed partial class FormaDataListItem<TItem> : FormaComponentBase
         // The first draw is not asked about, so what it draws by is recorded here.
         if (!_gate.IsRecorded)
         {
-            _gate.Record(Item, Position, Revision, DataViewItemGate.GetState(View, Item));
+            _gate.Record(Item, Position, ViewRevision, CultureState.Revision, DataViewItemGate.GetState(View, Item));
         }
     }
 
@@ -58,12 +58,12 @@ public sealed partial class FormaDataListItem<TItem> : FormaComponentBase
     {
         var state = DataViewItemGate.GetState(View, Item);
 
-        if (!_gate.Differs(Item, Position, Revision, state))
+        if (!_gate.Differs(Item, Position, ViewRevision, CultureState.Revision, state))
         {
             return false;
         }
 
-        _gate.Record(Item, Position, Revision, state);
+        _gate.Record(Item, Position, ViewRevision, CultureState.Revision, state);
 
         return true;
     }

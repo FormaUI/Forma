@@ -4,6 +4,7 @@
 @using System.Globalization
 @using Forma.Blazor.Components.DataView.Interop
 @using Forma.Framework.Css
+@using Forma.Framework.Globalization
 @using Forma.Blazor.Components.Layout
 @using Forma.Blazor.Components.Virtualization
 @using Microsoft.AspNetCore.Components.Web
@@ -889,6 +890,31 @@
 
         private static IReadOnlyList<int> DrawnSince(Dictionary<int, int> drawn, Dictionary<int, int> before)
             => [.. drawn.Where(entry => entry.Value != before.GetValueOrDefault(entry.Key)).Select(entry => entry.Key).Order()];
+
+        [Fact]
+        public async Task Should_draw_again_every_row_when_the_culture_changes_though_its_data_does_not()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            using var fixture = new CultureFixture("en");
+            var drawn = new Dictionary<int, int>();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaTemplateColumn Title="Item"><ChildContent Context="item">@Draw(drawn, item)</ChildContent></FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => drawn.Count == 3);
+            var before = new Dictionary<int, int>(drawn);
+
+            // Act
+            await ctx.Services.GetRequiredService<ICultureState>().ChangeAsync(CultureInfo.GetCultureInfo("he"));
+
+            // Assert
+            Assert.Equal([1, 2, 3], DrawnSince(drawn, before));
+        }
 
         [Fact]
         public async Task Should_draw_again_only_the_row_whose_box_was_pressed()

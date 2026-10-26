@@ -244,14 +244,16 @@ The folder reaches the output as content:
 </ItemGroup>
 ```
 
-A host that changes the culture without a new request, switching language in place, sets the
-culture in force and cascades it from where it renders only on that change, its root, and every
-component renders again in it:
+A host that changes the culture without a new request, switching language in place, changes it
+through the `ICultureState` every user scope holds, and every component renders again in it:
 
 ```razor
-<CascadingValue Value="CultureInfo.CurrentUICulture">
-    <Router AppAssembly="typeof(Program).Assembly">...</Router>
-</CascadingValue>
+@using System.Globalization
+@using Forma.Blazor.Components.Buttons
+@using Forma.Framework.Globalization
+@inject ICultureState CultureState
+
+<FormaButton OnClick="@(() => CultureState.ChangeAsync(CultureInfo.GetCultureInfo("he")))">עברית</FormaButton>
 ```
 
 A host's file overrides the library's and the pack's for the keys it holds.

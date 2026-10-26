@@ -107,13 +107,11 @@ own cleanup can still use it. The context carries the component's identity, stri
 and JS environment, and the DOM watcher and engine it makes on first use, whose
 observations and interactions its release ends in one call to the browser.
 
-A component writes in the culture in force, which a request sets. A host that changes the
-culture without a new request, switching language in place, cascades a `CultureInfo` from
-where it renders only on that change, its root; the base takes it as `CascadedCulture`, and
-each render of the cascade renders every component under it again, even one whose
-parameters are unchanged, so a date a box formats or a string it looks up follows the new
-culture. A host that cascades none loses nothing, and the component reads the culture in
-force either way, never the cascaded value.
+A component writes in the cultures of its user scope's culture state, which both bases inject
+as `CultureState`: its strings come from the state's UI culture, and each change of the state
+renders it again, even where its parameters are unchanged. The [culture design](culture-design.md)
+sets out the state, how a change reaches each component, and how the document and the address
+follow it.
 
 The context builds its JS environment once from the runtime, its logger and its identity,
 so the environment's identity and log are the context's by construction. The environment

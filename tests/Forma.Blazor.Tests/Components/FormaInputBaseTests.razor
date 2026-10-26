@@ -21,6 +21,22 @@
         }
 
         [Fact]
+        public async Task Should_render_again_when_the_culture_state_changes()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            using var fixture = new CultureFixture("en");
+            var cut = RenderField(ctx, new FakeModel());
+            var before = cut.RenderCount;
+
+            // Act
+            await ChangeAsync(ctx, "he", "he");
+
+            // Assert
+            Assert.Equal(before + 1, cut.RenderCount);
+        }
+
+        [Fact]
         public async Task Should_read_its_strings_in_the_culture_states_ui_culture()
         {
             // Arrange

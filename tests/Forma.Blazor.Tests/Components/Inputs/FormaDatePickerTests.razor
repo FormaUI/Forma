@@ -1,6 +1,7 @@
 @inherits FormaBunitContext
 @using Forma.Framework.Browser.Interop.Behaviors
 @using System.Globalization
+@using Forma.Framework.Globalization
 
 @code {
     public sealed class Component
@@ -39,37 +40,23 @@
         }
 
         [Fact]
-        public void Should_write_the_date_in_a_culture_the_host_changes_to_in_place()
+        public async Task Should_write_the_date_in_a_culture_the_host_changes_to_in_place()
         {
             // Arrange
             using var ctx = new FormaDatePickerTests();
+            using var fixture = new CultureFixture("en-US");
             var model = new FakeModel { Date = new DateOnly(2025, 3, 15) };
-            var previous = CultureInfo.CurrentCulture;
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
-
-            try
-            {
-                var editContext = new EditContext(model);
-                RenderFragment picker = @<FakeFormHost EditContext="editContext">
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(
+                @<FakeFormHost EditContext="editContext">
                     <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
-                </FakeFormHost>;
-                var cut = ctx.Render<CascadingValue<CultureInfo>>(parameters => parameters
-                    .Add(p => p.Value, CultureInfo.CurrentCulture)
-                    .AddChildContent(picker));
+                </FakeFormHost>);
 
-                // Act
-                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("es-419");
-                cut.Render(parameters => parameters
-                    .Add(p => p.Value, CultureInfo.CurrentCulture)
-                    .AddChildContent(picker));
+            // Act
+            await ctx.Services.GetRequiredService<ICultureState>().ChangeAsync(CultureInfo.GetCultureInfo("es-419"));
 
-                // Assert
-                Assert.Equal("15/3/2025", cut.Find(".forma-date-box-value").TextContent);
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = previous;
-            }
+            // Assert
+            Assert.Equal("15/3/2025", cut.Find(".forma-date-box-value").TextContent);
         }
 
         [Fact]

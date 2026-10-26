@@ -135,7 +135,7 @@
                 {
                     @foreach (var item in group.Items)
                     {
-                        <FormaDataGridRow TItem="TItem" Item="item" Token="View.GetItemToken(item)" Revision="rowRevision" @key="View.ItemKey(item)" />
+                        <FormaDataGridRow TItem="TItem" Item="item" Token="View.GetItemToken(item)" ViewRevision="rowRevision" @key="View.ItemKey(item)" />
                     }
                 }
             </tbody>
@@ -170,7 +170,7 @@
                     }
                     else
                     {
-                        <FormaDataGridRow TItem="TItem" Item="row.Items[0]" Position="row.FirstItemIndex" Token="View.GetItemToken(row.Items[0])" Revision="rowRevision" @key="View.ItemKey(row.Items[0])" />
+                        <FormaDataGridRow TItem="TItem" Item="row.Items[0]" Position="row.FirstItemIndex" Token="View.GetItemToken(row.Items[0])" ViewRevision="rowRevision" @key="View.ItemKey(row.Items[0])" />
                     }
                 </ItemContent>
                 <Placeholder>
@@ -201,7 +201,7 @@
         {
             @foreach (var item in View.Items)
             {
-                <FormaDataGridRow TItem="TItem" Item="item" Token="View.GetItemToken(item)" Revision="rowRevision" @key="View.ItemKey(item)" />
+                <FormaDataGridRow TItem="TItem" Item="item" Token="View.GetItemToken(item)" ViewRevision="rowRevision" @key="View.ItemKey(item)" />
             }
         }
     </tbody>

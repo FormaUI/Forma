@@ -11,7 +11,7 @@
     // A card draws again only when its own state, its place or what every card is drawn by changed, so the cards give it the token the
     // selection behavior knows it by on every pass, which is what keeps the token from being retired.
     RenderFragment<(TItem Item, int? Position)> card = entry =>
-        @<FormaDataCard TItem="TItem" Cards="this" Item="entry.Item" Position="entry.Position" Token="View.GetItemToken(entry.Item)" Revision="revision" @key="View.ItemKey(entry.Item)" />;
+        @<FormaDataCard TItem="TItem" Cards="this" Item="entry.Item" Position="entry.Position" Token="View.GetItemToken(entry.Item)" ViewRevision="revision" @key="View.ItemKey(entry.Item)" />;
 
     <div id="@Id"
          data-rid="@Context.RuntimeId"

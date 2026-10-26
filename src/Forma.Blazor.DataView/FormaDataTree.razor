@@ -76,6 +76,6 @@
     // token the selection behavior knows it by on every pass, which is what keeps the token from being retired.
     private RenderFragment RenderNode(VisibleNode row, string? ownsId) => __builder =>
     {
-        <FormaDataTreeNode TItem="TItem" Tree="this" Item="row.Node" Depth="row.Depth" SiblingPosition="row.Position" SetSize="row.SetSize" Position="row.Row" OwnsId="@ownsId" Token="View.GetItemToken(row.Node)" Revision="NodeRevision" />
+        <FormaDataTreeNode TItem="TItem" Tree="this" Item="row.Node" Depth="row.Depth" SiblingPosition="row.Position" SetSize="row.SetSize" Position="row.Row" OwnsId="@ownsId" Token="View.GetItemToken(row.Node)" ViewRevision="NodeRevision" />
     };
 }

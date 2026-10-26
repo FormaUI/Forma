@@ -35,7 +35,7 @@ public sealed partial class FormaDataTreeNode<TItem> : FormaComponentBase
     [Parameter] public int Token { get; set; }
 
     /// <summary>What the tree draws every node by.</summary>
-    [Parameter] public int Revision { get; set; }
+    [Parameter] public int ViewRevision { get; set; }
 
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;
 
@@ -61,7 +61,7 @@ public sealed partial class FormaDataTreeNode<TItem> : FormaComponentBase
         // The first draw is not asked about, so what it draws by is recorded here.
         if (!_gate.IsRecorded)
         {
-            _gate.Record(Item, Position, Revision, Tree.GetNodeState(Item), GetShape());
+            _gate.Record(Item, Position, ViewRevision, CultureState.Revision, Tree.GetNodeState(Item), GetShape());
         }
     }
 
@@ -71,12 +71,12 @@ public sealed partial class FormaDataTreeNode<TItem> : FormaComponentBase
         var state = Tree.GetNodeState(Item);
         var shape = GetShape();
 
-        if (!_gate.Differs(Item, Position, Revision, state, shape))
+        if (!_gate.Differs(Item, Position, ViewRevision, CultureState.Revision, state, shape))
         {
             return false;
         }
 
-        _gate.Record(Item, Position, Revision, state, shape);
+        _gate.Record(Item, Position, ViewRevision, CultureState.Revision, state, shape);
 
         return true;
     }

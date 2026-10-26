@@ -20,7 +20,7 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     [Parameter] public int Token { get; set; }
 
     /// <summary>What the grid draws every row by.</summary>
-    [Parameter] public int Revision { get; set; }
+    [Parameter] public int ViewRevision { get; set; }
 
     [CascadingParameter] private FormaDataGrid<TItem> Grid { get; set; } = default!;
 
@@ -56,7 +56,7 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
         // The first draw is not asked about, so what it draws by is recorded here.
         if (!_gate.IsRecorded)
         {
-            _gate.Record(Item, Position, Revision, GetState());
+            _gate.Record(Item, Position, ViewRevision, CultureState.Revision, GetState());
         }
     }
 
@@ -65,12 +65,12 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     {
         var state = GetState();
 
-        if (!_gate.Differs(Item, Position, Revision, state) && !Grid.IsEditing(Item))
+        if (!_gate.Differs(Item, Position, ViewRevision, CultureState.Revision, state) && !Grid.IsEditing(Item))
         {
             return false;
         }
 
-        _gate.Record(Item, Position, Revision, state);
+        _gate.Record(Item, Position, ViewRevision, CultureState.Revision, state);
 
         return true;
     }

@@ -39,6 +39,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     [Inject] protected ICultureState CultureState { get; set; } = default!;
 
     private ComponentContext? _context;
+    private bool _isSubscribedToCultureState;
 
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }
@@ -120,6 +121,19 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     }
 
     /// <inheritdoc />
+    /// <remarks>The first call subscribes the component to its culture state, so each change of the state renders it again.</remarks>
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        if (!_isSubscribedToCultureState)
+        {
+            _isSubscribedToCultureState = true;
+            CultureState.Subscribe(HandleCultureChangedAsync);
+        }
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         if (IsDisposed)
@@ -128,6 +142,11 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
 
         IsDisposed = true;
+
+        if (_isSubscribedToCultureState)
+        {
+            CultureState.Unsubscribe(HandleCultureChangedAsync);
+        }
 
         try
         {
@@ -167,6 +186,10 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     protected virtual void BuildDescribedBy(ICollection<string> ids)
     {
     }
+
+    // A component its renderer has disposed takes no further render.
+    private Task HandleCultureChangedAsync()
+        => IsDisposed ? Task.CompletedTask : InvokeAsync(StateHasChanged);
 
     /// <summary>Releases what the component holds.</summary>
     /// <remarks>The base runs it once.</remarks>
