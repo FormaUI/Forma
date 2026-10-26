@@ -76,8 +76,8 @@ var title = CultureState.Run(() => display.GetName());
 ```
 
 `AmbientCulture.Run(culture, uiCulture, operation)` does the same in cultures given to it, such as the
-ones a piece of work captured as it started. The operation is synchronous, and one that returns a task or
-a value task is refused, since the cultures would be restored at its first await.
+ones a piece of work captured as it started. The operation must be synchronous: one returning a task or a
+value task is refused.
 
 ## License
 

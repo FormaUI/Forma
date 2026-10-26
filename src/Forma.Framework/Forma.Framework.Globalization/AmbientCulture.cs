@@ -2,7 +2,7 @@ namespace Forma.Framework.Globalization;
 
 using System.Globalization;
 
-/// <summary>Runs a synchronous operation that reads the ambient culture in the cultures its output is for.</summary>
+/// <summary>Runs synchronous operations with the specified ambient cultures.</summary>
 public static class AmbientCulture
 {
     /// <summary>Runs an operation in the given cultures and restores the caller's afterward.</summary>
@@ -19,7 +19,7 @@ public static class AmbientCulture
 
         if (IsTask(typeof(TResult)))
         {
-            throw new ArgumentException("The ambient culture scope covers the operation's synchronous execution. When the operation yields at an await, the caller's original cultures are restored, even though the task has not yet finished.", nameof(operation));
+            throw new ArgumentException("The operation must be synchronous and must not return a Task or ValueTask.", nameof(operation));
         }
 
         var callerCulture = CultureInfo.CurrentCulture;

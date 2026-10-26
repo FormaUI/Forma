@@ -1,6 +1,6 @@
 namespace Forma.Framework.Globalization;
 
-/// <summary>Runs a synchronous operation that reads the ambient culture in a culture state's cultures.</summary>
+/// <summary>Runs synchronous operations with a culture state's cultures as the ambient cultures.</summary>
 public static class CultureStateExtensions
 {
     /// <summary>Runs an operation in the state's cultures and restores the caller's afterward.</summary>
