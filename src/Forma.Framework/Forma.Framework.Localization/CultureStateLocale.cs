@@ -1,13 +1,16 @@
-namespace Forma.Blazor.Components;
+namespace Forma.Framework.Localization;
 
 using System.Globalization;
 
 using Forma.Framework.Globalization;
-using Forma.Framework.Localization;
 
-/// <summary>A locale that looks its strings up in a culture state's cultures, bound again whenever the state changes.</summary>
-/// <param name="locale">The locale whose strings are looked up.</param>
-/// <param name="cultureState">The culture state whose cultures the strings are looked up in.</param>
+/// <summary>Resolves localized strings using the cultures of an <see cref="ICultureState"/>.</summary>
+/// <remarks>
+/// Creates a culture-bound locale on first use and refreshes it on the first use after
+/// the culture state's revision changes.
+/// </remarks>
+/// <param name="locale">The underlying locale to bind to the state's cultures.</param>
+/// <param name="cultureState">The state that supplies the formatting and UI cultures.</param>
 internal sealed class CultureStateLocale(IStringLocale locale, ICultureState cultureState) : IStringLocale
 {
     private IStringLocale? _boundLocale;

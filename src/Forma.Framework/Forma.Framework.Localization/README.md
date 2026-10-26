@@ -79,6 +79,10 @@ var hebrew = locale.WithCulture(CultureInfo.GetCultureInfo("he"), CultureInfo.Ge
 hebrew["Save"]   // "שמירה", whatever the current culture
 ```
 
+`factory.Create(type, cultureState)` creates a locale that looks its strings up in an `ICultureState`'s
+cultures, bound again on its first use after each change of the state, which is how a component on
+Forma's bases reads its strings.
+
 ### Holes
 
 A hole is `{Name}`, optionally with an alignment and a format specifier, `{Name,8}` or

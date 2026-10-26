@@ -45,7 +45,7 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
     protected IComponentContext Context
         => _context ??= new ComponentContext(
             () => JSRuntime,
-            () => new CultureStateLocale(LocaleFactory.Create(LocalizationSourceType), CultureState),
+            () => LocaleFactory.Create(LocalizationSourceType, CultureState),
             () => LoggerFactory.CreateLogger(GetType()),
             () => Services.GetService<DomBridge>());
 
