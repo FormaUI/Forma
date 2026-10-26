@@ -9,6 +9,7 @@ using Forma.Framework.Resources;
 public sealed class CatalogCollectionView
 {
     private readonly Func<ICatalogItem, string> _kindLabel;
+    private readonly Func<CultureInfo> _uiCulture;
 
     private IReadOnlyList<ICatalogItem> _source = [];
     private CatalogResourceFilter? _filter;
@@ -17,17 +18,22 @@ public sealed class CatalogCollectionView
     private CatalogSortDirection _sortDirection = CatalogSortDirection.Ascending;
 
     private List<ICatalogItem>? _matchingItems;
+    private CultureInfo? _matchedUICulture;
     private List<ICatalogItem>? _visibleItems;
     private List<ICatalogItem>? _visibleItemsSource;
     private int _visibleItemsSkip;
     private int _visibleItemsTake;
 
-    /// <summary>Creates an empty view with the kind label that orders items by kind.</summary>
-    public CatalogCollectionView(Func<ICatalogItem, string> kindLabel)
+    /// <summary>Creates an empty view with the kind label that orders items by kind and the culture the labels are compared in.</summary>
+    /// <param name="kindLabel">The label of an item's kind.</param>
+    /// <param name="uiCulture">The culture the kind labels are written and compared in, read each time the items are ordered.</param>
+    public CatalogCollectionView(Func<ICatalogItem, string> kindLabel, Func<CultureInfo> uiCulture)
     {
         ArgumentNullException.ThrowIfNull(kindLabel);
+        ArgumentNullException.ThrowIfNull(uiCulture);
 
         _kindLabel = kindLabel;
+        _uiCulture = uiCulture;
     }
 
     /// <summary>The items the view shapes.</summary>
@@ -164,7 +170,10 @@ public sealed class CatalogCollectionView
     {
         get
         {
-            if (_matchingItems is not null)
+            // The kind labels are written in the UI culture, so a change of it orders the items again.
+            var uiCulture = _uiCulture();
+
+            if (_matchingItems is not null && uiCulture.Equals(_matchedUICulture))
             {
                 return _matchingItems;
             }
@@ -187,8 +196,8 @@ public sealed class CatalogCollectionView
                 (CatalogSortField.Name, CatalogSortDirection.Descending) => query.OrderByDescending(item => item.Name, StringComparer.OrdinalIgnoreCase),
                 (CatalogSortField.Size, CatalogSortDirection.Ascending) => query.OrderBy(item => item.Resource?.Size ?? 0),
                 (CatalogSortField.Size, CatalogSortDirection.Descending) => query.OrderByDescending(item => item.Resource?.Size ?? 0),
-                (CatalogSortField.Kind, CatalogSortDirection.Ascending) => query.OrderBy(_kindLabel, StringComparer.Create(CultureInfo.CurrentUICulture, ignoreCase: false)),
-                (CatalogSortField.Kind, CatalogSortDirection.Descending) => query.OrderByDescending(_kindLabel, StringComparer.Create(CultureInfo.CurrentUICulture, ignoreCase: false)),
+                (CatalogSortField.Kind, CatalogSortDirection.Ascending) => query.OrderBy(_kindLabel, StringComparer.Create(uiCulture, ignoreCase: false)),
+                (CatalogSortField.Kind, CatalogSortDirection.Descending) => query.OrderByDescending(_kindLabel, StringComparer.Create(uiCulture, ignoreCase: false)),
                 (CatalogSortField.DateAdded, CatalogSortDirection.Ascending) => query.OrderBy(item => item.CreatedAt ?? DateTimeOffset.MinValue),
                 (CatalogSortField.DateAdded, CatalogSortDirection.Descending) => query.OrderByDescending(item => item.CreatedAt ?? DateTimeOffset.MinValue),
                 (CatalogSortField.DateModified, CatalogSortDirection.Ascending) => query.OrderBy(item => item.ModifiedAt ?? DateTimeOffset.MinValue),
@@ -197,6 +206,7 @@ public sealed class CatalogCollectionView
             };
 
             _matchingItems = [.. query];
+            _matchedUICulture = uiCulture;
 
             return _matchingItems;
         }

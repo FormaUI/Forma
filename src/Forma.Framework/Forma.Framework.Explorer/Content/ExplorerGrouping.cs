@@ -22,6 +22,7 @@ public static class ExplorerGrouping
     /// <param name="field">The field the items are grouped by.</param>
     /// <param name="direction">The direction the groups are ordered in.</param>
     /// <param name="kindLabel">The label of an item's kind.</param>
+    /// <param name="uiCulture">The culture the kind labels are compared in.</param>
     /// <param name="now">The moment dates are banded against.</param>
     /// <param name="firstDayOfWeek">The day a week starts on.</param>
     /// <returns>The groups of the items.</returns>
@@ -30,11 +31,13 @@ public static class ExplorerGrouping
         ExplorerGroupField field,
         CatalogSortDirection direction,
         Func<ICatalogItem, string> kindLabel,
+        CultureInfo uiCulture,
         DateTimeOffset now,
         DayOfWeek firstDayOfWeek)
     {
         ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(kindLabel);
+        ArgumentNullException.ThrowIfNull(uiCulture);
 
         if (field == ExplorerGroupField.None)
         {
@@ -57,7 +60,7 @@ public static class ExplorerGrouping
             group.Items.Add(item);
         }
 
-        var comparer = StringComparer.Create(CultureInfo.CurrentUICulture, ignoreCase: false);
+        var comparer = StringComparer.Create(uiCulture, ignoreCase: false);
         var ordered = groups.Values
             .OrderBy(group => group.Band)
             .ThenBy(group => group.KindLabel, comparer);

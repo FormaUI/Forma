@@ -130,11 +130,11 @@ public sealed class UploadFolderReader(string folder) : IResourceContentReader
 
 ## Formatting measurements
 
-`ResourceFormatter` writes measurements in the current culture: `FromByteCount` as `B`, `KB`,
+`ResourceFormatter` writes measurements in the culture it is given: `FromByteCount` as `B`, `KB`,
 `MB`, `GB` or `TB`, `FromDuration` as milliseconds, seconds, `m:ss` or `h:mm:ss`, and
-`FromTransferRate` as a byte count per second, such as `1.5 MB/s`. The `DisplaySize` extension
-property, in `Forma.Framework.Resources.Extensions`, writes a resource's `Size` the same way, or
-`null` when the size is unknown.
+`FromTransferRate` as a byte count per second, such as `1.5 MB/s` in English and `1,5 MB/s` in German.
+The `FormatSize(culture)` extension method, in `Forma.Framework.Resources.Extensions`, writes a
+resource's `Size` the same way, or `null` when the size is unknown.
 
 ## License
 

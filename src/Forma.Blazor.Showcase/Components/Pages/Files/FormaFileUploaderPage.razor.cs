@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Files;
 
+using System.Globalization;
+
 using Forma.Blazor.Components.Files;
 using Forma.Blazor.Showcase.Features.Upload;
 using Forma.Framework.Files;
@@ -38,7 +40,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
         => Limit(SmallLimit);
 
     private static string Limit(long bytes)
-        => $"""<bdi dir="ltr">{ResourceFormatter.FromByteCount(bytes)}</bdi>""";
+        => $"""<bdi dir="ltr">{ResourceFormatter.FromByteCount(bytes, CultureInfo.CurrentCulture)}</bdi>""";
 
     /// <inheritdoc />
     protected override void OnInitialized()

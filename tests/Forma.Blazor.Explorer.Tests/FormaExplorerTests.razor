@@ -436,6 +436,22 @@
         }
 
         [Fact]
+        public async Task Should_write_a_size_in_the_details_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            using var culture = new CultureFixture("en-US");
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg") { Size = 1536 }];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Equal("1,5 KB", cut.Find(".forma-explorer-cell-size").TextContent.Trim());
+        }
+
+        [Fact]
         public void Should_render_a_dash_in_the_details_modified_column_without_a_date()
         {
             // Arrange

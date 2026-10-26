@@ -94,7 +94,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
         => _zoom.Percent;
 
     private string? DisplaySize
-        => Resource?.DisplaySize;
+        => Resource?.FormatSize(CultureState.Culture);
 
     private string DisplayName
         => Resource?.Name ?? Source;

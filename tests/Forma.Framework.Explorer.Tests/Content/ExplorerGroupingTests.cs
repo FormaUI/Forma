@@ -1,5 +1,7 @@
 namespace Forma.Framework.Explorer.Tests.Content;
 
+using System.Globalization;
+
 using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content;
@@ -20,7 +22,7 @@ public sealed class ExplorerGroupingTests
         => new($"/media/{name}") { Size = size, ModifiedAt = modifiedAt };
 
     private static IReadOnlyList<ExplorerItemGroup> Group(ExplorerGroupField field, CatalogSortDirection direction = CatalogSortDirection.Ascending, params ResourceInfo[] resources)
-        => ExplorerGrouping.GroupBy(CatalogItem.ForAll(resources), field, direction, GetTypeNameKindLabel, Now, DayOfWeek.Monday);
+        => ExplorerGrouping.GroupBy(CatalogItem.ForAll(resources), field, direction, GetTypeNameKindLabel, CultureInfo.InvariantCulture, Now, DayOfWeek.Monday);
 
     [Fact]
     public void Should_yield_no_groups_when_nothing_groups_the_items()

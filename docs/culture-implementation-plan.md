@@ -158,6 +158,10 @@ Each step is built, reviewed and committed on its own.
      direction; the data view's group names and column titles, and a cell's value that takes no culture
      of its own, run in the bounded scope; and the pagination's summary and the file viewer's resolution
      start again after a change, which sets no parameter.
+   - ✅ The Framework's measurements and orders take their culture: the resource formatter, a resource's
+     size, the explorer's grouping and the catalog view's kind order are each given the culture they
+     write or compare in, the catalog view ordering again when its UI culture changes, and every
+     component gives them the state's.
 
    Departure until step 5: a resource provider converts in the ambient culture as the file viewer calls it.
    The resolution a change starts runs in the change's render, whose flow carries the new cultures, while

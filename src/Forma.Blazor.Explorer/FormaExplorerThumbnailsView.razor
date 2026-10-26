@@ -49,7 +49,7 @@
 
             <div class="forma-explorer-item-info">
                 <span class="forma-explorer-item-name" title="@item.Name">@item.Name</span>
-                @if (item.Resource?.DisplaySize is { } size)
+                @if (item.Resource?.FormatSize(CultureState.Culture) is { } size)
                 {
                     <span class="forma-explorer-item-size" dir="auto">@size</span>
                 }

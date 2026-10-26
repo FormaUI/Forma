@@ -1,5 +1,7 @@
 namespace Forma.Framework.Catalog.Tests.Queries;
 
+using System.Globalization;
+
 using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Resources;
 
@@ -11,10 +13,33 @@ public sealed class CatalogCollectionViewTests
         => item.Resource?.GetType().Name ?? string.Empty;
 
     private static CatalogCollectionView CreateView(params ResourceInfo[] resources)
-        => new(GetTypeNameKindLabel) { Source = CatalogItem.ForAll(resources), PageSize = 24 };
+        => new(GetTypeNameKindLabel, () => CultureInfo.InvariantCulture) { Source = CatalogItem.ForAll(resources), PageSize = 24 };
 
     private static FileResourceInfo CreateFile(string name, long? size = null, DateTimeOffset? createdAt = null, DateTimeOffset? modifiedAt = null)
         => new($"/media/{name}") { Size = size, CreatedAt = createdAt, ModifiedAt = modifiedAt };
+
+    [Fact]
+    public void Should_order_by_kind_again_when_its_ui_culture_changes()
+    {
+        // Arrange — Swedish sorts Ä after Z, where German sorts it with A
+        var uiCulture = CultureInfo.GetCultureInfo("de-DE");
+        var view = new CatalogCollectionView(item => item.Name.StartsWith('a', StringComparison.Ordinal) ? "Äpfel" : "Zebra", () => uiCulture)
+        {
+            Source = CatalogItem.ForAll([CreateFile("zebra.png"), CreateFile("apple.png")]),
+            PageSize = 24,
+            SortField = CatalogSortField.Kind,
+        };
+        var german = view.MatchingItems.Select(item => item.Name).ToList();
+
+        // Act
+        uiCulture = CultureInfo.GetCultureInfo("sv-SE");
+        var swedish = view.MatchingItems.Select(item => item.Name).ToList();
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(["apple.png", "zebra.png"], german),
+            () => Assert.Equal(["zebra.png", "apple.png"], swedish));
+    }
 
     [Fact]
     public void Should_list_everything_in_name_order_by_default()
@@ -30,7 +55,7 @@ public sealed class CatalogCollectionViewTests
     public void Should_leave_hidden_items_out_and_keep_invisible_ones()
     {
         // Arrange
-        var view = new CatalogCollectionView(GetTypeNameKindLabel)
+        var view = new CatalogCollectionView(GetTypeNameKindLabel, () => CultureInfo.InvariantCulture)
         {
             Source =
             [
@@ -195,7 +220,7 @@ public sealed class CatalogCollectionViewTests
     {
         // Arrange
         var items = new List<ICatalogItem> { CatalogItem.For(CreateFile("one.txt")) };
-        var view = new CatalogCollectionView(GetTypeNameKindLabel) { Source = items, PageSize = 24 };
+        var view = new CatalogCollectionView(GetTypeNameKindLabel, () => CultureInfo.InvariantCulture) { Source = items, PageSize = 24 };
         Assert.Equal(1, view.MatchingCount);
 
         // Act

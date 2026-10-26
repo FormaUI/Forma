@@ -21,7 +21,7 @@
 
                 @if (attachment.Size is { } size)
                 {
-                    <span class="forma-composer-attachment-size" dir="auto">@ResourceFormatter.FromByteCount(size)</span>
+                    <span class="forma-composer-attachment-size" dir="auto">@ResourceFormatter.FromByteCount(size, CultureState.Culture)</span>
                 }
 
                 @if (CanRemove)
