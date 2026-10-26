@@ -239,6 +239,40 @@ Each step is built, reviewed and committed on its own.
 
    The gate adds: two tabs in two cultures, one switching while the other reconnects; an existing
    installation's `HttpOnly` cookie; and the flash checks measured from the traced order.
+
+   The probes ran on step 2's probe host under .NET 11 release candidate 1, driven in Chrome, the host
+   started in each configuration by the probe itself, with English the default culture, Hebrew beside it
+   and `iw` its alias:
+   - ✅ A culture-prefixed `<base href>` lets interactive routing find a page at its culture's address, and
+     leaves every navigation to another culture's address outside the base. Under global interactivity
+     with `ExceptDefault`, a full load of `/he/about` rendered the page with the base `/he/`, where the
+     plain base reaches not-found, and a relative link reached `/he/other` in the same circuit; `Always`
+     behaved the same, `/about` redirecting to `/en/about` under the base `/en/`. A link to `/about`, the
+     switch made by navigating, and Back across the cultures each loaded a new document and circuit;
+     `/iw/other` and `/HE/other` reached `/he/other` through the middleware's redirect, `/he/en/other` was
+     refused with 400 and `/xx/other` answered 404. Islands behaved the same. So the base gives a
+     supported full load, and doesn't make a switch in place.
+   - ✅ Under a culture-prefixed base, the framework's own requests take the culture segment,
+     `/he/_blazor/negotiate` and `/he/_blazor/disconnect`, and the middleware, which tells a framework
+     request by its first segment, takes them for documents and writes the cookie for them. Leaving
+     `/he/about` for `/about`, the old page's disconnect beacon arrived after `/about` had written `en`,
+     set the cookie back to `he`, and the next circuit opened in Hebrew at the English address.
+   - ✅ Under a `/app` path base, the circuit's negotiation at `/app/he/_blazor/negotiate` answered 405
+     with the culture base, and the circuit connected with the plain base; the cause isn't established.
+     The cookie is written at the path `/` whatever the path base.
+   - ✅ An enhanced navigation tells the circuit of its location change as the navigation starts, before
+     its response. With the state following each location change, a link to `/he/about` from English
+     set `he/rtl` 17 ms in, over the English page, which the patch replaced at 34 ms; under 400 ms of
+     latency, the English page stood under `he/rtl` from 30 ms to 429 ms. Back, Forward and the switch made
+     by navigating had the same order, and two navigations 30 ms apart ended on the second's culture.
+     The patch wrote neither attribute, since both already matched.
+   - ✅ The address is available as a circuit opens: reconciling the state with it there, ahead of the
+     culture's own handler, changed the state before the connection came up, so the synchronizer
+     registered the address's culture and never wrote another.
+   - ✅ A resumed circuit's state starts from the cookie at the time it resumes. After a second tab loaded
+     `/he/about`, the first tab, at `/about`, paused and resumed into `he/rtl` over its English page and
+     stayed there; with reconciliation at open, it resumed in English. An in-place switch made before the
+     pause wasn't kept either way, since it changes neither the address nor the cookie today.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again
