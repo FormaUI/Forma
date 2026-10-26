@@ -10,7 +10,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_the_culture_state_scoped()
     {
         // Act
-        var services = new ServiceCollection().AddFormaCultureServices();
+        var services = new ServiceCollection().AddFormaGlobalizationCoreServices();
 
         // Assert
         var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState));
@@ -26,7 +26,7 @@ public sealed class ServiceCollectionExtensionsTests
         services.AddScoped(hostFactory);
 
         // Act
-        services.AddFormaCultureServices();
+        services.AddFormaGlobalizationCoreServices();
 
         // Assert
         var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState));

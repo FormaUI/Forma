@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IJSRuntime>(UnavailableJSRuntime.Instance);
 
         services.AddFormaEventServices();
-        services.AddFormaCultureServices();
+        services.AddFormaGlobalizationCoreServices();
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();

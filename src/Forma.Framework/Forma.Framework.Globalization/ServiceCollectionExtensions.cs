@@ -9,7 +9,7 @@ public static class ServiceCollectionExtensions
     /// <summary>Registers the culture state each user scope holds.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection.</returns>
-    public static IServiceCollection AddFormaCultureServices(this IServiceCollection services)
+    public static IServiceCollection AddFormaGlobalizationCoreServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 

@@ -15,7 +15,7 @@ public sealed class DefaultCultureStateTests
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he");
 
     private static ServiceProvider CreateServices()
-        => new ServiceCollection().AddFormaCultureServices().BuildServiceProvider();
+        => new ServiceCollection().AddFormaGlobalizationCoreServices().BuildServiceProvider();
 
     private static ICultureState GetState(IServiceScope scope)
         => scope.ServiceProvider.GetRequiredService<ICultureState>();
