@@ -35,15 +35,19 @@ public sealed class CultureSwitcher
     {
         ArgumentNullException.ThrowIfNull(route);
 
-        var relativeUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
-        var fragmentStart = relativeUrl.IndexOf('#', StringComparison.Ordinal);
+        var address = ReadAddress().Address;
+        var fragmentStart = address.IndexOf('#', StringComparison.Ordinal);
 
-        if (fragmentStart >= 0)
-        {
-            relativeUrl = relativeUrl[..fragmentStart];
-        }
+        return GetUri(route, fragmentStart < 0 ? address : address[..fragmentStart]);
+    }
 
-        return _navigationManager.ToAbsoluteUri(_cultureRouter.GetUrl(route, relativeUrl).TrimStart('/'));
+    /// <summary>The address <paramref name="relativeAddress"/>, relative to the application's root, in the culture of <paramref name="route"/>, query included.</summary>
+    public Uri GetUri(CultureRoute route, string relativeAddress)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(relativeAddress);
+
+        return new Uri(ReadAddress().Root, _cultureRouter.GetUrl(route, relativeAddress).TrimStart('/'));
     }
 
     /// <summary>Loads the current page's address in the culture of <paramref name="route"/>.</summary>
@@ -57,9 +61,9 @@ public sealed class CultureSwitcher
     /// <summary>Changes the culture state to the culture the current address names.</summary>
     internal Task ReconcileAsync()
     {
-        var relativeUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
-        var pathEnd = relativeUrl.IndexOfAny(['?', '#']);
-        var path = PathString.FromUriComponent("/" + (pathEnd < 0 ? relativeUrl : relativeUrl[..pathEnd]));
+        var address = ReadAddress().Address;
+        var pathEnd = address.IndexOfAny(['?', '#']);
+        var path = PathString.FromUriComponent("/" + (pathEnd < 0 ? address : address[..pathEnd]));
 
         // An address naming cultures in two consecutive segments names neither, and the middleware refuses it.
         if (_cultureRouter.HasConsecutiveCultures(path))
@@ -68,5 +72,23 @@ public sealed class CultureSwitcher
         }
 
         return _cultureState.ChangeAsync(_cultureRouter.Match(path).Route.Culture);
+    }
+
+    // The application's root and the current address relative to it, its culture segment included. A document base
+    // in a culture, /app/he/ where the application's root is /app/, ends in that culture's token.
+    private (Uri Root, string Address) ReadAddress()
+    {
+        var baseUri = new Uri(_navigationManager.BaseUri);
+        var relativeAddress = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+        var basePath = baseUri.AbsolutePath.TrimEnd('/');
+        var lastSegmentStart = basePath.LastIndexOf('/', StringComparison.Ordinal) + 1;
+        var lastSegment = PathString.FromUriComponent("/" + basePath[lastSegmentStart..]);
+
+        if (lastSegment.Value is "/" || _cultureRouter.Match(lastSegment).Path != PathString.FromUriComponent("/"))
+        {
+            return (baseUri, relativeAddress);
+        }
+
+        return (new Uri(baseUri, basePath[..lastSegmentStart]), basePath[lastSegmentStart..] + "/" + relativeAddress);
     }
 }

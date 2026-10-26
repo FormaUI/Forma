@@ -98,6 +98,7 @@ address as its circuit opens.
 | --- | --- |
 | `CurrentRoute` | The route of the culture state's UI culture. |
 | `GetUri(route)` | The current page's address in a route's culture, query string included. |
+| `GetUri(route, relativeAddress)` | An address relative to the application's root, such as `about?tab=2`, in a route's culture. |
 | `SwitchTo(route)` | Loads the current page's address in a route's culture. |
 
 ```razor
@@ -113,7 +114,8 @@ address as its circuit opens.
 
 ## Building links
 
-A page or component injects `CultureRouter` to address a culture:
+A link in markup takes its address from `CultureSwitcher.GetUri`, which knows the application's
+root under any path base and document base. `CultureRouter` builds the paths beneath it:
 
 | Member | What it does |
 | --- | --- |
@@ -121,7 +123,7 @@ A page or component injects `CultureRouter` to address a culture:
 | `DefaultRoute` | The route serving a request that names none. |
 | `GetRoute(culture)` | The route serving a culture, or `DefaultRoute`. |
 | `GetPath(route, path)` | The `PathString` of a path in a route's culture, replacing any culture segment it carries. |
-| `GetUrl(route, relativeUrl)` | A base-relative URL in a route's culture, query string included. |
+| `GetUrl(route, relativeUrl)` | A URL relative to the application's root in a route's culture, from that root, query string included. |
 | `Match(path)` | The `CultureMatch` of a path: its `Route`, its `Path` without the culture segment, its `CanonicalPath` and whether it `IsCanonical`. |
 | `HasConsecutiveCultures(path)` | Whether a path names cultures in two consecutive segments. |
 
@@ -129,19 +131,17 @@ A page or component injects `CultureRouter` to address a culture:
 @using Forma.Framework.Globalization.AspNetCore
 @inject CultureRouter Router
 @inject CultureSwitcher Switcher
-@inject NavigationManager Navigation
 
-<a href="@Router.GetPath(Switcher.CurrentRoute, "/about")">About</a>
+<a href="@Switcher.GetUri(Switcher.CurrentRoute, "about")">About</a>
 
 @foreach (var route in Router.Routes)
 {
-    <link rel="alternate" hreflang="@route.HrefLang"
-          href="@Router.GetUrl(route, Navigation.ToBaseRelativePath(Navigation.Uri))" />
+    <link rel="alternate" hreflang="@route.HrefLang" href="@Switcher.GetUri(route)" />
 }
 ```
 
-`GetPath` keeps a link in the reader's culture, and `GetUrl` over the current address links the
-same page in another culture.
+`GetUri` over the current route keeps a link in the reader's culture, and over another route
+links the same page in that culture.
 
 ## License
 
