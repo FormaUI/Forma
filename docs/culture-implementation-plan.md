@@ -362,11 +362,25 @@ Each step is built, reviewed and committed on its own.
       interactivity the page there reached not-found, as the plain base leaves any full load of another
       culture's address, which the culture base of part 3 settles. The Showcase's language links marked
       the page's culture and its page links stayed in it, in Hebrew, in English and after Back.
-   3. **The document's base.** Forma supplies the base in the address's culture, so a switch is a full
+   3. ✅ **The document's base.** Forma supplies the base in the address's culture, so a switch is a full
       load by default. Links are settled with it: `GetPath` and `GetUrl` give a path from the
       application's root, `/he/about`, which an `href` resolves from the host's root, so under a path base
       it misses the base, and the switcher's address and the reconciliation read the address relative to
-      the document's base, which a culture base changes.
+      the document's base, which a culture base changes. A component writes the base, and the switcher
+      reads the address and builds a link from the application's root, the base without its culture
+      segment.
+
+      In Chrome, under `ExceptDefault` with the culture base, the default culture's base `/` holds
+      `/he/about`, and under global interactivity a link to it from `/about`, plain or with enhanced
+      navigation turned off, loaded a new document, since interactive routing found no page there; so did
+      Back. Reading the address relative to the base, that circuit reconciled to English at `/he/about`;
+      read from the application's root, it opened in Hebrew. Under islands a plain link was an enhanced
+      navigation, which the state follows from the handoff on. The switcher's switch to Hebrew and back
+      loaded `/he/about` and `/about` in their cultures under islands with the plain base, under global
+      interactivity with the culture base, and under both with the culture base and the `/app` path base,
+      `/app/he/` the base of `/app/he/about`, under `ExceptDefault` and under `Always`. A tab at
+      `/he/about`, its base `/he/`, paused and resumed into Hebrew after another tab had written the
+      cookie in English, under islands and under global interactivity.
    4. **The handoff.** The document culture synchronizer holds the document through an enhanced
       navigation until the circuit acknowledges reconciling the navigation that landed last.
    5. **Culture-bearing interactive routes.** The host's declaration, the page base, the plain base, the

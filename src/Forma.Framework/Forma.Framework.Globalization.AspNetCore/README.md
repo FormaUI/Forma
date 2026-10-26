@@ -88,6 +88,24 @@ as a paused circuit resumes, the state takes the culture the address names, what
 circuit's connection arrived with, so a tab at `/about` stays English after another tab has
 loaded `/he/about`.
 
+## The document's base
+
+The document's `<base>` is in the request's culture, `/he/` for a Hebrew page and `/app/he/` under
+the path base `/app`, so interactive routing finds the pages of the document's culture, and an
+address in another culture, where it finds none, loads as a new document whose circuit opens in
+that culture. `CultureBaseHref` writes it in place of the host's own:
+
+```razor
+<head>
+    <meta charset="utf-8" />
+    <CultureBaseHref />
+    <HeadOutlet />
+</head>
+```
+
+The application's root is the base without its culture segment, so a path base doesn't end in a
+segment that is a culture's token.
+
 ## Switching culture
 
 A page or component injects `CultureSwitcher` to switch to another culture. The switch loads the

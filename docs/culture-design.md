@@ -212,7 +212,11 @@ How a switch navigates is the host's choice, made once where it configures cultu
 
 - **A full load, by default.** Forma supplies the document's base in the address's culture, `/he/`, or
   `/app/he/` under the path base `/app`, so interactive routing finds a page within its culture, and an
-  address in another culture lies outside the base and loads a new document and circuit.
+  address in another culture loads a new document and circuit: it lies outside the base, or, from the
+  default culture's base under `ExceptDefault`, inside it where interactive routing finds no page and
+  hands the address to the server. The application's root is the base without its culture segment, so
+  a path base doesn't end in a segment that is a culture's token, and Forma reads an address and builds
+  a link from that root.
 - **In place, when the host declares culture-bearing interactive routes.** Every page then carries its
   culture route beside its plain one, `@page "/about"` and `@page "/{culture}/about"`, and the document's
   base is the plain one, so interactive routing reaches another culture's address in the same circuit,
