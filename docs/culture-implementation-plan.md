@@ -338,9 +338,9 @@ Each step is built, reviewed and committed on its own.
      attributes kept `he/rtl`, and the island lagged 18 ms.
    - ✅ `UsePathBase` chooses an endpoint as it removes the path base: for `/he/_blazor/negotiate`, whose
      path matched a route only for another method, it chose the 405 before the culture middleware removed
-     the culture segment, and explicit routing kept it. The middleware now clears an endpoint and route values chosen
-     for an address whose culture segment it removes, and the circuit connected under `/app` with the
-     culture base.
+     the culture segment, and explicit routing kept it. The middleware now clears an endpoint and route
+     values chosen for an address whose culture segment it removes, and the circuit connected under `/app`
+     with the culture base.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again
