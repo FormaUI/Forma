@@ -4,6 +4,10 @@
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
+    </ItemGroup>
+
     <!-- What makes a project a locale pack ships with the library, so a pack can be written by anyone who references it; NuGet imports the file named for the package, so the library's own targets file takes that name in the package and its template rides beside it. -->
     <ItemGroup>
         <None Remove="build\*.targets" />

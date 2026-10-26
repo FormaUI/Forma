@@ -369,6 +369,134 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
+    public void Should_look_a_bound_locales_strings_up_in_its_ui_culture()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = CreateLocale<Colocated>();
+
+        // Act
+        var localized = strings.WithCulture(CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("he"))["Today"];
+
+        // Assert
+        Assert.Equal("היום", localized.Value);
+    }
+
+    [Fact]
+    public void Should_keep_locales_bound_from_one_original_apart_from_each_other_and_from_it()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = CreateLocale<Colocated>();
+
+        // Act
+        var hebrew = strings.WithCulture(CultureInfo.GetCultureInfo("he"), CultureInfo.GetCultureInfo("he"));
+        var spanish = strings.WithCulture(CultureInfo.GetCultureInfo("es"), CultureInfo.GetCultureInfo("es"));
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("היום", hebrew["Today"].Value);
+            Assert.Equal("Hoy", spanish["Today"].Value);
+            Assert.Equal("Today", strings["Today"].Value);
+        });
+    }
+
+    [Fact]
+    public void Should_replace_both_cultures_when_a_bound_locale_is_bound_again()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var hebrew = CreateLocale<Colocated>().WithCulture(CultureInfo.GetCultureInfo("de-DE"), CultureInfo.GetCultureInfo("he"));
+
+        // Act
+        var rebound = hebrew.WithCulture(CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("es"));
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("Hoy", rebound["Today"].Value);
+            Assert.Equal("Stored 1.5 of 2.", rebound["Stored {stored} of {total}.", 1.5, 2].Value);
+        });
+    }
+
+    [Fact]
+    public void Should_change_only_the_values_when_only_the_formatting_culture_changes()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = CreateLocale<Colocated>();
+        var english = CultureInfo.GetCultureInfo("en");
+
+        // Act
+        var inGerman = strings.WithCulture(CultureInfo.GetCultureInfo("de-DE"), english)["Stored {stored} of {total}.", 1.5, 2];
+        var inEnglish = strings.WithCulture(english, english)["Stored {stored} of {total}.", 1.5, 2];
+
+        // Assert
+        Assert.Equal(["Stored 1,5 of 2.", "Stored 1.5 of 2."], [inGerman.Value, inEnglish.Value]);
+    }
+
+    [Fact]
+    public void Should_change_only_the_language_and_plural_forms_when_only_the_ui_culture_changes()
+    {
+        // Arrange
+        const string Key = "[$ plural; one: # file; other: # files; $]";
+        using var culture = new CultureScope("en");
+        var strings = CreateLocale<Pluralized>();
+        var english = CultureInfo.GetCultureInfo("en");
+
+        // Act
+        var inHebrew = strings.WithCulture(english, CultureInfo.GetCultureInfo("he"))[Key, 2];
+        var inEnglish = strings.WithCulture(english, english)[Key, 2];
+
+        // Assert
+        Assert.Equal(["שני קבצים", "2 files"], [inHebrew.Value, inEnglish.Value]);
+    }
+
+    [Fact]
+    public void Should_format_a_value_that_takes_no_culture_in_the_bound_cultures()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = CreateLocale<Colocated>().WithCulture(CultureInfo.GetCultureInfo("de-DE"), CultureInfo.GetCultureInfo("en"));
+
+        // Act
+        var localized = strings["Stored {stored} of {total}.", new Measure(1.5), 2];
+
+        // Assert
+        Assert.Equal("Stored Measure { Size = 1,5 } of 2.", localized.Value);
+    }
+
+    [Fact]
+    public void Should_list_the_strings_of_a_bound_locales_ui_culture()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = CreateLocale<Colocated>().WithCulture(CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("he"));
+
+        // Act
+        var names = strings.GetAllStrings(includeParentCultures: false).Select(s => s.Name);
+
+        // Assert
+        Assert.Equal(
+            ["Last 7 days", "Moved to position {position} of {total}.", "Stored {stored} of {total}.", "Today", "Use {{curly}} braces."],
+            names.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Should_reject_a_missing_culture_to_bind()
+    {
+        // Arrange
+        var strings = CreateLocale<Colocated>();
+        var english = CultureInfo.GetCultureInfo("en");
+
+        // Act & Assert
+        Assert.Multiple(
+            () => Assert.Throws<ArgumentNullException>(() => strings.WithCulture(null!, english)),
+            () => Assert.Throws<ArgumentNullException>(() => strings.WithCulture(english, null!)));
+    }
+
+    [Fact]
     public void Should_list_the_strings_of_the_current_culture()
     {
         // Arrange
@@ -531,4 +659,6 @@ public sealed class JsonStringLocaleTests
         // Assert
         Assert.Equal("1.234,5 files", many.Value);
     }
+
+    private sealed record Measure(double Size);
 }

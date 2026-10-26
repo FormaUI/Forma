@@ -51,7 +51,7 @@ public sealed class LocalizedFormatTests
     public void Should_render_a_hole_naming_an_argument_that_was_not_supplied_as_its_own_text()
     {
         // Act
-        var rendered = LocalizedFormat.Render("Stored {stored} of {total}.", [new LocalizedArgument("stored", 3)], CultureInfo.InvariantCulture);
+        var rendered = LocalizedFormat.Render("Stored {stored} of {total}.", [new LocalizedArgument("stored", 3)], CultureInfo.InvariantCulture, CultureInfo.InvariantCulture);
 
         // Assert
         Assert.Equal("Stored 3 of {total}.", rendered);
@@ -61,7 +61,7 @@ public sealed class LocalizedFormatTests
     public void Should_render_a_hole_through_the_specifier_the_format_carries()
     {
         // Act
-        var rendered = LocalizedFormat.Render("{rows:N0} rows", [new LocalizedArgument("rows", 5000)], CultureInfo.GetCultureInfo("en"));
+        var rendered = LocalizedFormat.Render("{rows:N0} rows", [new LocalizedArgument("rows", 5000)], CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("en"));
 
         // Assert
         Assert.Equal("5,000 rows", rendered);
@@ -71,7 +71,7 @@ public sealed class LocalizedFormatTests
     public void Should_pad_a_hole_to_the_alignment_the_format_carries()
     {
         // Act
-        var rendered = LocalizedFormat.Render("[{label,-4}]", [new LocalizedArgument("label", "x")], CultureInfo.InvariantCulture);
+        var rendered = LocalizedFormat.Render("[{label,-4}]", [new LocalizedArgument("label", "x")], CultureInfo.InvariantCulture, CultureInfo.InvariantCulture);
 
         // Assert
         Assert.Equal("[x   ]", rendered);

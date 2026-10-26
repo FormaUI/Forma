@@ -121,6 +121,33 @@ public sealed class NullStringLocaleFactoryTests
         }
 
         [Fact]
+        public void Should_fill_a_bound_locales_holes_in_its_culture_and_leave_the_original_reading_the_current_one()
+        {
+            // Arrange
+            using var culture = new CultureFixture("en");
+            var locale = NullStringLocaleFactory.Instance.Create(typeof(Locale));
+
+            // Act
+            var bound = locale.WithCulture(CultureInfo.GetCultureInfo("de-DE"), CultureInfo.GetCultureInfo("he"))["Stored {Amount}", 1.5];
+            var original = locale["Stored {Amount}", 1.5];
+
+            // Assert
+            Assert.Equal(["Stored 1,5", "Stored 1.5"], [bound.Value, original.Value]);
+        }
+
+        [Fact]
+        public void Should_reject_a_missing_culture_to_bind()
+        {
+            // Arrange
+            var locale = NullStringLocaleFactory.Instance.Create(typeof(Locale));
+            var english = CultureInfo.GetCultureInfo("en");
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => locale.WithCulture(null!, english));
+            Assert.Throws<ArgumentNullException>(() => locale.WithCulture(english, null!));
+        }
+
+        [Fact]
         public void Should_list_no_strings()
         {
             // Arrange

@@ -114,7 +114,8 @@ translated, so `RequireMatchingLocalization` accepts it and `GetAllStrings` list
 
 ## How a lookup resolves
 
-A lookup walks `CultureInfo.CurrentUICulture` out through its parents, taking the first culture
+A lookup walks the locale's UI culture, `CultureInfo.CurrentUICulture` unless the locale was bound to another
+through `WithCulture`, out through its parents, taking the first culture
 whose files carry the key: an `es-419` reader gets the `es` entry where no `es-419` file has one.
 Within a culture, the assembly's own files are read first, then the locale packs, then the host's
 folder, each overriding the one before. Each file is read once per factory.

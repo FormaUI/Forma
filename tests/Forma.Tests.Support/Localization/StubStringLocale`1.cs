@@ -1,5 +1,7 @@
 namespace Forma.Tests.Localization;
 
+using System.Globalization;
+
 using Forma.Framework.Localization;
 
 /// <summary>A string locale for <typeparamref name="T"/> over translations held in memory.</summary>
@@ -28,4 +30,8 @@ public sealed class StubStringLocale<T>(IReadOnlyDictionary<string, string> tran
     /// <inheritdoc />
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
         => _locale.GetAllStrings(includeParentCultures);
+
+    /// <inheritdoc />
+    public IStringLocale WithCulture(CultureInfo culture, CultureInfo uiCulture)
+        => _locale.WithCulture(culture, uiCulture);
 }

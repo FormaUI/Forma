@@ -346,5 +346,5 @@
         => PluralFormat.Evaluate(GroupedFormat, CultureInfo.CurrentCulture, LocalizedFormat.Bind(GroupedFormat, count));
 
     private static string GetRawCount(decimal count)
-        => LocalizedFormat.Render(RawFormat, LocalizedFormat.Bind(RawFormat, count), CultureInfo.CurrentCulture);
+        => LocalizedFormat.Render(RawFormat, LocalizedFormat.Bind(RawFormat, count), CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 }

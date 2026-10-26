@@ -1,5 +1,7 @@
 namespace Forma.Framework.Localization.Json;
 
+using System.Globalization;
+
 using Forma.Framework.Localization;
 
 /// <summary>A locale for the strings belonging to <typeparamref name="T"/>.</summary>
@@ -34,4 +36,8 @@ public sealed class JsonStringLocale<T> : IStringLocale<T>
     /// <inheritdoc />
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
         => _locale.GetAllStrings(includeParentCultures);
+
+    /// <inheritdoc />
+    public IStringLocale WithCulture(CultureInfo culture, CultureInfo uiCulture)
+        => _locale.WithCulture(culture, uiCulture);
 }

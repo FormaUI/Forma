@@ -64,7 +64,20 @@ text.ResourceNotFound   // true when the lookup fell back to the key
 text.SearchedLocation   // the full name of the type that was searched
 ```
 
-`GetAllStrings(includeParentCultures)` lists every translation the current culture has for the type.
+`GetAllStrings(includeParentCultures)` lists every translation the locale's UI culture has for the type.
+
+### Cultures
+
+A locale chooses its strings, their fallback and their plural forms by `CultureInfo.CurrentUICulture`,
+and formats the values in their holes by `CultureInfo.CurrentCulture`. `WithCulture(culture, uiCulture)`
+returns a locale that uses the two cultures given instead, reading the same files; the original keeps
+reading the current ones:
+
+```csharp
+var hebrew = locale.WithCulture(CultureInfo.GetCultureInfo("he"), CultureInfo.GetCultureInfo("he"));
+
+hebrew["Save"]   // "שמירה", whatever the current culture
+```
 
 ### Holes
 
@@ -221,7 +234,7 @@ pack directly; a class library or a test that references one names it in `Locale
 
 | Type | What it is |
 | --- | --- |
-| `IStringLocale<T>` | The strings of type `T`: `this[name]`, `this[name, values]`, `Resolve`, `GetAllStrings`. |
+| `IStringLocale<T>` | The strings of type `T`: `this[name]`, `this[name, values]`, `Resolve`, `GetAllStrings`, `WithCulture`. |
 | `IStringLocaleFactory` | Creates a locale for a type, `Create(Type)`, or for a base name in an assembly, `Create(string, string)`. |
 | `LocalizationOptions` | The settings above. |
 | `LocalizedText` | A localized string: `Value`, `Name`, `ResourceNotFound`, `SearchedLocation`. |

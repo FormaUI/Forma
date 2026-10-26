@@ -3,6 +3,8 @@ namespace Forma.Framework.Localization;
 using System.Globalization;
 using System.Text;
 
+using Forma.Framework.Globalization;
+
 /// <summary>Renders a composite format whose holes name their arguments.</summary>
 public static class LocalizedFormat
 {
@@ -43,16 +45,18 @@ public static class LocalizedFormat
         return arguments;
     }
 
-    /// <summary>Renders a format, writing each hole's argument in the culture supplied.</summary>
+    /// <summary>Renders a format, writing each hole's argument in the cultures supplied.</summary>
     /// <param name="format">The composite format, whose holes name their arguments.</param>
     /// <param name="arguments">The values the holes name.</param>
     /// <param name="culture">The culture the values are rendered in.</param>
+    /// <param name="uiCulture">The UI culture in force while a value that takes no culture of its own writes itself.</param>
     /// <remarks>A hole naming an argument that was not supplied is written as its own text.</remarks>
-    public static string Render(string format, IReadOnlyList<LocalizedArgument> arguments, CultureInfo culture)
+    public static string Render(string format, IReadOnlyList<LocalizedArgument> arguments, CultureInfo culture, CultureInfo uiCulture)
     {
         ArgumentNullException.ThrowIfNull(format);
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(culture);
+        ArgumentNullException.ThrowIfNull(uiCulture);
 
         if (!format.AsSpan().ContainsAny('{', '}'))
         {
@@ -70,7 +74,7 @@ public static class LocalizedFormat
                 continue;
             }
 
-            Append(builder, segment, arguments, culture);
+            Append(builder, segment, arguments, culture, uiCulture);
         }
 
         return builder.ToString();
@@ -97,7 +101,7 @@ public static class LocalizedFormat
         return names;
     }
 
-    private static void Append(StringBuilder builder, LocalizedSegment segment, IReadOnlyList<LocalizedArgument> arguments, CultureInfo culture)
+    private static void Append(StringBuilder builder, LocalizedSegment segment, IReadOnlyList<LocalizedArgument> arguments, CultureInfo culture, CultureInfo uiCulture)
     {
         if (!TryFind(segment.Name, arguments, out var value))
         {
@@ -106,9 +110,14 @@ public static class LocalizedFormat
             return;
         }
 
-        var text = value is IFormattable formattable
-            ? formattable.ToString(segment.Format.IsEmpty ? null : segment.Format.ToString(), culture)
-            : value?.ToString() ?? string.Empty;
+        // A value that takes no culture, such as a record printing its members, reads the ambient one.
+        var text = value switch
+        {
+            null => string.Empty,
+            string written => written,
+            IFormattable formattable => formattable.ToString(segment.Format.IsEmpty ? null : segment.Format.ToString(), culture),
+            _ => AmbientCulture.Run(culture, uiCulture, () => value.ToString()) ?? string.Empty,
+        };
 
         var padding = Math.Abs(segment.Alignment) - text.Length;
         if (padding <= 0)

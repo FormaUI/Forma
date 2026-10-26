@@ -1,5 +1,7 @@
 namespace Forma.Framework.Localization;
 
+using System.Globalization;
+
 /// <summary>Provides localized strings for one resource base name.</summary>
 public interface IStringLocale
 {
@@ -25,7 +27,13 @@ public interface IStringLocale
     /// <param name="values">One value per distinct hole, in the order the holes first appear in the key.</param>
     LocalizedPattern Resolve(string name, params object?[] values);
 
-    /// <summary>Every translation available for the current culture.</summary>
+    /// <summary>Every translation available for the UI culture the locale looks its strings up in.</summary>
     /// <param name="includeParentCultures">Whether to include translations inherited from parent cultures.</param>
     IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures);
+
+    /// <summary>Returns a locale that uses the specified formatting and UI cultures, sharing the underlying localization resources. The original locale is unchanged.</summary>
+    /// <param name="culture">The culture that formats the values filling a string's holes.</param>
+    /// <param name="uiCulture">The culture that chooses the strings, their fallback and their plural forms.</param>
+    /// <returns>A locale bound to both cultures, which replace any the original was bound to.</returns>
+    IStringLocale WithCulture(CultureInfo culture, CultureInfo uiCulture);
 }
