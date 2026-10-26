@@ -1,6 +1,7 @@
 namespace Forma.Framework.Globalization.AspNetCore;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http;
 
 /// <summary>Switches a user scope to another culture by navigating to the current page's address in it.</summary>
 /// <remarks>
@@ -52,4 +53,20 @@ public sealed class CultureSwitcher
     /// </remarks>
     public void SwitchTo(CultureRoute route)
         => _navigationManager.NavigateTo(GetUri(route).AbsoluteUri, forceLoad: true);
+
+    /// <summary>Changes the culture state to the culture the current address names.</summary>
+    internal Task ReconcileAsync()
+    {
+        var relativeUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+        var pathEnd = relativeUrl.IndexOfAny(['?', '#']);
+        var path = PathString.FromUriComponent("/" + (pathEnd < 0 ? relativeUrl : relativeUrl[..pathEnd]));
+
+        // An address naming cultures in two consecutive segments names neither, and the middleware refuses it.
+        if (_cultureRouter.HasConsecutiveCultures(path))
+        {
+            return Task.CompletedTask;
+        }
+
+        return _cultureState.ChangeAsync(_cultureRouter.Match(path).Route.Culture);
+    }
 }

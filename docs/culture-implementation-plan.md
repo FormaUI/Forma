@@ -352,11 +352,21 @@ Each step is built, reviewed and committed on its own.
       written again beside the new one, it was expired on the next document, and the new one took that
       document's culture. Under `/app`, beside another application's cookie at `/` naming English, a
       framework request took the Hebrew of its own.
-   2. **Reconciliation and the switcher.** The circuit reconciles its state with the address as it opens
-      and as it resumes, before the document culture synchronizer starts; the switcher requests another
-      culture's address, and its current route is the state's.
+   2. ✅ **Reconciliation and the switcher.** The circuit reconciles its state with the address as it
+      opens and as it resumes, before the document culture synchronizer starts; the switcher requests
+      another culture's address, and its current route is the state's, which replaces the router's
+      current route read from the ambient culture. In Chrome, under islands and under global
+      interactivity, a tab at `/about` paused and resumed into `en/ltr` with its state in English after a
+      second tab had loaded `/he/about` and written the cookie in Hebrew. The switcher's switch from
+      `/about` loaded `/he/about` as a new document whose circuit opened in Hebrew; under global
+      interactivity the page there reached not-found, as the plain base leaves any full load of another
+      culture's address, which the culture base of part 3 settles. The Showcase's language links marked
+      the page's culture and its page links stayed in it, in Hebrew, in English and after Back.
    3. **The document's base.** Forma supplies the base in the address's culture, so a switch is a full
-      load by default.
+      load by default. Links are settled with it: `GetPath` and `GetUrl` give a path from the
+      application's root, `/he/about`, which an `href` resolves from the host's root, so under a path base
+      it misses the base, and the switcher's address and the reconciliation read the address relative to
+      the document's base, which a culture base changes.
    4. **The handoff.** The document culture synchronizer holds the document through an enhanced
       navigation until the circuit acknowledges reconciling the navigation that landed last.
    5. **Culture-bearing interactive routes.** The host's declaration, the page base, the plain base, the

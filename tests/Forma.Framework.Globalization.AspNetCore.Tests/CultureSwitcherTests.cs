@@ -5,6 +5,7 @@ using System.Globalization;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
 
 public sealed class CultureSwitcherTests
@@ -28,6 +29,10 @@ public sealed class CultureSwitcherTests
 
     private static CultureRoute GetRoute(IServiceProvider services, string token)
         => services.GetRequiredService<CultureRouter>().Routes.Single(route => route.Token == token);
+
+    // The circuit is not read by the handler, and a test cannot make one.
+    private static Task OpenCircuitAsync(IServiceProvider services)
+        => Assert.Single(services.GetServices<CircuitHandler>()).OnCircuitOpenedAsync(null!, TestContext.Current.CancellationToken);
 
     public sealed class CurrentRoute
     {
@@ -91,6 +96,48 @@ public sealed class CultureSwitcherTests
                 () => Assert.Equal("http://localhost/he/about", navigation.Uri),
                 () => Assert.True(navigation.Options.ForceLoad),
                 () => Assert.Equal("en", cultureState.UICulture.Name));
+        }
+    }
+
+    public sealed class Reconciliation
+    {
+        [Theory]
+        [InlineData("en", "http://localhost/", "http://localhost/he/about?tab=2", "he")]
+        [InlineData("he", "http://localhost/", "http://localhost/about", "en")]
+        [InlineData("he", "http://localhost/", "http://localhost/", "en")]
+        [InlineData("en", "http://localhost/", "http://localhost/HE/about", "he")]
+        [InlineData("en", "http://localhost/app/", "http://localhost/app/he/about#states", "he")]
+        public async Task Should_set_the_culture_state_from_the_address_a_circuit_opens_at(string connection, string baseAddress, string address, string culture)
+        {
+            // Arrange — the culture the circuit's connection arrived with, from the cookie another tab may have written
+            using var fixture = new CultureFixture(connection);
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri(baseAddress), new Uri(address)));
+            await using var scope = provider.CreateAsyncScope();
+            var cultureState = scope.ServiceProvider.GetRequiredService<ICultureState>();
+
+            // Act
+            await OpenCircuitAsync(scope.ServiceProvider);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(culture, cultureState.Culture.Name),
+                () => Assert.Equal(culture, cultureState.UICulture.Name));
+        }
+
+        [Fact]
+        public async Task Should_leave_the_culture_state_at_an_address_naming_two_consecutive_cultures()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("he");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/en/he/about")));
+            await using var scope = provider.CreateAsyncScope();
+            var cultureState = scope.ServiceProvider.GetRequiredService<ICultureState>();
+
+            // Act
+            await OpenCircuitAsync(scope.ServiceProvider);
+
+            // Assert
+            Assert.Equal(0, cultureState.Revision);
         }
     }
 }

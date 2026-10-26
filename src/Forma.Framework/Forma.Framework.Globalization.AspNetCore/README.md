@@ -83,11 +83,16 @@ and the default culture where neither names a route, then goes straight on to ro
 segment that is no token stays in the path, and a path naming cultures in two consecutive
 segments, such as `/he/en`, is answered with `400 Bad Request`.
 
+An interactive circuit's culture state follows its address too: as the circuit opens, and again
+as a paused circuit resumes, the state takes the culture the address names, whatever culture the
+circuit's connection arrived with, so a tab at `/about` stays English after another tab has
+loaded `/he/about`.
+
 ## Switching culture
 
 A page or component injects `CultureSwitcher` to switch to another culture. The switch loads the
-current page's address in that culture as a new document, which runs in the culture its address
-names.
+current page's address in that culture as a new document, and the culture state follows the
+address as its circuit opens.
 
 | Member | What it does |
 | --- | --- |
