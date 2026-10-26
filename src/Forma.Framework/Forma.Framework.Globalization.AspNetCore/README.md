@@ -4,6 +4,8 @@ Culture routing for ASP.NET Core: the first segment of the URL path selects the 
 as in `/he/about`, every page has one canonical address per culture, and `CultureRouter` builds
 the link to any page in any culture. It suits a localized site whose addresses are shared,
 bookmarked and indexed per language.
+On an Interactive Server circuit it keeps the ambient culture in step with the culture state, so every
+event runs in the state's cultures.
 
 ## Install and register
 
@@ -104,6 +106,18 @@ A page or component injects `CultureRouter` to address a culture:
 
 `GetPath` keeps a link in the reader's culture, and `GetUrl` over the current address links the
 same page in another culture.
+
+## The circuit's culture
+
+`AddFormaGlobalizationServices()`, which `AddFormaUI()` calls, registers the culture state of
+`Forma.Framework.Globalization` and a circuit handler that sets `CultureInfo.CurrentCulture` and
+`CultureInfo.CurrentUICulture` from the state before every inbound activity: each UI event and each call
+from script into .NET. Code that reads the ambient culture in an event after a switch reads the new
+cultures, and a switch in one circuit leaves every other circuit's in place.
+
+```csharp
+builder.Services.AddFormaGlobalizationServices();
+```
 
 ## License
 

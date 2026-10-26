@@ -5,7 +5,7 @@ landed.
 
 ## Status
 
-Steps 1 to 4 have landed. Step 5 is next.
+Steps 1 to 5 have landed. Step 6 is next.
 
 ## Where Forma stood
 
@@ -166,15 +166,23 @@ Each step is built, reviewed and committed on its own.
      current cultures, the current format infos and the current-culture comparisons, each banned symbol
      naming the culture state member to use, through the banned-API analyzer at error.
 
-   Departure until step 5: a resource provider converts in the ambient culture as the file viewer calls it.
+   ✅ Departure until step 5: a resource provider converts in the ambient culture as the file viewer calls it.
    The resolution a change starts runs in the change's render, whose flow carries the new cultures, while
    one a parameter starts runs in its event's, the connection's culture until the circuit handler applies
    the state before every inbound activity.
 
    Gate: a change renders an input, a component on the base and a gated grid row again, each in the new
    cultures, and a bounded scope restores the caller's cultures.
-5. **The server.** The circuit handler applies the culture before every inbound activity. Gate: a test of
+5. **The server.** ✅ The circuit handler applies the culture before every inbound activity. Gate: a test of
    the handler around an inbound activity, and an event after a switch rendering in the new culture.
+
+   The handler sets both cultures from the state in each activity's own flow, leaving the dispatching flow's in
+   place, and the feature's server registrar, which `AddFormaUI` calls, registers it beside the state.
+
+   On step 2's probe host, with the handler registered and a switch made through the state, driven in Chrome
+   with an interactive `Routes` and again with islands: the switching event read `he/he`, the next event and
+   the one after it read `he/he` where step 2 recorded `en/en`, and a second circuit of the same host read
+   `en/en`.
 6. **The document.** The ASP.NET Core integration keeps `<html lang dir>` in step, again after each
    enhanced navigation. Gate: a script test of the operation, and a browser check of both attributes
    after a switch and after an enhanced navigation.
