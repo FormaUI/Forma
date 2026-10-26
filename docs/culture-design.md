@@ -176,8 +176,15 @@ UI culture's name, and `dir` its direction.
   among them, while a streaming update patches only its component's region, so a streaming update never
   changes the served pair. An attribute the server left out is absent from the pair. The served pair is
   tracked for the document's lifetime, whether or not anything owns it.
-- **After a page update.** Every enhanced page update, a navigation's or a streaming one, can undo an
-  owner's pair, so the owner sets its latest pair again after each.
+- **After a page update.** A streaming update can undo an owner's pair, so the owner sets its latest pair
+  again after each.
+- **During an enhanced navigation.** From an enhanced navigation's start the document is held: the owner's
+  pair stays until the response patches the document, the patch's pair stands, and every pair the owner
+  sends meanwhile waits. The hold ends when the circuit acknowledges reconciling its state for the
+  navigation that landed last, a navigation within one culture included, and the owner then sets the pair
+  that acknowledgement carries. A navigation another replaced is never acknowledged, and a closed circuit
+  ends the hold by releasing its registration. A surviving interactive island renders in the new culture
+  once its circuit has reconciled, a round trip after the patch.
 - **When the owner goes.** A circuit's registration is released when the client closes the circuit: once
   no interactive server component remains, after the circuit's inactivity timeout, and before a paused
   circuit resumes. Until then the circuit's state keeps the document. Releasing stops the owner setting its
@@ -194,30 +201,44 @@ UI culture's name, and `dir` its direction.
 
 ## Culture addresses
 
-A host with culture addresses switches through `CultureRouter`, which owns the switch: the integration's
-entry point navigates to the other culture's address, and the state follows the address, never the
-reverse, so an address and the culture it shows never disagree. Calling `ChangeAsync` directly is for a host
-without culture addresses.
+The address decides a page's culture, and the state follows the address, never the reverse, so an address
+and the culture it shows never disagree. A host with culture addresses switches through a switcher, one per
+circuit beside the application's one `CultureRouter`: it requests the other culture's address of the
+current page, and the navigation that request becomes changes the state. The switcher's current route is
+the culture state's, so work begun before a switch reads the route it began in. Calling `ChangeAsync`
+directly is for a host without culture addresses.
 
-The state follows the address in every way a navigation happens:
+How a switch navigates is the host's choice, made once where it configures culture routing:
 
-- **When the integration starts,** and again as a connection comes back, it reconciles the state with
-  the current address, before the document culture synchronizer applies the culture the connection arrived with.
-- **An enhanced navigation** is a request, so the middleware renders its static content in the new
-  culture, and the circuit's state follows the address it lands on.
-- **Interactive routing** makes no request, so no middleware runs; the integration changes the state from
-  the address on each location change, and route matching understands the culture segment there, which
-  the middleware's rewrite cannot establish.
-- **Back and Forward** are location changes like any other, and restore the culture of the address they
-  return to.
+- **A full load, by default.** Forma supplies the document's base in the address's culture, `/he/`, or
+  `/app/he/` under the path base `/app`, so interactive routing finds a page within its culture, and an
+  address in another culture lies outside the base and loads a new document and circuit.
+- **In place, when the host declares culture-bearing interactive routes.** Every page then carries its
+  culture route beside its plain one, `@page "/about"` and `@page "/{culture}/about"`, and the document's
+  base is the plain one, so interactive routing reaches another culture's address in the same circuit,
+  keeping the user's work. Forma's page base supplies only the `Culture` parameter and its validation; it
+  doesn't declare a route, so each page still declares its own. A segment that isn't a culture's token
+  stops the page before its lifecycle with the router's not-found outcome: an interactive navigation
+  renders the router's not-found page in the same circuit, which needs the `Router`'s `NotFoundPage`, and
+  a full request answers 404 with it. An alias or a token in another case is replaced by the canonical
+  address, and so is the default culture's token under `ExceptDefault`.
 
-Interactive routing keeps the middleware's matching rules: an alias redirects to its route's token, a token
-in another case to its canonical case, the default culture's token under `ExceptDefault` to the address
-without one, a first segment that is no token stays in the path, and two consecutive culture segments are
-refused.
+The state follows the address at the event that settles each kind of navigation:
 
-A switch is made in place, keeping the user's work, and a full load stays supported. A navigation resolves
-by the address it leaves behind:
+- **A full load** is a request: the middleware renders it in its address's culture, and the circuit,
+  as it opens and again as it resumes, reconciles its state with the address before the document culture
+  synchronizer starts.
+- **An enhanced navigation** is a request too, and the circuit hears its location change as it starts,
+  before its response, so the state follows the client's report that the navigation landed, never the
+  location change, and the circuit acknowledges each reconciliation, as
+  [the document](#the-document-follows-the-state) sets out.
+- **Interactive routing** makes no request, so under culture-bearing interactive routes the circuit's
+  location change is the navigation itself, and the state follows it there. Without them, the circuit
+  doesn't follow a location change.
+- **Back and Forward** are navigations of the kind they become, and restore the culture of the address
+  they return to.
+
+A navigation resolves by the address it leaves behind:
 
 - one cancelled before the address changes leaves the state and the cookie as they were;
 - one that lands sets the state from its final address, a redirect's included;
@@ -225,12 +246,22 @@ by the address it leaves behind:
 - a failure after the address changed is resolved by the address the browser shows, never by restoring the
   culture the navigation left.
 
-The address decides a page's culture, and the `forma-culture` cookie only names the culture last chosen for
-a request whose address carries none, such as the circuit's own connection. A new tab opens in the culture
-its address names; under `ExceptDefault`, `/` is the default culture. So two tabs in two cultures each keep
-their own: one tab's switch rewrites the shared cookie, and the other, reconnecting, is reconciled with its
-own address. A switch that makes no request writes the cookie itself, so the browser's script can write it,
-and a cookie an earlier version wrote that script cannot is replaced.
+The `forma-culture-route` cookie only names the culture last chosen, for a request whose address carries
+none, such as the circuit's own connection. A new tab opens in the culture its address names; under
+`ExceptDefault`, `/` is the default culture. So two tabs in two cultures each keep their own: one tab's
+switch rewrites the shared cookie, and the other, reconnecting, is reconciled with its own address.
+
+The cookie belongs to the application, so it is written at the application's path base, and it isn't
+`HttpOnly`, since a switch that makes no request writes it from the browser's script. The `forma-culture`
+cookie an earlier version wrote, `HttpOnly` at `/`, is replaced: a request carrying it alone takes its
+token as the culture last chosen where it names a route and the address names none, and a document's
+response writes the new cookie and expires the old one at `/`; where both arrive, the new one decides and
+the old one is expired. Each name is written at one path, so the order in which a browser sends two
+same-named cookies is never part of the contract, an application at `/` included.
+
+The culture segment is the first segment after the path base, and a request whose culture segment the
+middleware removes is routed again, since `UsePathBase` routes a request as it removes the base. The
+circuit's transport takes the culture its own address names, which the document's base makes the page's.
 
 ## WebAssembly and Hybrid
 
@@ -260,7 +291,7 @@ as an integration with ASP.NET Core does across .NET:
 | `Forma.Framework.Globalization` | The culture state's abstraction, its default and its registrar, with no dependency on ASP.NET Core or navigation |
 | `Forma.Framework.Globalization.Interop` | The document culture synchronizer: its script, the initializer that tracks what the server served and releases a closed circuit's registration, and the service that keeps the document on a culture state |
 | `Forma.Framework.Globalization.Interop.Server` | The circuit handler that applies the culture before every inbound activity and starts the document culture synchronizer |
-| `Forma.Framework.Globalization.AspNetCore` | The routing middleware, `CultureRouter`, the switching entry point, the address reconciliation and the cookie |
+| `Forma.Framework.Globalization.AspNetCore` | The routing middleware, `CultureRouter`, the switcher, the page base, the document's base, the address reconciliation and the cookie |
 | `Forma.Framework.Browser.Interop.Server` | The DOM's circuit handler |
 
 The product's aggregate registrar registers all of them but the routing, which takes the host's options, so a
@@ -277,3 +308,5 @@ host makes one call for the rest and can still override any single service.
 | C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Interop.Server` and the culture's `Forma.Framework.Globalization.Interop.Server` do, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Globalization.AspNetCore` does |
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
+| C8 | How does a switch navigate? | By a full load by default; in place where the host declares culture-bearing interactive routes, each page carrying its culture route, as [culture addresses](#culture-addresses) sets out |
+| C9 | What does the cookie migrate by? | A new name, `forma-culture-route`, at the application's path base, which replaces the `HttpOnly` `forma-culture` without relying on the order of same-named cookies |

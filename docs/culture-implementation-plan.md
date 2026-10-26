@@ -231,14 +231,16 @@ Each step is built, reviewed and committed on its own.
    - what a resumed circuit's state starts from, since step 6 saw it start from its connection's culture
      and lose an in-place switch across a pause.
 
-   Open with the design: `CultureRouter` is a singleton while navigation and the state belong to a
-   circuit, so the switching entry point must respect that separation, and its `CurrentRoute` reads the
-   ambient UI culture, so work begun before a switch can report the old route. The cookie is written
-   `HttpOnly`, and the middleware leaves one whose token already matches, so the switch to a cookie script
-   can write includes replacing an existing one.
+   ✅ Open with the design, and settled in its culture addresses by the probes below: `CultureRouter` is
+   a singleton while navigation and the state belong to a circuit, so the switching entry point must
+   respect that separation, and its `CurrentRoute` reads the ambient UI culture, so work begun before a
+   switch can report the old route. The cookie is written `HttpOnly`, and the middleware leaves one whose
+   token already matches, so the switch to a cookie script can write includes replacing an existing one.
 
    The gate adds: two tabs in two cultures, one switching while the other reconnects; an existing
-   installation's `HttpOnly` cookie; and the flash checks measured from the traced order.
+   installation's `HttpOnly` cookie, alone and beside the new one, at `/` and under a path base; a circuit
+   closing while the document waits for its acknowledgement; and the flash checks measured from the traced
+   order, in the attributes and in a surviving island's content.
 
    The probes ran on step 2's probe host under .NET 11 release candidate 1, driven in Chrome, the host
    started in each configuration by the probe itself, with English the default culture, Hebrew beside it
@@ -334,6 +336,11 @@ Each step is built, reviewed and committed on its own.
      acknowledgement sent 300 ms late and an update sent into each wait, the synchronizer held each update
      off until the acknowledgement; on the link to `/he/about` that update was a stale `en/ltr`, the
      attributes kept `he/rtl`, and the island lagged 18 ms.
+   - ✅ `UsePathBase` chooses an endpoint as it removes the path base: for `/he/_blazor/negotiate`, whose
+     path matched a route only for another method, it chose the 405 before the culture middleware removed
+     the culture segment, and explicit routing kept it. The middleware now clears an endpoint and route values chosen
+     for an address whose culture segment it removes, and the circuit connected under `/app` with the
+     culture base.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again
