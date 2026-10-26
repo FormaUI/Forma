@@ -43,10 +43,12 @@ public sealed class CultureRoutingMiddleware
         }
 
         var match = _router.Match(requested);
-        var isDocument = IsDocument(requested);
+        var isDocument = IsDocument(match.Path);
 
-        // A framework endpoint such as /_blazor takes the stored culture, which its interactive circuit inherits.
-        var route = isDocument ? match.Route : GetStoredRoute(context) ?? match.Route;
+        // A framework endpoint such as /_blazor, which its interactive circuit inherits a culture from, takes the culture its
+        // address names, and the stored culture only where its address names none.
+        var namesCulture = match.Path != requested;
+        var route = isDocument || namesCulture ? match.Route : GetStoredRoute(context) ?? match.Route;
 
         ApplyCulture(context, route);
         context.Request.Path = match.Path;

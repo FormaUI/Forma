@@ -70,8 +70,10 @@ For a page request, the middleware:
 - stores the route's token in a `forma-culture` cookie.
 
 A request for a static file, one whose last segment has an extension, or for a framework endpoint
-under `/_`, such as `/_blazor`, takes its culture from that cookie, or from its path when there
-is none, and goes straight on to routing. A first segment that is no token stays in the path, and a path naming cultures in two consecutive segments, such as
+under `/_`, such as `/_blazor` or `/he/_blazor`, judged by its path without the culture segment,
+neither redirects nor writes the cookie. It takes the culture its culture segment names, the cookie's
+where it has none, and the default culture where the cookie names none, then goes straight on to
+routing. A first segment that is no token stays in the path, and a path naming cultures in two consecutive segments, such as
 `/he/en`, is answered with `400 Bad Request`.
 
 ## Building links

@@ -167,6 +167,8 @@ public sealed class CultureRoutingMiddlewareTests
     [Theory]
     [InlineData("/he/app.css", "/app.css")]
     [InlineData("/he/_framework/blazor.web.js", "/_framework/blazor.web.js")]
+    [InlineData("/he/_blazor/negotiate", "/_blazor/negotiate")]
+    [InlineData("/he/_blazor/disconnect", "/_blazor/disconnect")]
     [InlineData("/_blazor", "/_blazor")]
     [InlineData("/favicon.ico", "/favicon.ico")]
     public async Task Should_neither_redirect_nor_cookie_a_request_that_is_not_a_document(string requested, string forwarded)
@@ -278,6 +280,30 @@ public sealed class CultureRoutingMiddlewareTests
 
         // Assert
         Assert.Equal("he", CultureInfo.CurrentUICulture.Name);
+    }
+
+    [Theory]
+    [InlineData(CulturePrefix.ExceptDefault, "/he/_blazor/negotiate", "he")]
+    [InlineData(CulturePrefix.ExceptDefault, "/HE/_blazor/disconnect", "he")]
+    [InlineData(CulturePrefix.Always, "/en/_blazor/negotiate", "en")]
+    public async Task Should_take_the_culture_a_framework_endpoints_address_names_over_the_cookie(CulturePrefix prefix, string requested, string culture)
+    {
+        // Arrange — a cookie another tab wrote, naming the other culture
+        using var fixture = new CultureFixture();
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(prefix));
+        var context = CreateContext(requested);
+        context.Request.Headers.Cookie = culture == "he" ? "forma-culture=en" : "forma-culture=he";
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(culture, CultureInfo.CurrentUICulture.Name);
+            Assert.Equal(string.Empty, context.Response.Headers.SetCookie.ToString());
+            Assert.Equal(string.Empty, context.Response.Headers.Location.ToString());
+        });
     }
 
     [Theory]

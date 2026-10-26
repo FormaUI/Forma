@@ -256,7 +256,9 @@ Each step is built, reviewed and committed on its own.
      `/he/_blazor/negotiate` and `/he/_blazor/disconnect`, and the middleware, which tells a framework
      request by its first segment, takes them for documents and writes the cookie for them. Leaving
      `/he/about` for `/about`, the old page's disconnect beacon arrived after `/about` had written `en`,
-     set the cookie back to `he`, and the next circuit opened in Hebrew at the English address.
+     set the cookie back to `he`, and the next circuit opened in Hebrew at the English address. The
+     middleware now tells a framework request by its path without the culture segment, writes no cookie
+     for one, and gives it the culture its segment names before the cookie's.
    - ✅ Under a `/app` path base, the circuit's negotiation at `/app/he/_blazor/negotiate` answered 405
      with the culture base, and the circuit connected with the plain base; the cause isn't established.
      The cookie is written at the path `/` whatever the path base.
