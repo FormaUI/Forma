@@ -341,6 +341,27 @@ Each step is built, reviewed and committed on its own.
      the culture segment, and explicit routing kept it. The middleware now clears an endpoint and route
      values chosen for an address whose culture segment it removes, and the circuit connected under `/app`
      with the culture base.
+
+   The step is built in parts, as the design's culture addresses set them out, each reviewed and committed
+   on its own:
+   1. ✅ **The cookie.** The middleware stores the route in `forma-culture-route` at the path base, its
+      name carrying the base, which script can write, reads the earlier `forma-culture` only where the new
+      one is absent, and expires it at `/` on a document's response. In Chrome, at `/` and under `/app`,
+      an installation's `HttpOnly` cookie naming Hebrew was replaced on loading `/about` by the new cookie
+      naming English at the path base, script saw only the new one, and the circuit opened in English;
+      written again beside the new one, it was expired on the next document, and the new one took that
+      document's culture. Under `/app`, beside another application's cookie at `/` naming English, a
+      framework request took the Hebrew of its own.
+   2. **Reconciliation and the switcher.** The circuit reconciles its state with the address as it opens
+      and as it resumes, before the document culture synchronizer starts; the switcher requests another
+      culture's address, and its current route is the state's.
+   3. **The document's base.** Forma supplies the base in the address's culture, so a switch is a full
+      load by default.
+   4. **The handoff.** The document culture synchronizer holds the document through an enhanced
+      navigation until the circuit acknowledges reconciling the navigation that landed last.
+   5. **Culture-bearing interactive routes.** The host's declaration, the page base, the plain base, the
+      circuit following its own location changes, and the cookie written from script on a switch in
+      place.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again

@@ -252,10 +252,118 @@ public sealed class CultureRoutingMiddlewareTests
 
         Assert.Multiple(() =>
         {
-            Assert.Contains("forma-culture=he;", cookie, StringComparison.Ordinal);
-            Assert.Contains("httponly", cookie, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("forma-culture-route=he;", cookie, StringComparison.Ordinal);
+            Assert.Contains("path=/;", cookie, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("httponly", cookie, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("max-age=", cookie, StringComparison.OrdinalIgnoreCase);
         });
+    }
+
+    [Fact]
+    public async Task Should_write_the_culture_cookie_at_the_path_base()
+    {
+        // Arrange
+        using var fixture = new CultureFixture();
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/he/file-viewer");
+        context.Request.PathBase = "/app";
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        var cookie = context.Response.Headers.SetCookie.ToString();
+
+        Assert.Multiple(() =>
+        {
+            Assert.StartsWith("forma-culture-route%2Fapp=he;", cookie, StringComparison.Ordinal);
+            Assert.Contains("path=/app;", cookie, StringComparison.OrdinalIgnoreCase);
+        });
+    }
+
+    [Theory]
+    [InlineData("forma-culture-route=en; forma-culture-route%2Fapp=he")]
+    [InlineData("forma-culture-route%2Fapp=he; forma-culture-route=en")]
+    [InlineData("forma-culture-route%2Fapp%2Fadmin=en; forma-culture-route%2Fapp=he")]
+    public async Task Should_read_only_its_own_culture_cookie_beside_another_applications_on_the_host(string cookies)
+    {
+        // Arrange — the cookies of an application at / and of one under /app/admin, beside this one's under /app
+        using var fixture = new CultureFixture();
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/_blazor/negotiate");
+        context.Request.PathBase = "/app";
+        context.Request.Headers.Cookie = cookies;
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("he", CultureInfo.CurrentUICulture.Name);
+    }
+
+    [Fact]
+    public async Task Should_leave_another_applications_culture_cookie_out_of_the_choice()
+    {
+        // Arrange — only the cookie of an application at /, naming Hebrew
+        using var fixture = new CultureFixture();
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/_blazor/negotiate");
+        context.Request.PathBase = "/app";
+        context.Request.Headers.Cookie = "forma-culture-route=he";
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
+    }
+
+    [Theory]
+    [InlineData("", "forma-culture=en")]
+    [InlineData("/app", "forma-culture=en")]
+    [InlineData("", "forma-culture=en; forma-culture-route=en")]
+    [InlineData("/app", "forma-culture-route%2Fapp=en; forma-culture=en")]
+    public async Task Should_replace_the_cookie_an_earlier_version_wrote(string pathBase, string cookies)
+    {
+        // Arrange
+        using var fixture = new CultureFixture();
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/he/file-viewer");
+        context.Request.PathBase = pathBase;
+        context.Request.Headers.Cookie = cookies;
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        var written = context.Response.Headers.SetCookie.ToArray();
+
+        Assert.Multiple(() =>
+        {
+            Assert.Contains(written, cookie => cookie!.StartsWith("forma-culture=;", StringComparison.Ordinal)
+                && cookie.Contains("expires=Thu, 01 Jan 1970", StringComparison.Ordinal)
+                && cookie.Contains("path=/", StringComparison.Ordinal)
+                && !cookie.Contains("path=/app", StringComparison.Ordinal));
+            Assert.Contains(written, cookie => cookie!.StartsWith($"forma-culture-route{Uri.EscapeDataString(pathBase)}=he;", StringComparison.Ordinal)
+                && cookie.Contains($"path={(pathBase.Length > 0 ? pathBase : "/")}", StringComparison.Ordinal));
+        });
+    }
+
+    [Fact]
+    public async Task Should_only_expire_the_earlier_cookie_when_the_culture_cookie_already_matches()
+    {
+        // Arrange
+        using var fixture = new CultureFixture();
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/he/file-viewer");
+        context.Request.Headers.Cookie = "forma-culture=en; forma-culture-route=he";
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        var written = Assert.Single(context.Response.Headers.SetCookie.ToArray());
+        Assert.StartsWith("forma-culture=;", written, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -270,7 +378,7 @@ public sealed class CultureRoutingMiddlewareTests
         await middleware.InvokeAsync(context);
 
         // Assert
-        Assert.Contains("forma-culture=es;", context.Response.Headers.SetCookie.ToString(), StringComparison.Ordinal);
+        Assert.Contains("forma-culture-route=es;", context.Response.Headers.SetCookie.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -280,7 +388,7 @@ public sealed class CultureRoutingMiddlewareTests
         using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/he/file-viewer");
-        context.Request.Headers.Cookie = "forma-culture=he";
+        context.Request.Headers.Cookie = "forma-culture-route=he";
 
         // Act
         await middleware.InvokeAsync(context);
@@ -296,7 +404,7 @@ public sealed class CultureRoutingMiddlewareTests
         using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext("/file-viewer");
-        context.Request.Headers.Cookie = "forma-culture=he";
+        context.Request.Headers.Cookie = "forma-culture-route=he";
 
         // Act
         await middleware.InvokeAsync(context);
@@ -318,13 +426,36 @@ public sealed class CultureRoutingMiddlewareTests
         using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
         var context = CreateContext(requested);
-        context.Request.Headers.Cookie = "forma-culture=he";
+        context.Request.Headers.Cookie = "forma-culture-route=he";
 
         // Act
         await middleware.InvokeAsync(context);
 
         // Assert
         Assert.Equal("he", CultureInfo.CurrentUICulture.Name);
+    }
+
+    [Theory]
+    [InlineData("forma-culture=he", "he")]
+    [InlineData("forma-culture=he; forma-culture-route=en", "en")]
+    [InlineData("forma-culture-route=en; forma-culture=he", "en")]
+    public async Task Should_take_the_earlier_cookie_for_a_framework_endpoint_only_where_the_culture_cookie_is_absent(string cookies, string culture)
+    {
+        // Arrange
+        using var fixture = new CultureFixture();
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/_blazor/negotiate");
+        context.Request.Headers.Cookie = cookies;
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(culture, CultureInfo.CurrentUICulture.Name);
+            Assert.Equal(string.Empty, context.Response.Headers.SetCookie.ToString());
+        });
     }
 
     [Theory]
@@ -337,7 +468,7 @@ public sealed class CultureRoutingMiddlewareTests
         using var fixture = new CultureFixture();
         var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(prefix));
         var context = CreateContext(requested);
-        context.Request.Headers.Cookie = culture == "he" ? "forma-culture=en" : "forma-culture=he";
+        context.Request.Headers.Cookie = culture == "he" ? "forma-culture-route=en" : "forma-culture-route=he";
 
         // Act
         await middleware.InvokeAsync(context);
@@ -352,9 +483,9 @@ public sealed class CultureRoutingMiddlewareTests
     }
 
     [Theory]
-    [InlineData("forma-culture=xx")]
-    [InlineData("forma-culture=es-419")]
-    [InlineData("forma-culture=")]
+    [InlineData("forma-culture-route=xx")]
+    [InlineData("forma-culture-route=es-419")]
+    [InlineData("forma-culture-route=")]
     public async Task Should_fall_back_to_the_default_culture_when_the_cookie_names_no_route(string cookie)
     {
         // Arrange

@@ -251,13 +251,15 @@ none, such as the circuit's own connection. A new tab opens in the culture its a
 `ExceptDefault`, `/` is the default culture. So two tabs in two cultures each keep their own: one tab's
 switch rewrites the shared cookie, and the other, reconnecting, is reconciled with its own address.
 
-The cookie belongs to the application, so it is written at the application's path base, and it isn't
-`HttpOnly`, since a switch that makes no request writes it from the browser's script. The `forma-culture`
-cookie an earlier version wrote, `HttpOnly` at `/`, is replaced: a request carrying it alone takes its
-token as the culture last chosen where it names a route and the address names none, and a document's
-response writes the new cookie and expires the old one at `/`; where both arrive, the new one decides and
-the old one is expired. Each name is written at one path, so the order in which a browser sends two
-same-named cookies is never part of the contract, an application at `/` included.
+The cookie belongs to the application: it is written at the application's path base, and under a path
+base its name carries that base, escaped, `forma-culture-route%2Fapp` under `/app`, so applications sharing
+a host, one at `/` and another under `/app`, each read their own. It isn't `HttpOnly`, since a switch that
+makes no request writes it from the browser's script. The `forma-culture` cookie an earlier version wrote,
+`HttpOnly` at `/`, is replaced: a request carrying it alone takes its token as the culture last chosen
+where it names a route and the address names none, and a document's response writes the new cookie and
+expires the old one at `/`; where both arrive, the new one decides and the old one is expired. Each name
+is written at one path, so the order in which a browser sends two same-named cookies is never part of the
+contract, an application at `/` included.
 
 The culture segment is the first segment after the path base, and a request whose culture segment the
 middleware removes is routed again, since `UsePathBase` routes a request as it removes the base. The
@@ -309,4 +311,4 @@ host makes one call for the rest and can still override any single service.
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
 | C8 | How does a switch navigate? | By a full load by default; in place where the host declares culture-bearing interactive routes, each page carrying its culture route, as [culture addresses](#culture-addresses) sets out |
-| C9 | What does the cookie migrate by? | A new name, `forma-culture-route`, at the application's path base, which replaces the `HttpOnly` `forma-culture` without relying on the order of same-named cookies |
+| C9 | What does the cookie migrate by? | A new name, `forma-culture-route`, carrying the application's path base and written at it, which replaces the `HttpOnly` `forma-culture` without relying on the order of same-named cookies |

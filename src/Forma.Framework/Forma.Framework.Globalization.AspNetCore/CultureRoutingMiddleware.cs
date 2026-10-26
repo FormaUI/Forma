@@ -11,7 +11,10 @@ using Microsoft.AspNetCore.Localization;
 /// </summary>
 public sealed class CultureRoutingMiddleware
 {
-    private const string CultureCookieName = "forma-culture";
+    private const string CultureCookieName = "forma-culture-route";
+
+    // The HttpOnly cookie at the path / that an earlier version wrote, which the culture cookie replaces.
+    private const string LegacyCultureCookieName = "forma-culture";
 
     private static readonly TimeSpan CookieLifetime = TimeSpan.FromDays(365);
 
@@ -120,7 +123,10 @@ public sealed class CultureRoutingMiddleware
 
     private CultureRoute? GetStoredRoute(HttpContext context)
     {
-        if (!context.Request.Cookies.TryGetValue(CultureCookieName, out var stored) || string.IsNullOrEmpty(stored))
+        var cookies = context.Request.Cookies;
+        var stored = cookies.TryGetValue(GetCookieName(context), out var current) ? current : cookies[LegacyCultureCookieName];
+
+        if (string.IsNullOrEmpty(stored))
         {
             return null;
         }
@@ -130,20 +136,37 @@ public sealed class CultureRoutingMiddleware
 
     private static void WriteCultureCookie(HttpContext context, CultureRoute route)
     {
-        if (context.Request.Cookies.TryGetValue(CultureCookieName, out var stored)
-            && string.Equals(stored, route.Token, StringComparison.Ordinal))
+        var cookies = context.Request.Cookies;
+
+        if (cookies.ContainsKey(LegacyCultureCookieName))
+        {
+            context.Response.Cookies.Delete(LegacyCultureCookieName, new CookieOptions { Path = "/" });
+        }
+
+        var name = GetCookieName(context);
+
+        if (cookies.TryGetValue(name, out var stored) && string.Equals(stored, route.Token, StringComparison.Ordinal))
         {
             return;
         }
 
-        context.Response.Cookies.Append(CultureCookieName, route.Token, new CookieOptions
+        context.Response.Cookies.Append(name, route.Token, new CookieOptions
         {
-            Path = "/",
+            Path = GetCookiePath(context),
             IsEssential = true,
-            HttpOnly = true,
             Secure = context.Request.IsHttps,
             SameSite = SameSiteMode.Lax,
             MaxAge = CookieLifetime
         });
     }
+
+    // Under a path base the name carries the path base, escaped, so a request never carries two culture cookies of
+    // one name, however many applications share the host.
+    private static string GetCookieName(HttpContext context)
+        => context.Request.PathBase.HasValue
+            ? CultureCookieName + Uri.EscapeDataString(context.Request.PathBase.Value)
+            : CultureCookieName;
+
+    private static string GetCookiePath(HttpContext context)
+        => context.Request.PathBase.HasValue ? context.Request.PathBase.ToUriComponent() : "/";
 }

@@ -69,14 +69,18 @@ For a page request, the middleware:
 - redirects with `302 Found` to the canonical address, keeping the path base and query, when the
   address used an alias, a token in another case, a token on the default culture under
   `ExceptDefault`, or no token under `Always`;
-- stores the route's token in a `forma-culture` cookie.
+- stores the route's token in a `forma-culture-route` cookie at the path base, which the
+  browser's script can read and write, and expires the `HttpOnly` `forma-culture` cookie an
+  earlier version wrote at `/`. Under a path base the cookie's name carries it, escaped,
+  `forma-culture-route%2Fapp` under `/app`, so applications sharing a host each read their own.
 
 A request for a static file, one whose last segment has an extension, or for a framework endpoint
 under `/_`, such as `/_blazor` or `/he/_blazor`, judged by its path without the culture segment,
 neither redirects nor writes the cookie. It takes the culture its culture segment names, the cookie's
-where it has none, and the default culture where the cookie names none, then goes straight on to
-routing. A first segment that is no token stays in the path, and a path naming cultures in two consecutive segments, such as
-`/he/en`, is answered with `400 Bad Request`.
+where it has none, the earlier `forma-culture` cookie's where the request carries only that one,
+and the default culture where neither names a route, then goes straight on to routing. A first
+segment that is no token stays in the path, and a path naming cultures in two consecutive
+segments, such as `/he/en`, is answered with `400 Bad Request`.
 
 ## Building links
 
