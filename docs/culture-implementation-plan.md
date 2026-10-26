@@ -211,12 +211,31 @@ Each step is built, reviewed and committed on its own.
    the server rendered in Hebrew.
 7. **Culture addresses.** The switching entry point, reconciliation when the integration starts,
    interactive routing, Back and Forward, and the cookie, as step 2's results choose. Gate: a browser check
-   of each navigation, and of a new tab opening in the culture last chosen.
-   The switching entry point changes the culture state through its own navigation, so the document follows
-   the state; what a cancelled or failed navigation leaves the state in is decided there, and the browser
-   check looks for a flash on the switch, on a plain link and on Back and Forward. A resumed circuit's state
-   starts from the culture of its connection, so an in-place switch is lost across a pause; the cookie and
-   the reconciliation take it up.
+   of each navigation, and of a new tab opening in the culture its address names.
+
+   Probes come first, each recording its configuration and what it observed, and their results choose the
+   routing and synchronization mechanism:
+   - whether a culture-prefixed `<base href>` makes interactive route matching find `/he/other`, judged
+     against the whole requirement: an in-place switch, links, assets, an application under a path base,
+     and both prefix policies; one that works only by reloading on a switch establishes a supported full
+     load and doesn't complete this step;
+   - the order of the address, the state's change, the page's patch, the document's attributes and the
+     visible output, for a switch, a plain link and Back and Forward, with the document language in place,
+     under delayed delivery and through rapid consecutive navigations; an eventual `he/rtl` doesn't show the
+     absence of a flash;
+   - whether reconciliation can run, at the start and on reconnection, before the document language
+     applies the culture the connection arrived with, since the circuit handler starts it at once today;
+   - what a resumed circuit's state starts from, since step 6 saw it start from its connection's culture
+     and lose an in-place switch across a pause.
+
+   Open with the design: `CultureRouter` is a singleton while navigation and the state belong to a
+   circuit, so the switching entry point must respect that separation, and its `CurrentRoute` reads the
+   ambient UI culture, so work begun before a switch can report the old route. The cookie is written
+   `HttpOnly`, and the middleware leaves one whose token already matches, so the switch to a cookie script
+   can write includes replacing an existing one.
+
+   The gate adds: two tabs in two cultures, one switching while the other reconnects; an existing
+   installation's `HttpOnly` cookie; and the flash checks measured from the traced order.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again

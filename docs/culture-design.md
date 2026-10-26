@@ -201,7 +201,8 @@ without culture addresses.
 
 The state follows the address in every way a navigation happens:
 
-- **When the integration starts,** it reconciles the state with the current address.
+- **When the integration starts,** and again as a connection comes back, it reconciles the state with
+  the current address, before the document language applies the culture the connection arrived with.
 - **An enhanced navigation** is a request, so the middleware renders its static content in the new
   culture, and the circuit's state follows the address it lands on.
 - **Interactive routing** makes no request, so no middleware runs; the integration changes the state from
@@ -210,8 +211,26 @@ The state follows the address in every way a navigation happens:
 - **Back and Forward** are location changes like any other, and restore the culture of the address they
   return to.
 
-A switch that makes no request writes the `forma-culture` cookie itself, so a circuit opened later, a
-reconnection or a new tab, starts in the culture last chosen.
+Interactive routing keeps the middleware's matching rules: an alias redirects to its route's token, a token
+in another case to its canonical case, the default culture's token under `ExceptDefault` to the address
+without one, a first segment that is no token stays in the path, and two consecutive culture segments are
+refused.
+
+A switch is made in place, keeping the user's work, and a full load stays supported. A navigation resolves
+by the address it leaves behind:
+
+- one cancelled before the address changes leaves the state and the cookie as they were;
+- one that lands sets the state from its final address, a redirect's included;
+- an older navigation's late completion never overwrites a newer one;
+- a failure after the address changed is resolved by the address the browser shows, never by restoring the
+  culture the navigation left.
+
+The address decides a page's culture, and the `forma-culture` cookie only names the culture last chosen for
+a request whose address carries none, such as the circuit's own connection. A new tab opens in the culture
+its address names; under `ExceptDefault`, `/` is the default culture. So two tabs in two cultures each keep
+their own: one tab's switch rewrites the shared cookie, and the other, reconnecting, is reconciled with its
+own address. A switch that makes no request writes the cookie itself, so the browser's script can write it,
+and a cookie an earlier version wrote that script cannot is replaced.
 
 ## WebAssembly and Hybrid
 
