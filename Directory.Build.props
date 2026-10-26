@@ -21,6 +21,7 @@
     <!-- Repo-root-anchored, so a project imports it correctly whatever depth it sits at. -->
     <PropertyGroup>
         <BundledPackageTargets>$(MSBuildThisFileDirectory)eng\BundledPackage.targets</BundledPackageTargets>
+        <ComponentAnalyzersTargets>$(MSBuildThisFileDirectory)eng\ComponentAnalyzers.targets</ComponentAnalyzersTargets>
     </PropertyGroup>
 
     <!-- The one version every package ships at; a preview, as the framework it targets is. -->

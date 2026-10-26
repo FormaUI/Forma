@@ -1,0 +1,13 @@
+<Project>
+
+    <!--
+        A component writes in the cultures of its user scope's culture state, so the members that read or set
+        the ambient culture are banned in a component project. The analyzer builds with the project and ships
+        with nothing.
+    -->
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Components.txt" />
+    </ItemGroup>
+
+</Project>

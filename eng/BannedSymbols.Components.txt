@@ -1,0 +1,8 @@
+P:System.Globalization.CultureInfo.CurrentCulture;A component writes in the culture state: format, parse and compare with CultureState.Culture
+P:System.Globalization.CultureInfo.CurrentUICulture;A component writes in the culture state: choose strings with CultureState.UICulture, and direction with CultureState.IsRightToLeft
+P:System.Globalization.DateTimeFormatInfo.CurrentInfo;A component writes in the culture state: read CultureState.Culture.DateTimeFormat
+P:System.Globalization.NumberFormatInfo.CurrentInfo;A component writes in the culture state: read CultureState.Culture.NumberFormat
+F:System.StringComparison.CurrentCulture;A component compares in the culture state: compare through CultureState.Culture.CompareInfo
+F:System.StringComparison.CurrentCultureIgnoreCase;A component compares in the culture state: compare through CultureState.Culture.CompareInfo with CompareOptions.IgnoreCase
+P:System.StringComparer.CurrentCulture;A component compares in the culture state: use StringComparer.Create(CultureState.Culture, ignoreCase: false)
+P:System.StringComparer.CurrentCultureIgnoreCase;A component compares in the culture state: use StringComparer.Create(CultureState.Culture, ignoreCase: true)

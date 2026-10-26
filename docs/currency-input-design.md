@@ -19,7 +19,7 @@ the reader's culture decides only how the number and the symbol are written.
   empty is required, and a nullable one is required where the host sets `Required`, as the number
   input's are.
 - **The application names the currency.** `CurrencyCode` is the ISO 4217 code of the amount's
-  currency, `USD` or `ILS`, and is required. The formatting culture, `CultureInfo.CurrentCulture`,
+  currency, `USD` or `ILS`, and is required. The formatting culture, the culture state's `Culture`,
   writes and reads the number and decides where the symbol stands and which symbol it is; it
   never chooses the currency.
 - **Currency metadata is its own concern.** `Forma.Framework.Currencies` holds what is known about

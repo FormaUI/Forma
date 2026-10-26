@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <Import Project="$(BundledPackageTargets)" />
+    <Import Project="$(ComponentAnalyzersTargets)" />
 
     <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
     <ItemGroup>

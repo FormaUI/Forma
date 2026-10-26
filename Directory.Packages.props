@@ -23,6 +23,11 @@
         <PackageVersion Include="OfficeIMO.Word.Html" Version="3.2.0" />
     </ItemGroup>
 
+    <!-- What the build checks the library with, which ships with nothing. -->
+    <ItemGroup>
+        <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
+    </ItemGroup>
+
     <!-- What the tests run on; bUnit decides the AngleSharp a test project may use. -->
     <ItemGroup>
         <PackageVersion Include="AngleSharp" Version="1.8.1" />

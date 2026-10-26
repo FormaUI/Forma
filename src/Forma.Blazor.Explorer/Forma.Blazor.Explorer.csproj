@@ -46,5 +46,6 @@
     </ItemGroup>
 
     <Import Project="$(BundledPackageTargets)" />
+    <Import Project="$(ComponentAnalyzersTargets)" />
 
 </Project>

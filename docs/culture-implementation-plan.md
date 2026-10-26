@@ -5,7 +5,7 @@ landed.
 
 ## Status
 
-Steps 1 to 3 have landed. Step 4 is under way.
+Steps 1 to 4 have landed. Step 5 is next.
 
 ## Where Forma stood
 
@@ -129,7 +129,7 @@ Each step is built, reviewed and committed on its own.
    - a second circuit of the same host stayed English throughout;
    - the state followed the address through enhanced navigation to `/he/example` and back to `/example`,
      and through Back and Forward.
-4. **The culture state and the component bases.** The scoped state, `DefaultCultureState` its default; both
+4. **The culture state and the component bases.** ✅ The scoped state, `DefaultCultureState` its default; both
    component bases injecting it as `CultureState` and subscribing to it; components reading its cultures and
    its direction for their output; the localization layer looking strings up in a given UI culture, and the
    bases' strings in the state's; ambient-culture APIs and callbacks run in the bounded scope; every render
@@ -162,6 +162,9 @@ Each step is built, reviewed and committed on its own.
      size, the explorer's grouping and the catalog view's kind order are each given the culture they
      write or compare in, the catalog view ordering again when its UI culture changes, and every
      component gives them the state's.
+   - ✅ The ban: a component project bans the members that read or set the ambient culture, `CultureInfo`'s
+     current cultures, the current format infos and the current-culture comparisons, each banned symbol
+     naming the culture state member to use, through the banned-API analyzer at error.
 
    Departure until step 5: a resource provider converts in the ambient culture as the file viewer calls it.
    The resolution a change starts runs in the change's render, whose flow carries the new cultures, while

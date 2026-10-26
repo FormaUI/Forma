@@ -21,7 +21,7 @@ half hours never makes a quarter hour invalid.
   label's mark and the control's required state follow that one effective state, as the
   date picker's and the number input's do.
 - **The formatting culture writes and reads it.** A time is written and read in
-  `CultureInfo.CurrentCulture`, the culture that formats, which can differ from the one the
+  the culture state's `Culture`, the culture that formats, which can differ from the one the
   field's own strings come from: 24-hour or 12-hour with the culture's designators, as the
   culture writes it. Display carries no more than the value needs.
 - **No time zone.** A time of day has none. A date with a time is edited on its own clock: a

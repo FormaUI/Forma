@@ -394,6 +394,12 @@ dotnet_diagnostic.CA5401.severity = error       # Do not use CreateEncryptor wit
 dotnet_diagnostic.CA5402.severity = error       # Use CreateEncryptor with the default IV
 
 # ------------------------------------------------------------
+# Banned API Rules (RS) - the symbols a component project may not use
+# ------------------------------------------------------------
+dotnet_diagnostic.RS0030.severity = error       # Do not use banned APIs
+dotnet_diagnostic.RS0031.severity = error       # The list of banned symbols contains a duplicate
+
+# ------------------------------------------------------------
 # IDE Rules - Code Style and Quality
 # ------------------------------------------------------------
 
