@@ -275,6 +275,65 @@ Each step is built, reviewed and committed on its own.
      `/he/about`, the first tab, at `/about`, paused and resumed into `he/rtl` over its English page and
      stayed there; with reconciliation at open, it resumed in English. An in-place switch made before the
      pause wasn't kept either way, since it changes neither the address nor the cookie today.
+
+   A second round settled what the first left open, on the same host and runtime:
+   - ✅ Blazor's routing doesn't offer a public way from an address to `RouteData`: `RouteData`,
+     `RouteView` and the `Router` are public, while the route table, its factory and the template matcher
+     are internal, and the `Router` reads its address from the `NavigationManager` alone. A routing
+     component matching the address without its culture segment would copy Blazor's matching, so it fails
+     as a candidate.
+   - ✅ A page carrying a culture route beside its plain one, `@page "/tabout"` and
+     `@page "/{culture}/tabout"`, switches in place under global interactivity: a link from `/tabout` to
+     `/he/tabout` kept the circuit and the page's instance, the document took `he/rtl` at 14 ms and the
+     state at 16 ms, Back and Forward did the same, and a full load of `/he/tabout` rendered through the
+     plain route on the server and the culture route in the browser. It binds the segment to whatever it
+     holds, so `/xx/tabout` rendered the page with the culture `xx` and a root `/{culture}` caught `/zz`;
+     a constraint holds beside it, `/he/titem/5` matching and `/he/titem/five` not; a page declaring the
+     culture route without a `Culture` parameter ended its circuit with an exception; and a page without
+     the culture route wasn't found at `/he/about`.
+   - ✅ The circuit hears an enhanced navigation's location change before the client can report its start:
+     across links, Back, Forward and a cancelled navigation, the report never arrived first. Following each
+     location change, the document and the state took the new culture over the old page until its
+     response, 400 ms under 400 ms of latency, and 150 ms for a navigation another replaced. Following the
+     client's report that the page landed, the old culture held until the patch, which wrote the new
+     pair; the synchronizer then wrote the owner's old pair back over it, and the circuit's follow, a
+     round trip later, restored the new one: 18 ms of the old pair over the new page under 400 ms of
+     latency. In both, the replaced navigation never restored its culture, every navigation ended on the
+     culture of the address it left behind, and a navigation turned into a full load reconciled at open.
+   - ✅ Under the `/app` path base with a culture-prefixed base, the transport's address is generated from
+     the base, `/app/he/_blazor/negotiate`; after the path base it was `/he/_blazor/negotiate`, after the
+     culture middleware `/_blazor/negotiate`, and by then an endpoint had already been chosen, ASP.NET
+     Core's 405 for an unsupported method, which answered the request. With the plain base the transport's
+     address didn't carry a culture, nothing had been chosen by that point, and the circuit connected. Why
+     the endpoint was chosen that early isn't established; the circuit takes its culture from its address
+     as it opens, so the transport doesn't need a culture of its own.
+   - ✅ Two culture cookies at `/` and at `/app` are both kept, and under `/app` the browser sends the one at
+     `/app` first while ASP.NET Core reads the last, the one at `/`. Script sees only a cookie it can write,
+     can replace the one at `/app`, and can't replace one written `HttpOnly` at `/`; the server deleted that
+     one by naming its path. The middleware writes at `/` whatever the path base, so under `/app` its
+     cookie is the one the server reads.
+
+   A last round tried the page base and the handoff, on the same host and runtime:
+   - ✅ A page base that validates its `Culture` parameter in `SetParametersAsync` and calls
+     `NavigationManager.NotFound()` for a segment that isn't a culture's token stops the derived page
+     before its lifecycle: for `/xx/tabout` the page's `OnInitialized` never ran. With only the `Router`'s
+     `NotFound` fragment, an interactive navigation to `/xx/tabout` left the previous page shown, and a
+     full request answered 404 with an empty body. With the `Router`'s `NotFoundPage` naming a page, the
+     full request answered 404 with that page, the interactive navigation rendered it in the same circuit,
+     and `/he/tabout` still answered 200.
+   - ✅ A synchronizer that holds the document's pair from an enhanced navigation's start until the circuit
+     acknowledges reconciling the state for that navigation, the one landed last, kept the attributes in
+     agreement with the page under islands. The latency delayed the document's responses, while the
+     circuit's messages ran at local speed, the landing's report reaching the server within 2 ms. A link
+     to `/he/about` from English kept `en/ltr` over the English page until the patch wrote `he/rtl` with
+     the Hebrew page at 427 ms, and the pair never went back; the surviving island's state readout showed
+     `en` for a further 16 ms, until the circuit reconciled and rendered it. A link within Hebrew, Back,
+     two navigations 30 ms apart and a navigation another replaced after 150 ms under 700 ms of latency
+     kept the attributes and the content in agreement throughout; every landed navigation was
+     acknowledged, the same-culture ones included, and a replaced navigation was never applied. With the
+     acknowledgement sent 300 ms late and an update sent into each wait, the synchronizer held each update
+     off until the acknowledgement; on the link to `/he/about` that update was a stale `en/ltr`, the
+     attributes kept `he/rtl`, and the island lagged 18 ms.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again
