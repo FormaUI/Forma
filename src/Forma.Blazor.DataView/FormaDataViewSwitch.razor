@@ -1,5 +1,6 @@
 @namespace Forma.Blazor.Components.DataView
 @inherits FormaElementBase
+@using Forma.Framework.Globalization
 
 <div id="@Id"
      data-rid="@Context.RuntimeId"
@@ -12,7 +13,7 @@
     @foreach (var view in Views.Views.Where(view => !view.IsCompanion))
     {
         <FormaToggleButton Icon="@view.Glyph"
-                           Label="@view.GetName()"
+                           Label="@CultureState.Run(view.GetName)"
                            ShowLabel="true"
                            class="forma-data-view-switch-button"
                            Pressed="@(view.Key == Views.ActiveViewKey)"

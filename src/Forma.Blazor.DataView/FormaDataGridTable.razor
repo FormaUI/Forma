@@ -1,7 +1,6 @@
 @namespace Forma.Blazor.Components.DataView
 @inherits FormaElementBase
 @typeparam TItem where TItem : notnull
-@using System.Globalization
 @using Forma.Blazor.Components.Menus
 @using Forma.Blazor.Components.Virtualization
 @using Microsoft.AspNetCore.Components.Web.Virtualization
@@ -20,7 +19,7 @@
                 <FormaButton Variant="ButtonVariant.Ghost" class="forma-data-grid-group-heading" aria-expanded="@(isFolded ? "false" : "true")" OnClick="() => Interaction.ToggleGroupAsync(group)">
                     <FormaIcon Icon="@(isFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-grid-group-chevron" />
                     <span class="forma-data-grid-group-name">@group.DisplayName</span>
-                    <span class="forma-data-grid-group-count">@group.Count.ToString("N0", CultureInfo.CurrentCulture)</span>
+                    <span class="forma-data-grid-group-count">@group.Count.ToString("N0", CultureState.Culture)</span>
                 </FormaButton>
             </th>
         </tr>;

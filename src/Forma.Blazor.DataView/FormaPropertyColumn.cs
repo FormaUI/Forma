@@ -2,11 +2,11 @@ namespace Forma.Blazor.Components.DataView;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 
 using Forma.Blazor.Components.Inputs;
+using Forma.Framework.Globalization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -24,7 +24,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     private string? _boundFormat;
     private DataViewSort<TItem>? _derivedSort;
     private Func<TItem, TValue> _getter = default!;
-    private Func<TItem, string?> _displayTextSelector = default!;
+    private Func<TItem, ICultureState, string?> _displayTextSelector = default!;
     private Func<string?> _defaultTitleSelector = static () => null;
     private Action<TItem, TValue>? _setter;
     private TItem? _cachedDraft;
@@ -100,7 +100,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             return;
         }
 
-        builder.AddContent(4, _displayTextSelector(item));
+        builder.AddContent(4, _displayTextSelector(item, CultureState));
     }
 
     /// <inheritdoc />
@@ -130,7 +130,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         }
 
         // A read-only column still reads from the draft, so a value derived from an edited one keeps up while the row is open.
-        builder.AddContent(1, _displayTextSelector(draft));
+        builder.AddContent(1, _displayTextSelector(draft, CultureState));
     }
 
     // The library's input for the value's type.
@@ -193,20 +193,25 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             Expression.Assign(member, value), property.Parameters[0], value).Compile();
     }
 
-    private static Func<TItem, string?> BuildDisplay(Func<TItem, TValue> getter, string? format)
+    // A value is written in the state's culture: a formattable one by its format, and any other, such as a record printing its members,
+    // as it writes itself with the state's cultures as the ambient ones.
+    private static Func<TItem, ICultureState, string?> BuildDisplay(Func<TItem, TValue> getter, string? format)
     {
-        if (string.IsNullOrEmpty(format))
-        {
-            return item => getter(item)?.ToString();
-        }
-
-        if (!typeof(IFormattable).IsAssignableFrom(Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue)))
+        if (!string.IsNullOrEmpty(format) && !typeof(IFormattable).IsAssignableFrom(Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue)))
         {
             throw new InvalidOperationException(
                 $"{nameof(Format)} requires a value type implementing {nameof(IFormattable)}, but {typeof(TValue)} does not.");
         }
 
-        return item => ((IFormattable?)getter(item))?.ToString(format, CultureInfo.CurrentCulture);
+        var valueFormat = string.IsNullOrEmpty(format) ? null : format;
+
+        return (item, cultureState) => getter(item) switch
+        {
+            null => null,
+            string text => text,
+            IFormattable formattable => formattable.ToString(valueFormat, cultureState.Culture),
+            var value => cultureState.Run(value.ToString),
+        };
     }
 
     /// <inheritdoc />
@@ -240,7 +245,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         return string.Join('.', names);
     }
 
-    // The attributes are found once and read each time, so a resource-backed name follows the culture in force.
+    // The attributes are found once and read each time, so a resource-backed name follows the cultures it is read in.
     private static Func<string?> CreateDefaultTitleSelector(Expression<Func<TItem, TValue>> property)
     {
         if (property.Body is not MemberExpression { Member: var member })

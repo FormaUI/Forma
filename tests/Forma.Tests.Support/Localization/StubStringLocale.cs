@@ -2,6 +2,7 @@ namespace Forma.Tests.Localization;
 
 using System.Globalization;
 
+using Forma.Framework.Globalization;
 using Forma.Framework.Localization;
 
 /// <summary>A string locale over translations held in memory.</summary>
@@ -52,12 +53,18 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
     private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
         => new(name, Find(name, out var found), arguments, !found, searchedLocation);
 
+    // Translations kept by culture read the culture in force, so a bound locale looks its translation up in its own cultures.
     private string Find(string name, out bool found)
     {
-        found = translations.TryGetValue(name, out var translation);
+        (found, var translation) = boundUICulture is null
+            ? Look(name)
+            : AmbientCulture.Run(boundCulture ?? boundUICulture, boundUICulture, () => Look(name));
 
         return translation ?? name;
     }
+
+    private (bool Found, string? Translation) Look(string name)
+        => (translations.TryGetValue(name, out var translation), translation);
 
     private LocalizedText GetText(string name, LocalizedArgument[] arguments)
     {

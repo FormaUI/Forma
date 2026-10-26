@@ -1468,7 +1468,7 @@
         }
 
         [Fact]
-        public void Should_title_the_shortcuts_in_the_ui_culture_the_open_reference_renders_in()
+        public async Task Should_title_the_shortcuts_again_when_the_culture_state_changes()
         {
             // Arrange
             using var ctx = new FormaComposerTests();
@@ -1488,8 +1488,7 @@
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-shortcuts")));
 
             // Act
-            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he");
-            cut.FindComponent<FormaComposerShortcutsDialog>().Render();
+            await ctx.ChangeCultureAsync("en", "he");
 
             // Assert
             var titles = cut.FindAll(".forma-composer-shortcuts tbody th").Select(title => title.TextContent).ToList();

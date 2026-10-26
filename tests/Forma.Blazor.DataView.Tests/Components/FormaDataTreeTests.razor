@@ -353,33 +353,24 @@
         [Fact]
         public void Should_bind_the_inline_arrows_by_the_reading_direction()
         {
-            // Arrange — the reading direction is the culture's, which the tree reads as it registers
-            var previous = CultureInfo.CurrentCulture;
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he");
+            // Arrange — the reading direction is the UI culture's, which the tree reads as it registers
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaDataTreeTests();
+            var router = new InputRouterProbe(ctx);
 
-            try
-            {
-                using var ctx = new FormaDataTreeTests();
-                var router = new InputRouterProbe(ctx);
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
-                // Act
-                var cut = ctx.Render(
-                    @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true">
-                        <FormaDataTree TItem="Entry" />
-                    </FormaDataView>);
-                cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
-
-                // Assert
-                Assert.Equal(["tree.open:ArrowLeft", "tree.close:ArrowRight", "tree.find:typing"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = previous;
-            }
+            // Assert
+            Assert.Equal(["tree.open:ArrowLeft", "tree.close:ArrowRight", "tree.find:typing"], InputRouterProbe.GetRoutes(router.Registrations.Last()));
         }
 
         [Fact]
-        public void Should_bind_the_inline_arrows_again_when_the_reading_direction_changes()
+        public async Task Should_bind_the_inline_arrows_again_when_the_reading_direction_changes()
         {
             // Arrange
             using var culture = new CultureFixture("en");
@@ -393,8 +384,7 @@
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
             // Act
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he");
-            cut.FindComponent<FormaDataTree<Entry>>().Render();
+            await ctx.ChangeCultureAsync("he");
 
             // Assert
             var update = Assert.Single(registration.Invocations, invocation => invocation.Identifier == "update");

@@ -186,7 +186,7 @@
         }
 
         [Fact]
-        public void Should_name_a_group_s_heading_in_the_culture_it_renders_in()
+        public async Task Should_name_a_group_s_heading_again_when_the_culture_state_changes()
         {
             // Arrange
             using var ctx = new FormaDataListTests();
@@ -199,8 +199,7 @@
             cut.WaitForState(() => cut.FindAll(".forma-data-list-group").Count == 1);
 
             // Act
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he-IL");
-            cut.FindComponent<FormaDataGroupHeading<Product>>().Render();
+            await ctx.ChangeCultureAsync("he-IL");
 
             // Assert
             Assert.Equal("מרץ", cut.Find(".forma-data-group-name").TextContent);

@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
 using Forma.Framework.Css;
+using Forma.Framework.Globalization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -21,6 +22,9 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     private ParameterRevision? _parameterRevision;
 
     [CascadingParameter] private FormaDataGrid<TItem> Grid { get; set; } = default!;
+
+    /// <summary>The cultures the column writes its title and its cells in.</summary>
+    [Inject] protected ICultureState CultureState { get; set; } = default!;
 
     /// <summary>The title shown in the header cell and read as the column's name.</summary>
     [Parameter] public string? Title { get; set; }
@@ -81,7 +85,7 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
 
     /// <summary>The title the column shows and is named by, from <see cref="Title"/> or the column's own default.</summary>
     public string? EffectiveTitle
-        => Title ?? GetDefaultTitle();
+        => Title ?? CultureState.Run(GetDefaultTitle);
 
     /// <summary>The content of the header cell: the template where the caller gave one, else the title.</summary>
     protected internal virtual RenderFragment HeaderContent

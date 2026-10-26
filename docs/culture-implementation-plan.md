@@ -84,7 +84,7 @@ Each step is built, reviewed and committed on its own.
      starts and given to it; a conversion that completes after another request began is discarded, so an
      English conversion finishing after a switch to Hebrew never replaces the Hebrew one.
 
-   Departure until step 4: a heading's call and a view's name run in the ambient culture as the heading or
+   ✅ Departure until step 4: a heading's call and a view's name run in the ambient culture as the heading or
    the switch renders; once the state exists, they run in the bounded scope the design sets out, in the
    view's cultures.
 

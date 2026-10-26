@@ -891,6 +891,58 @@
             => [.. drawn.Where(entry => entry.Value != before.GetValueOrDefault(entry.Key)).Select(entry => entry.Key).Order()];
 
         [Fact]
+        public async Task Should_write_a_cell_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            using var fixture = new CultureFixture("en-US");
+            var readings = new[] { new Reading(1, 1234.5m, new Extent(1.5)) }.AsQueryable();
+            var cut = ctx.Render(
+                @<FormaDataView Items="readings" PageSize="10">
+                    <FormaDataGrid TItem="Reading">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(reading => reading.Value)" Format="N1" />
+                            <FormaPropertyColumn Property="@(reading => reading.Size)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.Markup.Contains("1,234.5", StringComparison.Ordinal));
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            var cells = cut.FindAll("tbody td").Select(cell => cell.TextContent.Trim()).ToList();
+            Assert.Multiple(
+                () => Assert.Contains("1.234,5", cells),
+                () => Assert.Contains("Extent { Width = 1,5 }", cells));
+        }
+
+        [Fact]
+        public async Task Should_name_a_group_by_its_key_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            using var fixture = new CultureFixture("en-US");
+            var readings = new[] { new Reading(1, 1234.5m, new Extent(1.5)) }.AsQueryable();
+            var cut = ctx.Render(
+                @<FormaDataView Items="readings" EnablePagination="false" GroupBy="@(DataViewGrouping<Reading>.By(reading => reading.Value))">
+                    <FormaDataGrid TItem="Reading">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(reading => reading.Id)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-grid-group-name").Count == 1);
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Equal("1234,5", cut.Find(".forma-data-grid-group-name").TextContent);
+        }
+
+        [Fact]
         public async Task Should_draw_again_every_row_when_the_culture_changes_though_its_data_does_not()
         {
             // Arrange
@@ -2467,6 +2519,10 @@
 
         private sealed record GridItem(int Id, string Title);
 
+        private sealed record Reading(int Id, decimal Value, Extent Size);
+
+        private sealed record Extent(double Width);
+
         private sealed record Product(int Id, string Title, string Category);
 
         // Reports every header cell that names a column as wanting one width, and the container as giving the width asked for.
@@ -3225,7 +3281,7 @@
         }
 
         [Fact]
-        public void Should_title_a_column_from_its_resource_backed_display_name_in_the_culture_it_renders_in()
+        public async Task Should_title_a_column_from_its_resource_backed_display_name_again_when_the_culture_state_changes()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -3242,8 +3298,7 @@
             cut.WaitForState(() => cut.Markup.Contains("Morning", StringComparison.Ordinal));
 
             // Act
-            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("he");
-            cut.FindComponent<FormaDataGridColumnHeader<Shift>>().Render();
+            await ctx.ChangeCultureAsync("en", "he");
 
             // Assert
             Assert.Contains("משמרת", cut.Find("thead").TextContent, StringComparison.Ordinal);

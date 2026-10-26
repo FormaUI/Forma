@@ -3,16 +3,18 @@ namespace Forma.Blazor.Components.DataView;
 using System.Globalization;
 using System.Linq.Expressions;
 
+using Forma.Framework.Globalization;
+
 /// <summary>A grouping over items: the key their groups fold under, the order the groups come in, and the name a group's heading shows.</summary>
 /// <typeparam name="TItem">The item the key reads.</typeparam>
 public sealed class DataViewGrouping<TItem>
 {
     private readonly DataViewSort<TItem> _order;
     private readonly Func<TItem, object?> _key;
-    private readonly Func<object?, string> _nameSelector;
+    private readonly Func<object?, CultureInfo, string> _nameSelector;
     private readonly Func<IQueryable<TItem>, IQueryable<DataViewGroupSize>> _count;
 
-    private DataViewGrouping(DataViewSort<TItem> order, Func<TItem, object?> key, Func<object?, string> nameSelector, Func<IQueryable<TItem>, IQueryable<DataViewGroupSize>> count)
+    private DataViewGrouping(DataViewSort<TItem> order, Func<TItem, object?> key, Func<object?, CultureInfo, string> nameSelector, Func<IQueryable<TItem>, IQueryable<DataViewGroupSize>> count)
     {
         _order = order;
         _key = key;
@@ -57,11 +59,12 @@ public sealed class DataViewGrouping<TItem>
     public object? GetKey(TItem item)
         => _key(item);
 
-    /// <summary>Creates the group of <paramref name="key"/> over <paramref name="items"/>, which names itself by this grouping's name callback.</summary>
+    /// <summary>Creates the group of <paramref name="key"/> over <paramref name="items"/>, which names itself by this grouping's name callback in the culture state's cultures.</summary>
     /// <param name="key">The key the group's items share.</param>
     /// <param name="items">The group's items on screen.</param>
-    internal DataViewGroup<TItem> CreateGroup(object? key, IReadOnlyList<TItem> items)
-        => new(key, _nameSelector, items);
+    /// <param name="cultureState">The culture state the group names itself in.</param>
+    internal DataViewGroup<TItem> CreateGroup(object? key, IReadOnlyList<TItem> items, ICultureState cultureState)
+        => new(key, _nameSelector, items, cultureState);
 
     private static DataViewGrouping<TItem> Create<TValue>(Expression<Func<TItem, TValue>> key, DataViewSort<TItem> order, Func<TValue, string>? name, bool descending)
     {
@@ -73,8 +76,8 @@ public sealed class DataViewGrouping<TItem>
             order,
             item => read(item),
             name is null
-                ? value => Convert.ToString(value, CultureInfo.CurrentCulture) ?? string.Empty
-                : value => name((TValue)value!),
+                ? (value, culture) => Convert.ToString(value, culture) ?? string.Empty
+                : (value, _) => name((TValue)value!),
             source => CountGroups(source, key, descending));
     }
 
