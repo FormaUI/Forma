@@ -3,8 +3,8 @@
 The engine `FormaComposer` runs its plugins with: the description of a composer's plugins and the
 builders that write it, the catalog that picks the editor and the plugins in play, the registry
 that routes a command to the layer that runs it, the toolbar layout, the undo history, the status
-items and gutter markers, text operations, and document conversion. It is plain .NET, and it ships
-inside the `formaui-net.Blazor.Composer` package, whose
+items and gutter markers, text operations, and document conversion. It is plain .NET, and the package
+comes with `formaui-net.Blazor.Composer`, whose
 [README](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Composer/README.md) covers
 installing and using the composer. The contracts these types read, the plugin interfaces, the
 document and the context, are

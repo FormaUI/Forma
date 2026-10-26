@@ -20,7 +20,6 @@
 
     <!-- Repo-root-anchored, so a project imports it correctly whatever depth it sits at. -->
     <PropertyGroup>
-        <BundledPackageTargets>$(MSBuildThisFileDirectory)eng\BundledPackage.targets</BundledPackageTargets>
         <ComponentAnalyzersTargets>$(MSBuildThisFileDirectory)eng\ComponentAnalyzers.targets</ComponentAnalyzersTargets>
     </PropertyGroup>
 

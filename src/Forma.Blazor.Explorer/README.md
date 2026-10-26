@@ -20,7 +20,7 @@ and requests it works with are
 [`Forma.Framework.Catalog`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Catalog/README.md)'s,
 and its options are
 [`Forma.Framework.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Explorer/README.md)'s,
-which ships inside this package.
+which comes with this package.
 
 ## Register
 

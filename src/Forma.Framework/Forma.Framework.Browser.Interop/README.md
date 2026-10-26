@@ -7,7 +7,7 @@ behaviors that attach to an element for a lifetime, such as roving focus or a dr
 that make a single call, such as writing to the clipboard; and the browser side of components such as
 `FormaDialog` and `FormaWindow`.
 
-The assembly ships inside `formaui-net.Blazor`. It is built on `Forma.Framework.JavaScript.Interop`.
+The package comes with `formaui-net.Blazor`. It is built on `Forma.Framework.JavaScript.Interop`.
 The watcher and engine sit at the root of the `Forma.Framework.Browser.Interop` namespace with the
 registrations they make, and each capability area has a namespace beneath it, such as `Scrolling`.
 The wrappers sit in `Behaviors`, `Operations` and `Components`. The scripts are served from

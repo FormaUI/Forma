@@ -4,7 +4,6 @@
         <!-- The component borrows the product's namespace, so its translations embed and resolve as the product's own do. -->
         <RootNamespace>Forma.Blazor.Components.Composer</RootNamespace>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
-        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,34 +20,29 @@
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />
     </ItemGroup>
 
-    <!-- The component's own feature vocabulary and interop assembly, which ship inside this package. -->
+    <!-- The engine the component drives, a package this one depends on. -->
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
     </ItemGroup>
 
-    <!-- The Framework assemblies the component compiles against, every one of which the product's package already ships or declares. -->
+    <!-- The Framework assemblies the component compiles against, each a package this one depends on. -->
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Files\Forma.Framework.Files.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Files\Forma.Framework.Files.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
     </ItemGroup>
 
-    <Import Project="$(BundledPackageTargets)" />
     <Import Project="$(ComponentAnalyzersTargets)" />
 
 </Project>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
         <StaticWebAssetBasePath>_content/forma/core</StaticWebAssetBasePath>
     </PropertyGroup>
 

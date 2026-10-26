@@ -66,7 +66,7 @@ The rich text canvas's script module and its `RichTextEditor` wrapper ship in `F
 
 **Every public type the composer owns carries the prefix** — `IComposer*` for contracts, `Composer*` for types. The namespace would disambiguate on its own, but a host sees these names in its DI registrations and its `using` list, where `ComposerDocumentFormat` cannot be mistaken for a framework type. The prefix is the convention for this assembly rather than a special case for the one collision that prompted it. It stops at the assembly boundary: a contract that is not the composer's own, such as `IHtmlSanitizer`, is named for what it does.
 
-The engine ships inside the components' own package, because a host installing the composer gets a working one. The contracts are packable in their own right, since packages outside that one extend them, and so is each satellite, so a host takes only the capabilities it wants.
+The engine is a package the components' package depends on, so a host installing the composer gets a working one. The contracts are a package of their own, since packages outside the composer extend them, and so is each satellite, so a host takes only the capabilities it wants.
 
 ---
 

@@ -4,7 +4,7 @@ The bases Forma's C# wrappers over JavaScript modules are built from, and the sc
 other scripts share. A wrapper built on them imports its module on first use, logs a failed import
 or call under its owner's logger, and reports a dropped circuit as a call that did not run.
 
-The assembly ships inside `formaui-net.Blazor`. Its scripts are served from
+The package comes with `formaui-net.Blazor`. Its scripts are served from
 `_content/forma/core/scripts/`.
 
 ## Writing a wrapper

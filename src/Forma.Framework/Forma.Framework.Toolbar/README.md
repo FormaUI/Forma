@@ -7,7 +7,7 @@ the command string.
 
 ## Use it
 
-The assembly ships inside the `formaui-net.Blazor` package, and its types live in the
+The package comes with `formaui-net.Blazor`, and its types live in the
 `Forma.Framework.Toolbar` namespace. A list of `ToolbarItem`s is what `FormaToolbar`,
 `FormaSearchToolbar`, `FormaSelectionToolbar` and `FormaStatusStrip` take as `Items`, and what
 `FormaWindow` and `FormaChrome` take as `Commands` for their title bars. Each raises the chosen

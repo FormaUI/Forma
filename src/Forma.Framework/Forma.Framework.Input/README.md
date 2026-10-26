@@ -6,7 +6,7 @@ application, and the records an action arrives with. The input router resolves e
 wheel turn and drop on the page to one owner, so a component implements its actions and the router
 decides which component receives each one.
 
-The assembly ships inside `formaui-net.Blazor`. Its types are in `Forma.Framework.Input`, with each
+The package comes with `formaui-net.Blazor`. Its types are in `Forma.Framework.Input`, with each
 family's binding under `.Keyboard`, `.Pointer`, `.Click`, `.Wheel` and `.Drop`.
 
 ## Setting the application's policy

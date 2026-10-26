@@ -5,7 +5,7 @@ file an uploader could not store and the error that stopped it, and the progress
 an upload. A host names them in the handlers it gives `FormaFilePicker`, `FormaImagePicker` and
 `FormaFileUploader`.
 
-The assembly ships inside the `Forma.Blazor` package, and its types are in the
+The package comes with `formaui-net.Blazor`, and its types are in the
 `Forma.Framework.Files` namespace. The store an uploader writes to and the resource each file
 becomes are the contracts of
 [`Forma.Framework.Resources`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Resources/README.md).

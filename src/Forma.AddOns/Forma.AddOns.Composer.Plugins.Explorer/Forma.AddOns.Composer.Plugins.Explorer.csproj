@@ -4,7 +4,6 @@
         <!-- The AddOn borrows the namespace of the composer plugins it joins, so a host reaches it with the using it already writes. -->
         <RootNamespace>Forma.Blazor.Components.Composer.Plugins</RootNamespace>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
-        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,12 +17,11 @@
         <ProjectReference Include="..\..\Forma.Blazor\Forma.Blazor.csproj" />
     </ItemGroup>
 
-    <!-- The explorer's feature vocabulary, which its dialog speaks and the explorer's own package already ships. -->
+    <!-- The explorer's engine, which its dialog speaks, a package this one depends on. -->
     <ItemGroup>
-        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
     </ItemGroup>
 
-    <Import Project="$(BundledPackageTargets)" />
     <Import Project="$(ComponentAnalyzersTargets)" />
 
     <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
