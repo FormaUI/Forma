@@ -11,12 +11,12 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 /// The cultures are set in the activity's own flow, so the work it runs reads them, and the flow that dispatched the
 /// activity keeps its own cultures once the activity ends.
 /// </remarks>
-internal sealed class CultureCircuitHandler(ICultureState cultureState, DocumentLanguage documentLanguage) : CircuitHandler
+internal sealed class CultureCircuitHandler(ICultureState cultureState, DocumentCultureSynchronizer documentCultureSynchronizer) : CircuitHandler
 {
     /// <inheritdoc />
     public override Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
     {
-        documentLanguage.BeginFollowing();
+        documentCultureSynchronizer.BeginFollowing();
 
         return Task.CompletedTask;
     }

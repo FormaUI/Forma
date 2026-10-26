@@ -14,9 +14,9 @@ public sealed class CultureCircuitHandlerTests
     private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he-IL");
 
-    private static ServiceProvider CreateServices(FakeDocumentLanguageBrowser? browser = null)
+    private static ServiceProvider CreateServices(FakeDocumentCultureSynchronizerBrowser? browser = null)
         => new ServiceCollection()
-            .AddSingleton<IJSRuntime>((browser ?? new FakeDocumentLanguageBrowser()).Runtime)
+            .AddSingleton<IJSRuntime>((browser ?? new FakeDocumentCultureSynchronizerBrowser()).Runtime)
             .AddFormaGlobalizationCircuitIntegration()
             .BuildServiceProvider();
 
@@ -79,7 +79,7 @@ public sealed class CultureCircuitHandlerTests
     {
         // Arrange
         using var fixture = new CultureFixture("he-IL");
-        var browser = new FakeDocumentLanguageBrowser("en", "ltr");
+        var browser = new FakeDocumentCultureSynchronizerBrowser("en", "ltr");
         await using var provider = CreateServices(browser);
         await using var scope = provider.CreateAsyncScope();
 
@@ -91,11 +91,11 @@ public sealed class CultureCircuitHandlerTests
     }
 
     [Fact]
-    public async Task Should_start_the_document_language_on_a_later_connection_after_an_expected_failure()
+    public async Task Should_start_the_document_culture_synchronizer_on_a_later_connection_after_an_expected_failure()
     {
         // Arrange — the first connection drops while the module is imported
         using var fixture = new CultureFixture("he-IL");
-        var browser = new FakeDocumentLanguageBrowser("en", "ltr");
+        var browser = new FakeDocumentCultureSynchronizerBrowser("en", "ltr");
         browser.FailNext("import", new JSDisconnectedException("The circuit dropped."));
         await using var provider = CreateServices(browser);
         await using var scope = provider.CreateAsyncScope();

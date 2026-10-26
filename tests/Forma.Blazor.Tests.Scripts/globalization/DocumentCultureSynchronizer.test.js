@@ -8,7 +8,7 @@ async function load(served = { lang: 'en', dir: 'ltr' }) {
     setAttributes(served);
     vi.resetModules();
 
-    return await import('#globalization/DocumentLanguage.js');
+    return await import('#globalization/DocumentCultureSynchronizer.js');
 }
 
 async function loadInitializer() {
@@ -53,7 +53,7 @@ beforeEach(() => {
     setAttributes({ lang: 'en', dir: 'ltr' });
 });
 
-describe('DocumentLanguage', () => {
+describe('DocumentCultureSynchronizer', () => {
     describe('registering', () => {
         it('sets both attributes to the owner\'s pair', async () => {
             // Arrange

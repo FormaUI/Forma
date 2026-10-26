@@ -15,7 +15,7 @@ export function register(identity, language, direction) {
         throw new Error('A document follows one culture state.');
     }
 
-    owner ??= new DocumentLanguageRegistration(identity);
+    owner ??= new DocumentCultureSynchronizerRegistration(identity);
     owner.update(language, direction);
 
     return owner;
@@ -56,7 +56,7 @@ export function track(blazor) {
 }
 
 // A culture state's hold on the document.
-class DocumentLanguageRegistration {
+class DocumentCultureSynchronizerRegistration {
     #identity;
     #pair = null;
 

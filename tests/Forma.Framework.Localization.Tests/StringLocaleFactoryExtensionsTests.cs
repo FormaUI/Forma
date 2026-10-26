@@ -24,7 +24,7 @@ public sealed class StringLocaleFactoryExtensionsTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            using var services = new ServiceCollection().AddFormaGlobalizationCoreServices().BuildServiceProvider();
+            using var services = new ServiceCollection().AddFormaGlobalizationServices().BuildServiceProvider();
             using var scope = services.CreateScope();
             var cultureState = scope.ServiceProvider.GetRequiredService<ICultureState>();
             var locale = NullStringLocaleFactory.Instance.Create(typeof(Create), cultureState);

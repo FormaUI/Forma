@@ -4,18 +4,18 @@ using Forma.Tests.Interop;
 
 using Microsoft.JSInterop;
 
-/// <summary>A stand-in for the browser's document language: a runtime importing its module, which keeps one owner's pair on the document as the script does, recording every call and failing the calls a test names.</summary>
-public sealed class FakeDocumentLanguageBrowser
+/// <summary>A stand-in for the browser's document culture synchronizer: a runtime importing its module, which keeps one owner's pair on the document as the script does, recording every call and failing the calls a test names.</summary>
+public sealed class FakeDocumentCultureSynchronizerBrowser
 {
-    /// <summary>The document language's module.</summary>
-    public const string ModulePath = "./_content/forma/globalization/scripts/DocumentLanguage.js";
+    /// <summary>The document culture synchronizer's module.</summary>
+    public const string ModulePath = "./_content/forma/globalization/scripts/DocumentCultureSynchronizer.js";
 
     private readonly Dictionary<string, Queue<Failure>> _failures = [];
     private readonly List<(string Language, string Direction)> _updates = [];
     private Owner? _owner;
 
     /// <summary>Creates the browser over a document the server served in <paramref name="servedLanguage"/> and <paramref name="servedDirection"/>.</summary>
-    public FakeDocumentLanguageBrowser(string servedLanguage = "en", string servedDirection = "ltr")
+    public FakeDocumentCultureSynchronizerBrowser(string servedLanguage = "en", string servedDirection = "ltr")
     {
         Served = (servedLanguage, servedDirection);
         Document = Served;

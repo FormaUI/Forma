@@ -183,7 +183,7 @@ Each step is built, reviewed and committed on its own.
    with an interactive `Routes` and again with islands: the switching event read `he/he`, the next event and
    the one after it read `he/he` where step 2 recorded `en/en`, and a second circuit of the same host read
    `en/en`.
-6. **The document.** ✅ The document language keeps `<html lang dir>` on the state, again after each
+6. **The document.** ✅ The document culture synchronizer keeps `<html lang dir>` on the state, again after each
    enhanced page update, as the design's document section sets out. Gate: a script test of the operation,
    and a browser check of both attributes after a switch and after an enhanced navigation.
 
@@ -191,7 +191,7 @@ Each step is built, reviewed and committed on its own.
    Framework assembly became a package first, so this package could build on the JavaScript interop
    floor. The culture's circuit handler, moved with its registrar out of
    `Forma.Framework.Globalization.AspNetCore` into `Forma.Framework.Globalization.Interop.Server`, the
-   render mode's half, starts the document language as each connection comes up, and the routing package
+   render mode's half, starts the document culture synchronizer as each connection comes up, and the routing package
    holds routing alone again.
 
    On step 2's probe host, driven in Chrome with islands and again under global interactivity:
@@ -223,10 +223,10 @@ Each step is built, reviewed and committed on its own.
      and both prefix policies; one that works only by reloading on a switch establishes a supported full
      load and doesn't complete this step;
    - the order of the address, the state's change, the page's patch, the document's attributes and the
-     visible output, for a switch, a plain link and Back and Forward, with the document language in place,
+     visible output, for a switch, a plain link and Back and Forward, with the document culture synchronizer in place,
      under delayed delivery and through rapid consecutive navigations; an eventual `he/rtl` doesn't show the
      absence of a flash;
-   - whether reconciliation can run, at the start and on reconnection, before the document language
+   - whether reconciliation can run, at the start and on reconnection, before the document culture synchronizer
      applies the culture the connection arrived with, since the circuit handler starts it at once today;
    - what a resumed circuit's state starts from, since step 6 saw it start from its connection's culture
      and lose an in-place switch across a pause.

@@ -163,7 +163,7 @@ commits as the fourth of March under any other:
 
 In a Blazor Web App the `<html>` element belongs to the static `App` component, which no interactive
 component renders. The host's static render sets the document's initial language and direction, and a
-document language keeps them in step with a culture state from then on: `lang` is the state's
+document culture synchronizer keeps them in step with a culture state from then on: `lang` is the state's
 UI culture's name, and `dir` its direction.
 
 - **One owner.** While a document-language registration is live, its culture state determines the
@@ -202,7 +202,7 @@ without culture addresses.
 The state follows the address in every way a navigation happens:
 
 - **When the integration starts,** and again as a connection comes back, it reconciles the state with
-  the current address, before the document language applies the culture the connection arrived with.
+  the current address, before the document culture synchronizer applies the culture the connection arrived with.
 - **An enhanced navigation** is a request, so the middleware renders its static content in the new
   culture, and the circuit's state follows the address it lands on.
 - **Interactive routing** makes no request, so no middleware runs; the integration changes the state from
@@ -258,8 +258,8 @@ as an integration with ASP.NET Core does across .NET:
 | Assembly | Holds |
 | --- | --- |
 | `Forma.Framework.Globalization` | The culture state's abstraction, its default and its registrar, with no dependency on ASP.NET Core or navigation |
-| `Forma.Framework.Globalization.Interop` | The document language: its script, the initializer that tracks what the server served and releases a closed circuit's registration, and the service that keeps the document on a culture state |
-| `Forma.Framework.Globalization.Interop.Server` | The circuit handler that applies the culture before every inbound activity and starts the document language |
+| `Forma.Framework.Globalization.Interop` | The document culture synchronizer: its script, the initializer that tracks what the server served and releases a closed circuit's registration, and the service that keeps the document on a culture state |
+| `Forma.Framework.Globalization.Interop.Server` | The circuit handler that applies the culture before every inbound activity and starts the document culture synchronizer |
 | `Forma.Framework.Globalization.AspNetCore` | The routing middleware, `CultureRouter`, the switching entry point, the address reconciliation and the cookie |
 | `Forma.Framework.Browser.Interop.Server` | The DOM's circuit handler |
 
@@ -272,7 +272,7 @@ host makes one call for the rest and can still override any single service.
 | --- | --- | --- |
 | C1 | Where does the culture state live? | A platform-neutral `Forma.Framework.Globalization`, its ASP.NET Core parts in `Forma.Framework.Globalization.AspNetCore` |
 | C2 | What is the state called? | `ICultureState`, which says what it holds and that it changes |
-| C3 | Who keeps `<html lang dir>` in step? | The document language, which the culture's circuit handler starts with each circuit, so a switch is complete by default |
+| C3 | Who keeps `<html lang dir>` in step? | The document culture synchronizer, which the culture's circuit handler starts with each circuit, so a switch is complete by default |
 | C4 | Does the Showcase switch in place? | Yes, keeping the user's work, with the new load still supported |
 | C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Interop.Server` and the culture's `Forma.Framework.Globalization.Interop.Server` do, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Globalization.AspNetCore` does |
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |

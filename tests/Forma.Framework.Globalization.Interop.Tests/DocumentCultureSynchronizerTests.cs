@@ -9,19 +9,19 @@ using Forma.Tests.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
-public sealed class DocumentLanguageTests
+public sealed class DocumentCultureSynchronizerTests
 {
     private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
 
-    private static ServiceProvider CreateServices(FakeDocumentLanguageBrowser browser)
+    private static ServiceProvider CreateServices(FakeDocumentCultureSynchronizerBrowser browser)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>(browser.Runtime)
-            .AddFormaDocumentLanguage()
+            .AddFormaGlobalizationDocumentCultureSynchronizer()
             .BuildServiceProvider();
 
-    private static DocumentLanguage GetDocumentLanguage(IServiceScope scope)
-        => scope.ServiceProvider.GetRequiredService<DocumentLanguage>();
+    private static DocumentCultureSynchronizer GetDocumentCultureSynchronizer(IServiceScope scope)
+        => scope.ServiceProvider.GetRequiredService<DocumentCultureSynchronizer>();
 
     private static ICultureState GetCultureState(IServiceScope scope)
         => scope.ServiceProvider.GetRequiredService<ICultureState>();
@@ -33,12 +33,12 @@ public sealed class DocumentLanguageTests
         {
             // Arrange — a scope whose state starts in Hebrew, in a document the server served in English
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser("en", "ltr");
+            var browser = new FakeDocumentCultureSynchronizerBrowser("en", "ltr");
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
 
             // Act
-            GetDocumentLanguage(scope).BeginFollowing();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
 
             // Assert
             Assert.Multiple(
@@ -51,10 +51,10 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            GetDocumentLanguage(scope).BeginFollowing();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
 
             // Act
             await GetCultureState(scope).ChangeAsync(German, French);
@@ -70,11 +70,11 @@ public sealed class DocumentLanguageTests
         {
             // Arrange — the first update held open while two more changes arrive
             using var fixture = new CultureFixture("en-US");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
             var cultureState = GetCultureState(scope);
-            GetDocumentLanguage(scope).BeginFollowing();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
             browser.OwnerRegistration!.Recorder.Hold("update");
             var first = cultureState.ChangeAsync(CultureInfo.GetCultureInfo("he-IL"));
             var second = cultureState.ChangeAsync(German);
@@ -99,14 +99,14 @@ public sealed class DocumentLanguageTests
         {
             // Arrange — the first registration held open while the connection comes up again
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             browser.Module.Recorder.Hold("register");
             await using var firstRegistration = new RecordingJSObjectReference((_, _) => true);
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
-            documentLanguage.BeginFollowing();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
+            documentCultureSynchronizer.BeginFollowing();
             browser.Module.Recorder.Release("register");
 
             // Act — a change queued behind both reconciliations completes once they have
@@ -124,16 +124,16 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             browser.LoseNextResult("register", new JSDisconnectedException("The circuit dropped."));
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
             var owner = browser.OwnerIdentity;
 
             // Act — the connection comes up again
-            documentLanguage.BeginFollowing();
+            documentCultureSynchronizer.BeginFollowing();
             await GetCultureState(scope).ChangeAsync(German);
 
             // Assert — the same identity recovered the registration rather than being refused as another owner
@@ -148,15 +148,15 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             browser.FailNext("import", new JSDisconnectedException("The circuit dropped."));
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
 
             // Act
-            documentLanguage.BeginFollowing();
+            documentCultureSynchronizer.BeginFollowing();
 
             // Assert
             Assert.Multiple(
@@ -169,15 +169,15 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             browser.FailNext("import", new TaskCanceledException());
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
 
             // Act
-            documentLanguage.BeginFollowing();
+            documentCultureSynchronizer.BeginFollowing();
 
             // Assert
             Assert.Multiple(
@@ -190,16 +190,16 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
             browser.FailNext("update", new JSDisconnectedException("The circuit dropped."));
             await GetCultureState(scope).ChangeAsync(German);
 
             // Act
-            documentLanguage.BeginFollowing();
+            documentCultureSynchronizer.BeginFollowing();
 
             // Assert
             Assert.Equal(("de-DE", "ltr"), browser.Document);
@@ -210,11 +210,11 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
             var cultureState = GetCultureState(scope);
-            GetDocumentLanguage(scope).BeginFollowing();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
             browser.FailNext("update", new TaskCanceledException());
             await cultureState.ChangeAsync(German);
 
@@ -230,15 +230,15 @@ public sealed class DocumentLanguageTests
         {
             // Arrange — the state has not changed since the registration the browser released
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
             browser.CloseCircuit();
 
             // Act
-            documentLanguage.BeginFollowing();
+            documentCultureSynchronizer.BeginFollowing();
 
             // Assert
             Assert.Multiple(
@@ -251,10 +251,10 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            GetDocumentLanguage(scope).BeginFollowing();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
             browser.CloseCircuit();
 
             // Act
@@ -274,16 +274,16 @@ public sealed class DocumentLanguageTests
         {
             // Arrange — an update held open with two more changes queued behind it
             using var fixture = new CultureFixture("en-US");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
             var cultureState = GetCultureState(scope);
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
             var registration = browser.OwnerRegistration!;
             registration.Recorder.Hold("update");
             var changes = Task.WhenAll(cultureState.ChangeAsync(German), cultureState.ChangeAsync(French));
-            var disposal = documentLanguage.DisposeAsync().AsTask();
+            var disposal = documentCultureSynchronizer.DisposeAsync().AsTask();
 
             // Act
             registration.Recorder.Release("update");
@@ -302,14 +302,14 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser("en", "ltr");
+            var browser = new FakeDocumentCultureSynchronizerBrowser("en", "ltr");
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
 
             // Act
-            await documentLanguage.DisposeAsync();
+            await documentCultureSynchronizer.DisposeAsync();
 
             // Assert
             Assert.Multiple(
@@ -322,16 +322,16 @@ public sealed class DocumentLanguageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he-IL");
-            var browser = new FakeDocumentLanguageBrowser();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var documentLanguage = GetDocumentLanguage(scope);
-            documentLanguage.BeginFollowing();
-            await documentLanguage.DisposeAsync();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
+            await documentCultureSynchronizer.DisposeAsync();
 
             // Act
             await GetCultureState(scope).ChangeAsync(German);
-            documentLanguage.BeginFollowing();
+            documentCultureSynchronizer.BeginFollowing();
 
             // Assert
             Assert.Multiple(

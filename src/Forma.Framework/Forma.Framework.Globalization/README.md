@@ -8,7 +8,7 @@ hear of each change.
 ## Use it
 
 The package comes with `formaui-net.Blazor`, and `AddFormaUI()` registers its state through
-`AddFormaGlobalizationCoreServices()`:
+`AddFormaGlobalizationServices()`:
 
 | Service | Registered as |
 | --- | --- |

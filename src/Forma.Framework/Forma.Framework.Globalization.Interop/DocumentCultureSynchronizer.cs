@@ -13,9 +13,9 @@ using Microsoft.JSInterop;
 /// the browser asks for a registration under the scope's one identity, which recovers a live registration and replaces one the
 /// browser released, and a reconciliation answers only the requests made before it started.
 /// </remarks>
-public sealed class DocumentLanguage : IAsyncDisposable, IDisposable
+public sealed class DocumentCultureSynchronizer : IAsyncDisposable, IDisposable
 {
-    private const string ModulePath = "./_content/forma/globalization/scripts/DocumentLanguage.js";
+    private const string ModulePath = "./_content/forma/globalization/scripts/DocumentCultureSynchronizer.js";
 
     private readonly ICultureState _cultureState;
     private readonly JSEnvironment _environment;
@@ -30,8 +30,8 @@ public sealed class DocumentLanguage : IAsyncDisposable, IDisposable
     private bool _isFollowing;
     private volatile bool _isDisposed;
 
-    /// <summary>Creates the document language for one user scope's <paramref name="cultureState"/>.</summary>
-    public DocumentLanguage(ICultureState cultureState, IJSRuntime js, ILogger<DocumentLanguage> logger)
+    /// <summary>Creates the document culture synchronizer for one user scope's <paramref name="cultureState"/>.</summary>
+    public DocumentCultureSynchronizer(ICultureState cultureState, IJSRuntime js, ILogger<DocumentCultureSynchronizer> logger)
     {
         ArgumentNullException.ThrowIfNull(cultureState);
 

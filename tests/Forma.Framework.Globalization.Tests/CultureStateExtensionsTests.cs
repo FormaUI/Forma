@@ -32,7 +32,7 @@ public sealed class CultureStateExtensionsTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            using var services = new ServiceCollection().AddFormaGlobalizationCoreServices().BuildServiceProvider();
+            using var services = new ServiceCollection().AddFormaGlobalizationServices().BuildServiceProvider();
             using var scope = services.CreateScope();
             var state = await GetChangedStateAsync(scope);
 
@@ -50,7 +50,7 @@ public sealed class CultureStateExtensionsTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            using var services = new ServiceCollection().AddFormaGlobalizationCoreServices().BuildServiceProvider();
+            using var services = new ServiceCollection().AddFormaGlobalizationServices().BuildServiceProvider();
             using var scope = services.CreateScope();
             var state = await GetChangedStateAsync(scope);
             var ambientCultures = "";
