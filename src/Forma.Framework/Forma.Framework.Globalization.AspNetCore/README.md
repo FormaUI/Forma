@@ -32,7 +32,8 @@ app.UseCultureRouting();
 app.UseRouting();
 ```
 
-`AddCultureRouting` validates the options and registers `CultureRouter` as a singleton.
+`AddCultureRouting` validates the options and registers `CultureRouter` as a singleton, the
+`CultureSwitcher` each user scope switches through, and the culture state those scopes hold.
 `UseCultureRouting` goes before routing, so endpoints see the path with the culture segment
 removed, and after `UsePathBase` under a path base; an endpoint chosen for the address with its
 culture segment, as `UsePathBase` chooses one, is chosen again for the path without it. With
@@ -82,6 +83,29 @@ and the default culture where neither names a route, then goes straight on to ro
 segment that is no token stays in the path, and a path naming cultures in two consecutive
 segments, such as `/he/en`, is answered with `400 Bad Request`.
 
+## Switching culture
+
+A page or component injects `CultureSwitcher` to switch to another culture. The switch loads the
+current page's address in that culture as a new document, which runs in the culture its address
+names.
+
+| Member | What it does |
+| --- | --- |
+| `CurrentRoute` | The route of the culture state's UI culture. |
+| `GetUri(route)` | The current page's address in a route's culture, query string included. |
+| `SwitchTo(route)` | Loads the current page's address in a route's culture. |
+
+```razor
+@using Forma.Framework.Globalization.AspNetCore
+@inject CultureRouter Router
+@inject CultureSwitcher Switcher
+
+@foreach (var route in Router.Routes)
+{
+    <a href="@Switcher.GetUri(route)" aria-current="@(route == Switcher.CurrentRoute ? "true" : null)">@route.Token</a>
+}
+```
+
 ## Building links
 
 A page or component injects `CultureRouter` to address a culture:
@@ -90,7 +114,7 @@ A page or component injects `CultureRouter` to address a culture:
 | --- | --- |
 | `Routes` | Every route, in registration order. |
 | `DefaultRoute` | The route serving a request that names none. |
-| `CurrentRoute` | The route of `CultureInfo.CurrentUICulture`, or `DefaultRoute`. |
+| `GetRoute(culture)` | The route serving a culture, or `DefaultRoute`. |
 | `GetPath(route, path)` | The `PathString` of a path in a route's culture, replacing any culture segment it carries. |
 | `GetUrl(route, relativeUrl)` | A base-relative URL in a route's culture, query string included. |
 | `Match(path)` | The `CultureMatch` of a path: its `Route`, its `Path` without the culture segment, its `CanonicalPath` and whether it `IsCanonical`. |
@@ -99,9 +123,10 @@ A page or component injects `CultureRouter` to address a culture:
 ```razor
 @using Forma.Framework.Globalization.AspNetCore
 @inject CultureRouter Router
+@inject CultureSwitcher Switcher
 @inject NavigationManager Navigation
 
-<a href="@Router.GetPath(Router.CurrentRoute, "/about")">About</a>
+<a href="@Router.GetPath(Switcher.CurrentRoute, "/about")">About</a>
 
 @foreach (var route in Router.Routes)
 {

@@ -14,12 +14,13 @@ public sealed partial class PageLocalization : ComponentBase
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private CultureRouter Router { get; set; } = default!;
+    [Inject] private CultureSwitcher Switcher { get; set; } = default!;
 
     private IEnumerable<(string HrefLang, string Url)> Alternates
         => Router.Routes.Select(route => (route.HrefLang, GetUrl(route)));
 
     private string Canonical
-        => GetUrl(_currentRoute ?? Router.CurrentRoute);
+        => GetUrl(_currentRoute ?? Switcher.CurrentRoute);
 
     private string XDefault
         => GetUrl(Router.DefaultRoute);

@@ -1,6 +1,6 @@
 namespace Forma.Framework.Globalization.AspNetCore.Tests;
 
-using Forma.Tests.Shared;
+using System.Globalization;
 
 public sealed class CultureRouterTests
 {
@@ -327,15 +327,32 @@ public sealed class CultureRouterTests
         Assert.Equal("/he/file-viewer?tab=2", url);
     }
 
-    [Fact]
-    public void Should_fall_back_to_the_default_route_when_the_ambient_culture_matches_none()
+    [Theory]
+    [InlineData("he", "he")]
+    [InlineData("HE", "he")]
+    [InlineData("es-419", "es")]
+    public void Should_find_the_route_serving_a_culture(string culture, string token)
     {
         // Arrange
-        using var culture = new CultureFixture("fr");
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
+
+        // Act
+        var route = router.GetRoute(CultureInfo.GetCultureInfo(culture));
+
+        // Assert
+        Assert.Equal(token, route.Token);
+    }
+
+    [Theory]
+    [InlineData("fr")]
+    [InlineData("es")]
+    public void Should_fall_back_to_the_default_route_for_a_culture_no_route_serves(string culture)
+    {
+        // Arrange
         var router = CreateRouter(CulturePrefix.ExceptDefault);
 
         // Act & Assert
-        Assert.Equal(router.DefaultRoute, router.CurrentRoute);
+        Assert.Equal(router.DefaultRoute, router.GetRoute(CultureInfo.GetCultureInfo(culture)));
     }
 
     private static CultureRouter CreateRouter(CulturePrefix prefix)

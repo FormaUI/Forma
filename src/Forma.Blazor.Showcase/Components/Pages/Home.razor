@@ -1,6 +1,7 @@
 @page "/"
 @using Forma.Framework.Globalization.AspNetCore
 @inject CultureRouter Router
+@inject CultureSwitcher Switcher
 @inject IStringLocale<Home> L
 
 <h1>Forma</h1>
@@ -13,7 +14,7 @@
         <ul class="showcase-index">
             @foreach (var entry in group)
             {
-                <li><a href="@Router.GetPath(Router.CurrentRoute, entry.Route)">@entry.Title</a></li>
+                <li><a href="@Router.GetPath(Switcher.CurrentRoute, entry.Route)">@entry.Title</a></li>
             }
         </ul>
     </div>

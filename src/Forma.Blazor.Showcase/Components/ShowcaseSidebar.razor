@@ -5,6 +5,7 @@
 @using Microsoft.JSInterop
 @implements IAsyncDisposable
 @inject CultureRouter Router
+@inject CultureSwitcher Switcher
 @inject NavigationManager Nav
 @inject IJSRuntime JSRuntime
 @inject ILogger<ShowcaseSidebar> Logger
@@ -46,7 +47,7 @@
 
     private bool _hasNavigated;
 
-    private CultureRoute Current => Router.CurrentRoute;
+    private CultureRoute Current => Switcher.CurrentRoute;
 
     /// <inheritdoc />
     protected override void OnInitialized()

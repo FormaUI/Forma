@@ -41,17 +41,6 @@ public sealed partial class CultureRouter
             ?? throw new ArgumentException($"DefaultCulture '{options.DefaultCulture}' is not the token of any registered culture.", nameof(options));
     }
 
-    /// <summary>The route whose culture is currently in effect.</summary>
-    public CultureRoute CurrentRoute
-    {
-        get
-        {
-            var current = CultureInfo.CurrentUICulture.Name;
-
-            return Routes.FirstOrDefault(route => string.Equals(route.Culture.Name, current, StringComparison.OrdinalIgnoreCase)) ?? DefaultRoute;
-        }
-    }
-
     /// <summary>The culture serving a request that names none.</summary>
     public CultureRoute DefaultRoute { get; }
 
@@ -61,6 +50,14 @@ public sealed partial class CultureRouter
     // Google reads an ISO 639-1 language with an optional ISO 15924 script and ISO 3166-1 alpha-2 region.
     [GeneratedRegex("^[a-z]{2}(-[a-z]{4})?(-[a-z]{2})?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex HrefLangPattern { get; }
+
+    /// <summary>The route serving <paramref name="culture"/>, or <see cref="DefaultRoute"/> where none serves it.</summary>
+    public CultureRoute GetRoute(CultureInfo culture)
+    {
+        ArgumentNullException.ThrowIfNull(culture);
+
+        return Routes.FirstOrDefault(route => string.Equals(route.Culture.Name, culture.Name, StringComparison.OrdinalIgnoreCase)) ?? DefaultRoute;
+    }
 
     /// <summary>The path <paramref name="path"/> in the culture of <paramref name="route"/>.</summary>
     public PathString GetPath(CultureRoute route, PathString path)
