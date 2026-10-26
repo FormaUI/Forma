@@ -51,7 +51,15 @@ public sealed class CultureRoutingMiddleware
         var route = isDocument || namesCulture ? match.Route : GetStoredRoute(context) ?? match.Route;
 
         ApplyCulture(context, route);
-        context.Request.Path = match.Path;
+
+        if (namesCulture)
+        {
+            // An endpoint chosen for the address with its culture segment, as UsePathBase chooses one, is chosen again
+            // for the path routing goes on to.
+            context.Request.Path = match.Path;
+            context.SetEndpoint(null);
+            context.Request.RouteValues.Clear();
+        }
 
         if (!isDocument)
         {

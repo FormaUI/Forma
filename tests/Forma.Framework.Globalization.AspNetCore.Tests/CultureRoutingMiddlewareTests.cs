@@ -191,6 +191,51 @@ public sealed class CultureRoutingMiddlewareTests
         });
     }
 
+    [Theory]
+    [InlineData("/he/_blazor/negotiate", "/_blazor/negotiate")]
+    [InlineData("/he/file-viewer", "/file-viewer")]
+    public async Task Should_clear_the_endpoint_chosen_before_it_removes_the_culture_segment(string requested, string forwarded)
+    {
+        // Arrange — an endpoint and its route values chosen for the address with its culture segment
+        using var fixture = new CultureFixture();
+        var chosen = new Endpoint(null, null, "chosen");
+        Endpoint? reachedEndpoint = chosen;
+        var reachedValues = -1;
+        var middleware = new CultureRoutingMiddleware(context => { reachedEndpoint = context.GetEndpoint(); reachedValues = context.Request.RouteValues.Count; return Task.CompletedTask; }, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext(requested);
+        context.SetEndpoint(chosen);
+        context.Request.RouteValues["culture"] = "he";
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(forwarded, context.Request.Path.Value);
+            Assert.Null(reachedEndpoint);
+            Assert.Equal(0, reachedValues);
+        });
+    }
+
+    [Fact]
+    public async Task Should_keep_the_endpoint_of_a_request_whose_path_it_leaves()
+    {
+        // Arrange
+        using var fixture = new CultureFixture();
+        var chosen = new Endpoint(null, null, "chosen");
+        Endpoint? reachedEndpoint = null;
+        var middleware = new CultureRoutingMiddleware(context => { reachedEndpoint = context.GetEndpoint(); return Task.CompletedTask; }, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/_blazor/negotiate");
+        context.SetEndpoint(chosen);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Same(chosen, reachedEndpoint);
+    }
+
     [Fact]
     public async Task Should_write_the_culture_cookie_for_a_document()
     {

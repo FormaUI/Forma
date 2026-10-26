@@ -34,8 +34,10 @@ app.UseRouting();
 
 `AddCultureRouting` validates the options and registers `CultureRouter` as a singleton.
 `UseCultureRouting` goes before routing, so endpoints see the path with the culture segment
-removed. With these options `/about` serves English, `/he/about` Hebrew and `/es/about` Latin
-American Spanish.
+removed, and after `UsePathBase` under a path base; an endpoint chosen for the address with its
+culture segment, as `UsePathBase` chooses one, is chosen again for the path without it. With
+these options `/about` serves English, `/he/about` Hebrew and `/es/about` Latin American
+Spanish.
 
 | Option | What it is |
 | --- | --- |
