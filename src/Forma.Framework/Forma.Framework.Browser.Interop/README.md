@@ -72,7 +72,7 @@ it started moving.
 | `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
 
 A host registers the bridge the watchers and engines of one circuit share their imports through with
-`AddFormaDomServices`. On Interactive Server, `AddFormaUI` registers it through
+`AddFormaBrowserServices`. On Interactive Server, `AddFormaUI` registers it through
 `Forma.Framework.Browser.Interop.Server`, which also refreshes a circuit's observations once its
 connection is restored. A watcher made with no bridge imports through one of its own, and its
 observations recover through `RefreshAsync`.

@@ -50,7 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddFormaGlyphServices();
 
         services.AddFormaInputRouter(inputRouting);
-        services.AddFormaDomServerServices();
+        services.AddFormaBrowserCircuitIntegration();
 
         return services;
     }

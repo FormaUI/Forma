@@ -27,7 +27,7 @@ public sealed class DomCircuitHandlerTests
     private static ServiceProvider CreateServices(FakeDomBrowser browser)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>(browser.Runtime)
-            .AddFormaDomServerServices()
+            .AddFormaBrowserCircuitIntegration()
             .BuildServiceProvider();
 
     private static Task<DomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(DomWatcher watcher, ElementReference element)

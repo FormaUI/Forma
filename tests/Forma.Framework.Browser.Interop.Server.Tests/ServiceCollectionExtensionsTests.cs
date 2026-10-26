@@ -11,7 +11,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_the_circuit_handler_beside_the_browser_services()
     {
         // Act
-        var services = new ServiceCollection().AddFormaDomServerServices().AddFormaDomServerServices();
+        var services = new ServiceCollection().AddFormaBrowserCircuitIntegration().AddFormaBrowserCircuitIntegration();
 
         // Assert
         Assert.Multiple(

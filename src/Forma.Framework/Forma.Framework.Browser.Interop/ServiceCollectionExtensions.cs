@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
     /// <summary>Registers the bridge of each JS runtime scope.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection.</returns>
-    public static IServiceCollection AddFormaDomServices(this IServiceCollection services)
+    public static IServiceCollection AddFormaBrowserServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 

@@ -10,11 +10,11 @@ public static class ServiceCollectionExtensions
     /// <summary>Registers the browser services and the circuit handler that refreshes a circuit's observations.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection.</returns>
-    public static IServiceCollection AddFormaDomServerServices(this IServiceCollection services)
+    public static IServiceCollection AddFormaBrowserCircuitIntegration(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddFormaDomServices();
+        services.AddFormaBrowserServices();
         services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, DomCircuitHandler>(provider => new DomCircuitHandler(provider.GetRequiredService<DomBridge>())));
 
         return services;

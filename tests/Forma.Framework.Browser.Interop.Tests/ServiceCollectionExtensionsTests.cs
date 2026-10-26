@@ -14,7 +14,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_the_bridge_once_per_scope()
     {
         // Act
-        var services = new ServiceCollection().AddFormaDomServices();
+        var services = new ServiceCollection().AddFormaBrowserServices();
 
         // Assert
         var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(DomBridge));
@@ -27,7 +27,7 @@ public sealed class ServiceCollectionExtensionsTests
         // Arrange
         await using var provider = new ServiceCollection()
             .AddSingleton<IJSRuntime>(new FakeJSRuntime((_, _) => null))
-            .AddFormaDomServices()
+            .AddFormaBrowserServices()
             .BuildServiceProvider();
         await using var scope = provider.CreateAsyncScope();
 
@@ -45,7 +45,7 @@ public sealed class ServiceCollectionExtensionsTests
         await using var provider = new ServiceCollection()
             .AddSingleton<IJSRuntime>(new FakeJSRuntime((_, _) => null))
             .AddFormaInputRouter()
-            .AddFormaDomServices()
+            .AddFormaBrowserServices()
             .BuildServiceProvider();
         await using var scope = provider.CreateAsyncScope();
 
