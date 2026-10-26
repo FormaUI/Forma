@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components;
 
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Css;
+using Forma.Framework.Globalization;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 
@@ -34,6 +35,9 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
+    /// <summary>The cultures the component writes its strings, formats and direction in.</summary>
+    [Inject] protected ICultureState CultureState { get; set; } = default!;
+
     private ComponentContext? _context;
 
     /// <summary>Whether the component has been disposed.</summary>
@@ -50,11 +54,11 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     protected IComponentContext Context
         => _context ??= new ComponentContext(
             () => JSRuntime,
-            () => LocaleFactory.Create(LocalizationSourceType),
+            () => new CultureStateLocale(LocaleFactory.Create(LocalizationSourceType), CultureState),
             () => LoggerFactory.CreateLogger(GetType()),
             () => Services.GetService<DomBridge>());
 
-    /// <summary>The component's strings, in the reader's culture.</summary>
+    /// <summary>The component's strings, in the culture state's UI culture.</summary>
     protected IStringLocale L
         => Context.Locale;
 

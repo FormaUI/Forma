@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using System.Globalization
+@using Forma.Framework.Globalization
 @using Forma.Framework.JavaScript.Interop
 @using Forma.Tests.Localization
 @using Microsoft.Extensions.Logging
@@ -116,6 +117,68 @@
 
             // Assert
             Assert.Equal(before + 1, cut.FindComponent<Announcer>().RenderCount);
+        }
+
+        [Fact]
+        public async Task Should_read_its_strings_in_the_culture_states_ui_culture()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            using var fixture = new CultureFixture("en");
+            var paginator = ctx.Render<Paginator>().Instance;
+
+            // Act
+            await ChangeAsync(ctx, "en", "he");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("הבא", paginator.Next);
+                Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
+            });
+        }
+
+        [Fact]
+        public async Task Should_keep_one_locale_that_follows_every_change_of_the_state()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            using var fixture = new CultureFixture("en");
+            var paginator = ctx.Render<Paginator>().Instance;
+            var locale = paginator.Strings;
+            var english = paginator.Next;
+
+            // Act
+            await ChangeAsync(ctx, "en", "he");
+            var hebrew = paginator.Next;
+            await ChangeAsync(ctx, "en", "en");
+            var englishAgain = paginator.Next;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Same(locale, paginator.Strings);
+                Assert.Same(paginator.OwnContext.Locale, paginator.Strings);
+                Assert.Equal(["Next", "הבא", "Next"], [english, hebrew, englishAgain]);
+            });
+        }
+
+        [Fact]
+        public async Task Should_format_the_values_in_its_strings_in_the_culture_states_culture()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            using var fixture = new CultureFixture("en");
+            var paginator = ctx.Render<Paginator>().Instance;
+
+            // Act
+            await ChangeAsync(ctx, "de-DE", "en");
+            var german = paginator.GetPage(1.5);
+            await ChangeAsync(ctx, "en", "en");
+            var english = paginator.GetPage(1.5);
+
+            // Assert
+            Assert.Equal(["Page 1,5", "Page 1.5"], [german, english]);
         }
 
         [Fact]
@@ -248,6 +311,28 @@
 
         protected override ValueTask DisposeAsyncCore()
             => throw new InvalidOperationException("The cleanup failed.");
+    }
+
+    // Changed inside an asynchronous method of its own, so the cultures the change applies stay in that flow and the caller's are left as they were.
+    private static async Task ChangeAsync(FormaComponentBaseTests ctx, string culture, string uiCulture)
+        => await ctx.Services.GetRequiredService<ICultureState>().ChangeAsync(CultureInfo.GetCultureInfo(culture), CultureInfo.GetCultureInfo(uiCulture));
+
+    public sealed class Paginator : FormaComponentBase
+    {
+        public IComponentContext OwnContext
+            => Context;
+
+        public IStringLocale Strings
+            => L;
+
+        public string Next
+            => L["Next"];
+
+        protected override Type LocalizationSourceType
+            => typeof(FormaPagination);
+
+        public string GetPage(double pageNumber)
+            => L["Page {PageNumber}", pageNumber];
     }
 
     public sealed class Borrower : FormaComponentBase

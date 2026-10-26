@@ -145,6 +145,11 @@ Each step is built, reviewed and committed on its own.
    - ✅ The bounded scope: `AmbientCulture.Run` runs a synchronous operation in the cultures it is given and
      restores the caller's in a `finally`, and the state's `Run` runs one in the state's cultures; an
      operation that returns a task is refused, since the scope spans no asynchronous work.
+   - ✅ The strings: a locale's `WithCulture` returns one bound to the cultures given, choosing its strings,
+     fallback and plural forms by the UI culture and formatting the values in their holes by the culture, a
+     value that takes no culture of its own among them; an unbound locale keeps reading the current cultures.
+     Both bases inject the state as `CultureState`, moved forward from the bases' part since their strings
+     need it, and their `L` is one locale that binds again on each revision of the state.
 
    Gate: a change renders an input, a component on the base and a gated grid row again, each in the new
    cultures, and a bounded scope restores the caller's cultures.

@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using System.Diagnostics.CodeAnalysis
+@using System.Globalization
+@using Forma.Framework.Globalization
 @using Forma.Framework.Css
 @using Microsoft.AspNetCore.Components.Rendering
 
@@ -16,6 +18,29 @@
                 .Add(field => field.Class, hostClass)
                 .Add(field => field.FailsOnDispose, failsOnDispose)
                 .Add(field => field.FrameworkFailsOnDispose, frameworkFailsOnDispose));
+        }
+
+        [Fact]
+        public async Task Should_read_its_strings_in_the_culture_states_ui_culture()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            using var fixture = new CultureFixture("en");
+            var model = new FakeModel();
+            var field = ctx.Render<Field>(parameters => parameters
+                .AddCascadingValue(new EditContext(model))
+                .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
+                .Add(field => field.StringsSource, typeof(FormaPagination))).Instance;
+
+            // Act
+            await ChangeAsync(ctx, "en", "he");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("הבא", field.OwnContext.Locale["Next"].Value);
+                Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
+            });
         }
 
         [Fact]
@@ -244,9 +269,15 @@
         }
     }
 
+    // Changed inside an asynchronous method of its own, so the cultures the change applies stay in that flow and the caller's are left as they were.
+    private static async Task ChangeAsync(FormaInputBaseTests ctx, string culture, string uiCulture)
+        => await ctx.Services.GetRequiredService<ICultureState>().ChangeAsync(CultureInfo.GetCultureInfo(culture), CultureInfo.GetCultureInfo(uiCulture));
+
     public sealed class Field : FormaInputBase<string?>
     {
         [Parameter] public string? PartId { get; set; }
+
+        [Parameter] public Type? StringsSource { get; set; }
 
         [Parameter] public bool OutsideField { get; set; }
 
@@ -273,6 +304,9 @@
 
         protected override bool HasFieldContainer
             => !OutsideField;
+
+        protected override Type LocalizationSourceType
+            => StringsSource ?? base.LocalizationSourceType;
 
         protected override void BuildRootClass(CssClassBuilder builder)
             => builder.Add("fake-field");
