@@ -25,7 +25,7 @@ UI culture is written right to left. `Revision` advances once on each change.
 `ChangeAsync(culture, uiCulture)` changes both; an omitted `uiCulture` takes `culture`. It applies the
 new cultures to the calling flow before it notifies, and its task completes once every subscriber has
 been notified. On an Interactive Server circuit,
-[`Forma.Framework.Globalization.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization.AspNetCore/README.md)
+[`Forma.Framework.Globalization.Interop.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization.Interop.Server/README.md)
 applies them before every later event too. A change to the pair the state already holds does nothing.
 
 ```razor

@@ -5,7 +5,7 @@ using Forma.Framework.Browser.Interop.Server;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Events;
 using Forma.Framework.Feedback;
-using Forma.Framework.Globalization.AspNetCore;
+using Forma.Framework.Globalization.Interop.Server;
 using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IJSRuntime>(UnavailableJSRuntime.Instance);
 
         services.AddFormaEventServices();
-        services.AddFormaGlobalizationServices();
+        services.AddFormaGlobalizationCircuitIntegration();
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();

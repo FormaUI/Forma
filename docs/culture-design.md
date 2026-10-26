@@ -163,8 +163,8 @@ commits as the fourth of March under any other:
 
 In a Blazor Web App the `<html>` element belongs to the static `App` component, which no interactive
 component renders. The host's static render sets the document's initial language and direction, and a
-document language keeps them in step with a culture state from then on: `lang` is the state's UI culture's
-name, and `dir` its direction.
+document language keeps them in step with a culture state from then on: `lang` is the state's
+UI culture's name, and `dir` its direction.
 
 - **One owner.** While a document-language registration is live, its culture state determines the
   document's language and direction. A document follows one culture state: registering again under the
@@ -253,17 +253,18 @@ its render mode.
 
 The culture state is platform-neutral. A half serving a render mode takes the render mode's name, as
 `Microsoft.AspNetCore.Components.Server` does, and a half serving the HTTP pipeline takes the platform's,
-whatever render mode it serves beside it, as an integration with ASP.NET Core does across .NET:
+as an integration with ASP.NET Core does across .NET:
 
 | Assembly | Holds |
 | --- | --- |
 | `Forma.Framework.Globalization` | The culture state's abstraction, its default and its registrar, with no dependency on ASP.NET Core or navigation |
 | `Forma.Framework.Globalization.Interop` | The document language: its script, the initializer that tracks what the server served and releases a closed circuit's registration, and the service that keeps the document on a culture state |
-| `Forma.Framework.Globalization.AspNetCore` | The routing middleware, `CultureRouter`, the switching entry point, the circuit handler that applies the culture and starts the document language, the address reconciliation and the cookie |
+| `Forma.Framework.Globalization.Interop.Server` | The circuit handler that applies the culture before every inbound activity and starts the document language |
+| `Forma.Framework.Globalization.AspNetCore` | The routing middleware, `CultureRouter`, the switching entry point, the address reconciliation and the cookie |
 | `Forma.Framework.Browser.Interop.Server` | The DOM's circuit handler |
 
-The product's aggregate registrar registers them, so a host makes its one call and can still override any
-single service.
+The product's aggregate registrar registers all of them but the routing, which takes the host's options, so a
+host makes one call for the rest and can still override any single service.
 
 ## Decisions
 
@@ -271,8 +272,8 @@ single service.
 | --- | --- | --- |
 | C1 | Where does the culture state live? | A platform-neutral `Forma.Framework.Globalization`, its ASP.NET Core parts in `Forma.Framework.Globalization.AspNetCore` |
 | C2 | What is the state called? | `ICultureState`, which says what it holds and that it changes |
-| C3 | Who keeps `<html lang dir>` in step? | The document language, which the ASP.NET Core integration starts with each circuit, so a switch is complete by default |
+| C3 | Who keeps `<html lang dir>` in step? | The document language, which the culture's circuit handler starts with each circuit, so a switch is complete by default |
 | C4 | Does the Showcase switch in place? | Yes, keeping the user's work, with the new load still supported |
-| C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Interop.Server` does, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Globalization.AspNetCore` does with a circuit handler beside its middleware |
+| C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Interop.Server` and the culture's `Forma.Framework.Globalization.Interop.Server` do, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Globalization.AspNetCore` does |
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |

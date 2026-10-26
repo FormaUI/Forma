@@ -1,4 +1,4 @@
-namespace Forma.Framework.Globalization.AspNetCore;
+namespace Forma.Framework.Globalization.Interop.Server;
 
 using Forma.Framework.Globalization.Interop;
 
@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
     /// <summary>Registers the culture state, the document language that keeps the document on it, and the circuit handler that applies the state before every inbound activity and starts the document language.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection.</returns>
-    public static IServiceCollection AddFormaGlobalizationServices(this IServiceCollection services)
+    public static IServiceCollection AddFormaGlobalizationCircuitIntegration(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 

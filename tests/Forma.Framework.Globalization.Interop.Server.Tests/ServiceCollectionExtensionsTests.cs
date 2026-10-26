@@ -1,4 +1,4 @@
-namespace Forma.Framework.Globalization.AspNetCore.Tests;
+namespace Forma.Framework.Globalization.Interop.Server.Tests;
 
 using Forma.Framework.Globalization.Interop;
 
@@ -11,7 +11,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_the_circuit_handler_beside_the_culture_state_and_the_document_language()
     {
         // Act
-        var services = new ServiceCollection().AddFormaGlobalizationServices().AddFormaGlobalizationServices();
+        var services = new ServiceCollection().AddFormaGlobalizationCircuitIntegration().AddFormaGlobalizationCircuitIntegration();
 
         // Assert
         Assert.Multiple(

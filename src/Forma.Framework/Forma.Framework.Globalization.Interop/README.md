@@ -1,14 +1,14 @@
 # Forma.Framework.Globalization.Interop
 
-The document language: the page's `<html lang dir>` kept on a user scope's culture state, so a page
-switched to Hebrew in place is laid out right to left and read as Hebrew by browsers and screen readers.
+The document language keeps the page's `<html lang dir>` on a user scope's culture state, so a
+page switched to Hebrew in place is laid out right to left and read as Hebrew by browsers and screen readers.
 `lang` is the state's UI culture's name and `dir` its direction.
 
 ## Use it
 
-The package comes with `formaui-net.Blazor` and with `formaui-net.Framework.Globalization.AspNetCore`,
-whose `AddFormaGlobalizationServices()` registers it through `AddFormaDocumentLanguage()` and starts it
-with each circuit:
+The package comes with `formaui-net.Blazor` and with `formaui-net.Framework.Globalization.Interop.Server`,
+whose `AddFormaGlobalizationCircuitIntegration()` registers it through
+`AddFormaDocumentLanguage()` and whose circuit handler starts it with each circuit:
 
 | Service | Registered as |
 | --- | --- |
@@ -16,8 +16,8 @@ with each circuit:
 | `DocumentLanguage` | Scoped, one per user scope. |
 
 Both are added with `TryAdd`, so a host's own registration made first is the one used.
-`DocumentLanguage.BeginFollowing()` starts keeping the document on the state, and brings it in step again
-when called as a connection to the browser comes up.
+`DocumentLanguage.BeginFollowing()` starts keeping the document on the state, and brings it in
+step again when called as a connection to the browser comes up.
 
 ## How the document follows the state
 

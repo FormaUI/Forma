@@ -1,4 +1,4 @@
-namespace Forma.Framework.Globalization.AspNetCore.Tests;
+namespace Forma.Framework.Globalization.Interop.Server.Tests;
 
 using System.Globalization;
 
@@ -17,7 +17,7 @@ public sealed class CultureCircuitHandlerTests
     private static ServiceProvider CreateServices(FakeDocumentLanguageBrowser? browser = null)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>((browser ?? new FakeDocumentLanguageBrowser()).Runtime)
-            .AddFormaGlobalizationServices()
+            .AddFormaGlobalizationCircuitIntegration()
             .BuildServiceProvider();
 
     // The circuit is not read by the handler, and a test cannot make one.

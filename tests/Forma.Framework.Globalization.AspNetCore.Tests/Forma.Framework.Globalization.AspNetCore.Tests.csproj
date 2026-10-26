@@ -7,9 +7,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Globalization.AspNetCore\Forma.Framework.Globalization.AspNetCore.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Globalization.Interop\Forma.Framework.Globalization.Interop.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 

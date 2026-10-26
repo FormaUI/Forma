@@ -189,7 +189,10 @@ Each step is built, reviewed and committed on its own.
 
    `Forma.Framework.Globalization.Interop` ships the script, its initializer and the service, and every
    Framework assembly became a package first, so this package could build on the JavaScript interop
-   floor. The culture's circuit handler starts the document language as each connection comes up.
+   floor. The culture's circuit handler, moved with its registrar out of
+   `Forma.Framework.Globalization.AspNetCore` into `Forma.Framework.Globalization.Interop.Server`, the
+   render mode's half, starts the document language as each connection comes up, and the routing package
+   holds routing alone again.
 
    On step 2's probe host, driven in Chrome with islands and again under global interactivity:
    - a switch to Hebrew set `he/rtl`, which held through an enhanced navigation within the culture and
@@ -202,8 +205,8 @@ Each step is built, reviewed and committed on its own.
    - with islands, a page without them kept `he/rtl` while the circuit lived and showed its served `en/ltr`
      once the client closed the circuit, about two seconds later under the default inactivity timeout,
      and the next islands page's circuit registered and switched;
-   - a host installing `Forma.Framework.Globalization.AspNetCore` alone received the five assemblies it
-     needs and the page listed the package's initializer.
+   - a host installing `Forma.Framework.Globalization.Interop.Server` alone received the five assemblies
+     it needs and the page listed the interop package's initializer.
 
    Departure until step 7: navigation to another culture's address does not update the culture state.
    While the existing registration remains live, the document continues to follow that state: a

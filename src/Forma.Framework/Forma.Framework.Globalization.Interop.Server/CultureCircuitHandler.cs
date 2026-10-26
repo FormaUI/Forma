@@ -1,4 +1,4 @@
-namespace Forma.Framework.Globalization.AspNetCore;
+namespace Forma.Framework.Globalization.Interop.Server;
 
 using System.Globalization;
 

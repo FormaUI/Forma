@@ -8,9 +8,4 @@
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
-        <ProjectReference Include="..\Forma.Framework.Globalization.Interop\Forma.Framework.Globalization.Interop.csproj" />
-    </ItemGroup>
-
 </Project>
