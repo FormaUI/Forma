@@ -154,6 +154,10 @@ Each step is built, reviewed and committed on its own.
      change unless disposed, and unsubscribe as they are disposed; the data view's four item gates count
      the state's revision beside their own, so an item whose data is unchanged draws again in a new
      culture; and the cascaded culture is retired.
+   - ✅ The output: every component formats, parses, compares and lays out by the state's cultures and
+     direction; the data view's group names and column titles, and a cell's value that takes no culture
+     of its own, run in the bounded scope; and the pagination's summary and the file viewer's resolution
+     start again after a change, which sets no parameter.
 
    Departure until step 5: a resource provider converts in the ambient culture as the file viewer calls it.
    The resolution a change starts runs in the change's render, whose flow carries the new cultures, while

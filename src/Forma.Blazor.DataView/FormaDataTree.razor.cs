@@ -326,7 +326,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         {
             var candidate = visible[(start + step) % visible.Count];
 
-            if (View.ItemName(candidate).StartsWith(letter, StringComparison.CurrentCultureIgnoreCase))
+            if (CultureState.Culture.CompareInfo.IsPrefix(View.ItemName(candidate), letter, CompareOptions.IgnoreCase))
             {
                 await MoveToAsync(candidate);
                 return;

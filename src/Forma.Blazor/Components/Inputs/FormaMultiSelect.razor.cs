@@ -56,7 +56,7 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     private IReadOnlyList<SelectOption<TValue>> FilteredOptions
         => string.IsNullOrWhiteSpace(_searchText)
             ? Options
-            : [.. Options.Where(o => o.Label.Contains(_searchText, StringComparison.CurrentCultureIgnoreCase))];
+            : [.. Options.Where(o => CultureState.Culture.CompareInfo.IndexOf(o.Label, _searchText, CompareOptions.IgnoreCase) >= 0)];
 
     private bool CanAddSearchText
         => AllowAdd

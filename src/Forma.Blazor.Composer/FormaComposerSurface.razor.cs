@@ -51,7 +51,7 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     {
         ArgumentNullException.ThrowIfNull(Editor);
 
-        var inputs = new SelectionBarInputs(Editor, Plugins, KeyBindings, CultureInfo.CurrentUICulture.Name);
+        var inputs = new SelectionBarInputs(Editor, Plugins, KeyBindings, CultureState.UICulture.Name);
 
         if (inputs == _selectionBarInputs)
         {

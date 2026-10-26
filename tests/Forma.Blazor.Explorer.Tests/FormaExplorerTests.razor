@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Globalization
 @using Forma.Framework.Input.Keyboard
 @using Forma.Framework.Resources
 @using Forma.Blazor.Components.Buttons
@@ -415,6 +416,23 @@
             // Assert
             var items = cut.FindAll(".forma-explorer-item-name");
             Assert.Equal(["undated.jpg", "dated.jpg"], items.Select(i => i.TextContent));
+        }
+
+        [Fact]
+        public async Task Should_write_a_date_in_the_details_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            using var culture = new CultureFixture("en-US");
+            var modifiedAt = new DateTimeOffset(2026, 1, 2, 15, 30, 0, TimeSpan.Zero);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg") { ModifiedAt = modifiedAt }];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Equal(modifiedAt.LocalDateTime.ToString("g", CultureInfo.GetCultureInfo("de-DE")), cut.Find(".forma-explorer-cell-modified").TextContent.Trim());
         }
 
         [Fact]

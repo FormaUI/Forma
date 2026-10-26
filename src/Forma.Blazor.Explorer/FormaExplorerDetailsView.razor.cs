@@ -82,8 +82,8 @@ public sealed partial class FormaExplorerDetailsView : FormaComponentBase
         }
     }
 
-    private static string DisplayDate(DateTimeOffset? value)
-        => value?.LocalDateTime.ToString("g", CultureInfo.CurrentCulture) ?? Placeholder;
+    private string DisplayDate(DateTimeOffset? value)
+        => value?.LocalDateTime.ToString("g", CultureState.Culture) ?? Placeholder;
 
     private string SortState(CatalogSortField field)
     {

@@ -619,7 +619,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             _collection.SortDirection,
             item => item.GetLocalizedLabels(L).KindLabel,
             Clock.GetLocalNow(),
-            CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
+            CultureState.Culture.DateTimeFormat.FirstDayOfWeek);
 
     bool IExplorerContentView.IsCollapsed(ExplorerItemGroup group)
     {
