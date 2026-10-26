@@ -7,26 +7,31 @@ using Forma.Framework.Globalization;
 /// <summary>Resolves localized strings using the cultures of an <see cref="ICultureState"/>.</summary>
 /// <remarks>
 /// Creates a culture-bound locale on first use and refreshes it on the first use after
-/// the culture state's revision changes.
+/// the culture state's revision changes. The bound locale and its revision are published as one binding,
+/// and the revision is read before the cultures, so a change landing between the reads leaves a binding
+/// whose cultures are newer than its revision, which the next use replaces, and never one whose cultures
+/// are older. Several threads may read the locale while the state changes.
 /// </remarks>
 /// <param name="locale">The underlying locale to bind to the state's cultures.</param>
 /// <param name="cultureState">The state that supplies the formatting and UI cultures.</param>
 internal sealed class CultureStateLocale(IStringLocale locale, ICultureState cultureState) : IStringLocale
 {
-    private IStringLocale? _boundLocale;
-    private int _boundRevision;
+    private Binding? _binding;
 
     private IStringLocale BoundLocale
     {
         get
         {
-            if (_boundLocale is null || _boundRevision != cultureState.Revision)
+            var binding = Volatile.Read(ref _binding);
+            var revision = cultureState.Revision;
+
+            if (binding is null || binding.Revision != revision)
             {
-                _boundLocale = locale.WithCulture(cultureState.Culture, cultureState.UICulture);
-                _boundRevision = cultureState.Revision;
+                binding = new Binding(locale.WithCulture(cultureState.Culture, cultureState.UICulture), revision);
+                Volatile.Write(ref _binding, binding);
             }
 
-            return _boundLocale;
+            return binding.Locale;
         }
     }
 
@@ -53,4 +58,9 @@ internal sealed class CultureStateLocale(IStringLocale locale, ICultureState cul
     /// <inheritdoc />
     public IStringLocale WithCulture(CultureInfo culture, CultureInfo uiCulture)
         => locale.WithCulture(culture, uiCulture);
+
+    /// <summary>A locale bound to the state's cultures, with the revision read before them.</summary>
+    /// <param name="Locale">The locale bound to the state's cultures.</param>
+    /// <param name="Revision">The state's revision, read before its cultures.</param>
+    private sealed record Binding(IStringLocale Locale, int Revision);
 }

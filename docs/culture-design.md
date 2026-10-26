@@ -66,7 +66,9 @@ Its rules:
 - The state holds read-only cultures, `CultureInfo.ReadOnly` of what it is given, so no caller can alter
   a culture behind it.
 - The revision is the state's, advanced once per change, and the one source every component base and
-  render gate reads.
+  render gate reads. It advances after the change's cultures are in place, so a reader that reads the
+  revision before the cultures never pairs it with cultures older than it; the state may be read from
+  several threads while it changes, and a change is made from one flow at a time.
 - `ChangeAsync` changes the state before it returns its task, which completes once every subscriber has
   been notified: each component's notification dispatches its render through its renderer, and the
   document's update goes through the browser, so a completed change means the state has changed and its

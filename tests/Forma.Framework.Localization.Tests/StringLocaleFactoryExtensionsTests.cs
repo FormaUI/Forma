@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.Globalization;
 using Forma.Framework.Localization;
+using Forma.Tests.Globalization;
 using Forma.Tests.Shared;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,22 @@ public sealed class StringLocaleFactoryExtensionsTests
             Assert.Multiple(
                 () => Assert.Equal(["Stored 1.5", "Stored 1,5"], [english, german]),
                 () => Assert.Equal("en", CultureInfo.CurrentCulture.Name));
+        }
+
+        [Fact]
+        public void Should_bind_again_after_a_change_that_lands_between_its_reads_of_the_state()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            var cultureState = new InterleavedCultureState(CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("de-DE"));
+            var locale = NullStringLocaleFactory.Instance.Create(typeof(Create), cultureState);
+
+            // Act
+            var duringChange = locale["Stored {Amount}", 1.5].Value;
+            var afterChange = locale["Stored {Amount}", 1.5].Value;
+
+            // Assert
+            Assert.Equal(["Stored 1.5", "Stored 1,5"], [duringChange, afterChange]);
         }
 
         [Fact]
