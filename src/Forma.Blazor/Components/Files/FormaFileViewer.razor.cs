@@ -109,12 +109,17 @@ public sealed partial class FormaFileViewer : FormaElementBase
     }
 
     /// <inheritdoc />
-    protected override async Task OnParametersSetAsync()
+    protected override Task OnParametersSetAsync()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Source);
 
-        // Resolves once per address and cultures, since a provider may convert a document into text in the culture it resolves in.
-        var request = new ResolutionRequest(Source, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+        return ResolveAsync();
+    }
+
+    // Resolves once per address and cultures, since a provider may convert a document into text in the culture it resolves in.
+    private async Task ResolveAsync()
+    {
+        var request = new ResolutionRequest(Source, CultureState.Culture, CultureState.UICulture);
 
         if (request == _resolvedRequest)
         {
@@ -180,7 +185,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The arrows belong to the viewer only while it can navigate; the registration runs beside the image's behaviors.
-        var navigation = _navigation.SyncAsync(RootElement, CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile, wanted: IsNavigable);
+        var navigation = _navigation.SyncAsync(RootElement, CultureState.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile, wanted: IsNavigable);
 
         if (Resource is ImageResourceInfo)
         {
@@ -211,6 +216,13 @@ public sealed partial class FormaFileViewer : FormaElementBase
         }
 
         await navigation;
+
+        // A change of culture renders the viewer again without setting a parameter, so a resolution in the cultures it left starts again here.
+        if (_resolvedRequest is { } resolved && (resolved.Culture != CultureState.Culture || resolved.UICulture != CultureState.UICulture))
+        {
+            await ResolveAsync();
+            StateHasChanged();
+        }
     }
 
     /// <summary>Zooms a step in for a wheel rolled up and a step out for one rolled down.</summary>

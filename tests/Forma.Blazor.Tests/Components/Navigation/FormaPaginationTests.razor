@@ -4,6 +4,22 @@
 @code {
     public sealed class Component
     {
+        [Fact]
+        public async Task Should_write_what_the_navigation_input_is_out_of_again_when_the_culture_state_changes()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            using var culture = new CultureFixture("en-US");
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="20000" PageSize="10" CurrentPage="7" />);
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Equal("7 of 2.000", cut.Find(InputBox).GetAttribute("value"));
+        }
+
         private static readonly PaginationOptions InputByOption =
             new() { NavigationInput = true };
 

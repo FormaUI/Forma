@@ -5,6 +5,21 @@
     public sealed class Component
     {
         [Fact]
+        public async Task Should_write_the_count_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaCapacityIndicatorTests();
+            using var culture = new CultureFixture("en-US");
+            var cut = ctx.Render(@<FormaCapacityIndicator Used="1234" Limit="2000" />);
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Equal("1.234 / 2.000", cut.Find(".forma-capacity-indicator-count").TextContent);
+        }
+
+        [Fact]
         public void Should_expose_a_meter_of_the_count_against_the_limit()
         {
             // Arrange

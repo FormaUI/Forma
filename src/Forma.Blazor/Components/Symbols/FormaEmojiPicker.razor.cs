@@ -1,7 +1,5 @@
 namespace Forma.Blazor.Components.Symbols;
 
-using System.Globalization;
-
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Interaction;
@@ -97,8 +95,8 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
 
     private bool IsSearching => !string.IsNullOrWhiteSpace(_searchQuery);
 
-    private static InputProfile TabsProfile
-        => CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftTabsProfile : LeftToRightTabsProfile;
+    private InputProfile TabsProfile
+        => CultureState.IsRightToLeft ? RightToLeftTabsProfile : LeftToRightTabsProfile;
 
     private IReadOnlyList<EmojiGroup> Tabs
         => _tabs ??= Recent.Count == 0

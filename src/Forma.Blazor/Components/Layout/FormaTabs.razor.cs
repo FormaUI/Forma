@@ -1,7 +1,5 @@
 namespace Forma.Blazor.Components.Layout;
 
-using System.Globalization;
-
 using Forma.Blazor.Components.Interaction;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
@@ -73,7 +71,7 @@ public sealed partial class FormaTabs : FormaElementBase
     // The tab list is the scope, so an arrow inside a panel is the panel's rather than the strip's.
     /// <inheritdoc />
     protected override Task OnAfterRenderAsync(bool firstRender)
-        => _inputRegistration.SyncAsync(_tabList, CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile);
+        => _inputRegistration.SyncAsync(_tabList, CultureState.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile);
 
     // Moves focus to the tab the action names, counted from the focused one, without selecting it.
     private async Task HandleStripActionAsync(string action, InputInfo input)

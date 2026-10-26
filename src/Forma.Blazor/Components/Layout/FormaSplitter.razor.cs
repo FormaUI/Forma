@@ -69,7 +69,7 @@ public sealed partial class FormaSplitter : FormaElementBase
 
     private InputProfile Profile
         => IsVertical
-            ? CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? VerticalRightToLeftProfile : VerticalLeftToRightProfile
+            ? CultureState.IsRightToLeft ? VerticalRightToLeftProfile : VerticalLeftToRightProfile
             : HorizontalProfile;
 
     private static string FormatRounded(double value)
@@ -140,7 +140,7 @@ public sealed partial class FormaSplitter : FormaElementBase
         var travelled = (IsVertical ? args.ClientX : args.ClientY) - _dragOrigin;
 
         // The pane sits before the divider, so in a right-to-left layout it grows as the pointer moves the other way.
-        var direction = IsVertical && CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? -1 : 1;
+        var direction = IsVertical && CultureState.IsRightToLeft ? -1 : 1;
 
         await SetValueAsync(_dragStartValue + (travelled / PixelsPerUnit * direction));
     }

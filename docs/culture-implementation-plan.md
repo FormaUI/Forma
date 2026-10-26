@@ -155,6 +155,11 @@ Each step is built, reviewed and committed on its own.
      the state's revision beside their own, so an item whose data is unchanged draws again in a new
      culture; and the cascaded culture is retired.
 
+   Departure until step 5: a resource provider converts in the ambient culture as the file viewer calls it.
+   The resolution a change starts runs in the change's render, whose flow carries the new cultures, while
+   one a parameter starts runs in its event's, the connection's culture until the circuit handler applies
+   the state before every inbound activity.
+
    Gate: a change renders an input, a component on the base and a gated grid row again, each in the new
    cultures, and a bounded scope restores the caller's cultures.
 5. **The server.** The circuit handler applies the culture before every inbound activity. Gate: a test of

@@ -1,7 +1,5 @@
 namespace Forma.Blazor.Components.Feedback;
 
-using System.Globalization;
-
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -87,8 +85,8 @@ public sealed partial class FormaCapacityIndicator : FormaElementBase
         ArgumentOutOfRangeException.ThrowIfGreaterThan(NearLimitRatio, 1m);
     }
 
-    private static string FormatCount(int count)
-        => count.ToString("N0", CultureInfo.CurrentCulture);
+    private string FormatCount(int count)
+        => count.ToString("N0", CultureState.Culture);
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

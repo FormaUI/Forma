@@ -42,6 +42,7 @@ public sealed partial class FormaPagination : FormaElementBase
     private TextEntry _textEntry = default!;
     private DotNetObjectReference<FormaPagination>? _selfReference;
     private string? _navigationEntry;
+    private string? _shownPageSummary;
     private int _shownPage;
 
     /// <summary>The total number of items.</summary>
@@ -84,7 +85,7 @@ public sealed partial class FormaPagination : FormaElementBase
 
     // The box reads "7 of 200" at rest.
     private string PageSummary
-        => L["{PageNumber} of {PageCount}", ActivePage.ToString(CultureInfo.CurrentCulture), PageCount.ToString("N0", CultureInfo.CurrentCulture)].Value;
+        => L["{PageNumber} of {PageCount}", ActivePage.ToString(CultureState.Culture), PageCount.ToString("N0", CultureState.Culture)].Value;
 
     /// <summary>Turns one page in the direction of a wheel gesture.</summary>
     [JSInvokable]
@@ -117,6 +118,13 @@ public sealed partial class FormaPagination : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // A change of culture renders the box again without setting a parameter, so the page it shows at rest is written again in the new culture.
+        if (_navigationEntry == _shownPageSummary && _shownPageSummary != PageSummary)
+        {
+            ShowPage();
+            StateHasChanged();
+        }
+
         if (PageCount <= 1)
         {
             await _navigationInputRegistration.SyncAsync(default, NavigationInputProfile, wanted: false);
@@ -216,7 +224,7 @@ public sealed partial class FormaPagination : FormaElementBase
     {
         var entry = await TakeNavigationEntryAsync();
 
-        if (int.TryParse(entry, NumberStyles.Integer, CultureInfo.CurrentCulture, out var page))
+        if (int.TryParse(entry, NumberStyles.Integer, CultureState.Culture, out var page))
         {
             await GoToPageAsync(Math.Clamp(page, 1, PageCount));
         }
@@ -226,7 +234,7 @@ public sealed partial class FormaPagination : FormaElementBase
     }
 
     private void ShowPage()
-        => _navigationEntry = PageSummary;
+        => _navigationEntry = _shownPageSummary = PageSummary;
 
     // Only an emptied box reverts to the page shown.
     private void ShowPageIfEmpty()
