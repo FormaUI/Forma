@@ -13,6 +13,7 @@ const scripts = {
     core: getInteropScriptsPath('JavaScript'),
     browser: getInteropScriptsPath('Browser'),
     input: getInteropScriptsPath('Input'),
+    globalization: getInteropScriptsPath('Globalization'),
     composer: getProductScriptsPath('Composer'),
     dataview: getProductScriptsPath('DataView'),
     explorer: getProductScriptsPath('Explorer'),
