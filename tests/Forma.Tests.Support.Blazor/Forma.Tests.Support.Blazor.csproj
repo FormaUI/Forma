@@ -19,6 +19,7 @@
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Browser.Interop.Server\Forma.Framework.Browser.Interop.Server.csproj" />
         <ProjectReference Include="..\..\src\Forma.AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />

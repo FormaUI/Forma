@@ -257,9 +257,9 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
             _ => null,
         };
 
-    private static bool TryReadTime(string text, out TimeOnly time)
+    private static bool TryReadTime(string text, CultureInfo culture, out TimeOnly time)
         => TimeOnly.TryParseExact(text, TimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out time)
-            || TimeOnly.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out time);
+            || TimeOnly.TryParse(text, culture, DateTimeStyles.None, out time);
 
     // A bound's clock at the entry's offset, where the bound is set.
     private DateTime? GetClock(TValue? bound)
@@ -302,10 +302,10 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     }
 
     private string FormatTime(TimeOnly time)
-        => time.ToString(HasSeconds ? "T" : "t", CultureInfo.CurrentCulture);
+        => time.ToString(HasSeconds ? "T" : "t", CultureState.Culture);
 
     private string FormatClock(DateTime clock)
-        => clock.ToString(HasSeconds ? "G" : "g", CultureInfo.CurrentCulture);
+        => clock.ToString(HasSeconds ? "G" : "g", CultureState.Culture);
 
     private void HandleChooseDate(DateOnly date)
     {
@@ -326,7 +326,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
             _time = null;
             _unreadTimeText = null;
         }
-        else if (TryReadTime(text.Trim(), out var time))
+        else if (TryReadTime(text.Trim(), CultureState.Culture, out var time))
         {
             _time = time;
             _unreadTimeText = null;
@@ -416,7 +416,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
         if (timeText.Length > 0)
         {
-            if (!TryReadTime(timeText.Trim(), out var parsedTime))
+            if (!TryReadTime(timeText.Trim(), CultureState.Culture, out var parsedTime))
             {
                 return L["The {Field} field must be a time.", FieldName];
             }

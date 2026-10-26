@@ -5,6 +5,27 @@
     public sealed class Component
     {
         [Fact]
+        public async Task Should_move_the_symbol_where_the_culture_state_s_currency_pattern_puts_it()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            await ctx.ChangeCultureAsync("he-IL");
+
+            // Assert
+            var adornment = cut.Find(".forma-number-input-adornment");
+            Assert.Multiple(
+                () => Assert.Equal("$", adornment.TextContent.Trim()),
+                () => Assert.Contains("forma-number-input-adornment-end", adornment.ClassList));
+        }
+
+        [Fact]
         public void Should_draw_one_field_with_one_label_one_input_and_one_set_of_messages()
         {
             // Arrange

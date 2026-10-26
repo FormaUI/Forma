@@ -1,6 +1,5 @@
 @inherits FormaBunitContext
 @using System.Globalization
-@using Forma.Framework.Globalization
 @using Forma.Framework.JavaScript.Interop
 @using Forma.Tests.Localization
 @using Microsoft.Extensions.Logging
@@ -109,7 +108,7 @@
             var before = cut.RenderCount;
 
             // Act
-            await ChangeAsync(ctx, "he", "he");
+            await ctx.ChangeCultureAsync("he", "he");
 
             // Assert
             Assert.Equal(before + 1, cut.RenderCount);
@@ -125,7 +124,7 @@
             var before = cut.RenderCount;
 
             // Act
-            await ChangeAsync(ctx, "en", "en");
+            await ctx.ChangeCultureAsync("en", "en");
 
             // Assert
             Assert.Equal(before, cut.RenderCount);
@@ -142,7 +141,7 @@
             var before = cut.RenderCount;
 
             // Act
-            await ChangeAsync(ctx, "he", "he");
+            await ctx.ChangeCultureAsync("he", "he");
 
             // Assert
             Assert.Equal(before, cut.RenderCount);
@@ -157,7 +156,7 @@
             var paginator = ctx.Render<Paginator>().Instance;
 
             // Act
-            await ChangeAsync(ctx, "en", "he");
+            await ctx.ChangeCultureAsync("en", "he");
 
             // Assert
             Assert.Multiple(() =>
@@ -178,9 +177,9 @@
             var english = paginator.Next;
 
             // Act
-            await ChangeAsync(ctx, "en", "he");
+            await ctx.ChangeCultureAsync("en", "he");
             var hebrew = paginator.Next;
-            await ChangeAsync(ctx, "en", "en");
+            await ctx.ChangeCultureAsync("en", "en");
             var englishAgain = paginator.Next;
 
             // Assert
@@ -201,9 +200,9 @@
             var paginator = ctx.Render<Paginator>().Instance;
 
             // Act
-            await ChangeAsync(ctx, "de-DE", "en");
+            await ctx.ChangeCultureAsync("de-DE", "en");
             var german = paginator.GetPage(1.5);
-            await ChangeAsync(ctx, "en", "en");
+            await ctx.ChangeCultureAsync("en", "en");
             var english = paginator.GetPage(1.5);
 
             // Assert
@@ -341,10 +340,6 @@
         protected override ValueTask DisposeAsyncCore()
             => throw new InvalidOperationException("The cleanup failed.");
     }
-
-    // Changed inside an asynchronous method of its own, so the cultures the change applies stay in that flow and the caller's are left as they were.
-    private static async Task ChangeAsync(FormaComponentBaseTests ctx, string culture, string uiCulture)
-        => await ctx.Services.GetRequiredService<ICultureState>().ChangeAsync(CultureInfo.GetCultureInfo(culture), CultureInfo.GetCultureInfo(uiCulture));
 
     public sealed class Paginator : FormaComponentBase
     {

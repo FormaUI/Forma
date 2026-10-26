@@ -1,7 +1,6 @@
 @inherits FormaBunitContext
 @using Forma.Framework.Browser.Interop.Behaviors
 @using System.Globalization
-@using Forma.Framework.Globalization
 
 @code {
     public sealed class Component
@@ -53,7 +52,7 @@
                 </FakeFormHost>);
 
             // Act
-            await ctx.Services.GetRequiredService<ICultureState>().ChangeAsync(CultureInfo.GetCultureInfo("es-419"));
+            await ctx.ChangeCultureAsync("es-419");
 
             // Assert
             Assert.Equal("15/3/2025", cut.Find(".forma-date-box-value").TextContent);

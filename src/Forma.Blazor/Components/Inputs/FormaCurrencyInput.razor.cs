@@ -59,9 +59,15 @@ public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase
 
     private int _maxDecimalPlaces;
     private int _minDecimalPlaces;
-    private NumberAdornment? _adornment;
 
     private FormaNumberInput<TValue>? NumberInput { get; set; }
+
+    // The culture's currency pattern puts the symbol before the number, $n or $ n, or after it, n$ or n $.
+    private NumberAdornment Adornment
+        => new(
+            CurrencyCatalog.GetSymbol(CurrencyCode, CultureState.Culture),
+            CultureState.Culture.NumberFormat.CurrencyPositivePattern is 1 or 3 ? AdornmentSide.End : AdornmentSide.Start,
+            CurrencyCode);
 
     /// <inheritdoc />
     public override ElementReference RootElement
@@ -97,14 +103,9 @@ public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase
         }
 
         // The currency's minor units are the places an amount is shown with and, unless the host allows more, the most it takes.
-        var culture = CultureInfo.CurrentCulture;
         var minorUnits = CurrencyCatalog.GetMinorUnits(CurrencyCode);
         _maxDecimalPlaces = MaxDecimalPlaces ?? minorUnits;
         _minDecimalPlaces = Math.Min(minorUnits, _maxDecimalPlaces);
-
-        // The culture's currency pattern puts the symbol before the number, $n or $ n, or after it, n$ or n $.
-        var side = culture.NumberFormat.CurrencyPositivePattern is 1 or 3 ? AdornmentSide.End : AdornmentSide.Start;
-        _adornment = new NumberAdornment(CurrencyCatalog.GetSymbol(CurrencyCode, culture), side, CurrencyCode);
     }
 
     /// <inheritdoc />

@@ -6,6 +6,21 @@
 @code {
     public sealed class Component
     {
+        [Fact]
+        public async Task Should_lay_the_month_out_in_the_culture_state_s_ui_direction()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            using var culture = new CultureFixture("en-US");
+            var cut = ctx.Render(@<FormaCalendar />);
+
+            // Act
+            await ctx.ChangeCultureAsync("en-US", "he-IL");
+
+            // Assert
+            Assert.Equal("rtl", cut.Find(".forma-calendar-month").GetAttribute("dir"));
+        }
+
         private static IElement FindDay<TComponent>(IRenderedComponent<TComponent> cut, string dayOfMonth)
             where TComponent : IComponent
             => cut.FindAll(".forma-calendar-day").First(day => day.TextContent.Trim() == dayOfMonth && !day.ClassList.Contains("empty"));

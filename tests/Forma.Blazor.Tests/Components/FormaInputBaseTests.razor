@@ -1,7 +1,6 @@
 @inherits FormaBunitContext
 @using System.Diagnostics.CodeAnalysis
 @using System.Globalization
-@using Forma.Framework.Globalization
 @using Forma.Framework.Css
 @using Microsoft.AspNetCore.Components.Rendering
 
@@ -30,7 +29,7 @@
             var before = cut.RenderCount;
 
             // Act
-            await ChangeAsync(ctx, "he", "he");
+            await ctx.ChangeCultureAsync("he", "he");
 
             // Assert
             Assert.Equal(before + 1, cut.RenderCount);
@@ -49,7 +48,7 @@
                 .Add(field => field.StringsSource, typeof(FormaPagination))).Instance;
 
             // Act
-            await ChangeAsync(ctx, "en", "he");
+            await ctx.ChangeCultureAsync("en", "he");
 
             // Assert
             Assert.Multiple(() =>
@@ -284,10 +283,6 @@
             Assert.Null(cut.Find("input").GetAttribute("aria-describedby"));
         }
     }
-
-    // Changed inside an asynchronous method of its own, so the cultures the change applies stay in that flow and the caller's are left as they were.
-    private static async Task ChangeAsync(FormaInputBaseTests ctx, string culture, string uiCulture)
-        => await ctx.Services.GetRequiredService<ICultureState>().ChangeAsync(CultureInfo.GetCultureInfo(culture), CultureInfo.GetCultureInfo(uiCulture));
 
     public sealed class Field : FormaInputBase<string?>
     {

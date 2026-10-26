@@ -1,7 +1,26 @@
 @inherits FormaBunitContext
+@using System.Globalization
 @code {
     public sealed class Component
     {
+        [Fact]
+        public async Task Should_show_the_value_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaSliderTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new FakeModel { Ratio = 0.5 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSlider @bind-Value="model.Ratio" Label="Duration" Min="0.5" Max="5" Step="0.5" Unit="s" />
+            </FakeFormHost>);
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Equal("0,5s", cut.Find(".forma-slider-value").TextContent);
+        }
+
         [Fact]
         public void Should_render_a_range_input()
         {

@@ -38,10 +38,8 @@ public sealed partial class FormaCalendar : FormaComponentBase
     private bool ShowsTwoMonths
         => Months == 2;
 
-#pragma warning disable CA1822 // Intentionally instance — reads ambient CultureInfo per render
-    private CultureInfo Culture => CultureInfo.CurrentCulture;
-#pragma warning restore CA1822
-    private string TextDirection => Culture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+    private CultureInfo Culture => CultureState.Culture;
+    private string TextDirection => CultureState.IsRightToLeft ? "rtl" : "ltr";
 
     /// <inheritdoc />
     protected override void OnParametersSet()

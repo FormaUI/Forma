@@ -61,7 +61,7 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     private bool CanAddSearchText
         => AllowAdd
         && !string.IsNullOrWhiteSpace(_searchText)
-        && !Options.Any(o => CultureInfo.CurrentCulture.CompareInfo
+        && !Options.Any(o => CultureState.Culture.CompareInfo
             .Compare(o.Label, _searchText.Trim(), CompareOptions.IgnoreCase) == 0);
 
     private string TriggerText

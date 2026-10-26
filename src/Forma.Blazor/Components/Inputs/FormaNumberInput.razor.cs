@@ -139,7 +139,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     // where the adornment stands at the start of a left-to-right culture or the end of a right-to-left one, and its own right otherwise.
     private string? AdornmentRoomClass
         => Adornment is { } adornment
-            ? (adornment.Side is AdornmentSide.Start) != CultureInfo.CurrentCulture.TextInfo.IsRightToLeft
+            ? (adornment.Side is AdornmentSide.Start) != CultureState.IsRightToLeft
                 ? "forma-number-input-room-start"
                 : "forma-number-input-room-end"
             : null;
@@ -253,7 +253,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         // Dividing by one written to the most decimal places drops the trailing zeros a sum keeps, so 12.5 and a half step shows 13.
         next = Math.Clamp(next, lowest, highest) / 1.0000000000000000000000000000m;
         _unreadText = null;
-        CurrentValueAsString = next.ToString(CultureInfo.CurrentCulture);
+        CurrentValueAsString = next.ToString(CultureState.Culture);
 
         // A routed key is no event of the field's own, so the field draws the number it stepped to itself.
         StateHasChanged();
@@ -263,11 +263,11 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     // A sign, digits and, for a fractional number, the culture's decimal separator, with the whole part grouped as the culture groups it or
     // not grouped at all.
-    private static bool TryParseNumber(string text, out TValue result)
+    private static bool TryParseNumber(string text, CultureInfo culture, out TValue result)
     {
         const NumberStyles Whole = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowLeadingSign;
         const NumberStyles Fractional = Whole | NumberStyles.AllowDecimalPoint;
-        var format = GetReadingFormat(CultureInfo.CurrentCulture.NumberFormat);
+        var format = GetReadingFormat(culture.NumberFormat);
         object? number = null;
         result = default!;
 
@@ -383,14 +383,14 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             : [format.NumberGroupSeparator];
 
     // The decimal places the text writes, past the culture's decimal separator, with trailing zeros left out.
-    private static int CountDecimalPlaces(string text)
+    private static int CountDecimalPlaces(string text, CultureInfo culture)
     {
         var trimmed = text.Trim();
-        var decimalAt = trimmed.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
+        var decimalAt = trimmed.IndexOf(culture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
 
         return decimalAt < 0
             ? 0
-            : trimmed[(decimalAt + CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator.Length)..].TrimEnd('0').Count(char.IsAsciiDigit);
+            : trimmed[(decimalAt + culture.NumberFormat.NumberDecimalSeparator.Length)..].TrimEnd('0').Count(char.IsAsciiDigit);
     }
 
     private static string? FormatLimit(decimal? limit)
@@ -436,8 +436,8 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     /// <inheritdoc />
     protected override string? FormatValueAsString(TValue? value)
         => DisplayFormat is { } format && value is IFormattable number
-            ? number.ToString(format, CultureInfo.CurrentCulture)
-            : BindConverter.FormatValue(value, CultureInfo.CurrentCulture)?.ToString();
+            ? number.ToString(format, CultureState.Culture)
+            : BindConverter.FormatValue(value, CultureState.Culture)?.ToString();
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -465,12 +465,12 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             return IsNullable ? null : L["The {Field} field is required.", FieldName];
         }
 
-        if (!TryParseNumber(value, out var parsed))
+        if (!TryParseNumber(value, CultureState.Culture, out var parsed))
         {
             return L["The {Field} field must be a number.", FieldName];
         }
 
-        if (MaxDecimalPlaces is { } places && CountDecimalPlaces(value) > places)
+        if (MaxDecimalPlaces is { } places && CountDecimalPlaces(value, CultureState.Culture) > places)
         {
             return places == 0
                 ? L["The {Field} field must be a whole number.", FieldName]
@@ -479,12 +479,12 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
         if (Min is { } min && CompareToLimit(parsed, min) < 0)
         {
-            return L["The {Field} field must be at least {Minimum}.", FieldName, min.ToString(CultureInfo.CurrentCulture)];
+            return L["The {Field} field must be at least {Minimum}.", FieldName, min.ToString(CultureState.Culture)];
         }
 
         if (Max is { } max && CompareToLimit(parsed, max) > 0)
         {
-            return L["The {Field} field must be at most {Maximum}.", FieldName, max.ToString(CultureInfo.CurrentCulture)];
+            return L["The {Field} field must be at most {Maximum}.", FieldName, max.ToString(CultureState.Culture)];
         }
 
         result = parsed;

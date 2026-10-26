@@ -34,8 +34,8 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
 
     private string CountText
         => MaxLength is { } maxLength
-            ? $"{CharacterCount.ToString(CultureInfo.CurrentCulture)} / {maxLength.ToString(CultureInfo.CurrentCulture)}"
-            : CharacterCount.ToString(CultureInfo.CurrentCulture);
+            ? $"{CharacterCount.ToString(CultureState.Culture)} / {maxLength.ToString(CultureState.Culture)}"
+            : CharacterCount.ToString(CultureState.Culture);
 
     // The count spelled out for assistive technology.
     private string CountLabel

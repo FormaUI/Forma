@@ -14,7 +14,6 @@
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />

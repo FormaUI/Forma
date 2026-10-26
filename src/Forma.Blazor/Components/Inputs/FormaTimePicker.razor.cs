@@ -139,7 +139,7 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
         => time is { } value && value.Second != 0;
 
     private string FormatTime(TimeOnly time)
-        => time.ToString(HasSeconds ? "T" : "t", CultureInfo.CurrentCulture);
+        => time.ToString(HasSeconds ? "T" : "t", CultureState.Culture);
 
     private void HandleChange(string? text)
     {
@@ -203,7 +203,7 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
         var text = value.Trim();
 
         if (!TimeOnly.TryParseExact(text, RoundTripFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)
-            && !TimeOnly.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out time))
+            && !TimeOnly.TryParse(text, CultureState.Culture, DateTimeStyles.None, out time))
         {
             return L["The {Field} field must be a time.", FieldName];
         }

@@ -43,10 +43,8 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     private bool IsOpen
         => Popover is { IsOpen: true };
 
-#pragma warning disable CA1822 // Intentionally instance — reads ambient CultureInfo per render
-    private CultureInfo Culture => CultureInfo.CurrentCulture;
-#pragma warning restore CA1822
-    private string TextDirection => Culture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+    private CultureInfo Culture => CultureState.Culture;
+    private string TextDirection => CultureState.IsRightToLeft ? "rtl" : "ltr";
 
     private bool HasValue
         => Value is not null;

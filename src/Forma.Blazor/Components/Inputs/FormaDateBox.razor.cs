@@ -82,7 +82,7 @@ public sealed partial class FormaDateBox : FormaComponentBase
         => NameId is null ? null : $"{NameId} {ValueId}";
 
     private string DisplayText
-        => Date is { } date ? date.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture) : string.Empty;
+        => Date is { } date ? date.ToDateTime(TimeOnly.MinValue).ToString("d", CultureState.Culture) : string.Empty;
 
     private DateRange? Highlight
         => Date is { } date ? new DateRange(date, date) : null;

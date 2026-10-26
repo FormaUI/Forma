@@ -4,7 +4,6 @@
 @using System.Globalization
 @using Forma.Blazor.Components.DataView.Interop
 @using Forma.Framework.Css
-@using Forma.Framework.Globalization
 @using Forma.Blazor.Components.Layout
 @using Forma.Blazor.Components.Virtualization
 @using Microsoft.AspNetCore.Components.Web
@@ -910,7 +909,7 @@
             var before = new Dictionary<int, int>(drawn);
 
             // Act
-            await ctx.Services.GetRequiredService<ICultureState>().ChangeAsync(CultureInfo.GetCultureInfo("he"));
+            await ctx.ChangeCultureAsync("he");
 
             // Assert
             Assert.Equal([1, 2, 3], DrawnSince(drawn, before));

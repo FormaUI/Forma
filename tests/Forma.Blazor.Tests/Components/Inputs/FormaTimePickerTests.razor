@@ -7,6 +7,24 @@
     public sealed class Component
     {
         [Fact]
+        public async Task Should_write_the_time_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Shift { Start = new TimeOnly(9, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Start" Label="Starts" />
+            </FakeFormHost>);
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Equal("09:30", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
         public void Should_render_an_editable_combobox_in_a_field_showing_the_time_as_the_culture_writes_it()
         {
             // Arrange

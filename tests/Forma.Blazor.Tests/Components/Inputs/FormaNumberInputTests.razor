@@ -5,6 +5,28 @@
     public sealed class Component
     {
         [Fact]
+        public async Task Should_read_a_number_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Act
+            cut.Find("input").Change("1.234,5");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1234.5m, model.Price),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")),
+                () => Assert.Equal("en-US", CultureInfo.CurrentCulture.Name));
+        }
+
+        [Fact]
         public void Should_render_a_spin_button_with_its_number_and_limits()
         {
             // Arrange

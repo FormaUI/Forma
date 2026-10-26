@@ -32,8 +32,8 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
     // The visible reading, hidden from assistive technology, which hears the input's own value text.
     private string DisplayValue
         => Unit is null
-            ? CurrentValue.ToString(null, CultureInfo.CurrentCulture)
-            : $"{CurrentValue.ToString(null, CultureInfo.CurrentCulture)}{Unit}";
+            ? CurrentValue.ToString(null, CultureState.Culture)
+            : $"{CurrentValue.ToString(null, CultureState.Culture)}{Unit}";
 
     // The reading with its unit, where null leaves the input's native value to be announced.
     private string? AriaValueText
