@@ -242,6 +242,56 @@ finally {
     Remove-Item -LiteralPath $log -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+# The progress is read off the lines the runner prints, so it runs for real here on lines shaped as the
+# runner's are: two projects of three finishing, one with a failed test whose name holds a space.
+try {
+    $module = Get-Module Forma.Build
+    $runnerLines = @(
+        'Test run for C:\tests\A.Tests.dll (.NETCoreApp,Version=v11.0)'
+        'A total of 1 test files matched the specified pattern.'
+        ''
+        'Passed!  - Failed:     0, Passed:    26, Skipped:     0, Total:    26, Duration: 52 ms - Forma.A.Tests.dll (net11.0)'
+        '  Failed Forma.B.Tests.Thing.Should_work(text: "a b") [12 ms]'
+        '  Error Message:'
+        'Failed!  - Failed:     1, Passed:    10, Skipped:     2, Total:    13, Duration: 1 s - Forma.B.Tests.dll (net11.0)'
+    )
+    $shown = @($runnerLines | & $module { $input | Write-TestProgress -ProjectCount 3 -Estimate ([timespan]::FromMinutes(5)) } 6>&1 | ForEach-Object { "$_" })
+    $counted = & $module { param($Target) Get-TestProjectCount -Target $Target } (Initialize-BuildContext -RepositoryRoot $repositoryRoot).Solution
+
+    $wrong = @(
+        if ($shown -match '^Test run for|^A total of') { 'the runner''s announcements were shown' }
+        if (-not ($shown -match '^\s+\[1/3\] passed Forma\.A\.Tests, 26 tests in 52 ms .*left\)$')) { 'the first project finishing was not shown with its count and the time left' }
+        if (-not ($shown -match '^\s+\[2/3\] FAILED Forma\.B\.Tests, 1 of 13 failed')) { 'the failing project was not shown as failed with its counts' }
+        if (-not ($shown -match '^\s+Error Message:$')) { 'a failed test''s message was not passed through' }
+        if (-not ($shown -match '^\s+36 passed, 1 failed, 2 skipped, across 2 of 3 projects')) { 'the totals were not added up across the projects' }
+        if (-not ($shown -match '^\s+1 project gave no result$')) { 'the project that gave no result was not reported' }
+        if (-not ($shown -match '^\s+Forma\.B\.Tests\.Thing\.Should_work\(text: "a b"\)$')) { 'the failed test was not listed by name' }
+        if ($counted -lt 2) { "the solution counted $counted test projects" }
+    )
+
+    $progress = [pscustomobject]@{
+        Name     = 'a test run shows each project as it finishes and adds up the totals'
+        Passed   = $wrong.Count -eq 0
+        Problems = $wrong
+        Output   = ''
+    }
+}
+catch {
+    $progress = [pscustomobject]@{
+        Name     = 'a test run shows each project as it finishes and adds up the totals'
+        Passed   = $false
+        Problems = @("the check could not be made: $($_.Exception.Message)")
+        Output   = ''
+    }
+}
+
+$mark = if ($progress.Passed) { 'ok  ' } else { 'FAIL' }
+Write-Host ("  {0} {1}" -f $mark, $progress.Name)
+
+foreach ($problem in $progress.Problems) {
+    Write-Host ("        {0}" -f $problem)
+}
+
 $mark = if ($waitLog.Passed) { 'ok  ' } else { 'FAIL' }
 Write-Host ("  {0} {1}" -f $mark, $waitLog.Name)
 
@@ -263,7 +313,7 @@ foreach ($problem in $guard.Problems) {
     Write-Host ("        {0}" -f $problem)
 }
 
-$all = @($results) + $guard + $cleaning + $waitLog
+$all = @($results) + $guard + $cleaning + $waitLog + $progress
 $failed = @($all | Where-Object { -not $_.Passed })
 
 Write-Host ''

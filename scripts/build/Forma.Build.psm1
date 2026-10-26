@@ -70,6 +70,113 @@ function Initialize-BuildContext {
         Scripts        = Join-Path $RepositoryRoot 'scripts'
         TaskPrograms   = Join-Path $RepositoryRoot 'scripts'
         ScriptTests    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Tests.Scripts'
+        Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
+    }
+}
+
+# ── Timings ───────────────────────────────────────────────────────────────────
+
+<#
+.SYNOPSIS
+Reads how long a step took the last time it passed.
+
+.DESCRIPTION
+A step is known by its name, what it acted on and what it did, so the whole suite and one project, or one
+run and twenty, are timed apart. The timings are a convenience kept as build output, so a file that is
+missing or cannot be read is a step with no timing rather than a failure.
+
+.PARAMETER Path
+The file the timings are kept in.
+
+.PARAMETER Name
+The step's name.
+
+.PARAMETER Target
+What the step acts on.
+
+.PARAMETER Description
+What the step does.
+
+.OUTPUTS
+The time the step took, or nothing where it has no timing.
+#>
+function Get-StepTiming {
+    [CmdletBinding()]
+    [OutputType([timespan])]
+    param(
+        [Parameter(Mandatory)] [string] $Path,
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [string] $Target,
+        [Parameter(Mandatory)] [string] $Description
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return
+    }
+
+    try {
+        $timings = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json -AsHashtable
+    }
+    catch {
+        return
+    }
+
+    $key = "$Name|$Target|$Description"
+
+    if ($timings -is [hashtable] -and $timings.ContainsKey($key)) {
+        [timespan]::FromSeconds([double]$timings[$key])
+    }
+}
+
+<#
+.SYNOPSIS
+Records how long a step took, for the next run to show beside its heading.
+
+.PARAMETER Path
+The file the timings are kept in.
+
+.PARAMETER Name
+The step's name.
+
+.PARAMETER Target
+What the step acts on.
+
+.PARAMETER Description
+What the step does.
+
+.PARAMETER Elapsed
+The time the step took.
+#>
+function Set-StepTiming {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory)] [string] $Path,
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [string] $Target,
+        [Parameter(Mandatory)] [string] $Description,
+        [Parameter(Mandatory)] [timespan] $Elapsed
+    )
+
+    $timings = $null
+
+    if (Test-Path -LiteralPath $Path -PathType Leaf) {
+        try {
+            $timings = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json -AsHashtable
+        }
+        catch {
+            $timings = $null
+        }
+    }
+
+    if ($timings -isnot [hashtable]) {
+        $timings = @{}
+    }
+
+    $timings["$Name|$Target|$Description"] = [math]::Round($Elapsed.TotalSeconds, 1)
+
+    if ($PSCmdlet.ShouldProcess($Path, 'record the step''s time')) {
+        New-Item -ItemType Directory -Path (Split-Path -Parent $Path) -Force | Out-Null
+        $timings | ConvertTo-Json | Set-Content -LiteralPath $Path -NoNewline
     }
 }
 
@@ -96,6 +203,10 @@ What the command does, for the description -WhatIf prints.
 .PARAMETER Command
 The command to run.
 
+.PARAMETER Timings
+The file the steps' timings are kept in. The heading gives the time the step took the last time it passed,
+and a step that passes records its own.
+
 .OUTPUTS
 An object carrying Name, Passed and Elapsed.
 #>
@@ -106,16 +217,23 @@ function Invoke-BuildStep {
         [Parameter(Mandatory)] [string] $Name,
         [Parameter(Mandatory)] [string] $Target,
         [Parameter(Mandatory)] [string] $Description,
-        [Parameter(Mandatory)] [scriptblock] $Command
+        [Parameter(Mandatory)] [scriptblock] $Command,
+        [string] $Timings
     )
 
+    $last = if ($Timings) { Get-StepTiming -Path $Timings -Name $Name -Target $Target -Description $Description }
+    $heading = if ($last) { "-- $Name, {0:N0} s last time " -f $last.TotalSeconds } else { "-- $Name " }
+
     Write-Host ''
-    Write-Host ("-- $Name ").PadRight(78, '-')
+    Write-Host $heading.PadRight(78, '-')
 
     $started = [datetime]::UtcNow
     $failed = $false
+    $ran = $false
 
     if ($PSCmdlet.ShouldProcess($Target, $Description)) {
+        $ran = $true
+
         try {
             # Only a native command writes an exit code, so clearing it first keeps a step that runs none
             # from being judged by the one before it.
@@ -135,10 +253,22 @@ function Invoke-BuildStep {
         }
     }
 
+    $elapsed = [datetime]::UtcNow - $started
+
+    # A failed step usually stops early, so only a passing one says how long the step takes.
+    if ($ran -and -not $failed -and $Timings) {
+        try {
+            Set-StepTiming -Path $Timings -Name $Name -Target $Target -Description $Description -Elapsed $elapsed -WhatIf:$false
+        }
+        catch {
+            Write-Host ("   the step's time could not be recorded: {0}" -f $_.Exception.Message)
+        }
+    }
+
     [pscustomobject]@{
         Name    = $Name
         Passed  = -not $failed
-        Elapsed = [datetime]::UtcNow - $started
+        Elapsed = $elapsed
     }
 }
 
@@ -243,6 +373,40 @@ function Resolve-TestProject {
 
 <#
 .SYNOPSIS
+Counts the test projects a test run reaches.
+
+.DESCRIPTION
+A project file is one project. In a solution, a test project is one that references the test SDK, which the
+support projects beside the tests do not.
+
+.PARAMETER Target
+The solution or the project file the run is given.
+
+.OUTPUTS
+The number of test projects.
+#>
+function Get-TestProjectCount {
+    [CmdletBinding()]
+    [OutputType([int])]
+    param(
+        [Parameter(Mandatory)] [string] $Target
+    )
+
+    if ([System.IO.Path]::GetExtension($Target) -ne '.slnx') {
+        return 1
+    }
+
+    $folder = Split-Path -Parent $Target
+    $separator = [System.IO.Path]::DirectorySeparatorChar
+    $paths = @(([xml](Get-Content -LiteralPath $Target -Raw)).SelectNodes('//Project') | ForEach-Object { $_.GetAttribute('Path') })
+
+    @($paths |
+        ForEach-Object { Join-Path $folder ($_ -replace '[\\/]', $separator) } |
+        Where-Object { (Test-Path -LiteralPath $_ -PathType Leaf) -and (Select-String -LiteralPath $_ -Pattern 'Microsoft.NET.Test.Sdk' -SimpleMatch -Quiet) }).Count
+}
+
+<#
+.SYNOPSIS
 Finds the task programs written in C#.
 
 .DESCRIPTION
@@ -332,7 +496,7 @@ function Build-Solution {
 
     $solution = $Context.Solution
 
-    Invoke-BuildStep -Name 'build' -Target $solution -Description 'dotnet build' -WhatIf:$WhatIfPreference -Command {
+    Invoke-BuildStep -Name 'build' -Target $solution -Description 'dotnet build' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         dotnet build $solution --nologo -v:q
     }.GetNewClosure()
 }
@@ -398,8 +562,12 @@ function Test-Solution {
     $waitLogPath = if ($WaitLog) { $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($WaitLog) } else { $null }
     $clearWaitLog = ${function:Clear-WaitLog}
     $summarizeWaitLog = ${function:Get-WaitLogSummary}
+    $writeTestProgress = ${function:Write-TestProgress}
+    $projectCount = Get-TestProjectCount -Target $target
 
-    $arguments = @($target, '--nologo', '-v:q', '--logger', 'console;verbosity=normal')
+    # Minimal verbosity prints each failed test with its message and stack, and one summary line per
+    # project, which is what the progress is read from.
+    $arguments = @($target, '--nologo', '-v:q', '--logger', 'console;verbosity=minimal')
 
     if ($NoBuild) {
         $arguments += '--no-build'
@@ -412,6 +580,14 @@ function Test-Solution {
     $runs = $Times
     $description = if ($runs -gt 1) { "dotnet test, $runs times" } else { 'dotnet test' }
 
+    if ($NoBuild) {
+        $description += ', on the build already on disk'
+    }
+
+    if ($Filter) {
+        $description += ", filtered by $Filter"
+    }
+
     if ($load.Count -gt 0) {
         $description += ", under load from $(($load | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }) -join ', ')"
     }
@@ -420,7 +596,10 @@ function Test-Solution {
         $description += ", recording its waits in $waitLogPath"
     }
 
-    Invoke-BuildStep -Name 'test' -Target $target -Description $description -WhatIf:$WhatIfPreference -Command {
+    $lastTime = Get-StepTiming -Path $Context.Timings -Name 'test' -Target $target -Description $description
+    $runEstimate = if ($lastTime) { [timespan]::FromTicks([long]($lastTime.Ticks / $runs)) } else { $null }
+
+    Invoke-BuildStep -Name 'test' -Target $target -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         $failures = [System.Collections.Generic.List[int]]::new()
         $previousWaitLog = $env:FORMA_WAIT_LOG
         $stopLoad = [System.Threading.CancellationTokenSource]::new()
@@ -472,7 +651,9 @@ function Test-Solution {
                     Write-Host ("   run {0} of {1}" -f $run, $runs)
                 }
 
-                dotnet test @arguments
+                dotnet test @arguments 2>&1 |
+                    ForEach-Object { "$_" } |
+                    & $writeTestProgress -ProjectCount $projectCount -Estimate $runEstimate
 
                 if ($LASTEXITCODE -ne 0) {
                     $failures.Add($run)
@@ -525,6 +706,110 @@ function Test-Solution {
         # is set here rather than left to whichever run happened to be last.
         $global:LASTEXITCODE = if ($failures.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
     }.GetNewClosure()
+}
+
+<#
+.SYNOPSIS
+Shows a test run's progress as each test project finishes, and its totals once it ends.
+
+.DESCRIPTION
+The runner prints one summary line per project as the project finishes, and each becomes a line saying
+how many projects have finished, that project's counts and time, the time the run has taken, and the
+time left against the estimate. The runner's announcements of what it is about to run are left out; every
+other line, a failed test's message and stack or a build error, is passed through as it arrives.
+
+A project the runner gave no summary for, because its test host crashed or its build failed, is counted
+as unfinished in the totals, so a run that reports fewer projects than it was given never reads as
+complete.
+
+.PARAMETER Line
+A line the runner printed.
+
+.PARAMETER ProjectCount
+The number of test projects the run reaches.
+
+.PARAMETER Estimate
+How long the run is expected to take.
+#>
+function Write-TestProgress {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline)] [AllowEmptyString()] [string] $Line,
+        [Parameter(Mandatory)] [int] $ProjectCount,
+        [AllowNull()] [Nullable[timespan]] $Estimate
+    )
+
+    begin {
+        $started = [datetime]::UtcNow
+        $finishedCount = 0
+        $passedCount = 0
+        $failedCount = 0
+        $skippedCount = 0
+        $failedTests = [System.Collections.Generic.List[string]]::new()
+        $width = "$ProjectCount".Length
+
+        Write-Host ("   running {0} test {1}{2}" -f $ProjectCount, $(if ($ProjectCount -eq 1) { 'project' } else { 'projects' }),
+            $(if ($Estimate) { ", about {0:m\:ss} last time" -f $Estimate } else { '' }))
+    }
+
+    process {
+        if ($Line -match '^(Passed|Failed)!\s+-\s+Failed:\s+(\d+),\s+Passed:\s+(\d+),\s+Skipped:\s+(\d+),\s+Total:\s+(\d+),\s+Duration:\s+(.+?)\s+-\s+(.+?)\.dll') {
+            $finishedCount++
+            $failedCount += [int]$Matches[2]
+            $passedCount += [int]$Matches[3]
+            $skippedCount += [int]$Matches[4]
+
+            $elapsed = [datetime]::UtcNow - $started
+            $remaining = if (-not $Estimate) {
+                ''
+            }
+            elseif ($Estimate -gt $elapsed) {
+                ", about {0:m\:ss} left" -f ($Estimate - $elapsed)
+            }
+            else {
+                ', past last time'
+            }
+
+            $outcome = if ($Matches[1] -eq 'Passed') { 'passed' } else { 'FAILED' }
+            $counts = if ([int]$Matches[2] -gt 0) { "{0} of {1} failed" -f $Matches[2], $Matches[5] } else { "{0} tests" -f $Matches[5] }
+
+            Write-Host ("   [{0}/{1}] {2} {3}, {4} in {5}  ({6:m\:ss} so far{7})" -f "$finishedCount".PadLeft($width), $ProjectCount, $outcome,
+                $Matches[7], $counts, $Matches[6], $elapsed, $remaining)
+
+            return
+        }
+
+        if ($Line -match '^Test run for ' -or $Line -match '^A total of \d+ test files? matched' -or -not $Line.Trim()) {
+            return
+        }
+
+        if ($Line -match '^\s+Failed (.+) \[[^\]]*\]\s*$') {
+            $failedTests.Add($Matches[1])
+        }
+
+        Write-Host $Line
+    }
+
+    end {
+        $elapsed = [datetime]::UtcNow - $started
+        $unfinished = $ProjectCount - $finishedCount
+
+        Write-Host ''
+        Write-Host ("   {0} passed, {1} failed, {2} skipped, across {3} of {4} projects in {5:m\:ss}" -f
+            $passedCount, $failedCount, $skippedCount, $finishedCount, $ProjectCount, $elapsed)
+
+        if ($unfinished -gt 0) {
+            Write-Host ("   {0} {1} gave no result" -f $unfinished, $(if ($unfinished -eq 1) { 'project' } else { 'projects' }))
+        }
+
+        if ($failedTests.Count -gt 0) {
+            Write-Host '   failed:'
+
+            foreach ($test in $failedTests) {
+                Write-Host ("     {0}" -f $test)
+            }
+        }
+    }
 }
 
 <#
@@ -637,7 +922,7 @@ function Test-SolutionFormat {
 
     $solution = $Context.Solution
 
-    Invoke-BuildStep -Name 'format' -Target $solution -Description 'dotnet format --verify-no-changes' -WhatIf:$WhatIfPreference -Command {
+    Invoke-BuildStep -Name 'format' -Target $solution -Description 'dotnet format --verify-no-changes' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         dotnet format $solution --verify-no-changes
     }.GetNewClosure()
 }
@@ -668,7 +953,7 @@ function Test-SolutionLocale {
     $root = $Context.RepositoryRoot
     $solution = $Context.Solution
 
-    Invoke-BuildStep -Name 'locales' -Target $solution -Description 'dotnet tool restore, dotnet locali' -WhatIf:$WhatIfPreference -Command {
+    Invoke-BuildStep -Name 'locales' -Target $solution -Description 'dotnet tool restore, dotnet locali' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         Push-Location -LiteralPath $root
         try {
             dotnet tool restore --verbosity quiet
@@ -716,7 +1001,7 @@ function Build-TaskProgram {
     # runs. Listing a folder makes nothing happen, so doing it under -WhatIf costs nothing.
     $programs = Get-TaskProgram -Context $Context
 
-    Invoke-BuildStep -Name 'tasks' -Target $folder -Description 'dotnet build, each entry point' -WhatIf:$WhatIfPreference -Command {
+    Invoke-BuildStep -Name 'tasks' -Target $folder -Description 'dotnet build, each entry point' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         if ($programs.Count -eq 0) {
             throw "No task program was found to build: nothing under $folder opens with a shebang."
         }
@@ -755,12 +1040,12 @@ function Test-BrowserScript {
     $scriptTests = $Context.ScriptTests
 
     if (-not (Test-Path (Join-Path $scriptTests 'node_modules'))) {
-        Invoke-BuildStep -Name 'restore' -Target $scriptTests -Description 'npm ci' -WhatIf:$WhatIfPreference -Command {
+        Invoke-BuildStep -Name 'restore' -Target $scriptTests -Description 'npm ci' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
             npm ci --prefix $scriptTests
         }.GetNewClosure()
     }
 
-    Invoke-BuildStep -Name 'scripts' -Target $scriptTests -Description 'npm test' -WhatIf:$WhatIfPreference -Command {
+    Invoke-BuildStep -Name 'scripts' -Target $scriptTests -Description 'npm test' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         npm test --prefix $scriptTests
     }.GetNewClosure()
 }
@@ -812,7 +1097,7 @@ function Clear-BuildOutput {
         'delete every bin, obj and artifacts folder'
     }
 
-    Invoke-BuildStep -Name 'clean' -Target $root -Description $description -WhatIf:$WhatIfPreference -Command {
+    Invoke-BuildStep -Name 'clean' -Target $root -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         # A build deletes what the build made. Installed packages under node_modules ship folders of their
         # own called bin, and .local holds work belonging to a person rather than to the repository, so
         # neither is the build's to remove however much it looks like output.
@@ -919,7 +1204,7 @@ function Invoke-Gate {
         # for the shape a script here keeps and exercises the ones that can be run without a side effect,
         # so a script added and covered by nothing fails rather than accumulating quietly.
         $contract = Join-Path $Context.Scripts 'Test-TaskScript.ps1'
-        $results.Add((Invoke-BuildStep -Name 'tooling' -Target $contract -Description 'check every script keeps its contract' -WhatIf:$WhatIfPreference -Command {
+        $results.Add((Invoke-BuildStep -Name 'tooling' -Target $contract -Description 'check every script keeps its contract' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
                     pwsh -NoProfile -File $contract
                 }.GetNewClosure()))
 

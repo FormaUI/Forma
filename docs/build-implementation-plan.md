@@ -5,11 +5,11 @@ landed. What the build is and how it is entered is the [repository document](rep
 
 ## Status
 
-Step 1 is under way.
+Step 1 has landed. Steps 2 and 3 are open.
 
 ## Steps
 
-1. **Progress and a summary.** The test step reports each test project as it finishes, with how many of
+1. **Progress and a summary.** ✅ The test step reports each test project as it finishes, with how many of
    the projects it has finished, its counts and the time the run has taken, and an estimate of the time
    left from the run before; it closes with the passed, failed and skipped counts across every project and
    the failing tests by name. Every step's heading gives the time it took the last time it passed.
