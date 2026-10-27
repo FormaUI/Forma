@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 using Forma.Blazor.Components.Inputs;
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;

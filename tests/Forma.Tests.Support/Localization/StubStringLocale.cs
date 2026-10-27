@@ -2,7 +2,7 @@ namespace Forma.Tests.Localization;
 
 using System.Globalization;
 
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 using Forma.Framework.Localization;
 
 /// <summary>A string locale over translations held in memory.</summary>

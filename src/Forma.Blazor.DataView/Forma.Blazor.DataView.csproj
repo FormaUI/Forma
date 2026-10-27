@@ -52,8 +52,8 @@
     <ItemGroup>
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />

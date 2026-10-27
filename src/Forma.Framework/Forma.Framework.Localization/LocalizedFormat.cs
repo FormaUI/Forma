@@ -3,7 +3,7 @@ namespace Forma.Framework.Localization;
 using System.Globalization;
 using System.Text;
 
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 
 /// <summary>Renders a composite format whose holes name their arguments.</summary>
 public static class LocalizedFormat

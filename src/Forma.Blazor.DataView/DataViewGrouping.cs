@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.DataView;
 using System.Globalization;
 using System.Linq.Expressions;
 
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 
 /// <summary>A grouping over items: the key their groups fold under, the order the groups come in, and the name a group's heading shows.</summary>
 /// <typeparam name="TItem">The item the key reads.</typeparam>

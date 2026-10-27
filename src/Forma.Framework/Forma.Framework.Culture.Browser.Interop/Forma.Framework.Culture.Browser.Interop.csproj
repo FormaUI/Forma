@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <StaticWebAssetBasePath>_content/forma/culture</StaticWebAssetBasePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Events\Forma.Framework.Events.csproj" />
+        <ProjectReference Include="..\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+    </ItemGroup>
+
+</Project>

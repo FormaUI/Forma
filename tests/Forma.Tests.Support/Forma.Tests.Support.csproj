@@ -15,7 +15,7 @@
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />

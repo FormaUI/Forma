@@ -6,8 +6,8 @@ using Bunit;
 using Bunit.Rendering;
 
 using Forma.Blazor;
+using Forma.Framework.Culture;
 using Forma.Framework.Emojis.Twemoji;
-using Forma.Framework.Globalization;
 using Forma.Framework.Localization;
 using Forma.Framework.Localization.Json;
 

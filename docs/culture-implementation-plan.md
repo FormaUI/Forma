@@ -136,12 +136,12 @@ Each step is built, reviewed and committed on its own.
    gate counting the revision; work a component resolves or loads in a culture, the file viewer's resolution
    among it, started again on a change, which sets no parameter; and the cascaded culture retired. Its parts
    land one commit at a time:
-   - ✅ The routing assembly becomes `Forma.Framework.Globalization.AspNetCore`, its namespace, README and
-     tests with it, so the name `Forma.Framework.Globalization` passes to the platform-neutral state, as C1
+   - ✅ The routing assembly becomes `Forma.Framework.Culture.Router.AspNetCore`, its namespace, README and
+     tests with it, so the name `Forma.Framework.Culture` passes to the platform-neutral state, as C1
      sets out.
    - ✅ The state: `ICultureState`, announcing its changes through `INotifyStateChanged`, and
      `DefaultCultureState`, registered once per user scope by the feature's registrar, which `AddFormaUI`
-     calls, in a platform-neutral `Forma.Framework.Globalization`.
+     calls, in a platform-neutral `Forma.Framework.Culture`.
    - ✅ The bounded scope: `AmbientCulture.Run` runs a synchronous operation in the cultures it is given and
      restores the caller's in a `finally`, and the state's `Run` runs one in the state's cultures; an
      operation that returns a task is refused, since the scope spans no asynchronous work.
@@ -187,10 +187,10 @@ Each step is built, reviewed and committed on its own.
    enhanced page update, as the design's document section sets out. Gate: a script test of the operation,
    and a browser check of both attributes after a switch and after an enhanced navigation.
 
-   `Forma.Framework.Globalization.Interop` ships the script, its initializer and the service, and every
+   `Forma.Framework.Culture.Browser.Interop` ships the script, its initializer and the service, and every
    Framework assembly became a package first, so this package could build on the JavaScript interop
    floor. The culture's circuit handler, moved with its registrar out of
-   `Forma.Framework.Globalization.AspNetCore` into `Forma.Framework.Globalization.Interop.Server`, the
+   `Forma.Framework.Culture.Router.AspNetCore` into `Forma.Framework.Culture.Blazor.Server`, the
    render mode's half, starts the document culture synchronizer as each connection comes up, and the routing package
    holds routing alone again.
 
@@ -205,7 +205,7 @@ Each step is built, reviewed and committed on its own.
    - with islands, a page without them kept `he/rtl` while the circuit lived and showed its served `en/ltr`
      once the client closed the circuit, about two seconds later under the default inactivity timeout,
      and the next islands page's circuit registered and switched;
-   - a host installing `Forma.Framework.Globalization.Interop.Server` alone received the five assemblies
+   - a host installing `Forma.Framework.Culture.Blazor.Server` alone received the five assemblies
      it needs and the page listed the interop package's initializer.
 
    Departure until step 7: navigation to another culture's address does not update the culture state.
@@ -393,7 +393,7 @@ Each step is built, reviewed and committed on its own.
    and direction follow the new UI culture throughout. Gate: a component test of each rule, and a browser
    check of an edit across a switch.
 9. **The Showcase.** The Showcase switches language in place, keeping the user's work, with the new load
-   still supported; the README, the globalization READMEs and the localization and authoring rules follow.
+   still supported; the README, the culture READMEs and the localization and authoring rules follow.
    Gate, in a browser: switching between English and Hebrew in place lays the page out right to left and
    keeps it there on the next click, an edit in progress keeps its text and its parsing culture, and a
    popover already open takes the new direction.

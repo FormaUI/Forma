@@ -1,9 +1,9 @@
 namespace Forma.Blazor.Tests;
 
 using Forma.Blazor.Features.Emojis;
+using Forma.Framework.Culture;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
-using Forma.Framework.Globalization;
 using Forma.Framework.Icons;
 using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;

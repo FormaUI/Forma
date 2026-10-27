@@ -36,8 +36,8 @@
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Globalization.Interop.Server\Forma.Framework.Globalization.Interop.Server.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Culture.Blazor.Server\Forma.Framework.Culture.Blazor.Server.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />

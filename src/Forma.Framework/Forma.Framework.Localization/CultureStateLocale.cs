@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization;
 
 using System.Globalization;
 
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 
 /// <summary>Resolves localized strings using the cultures of an <see cref="ICultureState"/>.</summary>
 /// <remarks>

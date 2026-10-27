@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization;
 
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 
 /// <summary>Creates locales that look their strings up in a culture state's cultures.</summary>
 public static class StringLocaleFactoryExtensions

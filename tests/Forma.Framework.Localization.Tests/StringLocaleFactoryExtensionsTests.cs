@@ -2,9 +2,9 @@ namespace Forma.Framework.Localization.Tests;
 
 using System.Globalization;
 
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 using Forma.Framework.Localization;
-using Forma.Tests.Globalization;
+using Forma.Tests.Culture;
 using Forma.Tests.Shared;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +24,7 @@ public sealed class StringLocaleFactoryExtensionsTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            using var services = new ServiceCollection().AddFormaGlobalizationServices().BuildServiceProvider();
+            using var services = new ServiceCollection().AddFormaCultureServices().BuildServiceProvider();
             using var scope = services.CreateScope();
             var cultureState = scope.ServiceProvider.GetRequiredService<ICultureState>();
             var locale = NullStringLocaleFactory.Instance.Create(typeof(Create), cultureState);

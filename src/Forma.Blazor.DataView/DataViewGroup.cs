@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.DataView;
 
 using System.Globalization;
 
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 
 /// <summary>A group of the data view's items: the key they fold under, the items of it on screen, how many items it holds, and the name its heading shows.</summary>
 /// <typeparam name="TItem">The item the group holds.</typeparam>

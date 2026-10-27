@@ -250,7 +250,7 @@ through the `ICultureState` every user scope holds, and every component renders 
 ```razor
 @using System.Globalization
 @using Forma.Blazor.Components.Buttons
-@using Forma.Framework.Globalization
+@using Forma.Framework.Culture
 @inject ICultureState CultureState
 
 <FormaButton OnClick="@(() => CultureState.ChangeAsync(CultureInfo.GetCultureInfo("he")))">עברית</FormaButton>
@@ -264,18 +264,18 @@ the file format.
 
 ## Culture in the URL
 
-[`Forma.Framework.Globalization.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization.AspNetCore/README.md)
+[`Forma.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md)
 takes the request culture from the first URL segment, `/he/orders`, and gives every page one
 address per culture:
 
 ```pwsh
-dotnet add package formaui-net.Framework.Globalization.AspNetCore
+dotnet add package formaui-net.Framework.Culture.Router.AspNetCore
 ```
 
 ```csharp
-using Forma.Framework.Globalization.AspNetCore;
+using Forma.Framework.Culture.Router.AspNetCore;
 
-builder.Services.AddCultureRouting(new CultureRouterOptions
+builder.Services.AddFormaCultureRouting(new CultureRouterOptions
 {
     Prefix = CulturePrefix.ExceptDefault,
     DefaultCulture = "en",
@@ -287,7 +287,7 @@ builder.Services.AddCultureRouting(new CultureRouterOptions
     ]
 });
 
-app.UseCultureRouting();
+app.UseFormaCultureRouting();
 ```
 
 ## More packages
@@ -305,7 +305,7 @@ Each package's README covers installing, registering and using it.
 | [`formaui-net.AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md) | Word, Excel and PowerPoint documents rendered as pages in `FormaFileViewer` |
 | [`formaui-net.AddOns.Share.Targets`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Share.Targets/README.md) | Social networks, messengers and cloud drives for `FormaShareMenu` |
 | [`formaui-net.Framework.Currencies`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Currencies/README.md) | Currency codes, their minor units, and the symbol each culture writes them with |
-| [`formaui-net.Framework.Globalization.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Globalization.AspNetCore/README.md) | The culture in the URL |
+| [`formaui-net.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md) | The culture in the URL |
 
 ## Contributing
 

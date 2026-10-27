@@ -6,10 +6,10 @@ using Forma.Blazor.Showcase.Features.Media;
 using Forma.Blazor.Showcase.Features.Upload;
 using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Css;
+using Forma.Framework.Culture.Router.AspNetCore;
 using Forma.Framework.Emojis.Twemoji;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Feedback;
-using Forma.Framework.Globalization.AspNetCore;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
@@ -67,7 +67,7 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 ]));
 
 // French comes from the .locales folder, as a language a host adds.
-builder.Services.AddCultureRouting(new CultureRouterOptions
+builder.Services.AddFormaCultureRouting(new CultureRouterOptions
 {
     Prefix = CulturePrefix.ExceptDefault,
     DefaultCulture = "en",
@@ -82,7 +82,7 @@ builder.Services.AddCultureRouting(new CultureRouterOptions
 
 var app = builder.Build();
 
-app.UseCultureRouting();
+app.UseFormaCultureRouting();
 
 app.UseRouting();
 app.UseAntiforgery();

@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
 using Forma.Framework.Css;
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;

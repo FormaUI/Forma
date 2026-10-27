@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components;
 
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Globalization;
+using Forma.Framework.Culture;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 
