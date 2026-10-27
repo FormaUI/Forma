@@ -1,4 +1,4 @@
-# Forma.Framework.Browser.Interop.Server
+# Forma.Framework.Browser.Blazor.Server
 
 What the DOM watcher and engine need from an Interactive Server host: when a circuit's connection to
 the browser is restored, every observation its components hold is measured afresh and delivered

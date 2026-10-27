@@ -1,4 +1,6 @@
-namespace Forma.Framework.Browser.Interop.Server.Tests;
+namespace Forma.Framework.Browser.Blazor.Server.Tests;
+
+using Forma.Framework.Browser.Interop;
 
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;

@@ -298,7 +298,7 @@ as an integration with ASP.NET Core does across .NET:
 | `Forma.Framework.Globalization.Interop` | The document culture synchronizer: its script, the initializer that tracks what the server served and releases a closed circuit's registration, and the service that keeps the document on a culture state |
 | `Forma.Framework.Globalization.Interop.Server` | The circuit handler that applies the culture before every inbound activity and starts the document culture synchronizer |
 | `Forma.Framework.Globalization.AspNetCore` | The routing middleware, `CultureRouter`, the switcher, the page base, the document's base, the address reconciliation and the cookie |
-| `Forma.Framework.Browser.Interop.Server` | The DOM's circuit handler |
+| `Forma.Framework.Browser.Blazor.Server` | The DOM's circuit handler |
 
 The product's aggregate registrar registers all of them but the routing, which takes the host's options, so a
 host makes one call for the rest and can still override any single service.
@@ -311,7 +311,7 @@ host makes one call for the rest and can still override any single service.
 | C2 | What is the state called? | `ICultureState`, which says what it holds and that it changes |
 | C3 | Who keeps `<html lang dir>` in step? | The document culture synchronizer, which the culture's circuit handler starts with each circuit, so a switch is complete by default |
 | C4 | Does the Showcase switch in place? | Yes, keeping the user's work, with the new load still supported |
-| C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Interop.Server` and the culture's `Forma.Framework.Globalization.Interop.Server` do, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Globalization.AspNetCore` does |
+| C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Blazor.Server` and the culture's `Forma.Framework.Globalization.Interop.Server` do, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Globalization.AspNetCore` does |
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
 | C8 | How does a switch navigate? | By a full load by default; in place where the host declares culture-bearing interactive routes, each page carrying its culture route, as [culture addresses](#culture-addresses) sets out |

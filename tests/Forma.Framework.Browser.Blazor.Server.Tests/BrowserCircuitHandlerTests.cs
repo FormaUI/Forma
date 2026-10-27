@@ -1,7 +1,8 @@
-namespace Forma.Framework.Browser.Interop.Server.Tests;
+namespace Forma.Framework.Browser.Blazor.Server.Tests;
 
 using System.Text.Json;
 
+using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Tests.Browser;
 using Forma.Tests.Shared;
@@ -13,7 +14,7 @@ using Microsoft.JSInterop;
 
 using Xunit;
 
-public sealed class DomCircuitHandlerTests
+public sealed class BrowserCircuitHandlerTests
 {
     private static readonly ElementReference Viewport = new("viewport");
 

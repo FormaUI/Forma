@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Forma.Framework.Browser.Interop.Server" />
+        <InternalsVisibleTo Include="Forma.Framework.Browser.Blazor.Server" />
     </ItemGroup>
 
     <ItemGroup>

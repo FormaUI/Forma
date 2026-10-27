@@ -73,7 +73,7 @@ it started moving.
 
 A host registers the bridge the watchers and engines of one circuit share their imports through with
 `AddFormaBrowserServices`. On Interactive Server, `AddFormaUI` registers it through
-`Forma.Framework.Browser.Interop.Server`, which also refreshes a circuit's observations once its
+`Forma.Framework.Browser.Blazor.Server`, which also refreshes a circuit's observations once its
 connection is restored. A watcher made with no bridge imports through one of its own, and its
 observations recover through `RefreshAsync`.
 

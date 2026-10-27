@@ -1,4 +1,6 @@
-namespace Forma.Framework.Browser.Interop.Server;
+namespace Forma.Framework.Browser.Blazor.Server;
+
+using Forma.Framework.Browser.Interop;
 
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +17,7 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddFormaBrowserServices();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, DomCircuitHandler>(provider => new DomCircuitHandler(provider.GetRequiredService<DomBridge>())));
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, BrowserCircuitHandler>(provider => new BrowserCircuitHandler(provider.GetRequiredService<DomBridge>())));
 
         return services;
     }

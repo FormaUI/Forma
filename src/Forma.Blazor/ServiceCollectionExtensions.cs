@@ -1,7 +1,7 @@
 namespace Forma.Blazor;
 
 using Forma.Blazor.Features.Emojis;
-using Forma.Framework.Browser.Interop.Server;
+using Forma.Framework.Browser.Blazor.Server;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Events;
 using Forma.Framework.Feedback;
