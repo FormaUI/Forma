@@ -60,10 +60,19 @@ public sealed class CultureSwitcher
 
     /// <summary>Changes the culture state to the culture the current address names.</summary>
     internal Task ReconcileAsync()
+        => ReconcileAsync(new Uri(_navigationManager.Uri));
+
+    /// <summary>Changes the culture state to the culture <paramref name="address"/> names.</summary>
+    internal Task ReconcileAsync(Uri address)
     {
-        var address = ReadAddress().Address;
-        var pathEnd = address.IndexOfAny(['?', '#']);
-        var path = PathString.FromUriComponent("/" + (pathEnd < 0 ? address : address[..pathEnd]));
+        // An address outside the application's root belongs to another application and names none of its cultures.
+        if (GetRelativeAddress(ReadRoot(), address) is not { } relativeAddress)
+        {
+            return Task.CompletedTask;
+        }
+
+        var pathEnd = relativeAddress.IndexOfAny(['?', '#']);
+        var path = PathString.FromUriComponent("/" + (pathEnd < 0 ? relativeAddress : relativeAddress[..pathEnd]));
 
         // An address naming cultures in two consecutive segments names neither, and the middleware refuses it.
         if (_cultureRouter.HasConsecutiveCultures(path))
@@ -74,21 +83,53 @@ public sealed class CultureSwitcher
         return _cultureState.ChangeAsync(_cultureRouter.Match(path).Route.Culture);
     }
 
-    // The application's root and the current address relative to it, its culture segment included. A document base
-    // in a culture, /app/he/ where the application's root is /app/, ends in that culture's token.
+    // The address relative to the application's root, its culture segment included, where it lies under the root's
+    // origin and path; the root's path compares as a path base does, ignoring case.
+    private static string? GetRelativeAddress(Uri root, Uri address)
+    {
+        if (Uri.Compare(root, address, UriComponents.SchemeAndServer, UriFormat.UriEscaped, StringComparison.OrdinalIgnoreCase) != 0)
+        {
+            return null;
+        }
+
+        var rootPath = root.AbsolutePath;
+        var pathQueryAndFragment = address.GetComponents(UriComponents.PathAndQuery | UriComponents.Fragment, UriFormat.UriEscaped);
+
+        if (pathQueryAndFragment.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return pathQueryAndFragment[rootPath.Length..];
+        }
+
+        // The root without its trailing slash, /app for the root /app/, is the root's own address.
+        var rootAddress = rootPath[..^1];
+
+        return pathQueryAndFragment.StartsWith(rootAddress, StringComparison.OrdinalIgnoreCase) && (pathQueryAndFragment.Length == rootAddress.Length || pathQueryAndFragment[rootAddress.Length] is '?' or '#')
+            ? pathQueryAndFragment[rootAddress.Length..]
+            : null;
+    }
+
+    // The application's root and the current address relative to it.
     private (Uri Root, string Address) ReadAddress()
     {
+        var root = ReadRoot();
+
+        return (root, GetRelativeAddress(root, new Uri(_navigationManager.Uri)) ?? string.Empty);
+    }
+
+    // The application's root, the document's base without the culture segment it ends in: a base in a culture, /app/he/
+    // where the root is /app/, ends in that culture's token.
+    private Uri ReadRoot()
+    {
         var baseUri = new Uri(_navigationManager.BaseUri);
-        var relativeAddress = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
         var basePath = baseUri.AbsolutePath.TrimEnd('/');
         var lastSegmentStart = basePath.LastIndexOf('/', StringComparison.Ordinal) + 1;
         var lastSegment = PathString.FromUriComponent("/" + basePath[lastSegmentStart..]);
 
         if (lastSegment.Value is "/" || _cultureRouter.Match(lastSegment).Path != PathString.FromUriComponent("/"))
         {
-            return (baseUri, relativeAddress);
+            return baseUri;
         }
 
-        return (new Uri(baseUri, basePath[..lastSegmentStart]), basePath[lastSegmentStart..] + "/" + relativeAddress);
+        return new Uri(baseUri, basePath[..lastSegmentStart]);
     }
 }

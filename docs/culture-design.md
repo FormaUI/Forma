@@ -216,7 +216,9 @@ How a switch navigates is the host's choice, made once where it configures cultu
   default culture's base under `ExceptDefault`, inside it where interactive routing finds no page and
   hands the address to the server. The application's root is the base without its culture segment, so
   a path base doesn't end in a segment that is a culture's token, and Forma reads an address and builds
-  a link from that root.
+  a link from that root. An address outside a culture's base but inside the root is read like any other;
+  one outside the root, at another origin or outside the path base, belongs to another application and
+  leaves the state as it is.
 - **In place, when the host declares culture-bearing interactive routes.** Every page then carries its
   culture route beside its plain one, `@page "/about"` and `@page "/{culture}/about"`, and the document's
   base is the plain one, so interactive routing reaches another culture's address in the same circuit,
@@ -294,10 +296,10 @@ as an integration with ASP.NET Core does across .NET:
 
 | Assembly | Holds |
 | --- | --- |
-| `Forma.Framework.Culture` | The culture state's abstraction, its default and its registrar, with no dependency on ASP.NET Core or navigation |
+| `Forma.Framework.Culture` | The culture state's abstraction, its default and its registrar, and the culture route handler's contract, with no dependency on ASP.NET Core or navigation |
 | `Forma.Framework.Culture.Browser.Interop` | The document culture synchronizer: its script, the initializer that tracks what the server served and releases a closed circuit's registration, and the service that keeps the document on a culture state |
 | `Forma.Framework.Culture.Blazor.Server` | The circuit handler that applies the culture before every inbound activity and starts the document culture synchronizer |
-| `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware, `CultureRouter`, the switcher, the page base, the document's base, the address reconciliation and the cookie |
+| `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware, `CultureRouter`, the switcher, the page base, the document's base, the address reconciliation, the culture route handler and the cookie |
 | `Forma.Framework.Browser.Blazor.Server` | The DOM's circuit handler |
 
 The product's aggregate registrar registers all of them but the routing, which takes the host's options, so a

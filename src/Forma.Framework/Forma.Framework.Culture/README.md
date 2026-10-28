@@ -67,6 +67,13 @@ registers a callback run after every change, and `Unsubscribe` removes it.
 }
 ```
 
+## Culture routes
+
+`ICultureRouteHandler` handles the culture route an address represents. Its `HandleAsync(address)`
+completes once the handling has finished; the one
+[`Forma.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md)
+registers changes the culture state to the culture the address names.
+
 ## Running in the state's cultures
 
 An operation that reads the ambient culture and takes none of its own, such as
