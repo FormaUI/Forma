@@ -381,8 +381,26 @@ Each step is built, reviewed and committed on its own.
       `/app/he/` the base of `/app/he/about`, under `ExceptDefault` and under `Always`. A tab at
       `/he/about`, its base `/he/`, paused and resumed into Hebrew after another tab had written the
       cookie in English, under islands and under global interactivity.
-   4. **The handoff.** The document culture synchronizer holds the document through an enhanced
-      navigation until the circuit acknowledges reconciling the navigation that landed last.
+   4. ✅ **The handoff.** The document culture synchronizer holds the document through an enhanced
+      navigation until the circuit acknowledges reconciling the navigation that landed last. Gate, beside
+      the step's: a landing within one culture acknowledged though the state announces no change, an
+      in-place change while a report is pending, and the navigation's end after its landing but before
+      the reply, each in the tests, and the first and the last in Chrome under islands, with and without
+      a path base.
+
+      In Chrome under islands with the plain base, at `/` and under `/app`, with 400 ms of latency on the
+      document's responses: a link from `/about` to `/he/about` kept `en/ltr` until the patch wrote
+      `he/rtl`, and the synchronizer wrote nothing; the surviving island read `en` for a further 17 ms
+      until its circuit handled the address. A link within Hebrew, Back, two navigations 30 ms apart and
+      a navigation another replaced after 150 ms under 700 ms agreed throughout. Every navigation ended
+      after its landing and before its reply. An in-place switch to English 100 ms into a link to
+      `/he/other` rendered the island in English while the document kept `he/rtl`, and the landing set
+      the state back to Hebrew. After a reply, an in-place switch wrote `en/ltr` and then `he/rtl` at
+      once. A navigation to a page without islands kept `he/rtl` as its circuit closed, and a tab that
+      followed a link to `/about` after a second tab had written the cookie in Hebrew stayed English. An
+      in-place change while a report waits, a circuit closing while one waits, and a refused report's
+      retry were covered by the tests alone, since the circuit's messages ran at local speed and replied
+      within milliseconds.
    5. **Culture-bearing interactive routes.** The host's declaration, the page base, the plain base, the
       circuit following its own location changes, and the cookie written from script on a switch in
       place.

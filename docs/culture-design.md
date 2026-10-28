@@ -178,13 +178,21 @@ UI culture's name, and `dir` its direction.
   tracked for the document's lifetime, whether or not anything owns it.
 - **After a page update.** A streaming update can undo an owner's pair, so the owner sets its latest pair
   again after each.
-- **During an enhanced navigation.** From an enhanced navigation's start the document is held: the owner's
-  pair stays until the response patches the document, the patch's pair stands, and every pair the owner
-  sends meanwhile waits. The hold ends when the circuit acknowledges reconciling its state for the
-  navigation that landed last, a navigation within one culture included, and the owner then sets the pair
-  that acknowledgement carries. A navigation another replaced is never acknowledged, and a closed circuit
-  ends the hold by releasing its registration. A surviving interactive island renders in the new culture
-  once its circuit has reconciled, a round trip after the patch.
+- **During an enhanced navigation.** An owner registers saying whether it follows addresses, as it does
+  where a culture route handler is registered, and only such an owner's document is held. From an enhanced
+  navigation's start the document is held: the owner's pair stays until the response patches the
+  document, the patch's pair stands, and every pair the owner sends meanwhile is kept without being
+  written. The first page update after the start is the navigation's landing, which the client reports to
+  the circuit with the address it landed at. The culture route handler handles that address, and the
+  report's reply comes once the browser holds the pair the state is left in, a landing within one culture
+  included, where the state announces no change, and a handling that throws as well. The reply ends the
+  hold, and the owner then sets its latest pair. A reply belongs to its registration and its navigation,
+  so one for a navigation another replaced, or for a registration since released, ends nothing. A
+  navigation that ends without landing ends the hold, and one that landed waits for its reply. A report
+  that fails leaves the hold while its registration is live, and the next connection's registration
+  reports the landing again; a closed circuit ends the hold by releasing its registration, which drops its
+  pending reply and its retry. A surviving interactive island renders in the new culture once its circuit
+  has handled the address, a round trip after the patch.
 - **When the owner goes.** A circuit's registration is released when the client closes the circuit: once
   no interactive server component remains, after the circuit's inactivity timeout, and before a paused
   circuit resumes. Until then the circuit's state keeps the document. Releasing stops the owner setting its
@@ -236,8 +244,9 @@ The state follows the address at the event that settles each kind of navigation:
   synchronizer starts.
 - **An enhanced navigation** is a request too, and the circuit hears its location change as it starts,
   before its response, so the state follows the client's report that the navigation landed, never the
-  location change, and the circuit acknowledges each reconciliation, as
-  [the document](#the-document-follows-the-state) sets out.
+  location change: the circuit's culture route handler handles the landed address and replies, as
+  [the document](#the-document-follows-the-state) sets out. Handling an address changes the state alone;
+  it navigates nowhere and writes no cookie.
 - **Interactive routing** makes no request, so under culture-bearing interactive routes the circuit's
   location change is the navigation itself, and the state follows it there. Without them, the circuit
   doesn't follow a location change.
@@ -318,3 +327,4 @@ host makes one call for the rest and can still override any single service.
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
 | C8 | How does a switch navigate? | By a full load by default; in place where the host declares culture-bearing interactive routes, each page carrying its culture route, as [culture addresses](#culture-addresses) sets out |
 | C9 | What does the cookie migrate by? | A new name, `forma-culture-route`, carrying the application's path base and written at it, which replaces the `HttpOnly` `forma-culture` without relying on the order of same-named cookies |
+| C10 | When is the document held through an enhanced navigation? | Only while its owner follows addresses, which a registered `ICultureRouteHandler` makes it do; the reply to the landing's report acknowledges it once the browser holds the resulting pair, and the owner then sets its latest pair, as [the document](#the-document-follows-the-state) sets out |

@@ -7,6 +7,7 @@ using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 public sealed class DocumentCultureSynchronizerTests
@@ -17,6 +18,16 @@ public sealed class DocumentCultureSynchronizerTests
     private static ServiceProvider CreateServices(FakeDocumentCultureSynchronizerBrowser browser)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>(browser.Runtime)
+            .AddFormaCultureBrowserSynchronization()
+            .BuildServiceProvider();
+
+    // A scope whose culture route handler changes its state to the culture an address's first segment names, English where it names none.
+    private static ServiceProvider CreateServicesFollowingAddresses(FakeDocumentCultureSynchronizerBrowser browser)
+        => new ServiceCollection()
+            .AddSingleton<IJSRuntime>(browser.Runtime)
+            .AddScoped(provider => new FakeCultureRouteHandler(address => provider.GetRequiredService<ICultureState>().ChangeAsync(
+                CultureInfo.GetCultureInfo(address.AbsolutePath.StartsWith("/he/", StringComparison.Ordinal) ? "he-IL" : "en-US"))))
+            .AddScoped<ICultureRouteHandler>(provider => provider.GetRequiredService<FakeCultureRouteHandler>())
             .AddFormaCultureBrowserSynchronization()
             .BuildServiceProvider();
 
@@ -264,6 +275,205 @@ public sealed class DocumentCultureSynchronizerTests
             Assert.Multiple(
                 () => Assert.Equal(("de-DE", "ltr"), browser.Document),
                 () => Assert.Equal(2, browser.CountRegistrations()));
+        }
+    }
+
+    public sealed class Landing
+    {
+        [Fact]
+        public async Task Should_register_without_a_receiver_where_no_culture_route_handler_is_registered()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+
+            // Act
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(browser.OwnerIdentity),
+                () => Assert.Null(browser.OwnerReceiver));
+        }
+
+        [Fact]
+        public async Task Should_register_a_receiver_where_a_culture_route_handler_is_registered()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = CreateServicesFollowingAddresses(browser);
+            await using var scope = provider.CreateAsyncScope();
+
+            // Act
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
+
+            // Assert
+            Assert.NotNull(browser.OwnerReceiver);
+        }
+
+        [Fact]
+        public async Task Should_reply_once_the_browser_holds_the_pair_the_landed_address_leaves_the_state_in()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = CreateServicesFollowingAddresses(browser);
+            await using var scope = provider.CreateAsyncScope();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
+
+            // Act
+            var holdsPair = await browser.ReportLandingAsync("http://localhost/he/about");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(holdsPair),
+                () => Assert.Equal([new Uri("http://localhost/he/about")], scope.ServiceProvider.GetRequiredService<FakeCultureRouteHandler>().Addresses),
+                () => Assert.Equal([("he-IL", "rtl")], browser.Updates));
+        }
+
+        [Fact]
+        public async Task Should_reply_for_a_landing_within_one_culture_though_the_state_announces_no_change()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = CreateServicesFollowingAddresses(browser);
+            await using var scope = provider.CreateAsyncScope();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
+
+            // Act
+            var holdsPair = await browser.ReportLandingAsync("http://localhost/about");
+
+            // Assert — the browser already holds the pair the registration sent, so nothing more is sent
+            Assert.Multiple(
+                () => Assert.True(holdsPair),
+                () => Assert.Equal(0, GetCultureState(scope).Revision),
+                () => Assert.Empty(browser.Updates));
+        }
+
+        [Fact]
+        public async Task Should_reply_only_once_the_browser_has_taken_the_pair()
+        {
+            // Arrange — the update the landing's change sends held open
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = CreateServicesFollowingAddresses(browser);
+            await using var scope = provider.CreateAsyncScope();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
+            var registration = browser.OwnerRegistration!;
+            registration.Recorder.Hold("update");
+            var reply = browser.ReportLandingAsync("http://localhost/he/about");
+            var isAnsweredWhileHeld = reply.IsCompleted;
+
+            // Act
+            registration.Recorder.Release("update");
+            Assert.Single(registration.Recorder.GetCalls("update")).Complete(true);
+            var holdsPair = await reply;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(isAnsweredWhileHeld),
+                () => Assert.True(holdsPair));
+        }
+
+        [Fact]
+        public async Task Should_send_a_change_made_while_the_report_is_pending_and_reply_once_the_browser_holds_it()
+        {
+            // Arrange — the landing's update held open while the state changes in place
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = CreateServicesFollowingAddresses(browser);
+            await using var scope = provider.CreateAsyncScope();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
+            var registration = browser.OwnerRegistration!;
+            registration.Recorder.Hold("update");
+            var reply = browser.ReportLandingAsync("http://localhost/he/about");
+            var change = GetCultureState(scope).ChangeAsync(German);
+
+            // Act
+            registration.Recorder.Release("update");
+            Assert.Single(registration.Recorder.GetCalls("update")).Complete(true);
+            await change;
+            var holdsPair = await reply;
+
+            // Assert — the reply came once the browser held a pair at least as new as the landing's
+            Assert.Multiple(
+                () => Assert.True(holdsPair),
+                () => Assert.Equal(("de-DE", "ltr"), browser.Document));
+        }
+
+        [Fact]
+        public async Task Should_refuse_the_reply_while_the_browser_lacks_the_pair()
+        {
+            // Arrange — a dropped connection, which fails the change's update and the landing's own reconciliation alike
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = CreateServicesFollowingAddresses(browser);
+            await using var scope = provider.CreateAsyncScope();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
+            browser.FailNext("update", new JSDisconnectedException("The circuit dropped."));
+            browser.FailNext("update", new JSDisconnectedException("The circuit dropped."));
+
+            // Act
+            var holdsPair = await browser.ReportLandingAsync("http://localhost/he/about");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(holdsPair),
+                () => Assert.Equal(("en-US", "ltr"), browser.Document));
+        }
+
+        [Fact]
+        public async Task Should_log_a_culture_route_handler_that_throws_and_reply_once_the_browser_holds_the_pair()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = new ServiceCollection()
+                .AddSingleton<IJSRuntime>(browser.Runtime)
+                .AddSingleton<ILogger<DocumentCultureSynchronizer>>(new Logger<DocumentCultureSynchronizer>(loggerFactory))
+                .AddScoped<ICultureRouteHandler>(_ => new FakeCultureRouteHandler(_ => throw new InvalidOperationException("The handler failed.")))
+                .AddFormaCultureBrowserSynchronization()
+                .BuildServiceProvider();
+            await using var scope = provider.CreateAsyncScope();
+            GetDocumentCultureSynchronizer(scope).BeginFollowing();
+
+            // Act
+            var holdsPair = await browser.ReportLandingAsync("http://localhost/he/about");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(holdsPair),
+                () => Assert.Equal(("en-US", "ltr"), browser.Document),
+                () => Assert.Equal(LogLevel.Error, Assert.Single(loggerFactory.Entries).Level));
+        }
+
+        [Fact]
+        public async Task Should_reply_to_a_landing_reported_again_once_the_connection_comes_up()
+        {
+            // Arrange — a report refused while the connection was down
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeDocumentCultureSynchronizerBrowser();
+            await using var provider = CreateServicesFollowingAddresses(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
+            documentCultureSynchronizer.BeginFollowing();
+            browser.FailNext("update", new JSDisconnectedException("The circuit dropped."));
+            browser.FailNext("update", new JSDisconnectedException("The circuit dropped."));
+            await browser.ReportLandingAsync("http://localhost/he/about");
+            documentCultureSynchronizer.BeginFollowing();
+
+            // Act
+            var holdsPair = await browser.ReportLandingAsync("http://localhost/he/about");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(holdsPair),
+                () => Assert.Equal(("he-IL", "rtl"), browser.Document));
         }
     }
 

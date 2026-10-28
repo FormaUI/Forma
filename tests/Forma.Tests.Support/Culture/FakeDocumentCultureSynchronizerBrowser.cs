@@ -1,5 +1,6 @@
 namespace Forma.Tests.Culture;
 
+using Forma.Framework.Culture.Browser.Interop;
 using Forma.Tests.Interop;
 
 using Microsoft.JSInterop;
@@ -45,6 +46,10 @@ public sealed class FakeDocumentCultureSynchronizerBrowser
     public RecordingJSObjectReference? OwnerRegistration
         => _owner?.Registration;
 
+    /// <summary>The receiver the document's owner follows addresses through, where it registered one.</summary>
+    public DotNetObjectReference<DocumentCultureSynchronizerReceiver>? OwnerReceiver
+        => _owner?.Receiver;
+
     /// <summary>The pairs every registration was updated with, in order.</summary>
     public IReadOnlyList<(string Language, string Direction)> Updates
         => _updates;
@@ -64,6 +69,11 @@ public sealed class FakeDocumentCultureSynchronizerBrowser
     /// <summary>Lets the next call to <paramref name="identifier"/> take effect and then faults it with <paramref name="exception"/>, so its caller never hears the result.</summary>
     public void LoseNextResult(string identifier, Exception exception)
         => Enqueue(identifier, new Failure(exception, IsAfterEffect: true));
+
+    /// <summary>Reports an enhanced navigation's landing at <paramref name="address"/> through the owner's receiver, as the script does.</summary>
+    /// <returns>A task that completes with the reply: whether the browser holds the pair the culture state is left in.</returns>
+    public Task<bool> ReportLandingAsync(string address)
+        => (OwnerReceiver ?? throw new InvalidOperationException("The document's owner follows no addresses.")).Value.ReportLandingAsync(address);
 
     /// <summary>Closes the circuit, releasing the owner as the initializer does and restoring the served pair.</summary>
     public void CloseCircuit()
@@ -103,11 +113,11 @@ public sealed class FakeDocumentCultureSynchronizerBrowser
     private RecordingJSObjectReference RespondToModule(string identifier, object?[] args)
         => identifier switch
         {
-            "register" => Run(identifier, () => Register((string)args[0]!, (string)args[1]!, (string)args[2]!)),
+            "register" => Run(identifier, () => Register((string)args[0]!, (string)args[1]!, (string)args[2]!, (DotNetObjectReference<DocumentCultureSynchronizerReceiver>?)args[3])),
             _ => throw new JSException($"The module exports no '{identifier}'."),
         };
 
-    private RecordingJSObjectReference Register(string identity, string language, string direction)
+    private RecordingJSObjectReference Register(string identity, string language, string direction, DotNetObjectReference<DocumentCultureSynchronizerReceiver>? receiver)
     {
         if (_owner is not null && _owner.Identity != identity)
         {
@@ -121,6 +131,7 @@ public sealed class FakeDocumentCultureSynchronizerBrowser
             _owner = owner;
         }
 
+        _owner.Receiver = receiver;
         Document = (language, direction);
 
         return _owner.Registration!;
@@ -165,5 +176,7 @@ public sealed class FakeDocumentCultureSynchronizerBrowser
         public string Identity { get; } = identity;
 
         public RecordingJSObjectReference? Registration { get; set; }
+
+        public DotNetObjectReference<DocumentCultureSynchronizerReceiver>? Receiver { get; set; }
     }
 }

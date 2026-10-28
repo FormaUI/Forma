@@ -49,6 +49,27 @@ function navigate(blazor, served) {
     blazor.raise('enhancedload');
 }
 
+// A stand-in for the circuit's receiver, recording each landing reported to it with the means to answer it.
+function fakeReceiver() {
+    const reports = [];
+
+    return {
+        reports,
+        invokeMethodAsync: (method, address) => new Promise((resolve, reject) => reports.push({ method, address, resolve, reject })),
+    };
+}
+
+// Answers a report and lets the synchronizer's reaction to the answer run, which is queued as the answer settles.
+async function reply(report, holdsPair) {
+    report.resolve(holdsPair);
+    await Promise.resolve();
+}
+
+async function refuse(report) {
+    report.reject(new Error('The circuit dropped.'));
+    await Promise.resolve();
+}
+
 beforeEach(() => {
     setAttributes({ lang: 'en', dir: 'ltr' });
 });
@@ -265,6 +286,213 @@ describe('DocumentCultureSynchronizer', () => {
             // Assert
             expect(blazor.count('enhancedload')).toBe(1);
             expect(blazor.count('enhancednavigationstart')).toBe(1);
+        });
+    });
+
+    describe('holding through a navigation', () => {
+        it('lets the patch\'s pair stand and keeps the owner\'s pairs until the reply, then sets the latest', async () => {
+            // Arrange
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            const receiver = fakeReceiver();
+            track(blazor);
+            const registration = register('a', 'en', 'ltr', receiver);
+
+            // Act
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+            const isOwner = registration.update('de', 'ltr');
+            const held = readAttributes();
+            await reply(receiver.reports[0], true);
+
+            // Assert
+            expect(isOwner).toBe(true);
+            expect(held).toEqual({ lang: 'he', dir: 'rtl' });
+            expect(readAttributes()).toEqual({ lang: 'de', dir: 'ltr' });
+        });
+
+        it('reports the address the navigation landed at, once', async () => {
+            // Arrange
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            const receiver = fakeReceiver();
+            track(blazor);
+            register('a', 'en', 'ltr', receiver);
+
+            // Act
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+            blazor.raise('enhancedload');
+
+            // Assert
+            expect(receiver.reports).toHaveLength(1);
+            expect(receiver.reports[0].method).toBe('ReportLandingAsync');
+            expect(receiver.reports[0].address).toBe(location.href);
+        });
+
+        it('keeps the patch\'s pair across a streaming update while held', async () => {
+            // Arrange
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            track(blazor);
+            register('a', 'en', 'ltr', fakeReceiver());
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+
+            // Act
+            blazor.raise('enhancedload');
+
+            // Assert
+            expect(readAttributes()).toEqual({ lang: 'he', dir: 'rtl' });
+        });
+
+        it('stays held when the reply says the browser lacks the pair', async () => {
+            // Arrange
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            const receiver = fakeReceiver();
+            track(blazor);
+            const registration = register('a', 'en', 'ltr', receiver);
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+
+            // Act
+            await reply(receiver.reports[0], false);
+            registration.update('de', 'ltr');
+
+            // Assert
+            expect(readAttributes()).toEqual({ lang: 'he', dir: 'rtl' });
+        });
+
+        it('ignores the reply for a navigation another replaced', async () => {
+            // Arrange — the first navigation landed and reported; a second started before its reply
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            const receiver = fakeReceiver();
+            track(blazor);
+            const registration = register('a', 'en', 'ltr', receiver);
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+            blazor.raise('enhancednavigationstart');
+            registration.update('fr', 'ltr');
+
+            // Act
+            await reply(receiver.reports[0], true);
+            const afterReplacedReply = readAttributes();
+            setAttributes({ lang: 'ar', dir: 'rtl' });
+            blazor.raise('enhancedload');
+            await reply(receiver.reports[1], true);
+
+            // Assert
+            expect(afterReplacedReply).toEqual({ lang: 'he', dir: 'rtl' });
+            expect(readAttributes()).toEqual({ lang: 'fr', dir: 'ltr' });
+        });
+
+        it('ends the hold when the navigation ends without landing', async () => {
+            // Arrange
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            const receiver = fakeReceiver();
+            track(blazor);
+            const registration = register('a', 'en', 'ltr', receiver);
+            blazor.raise('enhancednavigationstart');
+            registration.update('de', 'ltr');
+
+            // Act
+            blazor.raise('enhancednavigationend');
+
+            // Assert
+            expect(receiver.reports).toHaveLength(0);
+            expect(readAttributes()).toEqual({ lang: 'de', dir: 'ltr' });
+        });
+
+        it('waits for the reply when the navigation ends after landing', async () => {
+            // Arrange
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            const receiver = fakeReceiver();
+            track(blazor);
+            const registration = register('a', 'en', 'ltr', receiver);
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+            registration.update('de', 'ltr');
+
+            // Act
+            blazor.raise('enhancednavigationend');
+            const afterEnd = readAttributes();
+            await reply(receiver.reports[0], true);
+
+            // Assert
+            expect(afterEnd).toEqual({ lang: 'he', dir: 'rtl' });
+            expect(readAttributes()).toEqual({ lang: 'de', dir: 'ltr' });
+        });
+
+        it('reports the landing again over the next registration after a refused report', async () => {
+            // Arrange
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            const receiver = fakeReceiver();
+            track(blazor);
+            register('a', 'en', 'ltr', receiver);
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+            await refuse(receiver.reports[0]);
+
+            // Act — the connection comes up again and the owner registers under its identity
+            register('a', 'he', 'rtl', receiver);
+            const held = readAttributes();
+            await reply(receiver.reports[1], true);
+
+            // Assert
+            expect(receiver.reports).toHaveLength(2);
+            expect(receiver.reports[1].address).toBe(receiver.reports[0].address);
+            expect(held).toEqual({ lang: 'he', dir: 'rtl' });
+            expect(readAttributes()).toEqual({ lang: 'he', dir: 'rtl' });
+        });
+
+        it('drops a released registration\'s pending reply and retry', async () => {
+            // Arrange — a report pending as the circuit closes, then a new owner held by a navigation of its own
+            const { register, release, track } = await load();
+            const blazor = fakeBlazor();
+            const released = fakeReceiver();
+            const receiver = fakeReceiver();
+            track(blazor);
+            register('a', 'en', 'ltr', released);
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+            release();
+            register('b', 'fr', 'ltr', receiver);
+            navigate(blazor, { lang: 'ar', dir: 'rtl' });
+
+            // Act
+            await reply(released.reports[0], true);
+
+            // Assert
+            expect(released.reports).toHaveLength(1);
+            expect(readAttributes()).toEqual({ lang: 'ar', dir: 'rtl' });
+        });
+
+        it('restores the served pair as the circuit closes during a hold', async () => {
+            // Arrange
+            const { register, release, track } = await load();
+            const blazor = fakeBlazor();
+            track(blazor);
+            const registration = register('a', 'en', 'ltr', fakeReceiver());
+            navigate(blazor, { lang: 'he', dir: 'rtl' });
+            registration.update('de', 'ltr');
+
+            // Act
+            release();
+
+            // Assert
+            expect(readAttributes()).toEqual({ lang: 'he', dir: 'rtl' });
+        });
+
+        it('holds nothing for an owner that follows no addresses', async () => {
+            // Arrange
+            const { register, track } = await load();
+            const blazor = fakeBlazor();
+            track(blazor);
+            const registration = register('a', 'en', 'ltr');
+
+            // Act
+            blazor.raise('enhancednavigationstart');
+            registration.update('de', 'ltr');
+
+            // Assert
+            expect(readAttributes()).toEqual({ lang: 'de', dir: 'ltr' });
         });
     });
 

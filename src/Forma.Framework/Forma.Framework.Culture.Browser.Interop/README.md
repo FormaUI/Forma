@@ -25,6 +25,10 @@ step again when called as a connection to the browser comes up.
   change.
 - An enhanced navigation or a streaming update can rewrite the attributes, so the owner sets its pair
   again after each.
+- Where an `ICultureRouteHandler` is registered, as `AddFormaCultureRouting` registers one, the
+  owner follows addresses: from an enhanced navigation's start the document keeps the pair its response
+  serves, the landing is reported to the handler with its address, and the owner sets its latest pair
+  once the circuit replies that the browser holds the pair the state is left in.
 - When the client closes the owning circuit, once no interactive server component remains or before a
   paused circuit resumes, the document returns to what the server last served, removing an attribute the
   server left out.
