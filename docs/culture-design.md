@@ -250,6 +250,13 @@ How a switch navigates is the host's choice, made once where it configures cultu
   the `Router`'s `NotFoundPage`, and a full request answers 404 with it. An alias or a token in another
   case is replaced by the canonical address, and so is the default culture's token under
   `ExceptDefault`, and so is a plain address under `Always`.
+- **In place, when the host's pages are islands,** `CultureSwitchMode.InPlace` under a static router.
+  The document's base is the plain one, so a link to another culture's address is an enhanced
+  navigation: the server renders the page in that culture, each island the page already holds stays in
+  its circuit with its state, and the circuit's state follows the landing handoff. The pages carry
+  their plain routes alone, since the middleware removes the culture segment before routing. An island
+  keeps the markup it rendered before the switch until it renders again, so a host's own interactive
+  components follow by subscribing to the state, as Forma's do.
 
 The state follows the address at the event that settles each kind of navigation:
 
@@ -366,7 +373,7 @@ host makes one call for the rest and can still override any single service.
 | C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Blazor.Server` and the culture's `Forma.Framework.Culture.Blazor.Server` do, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Culture.Router.AspNetCore` does |
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or replaced, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
-| C8 | How does a switch navigate? | By a full load by default; in place where the host declares culture-bearing interactive routes, `CultureSwitchMode.InPlace`, each page carrying its culture route, as [culture addresses](#culture-addresses) sets out |
+| C8 | How does a switch navigate? | By a full load by default; in place under `CultureSwitchMode.InPlace`, through culture-bearing interactive routes where an interactive router renders the pages, each page carrying its culture route, or through an enhanced navigation where the pages are islands, as [culture addresses](#culture-addresses) sets out |
 | C9 | What does the cookie migrate by? | A new name, `forma-culture-route`, carrying the application's path base and written at it, which replaces the `HttpOnly` `forma-culture` without relying on the order of same-named cookies |
 | C10 | When is the document held through an enhanced navigation? | Only while its owner follows addresses, which a registered `ICultureRouteHandler` makes it do; the reply to the landing's report acknowledges it once the browser holds the resulting pair, and the owner then sets its latest pair, as [the document](#the-document-follows-the-state) sets out |
 | C11 | How does the state follow interactive routing? | A culture route page reconciles the state with its incoming route before its interactive page lifecycle runs, where it renders interactively within `CultureRouteScope`, which the host places around its `Router`; a page that is an island of its own, and every enhanced navigation, follow the landing handoff, as [culture addresses](#culture-addresses) sets out |

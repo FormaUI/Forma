@@ -138,9 +138,9 @@ in the circuit, and the page it reaches follows its route.
 
 ## Switching in place
 
-`CultureSwitchMode.InPlace` keeps the circuit through a switch, so the user's work stays where it was:
-interactive routing reaches every culture's address, and the culture state follows the page it
-routes to. Three things make it so:
+`CultureSwitchMode.InPlace` keeps the circuit through a switch, so the user's work stays where it was.
+Under an interactive router, interactive routing reaches every culture's address, and the culture
+state follows the page it routes to. Three things make it so:
 
 - `Switch = CultureSwitchMode.InPlace` in the options, under which `CultureBaseHref` writes the
   application's root, so every culture's address lies within the base.
@@ -188,6 +188,35 @@ A page that doesn't derive `CultureRoutePage` follows nothing. One that carries 
 route has no page at another culture's address: Blazor's router loads the address as a new
 document for a link, whose circuit takes the address's culture as it opens, and renders its
 not-found page for `NavigateTo`.
+
+### Where the pages are islands
+
+A host whose pages each carry their own interactive render mode, under a static router, needs only
+`Switch = CultureSwitchMode.InPlace` and a document base at the application's root, which
+`CultureBaseHref` writes under that mode. A link to another culture's address is then an enhanced
+navigation: the server renders the page in that culture, each island the page already holds keeps
+its state, and the circuit's culture state follows the address the navigation lands at. The pages
+keep their plain routes.
+
+An island keeps the markup it rendered before the switch until it renders again, so a component of
+the host's own that shows text in the culture subscribes to `ICultureState` and renders again on
+each change, as Forma's components do:
+
+```razor
+@implements IDisposable
+@inject ICultureState CultureState
+
+@code {
+    protected override void OnInitialized()
+        => CultureState.Subscribe(RenderAgainAsync);
+
+    public void Dispose()
+        => CultureState.Unsubscribe(RenderAgainAsync);
+
+    private Task RenderAgainAsync()
+        => InvokeAsync(StateHasChanged);
+}
+```
 
 ## Building links
 

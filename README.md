@@ -256,6 +256,10 @@ through the `ICultureState` every user scope holds, and every component renders 
 <FormaButton OnClick="@(() => CultureState.ChangeAsync(CultureInfo.GetCultureInfo("he")))">עברית</FormaButton>
 ```
 
+Text typed into a number or time field and not yet committed keeps the culture it was typed in, so
+`1,234` typed in English still commits as a thousand and more after a switch to German. A host's
+own components render again in the new culture by subscribing to the same `ICultureState`.
+
 A host's file overrides the library's and the pack's for the keys it holds.
 [`Forma.Framework.Localization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Localization/README.md)
 documents the lookup, the plural syntax and every place a file may sit, and
@@ -289,6 +293,10 @@ builder.Services.AddFormaCultureRouting(new CultureRouterOptions
 
 app.UseFormaCultureRouting();
 ```
+
+A switch to another culture loads its address as a new document by default;
+`Switch = CultureSwitchMode.InPlace` keeps the document and the user's work instead, as the package's
+README sets out.
 
 ## More packages
 
