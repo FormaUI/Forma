@@ -194,6 +194,55 @@ public sealed class DefaultCultureStateTests
         }
 
         [Fact]
+        public async Task Should_apply_the_cultures_already_held_to_a_calling_flow_holding_others_without_a_change()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+            var notifications = 0;
+            state.Subscribe(() => { notifications++; return Task.CompletedTask; });
+            CultureInfo.CurrentCulture = German;
+            CultureInfo.CurrentUICulture = Hebrew;
+
+            // Act
+            await state.ChangeAsync(new CultureInfo("en"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(English, CultureInfo.CurrentCulture),
+                () => Assert.Equal(English, CultureInfo.CurrentUICulture),
+                () => Assert.Equal(0, state.Revision),
+                () => Assert.Equal(0, notifications));
+        }
+
+        [Fact]
+        public void Should_hold_the_cultures_in_the_state_and_the_calling_flow_before_the_notification_completes()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+            var gate = new TaskCompletionSource();
+            state.Subscribe(() => gate.Task);
+
+            // Act
+            var change = state.ChangeAsync(German, Hebrew);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(change.IsCompleted),
+                () => Assert.Equal(German, state.Culture),
+                () => Assert.Equal(Hebrew, state.UICulture),
+                () => Assert.Equal(1, state.Revision),
+                () => Assert.Equal(German, CultureInfo.CurrentCulture),
+                () => Assert.Equal(Hebrew, CultureInfo.CurrentUICulture));
+            gate.SetResult();
+        }
+
+        [Fact]
         public async Task Should_reject_a_missing_culture()
         {
             // Arrange

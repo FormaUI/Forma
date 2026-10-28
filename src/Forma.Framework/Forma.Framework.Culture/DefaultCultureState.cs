@@ -35,6 +35,9 @@ internal sealed class DefaultCultureState : ICultureState
 
         if (changedCulture.Equals(Culture) && changedUICulture.Equals(UICulture))
         {
+            CultureInfo.CurrentCulture = Culture;
+            CultureInfo.CurrentUICulture = UICulture;
+
             return Task.CompletedTask;
         }
 

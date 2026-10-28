@@ -62,7 +62,8 @@ Its rules:
 
 - An omitted UI culture is the culture.
 - `IsRightToLeft` is whether the UI culture is written right to left.
-- A change to the pair already held is no change: it neither notifies nor advances the revision.
+- A change to the pair already held is no change: it neither notifies nor advances the revision, and it
+  still applies the pair to its calling flow, which may hold other cultures.
 - The state holds read-only cultures, `CultureInfo.ReadOnly` of what it is given, so no caller can alter
   a culture behind it.
 - The revision is the state's, advanced once per change, and the one source every component base and

@@ -22,11 +22,12 @@ starts from the cultures in force when the scope first resolves it, which on a s
 `Culture` and `UICulture` are the state's cultures, each read-only, and `IsRightToLeft` is whether the
 UI culture is written right to left. `Revision` advances once on each change.
 
-`ChangeAsync(culture, uiCulture)` changes both; an omitted `uiCulture` takes `culture`. It applies the
-new cultures to the calling flow before it notifies, and its task completes once every subscriber has
-been notified. On an Interactive Server circuit,
+`ChangeAsync(culture, uiCulture)` changes both; an omitted `uiCulture` takes `culture`. The state holds
+the new cultures, and the calling flow runs in them, as soon as the call returns; its task completes once
+every subscriber has been notified. On an Interactive Server circuit,
 [`Forma.Framework.Culture.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Blazor.Server/README.md)
-applies them before every later event too. A change to the pair the state already holds does nothing.
+applies them before every later event too. A change to the pair the state already holds applies it to
+the calling flow and nothing more: `Revision` stays, and no subscriber is notified.
 
 ```razor
 @using System.Globalization
