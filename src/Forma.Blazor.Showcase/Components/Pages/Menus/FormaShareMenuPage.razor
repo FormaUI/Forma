@@ -6,7 +6,6 @@
 @using Forma.Framework.Share
 @using Forma.Framework.Icons
 @inject IStringLocale<FormaShareMenuPage> L
-@implements IDisposable
 
 <h1>FormaShareMenu</h1>
 <p class="description">@L["A share menu over one subject. The social networks and a download make up the baseline, a consumer adds its own actions beside them, and everything past the primary row waits behind More. Where the platform offers a native share surface, one entry hands the subject to it."]</p>
@@ -99,10 +98,15 @@
         Accounts.Subscribe(_refresh);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        Vault.Shared -= _refreshOnShared;
-        Accounts.Unsubscribe(_refresh);
+        if (disposing)
+        {
+            Vault.Shared -= _refreshOnShared;
+            Accounts.Unsubscribe(_refresh);
+        }
+
+        base.Dispose(disposing);
     }
 
     private readonly ShareItem _article = new()

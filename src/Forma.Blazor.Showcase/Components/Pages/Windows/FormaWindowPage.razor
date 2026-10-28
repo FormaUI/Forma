@@ -10,7 +10,6 @@
 @using Forma.Blazor.Components.Inputs
 @inject IStringLocale<FormaWindowPage> L
 @inject WindowManager Manager
-@implements IDisposable
 
 <h1>FormaWindow</h1>
 <p class="description">@L["A chrome floated over the page: it is moved by its title bar, resized at its edges, maximized, minimized to the rest area and closed. Every window belongs to a workspace that knows which one is current and which windows another opened."]</p>
@@ -307,10 +306,15 @@
         _studio.Changed += HandleWorkspaceChanged;
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        Manager.Changed -= HandleWorkspaceChanged;
-        _studio.Changed -= HandleWorkspaceChanged;
+        if (disposing)
+        {
+            Manager.Changed -= HandleWorkspaceChanged;
+            _studio.Changed -= HandleWorkspaceChanged;
+        }
+
+        base.Dispose(disposing);
     }
 
     private void HandleWorkspaceChanged(object? sender, EventArgs args)

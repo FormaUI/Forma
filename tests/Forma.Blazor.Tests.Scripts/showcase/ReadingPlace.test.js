@@ -42,13 +42,14 @@ describe('ReadingPlace', () => {
         scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
         setScrollY(0);
 
-        // A language link would reload the page; the test stays on it.
+        // A language link would leave the page; the test stays on it.
         stayOnPage = event => event.preventDefault();
         document.addEventListener('click', stayOnPage);
     });
 
     afterEach(() => {
         places.forEach(place => place.dispose());
+        delete globalThis.Blazor;
         document.removeEventListener('click', stayOnPage);
         scrollTo.mockRestore();
         resizes.restore();
@@ -132,6 +133,64 @@ describe('ReadingPlace', () => {
         expect(scrollTo).toHaveBeenCalledWith({ top: 120, behavior: 'instant' });
     });
 
+    it('returns a page reached through an enhanced navigation to the section the reader left', () => {
+        const blazor = stubBlazor();
+        setScrollY(1000);
+        placeSections([{ top: -600, bottom: -100 }, { top: -100, bottom: 400 }]);
+        attach(list, options);
+
+        clickLink('he');
+        arriveAt('/he/number-input');
+        placeSections([{ top: 200, bottom: 1300 }, { top: 1300, bottom: 1900 }]);
+        blazor.dispatch('enhancedload');
+
+        expect(scrollTo).toHaveBeenCalledWith({ top: 1400, behavior: 'instant' });
+        expect(sessionStorage.length).toBe(0);
+    });
+
+    it('holds the place while the page reached through an enhanced navigation renders again', async () => {
+        const blazor = stubBlazor();
+        setScrollY(1000);
+        placeSections([{ top: -600, bottom: -100 }, { top: -100, bottom: 400 }]);
+        attach(list, options);
+        clickLink('he');
+        arriveAt('/he/number-input');
+        placeSections([{ top: 200, bottom: 1300 }, { top: 1300, bottom: 1900 }]);
+        blazor.dispatch('enhancedload');
+
+        placeSections([{ top: 248, bottom: 1348 }, { top: 1348, bottom: 1948 }]);
+        document.querySelector('main').append(document.createElement('p'));
+        await Promise.resolve();
+
+        expect(scrollTo).toHaveBeenLastCalledWith({ top: 1448, behavior: 'instant' });
+    });
+
+    it('lets the reader move the window while the page renders again', async () => {
+        const blazor = stubBlazor();
+        setScrollY(1000);
+        placeSections([{ top: -600, bottom: -100 }, { top: -100, bottom: 400 }]);
+        attach(list, options);
+        clickLink('he');
+        arriveAt('/he/number-input');
+        placeSections([{ top: 200, bottom: 1300 }, { top: 1300, bottom: 1900 }]);
+        blazor.dispatch('enhancedload');
+
+        document.dispatchEvent(new WheelEvent('wheel', { bubbles: true }));
+        document.querySelector('main').append(document.createElement('p'));
+        await Promise.resolve();
+
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('stops returning to a place after an enhanced navigation once disposed', () => {
+        const blazor = stubBlazor();
+        const place = attach(list, options);
+
+        place.dispose();
+
+        expect(blazor.listeners.get('enhancedload')).toEqual(new Set());
+    });
+
     it('drops a place noted for another page', () => {
         const place = attach(list, options);
 
@@ -179,6 +238,19 @@ describe('ReadingPlace', () => {
         const link = [...document.querySelectorAll('.culture-switcher a')].find(anchor => anchor.textContent === text);
 
         link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...modifiers }));
+    }
+
+    // The framework's own event registry, which tells a module that an enhanced navigation landed.
+    function stubBlazor() {
+        const listeners = new Map();
+        globalThis.Blazor = {
+            listeners,
+            addEventListener: (name, callback) => listeners.set(name, (listeners.get(name) ?? new Set()).add(callback)),
+            removeEventListener: (name, callback) => listeners.get(name)?.delete(callback),
+            dispatch: name => listeners.get(name)?.forEach(callback => callback()),
+        };
+
+        return globalThis.Blazor;
     }
 
     function arriveAt(path) {

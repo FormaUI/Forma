@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>Demonstrates uploader transfer, failure, rollback, and cancellation states.</summary>
-public sealed partial class FormaFileUploaderPage : ComponentBase
+public sealed partial class FormaFileUploaderPage
 {
     private const long LargeLimit = 2L * 1024 * 1024;
 

@@ -70,6 +70,7 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 builder.Services.AddFormaCultureRouting(new CultureRouterOptions
 {
     Prefix = CulturePrefix.ExceptDefault,
+    Switch = CultureSwitchMode.InPlace,
     DefaultCulture = "en",
     Routes =
     [

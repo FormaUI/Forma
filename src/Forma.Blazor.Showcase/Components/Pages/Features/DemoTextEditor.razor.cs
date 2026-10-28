@@ -5,7 +5,7 @@ using Forma.Framework.Composer.Editing;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The plain text canvas for the composer demo, keeping its plugin's readout in step with the document.</summary>
-public sealed partial class DemoTextEditor : ComponentBase
+public sealed partial class DemoTextEditor
 {
     /// <summary>The composer's context.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }

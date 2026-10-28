@@ -1,16 +1,21 @@
 /**
  * ReadingPlace — keeping the reader's place across a change of language
  *
- * A link to the same page in another language reloads the page. Before it does, the place is noted
- * for the page it leads to as the section at the top of the window and how far into it the window
- * stands, so the place survives text that runs longer or shorter in the other language; above the
- * first section, the window's own scroll is the place. The page the link leads to returns to the
- * place, and the target, the page's list, is scrolled to its current entry on every page, whenever
- * the target is shown after being hidden, as a drawer is opened, and whenever its owner asks, as
- * after a navigation that kept the list.
+ * A link to the same page in another language leads to that page, in the same document through an
+ * enhanced navigation or in a new one. Before it does, the place is noted for the page it leads to
+ * as the section at the top of the window and how far into it the window stands, so the place
+ * survives text that runs longer or shorter in the other language; above the first section, the
+ * window's own scroll is the place. The page the link leads to returns to the place once it has
+ * loaded, either way, and after an enhanced navigation holds it while the page's interactive parts
+ * render again in the new language. The target, the page's list, is scrolled to its current entry
+ * on every page, whenever the target is shown after being hidden, as a drawer is opened, and
+ * whenever its owner asks, as after a navigation that kept the list.
  */
 
 const storageKey = 'forma-showcase-reading-place';
+
+// How long a page reached through an enhanced navigation holds the place while its interactive parts render again.
+const holdDuration = 2000;
 
 /**
  * @param {HTMLElement} target The list holding the entry for the current page.
@@ -29,18 +34,15 @@ class ReadingPlace {
     #isShown;
     #observer;
     #abort = new AbortController();
+    #holding = null;
+    #handleEnhancedLoad = () => this.#returnToPlace({ isHeld: true });
 
     constructor(target, { links, sections, current }) {
         this.#target = target;
         this.#sections = sections;
         this.#current = current;
 
-        const place = takePlace(location.pathname);
-
-        if (place) {
-            this.#restore(place);
-        }
-
+        this.#returnToPlace({ isHeld: false });
         this.reveal();
 
         this.#isShown = target.clientHeight > 0;
@@ -56,11 +58,16 @@ class ReadingPlace {
                 notePlace({ path: link.pathname, ...this.#measure() });
             }
         }, { capture: true, signal: this.#abort.signal });
+
+        // A page reached through an enhanced navigation keeps this document, which loads no module again.
+        globalThis.Blazor?.addEventListener('enhancedload', this.#handleEnhancedLoad);
     }
 
     dispose() {
         this.#observer.disconnect();
         this.#abort.abort();
+        this.#holding?.abort();
+        globalThis.Blazor?.removeEventListener('enhancedload', this.#handleEnhancedLoad);
     }
 
     // Centers the current entry in the target when the target's scroll leaves it out of view.
@@ -102,6 +109,42 @@ class ReadingPlace {
         return index < 0 || (index === 0 && top > 0)
             ? { section: -1, offset: window.scrollY }
             : { section: index, offset: -top };
+    }
+
+    #returnToPlace({ isHeld }) {
+        const place = takePlace(location.pathname);
+
+        if (!place) {
+            return;
+        }
+
+        this.#restore(place);
+
+        if (isHeld) {
+            this.#hold(place);
+        }
+    }
+
+    // A page reached through an enhanced navigation renders its interactive parts again in the new language after it
+    // loads, moving the text above the place, so the place is returned to on each change until the reader moves or the
+    // page settles.
+    #hold(place) {
+        this.#holding?.abort();
+
+        const holding = new AbortController();
+        const observer = new MutationObserver(() => this.#restore(place));
+        const timer = setTimeout(() => holding.abort(), holdDuration);
+
+        this.#holding = holding;
+        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+        holding.signal.addEventListener('abort', () => {
+            observer.disconnect();
+            clearTimeout(timer);
+        });
+
+        for (const name of ['wheel', 'touchstart', 'keydown', 'pointerdown']) {
+            document.addEventListener(name, () => holding.abort(), { capture: true, signal: holding.signal });
+        }
     }
 
     #restore({ section, offset }) {

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>The source canvas for the composer demo, numbering its lines and renaming a symbol throughout the document.</summary>
-public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
+public sealed partial class DemoSourceEditor
 {
     // Bounds a match against the pattern built from typed input.
     private static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(250);
@@ -169,6 +169,13 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
-        => Plugin?.RenameRequested -= HandleRenameRequested;
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            Plugin?.RenameRequested -= HandleRenameRequested;
+        }
+
+        base.Dispose(disposing);
+    }
 }

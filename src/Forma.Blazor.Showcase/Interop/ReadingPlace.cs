@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Keeps the reader's place in the window across a link to the same page in another language, and shows the list's entry for the current page.</summary>
 /// <remarks>
 /// The place is noted when such a link is pressed, as the section at the top of the window with how far into it the window
-/// stands, or as the window's own scroll above the first section, and the page the link leads to returns to it. The list
-/// is scrolled to center its current entry when the entry is out of view, on every page, whenever the list is shown after
-/// being hidden, and on each <see cref="RevealAsync"/>.
+/// stands, or as the window's own scroll above the first section, and the page the link leads to returns to it, holding it
+/// while a page reached through an enhanced navigation renders again in the new language. The list is scrolled to center
+/// its current entry when the entry is out of view, on every page, whenever the list is shown after being hidden, and on
+/// each <see cref="RevealAsync"/>.
 /// </remarks>
 internal sealed class ReadingPlace(IJSEnvironment js)
     : JSInterop(js, "./scripts/ReadingPlace.js")

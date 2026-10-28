@@ -14,7 +14,7 @@ using Forma.Framework.Resources;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Showcase page demonstrating the FormaExplorer component.</summary>
-public sealed partial class FormaExplorerPage : ComponentBase
+public sealed partial class FormaExplorerPage
 {
     // Answers queries from the folder the page holds.
     private sealed class FolderScopedProvider(SampleMediaStore store, Func<string?> folder) : ICatalogProvider

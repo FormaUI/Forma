@@ -484,11 +484,35 @@ Each step is built, reviewed and committed on its own.
    which German would read as 1.234, and showed `1234`. `1:30 אחה״צ` typed into a time at `/he/edit` was
    kept through Back to `/de/edit` the same way, and Tab committed 13:30, from a text German refuses, and
    showed `13:30`.
-9. **The Showcase.** The Showcase switches language in place, keeping the user's work, with the new load
+9. ✅ **The Showcase.** The Showcase switches language in place, keeping the user's work, with the new load
    still supported; the README, the culture READMEs and the localization and authoring rules follow.
    Gate, in a browser: switching between English and Hebrew in place lays the page out right to left and
    keeps it there on the next click, an edit in progress keeps its text and its parsing culture, and a
    popover already open takes the new direction.
+
+   The Showcase's pages are islands under a static router, so it switches in place through enhanced
+   navigation, as the design's islands case sets out, rather than through culture-bearing interactive
+   routes: `CultureSwitchMode.InPlace`, its language links no longer forcing a new document, its base
+   already the application's root. Three things the switch needed of the Showcase itself:
+   - Its pages follow the culture state through a shared base the pages' folder applies, and its nav and
+     sidebar, which outlive a navigation, subscribe themselves; before, a page kept its text, and the
+     sidebar its links, in the culture the switch left, so the next page link led back to it.
+   - The reader's place is returned to after an enhanced navigation too, and held while the page's
+     islands render again in the new language.
+   - `FocusOnNavigate` still moves focus to the heading on every navigation, so an edit in progress
+     commits, in the culture it was typed in, as the switch begins; its value is kept, and its text is
+     written in the new culture.
+
+   In Chrome on the Showcase, in one document throughout: `1,234` typed into a number under English,
+   then the Hebrew language link, committed 1234 and took `he/rtl`, the page's text, the sidebar's current
+   language and its links to `/he/...`; the layout stayed right to left through two later clicks, and the
+   next page link led to `/he/text-box`. `1,234` typed under English and carried to `/fr/number-input` by
+   Forward committed 1234, where French reads 1.234. A drop-down menu left open through a link to
+   `/he/drop-down-menu` stayed open, took `rtl`, anchored itself to the trigger's other edge and showed
+   its items in Hebrew. A language link from the fourth section kept the reader one pixel into the same
+   section in Hebrew. On the step 8 host, with the server holding each event 400 ms, a number and a time
+   typed at 25 ms a key kept every key and committed their meaning; Chrome's emulated latency doesn't
+   reach the circuit's WebSocket, so the delay is the server's.
 10. **WebAssembly and Hybrid,** each when Forma supports its render mode, Hybrid after its ownership is
     chosen.
 

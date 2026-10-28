@@ -5,7 +5,7 @@ using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
-public sealed partial class FormaDataViewPage : ComponentBase
+public sealed partial class FormaDataViewPage
 {
     [Inject] private IStringLocale<FormaDataViewPage> L { get; set; } = default!;
 

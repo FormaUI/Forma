@@ -5,7 +5,7 @@ using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
-public sealed partial class FormaPaginationPage : ComponentBase
+public sealed partial class FormaPaginationPage
 {
     [Inject] private IStringLocale<FormaPaginationPage> L { get; set; } = default!;
 

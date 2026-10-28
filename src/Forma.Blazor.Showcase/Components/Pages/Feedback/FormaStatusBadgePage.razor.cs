@@ -8,7 +8,7 @@ using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
-public sealed partial class FormaStatusBadgePage : ComponentBase
+public sealed partial class FormaStatusBadgePage
 {
     [Inject] private IStringLocale<FormaStatusBadgePage> L { get; set; } = default!;
 

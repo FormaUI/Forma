@@ -1,8 +1,10 @@
 @rendermode InteractiveServer
+@using Forma.Framework.Culture
 @using Forma.Framework.Icons
 @implements IDisposable
 @inject IStringLocale<ShowcaseNav> L
 @inject NavigationManager Nav
+@inject ICultureState CultureState
 
 @* The stylesheet opens the drawer from the toggle's aria-expanded; where the sidebar is a drawer, this is the bar holding the toggle. *@
 <div class="showcase-nav">
@@ -22,11 +24,21 @@
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => Nav.LocationChanged += HandleLocationChanged;
+    {
+        Nav.LocationChanged += HandleLocationChanged;
+        CultureState.Subscribe(HandleCultureChangedAsync);
+    }
 
     /// <inheritdoc />
     public void Dispose()
-        => Nav.LocationChanged -= HandleLocationChanged;
+    {
+        Nav.LocationChanged -= HandleLocationChanged;
+        CultureState.Unsubscribe(HandleCultureChangedAsync);
+    }
+
+    // The nav outlives a switch made in place, so it is drawn again in the new culture.
+    private Task HandleCultureChangedAsync()
+        => InvokeAsync(StateHasChanged);
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
     {

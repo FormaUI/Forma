@@ -7,7 +7,7 @@ using Forma.Framework.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-public sealed partial class FormaFilePickerPage : ComponentBase
+public sealed partial class FormaFilePickerPage
 {
     private const long MaxSizeBytes = 204_800;
 

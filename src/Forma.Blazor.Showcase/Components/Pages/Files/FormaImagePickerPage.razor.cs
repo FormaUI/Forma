@@ -7,7 +7,7 @@ using Forma.Framework.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-public sealed partial class FormaImagePickerPage : ComponentBase
+public sealed partial class FormaImagePickerPage
 {
     private readonly Dictionary<string, List<string>> _logs = [];
 

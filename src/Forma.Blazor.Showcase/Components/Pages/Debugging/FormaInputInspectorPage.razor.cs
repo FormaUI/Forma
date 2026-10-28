@@ -55,8 +55,15 @@ public sealed partial class FormaInputInspectorPage
     protected override void OnInitialized()
         => HostActions.Changed += HandleHostAction;
 
-    public void Dispose()
-        => HostActions.Changed -= HandleHostAction;
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            HostActions.Changed -= HandleHostAction;
+        }
+
+        base.Dispose(disposing);
+    }
 
     private static string GetReadoutClass(string? value)
         => value is null ? "demo-readout" : "demo-readout demo-readout-live";

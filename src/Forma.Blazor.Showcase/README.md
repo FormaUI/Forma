@@ -48,8 +48,9 @@ badge catalog, share accounts for the share menu, and two input routes, a palett
 | Hebrew | `/he` |
 | French | `/fr` |
 
-The switcher at the top of the sidebar changes between English, Spanish and Hebrew and keeps the
-current page. French shows a host adding a language: the project's `.locales` folder supplies a few
+The switcher at the top of the sidebar changes between English, Spanish and Hebrew in place, keeping
+the current page, what the reader typed or opened on it, and the reader's place; an address in a
+culture still loads in it as a new document. French shows a host adding a language: the project's `.locales` folder supplies a few
 components' strings in it, and the Localization page links into it with everything else in English.
 Reviewing a component means looking at its page in every culture the switcher offers.
 
@@ -59,7 +60,10 @@ A page is a routed component in `Components/Pages/{Category}/`, the component's 
 named `FormaXPage.razor` and marked with `@attribute [ShowcasePage("FormaX")]`. The sidebar, the
 home page and the tabs are read from the attribute and the folder at startup. A page opens with a
 heading and a description, followed by a section per scenario, each with a heading and a box, and
-its strings are a section of the category folder's `.locales` files.
+its strings are a section of the category folder's `.locales` files. Every component under
+`Components/Pages/` derives `ShowcaseComponentBase` through the folder's `_Imports.razor`, so it renders
+again when the culture changes in place; one that releases something of its own overrides
+`Dispose(bool)`.
 
 A variant is a sibling file named `FormaXPage.{Variant}.razor` with a route of its own; it joins
 `FormaXPage`'s tabs by its name. The repository's component authoring guide states what a page
