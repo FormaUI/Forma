@@ -212,7 +212,7 @@ Each step is built, reviewed and committed on its own.
    While the existing registration remains live, the document continues to follow that state: a
    navigation to `/he/about` from an English state, with islands, left the document `en/ltr` over a page
    the server rendered in Hebrew.
-7. **Culture addresses.** The switching entry point, reconciliation when the integration starts,
+7. ✅ **Culture addresses.** The switching entry point, reconciliation when the integration starts,
    interactive routing, Back and Forward, and the cookie, as step 2's results choose. Gate: a browser check
    of each navigation, and of a new tab opening in the culture its address names.
 
