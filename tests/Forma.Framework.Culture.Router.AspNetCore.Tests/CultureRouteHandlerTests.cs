@@ -1,15 +1,18 @@
 namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
 
+using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 public sealed class CultureRouteHandlerTests
 {
     private static ServiceProvider CreateServices(FakeNavigationManager navigationManager)
         => new ServiceCollection()
             .AddSingleton<NavigationManager>(navigationManager)
+            .AddSingleton<IJSRuntime>(new RecordingJSRuntime((_, _) => null))
             .AddFormaCultureRouting(new CultureRouterOptions
             {
                 Prefix = CulturePrefix.ExceptDefault,

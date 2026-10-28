@@ -48,6 +48,7 @@ Spanish.
 | `CultureRouterOptions.Routes` | Every culture the application serves, in order. |
 | `CultureRouterOptions.DefaultCulture` | The `Token` of the culture serving a request that names none. |
 | `CultureRouterOptions.Prefix` | `CulturePrefix.Always`, the default, puts a token on every culture; `CulturePrefix.ExceptDefault` leaves the default culture without one. |
+| `CultureRouterOptions.Switch` | `CultureSwitchMode.FullLoad`, the default, loads another culture's address as a new document; `CultureSwitchMode.InPlace` reaches it in the same circuit, as [switching in place](#switching-in-place) sets out. |
 | `CultureRoute.Token` | The canonical first path segment selecting the culture. |
 | `CultureRoute.Culture` | The `CultureInfo` a request that selects the route runs in. |
 | `CultureRoute.Aliases` | Further tokens that select the route and redirect to `Token`. |
@@ -96,7 +97,8 @@ loaded `/he/about`.
 The document's `<base>` is in the request's culture, `/he/` for a Hebrew page and `/app/he/` under
 the path base `/app`, so interactive routing finds the pages of the document's culture, and an
 address in another culture, where it finds none, loads as a new document whose circuit opens in
-that culture. `CultureBaseHref` writes it in place of the host's own:
+that culture. Under `CultureSwitchMode.InPlace` it is the application's root, `/` or `/app/`.
+`CultureBaseHref` writes it in place of the host's own:
 
 ```razor
 <head>
@@ -111,16 +113,17 @@ segment that is a culture's token.
 
 ## Switching culture
 
-A page or component injects `CultureSwitcher` to switch to another culture. The switch loads the
-current page's address in that culture as a new document, and the culture state follows the
-address as its circuit opens.
+A page or component injects `CultureSwitcher` to switch to another culture. The switch navigates to
+the current page's address in that culture: by default it loads the address as a new document, and
+the culture state follows the address as its circuit opens; under `CultureSwitchMode.InPlace` it stays
+in the circuit, and the page it reaches follows its route.
 
 | Member | What it does |
 | --- | --- |
 | `CurrentRoute` | The route of the culture state's UI culture. |
 | `GetUri(route)` | The current page's address in a route's culture, query string included. |
 | `GetUri(route, relativeAddress)` | An address relative to the application's root, such as `about?tab=2`, in a route's culture. |
-| `SwitchTo(route)` | Loads the current page's address in a route's culture. |
+| `SwitchTo(route)` | Navigates to the current page's address in a route's culture. |
 
 ```razor
 @using Forma.Framework.Culture.Router.AspNetCore
@@ -132,6 +135,59 @@ address as its circuit opens.
     <a href="@Switcher.GetUri(route)" aria-current="@(route == Switcher.CurrentRoute ? "true" : null)">@route.Token</a>
 }
 ```
+
+## Switching in place
+
+`CultureSwitchMode.InPlace` keeps the circuit through a switch, so the user's work stays where it was:
+interactive routing reaches every culture's address, and the culture state follows the page it
+routes to. Three things make it so:
+
+- `Switch = CultureSwitchMode.InPlace` in the options, under which `CultureBaseHref` writes the
+  application's root, so every culture's address lies within the base.
+- `CultureRouteScope` around the `Router`, inside the host's `Routes` component, so it renders in the
+  router's own tree:
+
+  ```razor
+  @using Forma.Framework.Culture.Router.AspNetCore
+
+  <CultureRouteScope>
+      <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+          <Found Context="routeData">
+              <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+          </Found>
+      </Router>
+  </CultureRouteScope>
+  ```
+
+- Every page carrying its culture route beside its plain one, and deriving `CultureRoutePage`:
+
+  ```razor
+  @page "/about"
+  @page "/{culture}/about"
+  @inherits CultureRoutePage
+  ```
+
+`CultureRoutePage` supplies the `Culture` parameter and acts on it before the page's lifecycle runs:
+
+- a segment that isn't a culture's token renders the `Router`'s `NotFoundPage`, and a full request
+  answers `404 Not Found` with it;
+- an alias, a token in another case, the default culture's token under `ExceptDefault`, or a plain
+  address under `Always` is replaced by the canonical address;
+- otherwise, where an interactive router renders the page within `CultureRouteScope`, the culture state
+  takes the route's culture, so `OnInitialized` and `OnParametersSet` run in it, in the state and as
+  the ambient culture, and the `forma-culture-route` cookie is written from the browser for a change,
+  since no request carries it. The layout and other components render again as each is notified;
+  a notification that fails is logged at `Error` under `CultureSwitcher`.
+
+A page that is an island of its own never receives `CultureRouteScope`, and its circuit follows the
+address an enhanced navigation lands at instead, as it does without `InPlace`. Nothing reports a
+missing `CultureRouteScope`, since an island's absence of it is expected: without it no page follows its
+route, and a navigation within one culture looks the same either way, so check a switch.
+
+A page that doesn't derive `CultureRoutePage` follows nothing. One that carries only its plain
+route has no page at another culture's address: Blazor's router loads the address as a new
+document for a link, whose circuit takes the address's culture as it opens, and renders its
+not-found page for `NavigateTo`.
 
 ## Building links
 

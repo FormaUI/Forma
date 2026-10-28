@@ -401,9 +401,51 @@ Each step is built, reviewed and committed on its own.
       in-place change while a report waits, a circuit closing while one waits, and a refused report's
       retry were covered by the tests alone, since the circuit's messages ran at local speed and replied
       within milliseconds.
-   5. **Culture-bearing interactive routes.** The host's declaration, the page base, the plain base, the
-      circuit following its own location changes, and the cookie written from script on a switch in
-      place.
+   5. ✅ **Culture-bearing interactive routes.** The host's declaration, `CultureRouterOptions.Switch` set to
+      `CultureSwitchMode.InPlace`; the page base, `CultureRoutePage`, following its incoming route;
+      `CultureRouteScope` around the host's `Router`, marking its render tree; the plain base; the culture
+      state's contract, its change made before its task returns and an unchanged pair applied to the calling
+      flow; and the cookie written from script by `Forma.Framework.Culture.Router.Interop`. Gate, beside the
+      step's: in the tests, an unchanged pair restoring a calling flow's stale cultures without notifying or
+      advancing the revision, and an interactive page outside `CultureRouteScope`, as an island renders,
+      leaving the state to the handoff; in Chrome under global interactivity, with and without `/app`, a
+      switch in place keeping the user's work, a reused page from `/he/about` to `/about` clearing its
+      token, a held subscriber delaying the reconciliation's renders, rapid Back and Forward, a not-found
+      segment and the canonical replacements.
+
+      The rule the design first gave, the state following the circuit's location change, was replaced by
+      the page following its route, on probes run on the same host under .NET 11 release candidate 1 and
+      repeated under release candidate 3:
+      - ✅ A circuit's location change can't tell interactive routing from an enhanced navigation:
+        `IsNavigationIntercepted` was true for a link and false for `NavigateTo` under islands and under
+        global interactivity alike, and false for Back and Forward under islands and true under global
+        interactivity; under islands the location change reached the circuit before the client's report
+        that the navigation started.
+      - ✅ An interactive page can't tell from its renderer or its assigned render mode whether a router
+        rendered it: `RendererInfo` was `Server` and interactive, and `AssignedRenderMode`
+        `InteractiveServerRenderMode`, both for a page under the interactive router and for a page that is
+        an island of its own. A value cascaded around the `Router` inside `Routes` reached the first on
+        every delivery, reached each one's static render, and never reached the island's interactive
+        instance. No `RouteData` is cascaded.
+      - ✅ The route value arrives under the template's spelling, `culture`, which a case-sensitive lookup
+        of `Culture` among the parameters misses; a page reused from `/he/rabout` to `/rabout` received
+        `culture` as null, its earlier value `he`; an island page under islands received no culture at
+        `/he/risland`, since the middleware removed the segment; and a prerender under global
+        interactivity is a static delivery.
+
+      In Chrome under global interactivity with `ExceptDefault`, at `/` and under `/app`, every
+      navigation stayed in the first document and kept the draft typed in the layout. The switcher's
+      switch from `/about` took `/he/about` with `he/rtl`, the reused page's parameter callback running in
+      `he` in the state and the calling flow, the layout's readout `he`, and the cookie `he` at the path
+      base under its name there, `forma-culture-route%2Fapp` under `/app`. A link from `/he/about` to
+      `/about` reused the page with its token cleared and took `en/ltr`, and Back and Forward each took
+      their address's culture. Back, Back and Forward 40 ms apart, and Back, Forward and Back 20 ms apart,
+      each ended on the culture of the address they left. `/xx/about` rendered the not-found page in the
+      same document, `/iw/about` and `/HE/other` were replaced by `/he/about` and `/he/other`, and
+      `/en/about` by `/about`. A reload of `/he/about` loaded in Hebrew, and the cookie was `SameSite=Lax`
+      at the path base. With a subscriber holding each notification 800 ms, the page rendered in Hebrew
+      and the document took `he/rtl` within 150 ms of the switch, and the layout, notified after that
+      subscriber, kept `en` until 1200 ms.
 8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
    cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
    culture, a committed or cancelled edit takes the current culture, a committed value formatted again

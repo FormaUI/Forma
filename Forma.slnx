@@ -13,6 +13,7 @@
     <Project Path="src\Forma.Framework\Forma.Framework.Files\Forma.Framework.Files.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Culture.Router.AspNetCore\Forma.Framework.Culture.Router.AspNetCore.csproj" />
+    <Project Path="src\Forma.Framework\Forma.Framework.Culture.Router.Interop\Forma.Framework.Culture.Router.Interop.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Culture.Browser.Interop\Forma.Framework.Culture.Browser.Interop.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Culture.Blazor.Server\Forma.Framework.Culture.Blazor.Server.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
@@ -65,6 +66,7 @@
     <Project Path="tests\Forma.Framework.Icons.Glyphs.Tests\Forma.Framework.Icons.Glyphs.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Culture.Tests\Forma.Framework.Culture.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Culture.Router.AspNetCore.Tests\Forma.Framework.Culture.Router.AspNetCore.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Culture.Router.Interop.Tests\Forma.Framework.Culture.Router.Interop.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Culture.Browser.Interop.Tests\Forma.Framework.Culture.Browser.Interop.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Culture.Blazor.Server.Tests\Forma.Framework.Culture.Blazor.Server.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />

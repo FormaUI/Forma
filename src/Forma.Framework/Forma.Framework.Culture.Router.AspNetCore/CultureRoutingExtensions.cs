@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>Registers culture routing and adds it to the request pipeline.</summary>
 public static class CultureRoutingExtensions
@@ -14,6 +16,7 @@ public static class CultureRoutingExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddFormaCultureServices();
+        services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
         services.TryAddSingleton(new CultureRouter(options));
         services.TryAddScoped<CultureSwitcher>();
         services.TryAddScoped<ICultureRouteHandler>(provider => new CultureRouteHandler(provider.GetRequiredService<CultureSwitcher>()));

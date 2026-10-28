@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Router.Interop\Forma.Framework.Culture.Router.Interop.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+    </ItemGroup>
+
+</Project>

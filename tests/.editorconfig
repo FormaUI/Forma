@@ -35,4 +35,9 @@ resharper_class_never_instantiated_global_highlighting = none
 [*Fixture.cs]
 dotnet_diagnostic.CA1822.severity = none
 
+[Forma.Tests.Support/Shared/FakeRenderer.cs]
+# Disable BL0006 - a renderer fake derives from Renderer and takes its RenderBatch, both in the RenderTree namespace,
+# since a Framework test reaches an interactive renderer no other way.
+dotnet_diagnostic.BL0006.severity = none
+
 # End of .editorconfig

@@ -2,22 +2,26 @@ namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
 
 using System.Globalization;
 
+using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 public sealed class CultureSwitcherTests
 {
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he");
 
-    private static ServiceProvider CreateServices(FakeNavigationManager navigationManager)
+    private static ServiceProvider CreateServices(FakeNavigationManager navigationManager, CultureSwitchMode cultureSwitchMode = CultureSwitchMode.FullLoad)
         => new ServiceCollection()
             .AddSingleton<NavigationManager>(navigationManager)
+            .AddSingleton<IJSRuntime>(new RecordingJSRuntime((_, _) => null))
             .AddFormaCultureRouting(new CultureRouterOptions
             {
                 Prefix = CulturePrefix.ExceptDefault,
+                Switch = cultureSwitchMode,
                 DefaultCulture = "en",
                 Routes =
                 [
@@ -119,6 +123,28 @@ public sealed class CultureSwitcherTests
             Assert.Multiple(
                 () => Assert.Equal("http://localhost/he/about", navigation.Uri),
                 () => Assert.True(navigation.Options.ForceLoad),
+                () => Assert.Equal("en", cultureState.UICulture.Name));
+        }
+
+        [Fact]
+        public async Task Should_navigate_in_the_circuit_where_a_switch_is_made_in_place_and_leave_the_culture_state_to_follow()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            var navigationManager = new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/about"));
+            await using var provider = CreateServices(navigationManager, CultureSwitchMode.InPlace);
+            await using var scope = provider.CreateAsyncScope();
+            var cultureState = scope.ServiceProvider.GetRequiredService<ICultureState>();
+
+            // Act
+            scope.ServiceProvider.GetRequiredService<CultureSwitcher>().SwitchTo(GetRoute(scope.ServiceProvider, "he"));
+
+            // Assert
+            var navigation = Assert.Single(navigationManager.Navigations);
+
+            Assert.Multiple(
+                () => Assert.Equal("http://localhost/he/about", navigation.Uri),
+                () => Assert.False(navigation.Options.ForceLoad),
                 () => Assert.Equal("en", cultureState.UICulture.Name));
         }
     }

@@ -11,4 +11,7 @@ public sealed class CultureRouterOptions
 
     /// <summary>Every culture the application serves.</summary>
     public required IReadOnlyList<CultureRoute> Routes { get; init; }
+
+    /// <summary>How a switch to another culture navigates.</summary>
+    public CultureSwitchMode Switch { get; init; } = CultureSwitchMode.FullLoad;
 }

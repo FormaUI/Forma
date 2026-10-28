@@ -228,15 +228,18 @@ How a switch navigates is the host's choice, made once where it configures cultu
   a link from that root. An address outside a culture's base but inside the root is read like any other;
   one outside the root, at another origin or outside the path base, belongs to another application and
   leaves the state as it is.
-- **In place, when the host declares culture-bearing interactive routes.** Every page then carries its
-  culture route beside its plain one, `@page "/about"` and `@page "/{culture}/about"`, and the document's
-  base is the plain one, so interactive routing reaches another culture's address in the same circuit,
-  keeping the user's work. Forma's page base supplies only the `Culture` parameter and its validation; it
-  doesn't declare a route, so each page still declares its own. A segment that isn't a culture's token
-  stops the page before its lifecycle with the router's not-found outcome: an interactive navigation
-  renders the router's not-found page in the same circuit, which needs the `Router`'s `NotFoundPage`, and
-  a full request answers 404 with it. An alias or a token in another case is replaced by the canonical
-  address, and so is the default culture's token under `ExceptDefault`.
+- **In place, when the host declares culture-bearing interactive routes,** `CultureSwitchMode.InPlace`.
+  Every page then carries its culture route beside its plain one, `@page "/about"` and
+  `@page "/{culture}/about"`, and derives Forma's page base, `CultureRoutePage`; the host's `Routes`
+  component places `CultureRouteScope` around its `Router`, within the router's render tree; and the
+  document's base is the plain one, so interactive routing reaches another culture's address in the same
+  circuit, keeping the user's work. The page base supplies the `Culture` parameter, its validation and the
+  page's following of its route; it doesn't declare a route, so each page still declares its own. A
+  segment that isn't a culture's token stops the page before its lifecycle with the router's not-found
+  outcome: an interactive navigation renders the router's not-found page in the same circuit, which needs
+  the `Router`'s `NotFoundPage`, and a full request answers 404 with it. An alias or a token in another
+  case is replaced by the canonical address, and so is the default culture's token under
+  `ExceptDefault`, and so is a plain address under `Always`.
 
 The state follows the address at the event that settles each kind of navigation:
 
@@ -248,9 +251,12 @@ The state follows the address at the event that settles each kind of navigation:
   location change: the circuit's culture route handler handles the landed address and replies, as
   [the document](#the-document-follows-the-state) sets out. Handling an address changes the state alone;
   it navigates nowhere and writes no cookie.
-- **Interactive routing** makes no request, so under culture-bearing interactive routes the circuit's
-  location change is the navigation itself, and the state follows it there. Without them, the circuit
-  doesn't follow a location change.
+- **Interactive routing** makes no request, and a circuit's location change can't tell it from an
+  enhanced navigation's start, so the state follows the page the router renders: under culture-bearing
+  interactive routes, a culture route page reconciles the culture state with its incoming route before
+  its interactive page lifecycle runs, so its initialization and parameter callbacks run in the route's
+  cultures, in the state and in their calling flow. Without them, interactive routing leaves the state
+  as it is.
 - **Back and Forward** are navigations of the kind they become, and restore the culture of the address
   they return to.
 
@@ -262,6 +268,29 @@ A navigation resolves by the address it leaves behind:
 - a failure after the address changed is resolved by the address the browser shows, never by restoring the
   culture the navigation left.
 
+A culture route page follows its route where it renders interactively within `CultureRouteScope`, whose
+cascaded value reaches every page an interactive router renders within it and stops at the boundary of a
+page that is an island of its own, as every cascading value stops where the render mode changes. Such an
+island receives no culture segment, since the middleware removed it before the static render, and is left
+to the landing handoff, as every enhanced navigation is; a static render is the middleware's. The scope's
+absence raises nothing, since an island never receives it, so in-place following rests on the host
+placing the scope: without it no page follows, and a navigation within one culture conceals that.
+
+The page takes its culture from the token it was routed with, never from the navigation manager's latest
+address, so a delivery for another reason changes nothing, and a reused page routed through its plain route
+receives no token and follows the culture its plain address names. The change is made before the page's
+lifecycle and the page doesn't wait for its notification: the state and the calling flow hold the route's
+cultures at once, and the layout and other components render again as their notifications reach them, one
+subscriber after another, so a subscriber that holds its notification delays those after it and the update
+isn't one atomic step. A notification that fails is logged. A change the page makes writes the cookie, since
+no request carries it.
+
+A page outside that contract follows nothing, since Forma reconciles only for a culture route page. A
+page that carries only its plain route has no page at another culture's address: Blazor's router loads
+the address as a new document for a navigation it intercepted, such as a link, whose circuit reconciles
+as it opens, and renders its not-found page for one it didn't, such as `NavigateTo`. A page that declares
+the culture route without deriving the base binds the segment unvalidated and leaves the state as it is.
+
 The `forma-culture-route` cookie only names the culture last chosen, for a request whose address carries
 none, such as the circuit's own connection. A new tab opens in the culture its address names; under
 `ExceptDefault`, `/` is the default culture. So two tabs in two cultures each keep their own: one tab's
@@ -269,13 +298,13 @@ switch rewrites the shared cookie, and the other, reconnecting, is reconciled wi
 
 The cookie belongs to the application: it is written at the application's path base, and under a path
 base its name carries that base, escaped, `forma-culture-route%2Fapp` under `/app`, so applications sharing
-a host, one at `/` and another under `/app`, each read their own. It isn't `HttpOnly`, since a switch that
-makes no request writes it from the browser's script. The `forma-culture` cookie an earlier version wrote,
-`HttpOnly` at `/`, is replaced: a request carrying it alone takes its token as the culture last chosen
-where it names a route and the address names none, and a document's response writes the new cookie and
-expires the old one at `/`; where both arrive, the new one decides and the old one is expired. Each name
-is written at one path, so the order in which a browser sends two same-named cookies is never part of the
-contract, an application at `/` included.
+a host, one at `/` and another under `/app`, each read their own. It isn't `HttpOnly`, since a change a
+culture route page makes in place, with no request, writes it from the browser's script. The
+`forma-culture` cookie an earlier version wrote, `HttpOnly` at `/`, is replaced: a request carrying it alone
+takes its token as the culture last chosen where it names a route and the address names none, and a
+document's response writes the new cookie and expires the old one at `/`; where both arrive, the new one
+decides and the old one is expired. Each name is written at one path, so the order in which a browser
+sends two same-named cookies is never part of the contract, an application at `/` included.
 
 The culture segment is the first segment after the path base, and a request whose culture segment the
 middleware removes is routed again, since `UsePathBase` routes a request as it removes the base. The
@@ -309,7 +338,8 @@ as an integration with ASP.NET Core does across .NET:
 | `Forma.Framework.Culture` | The culture state's abstraction, its default and its registrar, and the culture route handler's contract, with no dependency on ASP.NET Core or navigation |
 | `Forma.Framework.Culture.Browser.Interop` | The document culture synchronizer: its script, the initializer that tracks what the server served and releases a closed circuit's registration, and the service that keeps the document on a culture state |
 | `Forma.Framework.Culture.Blazor.Server` | The circuit handler that applies the culture before every inbound activity and starts the document culture synchronizer |
-| `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware, `CultureRouter`, the switcher, the page base, the document's base, the address reconciliation, the culture route handler and the cookie |
+| `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware, `CultureRouter`, the switcher, the page base, the culture route scope, the document's base, the address reconciliation, the culture route handler and the cookie |
+| `Forma.Framework.Culture.Router.Interop` | The culture cookie's script and its wrapper, which write the cookie from the browser for a change made in place |
 | `Forma.Framework.Browser.Blazor.Server` | The DOM's circuit handler |
 
 The product's aggregate registrar registers all of them but the routing, which takes the host's options, so a
@@ -326,6 +356,7 @@ host makes one call for the rest and can still override any single service.
 | C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Blazor.Server` and the culture's `Forma.Framework.Culture.Blazor.Server` do, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Culture.Router.AspNetCore` does |
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
-| C8 | How does a switch navigate? | By a full load by default; in place where the host declares culture-bearing interactive routes, each page carrying its culture route, as [culture addresses](#culture-addresses) sets out |
+| C8 | How does a switch navigate? | By a full load by default; in place where the host declares culture-bearing interactive routes, `CultureSwitchMode.InPlace`, each page carrying its culture route, as [culture addresses](#culture-addresses) sets out |
 | C9 | What does the cookie migrate by? | A new name, `forma-culture-route`, carrying the application's path base and written at it, which replaces the `HttpOnly` `forma-culture` without relying on the order of same-named cookies |
 | C10 | When is the document held through an enhanced navigation? | Only while its owner follows addresses, which a registered `ICultureRouteHandler` makes it do; the reply to the landing's report acknowledges it once the browser holds the resulting pair, and the owner then sets its latest pair, as [the document](#the-document-follows-the-state) sets out |
+| C11 | How does the state follow interactive routing? | A culture route page reconciles the state with its incoming route before its interactive page lifecycle runs, where it renders interactively within `CultureRouteScope`, which the host places around its `Router`; a page that is an island of its own, and every enhanced navigation, follow the landing handoff, as [culture addresses](#culture-addresses) sets out |

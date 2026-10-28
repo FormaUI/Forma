@@ -37,6 +37,7 @@ public sealed partial class CultureRouter
 
         Routes = [.. options.Routes];
         _prefix = options.Prefix;
+        Switch = options.Switch;
         DefaultRoute = Routes.FirstOrDefault(route => string.Equals(route.Token, options.DefaultCulture, StringComparison.Ordinal))
             ?? throw new ArgumentException($"DefaultCulture '{options.DefaultCulture}' is not the token of any registered culture.", nameof(options));
     }
@@ -46,6 +47,9 @@ public sealed partial class CultureRouter
 
     /// <summary>Every culture the application serves, in registration order.</summary>
     public IReadOnlyList<CultureRoute> Routes { get; }
+
+    /// <summary>How a switch to another culture navigates.</summary>
+    public CultureSwitchMode Switch { get; }
 
     // Google reads an ISO 639-1 language with an optional ISO 15924 script and ISO 3166-1 alpha-2 region.
     [GeneratedRegex("^[a-z]{2}(-[a-z]{4})?(-[a-z]{2})?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
@@ -112,6 +116,10 @@ public sealed partial class CultureRouter
 
         return segments.Length > 1 && _routesByToken.ContainsKey(segments[0]) && _routesByToken.ContainsKey(segments[1]);
     }
+
+    /// <summary>Whether <paramref name="segment"/> is a registered culture's token or alias, in any case.</summary>
+    internal bool IsToken(string segment)
+        => _routesByToken.ContainsKey(segment);
 
     private static string[] GetSegments(PathString path)
         => (path.Value ?? string.Empty).Split('/', StringSplitOptions.RemoveEmptyEntries);
