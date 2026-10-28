@@ -113,6 +113,7 @@ Every component derives from one of three bases, and never from `ComponentBase` 
 - Do hand the field the input's `FieldElementIds` through `ElementIds`, so the field's label and message container carry the ids the input's references point at, and write `aria-describedby="@DescribedBy"` on the element its label names, after the host's attributes, so a reader reaching an invalid input hears why; a part of the component's own that describes the element, such as a count or advice, adds its id in `BuildDescribedBy`, and an input that draws no field in some state answers `HasFieldContainer` with that state.
 - Do build an input that only specializes another, such as a currency amount over a number, as a component of the element tier that hands its `Value`, `ValueChanged` and `ValueExpression`, its label and its host surface to the one input it draws, overriding `RootElement` to answer with that input's root, so one input component stands under one field with one label, one set of messages and one set of element ids.
 - Do name a field through `ValueExpression` where the library uses an input as a control rather than a form field — a grid's row marker, a multi-select's option — because `InputBase` requires one.
+- Do keep the text an input parses as a draft from its input events until it commits or is replaced, and parse it in the draft's culture, so an edit begun before a culture switch keeps its meaning; a step, a chosen suggestion and a different bound value replace the draft, the same value bound again keeps it, and a rejected commit keeps its text and culture. The draft holds the text and its culture alone; the input keeps its own rules for committing.
 - Do use a plain `Value` / `ValueChanged` pair for non-form components.
 - Don't postpone validation until an event handler when lifecycle validation can fail earlier and more clearly.
 
@@ -158,5 +159,6 @@ Every component has a page in the showcase, in the category folder matching the 
 - Do make each state reachable on the page. A validation state needs a model rule and a submit, not a paragraph describing one.
 - Do treat the component's locale section as the inventory: if a key in it cannot be displayed in the showcase, a state is missing.
 - Do localize all page copy so every culture switcher exercises direction and translation.
+- Do let the page follow the culture state, which the showcase's shared page base does for every page beneath the pages' folder, so a switch made in place renders the page's own copy again in the new language; a showcase component elsewhere that shows text in the culture subscribes to the state itself.
 - Don't count a state as covered because the parameter exists; count it when the page renders the component standing in it.
 - Don't treat the showcase page as optional or as documentation that can be added later.
