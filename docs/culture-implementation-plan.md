@@ -446,12 +446,44 @@ Each step is built, reviewed and committed on its own.
       at the path base. With a subscriber holding each notification 800 ms, the page rendered in Hebrew
       and the document took `he/rtl` within 150 ms of the switch, and the layout, notified after that
       subscriber, kept `en` until 1200 ms.
-8. **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
-   cancelled, as the design's editing section sets out: a failed parse keeps its text and its parsing
-   culture, a committed or cancelled edit takes the current culture, a committed value formatted again
-   keeps its value and stays unmodified, focus alone is no edit, and the field's labels, accessible names
-   and direction follow the new UI culture throughout. Gate: a component test of each rule, and a browser
-   check of an edit across a switch.
+8. ✅ **The edit in progress.** An uncommitted edit keeps its parsing culture until it commits or is
+   replaced, as the design's editing section sets out. The fields that take typed text are the number
+   input, the currency input through it, the time picker and the date-time picker's time; the date
+   pickers take a date from a calendar alone. Until now a field held typed text only after a rejected
+   commit, and every parse read the current culture.
+   - One shared draft holds an edit's text and the culture it is read in, taken from the field's input
+     events without changing the bound value or validating; each field keeps its own commit rules. An
+     input event reaches the server for each change to the text, and typing doesn't wait for it.
+   - The number input steps from its value as it did: a step that succeeds replaces the edit and shows
+     its result in the current culture. Stepping from the number the edit's text writes is a decision of
+     its own, left out of this step.
+   - The date-time picker tells a missing time, an entered but unreadable one and a read one apart,
+     blank text counting as missing, and reading the time ends nothing: its edit ends only when the
+     whole field commits, or is replaced.
+   - Escape still closes the time list and leaves the edit in progress.
+
+   Gate, in the component tests, for the number, currency, time and date-time fields, each with a sample
+   the first culture reads and the second refuses or reads otherwise, `1,234` under English and German,
+   `1:30 אחה״צ` under Hebrew and English, and `13.30` under Finnish and English: typing, switching the
+   culture with the edit uncommitted, finding the exact text kept, then committing and finding the first
+   culture's meaning; a second switch keeping the first culture; a rejection keeping the edit; a commit
+   to the value already held ending the edit and formatting it again; a parent's render with the bound
+   value unchanged keeping the edit, and a changed value replacing it; a culture-only render keeping a
+   clean field clean and a modified one modified. In Chrome, with the in-place switch: typing into a
+   number and a time, then Back changing the culture with the same input still focused and nothing
+   committed before the change, the text kept, and a commit taking the first culture's meaning.
+
+   The common times read alike in English, German, Hebrew and French, `1:30 PM` and `13:30` among them,
+   so the time samples are Hebrew's own designators and Finnish's separator. Each culture test failed
+   with the field reading in the current culture, each test of the text kept failed without the input
+   events, and the tests of blank text and of a different bound value failed with those rules removed.
+
+   In Chrome under global interactivity, on a host switching in place between English, Hebrew and German,
+   every step stayed in the first document. `1,234` typed into a number at `/edit`, under English, was
+   kept through Back to `/de/edit` with the number still focused and no commit, and Tab committed 1234,
+   which German would read as 1.234, and showed `1234`. `1:30 אחה״צ` typed into a time at `/he/edit` was
+   kept through Back to `/de/edit` the same way, and Tab committed 13:30, from a text German refuses, and
+   showed `13:30`.
 9. **The Showcase.** The Showcase switches language in place, keeping the user's work, with the new load
    still supported; the README, the culture READMEs and the localization and authoring rules follow.
    Gate, in a browser: switching between English and Hebrew in place lays the page out right to left and

@@ -783,6 +783,199 @@
         }
     }
 
+    public sealed class EditInProgress
+    {
+        [Fact]
+        public async Task Should_commit_an_edit_in_the_culture_it_was_typed_in_after_the_culture_changes()
+        {
+            // Arrange — English reads 1,234 as a thousand and more, and German as one and a fraction
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1,234");
+            await ctx.ChangeCultureAsync("de-DE");
+            var textAfterChange = cut.Find("input").GetAttribute("value");
+            var valueAfterChange = model.Price;
+
+            // Act
+            cut.Find("input").Change("1,234");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1,234", textAfterChange),
+                () => Assert.Null(valueAfterChange),
+                () => Assert.Equal(1234m, model.Price),
+                () => Assert.Equal("1234", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_culture_an_edit_was_typed_in_through_a_second_change()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1,234");
+            await ctx.ChangeCultureAsync("de-DE");
+            await ctx.ChangeCultureAsync("fr-FR");
+
+            // Act
+            cut.Find("input").Change("1,234");
+
+            // Assert
+            Assert.Equal(1234m, model.Price);
+        }
+
+        [Fact]
+        public async Task Should_keep_a_rejected_edit_and_the_culture_it_was_typed_in()
+        {
+            // Arrange — German would read 1,234 as one and a fraction, within the limit
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Max="1000" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1,234");
+            cut.Find("input").Change("1,234");
+            await ctx.ChangeCultureAsync("de-DE");
+            var textAfterChange = cut.Find("input").GetAttribute("value");
+
+            // Act
+            cut.Find("input").Change("1,234");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1,234", textAfterChange),
+                () => Assert.Null(model.Price),
+                () => Assert.Equal("1,234", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("The Price field must be at most 1000.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_end_an_edit_that_commits_the_number_already_held_and_write_it_in_the_current_culture()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Price = 1234.5m };
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1,234.5");
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Act
+            cut.Find("input").Change("1,234.5");
+            await ctx.ChangeCultureAsync("fr-FR");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1234.5m, model.Price),
+                () => Assert.Equal("1234,5", cut.Find("input").GetAttribute("value")),
+                () => Assert.False(editContext.IsModified()));
+        }
+
+        [Fact]
+        public async Task Should_keep_an_edit_through_a_render_binding_the_same_number()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Price = 5m };
+            var cut = ctx.Render<FormaNumberInput<decimal?>>(parameters => parameters
+                .Add(p => p.Value, model.Price)
+                .Add(p => p.ValueExpression, () => model.Price));
+            cut.Find("input").Input("1,234");
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, 5m));
+            cut.Find("input").Change("1,234");
+
+            // Assert
+            Assert.Equal("1234", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public async Task Should_replace_an_edit_with_a_different_number_bound_to_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Price = 5m };
+            var cut = ctx.Render<FormaNumberInput<decimal?>>(parameters => parameters
+                .Add(p => p.Value, model.Price)
+                .Add(p => p.ValueExpression, () => model.Price));
+            cut.Find("input").Input("1,234");
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, 6.5m));
+
+            // Assert
+            Assert.Equal("6,5", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public async Task Should_replace_an_edit_with_the_number_a_step_reaches()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Price = 5m };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Step="0.5m" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1,234");
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Act
+            await router.RouteAsync("number-input.increase", "ArrowUp");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(5.5m, model.Price),
+                () => Assert.Equal("5,5", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Should_keep_the_modified_state_of_a_number_written_again_in_another_culture(bool isModified)
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Price = 1234.5m };
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" />
+            </FakeFormHost>);
+
+            if (isModified)
+            {
+                cut.Find("input").Change("1,000.5");
+            }
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(isModified ? "1000,5" : "1234,5", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(isModified, editContext.IsModified()));
+        }
+    }
+
     private sealed class Stock
     {
         public int? Count { get; set; }

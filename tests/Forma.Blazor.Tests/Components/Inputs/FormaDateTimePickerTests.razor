@@ -488,6 +488,127 @@
         }
     }
 
+    public sealed class EditInProgress
+    {
+        [Fact]
+        public async Task Should_commit_a_time_in_the_culture_it_was_typed_in_after_the_culture_changes()
+        {
+            // Arrange — Hebrew reads the text as half past one in the afternoon, and English refuses it
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 0, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = GetTime(cut).GetAttribute("value");
+
+            // Act
+            GetTime(cut).Change("1:30 אחה״צ");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1:30 אחה״צ", textAfterChange),
+                () => Assert.Equal(new DateTime(2026, 3, 15, 13, 30, 0), model.Starts),
+                () => Assert.Equal("1:30 PM", GetTime(cut).GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_keep_a_time_it_read_as_typed_while_the_field_waits_for_its_date()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Input("1:30 אחה״צ");
+            GetTime(cut).Change("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = GetTime(cut).GetAttribute("value");
+
+            // Act
+            PickDay(cut, "15");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1:30 אחה״צ", textAfterChange),
+                () => Assert.Equal(15, model.Starts!.Value.Day),
+                () => Assert.Equal(new TimeSpan(13, 30, 0), model.Starts!.Value.TimeOfDay),
+                () => Assert.Equal("1:30 PM", GetTime(cut).GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_keep_a_time_the_field_rejected_and_the_culture_it_was_typed_in()
+        {
+            // Arrange — English would refuse the text as no time at all
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var bound = new DateTime(2026, 3, 15, 9, 0, 0);
+            var model = new Booking { Starts = bound };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" Step="TimeSpan.FromMinutes(15)" />
+            </FakeFormHost>);
+            GetTime(cut).Input("1:10 אחה״צ");
+            GetTime(cut).Change("1:10 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = GetTime(cut).GetAttribute("value");
+
+            // Act
+            GetTime(cut).Change("1:10 אחה״צ");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1:10 אחה״צ", textAfterChange),
+                () => Assert.Equal(bound, model.Starts),
+                () => Assert.Equal("The Starts field must be 1:00 PM or 1:15 PM.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_take_blank_time_text_as_a_missing_time()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Input("  ");
+
+            // Act
+            PickDay(cut, "15");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(model.Starts),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public async Task Should_replace_the_time_s_edit_with_a_different_value_bound_to_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 0, 0) };
+            var cut = ctx.Render<FormaDateTimePicker<DateTime?>>(parameters => parameters
+                .Add(p => p.Label, "Starts")
+                .Add(p => p.Value, model.Starts)
+                .Add(p => p.ValueExpression, () => model.Starts));
+            cut.Find("input[role=combobox]").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, new DateTime(2026, 3, 15, 14, 0, 0)));
+
+            // Assert
+            Assert.Equal("2:00 PM", cut.Find("input[role=combobox]").GetAttribute("value"));
+        }
+    }
+
     private static IElement GetTrigger(IRenderedComponent<IComponent> cut)
         => cut.Find(".forma-date-box-trigger");
 

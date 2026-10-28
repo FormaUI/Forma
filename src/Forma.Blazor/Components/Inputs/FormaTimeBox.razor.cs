@@ -58,6 +58,9 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     /// <summary>The list's accessible name.</summary>
     [Parameter, EditorRequired] public string ListLabel { get; set; } = default!;
 
+    /// <summary>Raised with the field's text as the reader types it.</summary>
+    [Parameter] public EventCallback<string?> OnInput { get; set; }
+
     /// <summary>Raised with the field's text once the reader has changed it.</summary>
     [Parameter] public EventCallback<string?> OnChange { get; set; }
 
@@ -151,6 +154,9 @@ public sealed partial class FormaTimeBox : FormaComponentBase
 
         return builder.ToStringOrNull()!;
     }
+
+    private Task HandleInputAsync(ChangeEventArgs args)
+        => OnInput.InvokeAsync(args.Value?.ToString());
 
     private Task HandleChangeAsync(ChangeEventArgs args)
         => OnChange.InvokeAsync(args.Value?.ToString());

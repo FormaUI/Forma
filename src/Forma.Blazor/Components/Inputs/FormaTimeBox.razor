@@ -24,6 +24,7 @@
            value="@Text"
            disabled="@Disabled"
            readonly="@ReadOnly"
+           @oninput="HandleInputAsync"
            @onchange="HandleChangeAsync"
            @onfocusout="HandleFocusOutAsync" />
     @* The button opens the list without taking the focus, which stays in the field the keys move the list from. *@

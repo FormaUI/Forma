@@ -149,16 +149,26 @@ tab's title, reaches Forma's components through their parameters.
 
 ## An edit in progress keeps its culture
 
-An uncommitted edit keeps the culture it is parsed in until it is committed or cancelled, and the field
-follows the current culture afterward, so `03/04/2026` typed as the fourth of March under one culture
-commits as the fourth of March under any other:
+An edit in progress is text typed into a field and not yet committed. It keeps the culture in force when
+the typing began until it is committed or replaced, and the field follows the current culture afterward,
+so `1,234` typed under English as a thousand and more commits as that number under German, which would
+read it as one and a fraction:
 
-- An edit that fails to parse keeps its text and its parsing culture.
-- A committed value may be formatted again in the new culture, without changing the value or marking the
-  field modified.
+- An edit begins with the first change to the field's text, and the field holds its text through every
+  render, a change of culture among them, without changing the bound value or validating it.
+- An edit that is rejected keeps its text and its parsing culture, whether its text can't be read or the
+  value it reads lies outside the range, off the step or past the decimal places the field takes.
+- An edit ends when it commits, even to the value the field already holds, or when it is replaced: by a
+  value the field steps to, a suggestion the reader chooses, or a different value bound to the field. The
+  same value bound again leaves it in progress.
+- A committed value may be formatted again in the new culture, without changing the value or the field's
+  modified state, which stays clean or modified as it was.
 - Focus alone is no edit in progress; a field holding no uncommitted text follows a change at once.
-- Only the parsing culture is kept: the field's labels, accessible names and direction follow the new UI
-  culture.
+- Only the parsing culture is kept: the field's labels, accessible names, layout and direction follow the
+  new UI culture, and a number's own text reads left to right in every culture.
+- A field of two parts, a date with its time, holds the edit of its typed part until the whole field
+  commits. That part is missing, entered but unreadable, or read; blank text is missing, and a part read
+  while the field still waits for the other, or after the field rejected its value, keeps its edit.
 
 ## The document follows the state
 
@@ -354,7 +364,7 @@ host makes one call for the rest and can still override any single service.
 | C3 | Who keeps `<html lang dir>` in step? | The document culture synchronizer, which the culture's circuit handler starts with each circuit, so a switch is complete by default |
 | C4 | Does the Showcase switch in place? | Yes, keeping the user's work, with the new load still supported |
 | C5 | What does a platform half take its name from? | What it serves: a render mode's half takes the render mode's name, as the DOM's `Forma.Framework.Browser.Blazor.Server` and the culture's `Forma.Framework.Culture.Blazor.Server` do, and the HTTP pipeline's takes the platform's, as `Forma.Framework.Culture.Router.AspNetCore` does |
-| C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or cancelled, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
+| C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or replaced, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
 | C8 | How does a switch navigate? | By a full load by default; in place where the host declares culture-bearing interactive routes, `CultureSwitchMode.InPlace`, each page carrying its culture route, as [culture addresses](#culture-addresses) sets out |
 | C9 | What does the cookie migrate by? | A new name, `forma-culture-route`, carrying the application's path base and written at it, which replaces the `HttpOnly` `forma-culture` without relying on the order of same-named cookies |

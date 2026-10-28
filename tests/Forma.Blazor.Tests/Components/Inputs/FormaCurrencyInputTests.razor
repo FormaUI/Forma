@@ -269,6 +269,32 @@
         }
     }
 
+    public sealed class EditInProgress
+    {
+        [Fact]
+        public async Task Should_commit_an_edit_in_the_culture_it_was_typed_in_after_the_culture_changes()
+        {
+            // Arrange — English reads 1,234 as a thousand and more, and German as one and a fraction
+            using var ctx = new FormaCurrencyInputTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Product();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1,234");
+            await ctx.ChangeCultureAsync("de-DE");
+            var textAfterChange = cut.Find("input").GetAttribute("value");
+
+            // Act
+            cut.Find("input").Change("1,234");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1,234", textAfterChange),
+                () => Assert.Equal(1234m, model.Price));
+        }
+    }
+
     private sealed class Product
     {
         public decimal? Price { get; set; }

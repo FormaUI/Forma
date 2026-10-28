@@ -45,9 +45,9 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
     private IReadOnlyList<TimeOnly> _suggestions = [];
     private (TimeOnly? Min, TimeOnly? Max, TimeSpan Interval)? _suggestionsSource;
 
-    // Text the field could not read stays its value, so a time a later choice writes replaces it even where it is the time it held.
-    private string? _unreadText;
-    private TValue? _valueWhenUnread;
+    // The edit in progress and the value it began over, which a different value bound to the field replaces.
+    private readonly TextDraft _draft = new();
+    private TValue? _valueWhenDrafted;
 
     private FormaTimeBox? Box { get; set; }
 
@@ -117,9 +117,9 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
             _suggestions = CreateSuggestions(Min, Max, EffectiveListInterval);
         }
 
-        if (_unreadText is not null && !EqualityComparer<TValue>.Default.Equals(Value, _valueWhenUnread))
+        if (_draft.IsInProgress && !EqualityComparer<TValue>.Default.Equals(Value, _valueWhenDrafted))
         {
-            _unreadText = null;
+            _draft.Clear();
         }
     }
 
@@ -141,15 +141,32 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
     private string FormatTime(TimeOnly time)
         => time.ToString(HasSeconds ? "T" : "t", CultureState.Culture);
 
+    // Takes the text the reader typed into the edit in progress, which begins over the value bound to the field.
+    private void Draft(string? text)
+    {
+        if (!_draft.IsInProgress)
+        {
+            _valueWhenDrafted = Value;
+        }
+
+        _draft.Edit(text, CultureState.Culture);
+    }
+
     private void HandleChange(string? text)
     {
-        _unreadText = null;
+        Draft(text);
         CurrentValueAsString = text;
+
+        // Empty text clears a time that can be empty without being read, which ends the edit as a read does.
+        if (IsNullable && string.IsNullOrEmpty(text))
+        {
+            _draft.Clear();
+        }
     }
 
     private void HandleChoose(TimeOnly time)
     {
-        _unreadText = null;
+        _draft.Clear();
         CurrentValueAsString = time.ToString(RoundTripFormat, CultureInfo.InvariantCulture);
     }
 
@@ -181,16 +198,17 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
 
         if (validationErrorMessage is null)
         {
+            _draft.Clear();
+
             return true;
         }
 
-        _unreadText = value ?? string.Empty;
-        _valueWhenUnread = Value;
+        Draft(value);
 
         return false;
     }
 
-    // The time the text writes, or why the field cannot take it.
+    // The time the text writes, read in the culture of the edit in progress, or why the field cannot take it.
     private string? Read(string? value, out TValue result)
     {
         result = default!;
@@ -203,7 +221,7 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
         var text = value.Trim();
 
         if (!TimeOnly.TryParseExact(text, RoundTripFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)
-            && !TimeOnly.TryParse(text, CultureState.Culture, DateTimeStyles.None, out time))
+            && !TimeOnly.TryParse(text, _draft.Culture ?? CultureState.Culture, DateTimeStyles.None, out time))
         {
             return L["The {Field} field must be a time.", FieldName];
         }

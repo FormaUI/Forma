@@ -86,9 +86,9 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     private InputRegistration _inputRegistration = default!;
 
-    // Text the field could not read stays its value, so a later number the field draws replaces it even where that number is the one it held.
-    private string? _unreadText;
-    private TValue? _valueWhenUnread;
+    // The edit in progress and the value it began over, which a different value bound to the field replaces.
+    private readonly TextDraft _draft = new();
+    private TValue? _valueWhenDrafted;
 
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
@@ -198,9 +198,9 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             ArgumentException.ThrowIfNullOrWhiteSpace(adornment.Text, nameof(Adornment));
         }
 
-        if (_unreadText is not null && !EqualityComparer<TValue>.Default.Equals(Value, _valueWhenUnread))
+        if (_draft.IsInProgress && !EqualityComparer<TValue>.Default.Equals(Value, _valueWhenDrafted))
         {
-            _unreadText = null;
+            _draft.Clear();
         }
     }
 
@@ -208,10 +208,32 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(RootElement, StepProfile);
 
+    private void HandleInput(ChangeEventArgs args)
+        => Draft(args.Value?.ToString());
+
     private void HandleChange(ChangeEventArgs args)
     {
-        _unreadText = null;
-        CurrentValueAsString = args.Value?.ToString();
+        var text = args.Value?.ToString();
+
+        Draft(text);
+        CurrentValueAsString = text;
+
+        // Empty text clears a number that can be empty without being read, which ends the edit as a read does.
+        if (IsNullable && string.IsNullOrEmpty(text))
+        {
+            _draft.Clear();
+        }
+    }
+
+    // Takes the text the reader typed into the edit in progress, which begins over the value bound to the field.
+    private void Draft(string? text)
+    {
+        if (!_draft.IsInProgress)
+        {
+            _valueWhenDrafted = Value;
+        }
+
+        _draft.Edit(text, CultureState.Culture);
     }
 
     // A step starts from the number shown, or from the limit it moves away from, or from zero, and stops at the limits.
@@ -252,7 +274,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
         // Dividing by one written to the most decimal places drops the trailing zeros a sum keeps, so 12.5 and a half step shows 13.
         next = Math.Clamp(next, lowest, highest) / 1.0000000000000000000000000000m;
-        _unreadText = null;
+        _draft.Clear();
         CurrentValueAsString = next.ToString(CultureState.Culture);
 
         // A routed key is no event of the field's own, so the field draws the number it stepped to itself.
@@ -446,16 +468,17 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
         if (validationErrorMessage is null)
         {
+            _draft.Clear();
+
             return true;
         }
 
-        _unreadText = value ?? string.Empty;
-        _valueWhenUnread = Value;
+        Draft(value);
 
         return false;
     }
 
-    // The number the text writes, or why the field cannot take it.
+    // The number the text writes, read in the culture of the edit in progress, or why the field cannot take it.
     private string? Read(string? value, out TValue result)
     {
         result = default!;
@@ -465,12 +488,14 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             return IsNullable ? null : L["The {Field} field is required.", FieldName];
         }
 
-        if (!TryParseNumber(value, CultureState.Culture, out var parsed))
+        var culture = _draft.Culture ?? CultureState.Culture;
+
+        if (!TryParseNumber(value, culture, out var parsed))
         {
             return L["The {Field} field must be a number.", FieldName];
         }
 
-        if (MaxDecimalPlaces is { } places && CountDecimalPlaces(value, CultureState.Culture) > places)
+        if (MaxDecimalPlaces is { } places && CountDecimalPlaces(value, culture) > places)
         {
             return places == 0
                 ? L["The {Field} field must be a whole number.", FieldName]

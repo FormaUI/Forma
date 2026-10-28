@@ -528,6 +528,177 @@
         }
     }
 
+    public sealed class EditInProgress
+    {
+        [Theory]
+        [InlineData("he", "1:30 אחה״צ")]
+        [InlineData("fi-FI", "13.30")]
+        public async Task Should_commit_an_edit_in_the_culture_it_was_typed_in_after_the_culture_changes(string typingCulture, string typed)
+        {
+            // Arrange — the typing culture reads the text as half past one in the afternoon, and English refuses it
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture(typingCulture);
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            cut.Find("input").Input(typed);
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = cut.Find("input").GetAttribute("value");
+            var valueAfterChange = model.End;
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(typed, textAfterChange),
+                () => Assert.Null(valueAfterChange),
+                () => Assert.Equal(new TimeOnly(13, 30), model.End),
+                () => Assert.Equal("1:30 PM", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_culture_an_edit_was_typed_in_through_a_second_change()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Act
+            cut.Find("input").Change("1:30 אחה״צ");
+
+            // Assert
+            Assert.Equal(new TimeOnly(13, 30), model.End);
+        }
+
+        [Fact]
+        public async Task Should_keep_a_rejected_edit_and_the_culture_it_was_typed_in()
+        {
+            // Arrange — English would refuse the text as no time at all
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Max="new TimeOnly(12, 0)" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1:30 אחה״צ");
+            cut.Find("input").Change("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = cut.Find("input").GetAttribute("value");
+
+            // Act
+            cut.Find("input").Change("1:30 אחה״צ");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1:30 אחה״צ", textAfterChange),
+                () => Assert.Null(model.End),
+                () => Assert.Equal("The Ends field must be 12:00 PM or earlier.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_end_an_edit_that_commits_the_time_already_held_and_write_it_in_the_current_culture()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var model = new Shift { End = new TimeOnly(13, 30) };
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+
+            // Act
+            cut.Find("input").Change("1:30 אחה״צ");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new TimeOnly(13, 30), model.End),
+                () => Assert.Equal("1:30 PM", cut.Find("input").GetAttribute("value")),
+                () => Assert.False(editContext.IsModified()));
+        }
+
+        [Fact]
+        public async Task Should_keep_an_edit_through_a_render_binding_the_same_time()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var model = new Shift { End = new TimeOnly(9, 0) };
+            var cut = ctx.Render<FormaTimePicker<TimeOnly?>>(parameters => parameters
+                .Add(p => p.Label, "Ends")
+                .Add(p => p.Value, model.End)
+                .Add(p => p.ValueExpression, () => model.End));
+            cut.Find("input").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, new TimeOnly(9, 0)));
+
+            // Assert
+            Assert.Equal("1:30 אחה״צ", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public async Task Should_replace_an_edit_with_a_different_time_bound_to_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("he");
+            var model = new Shift { End = new TimeOnly(9, 0) };
+            var cut = ctx.Render<FormaTimePicker<TimeOnly?>>(parameters => parameters
+                .Add(p => p.Label, "Ends")
+                .Add(p => p.Value, model.End)
+                .Add(p => p.ValueExpression, () => model.End));
+            cut.Find("input").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, new TimeOnly(14, 0)));
+
+            // Assert
+            Assert.Equal("2:00 PM", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Should_keep_the_modified_state_of_a_time_written_again_in_another_culture(bool isModified)
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Shift { End = new TimeOnly(13, 30) };
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            if (isModified)
+            {
+                cut.Find("input").Change("2:15 PM");
+            }
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(isModified ? "14:15" : "13:30", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(isModified, editContext.IsModified()));
+        }
+    }
+
     private sealed class Shift
     {
         public TimeOnly Start { get; set; }

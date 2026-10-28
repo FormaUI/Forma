@@ -60,10 +60,11 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     private DomObservation<FocusWatchOptions, FocusState>? _focusState;
     private bool _isWithin;
 
-    // What the reader has entered, each half held apart until both are there; the time as read, or the text that could not be.
+    // What the reader has entered, each half held apart until both are there; the time as read, and the edit of its text in progress
+    // until the whole field commits.
+    private readonly TextDraft _timeDraft = new();
     private DateOnly? _date;
     private TimeOnly? _time;
-    private string? _unreadTimeText;
 
     // The bound value the entry was last taken from.
     private TValue? _enteredValue;
@@ -97,7 +98,14 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         => DisplayName ?? Label;
 
     private string? TimeText
-        => _unreadTimeText ?? (_time is { } time ? FormatTime(time) : null);
+        => _timeDraft.Text ?? (_time is { } time ? FormatTime(time) : null);
+
+    // A time is missing where its text is blank, or where no text is in progress and none was read.
+    private bool IsTimeMissing
+        => _timeDraft.IsInProgress ? string.IsNullOrWhiteSpace(_timeDraft.Text) : _time is null;
+
+    private CultureInfo TimeCulture
+        => _timeDraft.Culture ?? CultureState.Culture;
 
     // The two controls wear the field's box and its validation state.
     private string? ControlClass
@@ -126,7 +134,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
     // One half entered and the other not, which waits for the reader rather than reporting while they are between the two.
     private bool IsHalfEntered
-        => (_date is null) != (_time is null && _unreadTimeText is null);
+        => (_date is null) != IsTimeMissing;
 
     // The offset an entry is read at, and the kind it takes: the bound value's own, or the host's offset and no kind for a new one.
     private TimeSpan EntryOffset
@@ -275,7 +283,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         var clock = GetValueClock(value);
         _date = clock is { } dateClock ? DateOnly.FromDateTime(dateClock) : null;
         _time = clock is { } timeClock ? TimeOnly.FromDateTime(timeClock) : null;
-        _unreadTimeText = null;
+        _timeDraft.Clear();
     }
 
     // The times the date allows, at the list's interval from the step's origin.
@@ -319,31 +327,21 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         Enter();
     }
 
+    private void HandleInputTime(string? text)
+        => _timeDraft.Edit(text, CultureState.Culture);
+
+    // Reading the time ends nothing, so its text stays the reader's while the field waits for the date or rejects the value.
     private void HandleChangeTime(string? text)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            _time = null;
-            _unreadTimeText = null;
-        }
-        else if (TryReadTime(text.Trim(), CultureState.Culture, out var time))
-        {
-            _time = time;
-            _unreadTimeText = null;
-        }
-        else
-        {
-            _time = null;
-            _unreadTimeText = text;
-        }
-
+        _timeDraft.Edit(text, CultureState.Culture);
+        _time = !string.IsNullOrWhiteSpace(text) && TryReadTime(text.Trim(), TimeCulture, out var time) ? time : null;
         Enter();
     }
 
     private void HandleChooseTime(TimeOnly time)
     {
         _time = time;
-        _unreadTimeText = null;
+        _timeDraft.Clear();
         Enter();
     }
 
@@ -369,9 +367,16 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     private void Commit()
     {
         var date = _date is { } entered ? entered.ToString(DateFormat, CultureInfo.InvariantCulture) : string.Empty;
-        var time = _unreadTimeText ?? _time?.ToString(TimeFormat, CultureInfo.InvariantCulture) ?? string.Empty;
+        var time = IsTimeMissing ? string.Empty : _time?.ToString(TimeFormat, CultureInfo.InvariantCulture) ?? _timeDraft.Text!;
+        var entry = date.Length == 0 && time.Length == 0 ? string.Empty : $"{date}{EntrySeparator}{time}";
 
-        CurrentValueAsString = date.Length == 0 && time.Length == 0 ? string.Empty : $"{date}{EntrySeparator}{time}";
+        CurrentValueAsString = entry;
+
+        // An empty entry clears a value that can be empty without being read, which ends the edit as a read does.
+        if (IsNullable && entry.Length == 0)
+        {
+            _timeDraft.Clear();
+        }
     }
 
     // The value a date with its time makes, keeping the bound value's kind or offset.
@@ -395,7 +400,14 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     {
         validationErrorMessage = Read(value, out result);
 
-        return validationErrorMessage is null;
+        if (validationErrorMessage is not null)
+        {
+            return false;
+        }
+
+        _timeDraft.Clear();
+
+        return true;
     }
 
     // The value an entry writes, or why the field cannot take it.
@@ -416,7 +428,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
         if (timeText.Length > 0)
         {
-            if (!TryReadTime(timeText.Trim(), CultureState.Culture, out var parsedTime))
+            if (!TryReadTime(timeText.Trim(), TimeCulture, out var parsedTime))
             {
                 return L["The {Field} field must be a time.", FieldName];
             }
