@@ -5,7 +5,8 @@ landed.
 
 ## Status
 
-Steps 1 to 6 have landed. Step 7 is next.
+Steps 1 to 9 have landed. Step 10 waits until Forma supports a WebAssembly or Hybrid host, and the plan
+stands until it lands.
 
 ## Where Forma stood
 
