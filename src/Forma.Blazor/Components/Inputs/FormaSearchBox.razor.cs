@@ -32,6 +32,9 @@ public sealed partial class FormaSearchBox : FormaElementBase
     /// <remarks>Typing reports the term once it pauses for the debounce delay, or at every keystroke where the delay is zero; Enter and clearing the field report it at once.</remarks>
     [Parameter] public EventCallback<string> OnSearch { get; set; }
 
+    /// <summary>The label pinned at the top of the field.</summary>
+    [Parameter] public string? Label { get; set; }
+
     /// <summary>How the field presents itself and when it reports a search.</summary>
     [Parameter] public SearchBoxOptions Options { get; set; } = SearchBoxOptions.Default;
 
@@ -41,6 +44,12 @@ public sealed partial class FormaSearchBox : FormaElementBase
 
     private string EffectivePlaceholder
         => Options.Placeholder ?? L["Search..."].Value;
+
+    private bool HasLabel
+        => !string.IsNullOrWhiteSpace(Label);
+
+    private string? WrapperClass
+        => new CssClassBuilder().Add("forma-search-box-wrapper").Add("has-label", HasLabel).ToStringOrNull();
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -87,7 +96,9 @@ public sealed partial class FormaSearchBox : FormaElementBase
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
-        => builder.Add("forma-search-box");
+        => builder
+            .Add("forma-field-input", HasLabel)
+            .Add("forma-search-box");
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

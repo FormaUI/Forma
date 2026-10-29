@@ -209,7 +209,6 @@
     "Last search": "Última búsqueda",
     "(none)": "(ninguna)",
     "Searches performed": "Búsquedas realizadas",
-    "The field carries no label of its own, so an aria-label names it for anyone who cannot see the placeholder once it disappears.": "El campo no lleva una etiqueta propia, así que un aria-label lo nombra para quien no pueda ver el marcador de posición en cuanto desaparece.",
     "Search the site": "Buscar en el sitio",
     "A disabled field is skipped by the keyboard and dimmed.": "Un campo deshabilitado lo omite el teclado y se atenúa.",
     "Archived": "Archivado",
@@ -221,7 +220,18 @@
     "Banana": "Plátano",
     "Cherry": "Cereza",
     "Mango": "Mango",
-    "Orange": "Naranja"
+    "Orange": "Naranja",
+    "Without a Label the field carries no label of its own, so an aria-label names it for anyone who cannot see the placeholder once it disappears.": "Sin un Label el campo no lleva una etiqueta propia, así que un aria-label lo nombra para quien no pueda ver el marcador de posición en cuanto desaparece.",
+    "With a Label, beside Filter Fields": "Con una Etiqueta, junto a Campos de Filtro",
+    "Given a Label, the search draws itself as a field with its label pinned at the top, as tall as the selects and date pickers beside it. The row spaces the fields and keeps their tops level, so a message under one field leaves every box in line.": "Con un Label, la búsqueda se dibuja como un campo con su etiqueta fijada arriba, tan alto como los selectores y los selectores de fecha a su lado. La fila separa los campos y alinea sus bordes superiores, así que un mensaje bajo un campo deja todas las cajas en línea.",
+    "Search Orders": "Buscar Pedidos",
+    "Status": "Estado",
+    "From": "Desde",
+    "Open": "Abierto",
+    "Closed": "Cerrado",
+    "Apply Filters": "Aplicar Filtros",
+    "Filters applied.": "Filtros aplicados.",
+    "Choose the date to search from.": "Elija la fecha desde la que buscar."
   },
   "FormaSelectPage": {
     "A themed single-select: a trigger button opening an anchored, keyboard-navigable option list. The popover stays anchored to its trigger wherever the page scrolls.": "Un select de valor único con estilo propio: un botón activador que abre una lista de opciones anclada y navegable con teclado. La lista permanece anclada a su activador aunque la página se desplace.",

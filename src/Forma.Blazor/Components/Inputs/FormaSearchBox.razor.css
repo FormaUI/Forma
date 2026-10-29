@@ -1,6 +1,7 @@
 /* ============================================================
    FormaSearchBox — CSS isolation
-   A leading glyph, the search box, and its clear button.
+   A leading glyph, the search box, and its clear button, drawn as a field with
+   its label pinned when it has one.
    ============================================================ */
 
 .forma-search-box-wrapper {
@@ -49,8 +50,17 @@
     inset-inline-end: var(--space-2);
 }
 
+/* A field's value sits below its pinned label, so the glyph and the clear button center on the value's line. */
+.has-label .forma-search-box-icon,
+.has-label .forma-search-box-clear {
+    inset-block: var(--forma-field-padding-block-start) var(--forma-field-padding-block-end);
+    display: inline-flex;
+    align-items: center;
+}
+
+/* A field stands taller than a touch target already, so only the compact box grows under a coarse pointer. */
 @media (pointer: coarse) {
-    .forma-search-box {
+    .forma-search-box:not(.forma-field-input) {
         min-block-size: var(--target-size-touch);
     }
 }

@@ -84,7 +84,7 @@
     <h2>@L["Beside a Labeled Field"]</h2>
     <p class="description">@L["Once labeled it is the same FormaField that wraps FormaPasswordBox and FormaTextArea, so the label, the box and the validation message are drawn by one component rather than three that could drift."]</p>
     <div class="demo-box">
-        <EditForm Model="_model" FormName="textbox-parity">
+        <EditForm Model="_model" FormName="textbox-parity" class="demo-stack">
             <FormaTextBox @bind-Value="_model.Title" Label="@L["Title"]" />
             <FormaTextBox @bind-Value="_model.Slug" Label="@L["Slug"]" />
         </EditForm>

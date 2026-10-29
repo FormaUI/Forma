@@ -318,4 +318,40 @@
             });
         }
     }
+
+    public sealed class Label
+    {
+        [Fact]
+        public void Should_draw_a_field_whose_pinned_label_names_the_search()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Label="Search" />);
+
+            // Assert
+            var input = cut.Find("input");
+            var label = cut.Find(".forma-field.forma-field-label-pinned label.forma-field-label");
+            Assert.Multiple(
+                () => Assert.Contains("Search", label.TextContent, StringComparison.Ordinal),
+                () => Assert.Equal(input.Id, label.GetAttribute("for")),
+                () => Assert.Contains("forma-field-input", input.ClassList));
+        }
+
+        [Fact]
+        public void Should_stay_the_compact_box_without_a_label()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-field")),
+                () => Assert.DoesNotContain("forma-field-input", cut.Find("input").ClassList));
+        }
+    }
 }

@@ -1,7 +1,8 @@
 /* ============================================================
    FormaField — CSS isolation
    The label, required marker and validation messages around an input
-   element the wrapping component renders, reached with ::deep.
+   element the wrapping component renders, reached with ::deep, spaced from
+   its neighbors by the layout that holds it.
    ============================================================ */
 
 /* Autofill keyframes — global (not scoped by isolation) */
@@ -22,7 +23,6 @@
     --forma-field-padding-block-start: calc(var(--forma-field-label-offset) + var(--font-size-xs) * var(--line-height-target));
     --forma-field-padding-block-end: var(--space-1);
     position: relative;
-    margin-block-end: var(--space-4);
 }
 
 /* ---------- input element ---------- */

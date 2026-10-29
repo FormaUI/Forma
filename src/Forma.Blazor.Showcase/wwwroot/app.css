@@ -851,6 +851,19 @@ body {
     min-inline-size: 0;
 }
 
+/* Fields side by side share their top edge, so a message under one leaves every box level. */
+.demo-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-2);
+}
+
+.demo-filter-row > * {
+    flex: 1 1 12rem;
+    min-inline-size: 0;
+}
+
 /* Spaces controls that bring no margin of their own, such as a bare text box. */
 .demo-stack {
     display: flex;

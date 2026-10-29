@@ -3,6 +3,8 @@
 @rendermode InteractiveServer
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Inputs
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
 
 <h1>FormaSearchBox</h1>
 <p class="description">@L["A search field with a leading glyph and a clear button that appears once it holds a value. It needs no surrounding form: a caller binds Value and reacts through OnSearch, either on every keystroke or after a debounce."]</p>
@@ -33,9 +35,31 @@
 
 <div class="demo-section">
     <h2>@L["Naming the Field"]</h2>
-    <p class="description">@L["The field carries no label of its own, so an aria-label names it for anyone who cannot see the placeholder once it disappears."]</p>
+    <p class="description">@L["Without a Label the field carries no label of its own, so an aria-label names it for anyone who cannot see the placeholder once it disappears."]</p>
     <div class="demo-box">
         <FormaSearchBox Value="@_namedQuery" ValueChanged="v => _namedQuery = v" aria-label="@L["Search the site"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["With a Label, beside Filter Fields"]</h2>
+    <p class="description">@L["Given a Label, the search draws itself as a field with its label pinned at the top, as tall as the selects and date pickers beside it. The row spaces the fields and keeps their tops level, so a message under one field leaves every box in line."]</p>
+    <div class="demo-box">
+        <EditForm Model="_filters" FormName="search-box-filters" OnValidSubmit="HandleFilter" class="demo-stack">
+            <DataAnnotationsValidator />
+            <div class="demo-filter-row">
+                <FormaSearchBox Label="@L["Search Orders"]" Value="@_filterQuery" ValueChanged="v => _filterQuery = v" />
+                <FormaSelect TValue="int?" @bind-Value="_filters.Status" Options="StatusOptions" Label="@L["Status"]" />
+                <FormaDatePicker @bind-Value="_filters.From" Label="@L["From"]" />
+            </div>
+            <div class="demo-row">
+                <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Apply Filters"]</FormaButton>
+                @if (_isFiltered)
+                {
+                    <span class="demo-note">@L["Filters applied."]</span>
+                }
+            </div>
+        </EditForm>
     </div>
 </div>
 
@@ -63,19 +87,46 @@
     private string _debouncedQuery = string.Empty;
     private string _namedQuery = string.Empty;
     private string _toolbarQuery = string.Empty;
+    private string _filterQuery = string.Empty;
+    private FilterModel _filters = default!;
+    private bool _isFiltered;
     private string _lastSearchedTerm = string.Empty;
     private int _searchCount;
 
     private string[] Fruits => [L["Apple"], L["Banana"], L["Cherry"], L["Mango"], L["Orange"]];
+
+    private IReadOnlyList<SelectOption<int?>> StatusOptions => [new(1, L["Open"]), new(2, L["Closed"])];
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+        => _filters = new FilterModel(L);
 
     private IEnumerable<string> GetFilteredFruits(string query)
         => string.IsNullOrWhiteSpace(query)
             ? Fruits
             : Fruits.Where(f => f.Contains(query, StringComparison.OrdinalIgnoreCase));
 
+    private void HandleFilter()
+        => _isFiltered = true;
+
     private void HandleDebouncedSearch(string term)
     {
         _lastSearchedTerm = term;
         _searchCount++;
+    }
+
+    private sealed class FilterModel(IStringLocale localizer) : IValidatableObject
+    {
+        public int? Status { get; set; }
+
+        public DateOnly? From { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (From is null)
+            {
+                yield return new ValidationResult(localizer["Choose the date to search from."], [nameof(From)]);
+            }
+        }
     }
 }

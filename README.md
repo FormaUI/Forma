@@ -93,6 +93,23 @@ values they take live in `Forma.Framework.*` namespaces, such as `Forma.Framewor
 [The component catalog](https://github.com/FormaUI/Forma/blob/main/docs/component-catalog.md)
 lists every component, one line each.
 
+A field brings no space around itself; the layout that holds it does. A form whose fields stand one
+above another gives its container a gap, and a row of fields lines up with flex or grid, where every
+field and a `FormaSearchBox` given a `Label` stand at one height:
+
+```razor
+<div style="display: flex; flex-direction: column; gap: var(--space-4)">
+    <FormaTextBox @bind-Value="Model.Name" Label="Name" />
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-2)">
+        <FormaSearchBox Label="Search" @bind-Value="Query" />
+        <FormaSelect TValue="int?" @bind-Value="Model.Status" Options="Statuses" Label="Status" />
+    </div>
+</div>
+```
+
+Aligning a row at its top edge keeps the boxes level when a validation message shows under one of
+them.
+
 Toasts and confirmation dialogs are raised through a service and drawn by a component placed once
 where it renders interactively, in a layout under global interactivity or on the page itself:
 

@@ -2,25 +2,41 @@
 @inherits FormaElementBase
 @using Forma.Blazor.Components.Buttons
 
-<div class="forma-search-box-wrapper">
-    <span class="forma-search-box-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Search" Size="IconSize.Small" /></span>
-    <input id="@Id"
-           data-rid="@Context.RuntimeId"
-           class="@RootClass"
-           style="@RootStyle"
-           @attributes="AdditionalAttributes"
-           @ref="RootElement"
-           type="search"
-           dir="auto"
-           placeholder="@EffectivePlaceholder"
-           @bind:get="Value"
-           @bind:set="HandleInputAsync"
-           @bind:event="oninput"
-           disabled="@Options.Disabled" />
-    @if (!string.IsNullOrEmpty(Value))
-    {
-        <span class="forma-search-box-clear">
-            <FormaCloseButton Label="@L["Clear Search"]" Size="ButtonSize.Mini" Disabled="Options.Disabled" OnClick="ClearAsync" />
-        </span>
-    }
-</div>
+@{
+    RenderFragment box =
+        @<div class="@WrapperClass">
+            <span class="forma-search-box-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Search" Size="IconSize.Small" /></span>
+            <input id="@ElementId"
+                   data-rid="@Context.RuntimeId"
+                   class="@RootClass"
+                   style="@RootStyle"
+                   @attributes="AdditionalAttributes"
+                   @ref="RootElement"
+                   type="search"
+                   dir="auto"
+                   placeholder="@EffectivePlaceholder"
+                   @bind:get="Value"
+                   @bind:set="HandleInputAsync"
+                   @bind:event="oninput"
+                   disabled="@Options.Disabled" />
+            @if (!string.IsNullOrEmpty(Value))
+            {
+                <span class="forma-search-box-clear">
+                    <FormaCloseButton Label="@L["Clear Search"]" Size="ButtonSize.Mini" Disabled="Options.Disabled" OnClick="ClearAsync" />
+                </span>
+            }
+        </div>;
+}
+
+@if (HasLabel)
+{
+    <FormaField Label="@Label" TargetId="@ElementId" LabelMode="FieldLabelMode.Pinned">
+        <ChildContent>
+            @box
+        </ChildContent>
+    </FormaField>
+}
+else
+{
+    @box
+}

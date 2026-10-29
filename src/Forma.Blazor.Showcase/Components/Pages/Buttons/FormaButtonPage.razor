@@ -70,7 +70,7 @@
     <h2>@L["Inside a Form"]</h2>
     <p class="description">@L["Submit and reset buttons drive the surrounding form without any click handler of their own. A native reset clears the inputs but leaves the bound model alone, so the value below is what the form still holds."]</p>
     <div class="demo-box">
-        <EditForm Model="Model" FormName="button-demo" OnValidSubmit="HandleSubmitAsync">
+        <EditForm Model="Model" FormName="button-demo" OnValidSubmit="HandleSubmitAsync" class="demo-stack">
             <FormaTextBox @bind-Value="Model.Name" Label="@L["Name"]" />
             <div class="demo-row">
                 <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary" Busy="_saving">
