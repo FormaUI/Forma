@@ -48,8 +48,8 @@ formats dates, numbers and collation, and the UI culture, which chooses strings 
 as the platform keeps them so that a host can show English text with German formats. The state starts
 from the culture in force when the scope is created, the request's on the server and the one the runtime
 starts in under WebAssembly, and announces each change through `INotifyStateChanged`, as every Forma
-service a component follows does. It changes only by applying a pair [the switch](#one-switch-for-the-page)
-accepted, with that pair's version.
+service a component follows does. It changes only as its runtime's integration applies a pair
+[the switch](#one-switch-for-the-page) accepted, with that pair's version, and a component only reads it.
 
 ```csharp
 public interface ICultureState : INotifyStateChanged
@@ -59,6 +59,15 @@ public interface ICultureState : INotifyStateChanged
     bool IsRightToLeft { get; }
     int Revision { get; }
     CultureVersion Version { get; }
+}
+```
+
+The integration applies through a contract of its own, which the default state implements beside the one
+every component reads, so a component has no way to change the culture but the switch:
+
+```csharp
+public interface ICultureStateIntegration
+{
     Task ApplyAsync(AcceptedCulture accepted);
 }
 ```
@@ -88,12 +97,18 @@ Its rules:
   so the renders it schedules inherit them.
 - An application takes no cancellation: once the state has changed, every subscriber is notified, so no
   component is left showing the culture before it.
-- Applying is the switch's own work. A host changes the culture through the switch and applies nothing
-  itself, since a pair applied to one state alone is the disagreement the switch exists to prevent.
+- Applying is the runtime integration's work, its registration with the coordinator and the switches
+  that run without it. A host changes the culture through the switch, since a pair applied to one state
+  alone is the disagreement the switch exists to prevent, and an argument named accepted doesn't make a
+  pair one the coordinator accepted: the version's document and number are what the state checks.
 
 Components depend on the abstraction, and the library registers its default, `DefaultCultureState`, one
 per user scope with `TryAddScoped`, so every component resolves a state and a host that registers its own
-first still wins. The state knows nothing of navigation, addresses, cookies or the document; the switch
+first still wins. The integration is resolved from that same instance, never from a default of its own, so
+applying always reaches the exact state every component reads. A replacement that doesn't implement the
+integration is rejected with `InvalidOperationException` as the state is first resolved in its scope,
+before its runtime registers with the coordinator; no startup check builds a scoped state in the root
+provider to look. The state knows nothing of navigation, addresses, cookies or the document; the switch
 does.
 
 ## One switch for the page
@@ -114,8 +129,8 @@ public interface ICultureSwitch
 
 The switch is the one entry point a host calls, in any runtime, and an omitted UI culture is the culture.
 Requesting a switch and applying one are kept apart: the request goes through the switch, and each
-runtime's state applies the pair the switch accepted, locally, requesting nothing, so an application never
-loops back into a request, and applying never navigates, writes a cookie or calls script.
+runtime's integration applies the pair the switch accepted to its state, locally, requesting nothing, so an
+application never loops back into a request, and applying never navigates, writes a cookie or calls script.
 
 ### The coordinator
 
@@ -133,14 +148,51 @@ one document and marks where a new document begins:
   adopts the coordinator's current pair whatever its number.
 - **Registering and reconnecting are not switches.** A registration, a circuit reconnecting or a
   WebAssembly runtime starting, receives the accepted pair with its version and applies it, and never
-  replaces the coordinator's pair with the pair its own startup chose.
-- **The first pair** is what the page started in, number zero: a prerendered page's is the pair the
-  server resolved for the request and rendered in, and a standalone WebAssembly app's is the pair its
-  startup configured, which its first registration brings.
+  replaces the coordinator's pair with the pair its own startup chose. Registration never stands in for
+  a handoff its host disabled, as the [WebAssembly design](webassembly-design.md) sets out, and never
+  reads the server's marker again.
+- **The first pair** is what the page started in, number zero:
+  - A prerendered page's is the pair the server resolved for the request and rendered in, which
+    `FormaPageHead` publishes in the document's head as its culture marker, both cultures named, beside
+    the language and direction the server serves. The coordinator reads it once, as the document loads.
+    A coordinated prerendered page whose marker is missing or names an invalid culture fails the
+    coordinator's initialization with an error naming `FormaPageHead` and the coordinated prerendered
+    arrangement that requires it, and never falls back to the first runtime that registers.
+  - A standalone WebAssembly app has no server and no marker: its startup configures the pair, and its
+    runtime's registration brings it.
+- **The marker describes what the server rendered,** never a second copy of the coordinator's pair.
+  Registration never reads it, and after the first load it is read only as part of the landing it came
+  with, as [landings](#landings) set out, so a head update alone, a delayed response's or a stale one,
+  never undoes a newer switch.
+- **The accepted pair outlives its registrations.** The coordinator keeps the last accepted pair and its
+  version for the document's lifetime, with no registration live as with many. Releasing a registration
+  removes a subscriber and changes no culture, so a gap between registrations resets nothing, and a
+  runtime registering later adopts the retained pair. Only an accepted switch or an accepted landing
+  changes it.
 
 The coordinator owns ordering and distribution. Whether a switch persists and whether it navigates are its
 [policy's](#switch-policies), and the coordinator accepts a switch once the policy has done what acceptance
 needs.
+
+### Landings
+
+A navigation that lands in the document changes the page's culture through one landing record, the
+navigation's identity with the pair resolved for it, which the coordinator accepts as the next switch,
+unless it is the accepted pair already, without waiting for any registration. A navigation reaches its
+record by one of two paths, according to how it lands:
+
+- **A server-rendered landing,** an enhanced navigation's, takes its pair from the marker of that
+  navigation's own response, which the server resolved for the request by the one resolution
+  [culture addresses](#culture-addresses) states. The landing is the first page update after the
+  navigation's start, so the marker it brings is the navigation's own.
+- **An interactive landing,** which has no server response, takes its pair from the address the router
+  accepted: the runtime that routed reports that address with the navigation's identity, and the
+  coordinator resolves its pair through the culture-route mapping the page publishes, which the browser
+  and the server read by the same rules. The previous landing's marker is never read for it, and
+  interactive routing without culture routes produces no record.
+
+A navigation that is cancelled, fails or is replaced by another produces no record, and a record from a
+navigation another replaced is obsolete and accepts nothing.
 
 ### What awaiting a switch guarantees
 
@@ -152,49 +204,83 @@ simultaneous render: each runtime renders the change as its own notifications re
 
 A switch that can't be accepted fails and changes nothing:
 
-- **Without coordination.** A runtime with no live registration, a disconnected circuit among them, fails
-  the switch at once with `InvalidOperationException`, and never applies the pair locally in its place.
-- **Persistence that fails.** A cookie the browser doesn't keep fails the switch before it is accepted.
-- **A navigation that doesn't land.** An address switch whose navigation is cancelled, or replaced by
-  another, is never accepted, and its task completes as canceled; the accepted pair stays the one the
-  address that remained active names.
+- **Without coordination.** A runtime's registration is registering, registered or unavailable. A switch
+  requested while it is registering awaits that attempt, which completes on its own whether or not a
+  switch waits on it, and the attempt's failure, the registration's disposal or a disconnection fails the
+  waiting switch. A runtime with no registration under way, or one unavailable, a disconnected circuit
+  among them, fails the switch at once with `InvalidOperationException`: nothing waits for a registration
+  nobody started, and no switch applies the pair locally in its place.
+- **A pair no route names.** Under the address policy the destination is built before anything changes,
+  so a pair no culture route represents throws `InvalidOperationException` naming the pair and saying
+  that no configured culture route represents it, and leaves the culture, the cookie, the document and
+  the location as they were.
+- **Persistence that fails.** A cookie the coordinator can't read back fails the switch before it is
+  accepted.
+- **A navigation that doesn't land.** An address switch whose navigation is cancelled, fails or is
+  replaced by another is never accepted, and its task completes as canceled; the accepted pair stays the
+  one the address that remained active names.
 - **In a static render** there is no page to coordinate, so a switch throws `InvalidOperationException`;
   a static page switches with a request.
 
-A switch that loads a new document doesn't complete in the document it began in; the new document starts
-its own sequence from the pair the server resolves. A switch takes no cancellation: once accepted, every
-registration receives it.
+A switch that loads a new document doesn't complete in the document it began in, and nothing in it waits
+for that: the new document starts its own sequence from the pair the server resolves, and a switch a
+runtime outliving the old document still awaits fails as its registration is released. A switch takes no
+cancellation: once accepted, every registration receives it.
 
 ### Switch policies
 
 How a switch persists is the host's choice, made once where it registers the culture:
 
 - **The cookie.** Where a cookie chooses the culture, as request localization's cookie provider does, the
-  coordinator writes the cookie and confirms the browser kept it before it accepts the switch, in one
-  step, so the cookie always names the last accepted pair and the next request, a navigation's among
-  them, renders in it.
+  coordinator writes the cookie and reads it back before it accepts the switch, in one step, so the
+  cookie names the last accepted pair; a cookie it can't read back fails the switch, and the requested
+  pair is never published as accepted. Reading it back shows the cookie observable at that moment, and
+  the next request resolving the pair is what the policy promises.
 - **The address.** With culture addresses, a switch is a navigation to the other culture's address, and a
-  navigation requested is no destination accepted: the coordinator accepts the pair the landed address
-  names, as [culture addresses](#culture-addresses) sets out, so the router and the coordinator share one
-  acceptance path and neither commits a culture of its own.
+  navigation requested is no destination accepted: the coordinator accepts the landing's record, as
+  [landings](#landings) set out, so the router and the coordinator share one acceptance path and neither
+  commits a culture of its own.
 - **The state alone.** A switch the host chose not to persist is accepted at once, and promises nothing
   beyond the page: the next server render, a navigation's or a reload's, is in the request's culture.
 
-A switch requested while a navigation is in flight waits for the navigation to land or end and is accepted
-after it, so a landing never undoes it. Nothing promises that the cookie, the address, the document and
-every runtime change in one atomic step; each failure above leaves the accepted pair where it was, and the
-document and every registration converge on it.
+The policy is configuration, published apart from any pair: `FormaPageHead` publishes it as the document
+loads, beside the initial marker, and a standalone app's startup supplies the same, so adopting a pair or
+accepting a landing never changes it. The cookie policy publishes everything writing its cookie takes, the
+name, path, domain, lifetime, `Secure` and `SameSite`, and writes the one serialization the server's reader
+takes, request localization's `c=…|uic=…`; a cookie the policy writes can't be `HttpOnly`. The address
+policy publishes the culture-route mapping, from which it builds a destination and resolves an interactive
+landing, with the culture-route cookie's settings.
+
+A switch requested while a navigation is in flight waits for the navigation to land or end, so a landing
+never undoes it:
+
+- a navigation that is cancelled or fails ends the wait without accepting its destination's pair;
+- a landing is accepted only from its own record, naming what the browser landed at rather than what was
+  requested, and an obsolete record accepts nothing;
+- a switch that waited is then accepted against the address that landed, so an address switch navigates
+  from the page the browser shows;
+- a document replaced meanwhile fails what waited in it, as a switch that loads a new document does.
+
+Nothing promises that the cookie, the address, the document and every runtime change in one atomic step;
+each failure above leaves the accepted pair where it was, and the document and every registration
+converge on it.
 
 ### Switches without the coordinator
 
 Prerendering, a test and a host's deliberate choice each have their own switch, and none is inferred from
 a failure:
 
-- **A prerender's** state starts from the request's resolved culture, and nothing switches during it.
+- **Initialization is no switch.** A prerender's state starts from the request's resolved culture, and
+  a standalone app's runtime from the pair its startup configures; neither goes through the switch, and
+  nothing switches during a prerender.
 - **A test** supplies a test switch, which accepts, fails or holds a switch as the test directs.
 - **A host that wants one runtime switched alone** registers the local switch, which accepts at once in
-  a sequence of its own, applies to its own runtime's state only, and promises nothing across runtimes,
-  the document or a navigation. It is a hosting choice, never a fallback from an interop failure.
+  a sequence of its own and changes that runtime's culture state alone. It never writes the document's
+  `lang` or `dir`, never reaches the page's coordinator, and never writes a culture address or the
+  culture cookie, so it is no competing authority for the page, and it promises nothing across runtimes,
+  the document or a navigation. Under WebAssembly its applications set the process's default cultures as
+  every application there does, which reaches no further than its own runtime. It is a hosting choice,
+  never a fallback from an interop failure.
 
 ## Output takes its culture from the state
 
@@ -234,9 +320,10 @@ sets both cultures from the state before every inbound activity, every UI event 
 into .NET, through the circuit's inbound activity handler
 ([circuit activity](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr)), and `ApplyAsync`
 applies the new cultures to its calling flow before it notifies. Under WebAssembly, one runtime is one user
-scope, so applying a pair also sets the process's default cultures, `DefaultThreadCurrentCulture` and
-`DefaultThreadCurrentUICulture`, which each later event starts from; a Server runtime never sets the
-defaults, which every circuit in its process shares. Work begun before a switch finishes in the culture it
+scope, so every application of a pair, the local switch's included, also sets the runtime's current
+cultures and the process's default cultures, `DefaultThreadCurrentCulture` and
+`DefaultThreadCurrentUICulture`, which each later event starts from; that is the WebAssembly integration's
+work, and a Server runtime never sets the defaults, which every circuit in its process shares. Work begun before a switch finishes in the culture it
 captured, which is the platform's rule, a default changed after it included, while the render it asks for
 reads the state.
 
@@ -300,35 +387,27 @@ culture's name, and `dir` its direction.
   released changes nothing.
 - **What the server served.** The document keeps the pair the server last rendered: the attributes as the
   document loaded, and as the first page update after each enhanced navigation leaves them, read before the
-  coordinator sets the accepted pair. An enhanced navigation's response patches the whole document, `<html>`'s attributes
-  among them, while a streaming update patches only its component's region, so a streaming update never
-  changes the served pair. An attribute the server left out is absent from the pair. The served pair is
-  tracked for the document's lifetime, whether or not anything is registered.
+  coordinator sets the accepted pair. An enhanced navigation's response patches the whole document,
+  `<html>`'s attributes among them, while a streaming update patches only its component's region, so a
+  streaming update never changes the served pair. An attribute the server left out is absent from the
+  pair. The served pair is tracked for the document's lifetime, whether or not anything is registered.
 - **After a page update.** A streaming update can undo the accepted pair, so the coordinator sets it
   again after each.
-- **During an enhanced navigation.** A registration says whether it follows addresses, as a circuit does
-  where a culture route handler is registered, and the document is held only while such a registration
-  is live. From an enhanced navigation's start the document is held: the accepted pair stays until the
-  response patches the document, the patch's pair stands, and a switch requested meanwhile waits, as
-  [the policies](#switch-policies) set out. The first page update after the start is the navigation's
-  landing, which the coordinator reports, with the address it landed at, to the registration that follows
-  addresses. Its culture route handler resolves the pair that address names, and the report's reply
-  carries it: the coordinator accepts it as the next switch, unless it is the accepted pair already, as
-  on a landing within one culture, and the acceptance ends the hold. A handling that throws ends the hold
-  too, leaving the accepted pair. A reply belongs to its registration and its navigation, so one for a
-  navigation another replaced, or for a registration since released, accepts nothing and ends nothing. A
-  navigation that ends without landing ends the hold, and one that landed waits for its reply. A report
-  that fails leaves the hold while its registration is live, and the next connection's registration
-  reports the landing again; a closed circuit ends the hold by releasing its registration, which drops its
-  pending reply and its retry. A surviving interactive island renders in the new culture once its
-  runtime has applied the accepted pair, a round trip after the patch.
+- **During an enhanced navigation.** From an enhanced navigation's start the document is held: the
+  accepted pair stays until the response patches the document, the patch's pair stands, and a switch
+  requested meanwhile waits, as [the policies](#switch-policies) set out. The first page update after the
+  start is the navigation's landing, whose record the coordinator accepts from that response's marker, as
+  [landings](#landings) set out, and the acceptance ends the hold; a navigation that ends without landing
+  ends it too, leaving the accepted pair. A surviving interactive island renders in the new culture once
+  its runtime has applied the accepted pair, a round trip after the patch.
 - **When a registration goes.** A circuit's registration is released when the client closes the circuit:
   once no interactive server component remains, after the circuit's inactivity timeout, and before a
   paused circuit resumes. A WebAssembly runtime's is released as the runtime's scope is disposed. A circuit
   ended by a fatal server error is not closed this way, and its registration stays until the page reloads,
-  as Blazor's error UI asks. When the last registration goes, the document shows the served pair again,
-  removing an attribute the server left out, and the coordinator accepts that pair as the next in its
-  sequence, so a runtime that registers later adopts what the page shows.
+  as Blazor's error UI asks. Releasing is cleanup, never a switch: when the last registration goes, the
+  document keeps the accepted pair, which the coordinator retains for a runtime that registers later, as
+  [the coordinator](#the-coordinator) sets out, and a landing meanwhile is accepted from its record as
+  any other is.
 - **Applying a change.** Each registration applies the pairs the coordinator sends in the order of their
   versions, ignoring one its state has applied already. A delivery that fails is recovered by registering
   again, which adopts the current pair, and each connection to the browser registers again, so a
@@ -339,16 +418,21 @@ culture's name, and `dir` its direction.
 The address decides a page's culture, and the state follows the address, never the reverse, so an address
 and the culture it shows never disagree. A host with culture addresses switches through a switcher, one per
 circuit beside the application's one `CultureRouter`, which is [the address policy](#switch-policies)'s
-switch: it requests the other culture's address of the current page, and the coordinator accepts the pair
-the address names once the navigation that request becomes lands. The switcher's current route is the
+switch: it requests the other culture's address of the current page, and the coordinator accepts the record
+of the navigation that request becomes, once it lands. The switcher's current route is the
 culture state's, so work begun before a switch reads the route it began in. A host without culture
 addresses switches under the cookie policy or the state alone.
 
-A culture route names a pair, the culture that formats and the UI culture, which is the culture where the
-route names one alone, so an address carries the whole pair and the formatting culture survives every
-navigation: a route `he` that formats with `de-DE` names both, and a pair no route names can't be reached
-by address. The address decides over the cookie, which only names the culture last chosen for a request
-whose address carries none, as the cookie's rules below set out.
+A culture route names its UI culture, and may name a formatting culture of its own; a route that names
+none formats in its UI culture, so `he` alone is `he/he`, and a host that wants German formats under
+Hebrew text names `de-DE` on its `he` route. An address thus carries the whole pair, the formatting
+culture survives every navigation, and a pair no route names can't be reached by address. One
+resolution decides the pair an address names, for a server request, an interactive navigation, Back and
+Forward and a landing's record alike, and the address decides over the cookie, which only names the
+culture last chosen for a request whose address carries none, as the cookie's rules below set out. The
+mapping between addresses and pairs is defined once, in the render-mode-neutral routing assembly, and
+published to the page, so the server, a WebAssembly runtime and the coordinator resolve and build
+addresses by the same rules, the whole pair included.
 
 How a switch navigates is the host's choice, made once where it configures culture routing:
 
@@ -376,7 +460,7 @@ How a switch navigates is the host's choice, made once where it configures cultu
 - **In place, when the host's pages are islands,** `CultureSwitchMode.InPlace` under a static router.
   The document's base is the plain one, so a link to another culture's address is an enhanced
   navigation: the server renders the page in that culture, each island the page already holds stays in
-  its circuit with its state, and the circuit's state follows the landing handoff. The pages carry
+  its circuit with its state, and the circuit's state follows the landing's record. The pages carry
   their plain routes alone, since the middleware removes the culture segment before routing. An island
   keeps the markup it rendered before the switch until it renders again, so a host's own interactive
   components follow as Forma's do: they render again on each change of the state, and read their strings
@@ -388,21 +472,20 @@ How a switch navigates is the host's choice, made once where it configures cultu
 
 The state follows the address at the event that settles each kind of navigation:
 
-- **A full load** is a request: the middleware renders it in its address's pair, which the new
-  document's coordinator starts from, and the circuit, as it opens and again as it resumes, reconciles its
-  state with the address before it registers and adopts the accepted pair, the same pair in a document
-  the address loaded.
+- **A full load** is a request: the middleware renders it in its address's pair, which `FormaPageHead`
+  publishes as the marker the new document's coordinator starts from, and the circuit adopts the
+  accepted pair as it registers, and again as it resumes.
 - **An enhanced navigation** is a request too, and the circuit hears its location change as it starts,
-  before its response, so the state follows the landing, never the location change: the circuit's
-  culture route handler resolves the landed address's pair and replies, and the coordinator accepts it,
-  as [the document](#the-document-follows-the-state) sets out. Resolving an address changes nothing
-  itself; it navigates nowhere and writes no cookie.
+  before its response, so the state follows the landing, never the location change: the coordinator
+  accepts the landing's record from the marker of the navigation's own response, as
+  [landings](#landings) set out, and the circuit applies it as every registration does.
 - **Interactive routing** makes no request, and a circuit's location change can't tell it from an
   enhanced navigation's start, so the state follows the page the router renders: under culture-bearing
-  interactive routes, a culture route page requests the coordinator's acceptance of its incoming route's
-  pair before its interactive page lifecycle runs, and runs that lifecycle once its state has applied the
-  accepted pair, so its initialization and parameter callbacks run in the route's cultures, in the state
-  and in their calling flow. Without them, interactive routing leaves the state as it is.
+  interactive routes, a culture route page reports its interactive landing with the address its router
+  accepted before its interactive page lifecycle runs, the coordinator resolves and accepts the landing's
+  record, and the page runs that lifecycle once its state has applied the accepted pair, so its
+  initialization and parameter callbacks run in the route's cultures, in the state and in their calling
+  flow. Without them, interactive routing leaves the state as it is.
 - **Back and Forward** are navigations of the kind they become, and restore the culture of the address
   they return to.
 
@@ -418,30 +501,31 @@ A navigation resolves by the address it leaves behind:
 A culture route page follows its route where it renders interactively within `CultureRouteScope`, whose
 cascaded value reaches every page an interactive router renders within it and stops at the boundary of a
 page that is an island of its own, as every cascading value stops where the render mode changes. Such an
-island receives no culture segment, since the middleware removed it before the static render, and is left
-to the landing handoff, as every enhanced navigation is; a static render is the middleware's. The scope's
-absence raises nothing, since an island never receives it, so in-place following rests on the host
+island receives no culture segment, since the middleware removed it before the static render, and is left to
+the server-rendered landing, as every enhanced navigation is; a static render is the middleware's. The
+scope's absence raises nothing, since an island never receives it, so in-place following rests on the host
 placing the scope: without it no page follows, and a navigation within one culture conceals that.
 
-The page takes its culture from the token it was routed with, never from the navigation manager's latest
-address, so a delivery for another reason changes nothing, and a reused page routed through its plain route
-receives no token and follows the culture its plain address names. The page waits for the acceptance
-before its lifecycle and not for the notification: once its state has applied the accepted pair, the state
-and the calling flow hold the route's cultures, and the layout and other components render again as their
-notifications reach them, one subscriber after another, so a subscriber that holds its notification delays
-those after it and the update isn't one atomic step. A notification that fails is logged. An acceptance the
-page requests writes the cookie before it is accepted, since no request carries it.
+The page reports the address it was routed to, never the navigation manager's latest address, so a delivery
+for another reason changes nothing, and a reused page routed through its plain route reports its plain
+address, which names the culture it follows. The page waits for the acceptance before its lifecycle and not
+for the notification: once its state has applied the accepted pair, the state and the calling flow hold the
+route's cultures, and the layout and other components render again as their notifications reach them, one
+subscriber after another, so a subscriber that holds its notification delays those after it and the update
+isn't one atomic step. A notification that fails is logged. An interactive landing's acceptance writes the
+culture-route cookie before it is accepted, since no request carries it.
 
-A page outside that contract follows nothing, since Forma reconciles only for a culture route page. A
-page that carries only its plain route has no page at another culture's address: Blazor's router loads
-the address as a new document for a navigation it intercepted, such as a link, whose circuit reconciles
-as it opens, and renders its not-found page for one it didn't, such as `NavigateTo`. A page that declares
-the culture route without deriving the base binds the segment unvalidated and leaves the state as it is.
+A page outside that contract follows nothing, since only a culture route page reports an interactive
+landing. A page that carries only its plain route has no page at another culture's address: Blazor's router
+loads the address as a new document for a navigation it intercepted, such as a link, which starts from its
+own marker, and renders its not-found page for one it didn't, such as `NavigateTo`. A page that declares the
+culture route without deriving the base binds the segment unvalidated and leaves the state as it is.
 
 The `forma-culture-route` cookie only names the culture last chosen, for a request whose address carries
 none, such as the circuit's own connection. A new tab opens in the culture its address names; under
 `ExceptDefault`, `/` is the default culture. So two tabs in two cultures each keep their own: one tab's
-switch rewrites the shared cookie, and the other, reconnecting, is reconciled with its own address.
+switch rewrites the shared cookie, and the other keeps its own document's accepted pair as its circuit
+reconnects.
 
 The cookie belongs to the application: it is written at the application's path base, and under a path
 base its name carries that base, escaped, `forma-culture-route%2Fapp` under `/app`, so applications sharing
@@ -459,14 +543,15 @@ circuit's transport takes the culture its own address names, which the document'
 
 ## WebAssembly and Hybrid
 
-- **WebAssembly** takes part in the contract. A runtime's state registers with the page's coordinator as
-  a circuit's does, as the runtime starts, and is released as its scope is disposed; a prerendered
-  runtime starts in the pair the server rendered its prerender in, which the server hands it, as the
-  [WebAssembly design](webassembly-design.md) sets out; and, being one user scope in one process, it
-  applies each accepted pair to the process's default cultures too, as
-  [output](#output-takes-its-culture-from-the-state) sets out. The host loads the globalization data of
-  every culture it serves, `BlazorWebAssemblyLoadAllGlobalizationData`, since the default data covers
-  only the starting culture.
+- **WebAssembly** takes part in the contract. Under coordinated pages, the default, a runtime's state
+  registers with the page's coordinator as a circuit's does, as the runtime starts, and is released as
+  its scope is disposed; a prerendered runtime starts in the pair the server rendered its prerender in,
+  which the server hands it, as the [WebAssembly design](webassembly-design.md) sets out; and, being one
+  user scope in one process, it applies each accepted pair to the process's default cultures too, as
+  [output](#output-takes-its-culture-from-the-state) sets out. A host that declares its client's culture
+  independent leaves the runtime outside the page's pair, on the local switch, whose applications set
+  the process's defaults too, as the WebAssembly design's registration sets out. The host loads the globalization data of every culture it serves,
+  `BlazorWebAssemblyLoadAllGlobalizationData`, since the default data covers only the starting culture.
 - **Hybrid** isn't part of the contract until Forma supports its render mode, and must first choose its
   ownership: one culture shared by every window of the application, or
   one per `BlazorWebView` scope, reached through `BlazorWebView.TryDispatchAsync`. The process's default
@@ -485,24 +570,26 @@ as an integration with ASP.NET Core does across .NET:
 
 | Assembly | Holds |
 | --- | --- |
-| `Forma.Framework.Culture` | The culture state's abstraction and its default, the switch's abstraction, the culture version, the local switch, the registrar, and the culture route handler's contract, with no dependency on ASP.NET Core or navigation |
-| `Forma.Framework.Culture.Browser.Interop` | The document's culture coordinator: its script, the initializer that tracks what the server served and releases a closed circuit's registration, the registration that keeps a culture state on the accepted pair, and the switch that requests through the coordinator under the cookie policy or the state alone |
+| `Forma.Framework.Culture` | The culture state's abstraction, its integration contract and its default, the switch's abstraction, the culture version, the local switch and the registrar, with no dependency on ASP.NET Core or navigation |
+| `Forma.Framework.Culture.Browser.Interop` | The document's culture coordinator: its script, the initializer that reads the marker and the published policy and releases a closed circuit's registration, the registration that keeps a culture state on the accepted pair, and the switch that requests through the coordinator under the cookie policy or the state alone |
 | `Forma.Framework.Culture.Blazor.Server` | The circuit handler that applies the culture before every inbound activity and registers the circuit's state with the coordinator |
-| `Forma.Framework.Culture.Blazor.WebAssembly` | The startup that registers the runtime's state with the coordinator and applies each accepted pair to the process's default cultures |
-| `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware, `CultureRouter`, the switcher, the page base, the culture route scope, the document's base, the address reconciliation, the culture route handler and the cookie |
+| `Forma.Framework.Culture.Blazor.WebAssembly` | The startup that registers the runtime's state with the coordinator, and the application that sets the runtime's current and the process's default cultures on every application of a pair, the local switch's included |
+| `Forma.Framework.Culture.Router` | The culture routes, their tokens and the mapping between addresses and pairs, `CultureRouter`, the address policy's switch, the page base and the culture route scope, with no dependency on ASP.NET Core, so the server, a WebAssembly runtime and the published mapping share one set of rules |
+| `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware, the document's base and the cookie's server side |
 | `Forma.Framework.Culture.Router.Interop` | The culture cookie's script and its wrapper, which write the cookie from the browser for a change made in place |
 | `Forma.Framework.Browser.Blazor.Server` | The DOM's circuit handler |
 
 The product's registrars register all of them but the routing, which takes the host's options: the
-render-mode-neutral one registers the culture and its browser interop, and the product's server and
-WebAssembly halves each add their render mode's half, as the [WebAssembly design](webassembly-design.md)
+render-mode-neutral `AddFormaUI` registers the culture and its browser interop, and `AddFormaUIServer` and
+`AddFormaUIWebAssembly` each add their render mode's half, through the culture's own
+`AddFormaCultureServer` and `AddFormaCultureWebAssembly`, as the [WebAssembly design](webassembly-design.md)
 sets out, so a host makes one call on each side and can still override any single service.
 
 ## Decisions
 
 | | Question | Decision |
 | --- | --- | --- |
-| C1 | Where does the culture state live? | A platform-neutral `Forma.Framework.Culture`, its ASP.NET Core parts in `Forma.Framework.Culture.Router.AspNetCore` |
+| C1 | Where does the culture state live? | A platform-neutral `Forma.Framework.Culture`, the routing's neutral rules in `Forma.Framework.Culture.Router` and its ASP.NET Core parts in `Forma.Framework.Culture.Router.AspNetCore` |
 | C2 | What is the state called? | `ICultureState`, which says what it holds and that it changes |
 | C3 | Who keeps `<html lang dir>` in step? | The document's culture coordinator, on the pair it accepted last, whichever runtime requested it, so a switch is complete by default |
 | C4 | Does the Showcase switch in place? | Yes, keeping the user's work, with the new load still supported |
@@ -511,10 +598,16 @@ sets out, so a host makes one call on each side and can still override any singl
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
 | C8 | How does a switch navigate? | By a full load by default; in place under `CultureSwitchMode.InPlace`, through culture-bearing interactive routes where an interactive router renders the pages, each page carrying its culture route, or through an enhanced navigation where the pages are islands, as [culture addresses](#culture-addresses) sets out |
 | C9 | What does the cookie migrate by? | A new name, `forma-culture-route`, carrying the application's path base and written at it, which replaces the `HttpOnly` `forma-culture` without relying on the order of same-named cookies |
-| C10 | When is the document held through an enhanced navigation? | Only while a registration that follows addresses is live, which a registered `ICultureRouteHandler` makes a circuit's; the reply to the landing's report carries the pair the address names, which the coordinator accepts, ending the hold, as [the document](#the-document-follows-the-state) sets out |
-| C11 | How does the state follow interactive routing? | A culture route page requests the coordinator's acceptance of its incoming route's pair before its interactive page lifecycle runs, where it renders interactively within `CultureRouteScope`, which the host places around its `Router`; a page that is an island of its own, and every enhanced navigation, follow the landing handoff, as [culture addresses](#culture-addresses) sets out |
+| C10 | When is the document held through an enhanced navigation? | From every enhanced navigation's start until its landing, whose record the coordinator accepts from that navigation's own marker, or until the navigation ends without landing, as [the document](#the-document-follows-the-state) sets out |
+| C11 | How does the state follow interactive routing? | A culture route page reports its interactive landing with the address its router accepted before its interactive page lifecycle runs, where it renders interactively within `CultureRouteScope`, which the host places around its `Router`; the coordinator resolves the record through the published mapping, and the lifecycle runs once the state has applied it, as [culture addresses](#culture-addresses) sets out |
 | C12 | How many culture pairs does a page hold? | One, across every runtime on it: a switch is the application's, and every runtime converges on the pair it accepts, as [the switch](#one-switch-for-the-page) sets out |
 | C13 | Where are switches ordered? | In the document's culture coordinator, which numbers each accepted switch in the document's sequence and distributes it; a version is the document's identity with that number, and each state applies the pairs it receives locally, ignoring one it has applied or an older one, as [the coordinator](#the-coordinator) sets out |
 | C14 | What does awaiting a switch guarantee? | That it was accepted, its policy's persistence or navigation completed, and the runtime that requested it applied that pair or a newer one; other runtimes converge without holding it back, as [awaiting a switch](#what-awaiting-a-switch-guarantees) sets out |
 | C15 | What does a switch do without coordination? | It fails, and never applies locally in its place; a local switch is a host's explicit choice and a test supplies its own, as [switches without the coordinator](#switches-without-the-coordinator) sets out |
-| C16 | What does a culture route name? | A pair, the formatting culture with the UI culture, so the address carries the whole pair and decides over the cookie, as [culture addresses](#culture-addresses) sets out |
+| C16 | What does a culture route name? | Its UI culture, and a formatting culture of its own or, naming none, the UI culture, so the address carries the whole pair; one mapping, defined in the neutral routing assembly and published to the page, reads it for every navigation, and it decides over the cookie, as [culture addresses](#culture-addresses) sets out |
+| C17 | Who applies an accepted pair? | The runtime's integration, through `ICultureStateIntegration`, resolved from the very instance resolved as `ICultureState`; a replacement that lacks it is rejected as the state is first resolved in its scope, and a component reads the state and changes it only through the switch |
+| C18 | What does releasing the last registration do? | Nothing to the culture: the coordinator retains the accepted pair and version for the document's lifetime, and a later registration adopts it |
+| C19 | Where does a landing's pair come from? | One record per landing: a server-rendered landing's from its own response's marker, an interactive one's from the address its router accepted, resolved through the published mapping; the coordinator accepts it without waiting for a registration, and a cancelled or obsolete navigation changes nothing, as [landings](#landings) set out |
+| C20 | How does the browser learn the switch's policy? | From configuration `FormaPageHead` publishes, or a standalone app's startup supplies, apart from any pair: the cookie's every setting and its one serialization, or the culture-route mapping, as [the policies](#switch-policies) set out |
+| C21 | What does a switch wait for while its runtime registers? | An attempt already started, which its failure, its disposal or a disconnection settles with an error; never a registration nobody started, as [awaiting a switch](#what-awaiting-a-switch-guarantees) sets out |
+| C22 | What does a switch to a pair no route names do? | Under the address policy it throws `InvalidOperationException` before anything changes, naming the pair |
