@@ -136,8 +136,8 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
         }
     }
 
-    private void HandleInput(ChangeEventArgs args)
-        => CurrentValueAsString = args.Value?.ToString();
+    private void HandleInput(string? text)
+        => CurrentValueAsString = text;
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

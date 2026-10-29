@@ -203,9 +203,9 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
         Reassess();
     }
 
-    private void HandleInput(ChangeEventArgs args)
+    private void HandleInput(string? text)
     {
-        CurrentValueAsString = args.Value?.ToString();
+        CurrentValueAsString = text;
         Reassess();
     }
 

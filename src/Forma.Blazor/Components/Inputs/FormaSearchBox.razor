@@ -13,9 +13,10 @@
            type="search"
            dir="auto"
            placeholder="@EffectivePlaceholder"
-           value="@Value"
-           disabled="@Options.Disabled"
-           @oninput="HandleInputAsync" />
+           @bind:get="Value"
+           @bind:set="HandleInputAsync"
+           @bind:event="oninput"
+           disabled="@Options.Disabled" />
     @if (!string.IsNullOrEmpty(Value))
     {
         <span class="forma-search-box-clear">

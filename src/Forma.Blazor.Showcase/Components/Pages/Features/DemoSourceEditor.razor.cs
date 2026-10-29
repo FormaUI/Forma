@@ -94,8 +94,8 @@ public sealed partial class DemoSourceEditor
         StateHasChanged();
     }
 
-    private void HandleInputAsync(ChangeEventArgs e)
-        => _typedContent = e.Value?.ToString() ?? string.Empty;
+    private void HandleInput(string? text)
+        => _typedContent = text ?? string.Empty;
 
     private async Task HandleChangeAsync(ChangeEventArgs e)
     {

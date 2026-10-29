@@ -6,15 +6,15 @@
         <div class="demo-source-rename" role="group" aria-label="@L["Rename Symbol"]">
             <input class="demo-source-rename-field"
                    @ref="_oldNameElement"
-                   value="@_oldName"
-                   @oninput="e => _oldName = e.Value?.ToString() ?? string.Empty"
+                   @bind="_oldName"
+                   @bind:event="oninput"
                    @onkeydown="HandleRenameKeyDownAsync"
                    placeholder="@L["Current name"]"
                    aria-label="@L["Current name"]" />
             <span class="demo-source-rename-arrow" aria-hidden="true">&#10095;</span>
             <input class="demo-source-rename-field"
-                   value="@_newName"
-                   @oninput="e => _newName = e.Value?.ToString() ?? string.Empty"
+                   @bind="_newName"
+                   @bind:event="oninput"
                    @onkeydown="HandleRenameKeyDownAsync"
                    placeholder="@L["New name"]"
                    aria-label="@L["New name"]" />
@@ -35,8 +35,9 @@
         <textarea class="demo-source-textarea"
                   rows="@LineCount"
                   wrap="off"
-                  value="@Content"
-                  @oninput="HandleInputAsync"
+                  @bind:get="Content"
+                  @bind:set="HandleInput"
+                  @bind:event="oninput"
                   @onchange="HandleChangeAsync"
                   placeholder="@L["Edit Source"]"
                   aria-label="@L["Source"]"

@@ -860,9 +860,9 @@
             var model = new TestModel();
             var original = model.Body.Content;
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
-            cut.Find("textarea").Input("a");
-            cut.Find("textarea").Input("ab");
-            cut.Find("textarea").Input("abc");
+            cut.InvokeAsync(() => cut.Find("textarea").Input("a"));
+            cut.InvokeAsync(() => cut.Find("textarea").Input("ab"));
+            cut.InvokeAsync(() => cut.Find("textarea").Input("abc"));
             cut.WaitForAssertion(() => Assert.Equal("abc", model.Body.Content), TimeSpan.FromSeconds(5));
 
             // Act

@@ -31,9 +31,8 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
     private void HandleHexInput(ChangeEventArgs args) =>
         CurrentValueAsString = args.Value?.ToString();
 
-    private void HandleNativeInput(ChangeEventArgs args)
+    private void HandleNativeInput(string? rgb)
     {
-        var rgb = args.Value?.ToString();
         if (rgb is null)
         {
             return;
@@ -50,13 +49,8 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
         }
     }
 
-    private void HandleAlphaInput(ChangeEventArgs args)
+    private void HandleAlphaInput(int percent)
     {
-        if (args.Value?.ToString() is not { } text || !int.TryParse(text, out var percent))
-        {
-            return;
-        }
-
         var alpha = (int)Math.Round(percent / 100.0 * 255);
         CurrentValueAsString = $"{RgbHex}{alpha:X2}";
     }

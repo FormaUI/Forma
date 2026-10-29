@@ -57,9 +57,9 @@ public sealed partial class FormaSearchBox : FormaElementBase
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(RootElement, SearchProfile);
 
-    private async Task HandleInputAsync(ChangeEventArgs args)
+    private async Task HandleInputAsync(string? text)
     {
-        Value = args.Value?.ToString() ?? string.Empty;
+        Value = text ?? string.Empty;
 
         await ValueChanged.InvokeAsync(Value);
         await Debouncer.DebounceAsync(_ => OnSearch.InvokeAsync(Value), Options.DebounceDelay);

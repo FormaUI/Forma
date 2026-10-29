@@ -84,9 +84,9 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         }
     }
 
-    private async Task HandleInputAsync(ChangeEventArgs args)
+    private async Task HandleInputAsync(string? text)
     {
-        _typedContent = args.Value?.ToString() ?? string.Empty;
+        _typedContent = text ?? string.Empty;
 
         if (_commitCancellation is not null)
         {

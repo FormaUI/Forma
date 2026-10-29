@@ -12,7 +12,9 @@
                 aria-describedby="@DescribedBy"
                 type="@TypeValue"
                 placeholder="@EffectivePlaceholder"
-                value="@CurrentValueAsString"
+                @bind:get="CurrentValueAsString"
+                @bind:set="HandleInput"
+                @bind:event="oninput"
                 disabled="@Disabled"
                 readonly="@ReadOnly"
                 minlength="@Options.MinLength"
@@ -23,8 +25,7 @@
                 autocapitalize="@AutoCapitalizeValue"
                 spellcheck="@SpellCheckValue"
                 autocomplete="@Options.AutoComplete"
-                aria-required="@(Required ? "true" : null)"
-                @oninput="HandleInput" />;
+                aria-required="@(Required ? "true" : null)" />;
 }
 
 @if (HasLabel)

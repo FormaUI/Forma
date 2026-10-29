@@ -23,8 +23,9 @@
                 <input type="color"
                        class="forma-color-picker-native"
                        aria-label="@L["Choose Color"]"
-                       value="@RgbHex"
-                       @oninput="HandleNativeInput" />
+                       @bind:get="RgbHex"
+                       @bind:set="HandleNativeInput"
+                       @bind:event="oninput" />
                 <span class="forma-color-picker-swatch" style="background-color: @CurrentValueAsString" aria-hidden="true"></span>
             </span>
             @if (ShowAlpha)
@@ -35,8 +36,10 @@
                            type="range"
                            class="forma-color-picker-alpha"
                            min="0" max="100" step="1"
-                           value="@AlphaPercent"
-                           @oninput="HandleAlphaInput" />
+                           @bind:get="AlphaPercent"
+                           @bind:set="HandleAlphaInput"
+                           @bind:event="oninput"
+                           @bind:culture="System.Globalization.CultureInfo.InvariantCulture" />
                     <span class="forma-color-picker-alpha-value">@AlphaPercent%</span>
                 </div>
             }

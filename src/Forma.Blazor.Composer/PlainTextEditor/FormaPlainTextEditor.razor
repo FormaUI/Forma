@@ -4,8 +4,9 @@
 <div class="forma-composer-plain-text-editor">
     <textarea @ref="_textareaElement"
               class="forma-composer-plain-text-textarea"
-              value="@Content"
-              @oninput="HandleInputAsync"
+              @bind:get="Content"
+              @bind:set="HandleInputAsync"
+              @bind:event="oninput"
               @onchange="HandleChangeAsync"
               @onclick="HandleClickAsync"
               @onkeyup="HandleKeyUpAsync"

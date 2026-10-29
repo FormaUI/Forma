@@ -12,8 +12,8 @@
                   placeholder=" "
                   rows="@Rows"
                   maxlength="@MaxLength"
-                  value="@CurrentValueAsString"
-                  @oninput="@(args => CurrentValueAsString = args.Value?.ToString())"
+                  @bind="CurrentValueAsString"
+                  @bind:event="oninput"
                   aria-required="@(Required ? "true" : null)"
                   aria-describedby="@DescribedBy"></textarea>
         @if (ShowCharacterCount)

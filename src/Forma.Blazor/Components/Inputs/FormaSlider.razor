@@ -17,9 +17,9 @@
                min="@FormatInvariant(Min)"
                max="@FormatInvariant(Max)"
                step="@FormatInvariant(Step)"
-               value="@CurrentValueAsString"
+               @bind="CurrentValueAsString"
+               @bind:event="oninput"
                disabled="@Disabled"
-               aria-valuetext="@AriaValueText"
-               @oninput="@(args => CurrentValueAsString = args.Value?.ToString())" />
+               aria-valuetext="@AriaValueText" />
     </ChildContent>
 </FormaField>
