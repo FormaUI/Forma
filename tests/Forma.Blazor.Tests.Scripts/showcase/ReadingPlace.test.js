@@ -50,6 +50,7 @@ describe('ReadingPlace', () => {
     afterEach(() => {
         places.forEach(place => place.dispose());
         delete globalThis.Blazor;
+        delete globalThis.navigation;
         document.removeEventListener('click', stayOnPage);
         scrollTo.mockRestore();
         resizes.restore();
@@ -182,6 +183,49 @@ describe('ReadingPlace', () => {
         expect(scrollTo).toHaveBeenCalledTimes(1);
     });
 
+    it('ends the hold when the next enhanced navigation lands, even on a page with no place noted', async () => {
+        const blazor = stubBlazor();
+        holdPlaceAfterSwitch(blazor);
+
+        blazor.dispatch('enhancedload');
+        document.querySelector('main').append(document.createElement('p'));
+        await Promise.resolve();
+
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('ends the hold once the address changes, as a navigation to another page begins', async () => {
+        holdPlaceAfterSwitch(stubBlazor());
+
+        history.pushState(null, '', '/button');
+        placeSections([{ top: 0, bottom: 500 }, { top: 500, bottom: 900 }]);
+        document.querySelector('main').append(document.createElement('p'));
+        await Promise.resolve();
+
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('ends the hold on a move through the history, as Back and Forward begin', async () => {
+        holdPlaceAfterSwitch(stubBlazor());
+
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        document.querySelector('main').append(document.createElement('p'));
+        await Promise.resolve();
+
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
+    it('ends the hold when the browser reports a navigation beginning', async () => {
+        globalThis.navigation = new EventTarget();
+        holdPlaceAfterSwitch(stubBlazor());
+
+        globalThis.navigation.dispatchEvent(new Event('navigate'));
+        document.querySelector('main').append(document.createElement('p'));
+        await Promise.resolve();
+
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+    });
+
     it('stops returning to a place after an enhanced navigation once disposed', () => {
         const blazor = stubBlazor();
         const place = attach(list, options);
@@ -251,6 +295,18 @@ describe('ReadingPlace', () => {
         };
 
         return globalThis.Blazor;
+    }
+
+    // A language link from deep in the page, followed through an enhanced navigation that holds the place.
+    function holdPlaceAfterSwitch(blazor) {
+        setScrollY(1000);
+        placeSections([{ top: -600, bottom: -100 }, { top: -100, bottom: 400 }]);
+        attach(list, options);
+        clickLink('he');
+        arriveAt('/he/number-input');
+        placeSections([{ top: 200, bottom: 1300 }, { top: 1300, bottom: 1900 }]);
+        blazor.dispatch('enhancedload');
+        expect(scrollTo).toHaveBeenCalledTimes(1);
     }
 
     function arriveAt(path) {

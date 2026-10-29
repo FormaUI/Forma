@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Components;
 /// <remarks>
 /// The place is noted when such a link is pressed, as the section at the top of the window with how far into it the window
 /// stands, or as the window's own scroll above the first section, and the page the link leads to returns to it, holding it
-/// while a page reached through an enhanced navigation renders again in the new language. The list is scrolled to center
+/// while a page reached through an enhanced navigation renders again in the new language, until the reader moves, the page
+/// settles or the next navigation begins. The list is scrolled to center
 /// its current entry when the entry is out of view, on every page, whenever the list is shown after being hidden, and on
 /// each <see cref="RevealAsync"/>.
 /// </remarks>

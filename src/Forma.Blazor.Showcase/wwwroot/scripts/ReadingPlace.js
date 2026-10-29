@@ -7,7 +7,8 @@
  * survives text that runs longer or shorter in the other language; above the first section, the
  * window's own scroll is the place. The page the link leads to returns to the place once it has
  * loaded, either way, and after an enhanced navigation holds it while the page's interactive parts
- * render again in the new language. The target, the page's list, is scrolled to its current entry
+ * render again in the new language, until the reader moves, the page settles or the next navigation
+ * begins. The target, the page's list, is scrolled to its current entry
  * on every page, whenever the target is shown after being hidden, as a drawer is opened, and
  * whenever its owner asks, as after a navigation that kept the list.
  */
@@ -35,7 +36,10 @@ class ReadingPlace {
     #observer;
     #abort = new AbortController();
     #holding = null;
-    #handleEnhancedLoad = () => this.#returnToPlace({ isHeld: true });
+    #handleEnhancedLoad = () => {
+        this.#holding?.abort();
+        this.#returnToPlace({ isHeld: true });
+    };
 
     constructor(target, { links, sections, current }) {
         this.#target = target;
@@ -126,14 +130,17 @@ class ReadingPlace {
     }
 
     // A page reached through an enhanced navigation renders its interactive parts again in the new language after it
-    // loads, moving the text above the place, so the place is returned to on each change until the reader moves or the
-    // page settles.
+    // loads, moving the text above the place, so the place is returned to on each change until the reader moves, the
+    // page settles or the next navigation begins. The hold belongs to the address it began at, which a navigation
+    // changes before the next page's content arrives.
     #hold(place) {
         this.#holding?.abort();
 
         const holding = new AbortController();
-        const observer = new MutationObserver(() => this.#restore(place));
-        const timer = setTimeout(() => holding.abort(), holdDuration);
+        const address = location.href;
+        const end = () => holding.abort();
+        const observer = new MutationObserver(() => location.href === address ? this.#restore(place) : end());
+        const timer = setTimeout(end, holdDuration);
 
         this.#holding = holding;
         observer.observe(document.body, { childList: true, subtree: true, characterData: true });
@@ -143,8 +150,11 @@ class ReadingPlace {
         });
 
         for (const name of ['wheel', 'touchstart', 'keydown', 'pointerdown']) {
-            document.addEventListener(name, () => holding.abort(), { capture: true, signal: holding.signal });
+            document.addEventListener(name, end, { capture: true, signal: holding.signal });
         }
+
+        window.addEventListener('popstate', end, { signal: holding.signal });
+        globalThis.navigation?.addEventListener('navigate', end, { signal: holding.signal });
     }
 
     #restore({ section, offset }) {
