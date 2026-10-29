@@ -5,8 +5,9 @@ landed.
 
 ## Status
 
-Steps 1 to 9 have landed. Step 10 waits until Forma supports a WebAssembly or Hybrid host, and the plan
-stands until it lands.
+Steps 1 to 9 have landed. The design's switch and coordinator, with WebAssembly, are built by the
+[WebAssembly plan](webassembly-implementation-plan.md); step 10 waits for Hybrid, and the plan stands until it
+lands.
 
 ## Where Forma stood
 
@@ -540,8 +541,9 @@ Each step is built, reviewed and committed on its own.
    recorded under English read "פעולה אחרונה: View"; a validation message shown in English kept its
    English, and the next submit produced it in Hebrew; and the localization page's French column stayed
    French.
-10. **WebAssembly and Hybrid,** each when Forma supports its render mode, Hybrid after its ownership is
-    chosen.
+10. **Hybrid,** when Forma supports its render mode, after its ownership is chosen. WebAssembly, and the
+    switch and coordinator every runtime on a page shares, are the
+    [WebAssembly plan](webassembly-implementation-plan.md)'s.
 
 ## To verify
 
