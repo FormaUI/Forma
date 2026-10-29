@@ -33,7 +33,7 @@ internal sealed class DefaultCultureState : ICultureState
         var changedCulture = CultureInfo.ReadOnly(culture);
         var changedUICulture = CultureInfo.ReadOnly(uiCulture ?? culture);
 
-        if (changedCulture.Equals(Culture) && changedUICulture.Equals(UICulture))
+        if (IsHeld(changedCulture, Culture) && IsHeld(changedUICulture, UICulture))
         {
             CultureInfo.CurrentCulture = Culture;
             CultureInfo.CurrentUICulture = UICulture;
@@ -57,4 +57,8 @@ internal sealed class DefaultCultureState : ICultureState
     /// <inheritdoc />
     public void Unsubscribe(Func<Task> callback)
         => _notifier.Unsubscribe(callback);
+
+    // A culture of the same name that writes dates or numbers otherwise, as a clone pinning its own patterns does, is a change.
+    private static bool IsHeld(CultureInfo culture, CultureInfo held)
+        => culture.Equals(held) && CultureFormats.AreEqual(culture, held);
 }

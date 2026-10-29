@@ -81,7 +81,9 @@ hebrew["Save"]   // "שמירה", whatever the current culture
 
 `factory.Create(type, cultureState)` creates a locale that looks its strings up in an `ICultureState`'s
 cultures, bound again on its first use after each change of the state, which is how a component on
-Forma's bases reads its strings.
+Forma's bases reads its strings. A component of a host that switches language in place reads its
+strings this way too, since a render can run in a flow that still holds an earlier ambient culture,
+such as one that began before the switch.
 
 ### Holes
 

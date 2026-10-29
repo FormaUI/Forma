@@ -258,7 +258,13 @@ through the `ICultureState` every user scope holds, and every component renders 
 
 Text typed into a number or time field and not yet committed keeps the culture it was typed in, so
 `1,234` typed in English still commits as a thousand and more after a switch to German. A host's
-own components render again in the new culture by subscribing to the same `ICultureState`.
+own components render again in the new culture by subscribing to the same `ICultureState`, and read
+their strings through a locale bound to it, `factory.Create(typeof(Orders), cultureState)` from the
+injected `IStringLocaleFactory`, rather than `IStringLocale<T>`, which reads the ambient culture: a
+render can run in a flow that still holds an earlier ambient culture, such as one that began before
+the switch, and a locale bound to the state looks its strings up in the state's cultures whatever flow
+renders. A culture of the same name with patterns of its own, a 12- or 24-hour clock, is a change like
+any other.
 
 A host's file overrides the library's and the pack's for the keys it holds.
 [`Forma.Framework.Localization`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Localization/README.md)

@@ -175,6 +175,49 @@ public sealed class DefaultCultureStateTests
         }
 
         [Fact]
+        public async Task Should_change_to_a_culture_of_the_same_name_that_writes_times_otherwise()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+            var notifications = 0;
+            state.Subscribe(() => { notifications++; return Task.CompletedTask; });
+            var clock = (CultureInfo)CultureInfo.GetCultureInfo("en").Clone();
+            clock.DateTimeFormat.ShortTimePattern = "HH:mm";
+
+            // Act
+            await state.ChangeAsync(clock);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1, state.Revision),
+                () => Assert.Equal(1, notifications),
+                () => Assert.Equal("HH:mm", state.Culture.DateTimeFormat.ShortTimePattern));
+        }
+
+        [Fact]
+        public async Task Should_change_to_a_culture_of_the_same_name_that_reads_two_digit_years_otherwise()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+            var century = (CultureInfo)CultureInfo.GetCultureInfo("en").Clone();
+            century.DateTimeFormat.Calendar.TwoDigitYearMax = 2099;
+
+            // Act
+            await state.ChangeAsync(century);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1, state.Revision),
+                () => Assert.Equal(2099, state.Culture.DateTimeFormat.Calendar.TwoDigitYearMax));
+        }
+
+        [Fact]
         public async Task Should_apply_the_cultures_to_the_calling_flow()
         {
             // Arrange
