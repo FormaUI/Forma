@@ -208,9 +208,6 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(RootElement, StepProfile);
 
-    private void HandleInput(ChangeEventArgs args)
-        => Draft(args.Value?.ToString());
-
     private void HandleChange(ChangeEventArgs args)
     {
         var text = args.Value?.ToString();

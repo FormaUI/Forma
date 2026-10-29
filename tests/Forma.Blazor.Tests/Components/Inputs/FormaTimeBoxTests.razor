@@ -1,0 +1,43 @@
+@inherits FormaBunitContext
+@using System.Globalization
+
+@code {
+    public sealed class Text
+    {
+        [Fact]
+        public void Should_show_the_text_entered_before_its_owner_hands_it_back()
+        {
+            // Arrange
+            using var ctx = new FormaTimeBoxTests();
+            var entered = new List<string?>();
+            var cut = ctx.Render(@<FormaTimeBox ElementId="start" Text="1" Suggestions="[]" FormatTime="@(time => time.ToString("t", CultureInfo.InvariantCulture))" ListLabel="Times" OnInput="@((string? text) => entered.Add(text))" />);
+
+            // Act
+            cut.Find("input").Input("1:");
+
+            // Assert
+            Assert.Equal(["1:"], entered);
+            Assert.Equal("1:", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_show_a_different_text_its_owner_hands_it()
+        {
+            // Arrange
+            using var ctx = new FormaTimeBoxTests();
+            var cut = ctx.Render<FormaTimeBox>(parameters => parameters
+                .Add(p => p.ElementId, "start")
+                .Add(p => p.Text, "1")
+                .Add(p => p.Suggestions, Array.Empty<TimeOnly>())
+                .Add(p => p.FormatTime, time => time.ToString("t", CultureInfo.InvariantCulture))
+                .Add(p => p.ListLabel, "Times"));
+            cut.Find("input").Input("1:");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Text, "1:30 PM"));
+
+            // Assert
+            Assert.Equal("1:30 PM", cut.Find("input").GetAttribute("value"));
+        }
+    }
+}

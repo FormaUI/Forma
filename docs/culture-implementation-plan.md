@@ -485,6 +485,16 @@ Each step is built, reviewed and committed on its own.
    which German would read as 1.234, and showed `1234`. `1:30 אחה״צ` typed into a time at `/he/edit` was
    kept through Back to `/de/edit` the same way, and Tab committed 13:30, from a text German refuses, and
    showed `13:30`.
+
+   A later probe in Chrome found the drafting fields losing a key typed quickly. Each input event renders
+   the field, and a plain `value` beside `@oninput` leaves the server's render tree at the server's own
+   text, so a render a key behind wrote that text over the newer keys: `1,234` typed at Chrome's pace
+   became `1234`, and `1:30 PM` became `130 PM`, in 8 of 50 runs. The fields now bind their text through
+   Blazor's bind on input, which brings the client's text into the server's tree with each event before
+   its render, and the time box renders the text just entered until its owner hands it another. Recording
+   every write a render made to the field: before step 8, when nothing rendered on input, no run wrote
+   over it; from step 8 every run did, five to seven times while typing; with the fix none did, and none
+   of 60 runs lost a key.
 9. ✅ **The Showcase.** The Showcase switches language in place, keeping the user's work, with the new load
    still supported; the README, the culture READMEs and the localization and authoring rules follow.
    Gate, in a browser: switching between English and Hebrew in place lays the page out right to left and

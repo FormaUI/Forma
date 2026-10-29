@@ -16,7 +16,9 @@
                 role="spinbutton"
                 inputmode="@InputModeValue"
                 placeholder="@EffectivePlaceholder"
-                value="@(_draft.Text ?? CurrentValueAsString)"
+                @bind:get="_draft.Text ?? CurrentValueAsString"
+                @bind:set="Draft"
+                @bind:event="oninput"
                 disabled="@Disabled"
                 readonly="@ReadOnly"
                 aria-required="@(IsRequired ? "true" : null)"
@@ -24,7 +26,6 @@
                 aria-valuetext="@ValueText"
                 aria-valuemin="@FormatLimit(Min)"
                 aria-valuemax="@FormatLimit(Max)"
-                @oninput="HandleInput"
                 @onchange="HandleChange" />;
 
     // The adornment stands in the number's box, outside the text the reader edits.

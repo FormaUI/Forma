@@ -99,6 +99,10 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     private TimeOption[] _options = [];
     private int _activeIndex = -1;
 
+    // The field renders the text the reader last entered until the owner hands it a different one, since the owner's text arrives a render later.
+    private string? _text;
+    private string? _receivedText;
+
     /// <summary>The field's text element, once rendered.</summary>
     public ElementReference InputElement { get; private set; }
 
@@ -130,6 +134,12 @@ public sealed partial class FormaTimeBox : FormaComponentBase
         ArgumentNullException.ThrowIfNull(Suggestions);
         ArgumentNullException.ThrowIfNull(FormatTime);
 
+        if (Text != _receivedText)
+        {
+            _receivedText = Text;
+            _text = Text;
+        }
+
         if (!ReferenceEquals(_optionsSource, Suggestions))
         {
             _optionsSource = Suggestions;
@@ -155,8 +165,12 @@ public sealed partial class FormaTimeBox : FormaComponentBase
         return builder.ToStringOrNull()!;
     }
 
-    private Task HandleInputAsync(ChangeEventArgs args)
-        => OnInput.InvokeAsync(args.Value?.ToString());
+    private Task HandleInputAsync(string? text)
+    {
+        _text = text;
+
+        return OnInput.InvokeAsync(text);
+    }
 
     private Task HandleChangeAsync(ChangeEventArgs args)
         => OnChange.InvokeAsync(args.Value?.ToString());
