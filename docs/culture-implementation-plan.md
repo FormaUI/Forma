@@ -495,14 +495,20 @@ Each step is built, reviewed and committed on its own.
    navigation, as the design's islands case sets out, rather than through culture-bearing interactive
    routes: `CultureSwitchMode.InPlace`, its language links no longer forcing a new document, its base
    already the application's root. Three things the switch needed of the Showcase itself:
-   - Its pages follow the culture state through a shared base the pages' folder applies, and its nav and
-     sidebar, which outlive a navigation, subscribe themselves; before, a page kept its text, and the
+   - Its pages follow the culture state through a shared base the pages' folder applies, which renders a
+     page again on each change and gives it strings and cultures read from the state, so a render that
+     work begun before the switch asks for is in the new language too. A label a page built once, the
+     data view's sort labels among them, is built again on each change, keeping the reader's choices;
+     text an event produced keeps its language, as the contract excepts. Its nav takes the same base, and
+     its sidebar, which outlives a navigation, subscribes itself; before, a page kept its text, and the
      sidebar its links, in the culture the switch left, so the next page link led back to it.
    - The reader's place is returned to after an enhanced navigation too, and held while the page's
-     islands render again in the new language.
-   - `FocusOnNavigate` still moves focus to the heading on every navigation, so an edit in progress
-     commits, in the culture it was typed in, as the switch begins; its value is kept, and its text is
-     written in the new culture.
+     islands render again in the new language, until the reader moves, the page settles or the next
+     navigation begins; the hold belongs to the address it began at.
+   - `FocusOnNavigate` still moves focus to the heading on every navigation, so a navigation may move
+     focus off a field and attempt a commit. An accepted edit keeps its meaning and is shown in the
+     current culture, and a rejected one keeps its text and its parsing culture, whichever side of the
+     change the commit reaches, as step 8 guarantees.
 
    In Chrome on the Showcase, in one document throughout: `1,234` typed into a number under English,
    then the Hebrew language link, committed 1234 and took `he/rtl`, the page's text, the sidebar's current
@@ -513,7 +519,17 @@ Each step is built, reviewed and committed on its own.
    its items in Hebrew. A language link from the fourth section kept the reader one pixel into the same
    section in Hebrew. On the step 8 host, with the server holding each event 400 ms, a number and a time
    typed at 25 ms a key kept every key and committed their meaning; Chrome's emulated latency doesn't
-   reach the circuit's WebSocket, so the delay is the server's.
+   reach the circuit's WebSocket, so the check delays the circuit's inbound events instead.
+
+   A review found that work begun before the switch rendered in the language it began in, that text a
+   page built once kept its language, and that a held place followed the reader onto the next page. In
+   Chrome, against the Showcase before and after the fixes: a save begun in English and finished after
+   the switch to Hebrew read "Saved." before and "נשמר." after; a held place, followed by a link opened
+   from script or by going back two entries, put the next page 705 and 729 pixels down before and at its
+   top after. After the fixes the data view sorted by Price kept the sort and named it "מחיר"; an action
+   recorded under English read "פעולה אחרונה: View"; a validation message shown in English kept its
+   English, and the next submit produced it in Hebrew; and the localization page's French column stayed
+   French.
 10. **WebAssembly and Hybrid,** each when Forma supports its render mode, Hybrid after its ownership is
     chosen.
 

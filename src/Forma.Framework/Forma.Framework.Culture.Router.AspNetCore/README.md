@@ -199,14 +199,25 @@ its state, and the circuit's culture state follows the address the navigation la
 keep their plain routes.
 
 An island keeps the markup it rendered before the switch until it renders again, so a component of
-the host's own that shows text in the culture subscribes to `ICultureState` and renders again on
-each change, as Forma's components do:
+the host's own that shows text in the culture follows as Forma's components do. It renders again on
+each change of `ICultureState`, and reads its strings through a locale bound to the state, which
+`Forma.Framework.Localization` creates, so a render that work begun before the switch asks for is in
+the new culture too:
 
 ```razor
 @implements IDisposable
 @inject ICultureState CultureState
+@inject IStringLocaleFactory LocaleFactory
+
+<p>@(_isSaved ? L["Saved."] : L["Not saved yet."])</p>
 
 @code {
+    private IStringLocale? _locale;
+    private bool _isSaved;
+
+    private IStringLocale L
+        => _locale ??= LocaleFactory.Create(GetType(), CultureState);
+
     protected override void OnInitialized()
         => CultureState.Subscribe(RenderAgainAsync);
 
@@ -217,6 +228,11 @@ each change, as Forma's components do:
         => InvokeAsync(StateHasChanged);
 }
 ```
+
+Text that presents the component's current state, as `_isSaved` does here, is looked up as the
+component renders, and a label it builds once, such as an option it offers, it builds again before it
+renders again, keeping the reader's choices among them. Text an event produced, an announcement or a
+validation message, keeps the language it was produced in until the next such event.
 
 ## Building links
 

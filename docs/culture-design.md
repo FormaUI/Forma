@@ -256,7 +256,12 @@ How a switch navigates is the host's choice, made once where it configures cultu
   its circuit with its state, and the circuit's state follows the landing handoff. The pages carry
   their plain routes alone, since the middleware removes the culture segment before routing. An island
   keeps the markup it rendered before the switch until it renders again, so a host's own interactive
-  components follow by subscribing to the state, as Forma's do.
+  components follow as Forma's do: they render again on each change of the state, and read their strings
+  and cultures from the state, as [output](#output-takes-its-culture-from-the-state) sets out, so a
+  render that work begun before the switch asks for is in the new culture too. Text that presents the
+  component's current state, such as the labels of the options it offers, follows the change: a label
+  the component builds once it builds again on each change, keeping the reader's choices among it. Text
+  an event produced keeps its language, as [the contract](#the-contract) sets out.
 
 The state follows the address at the event that settles each kind of navigation:
 
