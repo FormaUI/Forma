@@ -6,7 +6,6 @@
 @using Forma.Framework.Localization
 @using Forma.Framework.Localization.Json
 @using Forma.Framework.Localization.Language
-@inject IStringLocale<LocalizationPage> L
 @inject CultureRouter Router
 
 <h1>Localization</h1>
@@ -19,11 +18,11 @@
             <tbody>
                 <tr>
                     <th>@L["Locale files are read for"]</th>
-                    <td><code dir="ltr">@CultureInfo.CurrentUICulture.Name</code></td>
+                    <td><code dir="ltr">@CultureState.UICulture.Name</code></td>
                 </tr>
                 <tr>
                     <th>@L["Numbers and dates format for"]</th>
-                    <td><code dir="ltr">@CultureInfo.CurrentCulture.Name</code></td>
+                    <td><code dir="ltr">@CultureState.Culture.Name</code></td>
                 </tr>
                 <tr>
                     <th>@L["Plural rules follow"]</th>
@@ -31,7 +30,7 @@
                 </tr>
                 <tr>
                     <th>@L["Writing direction"]</th>
-                    <td>@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? L["right to left"] : L["left to right"])</td>
+                    <td>@(CultureState.UICulture.TextInfo.IsRightToLeft ? L["right to left"] : L["left to right"])</td>
                 </tr>
             </tbody>
         </table>
@@ -116,7 +115,7 @@
                 @foreach (var sample in Samples)
                 {
                     <tr>
-                        <td><code dir="ltr">@sample.ToString(CultureInfo.CurrentCulture)</code></td>
+                        <td><code dir="ltr">@sample.ToString(CultureState.Culture)</code></td>
                         <td><code dir="ltr">@GetCategory(sample)</code></td>
                     </tr>
                 }
@@ -275,12 +274,6 @@
 
     private static readonly PluralExpressionEvaluator PluralFormat = new(CommonPluralRuleSet.Default);
 
-    private static readonly IStringLocale EnglishSource =
-        new JsonStringLocaleFactory().Create(typeof(LocalizationPage));
-
-    private static readonly IStringLocale HebrewSource =
-        new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he" }).Create(typeof(LocalizationPage));
-
     private const string AssemblyFileKey = "Written in the root's file";
     private const string NamespaceFileKey = "Written in a parent folder's file";
     private const string TypeFileKey = "Written in the page's folder's file";
@@ -294,34 +287,32 @@
         (HostOnlyKey, ".locales/Forma.Blazor.Showcase/.locales/{culture}.json"),
     ];
 
-    private static readonly IStringLocale WithoutHostFiles =
-        new JsonStringLocaleFactory(new LocalizationOptions { LocalesPath = string.Empty }).Create(typeof(LocalizationPage));
-
     private int _written = 5;
     private int _allowed = 280;
     private decimal _count = 1m;
     private int _page = 1;
 
-    private static string Language
-        => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    private string Language
+        => CultureState.UICulture.TwoLetterISOLanguageName;
 
     private CultureRoute French
         => Router.Routes.First(route => route.Token == "fr");
 
-    // Looks the key up under French and restores the culture on screen at once.
+    private IStringLocale EnglishSource
+        => field ??= new JsonStringLocaleFactory().Create(typeof(LocalizationPage), CultureState);
+
+    private IStringLocale HebrewSource
+        => field ??= new JsonStringLocaleFactory(new LocalizationOptions { SourceLanguage = "he" }).Create(typeof(LocalizationPage), CultureState);
+
+    private IStringLocale WithoutHostFiles
+        => field ??= new JsonStringLocaleFactory(new LocalizationOptions { LocalesPath = string.Empty }).Create(typeof(LocalizationPage), CultureState);
+
+    // Looks the key up under French, leaving the culture on screen as it is.
     private string GetFrench(string key)
     {
-        var current = CultureInfo.CurrentUICulture;
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr");
+        var french = CultureInfo.GetCultureInfo("fr");
 
-        try
-        {
-            return L[key].Value;
-        }
-        finally
-        {
-            CultureInfo.CurrentUICulture = current;
-        }
+        return L.WithCulture(french, french)[key].Value;
     }
 
     private Task HandlePageChangedAsync(int page)
@@ -334,7 +325,7 @@
     private LocalizedPattern Pattern
         => L.Resolve("{Written} of {Allowed} characters", _written, _allowed);
 
-    private static string GetCategory(decimal count)
+    private string GetCategory(decimal count)
     {
         var category = CommonPluralRuleSet.Default.Select(Language, PluralOperands.From(count));
 
@@ -342,9 +333,9 @@
     }
 
     // Both rows format the count directly.
-    private static string GetGroupedCount(decimal count)
-        => PluralFormat.Evaluate(GroupedFormat, CultureInfo.CurrentCulture, LocalizedFormat.Bind(GroupedFormat, count));
+    private string GetGroupedCount(decimal count)
+        => PluralFormat.Evaluate(GroupedFormat, CultureState.Culture, LocalizedFormat.Bind(GroupedFormat, count));
 
-    private static string GetRawCount(decimal count)
-        => LocalizedFormat.Render(RawFormat, LocalizedFormat.Bind(RawFormat, count), CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+    private string GetRawCount(decimal count)
+        => LocalizedFormat.Render(RawFormat, LocalizedFormat.Bind(RawFormat, count), CultureState.Culture, CultureState.UICulture);
 }

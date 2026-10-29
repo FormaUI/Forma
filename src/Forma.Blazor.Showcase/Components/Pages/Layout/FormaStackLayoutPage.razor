@@ -1,9 +1,7 @@
 @page "/stack-layout"
 @attribute [ShowcasePage("FormaStackLayout")]
 @rendermode InteractiveServer
-@using System.Globalization
 @using Forma.Blazor.Components.Layout
-@inject IStringLocale<FormaStackLayoutPage> L
 
 <h1>FormaStackLayout</h1>
 <p class="description">@L["Lays backdrops along one axis, one seam apart. The seam is one spacing step of the parent showing between them; a splitter placed between two backdrops stands in it and takes no room of its own."]</p>
@@ -51,7 +49,7 @@
             </FormaStackLayout>
         </FormaBackdrop>
     </div>
-    <p class="demo-note">@L["Width"]: <code>@_sidebarWidth.ToString("0.#", CultureInfo.CurrentCulture) rem</code></p>
+    <p class="demo-note">@L["Width"]: <code>@_sidebarWidth.ToString("0.#", CultureState.Culture) rem</code></p>
 </div>
 
 <div class="demo-section">

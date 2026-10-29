@@ -1,11 +1,8 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Files;
 
-using System.Globalization;
-
 using Forma.Blazor.Components.Files;
 using Forma.Blazor.Showcase.Features.Upload;
 using Forma.Framework.Files;
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
@@ -20,8 +17,6 @@ public sealed partial class FormaFileUploaderPage
 
     private const long SmallLimit = 4L * 1024;
 
-    [Inject] private IStringLocale<FormaFileUploaderPage> L { get; set; } = default!;
-
     [Inject] private SandboxAssets Sandbox { get; set; } = default!;
 
     private readonly Dictionary<string, List<string>> _logs = [];
@@ -30,17 +25,17 @@ public sealed partial class FormaFileUploaderPage
 
     private readonly Dictionary<string, DefaultFileStore> _stores = [];
 
-    private static string LargeMarkup
+    private string LargeMarkup
         => Limit(LargeLimit);
 
-    private static string MediumMarkup
+    private string MediumMarkup
         => Limit(MediumLimit);
 
-    private static string SmallMarkup
+    private string SmallMarkup
         => Limit(SmallLimit);
 
-    private static string Limit(long bytes)
-        => $"""<bdi dir="ltr">{ResourceFormatter.FromByteCount(bytes, CultureInfo.CurrentCulture)}</bdi>""";
+    private string Limit(long bytes)
+        => $"""<bdi dir="ltr">{ResourceFormatter.FromByteCount(bytes, CultureState.Culture)}</bdi>""";
 
     /// <inheritdoc />
     protected override void OnInitialized()

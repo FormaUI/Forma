@@ -1,6 +1,5 @@
 @page "/data-view/tree"
 @rendermode InteractiveServer
-@inject IStringLocale<FormaDataViewPage> L
 
 <h1>FormaDataView</h1>
 <p class="description">@L["This tab shows the tree as a view of the data view over a folder hierarchy: the folders as nodes under their parents, opened and closed from their disclosures and the keyboard, and standing beside the grid as a sidebar whose chosen folder the grid shows the contents of."]</p>
@@ -84,6 +83,10 @@
     private IQueryable<ShowcaseEntry> _changingEntries = DataViewShowcaseFolders.All;
     private FormaDataView<ShowcaseEntry> _changingView = default!;
     private bool _changingSelects;
+
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaDataViewPage);
 
     // Takes the entries away from the source, with everything under them.
     private async Task RemoveLaterAsync(params int[] ids)

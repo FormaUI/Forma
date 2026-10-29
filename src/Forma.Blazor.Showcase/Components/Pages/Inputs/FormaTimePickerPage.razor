@@ -2,11 +2,9 @@
 @attribute [ShowcasePage("FormaTimePicker")]
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
-@using System.Globalization
 @using Microsoft.AspNetCore.Components.Forms
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Inputs
-@inject IStringLocale<FormaTimePickerPage> L
 
 <h1>FormaTimePicker</h1>
 <p class="description">@L["A field for a time of day, typed as the formatting culture writes it or chosen from a list of suggested times. The down arrow opens the list, the arrows move through it, Enter takes the highlighted time and Escape closes it without taking one. A time the field cannot take is reported under it and never written."]</p>
@@ -75,7 +73,7 @@
         <p class="description">@L["Bound to a time rather than a nullable one, the field always holds a time: clearing it reports the field and keeps the time it held until another is entered."]</p>
         <div class="demo-box">
             <FormaTimePicker @bind-Value="Model.Alarm" Label="@L["Alarm"]" />
-            <p class="demo-note">@L["Value"]: <code>@Model.Alarm.ToString("t", CultureInfo.CurrentCulture)</code></p>
+            <p class="demo-note">@L["Value"]: <code>@Model.Alarm.ToString("t", CultureState.Culture)</code></p>
         </div>
     </div>
 
@@ -106,13 +104,13 @@
     protected override void OnInitialized()
         => Model = new TimePickerDemoModel(L) { Arrival = new TimeOnly(9, 30, 45), Alarm = new TimeOnly(7, 0), Locked = new TimeOnly(12, 0) };
 
-    private static string FormatValue(TimeOnly? time)
-        => time?.ToString("T", CultureInfo.CurrentCulture) ?? "null";
+    private string FormatValue(TimeOnly? time)
+        => time?.ToString("T", CultureState.Culture) ?? "null";
 
     private void HandleSubmit()
         => _submitted = true;
 
-    private sealed class TimePickerDemoModel(IStringLocale<FormaTimePickerPage> localizer) : IValidatableObject
+    private sealed class TimePickerDemoModel(IStringLocale localizer) : IValidatableObject
     {
         public TimeOnly? Start { get; set; }
         public TimeOnly? Arrival { get; set; }

@@ -1,7 +1,6 @@
 @page "/dialog"
 @attribute [ShowcasePage("FormaDialog")]
 @rendermode InteractiveServer
-@inject IStringLocale<FormaDialogPage> L
 
 <h1>FormaDialog</h1>
 <p class="description">@L["A dialog that holds the page until it is answered. It is the browser's own dialog underneath, so focus stays inside it, Escape closes it and a screen reader treats it as modal without the library reimplementing any of that."]</p>

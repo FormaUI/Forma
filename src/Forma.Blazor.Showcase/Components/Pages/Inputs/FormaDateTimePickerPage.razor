@@ -6,7 +6,6 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Inputs
-@inject IStringLocale<FormaDateTimePickerPage> L
 
 <h1>FormaDateTimePicker</h1>
 <p class="description">@L["A field for one value holding a date and its time: the date picked from a calendar, the time typed or chosen from a list of suggested times, under one label. Either half entered alone is held until the other comes, and reported once the focus leaves the field."]</p>
@@ -72,7 +71,7 @@
         <p class="description">@L["Bound to a date with a time rather than a nullable one, the field always holds a value: clearing a half reports it and keeps the value until the half is entered again."]</p>
         <div class="demo-box">
             <FormaDateTimePicker @bind-Value="Model.Reminder" Label="@L["Reminder"]" />
-            <p class="demo-note">@L["Value"]: <code>@Model.Reminder.ToString("g", CultureInfo.CurrentCulture)</code></p>
+            <p class="demo-note">@L["Value"]: <code>@Model.Reminder.ToString("g", CultureState.Culture)</code></p>
         </div>
     </div>
 
@@ -111,7 +110,7 @@
     private void HandleSubmit()
         => _submitted = true;
 
-    private sealed class DateTimePickerDemoModel(IStringLocale<FormaDateTimePickerPage> localizer) : IValidatableObject
+    private sealed class DateTimePickerDemoModel(IStringLocale localizer) : IValidatableObject
     {
         public DateTime? Start { get; set; }
         public DateTime? Appointment { get; set; }

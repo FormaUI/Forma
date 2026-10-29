@@ -1,7 +1,6 @@
 @page "/data-view/cards"
 @rendermode InteractiveServer
 @using Forma.Framework.Css
-@inject IStringLocale<FormaDataViewPage> L
 
 <h1>FormaDataView</h1>
 <p class="description">@L["This tab shows the cards as a view of the data view: each product a card with its thumbnail, its name, its price and an action bar the page templates, packed across the width and grouped by category."]</p>
@@ -18,7 +17,7 @@
             <ChildContent>
                 <FormaDataCards TItem="ShowcaseProduct" CardSize="@CssLength.FromRem(11)">
                     <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
-                    <ItemTemplate Context="product">@product.Price.ToString("C0", System.Globalization.CultureInfo.CurrentCulture)</ItemTemplate>
+                    <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
                     <ActionsTemplate Context="product">
                         <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" OnClick="() => _lastAction = product.Name">@L["Open"]</FormaButton>
                     </ActionsTemplate>
@@ -81,6 +80,10 @@
     private string? _lastAction;
 
     private bool _isNarrow;
+
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaDataViewPage);
 
     private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selected)
         => _checkedProducts = selected;

@@ -62,11 +62,13 @@ home page and the tabs are read from the attribute and the folder at startup. A 
 heading and a description, followed by a section per scenario, each with a heading and a box, and
 its strings are a section of the category folder's `.locales` files. Every component under
 `Components/Pages/` derives `ShowcaseComponentBase` through the folder's `_Imports.razor`, so it renders
-again when the culture changes in place; one that releases something of its own overrides
-`Dispose(bool)`.
+again when the culture changes in place, reads its strings through the base's `L` and formats by its
+`CultureState`; a label it builds once it builds again in `OnCultureChangedAsync`, and one that releases
+something of its own overrides `Dispose(bool)`.
 
 A variant is a sibling file named `FormaXPage.{Variant}.razor` with a route of its own; it joins
-`FormaXPage`'s tabs by its name. The repository's component authoring guide states what a page
+`FormaXPage`'s tabs by its name, and reads `FormaXPage`'s strings by overriding
+`LocalizationSourceType`. The repository's component authoring guide states what a page
 must render.
 
 ## License

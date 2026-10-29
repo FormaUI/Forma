@@ -6,7 +6,6 @@
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Inputs
 @using Forma.Blazor.Models
-@inject IStringLocale<FormaDateRangePickerPage> L
 
 <h1>FormaDateRangePicker</h1>
 <p class="description">@L["A field for a range of dates, picked from two months side by side with presets for the usual spans. The range is one value, committed once both ends are picked. Month and day names follow the culture, and the calendar mirrors for a right-to-left reader."]</p>
@@ -82,7 +81,7 @@
         return L["{Days} from {Start} to {End}", days, period.Start, period.End];
     }
 
-    private sealed class DateRangePickerDemoModel(IStringLocale<FormaDateRangePickerPage> localizer) : IValidatableObject
+    private sealed class DateRangePickerDemoModel(IStringLocale localizer) : IValidatableObject
     {
         public DateRange? Period { get; set; }
         public DateRange? Stay { get; set; }

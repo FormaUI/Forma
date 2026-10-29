@@ -5,7 +5,6 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Inputs
-@inject IStringLocale<FormaCheckBoxPage> L
 
 <h1>FormaCheckBox</h1>
 <p class="description">@L["A checkbox bound to a Boolean, with a third, indeterminate state for a choice that governs others. A caller can also take the checked state over entirely, which is what a select-all needs when only some of its children are checked."]</p>
@@ -92,7 +91,7 @@
     private void HandleSubmit()
         => _submitted = true;
 
-    private sealed class CheckBoxDemoModel(IStringLocale<FormaCheckBoxPage> localizer) : IValidatableObject
+    private sealed class CheckBoxDemoModel(IStringLocale localizer) : IValidatableObject
     {
         public bool Subscribed { get; set; }
         public bool Featured { get; set; }

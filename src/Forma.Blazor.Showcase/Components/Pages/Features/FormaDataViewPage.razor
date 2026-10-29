@@ -27,11 +27,11 @@
                 </FormaDataGrid>
                 <FormaDataList TItem="ShowcaseProduct">
                     <ThumbnailTemplate Context="product"><span class="demo-thumbnail demo-thumbnail-small"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></span></ThumbnailTemplate>
-                    <ItemTemplate Context="product">@product.Price.ToString("C0", System.Globalization.CultureInfo.CurrentCulture)</ItemTemplate>
+                    <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
                 </FormaDataList>
                 <FormaDataCards TItem="ShowcaseProduct">
                     <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
-                    <ItemTemplate Context="product">@product.Category · @product.Price.ToString("C0", System.Globalization.CultureInfo.CurrentCulture)</ItemTemplate>
+                    <ItemTemplate Context="product">@product.Category · @product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
                 </FormaDataCards>
             </ChildContent>
             <Status>@L["{Selected} of {Total} selected.", _selectedProducts.Count, DataViewShowcaseProducts.All.Count()]</Status>

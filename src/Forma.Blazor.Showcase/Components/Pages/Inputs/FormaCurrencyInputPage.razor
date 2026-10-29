@@ -2,11 +2,9 @@
 @attribute [ShowcasePage("FormaCurrencyInput")]
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
-@using System.Globalization
 @using Microsoft.AspNetCore.Components.Forms
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Inputs
-@inject IStringLocale<FormaCurrencyInputPage> L
 
 <h1>FormaCurrencyInput</h1>
 <p class="description">@L["A field for an amount in a currency the application names. The amount is typed as the reader's culture writes a number, the currency's symbol stands where that culture writes it, and the currency decides how many decimal places an amount carries."]</p>
@@ -75,7 +73,7 @@
         <p class="description">@L["Bound to an amount rather than a nullable one, the field always holds an amount: clearing it reports the field and keeps the amount it held until another is entered."]</p>
         <div class="demo-box">
             <FormaCurrencyInput @bind-Value="Model.FreeShippingFrom" CurrencyCode="USD" Label="@L["Free Shipping From"]" Min="0" />
-            <p class="demo-note">@L["Value"]: <code>@Model.FreeShippingFrom.ToString(CultureInfo.CurrentCulture)</code></p>
+            <p class="demo-note">@L["Value"]: <code>@Model.FreeShippingFrom.ToString(CultureState.Culture)</code></p>
         </div>
     </div>
 
@@ -98,13 +96,13 @@
     protected override void OnInitialized()
         => Model = new CurrencyInputDemoModel(L) { Shekels = 30m, Yen = 1200m, Dinars = 12.5m, FreeShippingFrom = 50m, Locked = 19.99m };
 
-    private static string FormatValue(decimal? value)
-        => value?.ToString(CultureInfo.CurrentCulture) ?? "null";
+    private string FormatValue(decimal? value)
+        => value?.ToString(CultureState.Culture) ?? "null";
 
     private void HandleSubmit()
         => _submitted = true;
 
-    private sealed class CurrencyInputDemoModel(IStringLocale<FormaCurrencyInputPage> localizer) : IValidatableObject
+    private sealed class CurrencyInputDemoModel(IStringLocale localizer) : IValidatableObject
     {
         public decimal? Price { get; set; }
         public decimal? Shekels { get; set; }

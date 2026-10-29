@@ -1,7 +1,6 @@
 @using Forma.Blazor.Components.Inputs
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @inject IEmojiCatalog Catalog
-@inject IStringLocale<FormaEmojiPage> L
 
 <div class="demo-section">
     <h2>@L["Every Emoji"] <span class="demo-count">@_total</span></h2>
@@ -35,6 +34,10 @@
     private IReadOnlyList<(EmojiGroup Group, List<EmojiInfo[]> Rows)> _groups = [];
 
     private int _total;
+
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaEmojiPage);
 
     /// <inheritdoc />
     protected override void OnInitialized()

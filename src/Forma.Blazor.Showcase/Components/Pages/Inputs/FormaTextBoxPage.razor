@@ -6,7 +6,6 @@
 @using Forma.Blazor.Components.Inputs
 @using Forma.Framework.Css
 @using Microsoft.AspNetCore.Components.Forms
-@inject IStringLocale<FormaTextBoxPage> L
 
 <h1>FormaTextBox</h1>
 <p class="description">@L["A plain single-line text field: the box every Forma input draws, without the floating label and validation chrome FormaField adds. It needs no surrounding form, which is what makes it the one to reach for in a toolbar, a filter row or a grid cell."]</p>
@@ -228,14 +227,21 @@
     private PatternModel _patternModel = default!;
     private string? _statusMessage;
     private string? _patternStatus;
+    private string? _sampleName;
 
     protected override void OnInitialized()
     {
         _validationModel = new ValidationModel(L);
         _patternModel = new PatternModel(L);
-        _model.Name = L["Acme Corp"].Value;
-        _model.DisabledValue = L["Locked by an administrator"].Value;
-        _model.ReadOnlyValue = L["Generated on save"].Value;
+        WriteSamples();
+    }
+
+    /// <inheritdoc />
+    protected override Task OnCultureChangedAsync()
+    {
+        WriteSamples();
+
+        return Task.CompletedTask;
     }
 
     private void HandleValidationSubmit()
@@ -243,6 +249,18 @@
 
     private void HandlePatternSubmit()
         => _patternStatus = L["Saved."].Value;
+
+    // Writes the sample texts in the current language, keeping a name the reader changed as they typed it.
+    private void WriteSamples()
+    {
+        if (_model.Name == _sampleName)
+        {
+            _model.Name = _sampleName = L["Acme Corp"].Value;
+        }
+
+        _model.DisabledValue = L["Locked by an administrator"].Value;
+        _model.ReadOnlyValue = L["Generated on save"].Value;
+    }
 
     private void AddTag()
     {
@@ -283,7 +301,7 @@
         public string? ShortLabelled { get; set; }
     }
 
-    private sealed class PatternModel(IStringLocale<FormaTextBoxPage> localizer) : IValidatableObject
+    private sealed class PatternModel(IStringLocale localizer) : IValidatableObject
     {
         public string? Code { get; set; }
 
@@ -296,7 +314,7 @@
         }
     }
 
-    private sealed class ValidationModel(IStringLocale<FormaTextBoxPage> localizer) : IValidatableObject
+    private sealed class ValidationModel(IStringLocale localizer) : IValidatableObject
     {
         public string? Title { get; set; }
 

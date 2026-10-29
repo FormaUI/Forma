@@ -8,10 +8,7 @@ using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
-
-using Microsoft.AspNetCore.Components;
 
 /// <summary>Showcase page demonstrating the FormaExplorer component.</summary>
 public sealed partial class FormaExplorerPage
@@ -106,8 +103,6 @@ public sealed partial class FormaExplorerPage
 
     private void ToggleColumn(ExplorerDetailsColumns column, bool show)
         => _detailsColumns = show ? _detailsColumns | column : _detailsColumns & ~column;
-
-    [Inject] private IStringLocale<FormaExplorerPage> L { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized()

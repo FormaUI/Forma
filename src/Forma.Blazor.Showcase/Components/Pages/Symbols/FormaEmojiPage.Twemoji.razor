@@ -1,6 +1,5 @@
 @page "/emoji/twemoji"
 @rendermode InteractiveServer
-@inject IStringLocale<FormaEmojiPage> L
 
 <h1>FormaEmoji</h1>
 <p class="description">@L["One emoji, drawn through whichever provider the host registered."]</p>
@@ -47,4 +46,8 @@
 
 @code {
     private static readonly IEmojiProvider Twemoji = new TwemojiEmojiProvider();
+
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaEmojiPage);
 }

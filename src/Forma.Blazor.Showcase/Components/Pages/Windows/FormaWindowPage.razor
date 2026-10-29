@@ -1,14 +1,12 @@
 @page "/window"
 @attribute [ShowcasePage("FormaWindow")]
 @rendermode InteractiveServer
-@using System.Globalization
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Layout
 @using Forma.Blazor.Components.Windows
 @using Forma.Framework.Icons
 @using Forma.Framework.Windows
 @using Forma.Blazor.Components.Inputs
-@inject IStringLocale<FormaWindowPage> L
 @inject WindowManager Manager
 
 <h1>FormaWindow</h1>
@@ -135,7 +133,7 @@
         <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Bring the first instance to the front"], () => Manager.BringToFrontAsync(new WindowSelector { InstanceId = _explorerA.InstanceId })))">@L["Bring the First Instance to the Front"]</FormaButton>
         <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="FindByTitle">@L["Find Every Preview"]</FormaButton>
         <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="FindDescendants" Disabled="!_isExplorerAOpen">@L["Find the First Explorer's Descendants"]</FormaButton>
-        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="RenameOrigin">@(_explorerA.OriginName == L["Explorer"] ? L["Rename the Origin to Files"] : L["Rename the Origin to Explorer"])</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="RenameOrigin">@(_isOriginRenamed ? L["Rename the Origin to Explorer"] : L["Rename the Origin to Files"])</FormaButton>
         <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Close the first by reference"], () => Manager.CloseAsync(new WindowSelector { Window = _explorerAWindow })))" Disabled="!_isExplorerAOpen">@L["Close the First by Reference"]</FormaButton>
         <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Close by origin"], () => Manager.CloseAsync(new WindowSelector { OriginId = ExplorerOriginId })))">@L["Close by Origin"]</FormaButton>
     </div>
@@ -283,6 +281,7 @@
     private const string ExplorerOriginId = "explorer";
     private WindowOrigin _explorerA = WindowOrigin.NewInstance(ExplorerOriginId, "Explorer");
     private WindowOrigin _explorerB = WindowOrigin.NewInstance(ExplorerOriginId, "Explorer");
+    private bool _isOriginRenamed;
     private FormaWindow? _explorerAWindow;
     private FormaWindow? _explorerBWindow;
     private FormaWindow? _previewAWindow;
@@ -299,9 +298,7 @@
 
     protected override void OnInitialized()
     {
-        _libraryOrigin = _libraryOrigin with { OriginName = L["Library"] };
-        _explorerA = _explorerA with { OriginName = L["Explorer"] };
-        _explorerB = _explorerB with { OriginName = L["Explorer"] };
+        NameOrigins();
         Manager.Changed += HandleWorkspaceChanged;
         _studio.Changed += HandleWorkspaceChanged;
     }
@@ -317,6 +314,14 @@
         base.Dispose(disposing);
     }
 
+    /// <inheritdoc />
+    protected override Task OnCultureChangedAsync()
+    {
+        NameOrigins();
+
+        return Task.CompletedTask;
+    }
+
     private void HandleWorkspaceChanged(object? sender, EventArgs args)
         => _ = InvokeAsync(StateHasChanged);
 
@@ -328,6 +333,7 @@
         try
         {
             var result = await operate();
+
             var titles = result.Windows.Count == 0 ? L["no windows"] : string.Join(", ", result.Windows.Select(window => window.Title));
 
             Log($"{operation}: {GetOutcomeText(result.Outcome)} ({titles})");
@@ -352,11 +358,10 @@
 
     private void RenameOrigin()
     {
-        var name = _explorerA.OriginName == L["Explorer"] ? L["Files"] : L["Explorer"];
+        _isOriginRenamed = !_isOriginRenamed;
 
-        _explorerA = _explorerA with { OriginName = name };
-        _explorerB = _explorerB with { OriginName = name };
-        Log(L["Origin renamed to {Name}; identities unchanged", name]);
+        NameOrigins();
+        Log(L["Origin renamed to {Name}; identities unchanged", GetExplorerOriginName(_isOriginRenamed)]);
     }
 
     private async Task ActivateAccountAsync()
@@ -376,6 +381,17 @@
             _ => L["declined"],
         };
 
+    // The origins keep their identities; only the names they show follow the culture and the rename.
+    private void NameOrigins()
+    {
+        _libraryOrigin = _libraryOrigin with { OriginName = L["Library"] };
+        _explorerA = _explorerA with { OriginName = GetExplorerOriginName(_isOriginRenamed) };
+        _explorerB = _explorerB with { OriginName = GetExplorerOriginName(_isOriginRenamed) };
+    }
+
+    private string GetExplorerOriginName(bool isRenamed)
+        => isRenamed ? L["Files"] : L["Explorer"];
+
     private void Log(string entry)
     {
         _log.Insert(0, entry);
@@ -392,6 +408,6 @@
     }
 
     private string PlacementText => _placement is { } placement
-        ? string.Create(CultureInfo.CurrentCulture, $"{placement.Left:0} × {placement.Top:0}, {placement.Width:0} × {placement.Height:0}")
+        ? string.Create(CultureState.Culture, $"{placement.Left:0} × {placement.Top:0}, {placement.Width:0} × {placement.Height:0}")
         : L["centered"];
 }

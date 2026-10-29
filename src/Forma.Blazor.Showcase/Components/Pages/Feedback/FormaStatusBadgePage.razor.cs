@@ -4,17 +4,14 @@ using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Css;
 using Forma.Framework.Feedback;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 public sealed partial class FormaStatusBadgePage
 {
-    [Inject] private IStringLocale<FormaStatusBadgePage> L { get; set; } = default!;
-
     [Inject] private IStatusBadgeCatalog Catalog { get; set; } = default!;
 
-    private (string Name, string Label)[] OrderStatuses => field ??=
+    private (string Name, string Label)[] OrderStatuses =>
     [
         ("order-new", L["New order"]),
         ("order-progress", L["Being handled"]),

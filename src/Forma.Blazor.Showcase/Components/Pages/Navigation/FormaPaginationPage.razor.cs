@@ -1,13 +1,9 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Navigation;
 
 using Forma.Blazor.Components.Navigation;
-using Forma.Framework.Localization;
-
-using Microsoft.AspNetCore.Components;
 
 public sealed partial class FormaPaginationPage
 {
-    [Inject] private IStringLocale<FormaPaginationPage> L { get; set; } = default!;
 
     private static readonly PaginationOptions InputByOption =
         new() { NavigationInput = true };

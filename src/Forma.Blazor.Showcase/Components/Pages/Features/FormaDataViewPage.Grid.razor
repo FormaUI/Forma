@@ -3,7 +3,6 @@
 @using System.ComponentModel.DataAnnotations
 @using Forma.Blazor.Components.Inputs
 @using Microsoft.AspNetCore.Components.Web.Virtualization
-@inject IStringLocale<FormaDataViewPage> L
 
 <h1>FormaDataView</h1>
 <p class="description">@L["This tab shows the grid as a view of the data view: the products as rows with sortable headers and a box per row, the master control and the selection the engine's, as they are in every other view."]</p>
@@ -607,6 +606,10 @@
     private FormaDataGrid<EditableEmployee>? _editGrid;
 
     /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaDataViewPage);
+
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _feedItems = _feedList.AsQueryable();
@@ -614,7 +617,21 @@
         _assignmentItems = _assignments.AsQueryable();
         _blockGrouping = DataViewGrouping<GridItem>.By(item => (item.Id - 1) / BlockRowCount, block => L["Rows {First:N0} to {Last:N0}", (block * BlockRowCount) + 1, (block + 1) * BlockRowCount].Value);
 
-        _limitsOptions = new CheckedSelectionOptions
+        _limitsOptions = CreateLimitsOptions();
+        _priorityOptions = CreatePriorityOptions();
+    }
+
+    /// <inheritdoc />
+    protected override Task OnCultureChangedAsync()
+    {
+        _limitsOptions = CreateLimitsOptions();
+        _priorityOptions = CreatePriorityOptions();
+
+        return Task.CompletedTask;
+    }
+
+    private CheckedSelectionOptions CreateLimitsOptions()
+        => new()
         {
             Maximum = SelectionLimit,
             Caption = new CheckedSelectionCaption
@@ -624,13 +641,14 @@
             },
         };
 
-        _priorityOptions =
+    // The options keep their values, so each assignment keeps its priority.
+    private List<SelectOption<int?>> CreatePriorityOptions()
+        =>
         [
             new(1, L["Low"]),
             new(2, L["Normal"]),
             new(3, L["High"]),
         ];
-    }
 
     private void HandleSelectionChanged(IReadOnlyList<Employee> selected)
         => _selectedEmployees = selected;

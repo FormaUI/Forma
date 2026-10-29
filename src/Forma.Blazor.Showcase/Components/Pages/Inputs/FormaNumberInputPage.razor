@@ -7,7 +7,6 @@
 @using Forma.Blazor.Components.Inputs
 @using Forma.Framework.Css
 @using System.Globalization
-@inject IStringLocale<FormaNumberInputPage> L
 
 <h1>FormaNumberInput</h1>
 <p class="description">@L["A field for a number, typed the way the formatting culture writes it and stepped with the up and down arrows. A number it cannot read, or one past its limits, is reported under the field and never written, so the model keeps the last number that was."]</p>
@@ -20,7 +19,7 @@
         <p class="description">@L["A whole number that can be empty. Type one, or press the up and down arrows; a word in place of a number is reported under the field."]</p>
         <div class="demo-box">
             <FormaNumberInput @bind-Value="Model.Quantity" Label="@L["Quantity"]" />
-            <p class="demo-note">@L["Value"]: <code>@(Model.Quantity?.ToString(CultureInfo.CurrentCulture) ?? "null")</code></p>
+            <p class="demo-note">@L["Value"]: <code>@(Model.Quantity?.ToString(CultureState.Culture) ?? "null")</code></p>
         </div>
     </div>
 
@@ -29,7 +28,7 @@
         <p class="description">@L["A decimal filled in already, stepped by half a unit and never below zero. It is written with the separators of the formatting culture, and a thousands separator is read only where it groups the digits as the culture does, so 1,234 is taken while 1,5 is reported rather than guessed at."]</p>
         <div class="demo-box">
             <FormaNumberInput @bind-Value="Model.Price" Label="@L["Price"]" Min="0" Step="0.5m" />
-            <p class="demo-note">@L["Value"]: <code>@(Model.Price?.ToString(CultureInfo.CurrentCulture) ?? "null")</code></p>
+            <p class="demo-note">@L["Value"]: <code>@(Model.Price?.ToString(CultureState.Culture) ?? "null")</code></p>
         </div>
     </div>
 
@@ -78,7 +77,7 @@
         <p class="description">@L["Bound to a number rather than a nullable one, the field always holds a number: clearing it reports the field and keeps the number it held until another is entered."]</p>
         <div class="demo-box">
             <FormaNumberInput @bind-Value="Model.UsageLimit" Label="@L["Usage Limit"]" Min="0" />
-            <p class="demo-note">@L["Value"]: <code>@Model.UsageLimit.ToString(CultureInfo.CurrentCulture)</code></p>
+            <p class="demo-note">@L["Value"]: <code>@Model.UsageLimit.ToString(CultureState.Culture)</code></p>
         </div>
     </div>
 
@@ -125,7 +124,7 @@
     private void HandleSubmit()
         => _submitted = true;
 
-    private sealed class NumberInputDemoModel(IStringLocale<FormaNumberInputPage> localizer) : IValidatableObject
+    private sealed class NumberInputDemoModel(IStringLocale localizer) : IValidatableObject
     {
         public int? Quantity { get; set; }
         public decimal? Price { get; set; }

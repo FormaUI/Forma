@@ -2,16 +2,12 @@ namespace Forma.Blazor.Showcase.Components.Pages.Files;
 
 using Forma.Blazor.Components.Files;
 using Forma.Framework.Files;
-using Forma.Framework.Localization;
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 public sealed partial class FormaImagePickerPage
 {
     private readonly Dictionary<string, List<string>> _logs = [];
-
-    [Inject] private IStringLocale<FormaImagePickerPage> L { get; set; } = default!;
 
     private List<string> GetEntries(string key)
     {

@@ -1,12 +1,10 @@
 @page "/frame"
 @attribute [ShowcasePage("FormaFrame")]
 @rendermode InteractiveServer
-@using System.Globalization
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Layout
 @using Forma.Blazor.Components.Symbols
 @using Forma.Framework.Icons
-@inject IStringLocale<FormaFramePage> L
 
 <h1>FormaFrame</h1>
 <p class="description">@L["A raised backdrop with a box of its own. In a layout it takes the room it is given; placed, it stands in the viewport, moved by its drag region and the arrow keys, resized at its edges and with Shift, and maximized to fill its bounds."]</p>
@@ -67,6 +65,6 @@
     private FramePlacement? _placement = new(320, 240, 420, 260);
 
     private string PlacementText => _placement is { } placement
-        ? string.Create(CultureInfo.CurrentCulture, $"{placement.Left:0} × {placement.Top:0}, {placement.Width:0} × {placement.Height:0}")
+        ? string.Create(CultureState.Culture, $"{placement.Left:0} × {placement.Top:0}, {placement.Width:0} × {placement.Height:0}")
         : L["none yet"];
 }

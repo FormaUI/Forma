@@ -1,14 +1,9 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
 using Forma.Blazor.Components.DataView;
-using Forma.Framework.Localization;
-
-using Microsoft.AspNetCore.Components;
 
 public sealed partial class FormaDataViewPage
 {
-    [Inject] private IStringLocale<FormaDataViewPage> L { get; set; } = default!;
-
     private FormaDataView<ShowcaseProduct>? _dataView;
 
     private IReadOnlyList<ShowcaseProduct> _selectedProducts = [];
@@ -18,12 +13,7 @@ public sealed partial class FormaDataViewPage
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _sorts =
-        [
-            new("Name", L["Name"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Name)),
-            new("Category", L["Category"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Category).ThenAscending(product => product.Name)),
-            new("Price", L["Price"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
-        ];
+        => _sorts = CreateSorts();
 
     /// <inheritdoc />
     protected override void OnAfterRender(bool firstRender)
@@ -35,6 +25,22 @@ public sealed partial class FormaDataViewPage
         }
     }
 
+    /// <inheritdoc />
+    protected override Task OnCultureChangedAsync()
+    {
+        _sorts = CreateSorts();
+
+        return Task.CompletedTask;
+    }
+
     private void HandleSelectionChanged(IReadOnlyList<ShowcaseProduct> selected)
         => _selectedProducts = selected;
+
+    private List<DataViewSortOption<ShowcaseProduct>> CreateSorts()
+        =>
+        [
+            new("Name", L["Name"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Name)),
+            new("Category", L["Category"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Category).ThenAscending(product => product.Name)),
+            new("Price", L["Price"], DataViewSort<ShowcaseProduct>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
+        ];
 }

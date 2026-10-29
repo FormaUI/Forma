@@ -2,9 +2,7 @@ namespace Forma.Blazor.Showcase.Components.Pages.Files;
 
 using Forma.Blazor.Components.Files;
 using Forma.Framework.Files;
-using Forma.Framework.Localization;
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 public sealed partial class FormaFilePickerPage
@@ -12,8 +10,6 @@ public sealed partial class FormaFilePickerPage
     private const long MaxSizeBytes = 204_800;
 
     private readonly Dictionary<string, List<string>> _logs = [];
-
-    [Inject] private IStringLocale<FormaFilePickerPage> L { get; set; } = default!;
 
     private static string SizeMarkup
         => $"""<bdi dir="ltr">{MaxSizeBytes / 1024} KB</bdi>""";

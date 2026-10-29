@@ -1,6 +1,5 @@
 @page "/data-view/states"
 @rendermode InteractiveServer
-@inject IStringLocale<FormaDataViewPage> L
 
 <h1>FormaDataView</h1>
 <p class="description">@L["This tab shows the states the data view draws around its items: nothing to show, a source still answering, a page that gives way when its items go, a selection its bounds refuse, and a tree node asking for its children."]</p>
@@ -107,6 +106,10 @@
     private FormaDataView<ShowcaseProduct>? _shelfDataView;
     private IReadOnlyList<ShowcaseProduct> _bounded = [DataViewShowcaseProducts.All.First()];
     private string? _refusal;
+
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaDataViewPage);
 
     // One queryable over the shelf for the page's life, since the view reloads on a new source.
     private IQueryable<ShowcaseProduct> ShelfItems
