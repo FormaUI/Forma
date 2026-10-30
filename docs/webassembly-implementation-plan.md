@@ -51,61 +51,127 @@ in a scratch copy of the repository patched past each blocker, and drove both in
 
 ## Steps
 
-Each step is built, reviewed and committed on its own.
+Each step is a stage, built and reviewed on its own in as many commits as it takes, each coherent and
+buildable. From the third step on, the browser check's host gates every step beside the step's own
+checks; the Showcase is a smoke check beside it, never the gate.
 
-1. **The client's references.** Every client library references the packages it compiles against in
-   place of the shared framework, which stays with the circuit halves and the culture router's middleware,
-   as the design's [first section](webassembly-design.md#what-a-client-loads) sets out. Gate: the gate,
-   and every client library restoring for `browser-wasm`.
-2. **The product's halves.** `Forma.Blazor.Server` takes `FormaPageHead` and `AddFormaUIServer`, which
-   registers the circuit halves, `Forma.Blazor.WebAssembly` takes `AddFormaUIWebAssembly`, which registers
-   the WebAssembly halves, and `AddFormaUI` registers the culture state and switch itself, as
-   [registration](webassembly-design.md#registration) sets out; the culture's registrars take the same
-   pattern, and the Showcase and the READMEs move to the server half. Gate: the gate, the Showcase
-   unchanged in a browser, and a WebAssembly client referencing the halves building.
-3. **The browser check.** A Web App host of its own in the tests, with Server, WebAssembly and Auto
-   pages, which the gate builds, publishes trimmed and drives in a browser, with runtime async off for
-   every assembly a client loads; the Showcase stays a check made by hand, apart from it. Gate: the check
-   passes interactivity, a popover through interop and binding in each runtime.
-4. **Trimming.** The 27 warnings resolved, each client library `IsTrimmable` with the analyzer on.
-   Gate: the gate with no trim warning, and the browser check on the trimmed publish.
-5. **The switch and the coordinator.** The culture design's switch, as its
-   [section](culture-design.md#one-switch-for-the-page) sets out: the switch and its policies, published by
-   `FormaPageHead` apart from the pair; the versions; the integration contract, resolved from the state's
-   own instance; the coordinator taking the document culture synchronizer's script and ownership;
-   `FormaPageHead` publishing the culture marker; landings by their two paths, the server-rendered one from
-   its own marker and the interactive one through the published mapping, replacing the route handler's
-   resolve-and-reply; the routes, their tokens, their mapping, the address policy's switch, the page base
-   and the route scope moving into the neutral `Forma.Framework.Culture.Router`; routes naming a pair; the
-   registration's three states; the test switch and the local switch. Gate: script tests of the
-   coordinator's ordering, versions, document boundary, adoption on registration, both landing paths, an
-   obsolete landing, a switch waiting out a navigation, a switch waiting on a registration under way and
-   failing with it, the cookie read back before acceptance, the last registration's release leaving the
-   accepted pair, a head update alone changing nothing, a missing or invalid marker failing
-   initialization, and a pair no route names rejected before anything changes; tests that the browser's
-   mapping and the server's agree on every route, pairs included; component tests through the test
-   switch, and a replacement state without the integration rejected; and the culture plan's document and
-   address checks again on the Showcase in a browser.
-6. **The culture under WebAssembly.** The culture's WebAssembly half, its registration at startup and the
-   runtime's current and the process's default cultures on every application, the local switch's
-   included; `AddFormaUIServer` supplying capture on where the configuration names none; the culture
-   arrangement on both product registrars; and the startup check that rejects capture off under
-   coordinated pages. An `IStringLocalizerFactory` over Forma's localization stays optional, adopted only
-   once it proves its contract: both factory overloads map to Forma's resources; missing resources,
-   fallback, enumeration and `ResourceNotFound` behave consistently; resource selection reads the UI
-   culture and argument formatting the formatting culture; its lifetime captures no one user's state; and
-   it coexists with a host's own factory in both registration orders, since `TryAdd` keeps only a factory
-   registered before it. Gate: every check under [To verify](#to-verify), in the browser check's host.
-7. **A host's strings in the browser.** A host's locale files embedded in its client assembly by the
-   package's targets, under resource names and discovery metadata the browser's loader finds. Gate: a
-   consumer of the packed packages, published trimmed, whose host string switches with the library's.
+1. **The client's references.** Every client library references the packages it compiles against in place of
+   the shared framework, which stays with the circuit halves and the culture router, and from step 9 with
+   the router's middleware alone, as the design's [first section](webassembly-design.md#what-a-client-loads)
+   sets out. Gate: the gate, and every client library restoring for `browser-wasm`.
+2. **The product's halves.** `Forma.Blazor.Server` takes `FormaPageHead` and `AddFormaUIServer`, on the
+   host's builder, which registers what `AddFormaUI` does and the circuit halves; `Forma.Blazor.WebAssembly`
+   takes `AddFormaUIWebAssembly`, which registers what `AddFormaUI` does until step 10 gives it the
+   culture's WebAssembly half; and `AddFormaUI` registers the culture state itself, as
+   [registration](webassembly-design.md#registration) sets out. The culture's circuit registrar becomes
+   `AddFormaCultureServer`, the Showcase and the READMEs move to the server half, and each new assembly gets
+   the test project named after it. Gate: the gate, a WebAssembly client referencing the halves building,
+   and the Showcase as a smoke check.
+3. **The browser check.** A Web App host of its own in the tests, with Server, WebAssembly and Auto pages,
+   which the gate builds, publishes and drives in a browser, with runtime async off for every assembly a
+   client loads. The publish's build configuration is recorded, its trim mode and globalization setting
+   among them, with evidence of what it actually trims: each assembly's size before and after the linker, so
+   which of Forma's libraries the publish trims is measured rather than inferred from which are marked
+   trimmable. It accounts for the download: a minimal Forma client and each optional add-on are built apart,
+   under that recorded configuration, so two measurements compare, and each reports its compressed transfer
+   by dependency group, the runtime, its globalization data, Forma's own assemblies and each dependency such
+   as AngleSharp. Budgets are set from those reproducible builds rather than from the probe's publish of
+   every add-on, and an intentional increase changes its budget in a reviewed change of its own. Gate: the
+   check passes interactivity, a popover through interop and binding in each runtime, within the budgets.
+4. **The culture's checks, automated.** The culture plan's document and address checks, verified by hand in
+   Chrome, run in the browser check's host against today's synchronizer: a switch and the document following
+   it, the hold through an enhanced navigation and a streaming update, rapid switches, a switch landing
+   while offline, a pause and a resume, a closed circuit's release, and culture addresses under islands and
+   under interactive routes. They establish today's Server behavior first, as regression checks that pass;
+   the new requirements under [To verify](#to-verify) that today's pages can already exercise, the probe's
+   defects among them, join them as known failures, so the suite never takes a defect for behavior to keep,
+   and each of the rest joins with the step that makes it expressible. Steps 7 to 9 rewrite exactly that
+   code and are measured against these checks, each kept or changed where the culture design now says
+   otherwise. The suite reports three kinds apart, regression checks, known failures and acceptance
+   requirements a later step has met, and a known failure that starts to pass moves to the third only in the
+   change that meets it, so a gate met under its declared expectations is never read as a defect fixed.
+   Gate: every regression check passes on today's code, and every known failure fails as recorded.
+5. **The navigation boundary.** Before anything is built on it, a focused check in the browser check's host
+   establishes, under the Server's router and WebAssembly's alike, how a runtime observes: the destination
+   its router accepted, with the navigation's identity; a navigation cancelled or failed without landing;
+   one superseded by another, and a late report from it; Back and Forward; and a navigation that replaces
+   the document. The plan records the hook each rests on and what it guarantees. Where the platform can't
+   give the contract the culture design's [landings](culture-design.md#landings) assume, the design changes
+   before step 8 builds the coordinator around it. Gate: the check, and its record here.
+6. **Trimming.** The 27 warnings resolved, each client library `IsTrimmable` with the analyzer on. The four
+   `DynamicComponent.Type` warnings come first: each is reduced to its cause, to find whether the fix
+   belongs in Forma's use of the component, in the code Razor generates or in the toolchain, and the remedy
+   is chosen from that, within the rule that no warning is suppressed. The publish records the final
+   trimming behavior with the same evidence, and its size is checked against step 3's configuration; where
+   trimming moves the baseline materially, the plan records why, rather than comparing the two measurements
+   as if they were alike. Gate: the gate with no trim warning, and the browser check on that publish, within
+   the budgets.
+7. **The switch's contract and its application.** `ICultureState` reads the pair, its revision and its
+   version; `ICultureStateIntegration`, resolved from the state's own instance, applies an accepted pair,
+   and a replacement state without it is rejected as the state is first resolved; `ICultureSwitch` requests
+   a change; and the versions, the test switch and the local switch, as the culture design's
+   [switch](culture-design.md#one-switch-for-the-page) sets out. The public contract changes here, and
+   `AddFormaUI` registers a transitional switch that keeps today's observable behavior while every caller
+   moves to the switch: under the Server it applies through today's synchronizer, and under WebAssembly it
+   applies locally, as a WebAssembly switch does today. Gate: the gate, component tests through the test
+   switch, a replacement state without the integration rejected as it is first resolved, and step 4's
+   regression checks.
+8. **Coordination.** The coordinator takes the document culture synchronizer's script and ownership, and the
+   switch that requests through it replaces step 7's transitional switch for circuits: the culture marker
+   `FormaPageHead` publishes; the switch's policy, chosen where the host registers the culture and published
+   apart from the marker; each circuit's registration, its lifecycle and its three states; versions and the
+   document's sequence; adoption on registration; the accepted pair outliving its registrations; the cookie
+   read back before acceptance; and the distribution of every accepted change. A WebAssembly runtime keeps
+   the transitional switch until step 10 registers it with the coordinator. The landing report and its reply
+   carry over, so culture addresses keep working until step 9, with one authority: the pair the reply
+   resolves enters the coordinator's acceptance as a landing record, and nothing beside the coordinator
+   updates a state or the document from it; step 9 replaces where the landing's pair comes from, never who
+   accepts it. Gate: script tests of the coordinator's ordering, versions, document boundary, adoption, a
+   switch waiting on a registration under way and failing with it, the cookie read back, a landing reply
+   accepted only through the coordinator, the last registration's release, a head update alone changing
+   nothing, and a missing or invalid marker failing initialization; and step 4's checks, each as the design
+   now states it.
+9. **Routing in coordination.** The routes, their tokens, their mapping, the address policy's switch, the
+   page base and the route scope move into the new `Forma.Framework.Culture.Router`, with its test project;
+   routes name a pair; the mapping is published to the page; destinations are built from it, and a pair no
+   route names is rejected before anything changes; and both landing paths, the server-rendered one from its
+   own response's marker and the interactive one on step 5's hook, are wired into coordination in place of
+   the route handler's resolve-and-reply, which retires with `ICultureRouteHandler`; and the document is
+   held through every enhanced navigation, as the culture design's
+   [document](culture-design.md#the-document-follows-the-state) section sets out. Under WebAssembly the
+   interactive landing runs end to end from step 10, once the runtime registers with the coordinator. Gate:
+   script tests of both landing paths, an obsolete landing, a switch waiting out a navigation and an
+   unrouted pair; tests that the browser's mapping and the server's agree on every route, pairs included;
+   and step 4's checks.
+10. **The culture under WebAssembly.** The culture's WebAssembly half,
+    `Forma.Framework.Culture.Blazor.WebAssembly` with its test project and `AddFormaCultureWebAssembly`,
+    which `AddFormaUIWebAssembly` now calls; its registration at startup, which replaces step 7's
+    transitional switch under coordinated pages as the local switch does under an independent client
+    culture, and the runtime's current and the process's default cultures on every application, the local
+    switch's included; `AddFormaUIServer` supplying capture on where the configuration names none; the
+    culture arrangement on both product registrars; and the startup check that rejects capture off under
+    coordinated pages. An `IStringLocalizerFactory` over Forma's localization stays optional, adopted only
+    once it proves its contract: both factory overloads map to Forma's resources; missing resources,
+    fallback, enumeration and `ResourceNotFound` behave consistently; resource selection reads the UI
+    culture and argument formatting the formatting culture; its lifetime captures no one user's state; and
+    it coexists with a host's own factory in both registration orders, since `TryAdd` keeps only a factory
+    registered before it. Gate: every check under [To verify](#to-verify), in the browser check's host.
+11. **A host's strings in the browser.** A host's locale files embedded in its client assembly by the
+    package's targets, under resource names and discovery metadata the browser's loader finds. Gate: a
+    consumer of the packed packages, published trimmed, whose host string switches with the library's.
+12. **The host's setup.** The READMEs set out both arrangements, each complete on both sides: the client's
+    and the server's registration, `FormaPageHead` and the marker it publishes, the capture setting, and the
+    host's locale files. Each arrangement is also an example host in the tests, built and exercised by the
+    gate from the README's own setup, so the README can't drift from what is supported. Gate: both example
+    hosts start and switch as their README says.
 
 Hybrid stays the [culture plan](culture-implementation-plan.md)'s, after its ownership is chosen.
 
 ## To verify
 
-The probe's checks, carried into the browser check's host as acceptance checks for steps 5 and 6. Its
-failure and its two gaps are what those steps fix.
+The probe's checks, carried into the browser check's host as acceptance checks for steps 7 to 10, where
+step 4 records the ones not yet met as known failures. The probe's failure and its two gaps are what
+those steps fix.
 
 - An event after a switch made under WebAssembly runs in the new pair. The probe failed it: the state held
   `en-US/en-US` and the event's ambient culture `de-DE/he`.
