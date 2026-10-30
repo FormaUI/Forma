@@ -136,7 +136,7 @@ A component logs through the base's `Logger`, whose category is the component's 
 - Do log at `Debug` what the library absorbs by design — a dropped circuit or a thrown script behind a `Try*` call, an asset that would not load, a plural argument that is not a count — so the silence is visible to whoever turns the category on and nothing changes for a host that does not.
 - Do leave normal behavior silent because it is normal: a superseded delay, resolve or fetch, a disposal race, a failure the component already hands to its host as a domain object. Silence follows from the behavior being expected, never from a wish to keep every absorbed failure at `Debug`.
 - Do name a message for the event it records and keep application and user data out of it: a plural argument is reported by its name and type, never its value.
-- Don't log above `Debug` without deciding it for that one site; `Warning` and `Error` are never applied in bulk. A plugin assembly that loads only partially is a `Warning`, because it can leave plugins unavailable.
+- Don't log above `Debug` without deciding it for that one site; `Warning` and `Error` are never applied in bulk. A culture state that can't register with the page's coordinator is a `Warning`, because the page's switches then leave its components behind.
 - Don't log at a call site what the wrapper it calls already reports; a discarded `Try*` result is covered by the wrapper's own message.
 - Don't write to the console or through an abstraction of the library's own; `ILogger` is what every host already configures and filters.
 
@@ -158,7 +158,7 @@ Every component has a page in the showcase, in the category folder matching the 
 - Do render the component in every state it can enter, not merely name the state: default, filled, required, disabled, invalid, plus whatever the component adds — empty collection, no search matches, over-limit count, indeterminate, loading.
 - Do make each state reachable on the page. A validation state needs a model rule and a submit, not a paragraph describing one.
 - Do treat the component's locale section as the inventory: if a key in it cannot be displayed in the showcase, a state is missing.
-- Do localize all page copy so every culture switcher exercises direction and translation.
+- Do localize all page copy so every culture switcher exercises direction and localized strings.
 - Do let the page follow the culture state through the showcase's shared page base, which every page beneath the pages' folder takes: it renders the page again on each change of the state, and its `L` and `CultureState` give the state's cultures, so a render that work begun before a switch asks for is in the new language too; a page formats by `CultureState`, never by the ambient culture, and a showcase component elsewhere that shows text in the culture takes the base as well.
 - Do let the text that presents a page's current state follow a switch: a label the page builds once, such as an option it offers, a sort or an item's name, it builds again in `OnCultureChangedAsync`, keeping the reader's choices and edits among it; text an event produced, a last action, an announcement, a log entry or a validation message, keeps the language it was produced in until the next such event, so a switch never revalidates a form.
 - Don't count a state as covered because the parameter exists; count it when the page renders the component standing in it.

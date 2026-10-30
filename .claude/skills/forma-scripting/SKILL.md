@@ -169,7 +169,7 @@ export function resolve(event) { … }
 - Do derive a behavior wrapper from `JSInterop`, take `(IJSEnvironment js)` and pass it on with the module path, and expose a typed `AttachAsync`.
 - Do give an operation wrapper a `JSModule` field built from the same `js` rather than deriving from it, so only its own typed methods can be called.
 - Do derive a component wrapper from `JSInterop` when its module attaches a surface, and give it a `JSModule` field when the module is operations alone.
-- Do make a service's wrapper a scoped service at the root of its interop assembly with a `JSModule` field, registered by the aggregate registrar, that pushes the host's policy once per circuit and hands out registration handles; it is not a plain wrapper, because it owns policy as well as the module.
+- Do make a service's wrapper a scoped service at the root of its interop assembly with a `JSModule` field, registered by the aggregate registrar, that pushes the host's policy once per user scope and hands out registration handles; it is not a plain wrapper, because it owns policy as well as the module.
 - Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JSModule` and `JSInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.

@@ -36,7 +36,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do keep a folder and its namespace in step, and give every assembly one root namespace, its project name, unless it borrows the namespace of what it extends or splits from, as the repository document sets out.
 - Do let dependencies point one way, from the product to the framework it builds on, never upward, and let an optional package extend the library from outside it rather than be referenced from within.
 - Do file a project by what it is: what the library builds on is Framework, whether or not the product uses it; a project that is optional and extends a Framework assembly is an AddOn, a host opt-in the host references and registers itself. Optional alone makes nothing an AddOn.
-- Do register a feature's services through one registrar at its root, with `TryAdd`, so a host that registered its own first still wins, and ship one aggregate registrar from the product so a host makes one call and still overrides any single service.
+- Do register a feature's services through one registrar at its root, with `TryAdd`, so a host that registered its own first still wins, and ship the product's aggregate registrars, one for each render-mode half, so a host makes one call on each side and still overrides any single service.
 - Do let a component whose optional contract is unregistered fall back to a default the library carries; a contract carrying data nobody can synthesize leaves the component in its empty state instead.
 - Do make components depend on abstractions and let the host choose implementations through DI.
 - Do represent colors and other CSS values with typed values, never arbitrary strings.
@@ -65,13 +65,13 @@ Every component replaces something in the legacy application the repository docu
 
 ## Build and verification
 
-The gate is the build with no warnings, every test project, the script tests, the format check, the locale lint, the browser check, and the Showcase for anything that renders; the repository document lists the commands.
+The gate is the build with no warnings, every test project, the format check, the task programs' build, every task script's contract, the locale lint, the script tests, the browser check, and the Showcase for anything that renders; the repository document lists the commands.
 
 - Do treat every compiler warning as a build failure; the `.editorconfig` severity table decides what the compiler reports, and the answer to an unwanted diagnostic is that table, never a local suppression.
 
 ## Working agreement
 
-- Do build, review, and commit one component at a time, taking the next from the roadmap's build order.
+- Do build, review, and commit one component at a time, finishing what is in progress before taking the next from the roadmap's build order.
 - Do derive parameters, validation, disposal, CSS, ARIA, localization, and tests from established repository patterns.
 - Do deliver the complete component set: markup, logic, stylesheet, warranted locale or script files, tests, and Showcase page.
 - Do verify both directions, color-independent states, accessible names and focus, and touch targets before review; the `forma-checking-a11y-touch-rtl` skill carries the full standard.
