@@ -27,8 +27,11 @@ public sealed class BrowserHost : IAsyncLifetime
     /// <summary>The address of the host whose router is interactive on the Server, switching through culture addresses.</summary>
     public Uri InteractiveAddress { get; private set; } = default!;
 
-    /// <summary>The address of the host whose pages are islands, switching the culture state alone.</summary>
+    /// <summary>The address of the host whose pages are islands, switching the culture state alone, which renders every request in <c>en-US</c>.</summary>
     public Uri StateAddress { get; private set; } = default!;
+
+    /// <summary>The address of the host whose pages are islands, switching the culture state alone, which renders every request in the invariant culture.</summary>
+    public Uri InvariantStateAddress { get; private set; } = default!;
 
     /// <summary>The address of the host rendering the recording router on the Server.</summary>
     public Uri NavigationServerAddress { get; private set; } = default!;
@@ -44,7 +47,8 @@ public sealed class BrowserHost : IAsyncLifetime
     {
         Address = await StartAsync(routes: null, culture: null).ConfigureAwait(false);
         InteractiveAddress = await StartAsync(routes: "interactive", culture: null).ConfigureAwait(false);
-        StateAddress = await StartAsync(routes: null, culture: "state").ConfigureAwait(false);
+        StateAddress = await StartAsync(routes: null, culture: "state", requestCulture: "en-US").ConfigureAwait(false);
+        InvariantStateAddress = await StartAsync(routes: null, culture: "state", requestCulture: "invariant").ConfigureAwait(false);
         NavigationServerAddress = await StartAsync(routes: "navigation-server", culture: null).ConfigureAwait(false);
         NavigationWebAssemblyAddress = await StartAsync(routes: "navigation-webassembly", culture: null).ConfigureAwait(false);
 
@@ -103,7 +107,7 @@ public sealed class BrowserHost : IAsyncLifetime
         _client.Dispose();
     }
 
-    private async Task<Uri> StartAsync(string? routes, string? culture)
+    private async Task<Uri> StartAsync(string? routes, string? culture, string? requestCulture = null)
     {
         var address = new Uri($"http://127.0.0.1:{GetFreePort()}/");
         var start = new ProcessStartInfo("dotnet", "Forma.Blazor.Browser.Host.dll")
@@ -117,6 +121,7 @@ public sealed class BrowserHost : IAsyncLifetime
         start.Environment["ASPNETCORE_ENVIRONMENT"] = "Production";
         start.Environment["FORMA_BROWSER_ROUTES"] = routes;
         start.Environment["FORMA_BROWSER_CULTURE"] = culture;
+        start.Environment["FORMA_BROWSER_REQUEST_CULTURE"] = requestCulture;
 
         var process = Process.Start(start) ?? throw new InvalidOperationException("The host did not start.");
         _processes.Add(process);

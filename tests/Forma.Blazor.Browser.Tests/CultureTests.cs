@@ -150,6 +150,37 @@ public sealed class CultureTests(BrowserHost host)
         await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync("en");
     }
 
+    /// <summary>The cultures a host switching the state alone renders every request in, named and invariant.</summary>
+    public static TheoryData<string> RequestCultures { get; } = ["en-US", "invariant"];
+
+    [Theory]
+    [MemberData(nameof(RequestCultures))]
+    public async Task Should_register_from_the_marker_of_the_culture_the_page_was_rendered_in_and_switch(string requestCulture)
+    {
+        // Arrange — a host that renders every request in the culture named, whatever the runner's
+        var isInvariant = requestCulture == "invariant";
+        var (context, page) = await host.OpenPageAsync(isInvariant ? host.InvariantStateAddress : host.StateAddress);
+        await using var _ = context;
+        var errors = new List<string>();
+        page.Console += (_, message) => errors.Add(message.Text);
+        await page.GotoAsync("state");
+        await WaitForPanelAsync(page);
+        var name = isInvariant ? string.Empty : requestCulture;
+        var marker = page.Locator("meta[name='forma-culture']");
+        var published = $"{await marker.GetAttributeAsync("data-culture")}|{await marker.GetAttributeAsync("data-ui-culture")}";
+        var started = await page.Locator("#state").TextContentAsync();
+
+        // Act
+        await page.Locator("#switch-state").ClickAsync();
+
+        // Assert — the switch is accepted only where the circuit registered with the page's coordinator
+        Assert.Equal($"{name}|{name}", published);
+        Assert.Equal(name, started);
+        await WaitForDocumentAsync(page, "he/rtl");
+        await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync("he");
+        Assert.DoesNotContain(errors, error => error.Contains("culture marker", StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task Should_show_the_served_pair_once_the_circuit_closes()
     {

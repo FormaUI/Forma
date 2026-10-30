@@ -1,3 +1,5 @@
+using System.Globalization;
+
 using Forma.Blazor;
 using Forma.Blazor.Browser.Host;
 using Forma.Blazor.Browser.Host.Client.Navigation;
@@ -28,6 +30,21 @@ builder.Services.AddSingleton<DelayedSwitches>();
 builder.Services.AddScoped<NavigationRecorder>();
 
 var app = builder.Build();
+
+if (HostModes.RequestCulture is { } requestCulture)
+{
+    CultureInfo.DefaultThreadCurrentCulture = requestCulture;
+    CultureInfo.DefaultThreadCurrentUICulture = requestCulture;
+
+    // Every request, the circuit's own connection among them, runs in the host's one culture.
+    app.Use((context, next) =>
+    {
+        CultureInfo.CurrentCulture = requestCulture;
+        CultureInfo.CurrentUICulture = requestCulture;
+
+        return next(context);
+    });
+}
 
 if (HostModes.UsesCultureAddresses)
 {

@@ -1,13 +1,23 @@
 namespace Forma.Blazor.Browser.Host;
 
+using System.Globalization;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>How the host routes its pages and switches culture: <c>FORMA_BROWSER_ROUTES</c> <c>interactive</c> makes its router interactive on the Server, <c>navigation-server</c> and <c>navigation-webassembly</c> render the recording router over the navigation pages in that runtime, and anything else renders statically with islands; <c>FORMA_BROWSER_CULTURE</c> <c>state</c> switches the culture state alone, where anything else switches through culture addresses.</summary>
+/// <summary>How the host routes its pages and switches culture: <c>FORMA_BROWSER_ROUTES</c> <c>interactive</c> makes its router interactive on the Server, <c>navigation-server</c> and <c>navigation-webassembly</c> render the recording router over the navigation pages in that runtime, and anything else renders statically with islands; <c>FORMA_BROWSER_CULTURE</c> <c>state</c> switches the culture state alone, where anything else switches through culture addresses; and <c>FORMA_BROWSER_REQUEST_CULTURE</c> names the culture every request runs in, <c>invariant</c> for the invariant culture.</summary>
 public static class HostModes
 {
     /// <summary>Whether the culture is switched through culture addresses.</summary>
     public static bool UsesCultureAddresses { get; } = Environment.GetEnvironmentVariable("FORMA_BROWSER_CULTURE") != "state";
+
+    /// <summary>The culture every request runs in, whatever the machine's, where the host names one.</summary>
+    public static CultureInfo? RequestCulture { get; } = Environment.GetEnvironmentVariable("FORMA_BROWSER_REQUEST_CULTURE") switch
+    {
+        null or "" => null,
+        "invariant" => CultureInfo.InvariantCulture,
+        var name => CultureInfo.GetCultureInfo(name),
+    };
 
     /// <summary>Whether the router is interactive.</summary>
     public static bool IsInteractiveRouting { get; } = Environment.GetEnvironmentVariable("FORMA_BROWSER_ROUTES") == "interactive";
