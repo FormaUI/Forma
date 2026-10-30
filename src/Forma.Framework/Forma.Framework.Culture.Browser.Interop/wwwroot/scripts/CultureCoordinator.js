@@ -294,10 +294,15 @@ function readPolicy(head) {
     };
 }
 
-// A name the platform can't read as a language tag names no culture.
+// A name the platform can't read as a language tag names no culture; the empty name is the invariant culture, which a
+// server renders in where nothing chose another.
 function isCultureName(name) {
-    if (!name) {
+    if (name === null) {
         return false;
+    }
+
+    if (name === '') {
+        return true;
     }
 
     try {

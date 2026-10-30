@@ -35,6 +35,23 @@
         }
 
         [Fact]
+        public async Task Should_publish_the_invariant_culture_by_its_empty_name()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+            await ctx.ChangeCultureAsync("");
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            var marker = cut.Find("meta[name='forma-culture']");
+            Assert.Multiple(
+                () => Assert.Equal(string.Empty, marker.GetAttribute("data-culture")),
+                () => Assert.Equal(string.Empty, marker.GetAttribute("data-ui-culture")));
+        }
+
+        [Fact]
         public void Should_publish_the_policy_that_persists_nothing_by_default()
         {
             // Arrange

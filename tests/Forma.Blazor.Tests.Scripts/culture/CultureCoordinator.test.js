@@ -142,6 +142,20 @@ describe('CultureCoordinator', () => {
             await expect(registering).rejects.toThrow(/FormaPageHead/);
         });
 
+        it('starts from a marker naming the invariant culture', async () => {
+            // Arrange — a server that renders in the invariant culture, whose name is empty
+            const coordinator = await load({ culture: '', lang: '', dir: 'ltr' });
+            const receiver = fakeReceiver();
+
+            // Act
+            const registration = await coordinator.register('a', receiver);
+            await registration.request('he', 'he', 'rtl');
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['/ #0', 'he/he #1']);
+            expect(readDocument()).toBe('he/rtl');
+        });
+
         it('reads the marker once, as the document loads', async () => {
             // Arrange
             const coordinator = await load({ culture: 'de-DE', uiCulture: 'he' });
