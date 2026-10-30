@@ -175,6 +175,58 @@ public sealed class LayoutTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("14");
             await Assertions.Expect(page.Locator("#pane")).ToHaveCSSAsync("width", "224px");
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_follow_a_drag_and_end_it_where_the_pointer_is_let_go_off_the_bar(string runtime)
+        {
+            // Arrange — the drag's script routes the press once it has attached
+            var (context, page) = await OpenAsync(host, runtime, "splitter");
+            await using var _ = context;
+            var splitter = page.Locator("#splitter");
+            await WaitForInputRouteAsync(page, "#splitter", "splitter.resize");
+            var bar = (await splitter.BoundingBoxAsync())!;
+            var x = bar.X + (bar.Width / 2);
+            var y = bar.Y + (bar.Height / 2);
+
+            // Act — 64 pixels along the inline axis, four units, then let go well below the bar
+            await page.Mouse.MoveAsync(x, y);
+            await page.Mouse.DownAsync();
+            await page.Mouse.MoveAsync(x + 64, y, new() { Steps = 4 });
+            await page.Mouse.MoveAsync(x + 64, y + 200);
+            await page.Mouse.UpAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("16");
+            await Assertions.Expect(splitter).ToHaveAttributeAsync("aria-valuenow", "16");
+            await Assertions.Expect(splitter).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex("is-resizing"));
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_return_to_the_size_a_drag_started_from_on_escape(string runtime)
+        {
+            // Arrange — a drag of four units under way
+            var (context, page) = await OpenAsync(host, runtime, "splitter");
+            await using var _ = context;
+            var splitter = page.Locator("#splitter");
+            await WaitForInputRouteAsync(page, "#splitter", "splitter.resize");
+            var bar = (await splitter.BoundingBoxAsync())!;
+            var x = bar.X + (bar.Width / 2);
+            var y = bar.Y + (bar.Height / 2);
+            await page.Mouse.MoveAsync(x, y);
+            await page.Mouse.DownAsync();
+            await page.Mouse.MoveAsync(x + 64, y, new() { Steps = 4 });
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("16");
+
+            // Act
+            await page.Keyboard.PressAsync("Escape");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("12");
+            await page.Mouse.UpAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("12");
+        }
     }
 
     public sealed class StackLayout(BrowserHost host)

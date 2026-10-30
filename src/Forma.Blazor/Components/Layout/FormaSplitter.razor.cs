@@ -2,17 +2,21 @@ namespace Forma.Blazor.Components.Layout;
 
 using System.Globalization;
 
-using Forma.Framework.Browser.Interop.Operations;
+using Forma.Framework.Browser.Interop.Components;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
-using Forma.Framework.Input.Pointer;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 /// <summary>A draggable divider between two panes, reporting the size the pane before it should take.</summary>
+/// <remarks>
+/// The browser holds the pointer from the press and tells the splitter how far it has traveled once a frame, so the drag
+/// follows the pointer and ends on its release wherever it is let go; Escape cancels the drag and returns the size it
+/// started from.
+/// </remarks>
 public sealed partial class FormaSplitter : FormaElementBase
 {
     private const string GrowAction = "splitter.grow";
@@ -55,9 +59,10 @@ public sealed partial class FormaSplitter : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    private Pointer _pointer = default!;
+    private Splitter _splitter = default!;
+    private DotNetObjectReference<FormaSplitter>? _selfReference;
     private InputRegistration _inputRegistration = default!;
-    private double _dragOrigin;
+    private bool? _attachedInline;
     private double _dragStartValue;
     private bool _isResizing;
 
@@ -78,7 +83,8 @@ public sealed partial class FormaSplitter : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _pointer = new Pointer(Context.JS);
+        _splitter = new Splitter(Context.JS);
+        _selfReference = DotNetObjectReference.Create(this);
         _inputRegistration = new InputRegistration(InputRouter, HandleBarActionAsync);
     }
 
@@ -90,20 +96,82 @@ public sealed partial class FormaSplitter : FormaElementBase
         ArgumentOutOfRangeException.ThrowIfGreaterThan(Min, Max);
     }
 
-    // The orientation, and with it the keys, can change after the registration was made.
+    // The orientation, and with it the keys and the axis the bar is dragged along, can change after the registration was made.
     /// <inheritdoc />
-    protected override Task OnAfterRenderAsync(bool firstRender)
-        => _inputRegistration.SyncAsync(RootElement, Profile);
-
-    private async Task HandleBarActionAsync(string action, InputInfo input)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (action == ResizeAction && input is InputPointerInfo press)
+        await _inputRegistration.SyncAsync(RootElement, Profile);
+
+        if (_attachedInline == IsVertical)
         {
-            await BeginResizeAsync(press);
-            StateHasChanged();
             return;
         }
 
+        // Claimed before the await, so a render arriving mid-call attaches no second gesture.
+        var isInline = IsVertical;
+        _attachedInline = isInline;
+        await _splitter.DetachAsync();
+
+        if (!await _splitter.AttachAsync(RootElement, _selfReference!, isInline, ResizeAction) && _attachedInline == isInline)
+        {
+            _attachedInline = null;
+        }
+    }
+
+    /// <summary>Starts resizing the pane, as the bar is pressed.</summary>
+    [JSInvokable]
+    public Task HandleResizeStartAsync()
+        => InvokeAsync(async () =>
+        {
+            _isResizing = true;
+            _dragStartValue = Value;
+
+            await OnResizingChanged.InvokeAsync(true);
+            StateHasChanged();
+        });
+
+    /// <summary>Resizes the pane by the pointer's <paramref name="travel"/> from where the bar was pressed, in pixels along the axis the bar moves on.</summary>
+    [JSInvokable]
+    public Task HandleResizeAsync(double travel)
+        => InvokeAsync(async () =>
+        {
+            if (!_isResizing)
+            {
+                return;
+            }
+
+            // The pane sits before the divider, so in a right-to-left layout it grows as the pointer moves the other way.
+            var direction = IsVertical && Context.CultureState.IsRightToLeft ? -1 : 1;
+
+            if (await SetValueAsync(_dragStartValue + (travel / PixelsPerUnit * direction)))
+            {
+                StateHasChanged();
+            }
+        });
+
+    /// <summary>Ends resizing the pane, as the bar is let go, or returns the size the drag started from where it was canceled.</summary>
+    [JSInvokable]
+    public Task HandleResizeEndAsync(bool isCanceled)
+        => InvokeAsync(async () =>
+        {
+            if (!_isResizing)
+            {
+                return;
+            }
+
+            _isResizing = false;
+
+            if (isCanceled)
+            {
+                await SetValueAsync(_dragStartValue);
+            }
+
+            await OnResizingChanged.InvokeAsync(false);
+            StateHasChanged();
+        });
+
+    private async Task HandleBarActionAsync(string action, InputInfo input)
+    {
         double? target = action switch
         {
             GrowAction => Value + Step,
@@ -117,45 +185,6 @@ public sealed partial class FormaSplitter : FormaElementBase
         {
             StateHasChanged();
         }
-    }
-
-    // The pointer captured here delivers the rest of the resize.
-    private async Task BeginResizeAsync(InputPointerInfo press)
-    {
-        _isResizing = true;
-        _dragOrigin = IsVertical ? press.ClientX : press.ClientY;
-        _dragStartValue = Value;
-
-        await OnResizingChanged.InvokeAsync(true);
-        await _pointer.CaptureAsync(RootElement, press.PointerId);
-    }
-
-    private async Task HandlePointerMoveAsync(PointerEventArgs args)
-    {
-        if (!_isResizing)
-        {
-            return;
-        }
-
-        var travelled = (IsVertical ? args.ClientX : args.ClientY) - _dragOrigin;
-
-        // The pane sits before the divider, so in a right-to-left layout it grows as the pointer moves the other way.
-        var direction = IsVertical && Context.CultureState.IsRightToLeft ? -1 : 1;
-
-        await SetValueAsync(_dragStartValue + (travelled / PixelsPerUnit * direction));
-    }
-
-    private async Task HandlePointerUpAsync(PointerEventArgs args)
-    {
-        if (!_isResizing)
-        {
-            return;
-        }
-
-        _isResizing = false;
-
-        await OnResizingChanged.InvokeAsync(false);
-        await _pointer.ReleaseAsync(RootElement, args.PointerId);
     }
 
     /// <summary>Takes the size, clamped to the bounds, and reports whether it differs from the current one.</summary>
@@ -184,7 +213,6 @@ public sealed partial class FormaSplitter : FormaElementBase
                 new InputRoute(ShrinkAction, new KeyBinding(shrink)),
                 new InputRoute(MinAction, new KeyBinding("Home")),
                 new InputRoute(MaxAction, new KeyBinding("End")),
-                new InputRoute(ResizeAction, new PointerBinding { Button = 0 }),
             ],
         };
 
@@ -199,7 +227,8 @@ public sealed partial class FormaSplitter : FormaElementBase
     protected override async ValueTask DisposeAsyncCore()
     {
         await _inputRegistration.DisposeAsync();
-        await _pointer.DisposeAsync();
+        await _splitter.DisposeAsync();
+        _selfReference?.Dispose();
         await base.DisposeAsyncCore();
     }
 }

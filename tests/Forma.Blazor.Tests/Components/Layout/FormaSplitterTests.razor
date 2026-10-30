@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
-@using Forma.Framework.Input.Pointer
+@using Forma.Tests.Interop
 
 @code {
     public sealed class Component
@@ -87,7 +87,7 @@
 
             // Assert
             var registration = Assert.Single(router.Registrations);
-            Assert.Equal(["splitter.grow:ArrowRight", "splitter.shrink:ArrowLeft", "splitter.min:Home", "splitter.max:End", "splitter.resize:pointerdown"], InputRouterProbe.GetRoutes(registration));
+            Assert.Equal(["splitter.grow:ArrowRight", "splitter.shrink:ArrowLeft", "splitter.min:Home", "splitter.max:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -103,7 +103,7 @@
 
             // Assert
             var registration = Assert.Single(router.Registrations);
-            Assert.Equal(["splitter.grow:ArrowLeft", "splitter.shrink:ArrowRight", "splitter.min:Home", "splitter.max:End", "splitter.resize:pointerdown"], InputRouterProbe.GetRoutes(registration));
+            Assert.Equal(["splitter.grow:ArrowLeft", "splitter.shrink:ArrowRight", "splitter.min:Home", "splitter.max:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -119,7 +119,7 @@
 
             // Assert
             var registration = Assert.Single(router.Registrations);
-            Assert.Equal(["splitter.grow:ArrowDown", "splitter.shrink:ArrowUp", "splitter.min:Home", "splitter.max:End", "splitter.resize:pointerdown"], InputRouterProbe.GetRoutes(registration));
+            Assert.Equal(["splitter.grow:ArrowDown", "splitter.shrink:ArrowUp", "splitter.min:Home", "splitter.max:End"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -243,13 +243,13 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            var router = new InputRouterProbe(ctx);
             var reported = new List<bool>();
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" OnResizingChanged="r => reported.Add(r)" />);
+            var splitter = cut.FindComponent<FormaSplitter>().Instance;
 
             // Act
-            await router.RouteAsync("splitter.resize", new InputPointerInfo { Type = "pointerdown" });
-            cut.Find(".forma-splitter").PointerUp();
+            await splitter.HandleResizeStartAsync();
+            await splitter.HandleResizeEndAsync(isCanceled: false);
 
             // Assert
             Assert.Equal([true, false], reported);
@@ -260,11 +260,10 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
 
             // Act
-            await router.RouteAsync("splitter.resize", new InputPointerInfo { Type = "pointerdown" });
+            await cut.FindComponent<FormaSplitter>().Instance.HandleResizeStartAsync();
 
             // Assert
             Assert.Contains("is-resizing", cut.Find(".forma-splitter").ClassList);
@@ -275,64 +274,103 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
-            await router.RouteAsync("splitter.resize", new InputPointerInfo { Type = "pointerdown" });
+            var splitter = cut.FindComponent<FormaSplitter>().Instance;
+            await splitter.HandleResizeStartAsync();
 
             // Act
-            cut.Find(".forma-splitter").PointerUp();
+            await splitter.HandleResizeEndAsync(isCanceled: false);
 
             // Assert
             Assert.DoesNotContain("is-resizing", cut.Find(".forma-splitter").ClassList);
         }
 
         [Fact]
-        public void Should_ignore_a_pointer_move_that_no_drag_started()
+        public async Task Should_ignore_travel_no_drag_started()
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
             double? reported = null;
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
 
             // Act
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
-            cut.Find(".forma-splitter").PointerMove(new PointerEventArgs { ClientX = 400 });
+            await cut.FindComponent<FormaSplitter>().Instance.HandleResizeAsync(400);
 
             // Assert
             Assert.Null(reported);
         }
 
         [Fact]
-        public async Task Should_resize_as_the_pointer_travels()
+        public async Task Should_resize_by_the_travel_from_where_the_bar_was_pressed()
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            var router = new InputRouterProbe(ctx);
             double? reported = null;
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            var splitter = cut.FindComponent<FormaSplitter>().Instance;
+            await splitter.HandleResizeStartAsync();
 
             // Act
-            await router.RouteAsync("splitter.resize", new InputPointerInfo { Type = "pointerdown", ClientX = 100 });
-            cut.Find(".forma-splitter").PointerMove(new PointerEventArgs { ClientX = 132 });
+            await splitter.HandleResizeAsync(32);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(20d, reported),
+                () => Assert.Equal("20", cut.Find(".forma-splitter").GetAttribute("aria-valuenow")));
+        }
+
+        [Fact]
+        public async Task Should_grow_the_pane_against_the_travel_under_right_to_left()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("he");
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            var splitter = cut.FindComponent<FormaSplitter>().Instance;
+            await splitter.HandleResizeStartAsync();
+
+            // Act
+            await splitter.HandleResizeAsync(-32);
 
             // Assert
             Assert.Equal(20d, reported);
         }
 
         [Fact]
-        public async Task Should_measure_the_block_axis_for_a_horizontal_splitter()
+        public async Task Should_return_the_size_it_started_from_when_the_drag_is_canceled()
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            var router = new InputRouterProbe(ctx);
-            double? reported = null;
-            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" ValueChanged="v => reported = v" />);
+            var reported = new List<double>();
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported.Add(v)" />);
+            var splitter = cut.FindComponent<FormaSplitter>().Instance;
+            await splitter.HandleResizeStartAsync();
+            await splitter.HandleResizeAsync(32);
 
             // Act
-            await router.RouteAsync("splitter.resize", new InputPointerInfo { Type = "pointerdown", ClientY = 100 });
-            cut.Find(".forma-splitter").PointerMove(new PointerEventArgs { ClientY = 132 });
+            await splitter.HandleResizeEndAsync(isCanceled: true);
 
             // Assert
-            Assert.Equal(20d, reported);
+            Assert.Equal([20d, 18d], reported);
+        }
+
+        [Theory]
+        [InlineData(SplitterOrientation.Vertical, "inline")]
+        [InlineData(SplitterOrientation.Horizontal, "block")]
+        public void Should_drag_its_bar_along_the_axis_it_moves_on(SplitterOrientation orientation, string axis)
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            var module = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/components/Splitter.js");
+            module.SetupModule("attach", _ => true);
+
+            // Act
+            ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="orientation" />);
+
+            // Assert
+            var options = Assert.Single(module.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Equal($"{axis} splitter.resize", $"{InteropPayload.GetValue(options, "axis")} {InteropPayload.GetValue(options, "action")}");
         }
 
         [Fact]
@@ -340,13 +378,13 @@
         {
             // Arrange
             using var ctx = new FormaSplitterTests();
-            var router = new InputRouterProbe(ctx);
             double? reported = null;
             var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="180" Min="100" Max="280" PixelsPerUnit="1" ValueChanged="v => reported = v" />);
+            var splitter = cut.FindComponent<FormaSplitter>().Instance;
+            await splitter.HandleResizeStartAsync();
 
             // Act
-            await router.RouteAsync("splitter.resize", new InputPointerInfo { Type = "pointerdown", ClientX = 100 });
-            cut.Find(".forma-splitter").PointerMove(new PointerEventArgs { ClientX = 132 });
+            await splitter.HandleResizeAsync(32);
 
             // Assert
             Assert.Equal(212d, reported);

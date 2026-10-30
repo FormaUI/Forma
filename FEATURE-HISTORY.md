@@ -8,7 +8,7 @@ Until the first release, a month may break what the one before it allowed, and e
 
 ## October 2026
 
-*October 1–30 · 73 components, 65 implemented and 8 in progress*
+*October 1–31 · 73 components, 65 implemented and 8 in progress*
 
 **Components**
 
@@ -21,6 +21,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaCheckBox`](docs/component-catalog.md#formacheckbox) is drawn from the design tokens, its focus ring an outline.
 - Inputs bound as they are typed into keep every key typed, and a button with no click handler makes no round trip.
 - [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through a group's items in the group's place.
+- [`FormaSplitter`](docs/component-catalog.md#formasplitter) follows a drag in the browser, ending it wherever the pointer is let go, and Escape returns the size the drag started from.
 - [`FormaTimePicker`](docs/component-catalog.md#formatimepicker)'s list and [`FormaDateTimePicker`](docs/component-catalog.md#formadatetimepicker)'s open on the time held, whatever was chosen before.
 - An open surface that closes gives up its layer among the input router's.
 - [`FormaPopover`](docs/component-catalog.md#formapopover) follows a change of reading direction while it is open, [`FormaTabs`](docs/component-catalog.md#formatabs) draws its strip again when a tab's header changes, and [`FormaFileViewer`](docs/component-catalog.md#formafileviewer) resolves its document again when the culture changes.
@@ -78,6 +79,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - `AddFormaUI` registers no culture switch: `AddFormaUIServer` and `AddFormaUIWebAssembly` register the switch of their render mode, and a WebAssembly client's culture services are one per runtime.
 - Culture routing is `Forma.Framework.Culture.Router`, its ASP.NET Core assembly keeping the middleware: a route names its pair, `UICulture` and an optional `Culture`; `CultureRouter` reads paths as strings; `CultureSwitcher.SwitchTo` is `SwitchToAsync`; `CultureBaseHref` and `Forma.Framework.Culture.Router.Interop` are gone, `FormaPageHead` writing the base routing gives and refusing a `BaseHref` beside it; and the `forma-culture` cookie is no longer read.
 - The composer's dialog results and selection reports, `TextRange`, and the data view's `ColumnFitReport` and `ColumnWidth` are records with `init` properties rather than positional ones, and `InputRoute`'s `Action` and `Bindings` and `KeyBinding`'s `Key` are `required` `init` properties beside the constructors that set them.
+- `Pointer` is gone; a drag captures its pointer in the browser.
 
 <a id="2026-09"></a>
 

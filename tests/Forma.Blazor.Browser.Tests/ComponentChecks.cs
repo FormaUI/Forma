@@ -41,6 +41,19 @@ public static partial class ComponentChecks
         await page.WaitForFunctionAsync("selector => window.formaInputRouter.describe(document.querySelector(selector)) !== null", selector).ConfigureAwait(false);
     }
 
+    /// <summary>Waits until the input router routes <paramref name="action"/> on the element <paramref name="selector"/> names, which the script that answers the action registers.</summary>
+    /// <param name="page">The page read.</param>
+    /// <param name="selector">The element's selector.</param>
+    /// <param name="action">The action's name.</param>
+    /// <returns>A task that completes once the router describes the route.</returns>
+    public static async Task WaitForInputRouteAsync(IPage page, string selector, string action)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        await page.EvaluateAsync("async () => { window.formaInputRouter ??= await import(new URL('_content/forma/input/scripts/InputRouter.js', document.baseURI).href); }").ConfigureAwait(false);
+        await page.WaitForFunctionAsync("([selector, action]) => window.formaInputRouter.describe(document.querySelector(selector))?.routes.some(route => route.action === action) === true", new[] { selector, action }).ConfigureAwait(false);
+    }
+
     /// <summary>Waits until the input router has placed <paramref name="scope"/> among the page's layers, which it does as an open surface registers.</summary>
     /// <param name="scope">The surface's element.</param>
     /// <returns>A task that completes once the surface carries its layer.</returns>
