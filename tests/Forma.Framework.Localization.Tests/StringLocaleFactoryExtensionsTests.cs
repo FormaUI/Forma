@@ -13,9 +13,9 @@ using Xunit;
 
 public sealed class StringLocaleFactoryExtensionsTests
 {
-    // Changed inside an asynchronous method of its own, so the cultures the change applies stay in that flow and the caller's are left as they were.
-    private static async Task ChangeAsync(ICultureState cultureState, string culture)
-        => await cultureState.ChangeAsync(CultureInfo.GetCultureInfo(culture));
+    // Switched inside an asynchronous method of its own, so the cultures the switch applies stay in that flow and the caller's are left as they were.
+    private static async Task ChangeAsync(IServiceScope scope, string culture)
+        => await new TestCultureSwitch(scope.ServiceProvider.GetRequiredService<ICultureStateIntegration>()).SwitchAsync(CultureInfo.GetCultureInfo(culture));
 
     public sealed class Create
     {
@@ -31,7 +31,7 @@ public sealed class StringLocaleFactoryExtensionsTests
             var english = locale["Stored {Amount}", 1.5].Value;
 
             // Act
-            await ChangeAsync(cultureState, "de-DE");
+            await ChangeAsync(scope, "de-DE");
             var german = locale["Stored {Amount}", 1.5].Value;
 
             // Assert

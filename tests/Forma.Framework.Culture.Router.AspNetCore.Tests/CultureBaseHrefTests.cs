@@ -1,5 +1,6 @@
 namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
 
+using Forma.Tests.Culture;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
@@ -29,6 +30,7 @@ public sealed class CultureBaseHrefTests
         await using var provider = new ServiceCollection()
             .AddSingleton<NavigationManager>(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/")))
             .AddSingleton<IJSRuntime>(new RecordingJSRuntime((_, _) => null))
+            .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureRouting(new CultureRouterOptions
             {
                 Prefix = prefix,

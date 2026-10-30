@@ -16,11 +16,11 @@ public sealed class CultureStateExtensionsTests
     private static string GetAmbientCultures()
         => $"{CultureInfo.CurrentCulture.Name}/{CultureInfo.CurrentUICulture.Name}";
 
-    // Changed inside an asynchronous method of its own, so the cultures the change applies stay in that flow and the caller's remain English.
+    // Switched inside an asynchronous method of its own, so the cultures the switch applies stay in that flow and the caller's remain English.
     private static async Task<ICultureState> GetChangedStateAsync(IServiceScope scope)
     {
         var state = scope.ServiceProvider.GetRequiredService<ICultureState>();
-        await state.ChangeAsync(German, Hebrew);
+        await new LocalCultureSwitch(scope.ServiceProvider.GetRequiredService<ICultureStateIntegration>()).SwitchAsync(German, Hebrew);
 
         return state;
     }

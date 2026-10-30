@@ -10,6 +10,7 @@ using Forma.Framework.Culture;
 using Forma.Framework.Emojis.Twemoji;
 using Forma.Framework.Localization;
 using Forma.Framework.Localization.Json;
+using Forma.Tests.Culture;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,15 +29,16 @@ public abstract class FormaBunitContext : BunitContext
         // Read from this assembly, where the build records the referenced locale packs; a test's entry assembly is its runner's.
         Services.AddJsonLocalization(new LocalizationOptions { LocalePacks = LocalePackLoader.Load(typeof(FormaBunitContext).Assembly, NullLogger.Instance) });
         Services.AddFormaTwemojiPack();
+        Services.AddScoped<ICultureSwitch, TestCultureSwitch>();
         Services.AddFormaUI();
     }
 
-    /// <summary>Changes the culture state the rendered components follow, leaving the caller's own cultures as they were.</summary>
+    /// <summary>Switches the cultures the rendered components follow through the test switch, leaving the caller's own cultures as they were.</summary>
     /// <param name="culture">The name of the culture that formats dates, numbers and collation.</param>
     /// <param name="uiCulture">The name of the culture that chooses strings and direction; <see langword="null"/> takes <paramref name="culture"/>.</param>
-    /// <remarks>The change is made inside this asynchronous method, so the cultures it applies to its flow are not the caller's.</remarks>
+    /// <remarks>The switch is made inside this asynchronous method, so the cultures it applies to its flow are not the caller's.</remarks>
     public async Task ChangeCultureAsync(string culture, string? uiCulture = null)
-        => await Services.GetRequiredService<ICultureState>().ChangeAsync(
+        => await Services.GetRequiredService<ICultureSwitch>().SwitchAsync(
             CultureInfo.GetCultureInfo(culture),
             uiCulture is null ? null : CultureInfo.GetCultureInfo(uiCulture)).ConfigureAwait(false);
 

@@ -4,7 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.Events;
 
-/// <summary>The cultures a user scope shows, announced to its subscribers as they change.</summary>
+/// <summary>The cultures a user scope shows, announced to its subscribers as they change, which change only as the state's integration applies a pair a switch accepted.</summary>
 public interface ICultureState : INotifyStateChanged
 {
     /// <summary>The culture that formats dates, numbers and collation.</summary>
@@ -20,13 +20,6 @@ public interface ICultureState : INotifyStateChanged
     /// <remarks>The revision is published with release semantics and read with acquire semantics, as <see cref="Volatile"/> does, so a thread that reads a revision reads the cultures of that change or of a later one.</remarks>
     int Revision { get; }
 
-    /// <summary>Changes the cultures, applies them to the calling flow and notifies every subscriber.</summary>
-    /// <remarks>
-    /// The state and the calling flow hold the cultures once the method returns, and only the notification completes
-    /// later. A pair the state already holds is applied to the calling flow alone, without a notification or a new revision.
-    /// </remarks>
-    /// <param name="culture">The culture that formats dates, numbers and collation.</param>
-    /// <param name="uiCulture">The culture that chooses strings and direction; <see langword="null"/> takes <paramref name="culture"/>.</param>
-    /// <returns>A task that completes once every subscriber has been notified.</returns>
-    Task ChangeAsync(CultureInfo culture, CultureInfo? uiCulture = null);
+    /// <summary>The version of the accepted pair the state last applied.</summary>
+    CultureVersion Version { get; }
 }

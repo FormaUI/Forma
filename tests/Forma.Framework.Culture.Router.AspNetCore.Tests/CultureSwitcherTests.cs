@@ -2,6 +2,7 @@ namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
 
 using System.Globalization;
 
+using Forma.Tests.Culture;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
@@ -18,6 +19,7 @@ public sealed class CultureSwitcherTests
         => new ServiceCollection()
             .AddSingleton<NavigationManager>(navigationManager)
             .AddSingleton<IJSRuntime>(new RecordingJSRuntime((_, _) => null))
+            .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureRouting(new CultureRouterOptions
             {
                 Prefix = CulturePrefix.ExceptDefault,
@@ -47,7 +49,7 @@ public sealed class CultureSwitcherTests
             using var fixture = new CultureFixture("en");
             await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/about")));
             await using var scope = provider.CreateAsyncScope();
-            await scope.ServiceProvider.GetRequiredService<ICultureState>().ChangeAsync(Hebrew);
+            await scope.ServiceProvider.GetRequiredService<ICultureSwitch>().SwitchAsync(Hebrew);
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
 
             // Act

@@ -2,6 +2,7 @@ namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
 
 using System.Globalization;
 
+using Forma.Tests.Culture;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
@@ -19,7 +20,8 @@ public sealed class CultureRoutePageTests
     {
         var services = new ServiceCollection()
             .AddSingleton<NavigationManager>(navigationManager)
-            .AddSingleton(js);
+            .AddSingleton(js)
+            .AddScoped<ICultureSwitch, TestCultureSwitch>();
 
         if (loggerFactory is not null)
         {

@@ -2,8 +2,8 @@
 
 The culture state each user scope holds: the culture that formats dates, numbers and collation, and
 the UI culture that chooses strings and direction, kept apart so an application can show English text
-with German formats. Code reads the cultures from the state, changes them through it, and subscribes to
-hear of each change.
+with German formats. Code reads the cultures from the state, switches them through the culture switch,
+and subscribes to the state to hear of each change.
 
 ## Use it
 
@@ -13,36 +13,51 @@ The package comes with `formaui-net.Blazor`, and `AddFormaUI()` registers its st
 | Service | Registered as |
 | --- | --- |
 | `ICultureState` | `DefaultCultureState`, scoped. |
+| `ICultureStateIntegration` | The same instance as the scope's `ICultureState`. |
 
-It is added with `TryAdd`, so a host registers its own `ICultureState` first to replace it. The state
+They are added with `TryAdd`, so a host registers its own `ICultureState` first to replace it. The state
 starts from the cultures in force when the scope first resolves it, which on a server are the request's.
 
-## The state
+## Switching
 
-`Culture` and `UICulture` are the state's cultures, each read-only, and `IsRightToLeft` is whether the
-UI culture is written right to left. `Revision` advances once on each change.
-
-`ChangeAsync(culture, uiCulture)` changes both; an omitted `uiCulture` takes `culture`. The state holds
-the new cultures, and the calling flow runs in them, as soon as the call returns; its task completes once
-every subscriber has been notified. On an Interactive Server circuit,
+`ICultureSwitch.SwitchAsync(culture, uiCulture)` requests both cultures; an omitted `uiCulture` takes
+`culture`. `AddFormaUI()` registers `LocalCultureSwitch` as the switch, which accepts each switch at once
+and applies it to the user scope's state: the state holds the new cultures, and the calling flow runs in
+them, as soon as the call returns, and its task completes once every subscriber has been notified. On an
+Interactive Server circuit,
 [`Forma.Framework.Culture.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Blazor.Server/README.md)
-applies them before every later event too. A change to the pair the state already holds applies it to
-the calling flow and nothing more: `Revision` stays, and no subscriber is notified.
+applies them before every later event too.
 
 ```razor
 @using System.Globalization
 @using Forma.Blazor.Components.Buttons
 @using Forma.Framework.Culture
 @inject ICultureState CultureState
+@inject ICultureSwitch CultureSwitch
 
 <FormaButton OnClick="SwitchToHebrewAsync">עברית</FormaButton>
 <span>@DateTime.Today.ToString("d", CultureState.Culture)</span>
 
 @code {
     private Task SwitchToHebrewAsync()
-        => CultureState.ChangeAsync(CultureInfo.GetCultureInfo("he"));
+        => CultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo("he"));
 }
 ```
+
+## The state
+
+`Culture` and `UICulture` are the state's cultures, each read-only, and `IsRightToLeft` is whether the
+UI culture is written right to left. `Revision` advances once on each change, and `Version` is the
+version of the accepted pair the state last applied: the key of the document whose sequence it belongs
+to, and its number in that sequence.
+
+A switch applies the pair it accepted through `ICultureStateIntegration.ApplyAsync(accepted)`, which
+resolves as the state's own instance, so a state registered in place of Forma's implements both; one
+that doesn't is rejected with `InvalidOperationException` as a scope first resolves it. A version the
+state has applied already, or an earlier one of the same document, changes nothing, and a version of
+another document is newer whatever its number. A later version of the pair the state already holds
+records the version and applies the pair to the calling flow, and nothing more: `Revision` stays, and no
+subscriber is notified.
 
 ## Following a change
 
@@ -73,7 +88,7 @@ registers a callback run after every change, and `Unsubscribe` removes it.
 `ICultureRouteHandler` handles the culture route an address represents. Its `HandleAsync(address)`
 completes once the handling has finished; the one
 [`Forma.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md)
-registers changes the culture state to the culture the address names, and the document culture
+registers switches to the culture the address names, and the document culture
 synchronizer reports each address an enhanced navigation lands at to it.
 
 ## Running in the state's cultures

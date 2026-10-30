@@ -265,16 +265,17 @@ The folder reaches the output as content:
 </ItemGroup>
 ```
 
-A host that changes the culture without a new request, switching language in place, changes it
-through the `ICultureState` every user scope holds, and every component renders again in it:
+A host that changes the culture without a new request, switching language in place, requests it
+through the `ICultureSwitch` every user scope resolves, which applies it to the scope's
+`ICultureState`, and every component renders again in it:
 
 ```razor
 @using System.Globalization
 @using Forma.Blazor.Components.Buttons
 @using Forma.Framework.Culture
-@inject ICultureState CultureState
+@inject ICultureSwitch CultureSwitch
 
-<FormaButton OnClick="@(() => CultureState.ChangeAsync(CultureInfo.GetCultureInfo("he")))">עברית</FormaButton>
+<FormaButton OnClick="@(() => CultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo("he")))">עברית</FormaButton>
 ```
 
 Text typed into a number or time field and not yet committed keeps the culture it was typed in, so

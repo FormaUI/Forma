@@ -17,6 +17,7 @@ public sealed class CultureCircuitHandlerTests
     private static ServiceProvider CreateServices(FakeDocumentCultureSynchronizerBrowser? browser = null)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>((browser ?? new FakeDocumentCultureSynchronizerBrowser()).Runtime)
+            .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureServer()
             .BuildServiceProvider();
 
@@ -35,12 +36,12 @@ public sealed class CultureCircuitHandlerTests
         using var fixture = new CultureFixture("en-US");
         await using var provider = CreateServices();
         await using var scope = provider.CreateAsyncScope();
-        var cultureState = scope.ServiceProvider.GetRequiredService<ICultureState>();
+        var cultureSwitch = scope.ServiceProvider.GetRequiredService<ICultureSwitch>();
         CultureInfo? culture = null;
         CultureInfo? uiCulture = null;
 
         // Act
-        await RunActivityAsync(scope.ServiceProvider, () => cultureState.ChangeAsync(German, Hebrew));
+        await RunActivityAsync(scope.ServiceProvider, () => cultureSwitch.SwitchAsync(German, Hebrew));
         await RunActivityAsync(scope.ServiceProvider, () =>
         {
             culture = CultureInfo.CurrentCulture;
@@ -62,8 +63,8 @@ public sealed class CultureCircuitHandlerTests
         using var fixture = new CultureFixture("en-US");
         await using var provider = CreateServices();
         await using var scope = provider.CreateAsyncScope();
-        var cultureState = scope.ServiceProvider.GetRequiredService<ICultureState>();
-        await RunActivityAsync(scope.ServiceProvider, () => cultureState.ChangeAsync(German, Hebrew));
+        var cultureSwitch = scope.ServiceProvider.GetRequiredService<ICultureSwitch>();
+        await RunActivityAsync(scope.ServiceProvider, () => cultureSwitch.SwitchAsync(German, Hebrew));
 
         // Act
         await RunActivityAsync(scope.ServiceProvider, () => Task.CompletedTask);

@@ -17,8 +17,17 @@ public sealed class DefaultCultureStateTests
     private static ServiceProvider CreateServices()
         => new ServiceCollection().AddFormaCultureServices().BuildServiceProvider();
 
+    private static int _lastNumber;
+
     private static ICultureState GetState(IServiceScope scope)
         => scope.ServiceProvider.GetRequiredService<ICultureState>();
+
+    private static ICultureStateIntegration GetIntegration(IServiceScope scope)
+        => scope.ServiceProvider.GetRequiredService<ICultureStateIntegration>();
+
+    // Each pair under the next version of one document, so every application follows the one before it.
+    private static Task ApplyAsync(IServiceScope scope, CultureInfo culture, CultureInfo? uiCulture = null)
+        => GetIntegration(scope).ApplyAsync(new AcceptedCulture(culture, uiCulture ?? culture, new CultureVersion("test", Interlocked.Increment(ref _lastNumber))));
 
     public sealed class Creation
     {
@@ -39,7 +48,8 @@ public sealed class DefaultCultureStateTests
                 () => Assert.Equal(German, state.Culture),
                 () => Assert.Equal(English, state.UICulture),
                 () => Assert.False(state.IsRightToLeft),
-                () => Assert.Equal(0, state.Revision));
+                () => Assert.Equal(0, state.Revision),
+                () => Assert.Same(CultureVersion.Initial, state.Version));
         }
 
         [Fact]
@@ -61,7 +71,7 @@ public sealed class DefaultCultureStateTests
         }
     }
 
-    public sealed class Change
+    public sealed class Application
     {
         [Fact]
         public async Task Should_take_the_culture_as_the_UI_culture_when_none_is_given()
@@ -73,7 +83,7 @@ public sealed class DefaultCultureStateTests
             var state = GetState(scope);
 
             // Act
-            await state.ChangeAsync(Hebrew);
+            await ApplyAsync(scope, Hebrew);
 
             // Assert
             Assert.Multiple(
@@ -91,7 +101,7 @@ public sealed class DefaultCultureStateTests
             var state = GetState(scope);
 
             // Act
-            await state.ChangeAsync(German, Hebrew);
+            await ApplyAsync(scope, German, Hebrew);
 
             // Assert
             Assert.Multiple(
@@ -111,7 +121,7 @@ public sealed class DefaultCultureStateTests
             var state = GetState(scope);
 
             // Act
-            await state.ChangeAsync(CultureInfo.GetCultureInfo(culture), CultureInfo.GetCultureInfo(uiCulture));
+            await ApplyAsync(scope, CultureInfo.GetCultureInfo(culture), CultureInfo.GetCultureInfo(uiCulture));
 
             // Assert
             Assert.Equal(isRightToLeft, state.IsRightToLeft);
@@ -128,7 +138,7 @@ public sealed class DefaultCultureStateTests
             var writableCulture = new CultureInfo("he");
 
             // Act
-            await state.ChangeAsync(writableCulture);
+            await ApplyAsync(scope, writableCulture);
 
             // Assert
             Assert.Multiple(
@@ -147,8 +157,8 @@ public sealed class DefaultCultureStateTests
             var state = GetState(scope);
 
             // Act
-            await state.ChangeAsync(Hebrew);
-            await state.ChangeAsync(German, Hebrew);
+            await ApplyAsync(scope, Hebrew);
+            await ApplyAsync(scope, German, Hebrew);
 
             // Assert
             Assert.Equal(2, state.Revision);
@@ -166,7 +176,7 @@ public sealed class DefaultCultureStateTests
             state.Subscribe(() => { notifications++; return Task.CompletedTask; });
 
             // Act
-            await state.ChangeAsync(new CultureInfo("en"));
+            await ApplyAsync(scope, new CultureInfo("en"));
 
             // Assert
             Assert.Multiple(
@@ -188,7 +198,7 @@ public sealed class DefaultCultureStateTests
             clock.DateTimeFormat.ShortTimePattern = "HH:mm";
 
             // Act
-            await state.ChangeAsync(clock);
+            await ApplyAsync(scope, clock);
 
             // Assert
             Assert.Multiple(
@@ -209,7 +219,7 @@ public sealed class DefaultCultureStateTests
             century.DateTimeFormat.Calendar.TwoDigitYearMax = 2099;
 
             // Act
-            await state.ChangeAsync(century);
+            await ApplyAsync(scope, century);
 
             // Assert
             Assert.Multiple(
@@ -228,7 +238,7 @@ public sealed class DefaultCultureStateTests
             state.Subscribe(async () => await Task.Yield());
 
             // Act
-            await state.ChangeAsync(German, Hebrew);
+            await ApplyAsync(scope, German, Hebrew);
 
             // Assert
             Assert.Multiple(
@@ -250,7 +260,7 @@ public sealed class DefaultCultureStateTests
             CultureInfo.CurrentUICulture = Hebrew;
 
             // Act
-            await state.ChangeAsync(new CultureInfo("en"));
+            await ApplyAsync(scope, new CultureInfo("en"));
 
             // Assert
             Assert.Multiple(
@@ -272,7 +282,7 @@ public sealed class DefaultCultureStateTests
             state.Subscribe(() => gate.Task);
 
             // Act
-            var change = state.ChangeAsync(German, Hebrew);
+            var change = ApplyAsync(scope, German, Hebrew);
 
             // Assert
             Assert.Multiple(
@@ -286,7 +296,7 @@ public sealed class DefaultCultureStateTests
         }
 
         [Fact]
-        public async Task Should_reject_a_missing_culture()
+        public async Task Should_reject_a_missing_pair()
         {
             // Arrange
             using var fixture = new CultureFixture("en");
@@ -295,10 +305,95 @@ public sealed class DefaultCultureStateTests
             var state = GetState(scope);
 
             // Act
-            var exception = await Record.ExceptionAsync(() => state.ChangeAsync(null!));
+            var exception = await Record.ExceptionAsync(() => GetIntegration(scope).ApplyAsync(null!));
 
             // Assert
             Assert.IsType<ArgumentNullException>(exception);
+        }
+    }
+
+    public sealed class Versions
+    {
+        [Fact]
+        public async Task Should_record_the_version_it_applies()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            var version = new CultureVersion("document", 3);
+
+            // Act
+            await GetIntegration(scope).ApplyAsync(new AcceptedCulture(Hebrew, Hebrew, version));
+
+            // Assert
+            Assert.Same(version, GetState(scope).Version);
+        }
+
+        [Theory]
+        [InlineData(2)]
+        [InlineData(1)]
+        public async Task Should_change_nothing_for_a_version_of_the_same_document_it_has_reached(int number)
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+            var notifications = 0;
+            await GetIntegration(scope).ApplyAsync(new AcceptedCulture(Hebrew, Hebrew, new CultureVersion("document", 2)));
+            state.Subscribe(() => { notifications++; return Task.CompletedTask; });
+
+            // Act
+            await GetIntegration(scope).ApplyAsync(new AcceptedCulture(German, German, new CultureVersion("document", number)));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(Hebrew, state.Culture),
+                () => Assert.Equal(2, state.Version.Number),
+                () => Assert.Equal(1, state.Revision),
+                () => Assert.Equal(0, notifications));
+        }
+
+        [Fact]
+        public async Task Should_apply_a_version_of_another_document_whatever_its_number()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            await GetIntegration(scope).ApplyAsync(new AcceptedCulture(Hebrew, Hebrew, new CultureVersion("document", 5)));
+            var version = new CultureVersion("next document", 0);
+
+            // Act
+            await GetIntegration(scope).ApplyAsync(new AcceptedCulture(German, German, version));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(German, GetState(scope).Culture),
+                () => Assert.Same(version, GetState(scope).Version));
+        }
+
+        [Fact]
+        public async Task Should_record_a_later_version_of_the_pair_it_holds_without_a_change()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+            await GetIntegration(scope).ApplyAsync(new AcceptedCulture(Hebrew, Hebrew, new CultureVersion("document", 1)));
+            var notifications = 0;
+            state.Subscribe(() => { notifications++; return Task.CompletedTask; });
+
+            // Act
+            await GetIntegration(scope).ApplyAsync(new AcceptedCulture(new CultureInfo("he"), new CultureInfo("he"), new CultureVersion("document", 2)));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, state.Version.Number),
+                () => Assert.Equal(1, state.Revision),
+                () => Assert.Equal(0, notifications));
         }
     }
 
@@ -320,7 +415,7 @@ public sealed class DefaultCultureStateTests
             });
 
             // Act
-            await state.ChangeAsync(German, Hebrew);
+            await ApplyAsync(scope, German, Hebrew);
 
             // Assert
             Assert.Equal(["de-DE/he r1"], notifiedCultures);
@@ -340,7 +435,7 @@ public sealed class DefaultCultureStateTests
             state.Subscribe(() => { notifiedSubscribers.Add("second"); return Task.CompletedTask; });
 
             // Act
-            var change = state.ChangeAsync(Hebrew);
+            var change = ApplyAsync(scope, Hebrew);
             var isCompletedBeforeRelease = change.IsCompleted;
             gate.SetResult();
             await change;
@@ -363,11 +458,11 @@ public sealed class DefaultCultureStateTests
             var notifications = 0;
             Task CountAsync() { notifications++; return Task.CompletedTask; }
             state.Subscribe(CountAsync);
-            await state.ChangeAsync(Hebrew);
+            await ApplyAsync(scope, Hebrew);
 
             // Act
             state.Unsubscribe(CountAsync);
-            await state.ChangeAsync(English);
+            await ApplyAsync(scope, English);
 
             // Assert
             Assert.Equal(1, notifications);
@@ -385,7 +480,7 @@ public sealed class DefaultCultureStateTests
             GetState(otherScope).Subscribe(() => { otherNotifications++; return Task.CompletedTask; });
 
             // Act
-            await GetState(scope).ChangeAsync(Hebrew);
+            await ApplyAsync(scope, Hebrew);
 
             // Assert
             Assert.Multiple(

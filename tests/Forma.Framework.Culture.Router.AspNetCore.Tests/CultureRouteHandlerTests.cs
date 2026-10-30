@@ -1,5 +1,6 @@
 namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
 
+using Forma.Tests.Culture;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
@@ -13,6 +14,7 @@ public sealed class CultureRouteHandlerTests
         => new ServiceCollection()
             .AddSingleton<NavigationManager>(navigationManager)
             .AddSingleton<IJSRuntime>(new RecordingJSRuntime((_, _) => null))
+            .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureRouting(new CultureRouterOptions
             {
                 Prefix = CulturePrefix.ExceptDefault,

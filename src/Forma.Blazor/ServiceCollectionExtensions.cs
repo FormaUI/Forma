@@ -2,6 +2,7 @@ namespace Forma.Blazor;
 
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Browser.Interop;
+using Forma.Framework.Culture;
 using Forma.Framework.Culture.Browser.Interop;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Events;
@@ -40,6 +41,8 @@ public static class ServiceCollectionExtensions
 
         services.AddFormaEventServices();
         services.AddFormaCultureBrowserSynchronization();
+        // A switch applies to the user scope's own state, which the document culture synchronizer follows.
+        services.TryAddScoped<ICultureSwitch, LocalCultureSwitch>();
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();

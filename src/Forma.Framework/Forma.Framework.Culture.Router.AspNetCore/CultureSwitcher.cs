@@ -17,20 +17,23 @@ public sealed class CultureSwitcher : IAsyncDisposable, IDisposable
 {
     private readonly CultureRouter _cultureRouter;
     private readonly ICultureState _cultureState;
+    private readonly ICultureSwitch _cultureSwitch;
     private readonly NavigationManager _navigationManager;
     private readonly JSEnvironment _environment;
     private CultureCookie? _cultureCookie;
     private Task _cookieWriting = Task.CompletedTask;
 
-    /// <summary>Creates the switcher over the application's cultures and the user scope's culture state, navigation and JS runtime.</summary>
-    public CultureSwitcher(CultureRouter cultureRouter, ICultureState cultureState, NavigationManager navigationManager, IJSRuntime js, ILogger<CultureSwitcher> logger)
+    /// <summary>Creates the switcher over the application's cultures and the user scope's culture state, culture switch, navigation and JS runtime.</summary>
+    public CultureSwitcher(CultureRouter cultureRouter, ICultureState cultureState, ICultureSwitch cultureSwitch, NavigationManager navigationManager, IJSRuntime js, ILogger<CultureSwitcher> logger)
     {
         ArgumentNullException.ThrowIfNull(cultureRouter);
         ArgumentNullException.ThrowIfNull(cultureState);
+        ArgumentNullException.ThrowIfNull(cultureSwitch);
         ArgumentNullException.ThrowIfNull(navigationManager);
 
         _cultureRouter = cultureRouter;
         _cultureState = cultureState;
+        _cultureSwitch = cultureSwitch;
         _navigationManager = navigationManager;
         _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
     }
@@ -92,9 +95,8 @@ public sealed class CultureSwitcher : IAsyncDisposable, IDisposable
     /// <remarks>
     /// A segment that isn't a culture's token is not found wherever the page renders. A page an interactive router rendered
     /// within <see cref="CultureRouteScope"/> under <see cref="CultureSwitchMode.InPlace"/> follows its route: an address that isn't
-    /// its culture's canonical one is replaced by the canonical one, and otherwise the culture state takes the route's
-    /// culture before the call returns, its notification observed rather than awaited, and the cookie is written where the
-    /// state changed.
+    /// its culture's canonical one is replaced by the canonical one, and otherwise the route's culture is switched to, its
+    /// switch observed rather than awaited, and the cookie is written where the state changed before the call returned.
     /// </remarks>
     /// <param name="token">The culture segment the page was routed with, <see langword="null"/> for its plain route.</param>
     /// <param name="isRoutedInPlace">Whether an interactive router rendered the page within <see cref="CultureRouteScope"/>.</param>
@@ -122,7 +124,7 @@ public sealed class CultureSwitcher : IAsyncDisposable, IDisposable
         }
 
         var revision = _cultureState.Revision;
-        var change = _cultureState.ChangeAsync(match.Route.Culture);
+        var change = _cultureSwitch.SwitchAsync(match.Route.Culture);
 
         _ = ObserveAsync(change, match.Route);
 
@@ -134,11 +136,11 @@ public sealed class CultureSwitcher : IAsyncDisposable, IDisposable
         return true;
     }
 
-    /// <summary>Changes the culture state to the culture the current address names.</summary>
+    /// <summary>Switches to the culture the current address names.</summary>
     internal Task ReconcileAsync()
         => ReconcileAsync(new Uri(_navigationManager.Uri));
 
-    /// <summary>Changes the culture state to the culture <paramref name="address"/> names.</summary>
+    /// <summary>Switches to the culture <paramref name="address"/> names.</summary>
     internal Task ReconcileAsync(Uri address)
     {
         // An address outside the application's root belongs to another application and names none of its cultures.
@@ -156,7 +158,7 @@ public sealed class CultureSwitcher : IAsyncDisposable, IDisposable
             return Task.CompletedTask;
         }
 
-        return _cultureState.ChangeAsync(_cultureRouter.Match(path).Route.Culture);
+        return _cultureSwitch.SwitchAsync(_cultureRouter.Match(path).Route.Culture);
     }
 
     // The address relative to the application's root, its culture segment included, where it lies under the root's
@@ -184,14 +186,14 @@ public sealed class CultureSwitcher : IAsyncDisposable, IDisposable
             : null;
     }
 
-    // A change's notification completes after the page it was made for has gone on to render, so a failure is logged here.
+    // A switch completes after the page it was made for has gone on to render, so a failure is logged here.
     private async Task ObserveAsync(Task change, CultureRoute route)
     {
         await change.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         if (change.Exception?.InnerException is { } exception)
         {
-            CultureRouterLog.CultureChangeNotificationFailed(_environment.Logger, exception, route.Culture.Name);
+            CultureRouterLog.CultureSwitchFailed(_environment.Logger, exception, route.Culture.Name);
         }
     }
 

@@ -45,8 +45,8 @@ public sealed class InterleavedCultureState(CultureInfo culture, CultureInfo cha
     public int Revision { get; private set; }
 
     /// <inheritdoc />
-    public Task ChangeAsync(CultureInfo culture, CultureInfo? uiCulture = null)
-        => throw new NotSupportedException("The state changes only as its culture is first read.");
+    public CultureVersion Version
+        => CultureVersion.Initial;
 
     /// <inheritdoc />
     public void Subscribe(Func<Task> callback)

@@ -18,6 +18,7 @@ public sealed class DocumentCultureSynchronizerTests
     private static ServiceProvider CreateServices(FakeDocumentCultureSynchronizerBrowser browser)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>(browser.Runtime)
+            .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureBrowserSynchronization()
             .BuildServiceProvider();
 
@@ -25,9 +26,10 @@ public sealed class DocumentCultureSynchronizerTests
     private static ServiceProvider CreateServicesFollowingAddresses(FakeDocumentCultureSynchronizerBrowser browser)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>(browser.Runtime)
-            .AddScoped(provider => new FakeCultureRouteHandler(address => provider.GetRequiredService<ICultureState>().ChangeAsync(
+            .AddScoped(provider => new FakeCultureRouteHandler(address => provider.GetRequiredService<ICultureSwitch>().SwitchAsync(
                 CultureInfo.GetCultureInfo(address.AbsolutePath.StartsWith("/he/", StringComparison.Ordinal) ? "he-IL" : "en-US"))))
             .AddScoped<ICultureRouteHandler>(provider => provider.GetRequiredService<FakeCultureRouteHandler>())
+            .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureBrowserSynchronization()
             .BuildServiceProvider();
 
@@ -36,6 +38,9 @@ public sealed class DocumentCultureSynchronizerTests
 
     private static ICultureState GetCultureState(IServiceScope scope)
         => scope.ServiceProvider.GetRequiredService<ICultureState>();
+
+    private static ICultureSwitch GetCultureSwitch(IServiceScope scope)
+        => scope.ServiceProvider.GetRequiredService<ICultureSwitch>();
 
     public sealed class Following
     {
@@ -68,7 +73,7 @@ public sealed class DocumentCultureSynchronizerTests
             GetDocumentCultureSynchronizer(scope).BeginFollowing();
 
             // Act
-            await GetCultureState(scope).ChangeAsync(German, French);
+            await GetCultureSwitch(scope).SwitchAsync(German, French);
 
             // Assert
             Assert.Multiple(
@@ -84,12 +89,12 @@ public sealed class DocumentCultureSynchronizerTests
             var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var cultureState = GetCultureState(scope);
+            var cultureSwitch = GetCultureSwitch(scope);
             GetDocumentCultureSynchronizer(scope).BeginFollowing();
             browser.OwnerRegistration!.Recorder.Hold("update");
-            var first = cultureState.ChangeAsync(CultureInfo.GetCultureInfo("he-IL"));
-            var second = cultureState.ChangeAsync(German);
-            var third = cultureState.ChangeAsync(French);
+            var first = cultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo("he-IL"));
+            var second = cultureSwitch.SwitchAsync(German);
+            var third = cultureSwitch.SwitchAsync(French);
 
             // Act
             browser.OwnerRegistration.Recorder.Release("update");
@@ -122,7 +127,7 @@ public sealed class DocumentCultureSynchronizerTests
 
             // Act — a change queued behind both reconciliations completes once they have
             Assert.Single(browser.Module.Recorder.GetCalls("register")).Complete(firstRegistration);
-            await GetCultureState(scope).ChangeAsync(German);
+            await GetCultureSwitch(scope).SwitchAsync(German);
 
             // Assert — the later connection registered again rather than taking the first registration as its own
             Assert.Multiple(
@@ -145,7 +150,7 @@ public sealed class DocumentCultureSynchronizerTests
 
             // Act — the connection comes up again
             documentCultureSynchronizer.BeginFollowing();
-            await GetCultureState(scope).ChangeAsync(German);
+            await GetCultureSwitch(scope).SwitchAsync(German);
 
             // Assert — the same identity recovered the registration rather than being refused as another owner
             Assert.Multiple(
@@ -207,7 +212,7 @@ public sealed class DocumentCultureSynchronizerTests
             var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
             documentCultureSynchronizer.BeginFollowing();
             browser.FailNext("update", new JSDisconnectedException("The circuit dropped."));
-            await GetCultureState(scope).ChangeAsync(German);
+            await GetCultureSwitch(scope).SwitchAsync(German);
 
             // Act
             documentCultureSynchronizer.BeginFollowing();
@@ -224,13 +229,13 @@ public sealed class DocumentCultureSynchronizerTests
             var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var cultureState = GetCultureState(scope);
+            var cultureSwitch = GetCultureSwitch(scope);
             GetDocumentCultureSynchronizer(scope).BeginFollowing();
             browser.FailNext("update", new TaskCanceledException());
-            await cultureState.ChangeAsync(German);
+            await cultureSwitch.SwitchAsync(German);
 
             // Act
-            await cultureState.ChangeAsync(French);
+            await cultureSwitch.SwitchAsync(French);
 
             // Assert
             Assert.Equal(("fr-FR", "ltr"), browser.Document);
@@ -269,7 +274,7 @@ public sealed class DocumentCultureSynchronizerTests
             browser.CloseCircuit();
 
             // Act
-            await GetCultureState(scope).ChangeAsync(German);
+            await GetCultureSwitch(scope).SwitchAsync(German);
 
             // Assert
             Assert.Multiple(
@@ -391,7 +396,7 @@ public sealed class DocumentCultureSynchronizerTests
             var registration = browser.OwnerRegistration!;
             registration.Recorder.Hold("update");
             var reply = browser.ReportLandingAsync("http://localhost/he/about");
-            var change = GetCultureState(scope).ChangeAsync(German);
+            var change = GetCultureSwitch(scope).SwitchAsync(German);
 
             // Act
             registration.Recorder.Release("update");
@@ -437,6 +442,7 @@ public sealed class DocumentCultureSynchronizerTests
                 .AddSingleton<IJSRuntime>(browser.Runtime)
                 .AddSingleton<ILogger<DocumentCultureSynchronizer>>(new Logger<DocumentCultureSynchronizer>(loggerFactory))
                 .AddScoped<ICultureRouteHandler>(_ => new FakeCultureRouteHandler(_ => throw new InvalidOperationException("The handler failed.")))
+                .AddScoped<ICultureSwitch, TestCultureSwitch>()
                 .AddFormaCultureBrowserSynchronization()
                 .BuildServiceProvider();
             await using var scope = provider.CreateAsyncScope();
@@ -487,12 +493,12 @@ public sealed class DocumentCultureSynchronizerTests
             var browser = new FakeDocumentCultureSynchronizerBrowser();
             await using var provider = CreateServices(browser);
             await using var scope = provider.CreateAsyncScope();
-            var cultureState = GetCultureState(scope);
+            var cultureSwitch = GetCultureSwitch(scope);
             var documentCultureSynchronizer = GetDocumentCultureSynchronizer(scope);
             documentCultureSynchronizer.BeginFollowing();
             var registration = browser.OwnerRegistration!;
             registration.Recorder.Hold("update");
-            var changes = Task.WhenAll(cultureState.ChangeAsync(German), cultureState.ChangeAsync(French));
+            var changes = Task.WhenAll(cultureSwitch.SwitchAsync(German), cultureSwitch.SwitchAsync(French));
             var disposal = documentCultureSynchronizer.DisposeAsync().AsTask();
 
             // Act
@@ -540,7 +546,7 @@ public sealed class DocumentCultureSynchronizerTests
             await documentCultureSynchronizer.DisposeAsync();
 
             // Act
-            await GetCultureState(scope).ChangeAsync(German);
+            await GetCultureSwitch(scope).SwitchAsync(German);
             documentCultureSynchronizer.BeginFollowing();
 
             // Assert

@@ -23,6 +23,7 @@
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 
     <!-- The languages the library ships, each a locale pack, so a component test reads the same strings the Showcase renders; the build records them in this assembly as it would in an application's. -->

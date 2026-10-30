@@ -13,9 +13,10 @@ handler starts it with each circuit:
 | Service | Registered as |
 | --- | --- |
 | `ICultureState` | `DefaultCultureState`, scoped, through `AddFormaCultureServices()`. |
+| `ICultureStateIntegration` | The same instance as the scope's `ICultureState`, through `AddFormaCultureServices()`. |
 | `DocumentCultureSynchronizer` | Scoped, one per user scope. |
 
-Both are added with `TryAdd`, so a host's own registration made first is the one used.
+Each is added with `TryAdd`, so a host's own registration made first is the one used.
 `DocumentCultureSynchronizer.BeginFollowing()` starts keeping the document on the state, and brings it in
 step again when called as a connection to the browser comes up.
 

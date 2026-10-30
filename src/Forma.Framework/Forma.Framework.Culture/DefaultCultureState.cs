@@ -5,7 +5,7 @@ using System.Globalization;
 using Forma.Framework.Events;
 
 /// <summary>The <see cref="ICultureState"/> a user scope holds, starting from the cultures in force when the scope first resolves it.</summary>
-internal sealed class DefaultCultureState : ICultureState
+internal sealed class DefaultCultureState : ICultureState, ICultureStateIntegration
 {
     private readonly StateNotifier _notifier = new();
     private int _revision;
@@ -25,15 +25,24 @@ internal sealed class DefaultCultureState : ICultureState
         => Volatile.Read(ref _revision);
 
     /// <inheritdoc />
+    public CultureVersion Version { get; private set; } = CultureVersion.Initial;
+
+    /// <inheritdoc />
     /// <remarks>The method is synchronous up to the notification's task it returns, so the cultures are assigned on the caller's flow and stay in force after the call.</remarks>
-    public Task ChangeAsync(CultureInfo culture, CultureInfo? uiCulture = null)
+    public Task ApplyAsync(AcceptedCulture accepted)
     {
-        ArgumentNullException.ThrowIfNull(culture);
+        ArgumentNullException.ThrowIfNull(accepted);
 
-        var changedCulture = CultureInfo.ReadOnly(culture);
-        var changedUICulture = CultureInfo.ReadOnly(uiCulture ?? culture);
+        if (!accepted.Version.Follows(Version))
+        {
+            return Task.CompletedTask;
+        }
 
-        if (IsHeld(changedCulture, Culture) && IsHeld(changedUICulture, UICulture))
+        var culture = CultureInfo.ReadOnly(accepted.Culture);
+        var uiCulture = CultureInfo.ReadOnly(accepted.UICulture);
+        Version = accepted.Version;
+
+        if (IsHeld(culture, Culture) && IsHeld(uiCulture, UICulture))
         {
             CultureInfo.CurrentCulture = Culture;
             CultureInfo.CurrentUICulture = UICulture;
@@ -41,10 +50,10 @@ internal sealed class DefaultCultureState : ICultureState
             return Task.CompletedTask;
         }
 
-        Culture = changedCulture;
-        UICulture = changedUICulture;
-        CultureInfo.CurrentCulture = changedCulture;
-        CultureInfo.CurrentUICulture = changedUICulture;
+        Culture = culture;
+        UICulture = uiCulture;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = uiCulture;
         Volatile.Write(ref _revision, _revision + 1);
 
         return _notifier.NotifyAsync();

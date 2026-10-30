@@ -1,5 +1,6 @@
 @implements IDisposable
 @inject ICultureState CultureState
+@inject ICultureSwitch CultureSwitch
 @inject IServiceProvider Services
 @inject NavigationManager Navigation
 @inject DelayedSwitches Delayed
@@ -36,7 +37,7 @@
         => CultureState.Subscribe(HandleCultureChangedAsync);
 
     private Task SwitchStateAsync()
-        => CultureState.ChangeAsync(Hebrew);
+        => CultureSwitch.SwitchAsync(Hebrew);
 
     // A switch that lands while the check holds the browser offline, which the check learns of over HTTP as soon as the
     // state has changed, since the notification that follows waits on the browser.
@@ -46,7 +47,7 @@
             await Task.Delay(TimeSpan.FromSeconds(2));
             await InvokeAsync(() =>
             {
-                var change = CultureState.ChangeAsync(Hebrew);
+                var change = CultureSwitch.SwitchAsync(Hebrew);
                 Delayed.Record();
 
                 return change;
