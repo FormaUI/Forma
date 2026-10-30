@@ -211,6 +211,23 @@
         }
 
         [Fact]
+        public async Task Should_leave_the_canvas_as_typed_when_a_render_brings_the_document_as_it_stood()
+        {
+            // Arrange — an empty document, and a selection change that renders the editor again before any change is reported
+            using var ctx = new FormaRichTextEditorTests();
+            var canvas = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
+            var model = new TestModel { Body = new ComposerDocument(ComposerDocumentFormat.Html, string.Empty) };
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
+            var editor = cut.FindComponent<FormaRichTextEditor>();
+
+            // Act
+            await editor.InvokeAsync(() => editor.Instance.HandleSelectionChangedAsync(new RichTextSelectionDto { Start = 0, End = 0, IsCollapsed = true, BlockType = "p", ActiveStyles = [] }));
+
+            // Assert
+            Assert.DoesNotContain(canvas.Invocations, invocation => invocation.Identifier == "setHtml");
+        }
+
+        [Fact]
         public void Should_render_no_selection_bar_while_the_engine_hides_it()
         {
             // Arrange

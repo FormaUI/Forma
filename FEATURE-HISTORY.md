@@ -31,6 +31,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [The data view](docs/data-view-design.md)'s grid, list, cards and tree draw through [`FormaVirtualize`](docs/virtualization-design.md), each redrawing only what changed, and the arrow keys move among the checkboxes under checked selection.
 - The grid edits numbers, times and dates with times through the library's own inputs.
 - The data view, [`FormaExplorer`](docs/component-catalog.md#formaexplorer) and [`FormaComposer`](docs/component-catalog.md#formacomposer) write dates and compare text in the culture state's cultures.
+- [`FormaComposer`](docs/component-catalog.md#formacomposer) keeps what is typed as soon as it is editable.
 
 **Foundations**
 

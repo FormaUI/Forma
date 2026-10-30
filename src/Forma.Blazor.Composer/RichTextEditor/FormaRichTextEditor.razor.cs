@@ -36,6 +36,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     private RichTextEditor _canvas = default!;
     private InputScope? _inputScope;
     private string? _committedContent;
+    private string? _receivedContent;
     private string _announcement = string.Empty;
     private string? _announcedBlockType;
     private IReadOnlySet<string> _activeStyles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -82,10 +83,19 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         _editorPlugin.EmbedDialogRequested += HandleEmbedDialogRequested;
     }
 
+    // The canvas takes the document's content only when the document changed since it was last received, so a render that
+    // brings the document as it stood never writes over what was typed since.
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
         var documentContent = Composer?.Document.Content;
+
+        if (documentContent == _receivedContent)
+        {
+            return;
+        }
+
+        _receivedContent = documentContent;
 
         if (_isAttached && documentContent != _committedContent && documentContent is not null)
         {
@@ -107,10 +117,13 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
                 _inputScope = await InputRouter.RegisterAsync(_editorElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() }, _selfReference);
             }
 
+            // The canvas holds the document it attached with, an empty one included.
             var initialContent = Composer?.Document.Content;
+            _committedContent = initialContent;
+            _receivedContent = initialContent;
+
             if (!string.IsNullOrEmpty(initialContent))
             {
-                _committedContent = initialContent;
                 await _canvas.SetHtmlAsync(initialContent);
             }
 
