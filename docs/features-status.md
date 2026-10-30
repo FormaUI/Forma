@@ -99,7 +99,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The server half, `AddFormaUIServer` and `FormaPageHead` | [`Forma.Blazor.Server`](../src/Forma.Blazor.Server/README.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented in part: the components load and render under WebAssembly and Auto; [steps 10 to 12](#webassembly) open | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, and Forma's analyzer keeping each type crossing the interop serializable | [October 2026](../FEATURE-HISTORY.md#2026-10) |
+| Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, Forma's analyzer keeping each type crossing the interop serializable and its generator keeping those types' members with their library | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Hybrid | [WebAssembly and Hybrid](culture-design.md#webassembly-and-hybrid) | [Deferred](#deferred) | — |
 
 ### Build and verification

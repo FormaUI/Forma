@@ -96,10 +96,12 @@ from its own startup, which supplies the initial pair and the switch's policy.
 - **What crosses the interop boundary** is serialized by the framework's interop through reflection, so
   every type crossing it, an argument, anything nested in one, a result or a `[JSInvokable]` parameter, is a
   named type annotated at the type with `DynamicallyAccessedMembers` keeping its public constructors and
-  properties, which reaches every use of it, and has a public parameterless constructor with `init`
-  properties, since trimming removes the parameter names serialization matches a constructor by. An
-  anonymous object never crosses it. Forma's own analyzer fails the build of every client library that
-  breaks either rule.
+  properties, and has a public parameterless constructor with `init` properties, since trimming removes the
+  parameter names serialization matches a constructor by. An anonymous object never crosses it. Forma's own
+  analyzer fails the build of every client library that breaks either rule. The trimmer applies a type's
+  annotation only where code asks a value typed as that type for its type, which the interop, serializing
+  values as `object`, never does, so the same package generates for each library a dependency on every
+  annotated type's members, and every type derived from one, which the trimmer keeps with the library.
 - **Locale packs** reach a trimmed client because the host's build records each pack it references in
   the host's assembly, the package's own targets doing what the repository's build does for its hosts.
 

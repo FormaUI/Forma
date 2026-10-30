@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Operations;
 /// <remarks>
 /// The interop serializes its arguments and results by reflection, and the trimmer keeps nothing that only reflection
 /// reads, so a type crossing the boundary declares what it keeps with a type-level <c>DynamicallyAccessedMembers</c>,
-/// which reaches every use of the type, nested ones included. Trimming also removes constructors' parameter names, which
+/// which <see cref="KeptMembersGenerator"/> keeps with the assembly, nested uses included. Trimming also removes constructors' parameter names, which
 /// serialization matches a parameterized constructor by, so a type crossing it has a public parameterless constructor.
 /// The boundary is crossed by an argument in an interop method's <c>object</c> array, by a type argument for an interop
 /// type parameter that declares serialized members, by a <c>[JSInvokable]</c> method's parameters and result, by a value

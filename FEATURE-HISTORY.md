@@ -44,7 +44,7 @@ Until the first release, a month may break what the one before it allowed, and e
 **Hosting**
 
 - [The product's render-mode halves](docs/webassembly-design.md#registration): [`Forma.Blazor.Server`](src/Forma.Blazor.Server/README.md), with `AddFormaUIServer` and [`FormaPageHead`](docs/component-catalog.md#formapagehead), and [`Forma.Blazor.WebAssembly`](src/Forma.Blazor.WebAssembly/README.md), with `AddFormaUIWebAssembly`, beside `AddFormaUI`, which registers what every render mode needs.
-- [Every client library](docs/webassembly-design.md#what-a-client-loads) references the packages it compiles against rather than the shared framework, and [is trimmed](docs/webassembly-design.md#the-clients-build) with a WebAssembly client's publish, [Forma's analyzers](eng/Forma.Analyzers/README.md) keeping each type that crosses the interop serializable once trimmed.
+- [Every client library](docs/webassembly-design.md#what-a-client-loads) references the packages it compiles against rather than the shared framework, and [is trimmed](docs/webassembly-design.md#the-clients-build) with a WebAssembly client's publish, [Forma's analyzers](eng/Forma.Analyzers/README.md) keeping each type that crosses the interop serializable once trimmed and its generator keeping those types' members with their library.
 
 **Build and verification**
 
