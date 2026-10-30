@@ -19,7 +19,7 @@ using Forma.Blazor;
 using Forma.Framework.Localization.Json;
 
 builder.Services.AddJsonLocalization();
-builder.Services.AddFormaUI();
+builder.AddFormaUIServer();
 ```
 
 Forma's strings then appear in Spanish wherever `CultureInfo.CurrentUICulture` is `es` or a culture

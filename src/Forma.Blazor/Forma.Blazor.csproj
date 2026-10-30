@@ -27,7 +27,6 @@
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Browser.Blazor.Server\Forma.Framework.Browser.Blazor.Server.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Currencies\Forma.Framework.Currencies.csproj" />
@@ -37,7 +36,7 @@
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Culture.Blazor.Server\Forma.Framework.Culture.Blazor.Server.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.Culture.Browser.Interop\Forma.Framework.Culture.Browser.Interop.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\Forma.Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />

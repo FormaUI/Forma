@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-Step 1 has landed; step 2 is next.
+Steps 1 and 2 have landed; step 3 is next.
 
 ## Where Forma stood
 
@@ -65,7 +65,7 @@ checks; the Showcase is a smoke check beside it, never the gate.
    code used, so none of them references an authorization package. Until step 2, `Forma.Blazor` still
    reaches the shared framework through the circuit halves it references, so a library in its graph
    restores for `browser-wasm` but doesn't yet build for it.
-2. **The product's halves.** `Forma.Blazor.Server` takes `FormaPageHead` and `AddFormaUIServer`, on the
+2. **The product's halves.** ✅ `Forma.Blazor.Server` takes `FormaPageHead` and `AddFormaUIServer`, on the
    host's builder, which registers what `AddFormaUI` does and the circuit halves; `Forma.Blazor.WebAssembly`
    takes `AddFormaUIWebAssembly`, which registers what `AddFormaUI` does until step 10 gives it the
    culture's WebAssembly half; and `AddFormaUI` registers the culture state itself, as
@@ -73,6 +73,15 @@ checks; the Showcase is a smoke check beside it, never the gate.
    `AddFormaCultureServer`, the Showcase and the READMEs move to the server half, and each new assembly gets
    the test project named after it. Gate: the gate, a WebAssembly client referencing the halves building,
    and the Showcase as a smoke check.
+
+   Both halves borrow the product's namespace, so `FormaPageHead` stays in `Forma.Blazor.Components.Page`
+   and every registrar is reached through `using Forma.Blazor;`; the WebAssembly half's registrar class is
+   `WebAssemblyServiceCollectionExtensions`, since the product's own `ServiceCollectionExtensions` holds
+   that full name. Each registrar takes its options through a delegate, `UIServerOptions` and
+   `UIWebAssemblyOptions`, whose `InputRouting` passes the input policy to `AddFormaUI`. The browser's
+   circuit registrar became `AddFormaBrowserServer` with the culture's, and `AddFormaUI` registers the
+   culture's and the browser's neutral services. On the Showcase, a page turned interactive and switched to
+   Hebrew in place, `he/rtl`, keeping the text typed.
 3. **The browser check.** A Web App host of its own in the tests, with Server, WebAssembly and Auto pages,
    which the gate builds, publishes and drives in a browser, with runtime async off for every assembly a
    client loads. The publish's build configuration is recorded, its trim mode and globalization setting

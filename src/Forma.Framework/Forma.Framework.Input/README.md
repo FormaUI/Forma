@@ -11,15 +11,15 @@ family's binding under `.Keyboard`, `.Pointer`, `.Click`, `.Wheel` and `.Drop`.
 
 ## Setting the application's policy
 
-`AddFormaUI` takes an `InputRouterOptions`. A host uses it to add shortcuts of its own and to remap
-the library's, and registers an `IInputActionHandler` to perform its actions:
+The host's Forma registration takes an `InputRouterOptions` as its `InputRouting`. A host uses it to add
+shortcuts of its own and to remap the library's, and registers an `IInputActionHandler` to perform its actions:
 
 ```csharp
 using Forma.Blazor;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
 
-builder.Services.AddFormaUI(new InputRouterOptions
+builder.AddFormaUIServer(options => options.InputRouting = new InputRouterOptions
 {
     PreemptiveRoutes = [new InputRoute("app.palette", KeyBinding.Shortcut("p", shift: true))],
     Routes = [new InputRoute("app.help", new KeyBinding("F1"))],

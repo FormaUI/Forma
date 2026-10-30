@@ -1,8 +1,8 @@
 namespace Forma.Blazor;
 
 using Forma.Blazor.Features.Emojis;
-using Forma.Framework.Browser.Blazor.Server;
-using Forma.Framework.Culture.Blazor.Server;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Culture.Browser.Interop;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Events;
 using Forma.Framework.Feedback;
@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 
-/// <summary>Registers the services Forma's components need to function.</summary>
+/// <summary>Registers the services Forma's components need in every render mode.</summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>Registers every default the components rely on, leaving in place whatever a host registered first.</summary>
@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IJSRuntime>(UnavailableJSRuntime.Instance);
 
         services.AddFormaEventServices();
-        services.AddFormaCultureCircuitIntegration();
+        services.AddFormaCultureBrowserSynchronization();
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();
@@ -50,7 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddFormaGlyphServices();
 
         services.AddFormaInputRouter(inputRouting);
-        services.AddFormaBrowserCircuitIntegration();
+        services.AddFormaBrowserServices();
 
         return services;
     }

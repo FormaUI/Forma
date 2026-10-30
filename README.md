@@ -8,12 +8,13 @@ direction, and draws from one set of design tokens a host can retheme.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Blazor
+dotnet add package formaui-net.Blazor.Server
 dotnet add package formaui-net.Framework.Localization.Json
 ```
 
-The first package is the library, and the Framework packages it builds on restore beside it. The
-second is the JSON localization backend the components read their strings through. The library's
+The first package is the library's server half, which brings the library and the Framework packages it
+builds on beside it. The second is the JSON localization backend the components read their strings
+through. The library's
 strings are English, and each other language is a locale pack of its own:
 
 ```pwsh
@@ -32,15 +33,18 @@ using Forma.Framework.Localization.Json;
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddJsonLocalization();
-builder.Services.AddFormaUI();
+builder.AddFormaUIServer();
 ```
 
-`AddFormaUI()` registers the services the components use: the toast and confirmation dialog
-services, the status badge catalog, the HTML sanitizer, the icon and emoji providers, and the input
-router that dispatches keyboard shortcuts. Each is registered only where nothing is registered for
-it yet, so a host replaces any one of them by registering its own first, and calls `AddFormaUI()`
-after `AddRazorComponents()` and `AddJsonLocalization()` so theirs are in place. Application-wide
-shortcuts are passed as `AddFormaUI(new InputRouterOptions { ... })`, which
+`AddFormaUIServer()` registers the services the components use, through `AddFormaUI()`: the toast
+and confirmation dialog services, the status badge catalog, the HTML sanitizer, the icon and emoji
+providers, the culture state, and the input router that dispatches keyboard shortcuts. Beside them it
+registers what an interactive server circuit needs, which keeps the culture and the document's
+language in step with each circuit. Each is registered only where nothing is registered for it yet,
+so a host replaces any one of them by registering its own first, and calls `AddFormaUIServer()` after
+`AddRazorComponents()` and `AddJsonLocalization()` so theirs are in place. Application-wide shortcuts
+are passed as `AddFormaUIServer(options => options.InputRouting = new InputRouterOptions { ... })`,
+which
 [`Forma.Framework.Input`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Input/README.md)
 documents.
 
@@ -66,7 +70,7 @@ documents.
 </html>
 ```
 
-`FormaPageHead` writes the character set, viewport, title, base address and icon, links Forma's
+`FormaPageHead`, from the server half, writes the character set, viewport, title, base address and icon, links Forma's
 stylesheets, and renders the framework's `ResourcePreloader`, `ImportMap` and `HeadOutlet`. Its
 child content renders after Forma's stylesheets, so the host's styles win, and a page's
 `PageTitle` still sets the title. `PreloadAssets="false"` leaves out the `ResourcePreloader`, which

@@ -11,6 +11,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
         <ProjectReference Include="..\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
         <ProjectReference Include="..\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
         <ProjectReference Include="..\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />

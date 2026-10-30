@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
     /// <summary>Registers the culture state, the document culture synchronizer that keeps the document on it, and the circuit handler that applies the state before every inbound activity and starts the document culture synchronizer.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection.</returns>
-    public static IServiceCollection AddFormaCultureCircuitIntegration(this IServiceCollection services)
+    public static IServiceCollection AddFormaCultureServer(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 

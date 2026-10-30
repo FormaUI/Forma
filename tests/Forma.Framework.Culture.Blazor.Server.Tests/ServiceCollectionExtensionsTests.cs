@@ -11,7 +11,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_the_circuit_handler_beside_the_culture_state_and_the_document_culture_synchronizer()
     {
         // Act
-        var services = new ServiceCollection().AddFormaCultureCircuitIntegration().AddFormaCultureCircuitIntegration();
+        var services = new ServiceCollection().AddFormaCultureServer().AddFormaCultureServer();
 
         // Assert
         Assert.Multiple(

@@ -31,7 +31,7 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
     new("closed", CssColor.FromRgba(98, 105, 118, 0.12), CssColor.FromHex(0x2c384a)) { Marker = Glyph.Prohibited },
 ]));
 
-builder.Services.AddFormaUI();
+builder.AddFormaUIServer();
 ```
 
 Place `FormaToastContainer` and `FormaConfirmDialog` once in the layout; they draw what the

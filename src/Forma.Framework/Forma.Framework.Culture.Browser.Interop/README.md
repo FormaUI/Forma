@@ -6,9 +6,9 @@ page switched to Hebrew in place is laid out right to left and read as Hebrew by
 
 ## Use it
 
-The package comes with `formaui-net.Blazor` and with `formaui-net.Framework.Culture.Blazor.Server`,
-whose `AddFormaCultureCircuitIntegration()` registers it through
-`AddFormaCultureBrowserSynchronization()` and whose circuit handler starts it with each circuit:
+The package comes with `formaui-net.Blazor`, whose `AddFormaUI()` registers it through
+`AddFormaCultureBrowserSynchronization()`, and `formaui-net.Framework.Culture.Blazor.Server`'s circuit
+handler starts it with each circuit:
 
 | Service | Registered as |
 | --- | --- |

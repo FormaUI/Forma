@@ -24,7 +24,7 @@ using Forma.Blazor.Components.DataView;
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddFormaUI();
+builder.AddFormaUIServer();
 builder.Services.AddFormaDataView();
 ```
 

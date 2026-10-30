@@ -41,6 +41,8 @@
     <Project Path="src\Forma.AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
     <Project Path="src\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
     <Project Path="src\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
+    <Project Path="src\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
+    <Project Path="src\Forma.Blazor.WebAssembly\Forma.Blazor.WebAssembly.csproj" />
     <Project Path="src\Forma.Locales\Forma.Blazor.Locales.Hebrew\Forma.Blazor.Locales.Hebrew.csproj" />
     <Project Path="src\Forma.Locales\Forma.Blazor.Locales.Spanish\Forma.Blazor.Locales.Spanish.csproj" />
 
@@ -51,6 +53,8 @@
     <Project Path="tests\Forma.Blazor.Explorer.Tests\Forma.Blazor.Explorer.Tests.csproj" />
     <Project Path="tests\Forma.Blazor.DataView.Tests\Forma.Blazor.DataView.Tests.csproj" />
     <Project Path="tests\Forma.Blazor.Composer.Tests\Forma.Blazor.Composer.Tests.csproj" />
+    <Project Path="tests\Forma.Blazor.Server.Tests\Forma.Blazor.Server.Tests.csproj" />
+    <Project Path="tests\Forma.Blazor.WebAssembly.Tests\Forma.Blazor.WebAssembly.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Windows.Tests\Forma.Framework.Windows.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Currencies.Tests\Forma.Framework.Currencies.Tests.csproj" />

@@ -76,8 +76,7 @@ Forma.Blazor/Components/
 ├── (2 / 2) Navigation/
 │   ├── ✅ FormaBreadcrumb
 │   └── ✅ FormaPagination
-├── (2 / 2) Page/
-│   ├── ✅ FormaPageHead
+├── (1 / 1) Page/
 │   └── ✅ FormaPageTitle
 ├── (3 / 3) Symbols/
 │   ├── ✅ FormaEmoji
@@ -100,8 +99,10 @@ src/
 │   ├── ◐ FormaDataTree
 │   ├── ◐ FormaDataView
 │   └── ◐ FormaDataViewSwitch
-└── (1 / 1) Forma.Blazor.Explorer/
-    └── ✅ FormaExplorer
+├── (1 / 1) Forma.Blazor.Explorer/
+│   └── ✅ FormaExplorer
+└── (1 / 1) Forma.Blazor.Server/Components/Page/
+    └── ✅ FormaPageHead
 ```
 
 ## Components

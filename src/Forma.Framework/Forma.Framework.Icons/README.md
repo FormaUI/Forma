@@ -103,12 +103,12 @@ public sealed class HouseIconProvider : IIconProvider
 }
 ```
 
-Register it as the `IIconProvider` before `AddFormaUI()`, which registers its default provider only
+Register it as the `IIconProvider` before `AddFormaUIServer()`, which registers its default provider only
 where none is registered:
 
 ```csharp
 builder.Services.AddSingleton<IIconProvider, HouseIconProvider>();
-builder.Services.AddFormaUI();
+builder.AddFormaUIServer();
 ```
 
 `FormaIcon` also takes a provider for one icon through its `Provider` parameter, or for a subtree

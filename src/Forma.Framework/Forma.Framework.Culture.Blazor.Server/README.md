@@ -9,12 +9,12 @@ as each connection comes up. Code that reads the ambient culture in an event aft
 cultures, the page's `lang` and `dir` follow the state's UI culture until the circuit closes, and a switch
 in one circuit leaves every other circuit's in place.
 
-The package comes with `formaui-net.Blazor`, and `AddFormaUI()` registers it through
-`AddFormaCultureCircuitIntegration()`, which also registers the culture state and the document
-culture synchronizer. A host without `AddFormaUI()` makes the same call:
+The package comes with `formaui-net.Blazor.Server`, and `AddFormaUIServer()` registers it through
+`AddFormaCultureServer()`, which also registers the culture state and the document culture
+synchronizer. A host without `AddFormaUIServer()` makes the same call:
 
 ```csharp
-builder.Services.AddFormaCultureCircuitIntegration();
+builder.Services.AddFormaCultureServer();
 ```
 
 ## License

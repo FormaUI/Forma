@@ -17,7 +17,7 @@ public sealed class CultureCircuitHandlerTests
     private static ServiceProvider CreateServices(FakeDocumentCultureSynchronizerBrowser? browser = null)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>((browser ?? new FakeDocumentCultureSynchronizerBrowser()).Runtime)
-            .AddFormaCultureCircuitIntegration()
+            .AddFormaCultureServer()
             .BuildServiceProvider();
 
     // The circuit is not read by the handler, and a test cannot make one.

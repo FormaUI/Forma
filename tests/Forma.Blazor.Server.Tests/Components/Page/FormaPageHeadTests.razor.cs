@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Tests.Components.Page;
+namespace Forma.Blazor.Server.Tests.Components.Page;
 
 public sealed partial class FormaPageHeadTests
 {
