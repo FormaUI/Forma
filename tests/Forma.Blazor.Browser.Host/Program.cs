@@ -1,5 +1,6 @@
 using Forma.Blazor;
 using Forma.Blazor.Browser.Host;
+using Forma.Blazor.Browser.Host.Client.Navigation;
 using Forma.Blazor.Browser.Host.Components;
 using Forma.Framework.Culture.Router.AspNetCore;
 
@@ -24,6 +25,7 @@ if (HostModes.UsesCultureAddresses)
 }
 
 builder.Services.AddSingleton<DelayedSwitches>();
+builder.Services.AddScoped<NavigationRecorder>();
 
 var app = builder.Build();
 

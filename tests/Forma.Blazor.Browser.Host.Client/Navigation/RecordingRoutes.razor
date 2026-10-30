@@ -1,0 +1,49 @@
+@implements IDisposable
+@inject NavigationRecorder Recorder
+@inject NavigationManager Navigation
+
+@* An interactive router over the navigation pages that records what its runtime observes of each navigation: a location change and whether the browser or the app made it, the router starting, a newer navigation cancelling it, and the router accepting the destination it then renders. *@
+<Router AppAssembly="typeof(RecordingRoutes).Assembly" OnNavigateAsync="HandleNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" />
+    </Found>
+    <NotFound>
+        <p id="nav-page">not found</p>
+    </NotFound>
+</Router>
+<NavigationLog />
+
+@code {
+    protected override void OnInitialized()
+        => Navigation.LocationChanged += HandleLocationChanged;
+
+    private async Task HandleNavigateAsync(NavigationContext context)
+    {
+        var sequence = Recorder.Start(context.Path);
+
+        // A path that names itself slow waits, so a navigation started meanwhile can supersede it.
+        if (context.Path.Contains("slow", StringComparison.Ordinal))
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3), context.CancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                Recorder.Record($"cancelled {sequence}");
+            }
+        }
+
+        // The router renders the destination once this completes, unless a newer navigation cancelled it.
+        if (!context.CancellationToken.IsCancellationRequested)
+        {
+            Recorder.Record($"accepted {sequence}");
+        }
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+        => Recorder.Record($"location /{Navigation.ToBaseRelativePath(e.Location)} intercepted={e.IsNavigationIntercepted}");
+
+    public void Dispose()
+        => Navigation.LocationChanged -= HandleLocationChanged;
+}

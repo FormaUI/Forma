@@ -1,0 +1,22 @@
+@implements IDisposable
+@inject NavigationRecorder Recorder
+
+@* The runtime's identity and what it recorded, rendering again on each entry without rendering the router again. *@
+<p id="nav-runtime">@RendererInfo.Name @Recorder.RuntimeId</p>
+<ol id="nav-log">
+    @foreach (var entry in Recorder.Entries)
+    {
+        <li>@entry</li>
+    }
+</ol>
+
+@code {
+    protected override void OnInitialized()
+        => Recorder.Recorded += HandleRecorded;
+
+    private void HandleRecorded()
+        => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+        => Recorder.Recorded -= HandleRecorded;
+}

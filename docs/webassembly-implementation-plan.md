@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-Steps 1 to 4 have landed; step 5 is next.
+Steps 1 to 5 have landed; step 6 is next.
 
 ## Where Forma stood
 
@@ -131,13 +131,29 @@ checks; the Showcase is a smoke check beside it, never the gate.
    WebAssembly island on the same page. The rest of To verify joins with the steps that make it
    expressible. The host routes after the culture middleware, as the Showcase does, since the routing a
    Web App adds at the pipeline's start would choose a page before the culture segment is removed.
-5. **The navigation boundary.** Before anything is built on it, a focused check in the browser check's host
-   establishes, under the Server's router and WebAssembly's alike, how a runtime observes: the destination
-   its router accepted, with the navigation's identity; a navigation cancelled or failed without landing;
-   one superseded by another, and a late report from it; Back and Forward; and a navigation that replaces
-   the document. The plan records the hook each rests on and what it guarantees. Where the platform can't
-   give the contract the culture design's [landings](culture-design.md#landings) assume, the design changes
-   before step 8 builds the coordinator around it. Gate: the check, and its record here.
+5. **The navigation boundary.** ✅ Before anything is built on it, a focused check in the browser check's
+   host establishes, under the Server's router and WebAssembly's alike, how a runtime observes: the
+   destination its router accepted, with the navigation's identity; a navigation cancelled or failed without
+   landing; one superseded by another, and a late report from it; Back and Forward; and a navigation that
+   replaces the document. The plan records the hook each rests on and what it guarantees. Where the platform
+   can't give the contract the culture design's [landings](culture-design.md#landings) assume, the design
+   changes before step 8 builds the coordinator around it. Gate: the check, and its record here.
+
+   The browser check's host renders a recording router in each runtime, and both behave alike. A router
+   renders a destination only once its `OnNavigateAsync` completes with its cancellation token unsignalled,
+   which is the accepted destination; the runtime numbers its navigations itself, since the router hands out
+   no identity. A newer navigation signals the older one's token, and the cancelled destination never
+   renders, so no report can come late from it within one runtime. A location-changing handler prevents a
+   link's navigation, and no navigation starts. Back and Forward report a location change with
+   `IsNavigationIntercepted` true and then navigate through the router as any navigation does. An address no
+   route names is accepted and renders the router's not-found content, where no culture route page reports.
+   A navigation that replaces the document starts a new runtime with an identity of its own. Two hooks don't
+   mark a landing: `LocationChanged` arrives before the router starts and for a superseded address as well,
+   and the router hands its `Found` content new route data on every refresh, a parent's render among them.
+   The culture design's interactive landing changed accordingly: the culture route page reports the route it
+   received, and the identity is the order its runtime reports in. Under WebAssembly in RC 3, `NavigateTo`
+   bypasses a location-changing handler that prevents a link's navigation; the design doesn't rest on
+   preventing a navigation, since one that lands reports as any landing does.
 6. **Trimming.** The 27 warnings resolved, each client library `IsTrimmable` with the analyzer on. The four
    `DynamicComponent.Type` warnings come first: each is reduced to its cause, to find whether the fix
    belongs in Forma's use of the component, in the code Razor generates or in the toolchain, and the remedy

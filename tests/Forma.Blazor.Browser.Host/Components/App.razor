@@ -4,7 +4,14 @@
     <FormaPageHead Title="Forma Browser Check" />
 </head>
 <body>
-    <Routes @rendermode="HostModes.Routes" />
+    @if (HostModes.NavigationRoutes is { } navigation)
+    {
+        <Forma.Blazor.Browser.Host.Client.Navigation.RecordingRoutes @rendermode="navigation" />
+    }
+    else
+    {
+        <Routes @rendermode="HostModes.Routes" />
+    }
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>

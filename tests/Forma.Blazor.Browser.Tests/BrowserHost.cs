@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 
 /// <summary>The published host the checks drive, running on free ports three ways, and the browser they drive it in.</summary>
-/// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, and with islands switching the culture state alone. The gate publishes the host and the full client and names their folders in <c>FORMA_BROWSER_HOST</c> and <c>FORMA_BROWSER_FULL</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
+/// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, and with the recording router in each runtime. The gate publishes the host and the full client and names their folders in <c>FORMA_BROWSER_HOST</c> and <c>FORMA_BROWSER_FULL</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
 public sealed class BrowserHost : IAsyncLifetime
 {
     private readonly List<Process> _processes = [];
@@ -30,6 +30,12 @@ public sealed class BrowserHost : IAsyncLifetime
     /// <summary>The address of the host whose pages are islands, switching the culture state alone.</summary>
     public Uri StateAddress { get; private set; } = default!;
 
+    /// <summary>The address of the host rendering the recording router on the Server.</summary>
+    public Uri NavigationServerAddress { get; private set; } = default!;
+
+    /// <summary>The address of the host rendering the recording router under WebAssembly.</summary>
+    public Uri NavigationWebAssemblyAddress { get; private set; } = default!;
+
     /// <summary>The browser the checks open their pages in.</summary>
     public IBrowser Browser { get; private set; } = default!;
 
@@ -39,6 +45,8 @@ public sealed class BrowserHost : IAsyncLifetime
         Address = await StartAsync(routes: null, culture: null).ConfigureAwait(false);
         InteractiveAddress = await StartAsync(routes: "interactive", culture: null).ConfigureAwait(false);
         StateAddress = await StartAsync(routes: null, culture: "state").ConfigureAwait(false);
+        NavigationServerAddress = await StartAsync(routes: "navigation-server", culture: null).ConfigureAwait(false);
+        NavigationWebAssemblyAddress = await StartAsync(routes: "navigation-webassembly", culture: null).ConfigureAwait(false);
 
         _playwright = await Playwright.CreateAsync().ConfigureAwait(false);
         Browser = await _playwright.Chromium.LaunchAsync(new()

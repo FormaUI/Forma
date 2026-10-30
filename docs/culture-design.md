@@ -186,10 +186,15 @@ record by one of two paths, according to how it lands:
   [culture addresses](#culture-addresses) states. The landing is the first page update after the
   navigation's start, so the marker it brings is the navigation's own.
 - **An interactive landing,** which has no server response, takes its pair from the address the router
-  accepted: the runtime that routed reports that address with the navigation's identity, and the
-  coordinator resolves its pair through the culture-route mapping the page publishes, which the browser
-  and the server read by the same rules. The previous landing's marker is never read for it, and
-  interactive routing without culture routes produces no record.
+  accepted. A router renders a destination only once its navigation completes uncancelled, and a culture
+  route page receives its route only from that render, so the page reports the address it was routed
+  to, and the navigation's identity is its place among the reports its runtime sends, in the order the
+  runtime renders them. The coordinator resolves its pair through the culture-route mapping the page
+  publishes, which the browser and the server read by the same rules. A navigation a newer one
+  cancelled never renders its page, so no report comes from it; neither a location change, which a
+  navigation announces before its router starts and a superseded one announces too, nor a render of
+  the router, which a parent's render causes as well, marks a landing. The previous landing's marker is
+  never read for it, and interactive routing without culture routes produces no record.
 
 A navigation that is cancelled, fails or is replaced by another produces no record, and a record from a
 navigation another replaced is obsolete and accepts nothing.
