@@ -179,7 +179,7 @@ checks; the Showcase is a smoke check beside it, never the gate.
    step 3 measured: the minimal client downloads Forma's 0.64 MB beside the runtime's 2.64 MB, and the full
    client, which now renders the composer, a grid and cards and registers the explorer plugin, Forma's
    1.07 MB beside the runtime's 3.62 MB, all within the budgets. The check passes in every runtime.
-7. **The switch's contract and its application.** `ICultureState` reads the pair, its revision and its
+7. **The switch's contract and its application.** ✅ `ICultureState` reads the pair, its revision and its
    version; `ICultureStateIntegration`, resolved from the state's own instance, applies an accepted pair,
    and a replacement state without it is rejected as the state is first resolved; `ICultureSwitch` requests
    a change; and the versions, the test switch and the local switch, as the culture design's
@@ -189,6 +189,15 @@ checks; the Showcase is a smoke check beside it, never the gate.
    applies locally, as a WebAssembly switch does today. Gate: the gate, component tests through the test
    switch, a replacement state without the integration rejected as it is first resolved, and step 4's
    regression checks.
+
+   The transitional switch is the local switch, which `AddFormaUI` registers where the host registered no
+   switch: it accepts at once in a sequence of its own and applies to the runtime's state, which today's
+   synchronizer follows into the document, so the Server and WebAssembly keep the behavior they had. The
+   culture router's landings request through the switch, so the address policy keeps working through it
+   until step 9. The registrar wraps whichever state registration resolution picks, so a replacement
+   without the integration fails as a scope first creates it, and an instance registration fails as it is
+   registered. The test switch lives in the shared test support, and the bUnit context registers it. Every
+   test and step 4's regression checks pass.
 8. **Coordination.** The coordinator takes the document culture synchronizer's script and ownership, and the
    switch that requests through it replaces step 7's transitional switch for circuits: the culture marker
    `FormaPageHead` publishes; the switch's policy, chosen where the host registers the culture and published
