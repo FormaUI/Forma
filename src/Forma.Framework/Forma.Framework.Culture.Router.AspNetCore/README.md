@@ -102,14 +102,41 @@ The document's `<base>` is in the request's culture, `/he/` for a Hebrew page an
 the path base `/app`, so interactive routing finds the pages of the document's culture, and an
 address in another culture, where it finds none, loads as a new document whose circuit opens in
 that culture. Under `CultureSwitchMode.InPlace` it is the application's root, `/` or `/app/`.
-`CultureBaseHref` writes it in place of the host's own:
+
+`FormaPageHead`, from
+[`formaui-net.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Server/README.md),
+writes the document's head, the culture marker and switch policy the page's culture coordinator starts
+from among it, and the page's one `<base>`, so `App.razor` hands it that base through `BaseHref`:
 
 ```razor
+@using System.Globalization
+@using Forma.Blazor.Components.Page
+@using Forma.Framework.Culture.Router.AspNetCore
+@using Microsoft.AspNetCore.Http
+@inject CultureRouter Router
+@inject CultureSwitcher Switcher
+
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.Name"
+      dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : "ltr")">
 <head>
-    <meta charset="utf-8" />
-    <CultureBaseHref />
-    <HeadOutlet />
+    <FormaPageHead Title="My App" BaseHref="@BaseHref" />
 </head>
+<body>
+    <Routes />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+</html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // The request's culture under the path base, or the application's root where a switch is made in place.
+    private string BaseHref
+        => HttpContext.Request.PathBase
+            .Add(Router.Switch is CultureSwitchMode.InPlace ? PathString.Empty : Router.GetPath(Switcher.CurrentRoute, "/"))
+            .ToUriComponent().TrimEnd('/') + "/";
+}
 ```
 
 The application's root is the base without its culture segment, so a path base doesn't end in a
@@ -146,8 +173,8 @@ in the circuit, and the page it reaches follows its route.
 Under an interactive router, interactive routing reaches every culture's address, and the culture
 state follows the page it routes to. Three things make it so:
 
-- `Switch = CultureSwitchMode.InPlace` in the options, under which `CultureBaseHref` writes the
-  application's root, so every culture's address lies within the base.
+- `Switch = CultureSwitchMode.InPlace` in the options, under which [the document's base](#the-documents-base)
+  is the application's root, so every culture's address lies within it.
 - `CultureRouteScope` around the `Router`, inside the host's `Routes` component, so it renders in the
   router's own tree:
 
@@ -196,11 +223,11 @@ not-found page for `NavigateTo`.
 ### Where the pages are islands
 
 A host whose pages each carry their own interactive render mode, under a static router, needs only
-`Switch = CultureSwitchMode.InPlace` and a document base at the application's root, which
-`CultureBaseHref` writes under that mode. A link to another culture's address is then an enhanced
-navigation: the server renders the page in that culture, each island the page already holds keeps
-its state, and the circuit's culture state follows the address the navigation lands at. The pages
-keep their plain routes.
+`Switch = CultureSwitchMode.InPlace`, under which [the document's base](#the-documents-base) is the
+application's root. A link to another culture's address is then an enhanced navigation: the server
+renders the page in that culture, each island the page already holds keeps its state, and the
+circuit's culture state follows the address the navigation lands at. The pages keep their plain
+routes.
 
 An island keeps the markup it rendered before the switch until it renders again, so a component of
 the host's own that shows text in the culture follows as Forma's components do. It renders again on
