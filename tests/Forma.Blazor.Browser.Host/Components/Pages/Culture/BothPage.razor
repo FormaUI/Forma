@@ -1,0 +1,6 @@
+@page "/culture/both"
+
+@* A Server island and a WebAssembly island on one page, each with its own culture state. *@
+<h1 id="page">both</h1>
+<section id="server-island"><CulturePanel @rendermode="InteractiveServer" /></section>
+<section id="webassembly-island"><WebAssemblyCulturePanel @rendermode="InteractiveWebAssembly" /></section>

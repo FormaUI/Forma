@@ -1,0 +1,21 @@
+@page "/culture/streaming"
+@page "/{culture}/culture/streaming"
+@inherits CultureRoutePage
+@attribute [StreamRendering]
+
+<h1 id="page">streaming</h1>
+<CulturePanel @rendermode="HostModes.Island" />
+@if (_isStreamed)
+{
+    <p id="streamed">streamed</p>
+}
+
+@code {
+    private bool _isStreamed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+        _isStreamed = true;
+    }
+}

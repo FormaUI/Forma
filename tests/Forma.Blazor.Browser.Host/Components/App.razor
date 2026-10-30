@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="@CultureInfo.CurrentUICulture.Name" dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : "ltr")">
 <head>
     <FormaPageHead Title="Forma Browser Check" />
 </head>
 <body>
-    <Routes />
+    <Routes @rendermode="HostModes.Routes" />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>

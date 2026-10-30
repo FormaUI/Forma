@@ -1,0 +1,39 @@
+@using System.Globalization
+@using Forma.Framework.Culture
+@implements IDisposable
+@inject ICultureState CultureState
+
+@* What the culture checks read and press under WebAssembly: the state at the first interactive render and now, a switch, and the ambient culture an event after it runs in. *@
+<output id="wasm-runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
+<output id="wasm-first">@_first</output>
+<output id="wasm-state">@CultureState.Culture.Name/@CultureState.UICulture.Name</output>
+<output id="wasm-ambient">@_ambient</output>
+<button id="wasm-switch" @onclick="SwitchAsync">Switch to Hebrew</button>
+<button id="wasm-read" @onclick="Read">Read the ambient culture</button>
+
+@code {
+    private string? _first;
+    private string? _ambient;
+
+    protected override void OnInitialized()
+    {
+        if (RendererInfo.IsInteractive)
+        {
+            _first = $"{CultureState.Culture.Name}/{CultureState.UICulture.Name}";
+        }
+
+        CultureState.Subscribe(HandleCultureChangedAsync);
+    }
+
+    private Task SwitchAsync()
+        => CultureState.ChangeAsync(CultureInfo.GetCultureInfo("he"));
+
+    private void Read()
+        => _ambient = $"{CultureInfo.CurrentCulture.Name}/{CultureInfo.CurrentUICulture.Name}";
+
+    private Task HandleCultureChangedAsync()
+        => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+        => CultureState.Unsubscribe(HandleCultureChangedAsync);
+}

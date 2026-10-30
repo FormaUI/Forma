@@ -1,0 +1,61 @@
+@implements IDisposable
+@inject ICultureState CultureState
+@inject IServiceProvider Services
+@inject NavigationManager Navigation
+@inject DelayedSwitches Delayed
+
+@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, and switches of the state alone, at once or after a delay. *@
+<output id="state">@CultureState.UICulture.Name</output>
+<output id="interactive">@RendererInfo.IsInteractive</output>
+<input id="typed" @bind="_typed" />
+@foreach (var route in Router?.Routes ?? [])
+{
+    <a id="lang-@route.Token" href="@Router!.GetUrl(route, Navigation.ToBaseRelativePath(Navigation.Uri))">@route.Token</a>
+}
+<a id="go-culture" href="@GetPath("/culture")">Culture</a>
+<a id="go-other" href="@GetPath("/culture/other")">Other</a>
+<a id="go-streaming" href="@GetPath("/culture/streaming")">Streaming</a>
+<a id="go-static" href="@GetPath("/culture/static")">Static</a>
+<a id="go-state-static" href="/state/static">State static</a>
+<button id="switch-state" @onclick="SwitchStateAsync">Switch the state</button>
+<button id="switch-later" @onclick="SwitchLater">Switch the state after a delay</button>
+
+@code {
+    private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he");
+
+    private string? _typed;
+
+    // Registered only where the host switches through culture addresses.
+    private CultureRouter? Router
+        => Services.GetService<CultureRouter>();
+
+    private string GetPath(string path)
+        => Router is { } router ? router.GetPath(Services.GetRequiredService<CultureSwitcher>().CurrentRoute, path).Value! : path;
+
+    protected override void OnInitialized()
+        => CultureState.Subscribe(HandleCultureChangedAsync);
+
+    private Task SwitchStateAsync()
+        => CultureState.ChangeAsync(Hebrew);
+
+    // A switch that lands while the check holds the browser offline, which the check learns of over HTTP as soon as the
+    // state has changed, since the notification that follows waits on the browser.
+    private void SwitchLater()
+        => _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            await InvokeAsync(() =>
+            {
+                var change = CultureState.ChangeAsync(Hebrew);
+                Delayed.Record();
+
+                return change;
+            });
+        });
+
+    private Task HandleCultureChangedAsync()
+        => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+        => CultureState.Unsubscribe(HandleCultureChangedAsync);
+}

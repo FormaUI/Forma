@@ -13,6 +13,8 @@
         <ProjectReference Include="..\Forma.Blazor.Browser.Host.Client\Forma.Blazor.Browser.Host.Client.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Router.AspNetCore\Forma.Framework.Culture.Router.AspNetCore.csproj" />
     </ItemGroup>
 
 </Project>

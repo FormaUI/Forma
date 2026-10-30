@@ -14,6 +14,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor.WebAssembly\Forma.Blazor.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
     </ItemGroup>
 
 </Project>

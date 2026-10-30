@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-Steps 1 to 3 have landed; step 4 is next.
+Steps 1 to 4 have landed; step 5 is next.
 
 ## Where Forma stood
 
@@ -104,19 +104,33 @@ checks; the Showcase is a smoke check beside it, never the gate.
    ICU data; the full client is published, not driven. Interactivity, binding and the select's list
    through interop passed in the Server, WebAssembly and Auto pages, and Auto ran on WebAssembly after
    its download, every request succeeding and none starting late.
-4. **The culture's checks, automated.** The culture plan's document and address checks, verified by hand in
-   Chrome, run in the browser check's host against today's synchronizer: a switch and the document following
-   it, the hold through an enhanced navigation and a streaming update, rapid switches, a switch landing
-   while offline, a pause and a resume, a closed circuit's release, and culture addresses under islands and
-   under interactive routes. They establish today's Server behavior first, as regression checks that pass;
-   the new requirements under [To verify](#to-verify) that today's pages can already exercise, the probe's
-   defects among them, join them as known failures, so the suite never takes a defect for behavior to keep,
-   and each of the rest joins with the step that makes it expressible. Steps 7 to 9 rewrite exactly that
-   code and are measured against these checks, each kept or changed where the culture design now says
-   otherwise. The suite reports three kinds apart, regression checks, known failures and acceptance
-   requirements a later step has met, and a known failure that starts to pass moves to the third only in the
-   change that meets it, so a gate met under its declared expectations is never read as a defect fixed.
-   Gate: every regression check passes on today's code, and every known failure fails as recorded.
+4. **The culture's checks, automated.** ✅ The culture plan's document and address checks, verified by hand
+   in Chrome, run in the browser check's host against today's synchronizer: a switch and the document
+   following it, the hold through an enhanced navigation and a streaming update, rapid switches, a switch
+   landing while offline, a pause and a resume, a closed circuit's release, and culture addresses under
+   islands and under interactive routes. They establish today's Server behavior first, as regression checks
+   that pass; the new requirements under [To verify](#to-verify) that today's pages can already exercise,
+   the probe's defects among them, join them as known failures, so the suite never takes a defect for
+   behavior to keep, and each of the rest joins with the step that makes it expressible. Steps 7 to 9
+   rewrite exactly that code and are measured against these checks, each kept or changed where the culture
+   design now says otherwise. The suite reports three kinds apart, regression checks, known failures and
+   acceptance requirements a later step has met, and a known failure that starts to pass moves to the third
+   only in the change that meets it, so a gate met under its declared expectations is never read as a defect
+   fixed. Gate: every regression check passes on today's code, and every known failure fails as recorded.
+
+   The browser check's host runs three ways: islands under a static router and an interactive router, both
+   switching through culture addresses, and islands switching the culture state alone, since under culture
+   addresses a closed circuit's release can't be told from the landing that sets the state from the
+   address. The regression checks, each passing: a switch in place under both routers, keeping typed text;
+   the document held through an enhanced navigation within the culture and through a streaming update;
+   rapid switches ending on the last, under both routers; a switch landing while the browser is offline,
+   which the document follows once it is back; a pause and a resume, after which the next switch is
+   followed; and the served pair shown once the client closes the circuit. The known failures, each still
+   failing: an event after a switch made under WebAssembly, the document following that switch,
+   WebAssembly starting in the pair the server rendered, and a switch from a Server island reaching a
+   WebAssembly island on the same page. The rest of To verify joins with the steps that make it
+   expressible. The host routes after the culture middleware, as the Showcase does, since the routing a
+   Web App adds at the pipeline's start would choose a page before the culture segment is removed.
 5. **The navigation boundary.** Before anything is built on it, a focused check in the browser check's host
    establishes, under the Server's router and WebAssembly's alike, how a runtime observes: the destination
    its router accepted, with the navigation's identity; a navigation cancelled or failed without landing;
