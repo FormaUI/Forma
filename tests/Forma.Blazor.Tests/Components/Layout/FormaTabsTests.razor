@@ -117,6 +117,22 @@
         }
 
         [Fact]
+        public void Should_hide_a_brand_mark_beside_the_title_naming_the_tab()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="GitHub" Icon="Brand.GitHub">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            Assert.Equal("true", cut.Find(".forma-tab-button svg").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
         public void Should_not_render_a_glyph_when_icon_is_null()
         {
             // Arrange

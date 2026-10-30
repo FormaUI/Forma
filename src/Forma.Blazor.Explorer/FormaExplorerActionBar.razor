@@ -17,7 +17,7 @@
                 <FormaDropDownMenuItem IsDestructive="action.IsDestructive"
                                        data-action="@action.Id"
                                        OnClick="() => action.InvokeAsync(Item)">
-                    <FormaIcon Icon="action.Icon" Size="IconSize.Small" />
+                    <FormaIcon Icon="action.Icon" Size="IconSize.Small" aria-hidden="true" />
                     <span>@action.Label()</span>
                 </FormaDropDownMenuItem>
             }

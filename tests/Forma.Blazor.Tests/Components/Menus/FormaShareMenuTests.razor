@@ -36,6 +36,21 @@
         }
 
         [Fact]
+        public void Should_name_each_network_by_its_title_alone()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            var facebook = cut.FindAll("a").First(a => a.TextContent.Contains("Facebook", StringComparison.Ordinal));
+            Assert.Equal("true", facebook.QuerySelector("svg")!.GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
         public void Should_offer_no_network_for_a_subject_without_an_address()
         {
             // Arrange

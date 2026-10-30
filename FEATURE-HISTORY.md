@@ -23,6 +23,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through its items in the order the page holds them, a group's and those added later among them.
 - [`FormaSplitter`](docs/component-catalog.md#formasplitter) follows a drag in the browser, ending it wherever the pointer is let go, and Escape returns the size the drag started from.
 - [`FormaImagePicker`](docs/component-catalog.md#formaimagepicker) previews an image chosen before its script attached.
+- A brand mark set beside the text naming the same thing is hidden from assistive technology, so a share menu's network, a tab or a toggle button is named once.
 - [`FormaTimePicker`](docs/component-catalog.md#formatimepicker)'s list and [`FormaDateTimePicker`](docs/component-catalog.md#formadatetimepicker)'s open on the time held, whatever was chosen before.
 - An open surface that closes gives up its layer among the input router's.
 - [`FormaPopover`](docs/component-catalog.md#formapopover) follows a change of reading direction while it is open, [`FormaTabs`](docs/component-catalog.md#formatabs) draws its strip again when a tab's header changes, and [`FormaFileViewer`](docs/component-catalog.md#formafileviewer) resolves its document again when the culture changes.

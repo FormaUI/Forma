@@ -26,7 +26,7 @@
                             <FormaDropDownMenuItem OnClick="() => OnCommand.InvokeAsync(action.Command)">
                                 @if (action.Icon is { } icon)
                                 {
-                                    <FormaIcon Icon="icon" Size="IconSize.Small" />
+                                    <FormaIcon Icon="icon" Size="IconSize.Small" aria-hidden="true" />
                                 }
                                 <span>@action.Title</span>
                             </FormaDropDownMenuItem>

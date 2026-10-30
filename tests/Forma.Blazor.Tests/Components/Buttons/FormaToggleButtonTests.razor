@@ -1,0 +1,31 @@
+@inherits FormaBunitContext
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_hide_its_icon_beside_the_label_naming_it()
+        {
+            // Arrange
+            using var ctx = new FormaToggleButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaToggleButton Label="GitHub" Icon="Brand.GitHub" ShowLabel="true" />);
+
+            // Assert
+            Assert.Equal("true", cut.Find("button svg").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_name_itself_by_its_label_when_it_shows_only_its_icon()
+        {
+            // Arrange
+            using var ctx = new FormaToggleButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaToggleButton Label="GitHub" Icon="Brand.GitHub" />);
+
+            // Assert
+            Assert.Equal("GitHub", cut.Find("button").GetAttribute("aria-label"));
+        }
+    }
+}
