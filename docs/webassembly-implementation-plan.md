@@ -226,7 +226,10 @@ checks; the Showcase is a smoke check beside it, never the gate.
    check changed: under Chrome's offline emulation the circuit keeps its connection, so the switch is
    accepted once the browser is back, and the check asserts that the document and the state settle on
    the pair the switch's outcome gives. The closed circuit's check still passes, now through the landing
-   that leaves the page. The script tests, the C# tests and the browser check pass.
+   that leaves the page. A marker names the invariant culture by its empty name, which the first Ubuntu run
+   showed the coordinator refusing; the browser check now registers and switches under one host rendering
+   every request in a named culture and one in the invariant culture, on both platforms, so it no longer
+   rests on the runner's culture. The script tests, the C# tests and the browser check pass.
 9. **Routing in coordination.** The routes, their tokens, their mapping, the address policy's switch, the
    page base and the route scope move into the new `Forma.Framework.Culture.Router`, with its test project;
    routes name a pair; the mapping is published to the page; destinations are built from it, and a pair no
