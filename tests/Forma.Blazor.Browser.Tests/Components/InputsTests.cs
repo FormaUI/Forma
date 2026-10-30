@@ -153,6 +153,7 @@ public sealed class InputsTests
             await using var _ = context;
             var result = page.Locator("#result");
             var numberInput = page.Locator("#check");
+            await ComponentChecks.WaitForInputRouteAsync(page, "#check", "number-input.increase");
             await numberInput.FillAsync("41");
             await numberInput.PressAsync("Tab");
             await Assertions.Expect(result).ToHaveTextAsync("41");
