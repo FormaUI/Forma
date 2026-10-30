@@ -1,9 +1,8 @@
 namespace Forma.Blazor.Showcase.Components.Metadata;
 
-using Forma.Framework.Culture.Router.AspNetCore;
+using Forma.Framework.Culture.Router;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Http;
 
 /// <summary>Emits the canonical link and the hreflang set addressing the current page in every culture.</summary>
 public sealed partial class PageLocalization : ComponentBase
@@ -32,13 +31,13 @@ public sealed partial class PageLocalization : ComponentBase
         _origin = Navigation.BaseUri.TrimEnd('/');
 
         var queryStart = _relativePath.IndexOf('?', StringComparison.Ordinal);
-        var path = PathString.FromUriComponent("/" + (queryStart < 0 ? _relativePath : _relativePath[..queryStart]));
+        var path = Uri.UnescapeDataString("/" + (queryStart < 0 ? _relativePath : _relativePath[..queryStart]));
 
         // Static rendering sees a path the middleware already stripped, so the culture comes from the
         // ambient one; a circuit sees the browser's path and the culture is still in it.
         var match = Router.Match(path);
 
-        _currentRoute = string.Equals(match.Path.Value, path.Value, StringComparison.Ordinal) ? null : match.Route;
+        _currentRoute = string.Equals(match.Path, path, StringComparison.Ordinal) ? null : match.Route;
     }
 
     private string GetUrl(CultureRoute route)

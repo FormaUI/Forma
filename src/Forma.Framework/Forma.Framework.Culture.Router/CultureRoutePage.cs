@@ -1,4 +1,4 @@
-namespace Forma.Framework.Culture.Router.AspNetCore;
+namespace Forma.Framework.Culture.Router;
 
 using Microsoft.AspNetCore.Components;
 
@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Components;
 /// <remarks>
 /// The parameters are assigned before the page's lifecycle, and the culture segment they carry is followed there: a
 /// segment that isn't a culture's token stops the page with the router's not-found outcome, and a page an interactive
-/// router renders within <see cref="CultureRouteScope"/> under <see cref="CultureSwitchMode.InPlace"/> brings the culture state
-/// to its route's culture before its initialization and parameter callbacks run, or, at an address that isn't its
-/// culture's canonical one, replaces the address and stops there.
+/// router renders within <see cref="CultureRouteScope"/> under <see cref="CultureSwitchMode.InPlace"/> reports its landing to
+/// the page's culture coordinator and runs its initialization and parameter callbacks once its culture state has applied
+/// the route's pair, or, at an address that isn't its route's canonical one, replaces the address and stops there.
 /// </remarks>
 public abstract class CultureRoutePage : ComponentBase
 {
@@ -20,12 +20,14 @@ public abstract class CultureRoutePage : ComponentBase
     [Inject] private CultureSwitcher CultureSwitcher { get; set; } = default!;
 
     /// <inheritdoc />
-    public override Task SetParametersAsync(ParameterView parameters)
+    public override async Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
 
-        return CultureSwitcher.FollowRoute(Culture, RendererInfo.IsInteractive && CultureRouteScope is not null)
-            ? base.SetParametersAsync(ParameterView.Empty)
-            : Task.CompletedTask;
+        if (await CultureSwitcher.FollowRouteAsync(Culture, RendererInfo.IsInteractive && CultureRouteScope is not null))
+        {
+            CultureSwitcher.HoldStateCultures();
+            await base.SetParametersAsync(ParameterView.Empty);
+        }
     }
 }

@@ -2,6 +2,8 @@ namespace Forma.Framework.Culture.Router.AspNetCore;
 
 using System.Globalization;
 
+using Forma.Framework.Culture.Router;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 
@@ -11,13 +13,8 @@ using Microsoft.AspNetCore.Localization;
 /// </summary>
 public sealed class CultureRoutingMiddleware
 {
-    private const string CultureCookieName = "forma-culture-route";
-
-    // The HttpOnly cookie at the path / that an earlier version wrote, which the culture cookie replaces.
-    private const string LegacyCultureCookieName = "forma-culture";
-
-    /// <summary>How long the browser keeps the culture cookie.</summary>
-    internal static readonly TimeSpan CookieLifetime = TimeSpan.FromDays(365);
+    // How long the browser keeps the culture cookie.
+    private static readonly TimeSpan CookieLifetime = TimeSpan.FromDays(365);
 
     private readonly RequestDelegate _next;
     private readonly CultureRouter _router;
@@ -37,7 +34,7 @@ public sealed class CultureRoutingMiddleware
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var requested = context.Request.Path;
+        var requested = context.Request.Path.Value ?? string.Empty;
 
         if (_router.HasConsecutiveCultures(requested))
         {
@@ -51,7 +48,7 @@ public sealed class CultureRoutingMiddleware
 
         // A framework endpoint such as /_blazor, which its interactive circuit inherits a culture from, takes the culture its
         // address names, and the stored culture only where its address names none.
-        var namesCulture = match.Path != requested;
+        var namesCulture = !string.Equals(match.Path, requested, StringComparison.Ordinal);
         var route = isDocument || namesCulture ? match.Route : GetStoredRoute(context) ?? match.Route;
 
         ApplyCulture(context, route);
@@ -60,7 +57,7 @@ public sealed class CultureRoutingMiddleware
         {
             // An endpoint chosen for the address with its culture segment, as UsePathBase chooses one, is chosen again
             // for the path routing goes on to.
-            context.Request.Path = match.Path;
+            context.Request.Path = new PathString(match.Path);
             context.SetEndpoint(null);
             context.Request.RouteValues.Clear();
         }
@@ -72,7 +69,7 @@ public sealed class CultureRoutingMiddleware
 
         if (!match.IsCanonical)
         {
-            return RedirectToCanonical(context, match.CanonicalPath);
+            return RedirectToCanonical(context, new PathString(match.CanonicalPath));
         }
 
         WriteCultureCookie(context, match.Route);
@@ -83,19 +80,17 @@ public sealed class CultureRoutingMiddleware
     private static void ApplyCulture(HttpContext context, CultureRoute route)
     {
         CultureInfo.CurrentCulture = route.Culture;
-        CultureInfo.CurrentUICulture = route.Culture;
+        CultureInfo.CurrentUICulture = route.UICulture;
 
-        context.Response.Headers.ContentLanguage = route.Culture.Name;
+        context.Response.Headers.ContentLanguage = route.UICulture.Name;
 
         // Blazor resolves the interactive circuit's culture from this feature.
         context.Features.Set<IRequestCultureFeature>(
-            new RequestCultureFeature(new RequestCulture(route.Culture, route.Culture), provider: null));
+            new RequestCultureFeature(new RequestCulture(route.Culture, route.UICulture), provider: null));
     }
 
-    private static bool IsDocument(PathString path)
+    private static bool IsDocument(string value)
     {
-        var value = path.Value;
-
         if (string.IsNullOrEmpty(value))
         {
             return true;
@@ -124,54 +119,27 @@ public sealed class CultureRoutingMiddleware
 
     private CultureRoute? GetStoredRoute(HttpContext context)
     {
-        var cookies = context.Request.Cookies;
-        var stored = cookies.TryGetValue(GetCookieName(context.Request.PathBase), out var current) ? current : cookies[LegacyCultureCookieName];
+        var stored = context.Request.Cookies[CultureRouter.GetCookieName(context.Request.PathBase.Value ?? string.Empty)];
 
-        if (string.IsNullOrEmpty(stored))
-        {
-            return null;
-        }
-
-        return _router.Routes.FirstOrDefault(route => string.Equals(route.Token, stored, StringComparison.Ordinal));
+        return string.IsNullOrEmpty(stored) ? null : _router.Routes.FirstOrDefault(route => string.Equals(route.Token, stored, StringComparison.Ordinal));
     }
 
     private static void WriteCultureCookie(HttpContext context, CultureRoute route)
     {
-        var cookies = context.Request.Cookies;
+        var name = CultureRouter.GetCookieName(context.Request.PathBase.Value ?? string.Empty);
 
-        if (cookies.ContainsKey(LegacyCultureCookieName))
-        {
-            context.Response.Cookies.Delete(LegacyCultureCookieName, new CookieOptions { Path = "/" });
-        }
-
-        var name = GetCookieName(context.Request.PathBase);
-
-        if (cookies.TryGetValue(name, out var stored) && string.Equals(stored, route.Token, StringComparison.Ordinal))
+        if (context.Request.Cookies.TryGetValue(name, out var stored) && string.Equals(stored, route.Token, StringComparison.Ordinal))
         {
             return;
         }
 
         context.Response.Cookies.Append(name, route.Token, new CookieOptions
         {
-            Path = GetCookiePath(context.Request.PathBase),
+            Path = CultureRouter.GetCookiePath(context.Request.PathBase.ToUriComponent()),
             IsEssential = true,
             Secure = context.Request.IsHttps,
             SameSite = SameSiteMode.Lax,
             MaxAge = CookieLifetime
         });
     }
-
-    /// <summary>The name of the culture cookie of the application at <paramref name="pathBase"/>.</summary>
-    /// <remarks>
-    /// Under a path base the name carries the path base, escaped, so a request never carries two culture cookies of one
-    /// name, however many applications share the host.
-    /// </remarks>
-    internal static string GetCookieName(PathString pathBase)
-        => pathBase.HasValue
-            ? CultureCookieName + Uri.EscapeDataString(pathBase.Value)
-            : CultureCookieName;
-
-    /// <summary>The path the culture cookie of the application at <paramref name="pathBase"/> is written at.</summary>
-    internal static string GetCookiePath(PathString pathBase)
-        => pathBase.HasValue ? pathBase.ToUriComponent() : "/";
 }

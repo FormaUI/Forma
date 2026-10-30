@@ -1,0 +1,932 @@
+{
+  "configurations": [
+    {
+      "map": {
+        "routes": [
+          {
+            "token": "en",
+            "aliases": [],
+            "culture": "en",
+            "uiCulture": "en",
+            "direction": "ltr"
+          },
+          {
+            "token": "he",
+            "aliases": [
+              "iw"
+            ],
+            "culture": "he",
+            "uiCulture": "he",
+            "direction": "rtl"
+          },
+          {
+            "token": "es",
+            "aliases": [
+              "es-419"
+            ],
+            "culture": "es-419",
+            "uiCulture": "es-419",
+            "direction": "ltr"
+          },
+          {
+            "token": "he-de",
+            "aliases": [],
+            "culture": "de-DE",
+            "uiCulture": "he",
+            "direction": "rtl"
+          }
+        ],
+        "defaultToken": "en",
+        "prefixesDefault": false,
+        "switchesInPlace": true,
+        "root": "/",
+        "cookieName": "forma-culture-route",
+        "cookiePath": "/"
+      },
+      "destinations": [
+        {
+          "href": "http://localhost/about",
+          "token": "en",
+          "destination": "http://localhost/about"
+        },
+        {
+          "href": "http://localhost/about",
+          "token": "he",
+          "destination": "http://localhost/he/about"
+        },
+        {
+          "href": "http://localhost/about",
+          "token": "es",
+          "destination": "http://localhost/es/about"
+        },
+        {
+          "href": "http://localhost/about",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about"
+        },
+        {
+          "href": "http://localhost/he/about?tab=2#top",
+          "token": "en",
+          "destination": "http://localhost/about?tab=2"
+        },
+        {
+          "href": "http://localhost/he/about?tab=2#top",
+          "token": "he",
+          "destination": "http://localhost/he/about?tab=2"
+        },
+        {
+          "href": "http://localhost/he/about?tab=2#top",
+          "token": "es",
+          "destination": "http://localhost/es/about?tab=2"
+        },
+        {
+          "href": "http://localhost/he/about?tab=2#top",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about?tab=2"
+        },
+        {
+          "href": "http://localhost/",
+          "token": "en",
+          "destination": "http://localhost/"
+        },
+        {
+          "href": "http://localhost/",
+          "token": "he",
+          "destination": "http://localhost/he"
+        },
+        {
+          "href": "http://localhost/",
+          "token": "es",
+          "destination": "http://localhost/es"
+        },
+        {
+          "href": "http://localhost/",
+          "token": "he-de",
+          "destination": "http://localhost/he-de"
+        },
+        {
+          "href": "http://localhost/iw/x/y/",
+          "token": "en",
+          "destination": "http://localhost/x/y"
+        },
+        {
+          "href": "http://localhost/iw/x/y/",
+          "token": "he",
+          "destination": "http://localhost/he/x/y"
+        },
+        {
+          "href": "http://localhost/iw/x/y/",
+          "token": "es",
+          "destination": "http://localhost/es/x/y"
+        },
+        {
+          "href": "http://localhost/iw/x/y/",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/x/y"
+        },
+        {
+          "href": "http://localhost/about/",
+          "token": "en",
+          "destination": "http://localhost/about/"
+        },
+        {
+          "href": "http://localhost/about/",
+          "token": "he",
+          "destination": "http://localhost/he/about/"
+        },
+        {
+          "href": "http://localhost/about/",
+          "token": "es",
+          "destination": "http://localhost/es/about/"
+        },
+        {
+          "href": "http://localhost/about/",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about/"
+        },
+        {
+          "href": "http://localhost/HE/about",
+          "token": "en",
+          "destination": "http://localhost/about"
+        },
+        {
+          "href": "http://localhost/HE/about",
+          "token": "he",
+          "destination": "http://localhost/he/about"
+        },
+        {
+          "href": "http://localhost/HE/about",
+          "token": "es",
+          "destination": "http://localhost/es/about"
+        },
+        {
+          "href": "http://localhost/HE/about",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about"
+        },
+        {
+          "href": "http://localhost/es-419/about",
+          "token": "en",
+          "destination": "http://localhost/about"
+        },
+        {
+          "href": "http://localhost/es-419/about",
+          "token": "he",
+          "destination": "http://localhost/he/about"
+        },
+        {
+          "href": "http://localhost/es-419/about",
+          "token": "es",
+          "destination": "http://localhost/es/about"
+        },
+        {
+          "href": "http://localhost/es-419/about",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about"
+        },
+        {
+          "href": "http://localhost/he-de/about?q=a%20b",
+          "token": "en",
+          "destination": "http://localhost/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/he-de/about?q=a%20b",
+          "token": "he",
+          "destination": "http://localhost/he/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/he-de/about?q=a%20b",
+          "token": "es",
+          "destination": "http://localhost/es/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/he-de/about?q=a%20b",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about?q=a%20b"
+        }
+      ],
+      "tokens": [
+        {
+          "token": "he",
+          "route": "he"
+        },
+        {
+          "token": "HE",
+          "route": "he"
+        },
+        {
+          "token": "iw",
+          "route": "he"
+        },
+        {
+          "token": "es-419",
+          "route": "es"
+        },
+        {
+          "token": "he-de",
+          "route": "he-de"
+        },
+        {
+          "token": "xx",
+          "route": null
+        }
+      ]
+    },
+    {
+      "map": {
+        "routes": [
+          {
+            "token": "en",
+            "aliases": [],
+            "culture": "en",
+            "uiCulture": "en",
+            "direction": "ltr"
+          },
+          {
+            "token": "he",
+            "aliases": [
+              "iw"
+            ],
+            "culture": "he",
+            "uiCulture": "he",
+            "direction": "rtl"
+          },
+          {
+            "token": "es",
+            "aliases": [
+              "es-419"
+            ],
+            "culture": "es-419",
+            "uiCulture": "es-419",
+            "direction": "ltr"
+          },
+          {
+            "token": "he-de",
+            "aliases": [],
+            "culture": "de-DE",
+            "uiCulture": "he",
+            "direction": "rtl"
+          }
+        ],
+        "defaultToken": "en",
+        "prefixesDefault": false,
+        "switchesInPlace": true,
+        "root": "/app/",
+        "cookieName": "forma-culture-route%2Fapp",
+        "cookiePath": "/app"
+      },
+      "destinations": [
+        {
+          "href": "http://localhost/app/about",
+          "token": "en",
+          "destination": "http://localhost/app/about"
+        },
+        {
+          "href": "http://localhost/app/about",
+          "token": "he",
+          "destination": "http://localhost/app/he/about"
+        },
+        {
+          "href": "http://localhost/app/about",
+          "token": "es",
+          "destination": "http://localhost/app/es/about"
+        },
+        {
+          "href": "http://localhost/app/about",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about"
+        },
+        {
+          "href": "http://localhost/app/he/about?tab=2#top",
+          "token": "en",
+          "destination": "http://localhost/app/about?tab=2"
+        },
+        {
+          "href": "http://localhost/app/he/about?tab=2#top",
+          "token": "he",
+          "destination": "http://localhost/app/he/about?tab=2"
+        },
+        {
+          "href": "http://localhost/app/he/about?tab=2#top",
+          "token": "es",
+          "destination": "http://localhost/app/es/about?tab=2"
+        },
+        {
+          "href": "http://localhost/app/he/about?tab=2#top",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about?tab=2"
+        },
+        {
+          "href": "http://localhost/app/",
+          "token": "en",
+          "destination": "http://localhost/app/"
+        },
+        {
+          "href": "http://localhost/app/",
+          "token": "he",
+          "destination": "http://localhost/app/he"
+        },
+        {
+          "href": "http://localhost/app/",
+          "token": "es",
+          "destination": "http://localhost/app/es"
+        },
+        {
+          "href": "http://localhost/app/",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de"
+        },
+        {
+          "href": "http://localhost/app/iw/x/y/",
+          "token": "en",
+          "destination": "http://localhost/app/x/y"
+        },
+        {
+          "href": "http://localhost/app/iw/x/y/",
+          "token": "he",
+          "destination": "http://localhost/app/he/x/y"
+        },
+        {
+          "href": "http://localhost/app/iw/x/y/",
+          "token": "es",
+          "destination": "http://localhost/app/es/x/y"
+        },
+        {
+          "href": "http://localhost/app/iw/x/y/",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/x/y"
+        },
+        {
+          "href": "http://localhost/app/about/",
+          "token": "en",
+          "destination": "http://localhost/app/about/"
+        },
+        {
+          "href": "http://localhost/app/about/",
+          "token": "he",
+          "destination": "http://localhost/app/he/about/"
+        },
+        {
+          "href": "http://localhost/app/about/",
+          "token": "es",
+          "destination": "http://localhost/app/es/about/"
+        },
+        {
+          "href": "http://localhost/app/about/",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about/"
+        },
+        {
+          "href": "http://localhost/app/HE/about",
+          "token": "en",
+          "destination": "http://localhost/app/about"
+        },
+        {
+          "href": "http://localhost/app/HE/about",
+          "token": "he",
+          "destination": "http://localhost/app/he/about"
+        },
+        {
+          "href": "http://localhost/app/HE/about",
+          "token": "es",
+          "destination": "http://localhost/app/es/about"
+        },
+        {
+          "href": "http://localhost/app/HE/about",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about"
+        },
+        {
+          "href": "http://localhost/app/es-419/about",
+          "token": "en",
+          "destination": "http://localhost/app/about"
+        },
+        {
+          "href": "http://localhost/app/es-419/about",
+          "token": "he",
+          "destination": "http://localhost/app/he/about"
+        },
+        {
+          "href": "http://localhost/app/es-419/about",
+          "token": "es",
+          "destination": "http://localhost/app/es/about"
+        },
+        {
+          "href": "http://localhost/app/es-419/about",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about"
+        },
+        {
+          "href": "http://localhost/app/he-de/about?q=a%20b",
+          "token": "en",
+          "destination": "http://localhost/app/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/app/he-de/about?q=a%20b",
+          "token": "he",
+          "destination": "http://localhost/app/he/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/app/he-de/about?q=a%20b",
+          "token": "es",
+          "destination": "http://localhost/app/es/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/app/he-de/about?q=a%20b",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about?q=a%20b"
+        }
+      ],
+      "tokens": [
+        {
+          "token": "he",
+          "route": "he"
+        },
+        {
+          "token": "HE",
+          "route": "he"
+        },
+        {
+          "token": "iw",
+          "route": "he"
+        },
+        {
+          "token": "es-419",
+          "route": "es"
+        },
+        {
+          "token": "he-de",
+          "route": "he-de"
+        },
+        {
+          "token": "xx",
+          "route": null
+        }
+      ]
+    },
+    {
+      "map": {
+        "routes": [
+          {
+            "token": "en",
+            "aliases": [],
+            "culture": "en",
+            "uiCulture": "en",
+            "direction": "ltr"
+          },
+          {
+            "token": "he",
+            "aliases": [
+              "iw"
+            ],
+            "culture": "he",
+            "uiCulture": "he",
+            "direction": "rtl"
+          },
+          {
+            "token": "es",
+            "aliases": [
+              "es-419"
+            ],
+            "culture": "es-419",
+            "uiCulture": "es-419",
+            "direction": "ltr"
+          },
+          {
+            "token": "he-de",
+            "aliases": [],
+            "culture": "de-DE",
+            "uiCulture": "he",
+            "direction": "rtl"
+          }
+        ],
+        "defaultToken": "en",
+        "prefixesDefault": true,
+        "switchesInPlace": true,
+        "root": "/",
+        "cookieName": "forma-culture-route",
+        "cookiePath": "/"
+      },
+      "destinations": [
+        {
+          "href": "http://localhost/about",
+          "token": "en",
+          "destination": "http://localhost/en/about"
+        },
+        {
+          "href": "http://localhost/about",
+          "token": "he",
+          "destination": "http://localhost/he/about"
+        },
+        {
+          "href": "http://localhost/about",
+          "token": "es",
+          "destination": "http://localhost/es/about"
+        },
+        {
+          "href": "http://localhost/about",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about"
+        },
+        {
+          "href": "http://localhost/he/about?tab=2#top",
+          "token": "en",
+          "destination": "http://localhost/en/about?tab=2"
+        },
+        {
+          "href": "http://localhost/he/about?tab=2#top",
+          "token": "he",
+          "destination": "http://localhost/he/about?tab=2"
+        },
+        {
+          "href": "http://localhost/he/about?tab=2#top",
+          "token": "es",
+          "destination": "http://localhost/es/about?tab=2"
+        },
+        {
+          "href": "http://localhost/he/about?tab=2#top",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about?tab=2"
+        },
+        {
+          "href": "http://localhost/",
+          "token": "en",
+          "destination": "http://localhost/en"
+        },
+        {
+          "href": "http://localhost/",
+          "token": "he",
+          "destination": "http://localhost/he"
+        },
+        {
+          "href": "http://localhost/",
+          "token": "es",
+          "destination": "http://localhost/es"
+        },
+        {
+          "href": "http://localhost/",
+          "token": "he-de",
+          "destination": "http://localhost/he-de"
+        },
+        {
+          "href": "http://localhost/iw/x/y/",
+          "token": "en",
+          "destination": "http://localhost/en/x/y"
+        },
+        {
+          "href": "http://localhost/iw/x/y/",
+          "token": "he",
+          "destination": "http://localhost/he/x/y"
+        },
+        {
+          "href": "http://localhost/iw/x/y/",
+          "token": "es",
+          "destination": "http://localhost/es/x/y"
+        },
+        {
+          "href": "http://localhost/iw/x/y/",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/x/y"
+        },
+        {
+          "href": "http://localhost/about/",
+          "token": "en",
+          "destination": "http://localhost/en/about/"
+        },
+        {
+          "href": "http://localhost/about/",
+          "token": "he",
+          "destination": "http://localhost/he/about/"
+        },
+        {
+          "href": "http://localhost/about/",
+          "token": "es",
+          "destination": "http://localhost/es/about/"
+        },
+        {
+          "href": "http://localhost/about/",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about/"
+        },
+        {
+          "href": "http://localhost/HE/about",
+          "token": "en",
+          "destination": "http://localhost/en/about"
+        },
+        {
+          "href": "http://localhost/HE/about",
+          "token": "he",
+          "destination": "http://localhost/he/about"
+        },
+        {
+          "href": "http://localhost/HE/about",
+          "token": "es",
+          "destination": "http://localhost/es/about"
+        },
+        {
+          "href": "http://localhost/HE/about",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about"
+        },
+        {
+          "href": "http://localhost/es-419/about",
+          "token": "en",
+          "destination": "http://localhost/en/about"
+        },
+        {
+          "href": "http://localhost/es-419/about",
+          "token": "he",
+          "destination": "http://localhost/he/about"
+        },
+        {
+          "href": "http://localhost/es-419/about",
+          "token": "es",
+          "destination": "http://localhost/es/about"
+        },
+        {
+          "href": "http://localhost/es-419/about",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about"
+        },
+        {
+          "href": "http://localhost/he-de/about?q=a%20b",
+          "token": "en",
+          "destination": "http://localhost/en/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/he-de/about?q=a%20b",
+          "token": "he",
+          "destination": "http://localhost/he/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/he-de/about?q=a%20b",
+          "token": "es",
+          "destination": "http://localhost/es/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/he-de/about?q=a%20b",
+          "token": "he-de",
+          "destination": "http://localhost/he-de/about?q=a%20b"
+        }
+      ],
+      "tokens": [
+        {
+          "token": "he",
+          "route": "he"
+        },
+        {
+          "token": "HE",
+          "route": "he"
+        },
+        {
+          "token": "iw",
+          "route": "he"
+        },
+        {
+          "token": "es-419",
+          "route": "es"
+        },
+        {
+          "token": "he-de",
+          "route": "he-de"
+        },
+        {
+          "token": "xx",
+          "route": null
+        }
+      ]
+    },
+    {
+      "map": {
+        "routes": [
+          {
+            "token": "en",
+            "aliases": [],
+            "culture": "en",
+            "uiCulture": "en",
+            "direction": "ltr"
+          },
+          {
+            "token": "he",
+            "aliases": [
+              "iw"
+            ],
+            "culture": "he",
+            "uiCulture": "he",
+            "direction": "rtl"
+          },
+          {
+            "token": "es",
+            "aliases": [
+              "es-419"
+            ],
+            "culture": "es-419",
+            "uiCulture": "es-419",
+            "direction": "ltr"
+          },
+          {
+            "token": "he-de",
+            "aliases": [],
+            "culture": "de-DE",
+            "uiCulture": "he",
+            "direction": "rtl"
+          }
+        ],
+        "defaultToken": "en",
+        "prefixesDefault": true,
+        "switchesInPlace": true,
+        "root": "/app/",
+        "cookieName": "forma-culture-route%2Fapp",
+        "cookiePath": "/app"
+      },
+      "destinations": [
+        {
+          "href": "http://localhost/app/about",
+          "token": "en",
+          "destination": "http://localhost/app/en/about"
+        },
+        {
+          "href": "http://localhost/app/about",
+          "token": "he",
+          "destination": "http://localhost/app/he/about"
+        },
+        {
+          "href": "http://localhost/app/about",
+          "token": "es",
+          "destination": "http://localhost/app/es/about"
+        },
+        {
+          "href": "http://localhost/app/about",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about"
+        },
+        {
+          "href": "http://localhost/app/he/about?tab=2#top",
+          "token": "en",
+          "destination": "http://localhost/app/en/about?tab=2"
+        },
+        {
+          "href": "http://localhost/app/he/about?tab=2#top",
+          "token": "he",
+          "destination": "http://localhost/app/he/about?tab=2"
+        },
+        {
+          "href": "http://localhost/app/he/about?tab=2#top",
+          "token": "es",
+          "destination": "http://localhost/app/es/about?tab=2"
+        },
+        {
+          "href": "http://localhost/app/he/about?tab=2#top",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about?tab=2"
+        },
+        {
+          "href": "http://localhost/app/",
+          "token": "en",
+          "destination": "http://localhost/app/en"
+        },
+        {
+          "href": "http://localhost/app/",
+          "token": "he",
+          "destination": "http://localhost/app/he"
+        },
+        {
+          "href": "http://localhost/app/",
+          "token": "es",
+          "destination": "http://localhost/app/es"
+        },
+        {
+          "href": "http://localhost/app/",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de"
+        },
+        {
+          "href": "http://localhost/app/iw/x/y/",
+          "token": "en",
+          "destination": "http://localhost/app/en/x/y"
+        },
+        {
+          "href": "http://localhost/app/iw/x/y/",
+          "token": "he",
+          "destination": "http://localhost/app/he/x/y"
+        },
+        {
+          "href": "http://localhost/app/iw/x/y/",
+          "token": "es",
+          "destination": "http://localhost/app/es/x/y"
+        },
+        {
+          "href": "http://localhost/app/iw/x/y/",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/x/y"
+        },
+        {
+          "href": "http://localhost/app/about/",
+          "token": "en",
+          "destination": "http://localhost/app/en/about/"
+        },
+        {
+          "href": "http://localhost/app/about/",
+          "token": "he",
+          "destination": "http://localhost/app/he/about/"
+        },
+        {
+          "href": "http://localhost/app/about/",
+          "token": "es",
+          "destination": "http://localhost/app/es/about/"
+        },
+        {
+          "href": "http://localhost/app/about/",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about/"
+        },
+        {
+          "href": "http://localhost/app/HE/about",
+          "token": "en",
+          "destination": "http://localhost/app/en/about"
+        },
+        {
+          "href": "http://localhost/app/HE/about",
+          "token": "he",
+          "destination": "http://localhost/app/he/about"
+        },
+        {
+          "href": "http://localhost/app/HE/about",
+          "token": "es",
+          "destination": "http://localhost/app/es/about"
+        },
+        {
+          "href": "http://localhost/app/HE/about",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about"
+        },
+        {
+          "href": "http://localhost/app/es-419/about",
+          "token": "en",
+          "destination": "http://localhost/app/en/about"
+        },
+        {
+          "href": "http://localhost/app/es-419/about",
+          "token": "he",
+          "destination": "http://localhost/app/he/about"
+        },
+        {
+          "href": "http://localhost/app/es-419/about",
+          "token": "es",
+          "destination": "http://localhost/app/es/about"
+        },
+        {
+          "href": "http://localhost/app/es-419/about",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about"
+        },
+        {
+          "href": "http://localhost/app/he-de/about?q=a%20b",
+          "token": "en",
+          "destination": "http://localhost/app/en/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/app/he-de/about?q=a%20b",
+          "token": "he",
+          "destination": "http://localhost/app/he/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/app/he-de/about?q=a%20b",
+          "token": "es",
+          "destination": "http://localhost/app/es/about?q=a%20b"
+        },
+        {
+          "href": "http://localhost/app/he-de/about?q=a%20b",
+          "token": "he-de",
+          "destination": "http://localhost/app/he-de/about?q=a%20b"
+        }
+      ],
+      "tokens": [
+        {
+          "token": "he",
+          "route": "he"
+        },
+        {
+          "token": "HE",
+          "route": "he"
+        },
+        {
+          "token": "iw",
+          "route": "he"
+        },
+        {
+          "token": "es-419",
+          "route": "es"
+        },
+        {
+          "token": "he-de",
+          "route": "he-de"
+        },
+        {
+          "token": "xx",
+          "route": null
+        }
+      ]
+    }
+  ]
+}

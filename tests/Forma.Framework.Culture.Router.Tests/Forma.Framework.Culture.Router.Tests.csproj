@@ -7,8 +7,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Router.Interop\Forma.Framework.Culture.Router.Interop.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 

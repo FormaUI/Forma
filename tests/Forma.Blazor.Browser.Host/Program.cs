@@ -4,6 +4,7 @@ using Forma.Blazor;
 using Forma.Blazor.Browser.Host;
 using Forma.Blazor.Browser.Host.Client.Navigation;
 using Forma.Blazor.Browser.Host.Components;
+using Forma.Framework.Culture.Router;
 using Forma.Framework.Culture.Router.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,8 +21,8 @@ if (HostModes.UsesCultureAddresses)
         DefaultCulture = "en",
         Routes =
         [
-            new() { Token = "en", Culture = new("en") },
-            new() { Token = "he", Culture = new("he") },
+            new() { Token = "en", UICulture = new("en") },
+            new() { Token = "he", UICulture = new("he") },
         ],
     });
 }

@@ -6,10 +6,14 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>@Title</title>
-<base href="@BaseHref" />
+<base href="@DocumentBase" />
 @* The cultures the server rendered the page in, and how a switch persists, which the page's culture coordinator reads. *@
 <meta name="forma-culture" data-culture="@Context.CultureState.Culture.Name" data-ui-culture="@Context.CultureState.UICulture.Name" />
-@if (Policy.Persistence is CultureSwitchPersistence.Cookie)
+@if (_map is { } map)
+{
+    <meta name="forma-culture-policy" content="address" data-routes="@MapRoutes" data-default="@map.DefaultToken" data-prefix="@MapPrefix" data-switch="@MapSwitch" data-root="@map.Root" data-cookie-name="@map.CookieName" data-cookie-path="@map.CookiePath" />
+}
+else if (Policy.Persistence is CultureSwitchPersistence.Cookie)
 {
     <meta name="forma-culture-policy" content="cookie" data-name="@Policy.CookieName" data-path="@Policy.CookiePath" data-domain="@Policy.CookieDomain" data-max-age="@CookieMaxAge" data-secure="@Policy.IsCookieSecure" data-same-site="@CookieSameSite" />
 }

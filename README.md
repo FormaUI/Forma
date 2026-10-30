@@ -299,15 +299,18 @@ the file format.
 
 ## Culture in the URL
 
-[`Forma.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md)
-takes the request culture from the first URL segment, `/he/orders`, and gives every page one
-address per culture:
+[`Forma.Framework.Culture.Router`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router/README.md)
+takes the page's culture pair from the first URL segment, `/he/orders`, and gives every page one
+address per route; a server host adds the request side from
+[`Forma.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md):
 
 ```pwsh
+dotnet add package formaui-net.Framework.Culture.Router
 dotnet add package formaui-net.Framework.Culture.Router.AspNetCore
 ```
 
 ```csharp
+using Forma.Framework.Culture.Router;
 using Forma.Framework.Culture.Router.AspNetCore;
 
 builder.Services.AddFormaCultureRouting(new CultureRouterOptions
@@ -316,18 +319,18 @@ builder.Services.AddFormaCultureRouting(new CultureRouterOptions
     DefaultCulture = "en",
     Routes =
     [
-        new() { Token = "en", Culture = new("en") },
-        new() { Token = "he", Culture = new("he") },
-        new() { Token = "es", Culture = new("es-419"), Aliases = ["es-419"] }
+        new() { Token = "en", UICulture = new("en") },
+        new() { Token = "he", UICulture = new("he") },
+        new() { Token = "es", UICulture = new("es-419"), Aliases = ["es-419"] }
     ]
 });
 
 app.UseFormaCultureRouting();
 ```
 
-A switch to another culture loads its address as a new document by default;
-`Switch = CultureSwitchMode.InPlace` keeps the document and the user's work instead, as the package's
-README sets out.
+`FormaPageHead` then writes the document's base in the page's route, and a switch is a navigation to
+the pair's address, loading it as a new document by default; `Switch = CultureSwitchMode.InPlace` keeps
+the document and the user's work instead, as the package's README sets out.
 
 ## More packages
 
@@ -344,7 +347,8 @@ Each package's README covers installing, registering and using it.
 | [`formaui-net.AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md) | Word, Excel and PowerPoint documents rendered as pages in `FormaFileViewer` |
 | [`formaui-net.AddOns.Share.Targets`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Share.Targets/README.md) | Social networks, messengers and cloud drives for `FormaShareMenu` |
 | [`formaui-net.Framework.Currencies`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Currencies/README.md) | Currency codes, their minor units, and the symbol each culture writes them with |
-| [`formaui-net.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md) | The culture in the URL |
+| [`formaui-net.Framework.Culture.Router`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router/README.md) | The culture in the URL |
+| [`formaui-net.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md) | The culture in the URL, on an ASP.NET Core server |
 
 ## Contributing
 

@@ -6,6 +6,7 @@ using Forma.Blazor.Showcase.Features.Media;
 using Forma.Blazor.Showcase.Features.Upload;
 using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Css;
+using Forma.Framework.Culture.Router;
 using Forma.Framework.Culture.Router.AspNetCore;
 using Forma.Framework.Emojis.Twemoji;
 using Forma.Framework.Explorer.Content.Queries;
@@ -74,10 +75,10 @@ builder.Services.AddFormaCultureRouting(new CultureRouterOptions
     DefaultCulture = "en",
     Routes =
     [
-        new() { Token = "en", Culture = new("en") },
-        new() { Token = "es", Culture = new("es-419"), Aliases = ["es-419"] },
-        new() { Token = "he", Culture = new("he") },
-        new() { Token = "fr", Culture = new("fr") }
+        new() { Token = "en", UICulture = new("en") },
+        new() { Token = "es", UICulture = new("es-419"), Aliases = ["es-419"] },
+        new() { Token = "he", UICulture = new("he") },
+        new() { Token = "fr", UICulture = new("fr") }
     ]
 });
 

@@ -2,7 +2,7 @@
 
 ## Current state
 
-**Forma has 65 implemented components and 8 in progress. Interactive Server is its established hosting mode, and WebAssembly and Auto are implemented in part.** The current work is [WebAssembly](#webassembly), steps 9 to 12; the product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
+**Forma has 65 implemented components and 8 in progress. Interactive Server is its established hosting mode, and WebAssembly and Auto are implemented in part.** The current work is [WebAssembly](#webassembly), steps 10 to 12; the product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
 
 | Measure | Now |
 | --- | --- |
@@ -20,7 +20,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 
 | Work | State |
 | --- | --- |
-| [WebAssembly](#webassembly) | Steps 9 to 12 next |
+| [WebAssembly](#webassembly) | Steps 10 to 12 next |
 | [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
@@ -75,7 +75,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | The component bases and the component context | [Component foundations design](component-foundations-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | Design tokens, backdrops and theming | [Styling and theming](../README.md#styling-and-theming) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | The culture state and the switch | [Culture design](culture-design.md) | Implemented for circuits, coordinated across a page; WebAssembly's registration is [step 10](#webassembly) | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| Culture addresses | [Culture addresses](culture-design.md#culture-addresses) | Implemented; routing in coordination is [step 9](#webassembly) | [March 2026](../FEATURE-HISTORY.md#2026-03) |
+| Culture addresses | [Culture addresses](culture-design.md#culture-addresses) | Implemented, in coordination; under WebAssembly from [step 10](#webassembly) | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Localization and locale packs | [Localization design](localization-design.md) | Implemented; a host's strings in the browser are [step 11](#webassembly) | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | The input router | [Input router design](input-router-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The DOM watcher and engine | [DOM watcher and engine design](dom-watcher-engine-design.md) | Implemented for focus, scrolling and intersection; [the rest](#the-dom-watcher-and-engine) open | [October 2026](../FEATURE-HISTORY.md#2026-10) |
@@ -98,7 +98,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | Feature | Contract | State | Since |
 | --- | --- | --- | --- |
 | The server half, `AddFormaUIServer` and `FormaPageHead` | [`Forma.Blazor.Server`](../src/Forma.Blazor.Server/README.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented in part: the components load and render under WebAssembly and Auto; [steps 9 to 12](#webassembly) open | [October 2026](../FEATURE-HISTORY.md#2026-10) |
+| The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented in part: the components load and render under WebAssembly and Auto; [steps 10 to 12](#webassembly) open | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, and Forma's analyzer keeping each type crossing the interop serializable | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Hybrid | [WebAssembly and Hybrid](culture-design.md#webassembly-and-hybrid) | [Deferred](#deferred) | — |
 
@@ -115,9 +115,8 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## WebAssembly
 
-[The WebAssembly plan](webassembly-implementation-plan.md) builds [the WebAssembly design](webassembly-design.md) and the parts of [the culture design](culture-design.md) a page holding several runtimes needs. Steps 1 to 8 have landed: the client libraries reference packages rather than the shared framework, the product has its two render-mode halves, the browser check runs the components in every runtime, the culture's checks and the navigation boundary are automated, every client library is trimmed, the culture state switches through `ICultureSwitch`, and a page's circuits share one coordinator. What remains:
+[The WebAssembly plan](webassembly-implementation-plan.md) builds [the WebAssembly design](webassembly-design.md) and the parts of [the culture design](culture-design.md) a page holding several runtimes needs. Steps 1 to 9 have landed: the client libraries reference packages rather than the shared framework, the product has its two render-mode halves, the browser check runs the components in every runtime, the culture's checks and the navigation boundary are automated, every client library is trimmed, the culture state switches through `ICultureSwitch`, a page's circuits share one coordinator, and culture routing takes part in coordination, its pairs published to the page and its interactive landings accepted by the coordinator. What remains:
 
-- **9, routing in coordination:** the culture routes move into a neutral `Forma.Framework.Culture.Router`, name a pair and are published to the page; the interactive landing joins the coordinator; and a pair without a route is refused before anything changes.
 - **10, the culture under WebAssembly:** the culture's WebAssembly half registers each runtime with the coordinator and sets the process's default cultures, and the culture arrangement, coordinated or independent, is chosen on both registrars.
 - **11, a host's strings in the browser:** a host's locale files embedded in its client assembly, where the browser's loader finds them.
 - **12, the host's setup:** both arrangements set out in the READMEs, each an example host the gate builds and runs.
@@ -176,8 +175,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 Each needs the maintainer's decision; each is given with a proposal.
 
-- **The document's base under culture addresses.** `FormaPageHead` writes the page's `<base>`, so a host loading each culture as a new document builds the culture's base and hands it in through `BaseHref`, as [the router's README](../src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md#the-documents-base) shows, and `CultureBaseHref`, which writes a `<base>` of its own, has no place in a head `FormaPageHead` renders. *Proposal:* `FormaPageHead` takes its base from culture routing where it is registered, as step 9 moves the page base into the neutral router, and `CultureBaseHref` retires.
-- **The earlier culture cookie.** The middleware still reads and expires a `forma-culture` cookie, which no release ever wrote. *Proposal:* drop it from the code and the culture design.
 - **The bases of host-placed components.** The component foundations design gives each placement one base, a component a host places being an element, while an element is a component with a root its host addresses. `FormaConfirmDialog`, `FormaToastContainer`, `FormaPageHead` and `FormaVirtualize` are placed by a host on the base of a part, though `FormaPageHead` and `FormaVirtualize` draw no root of their own, and `FormaColumnBase` derives from `ComponentBase` directly. `FormaCurrencyInput` and `FormaSearchBox` stand on the element base as the authoring rules set out: the first composes `FormaNumberInput` and forwards its value, expression and validation to it, and the second is a search field no form binds. *Proposal:* the design chooses a base by responsibility and composition rather than by placement, the element base for a component drawing a root its host addresses, and each case is then reviewed on its own against that rule rather than moved mechanically.
 - **Subscript and superscript.** The composer design keeps them out of the default preset, while its default formatting plugin adds both. *Proposal:* follow the design.
 - **Stepping a number from its draft.** A number input steps from its value, and a step replaces an edit in progress. *Proposal:* a step starts from the number the edit's text writes where it reads as one in the culture it was typed in, and from the value where it doesn't, as a native number field steps from what it shows.

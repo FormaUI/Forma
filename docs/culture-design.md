@@ -424,11 +424,12 @@ culture's name, and `dir` its direction.
 
 The address decides a page's culture, and the state follows the address, never the reverse, so an address
 and the culture it shows never disagree. A host with culture addresses switches through the switch, as every
-host does, which under [the address policy](#switch-policies) is the switcher, one per user scope beside the
-application's one `CultureRouter`: it requests the other culture's address of the current page, and the coordinator accepts the record
-of the navigation that request becomes, once it lands. The switcher's current route is the
-culture state's, so work reads the route in force. A host without culture
-addresses switches under the cookie policy or the state alone.
+host does, or through the switcher, one per user scope beside the application's one `CultureRouter`, which
+switches to a route's pair through the switch. Under [the address policy](#switch-policies) a switch refuses a
+pair no route carries before it requests anything; the coordinator builds the current page's address in the
+route carrying the pair and navigates to it, and accepts the record of the navigation that request becomes,
+once it lands. The switcher's current route is the route carrying the culture state's pair, so work reads the
+route in force. A host without culture addresses switches under the cookie policy or the state alone.
 
 A culture route names its UI culture, and may name a formatting culture of its own; a route that names
 none formats in its UI culture, so `he` alone is `he/he`, and a host that wants German formats under
@@ -541,12 +542,8 @@ reconnects.
 The cookie belongs to the application: it is written at the application's path base, and under a path
 base its name carries that base, escaped, `forma-culture-route%2Fapp` under `/app`, so applications sharing
 a host, one at `/` and another under `/app`, each read their own. It isn't `HttpOnly`, since a change a
-culture route page makes in place, with no request, writes it from the browser's script. The middleware
-also reads a `forma-culture` cookie, `HttpOnly` at `/`: a request carrying it alone takes its token as the
-culture last chosen where it names a route and the address names none, and a document's response writes
-the `forma-culture-route` cookie and expires `forma-culture` at `/`; where both arrive, the
-`forma-culture-route` cookie decides and the other is expired. Each name is written at one path, so the order in which a browser
-sends two same-named cookies is never part of the contract, an application at `/` included.
+culture route page makes in place, with no request, writes it from the browser's script: the coordinator
+writes it as it accepts an interactive landing, from the cookie settings the address policy publishes.
 
 The culture segment is the first segment after the path base, and a request whose culture segment the
 middleware removes is routed again, since `UsePathBase` routes a request as it removes the base. The
@@ -584,11 +581,11 @@ as an integration with ASP.NET Core does across .NET:
 | Assembly | Holds |
 | --- | --- |
 | `Forma.Framework.Culture` | The culture state's abstraction, its integration contract and its default, the switch's abstraction, the culture version, the local switch and the registrar, with no dependency on ASP.NET Core or navigation |
-| `Forma.Framework.Culture.Browser.Interop` | The document's culture coordinator: its script, the initializer that reads the marker and the published policy and releases a closed circuit's registration, the registration that keeps a culture state on the accepted pair, and the switch that requests through the coordinator under the cookie policy or the state alone |
+| `Forma.Framework.Culture.Browser.Interop` | The document's culture coordinator: its script, which holds every policy, building an address switch's destination and resolving an interactive landing from the published mapping; the initializer that reads the marker and the published policy and releases a closed circuit's registration; the registration that keeps a culture state on the accepted pair and reports a page's landing; the switch that requests through the coordinator; and the culture addressing a page's culture follows, the contract culture routing gives, through which the head publishes the document's base and the mapping and the switch refuses a pair no route carries |
 | `Forma.Framework.Culture.Blazor.Server` | The circuit handler that applies the culture before every inbound activity and registers the circuit's state with the coordinator |
 | `Forma.Framework.Culture.Blazor.WebAssembly` | The startup that registers the runtime's state with the coordinator, and the application that sets the runtime's current and the process's default cultures on every application of a pair, the local switch's included |
-| `Forma.Framework.Culture.Router` | The culture routes, their tokens and the mapping between addresses and pairs, `CultureRouter`, the address policy's switch, the page base and the culture route scope, with no dependency on ASP.NET Core, so the server, a WebAssembly runtime and the published mapping share one set of rules |
-| `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware, the document's base and the cookie's server side |
+| `Forma.Framework.Culture.Router` | The culture routes, their tokens and the mapping between addresses and pairs, `CultureRouter`, which gives the page its culture addressing, the switcher, the page base and the culture route scope, with no dependency on ASP.NET Core, so the server, a WebAssembly runtime and the published mapping share one set of rules |
+| `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware and the cookie's server side |
 
 The product's registrars register all of them but the routing, which takes the host's options: the
 render-mode-neutral `AddFormaUI` registers the culture and its browser interop, and `AddFormaUIServer` and
@@ -608,7 +605,7 @@ sets out, so a host makes one call on each side and can still override any singl
 | C6 | What culture does an edit in progress parse in? | The one it began in, until it is committed or replaced, as [editing](#an-edit-in-progress-keeps-its-culture) sets out |
 | C7 | How does output take the state's culture? | Components read the state's cultures explicitly, and an operation that reads the ambient culture runs in a bounded synchronous scope that saves and restores both, as [output](#output-takes-its-culture-from-the-state) sets out |
 | C8 | How does a switch navigate? | By a full load by default; in place under `CultureSwitchMode.InPlace`, through culture-bearing interactive routes where an interactive router renders the pages, each page carrying its culture route, or through an enhanced navigation where the pages are islands, as [culture addresses](#culture-addresses) sets out |
-| C9 | What is the culture-route cookie named, and where is it written? | `forma-culture-route`, carrying the application's path base and written at it, so applications sharing a host read their own, which expires an `HttpOnly` `forma-culture` it finds without relying on the order of same-named cookies |
+| C9 | What is the culture-route cookie named, and where is it written? | `forma-culture-route`, carrying the application's path base and written at it, so applications sharing a host read their own |
 | C10 | When is the document held through an enhanced navigation? | From every enhanced navigation's start until its landing, whose record the coordinator accepts from that navigation's own marker, or until the navigation ends without landing, as [the document](#the-document-follows-the-state) sets out |
 | C11 | How does the state follow interactive routing? | A culture route page reports its interactive landing with the address its router accepted before its interactive page lifecycle runs, where it renders interactively within `CultureRouteScope`, which the host places around its `Router`; the coordinator resolves the record through the published mapping, and the lifecycle runs once the state has applied it, as [culture addresses](#culture-addresses) sets out |
 | C12 | How many culture pairs does a page hold? | One, across every runtime on it: a switch is the application's, and every runtime converges on the pair it accepts, as [the switch](#one-switch-for-the-page) sets out |

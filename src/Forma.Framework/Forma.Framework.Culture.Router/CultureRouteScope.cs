@@ -1,4 +1,4 @@
-namespace Forma.Framework.Culture.Router.AspNetCore;
+namespace Forma.Framework.Culture.Router;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;

@@ -34,7 +34,7 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [The culture state](docs/culture-design.md#one-culture-state-per-user-scope): one per user scope, a circuit or a WebAssembly runtime, holding the culture that formats and the culture that chooses strings apart, and announcing each change.
 - [One switch for the page](docs/culture-design.md#one-switch-for-the-page): a host switches through `ICultureSwitch`, and on an Interactive Server page [the coordinator](docs/culture-design.md#the-coordinator) accepts each switch for every circuit registered with it, persists it in the culture cookie where the host chose that, and keeps the [document's language and direction](docs/culture-design.md#the-document-follows-the-state) on the pair it accepted.
-- [Culture addresses](docs/culture-design.md#culture-addresses): a culture in the address, switched with a new load or in place, the state following the address a navigation lands at.
+- [Culture addresses](docs/culture-design.md#culture-addresses): a culture pair in the address, switched with a new load or in place, the state following the address a navigation lands at, and [routing in coordination](src/Forma.Framework/Forma.Framework.Culture.Router/README.md): a switch is a navigation to its pair's address that the page's coordinator accepts once it lands, an interactive landing included, and `FormaPageHead` takes the document's base from routing.
 - [Locales bound to cultures](src/Forma.Framework/Forma.Framework.Localization/README.md#cultures), so a component's strings follow the state rather than the ambient culture.
 - [Measurements](src/Forma.Framework/Forma.Framework.Resources/README.md#formatting-measurements), sizes, durations and rates, written in a culture.
 - [The DOM watcher and engine](docs/dom-watcher-engine-design.md): what a component observes in the browser and acts on there goes through one watcher and one engine, its focus and its scrolling among it.
@@ -66,6 +66,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - A field carries no bottom margin.
 - The culture cookie is `forma-culture-route`.
 - A component reads its culture state as `Context.CultureState`, where both bases gave it as `CultureState`.
+- Culture routing is `Forma.Framework.Culture.Router`, its ASP.NET Core assembly keeping the middleware: a route names its pair, `UICulture` and an optional `Culture`; `CultureRouter` reads paths as strings; `CultureSwitcher.SwitchTo` is `SwitchToAsync`; `CultureBaseHref` and `Forma.Framework.Culture.Router.Interop` are gone, `FormaPageHead` writing the base routing gives and refusing a `BaseHref` beside it; and the `forma-culture` cookie is no longer read.
 - The composer's dialog results and selection reports, `TextRange`, and the data view's `ColumnFitReport` and `ColumnWidth` are records with `init` properties rather than positional ones, and `InputRoute`'s `Action` and `Bindings` and `KeyBinding`'s `Key` are `required` `init` properties beside the constructors that set them.
 
 <a id="2026-09"></a>

@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-Steps 1 to 8 have landed; step 9 is next.
+Steps 1 to 9 have landed; step 10 is next.
 
 ## Where Forma stood
 
@@ -230,7 +230,7 @@ checks; the Showcase is a smoke check beside it, never the gate.
    showed the coordinator refusing; the browser check now registers and switches under one host rendering
    every request in a named culture and one in the invariant culture, on both platforms, so it no longer
    rests on the runner's culture. The script tests, the C# tests and the browser check pass.
-9. **Routing in coordination.** The routes, their tokens, their mapping, the address policy's switch, the
+9. **Routing in coordination.** ✅ The routes, their tokens, their mapping, the address policy's switch, the
    page base and the route scope move into the new `Forma.Framework.Culture.Router`, with its test project;
    routes name a pair; the mapping is published to the page; destinations are built from it, and a pair without
    a route is rejected before anything changes; the coordinator writes the culture-route cookie for an
@@ -242,6 +242,28 @@ checks; the Showcase is a smoke check beside it, never the gate.
    script tests of both landing paths, an obsolete landing, a switch waiting out a navigation and an
    unrouted pair; tests that the browser's mapping and the server's agree on every route, pairs included;
    and step 4's checks.
+
+   The routes, the router, the switcher, the page base and the route scope are in
+   `Forma.Framework.Culture.Router`, with its test project, and the ASP.NET Core assembly keeps the
+   middleware alone, reading the router's paths as plain strings. A route names its UI culture and may name a
+   formatting culture of its own. The router gives the page its culture addressing, a contract in the
+   coordinator's assembly: `FormaPageHead` takes the document's base from it and refuses a `BaseHref` beside
+   it, writing the application's root under its path base where no routing is registered, which retires
+   `CultureBaseHref`; the head publishes the mapping as the address policy; and the coordinated switch
+   refuses a pair no route carries before it requests anything. The coordinator builds the destination from
+   the published mapping and navigates, by a full load or through Blazor's own navigation, and accepts the
+   landing that navigation becomes; a page routed in place reports its landing with its place among its
+   runtime's reports, and the coordinator writes the culture-route cookie as it accepts it, which retires
+   `Forma.Framework.Culture.Router.Interop`. The browser's mapping and the server's are held to one set of
+   cases the router's tests write and the script's tests read. The `forma-culture` cookie no release wrote is
+   no longer read. Departures from the design: a registration's delivery completes once its state holds the
+   pair, its subscribers notified after, so a switch and a page's landing go on as the rest of the page
+   renders again, and a notification that fails is logged under the registration; a page that followed its
+   route takes the state's cultures onto its own flow, since a delivery applies them on the delivery's own;
+   and an interactive navigation that ends without landing can't be observed, so a switch waiting on one
+   completes as canceled once another landing replaces it, or an enhanced navigation ends without one. The
+   browser check gained a switch by address in place, under islands and under the interactive router, and a
+   pair no route carries refused; it passes with the script tests and the C# tests.
 10. **The culture under WebAssembly.** The culture's WebAssembly half,
     `Forma.Framework.Culture.Blazor.WebAssembly` with its test project and `AddFormaCultureWebAssembly`,
     which `AddFormaUIWebAssembly` now calls; its registration at startup, which replaces step 7's

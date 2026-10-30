@@ -1,7 +1,6 @@
-@using Forma.Framework.Culture.Router.AspNetCore
+@using Forma.Framework.Culture.Router
 @using Forma.Blazor.Showcase
 @using Microsoft.AspNetCore.Components.Routing
-@using Microsoft.AspNetCore.Http
 @implements IDisposable
 @inject CultureRouter Router
 @inject CultureSwitcher Switcher
@@ -48,7 +47,7 @@
     {
         var relative = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].TrimStart('/');
 
-        _path = Router.Match(new PathString("/" + relative)).Path.Value ?? "/";
+        _path = Router.Match(Uri.UnescapeDataString("/" + relative)).Path;
         _variants = ShowcaseCatalog.GetVariants(_path);
     }
 

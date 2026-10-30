@@ -13,11 +13,11 @@ public sealed class CoordinatedCultureSwitchTests
     private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he");
 
-    private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser browser)
+    private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser browser, ICultureAddressing? addressing = null)
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>(browser.Runtime)
             .AddFormaCultureCoordination()
-            .AddScoped(provider => new CoordinatedCultureSwitch(provider.GetRequiredService<CultureCoordinatorRegistration>()))
+            .AddScoped(provider => new CoordinatedCultureSwitch(provider.GetRequiredService<CultureCoordinatorRegistration>(), addressing))
             .BuildServiceProvider();
 
     private static CultureCoordinatorRegistration GetRegistration(AsyncServiceScope scope)
@@ -193,6 +193,63 @@ public sealed class CoordinatedCultureSwitchTests
     }
 
     [Fact]
+    public async Task Should_refuse_a_pair_no_culture_route_carries_before_requesting_anything()
+    {
+        // Arrange
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser();
+        await using var provider = CreateServices(browser, new HebrewAddressing());
+        await using var scope = provider.CreateAsyncScope();
+        await GetRegistration(scope).RegisterAsync();
+
+        // Act
+        var exception = await Record.ExceptionAsync(() => GetSwitch(scope).SwitchAsync(German, Hebrew));
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Contains("'de-DE' with the UI culture 'he'", Assert.IsType<InvalidOperationException>(exception).Message, StringComparison.Ordinal),
+            () => Assert.Empty(browser.GetRegistration(browser.Identities.Single()).Recorder.GetCalls("request")),
+            () => Assert.Equal("en-US/en-US #0", ReadPair(scope)));
+    }
+
+    [Fact]
+    public async Task Should_request_a_pair_a_culture_route_carries()
+    {
+        // Arrange
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser();
+        await using var provider = CreateServices(browser, new HebrewAddressing());
+        await using var scope = provider.CreateAsyncScope();
+        await GetRegistration(scope).RegisterAsync();
+
+        // Act
+        await GetSwitch(scope).SwitchAsync(Hebrew);
+
+        // Assert
+        Assert.Equal("he/he #1", ReadPair(scope));
+    }
+
+    [Fact]
+    public async Task Should_complete_as_canceled_where_its_navigation_did_not_land()
+    {
+        // Arrange
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser();
+        await using var provider = CreateServices(browser, new HebrewAddressing());
+        await using var scope = provider.CreateAsyncScope();
+        await GetRegistration(scope).RegisterAsync();
+        browser.AnswerNextRequest("canceled");
+
+        // Act
+        var exception = await Record.ExceptionAsync(() => GetSwitch(scope).SwitchAsync(Hebrew));
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.IsAssignableFrom<OperationCanceledException>(exception),
+            () => Assert.Equal("en-US/en-US #0", ReadPair(scope)));
+    }
+
+    [Fact]
     public async Task Should_reject_a_missing_culture()
     {
         // Arrange
@@ -205,5 +262,18 @@ public sealed class CoordinatedCultureSwitchTests
 
         // Assert
         Assert.IsType<ArgumentNullException>(exception);
+    }
+
+    // Culture routing that carries the Hebrew pair alone.
+    private sealed class HebrewAddressing : ICultureAddressing
+    {
+        public bool CanAddress(CultureInfo culture, CultureInfo uiCulture)
+            => culture.Name == "he" && uiCulture.Name == "he";
+
+        public string GetDocumentBase(string root, CultureInfo culture, CultureInfo uiCulture)
+            => root;
+
+        public CultureRouteMap GetMap(string root)
+            => throw new NotSupportedException();
     }
 }

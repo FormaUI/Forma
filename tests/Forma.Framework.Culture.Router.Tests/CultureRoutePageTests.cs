@@ -1,7 +1,8 @@
-namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
+namespace Forma.Framework.Culture.Router.Tests;
 
 using System.Globalization;
 
+using Forma.Framework.Culture.Browser.Interop;
 using Forma.Tests.Culture;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
@@ -16,11 +17,13 @@ public sealed class CultureRoutePageTests
     private static readonly RendererInfo InteractiveServer = new("Server", isInteractive: true);
     private static readonly RendererInfo Static = new("Static", isInteractive: false);
 
-    private static ServiceProvider CreateServices(FakeNavigationManager navigationManager, IJSRuntime js, CultureSwitchMode cultureSwitchMode = CultureSwitchMode.InPlace, CulturePrefix prefix = CulturePrefix.ExceptDefault, ILoggerFactory? loggerFactory = null)
+    private static ServiceProvider CreateServices(FakeNavigationManager navigationManager, FakeCultureCoordinatorBrowser browser, CultureSwitchMode cultureSwitchMode = CultureSwitchMode.InPlace, CulturePrefix prefix = CulturePrefix.ExceptDefault, ILoggerFactory? loggerFactory = null)
     {
+        browser.UseRoutes("en", ("en", "en", "en"), ("he", "he", "he"));
+
         var services = new ServiceCollection()
             .AddSingleton<NavigationManager>(navigationManager)
-            .AddSingleton(js)
+            .AddSingleton<IJSRuntime>(browser.Runtime)
             .AddScoped<ICultureSwitch, TestCultureSwitch>();
 
         if (loggerFactory is not null)
@@ -36,11 +39,20 @@ public sealed class CultureRoutePageTests
                 DefaultCulture = "en",
                 Routes =
                 [
-                    new() { Token = "en", Culture = new("en") },
-                    new() { Token = "he", Culture = new("he"), Aliases = ["iw"] }
+                    new() { Token = "en", UICulture = new("en") },
+                    new() { Token = "he", UICulture = new("he"), Aliases = ["iw"] }
                 ]
             })
             .BuildServiceProvider();
+    }
+
+    // The scope's state registered with the page's coordinator, as the circuit registers it as its connection comes up.
+    private static async Task<IServiceScope> CreateScopeAsync(ServiceProvider provider)
+    {
+        var scope = provider.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<CultureCoordinatorRegistration>().RegisterAsync();
+
+        return scope;
     }
 
     // The page as a router hands it its route values, under the template's own spelling of the culture segment.
@@ -67,11 +79,8 @@ public sealed class CultureRoutePageTests
         };
     }
 
-    private static RecordingJSObjectReference CreateModule()
-        => new((_, _) => null);
-
-    private static RecordingJSRuntime CreateJS(RecordingJSObjectReference module)
-        => new((identifier, _) => identifier == "import" ? module : null);
+    private static IReadOnlyList<RecordedCall> GetLandings(FakeCultureCoordinatorBrowser browser)
+        => browser.GetRegistration(browser.Identities.Single()).Recorder.GetCalls("reportLanding");
 
     /// <summary>A culture route page recording each step of its lifecycle in the cultures it runs in.</summary>
     public sealed class Page : CultureRoutePage
@@ -97,9 +106,9 @@ public sealed class CultureRoutePageTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser);
+            using var scope = await CreateScopeAsync(provider);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
 
@@ -110,6 +119,7 @@ public sealed class CultureRoutePageTests
             Assert.Multiple(
                 () => Assert.Equal(["initialized he he he", "parameters set he he he"], lifecycle),
                 () => Assert.Equal(1, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
+                () => Assert.Equal(["he"], browser.RouteCookies),
                 () => Assert.Empty(renderer.Exceptions));
         }
 
@@ -118,9 +128,9 @@ public sealed class CultureRoutePageTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser);
+            using var scope = await CreateScopeAsync(provider);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
             await renderer.RenderAsync(CreatePage("he", lifecycle));
@@ -132,17 +142,17 @@ public sealed class CultureRoutePageTests
             Assert.Multiple(
                 () => Assert.Equal(["initialized he he he", "parameters set he he he", "parameters set - en en"], lifecycle),
                 () => Assert.Equal(2, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
-                () => Assert.Empty(renderer.Exceptions));
+                () => Assert.Equal(["he", null], GetLandings(browser).Select(landing => (string?)landing.Arguments[0])));
         }
 
         [Fact]
-        public async Task Should_change_nothing_for_a_delivery_carrying_the_route_it_follows()
+        public async Task Should_report_each_landing_after_the_one_before_it()
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser);
+            using var scope = await CreateScopeAsync(provider);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
             await renderer.RenderAsync(CreatePage("he", lifecycle));
@@ -154,7 +164,7 @@ public sealed class CultureRoutePageTests
             Assert.Multiple(
                 () => Assert.Equal(["initialized he he he", "parameters set he he he", "parameters set he he he"], lifecycle),
                 () => Assert.Equal(1, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
-                () => Assert.Single(module.Recorder.GetCalls("write")));
+                () => Assert.Equal([1, 2], GetLandings(browser).Select(landing => (int)landing.Arguments[1]!)));
         }
 
         [Fact]
@@ -162,9 +172,9 @@ public sealed class CultureRoutePageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            var browser = new FakeCultureCoordinatorBrowser("he");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser);
+            using var scope = await CreateScopeAsync(provider);
             var cultureState = scope.ServiceProvider.GetRequiredService<ICultureState>();
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
@@ -177,8 +187,7 @@ public sealed class CultureRoutePageTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(["initialized he he he", "parameters set he he he"], lifecycle),
-                () => Assert.Equal(0, cultureState.Revision),
-                () => Assert.Empty(module.Recorder.GetCalls("write")));
+                () => Assert.Equal(0, cultureState.Revision));
         }
 
         [Fact]
@@ -186,9 +195,9 @@ public sealed class CultureRoutePageTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser);
+            using var scope = await CreateScopeAsync(provider);
             var gate = new TaskCompletionSource();
             scope.ServiceProvider.GetRequiredService<ICultureState>().Subscribe(() => gate.Task);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
@@ -203,14 +212,14 @@ public sealed class CultureRoutePageTests
         }
 
         [Fact]
-        public async Task Should_log_a_notification_that_fails()
+        public async Task Should_log_a_notification_that_fails_under_the_registration()
         {
             // Arrange
             using var fixture = new CultureFixture("en");
             using var loggerFactory = new FakeLoggerFactory();
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module), loggerFactory: loggerFactory);
-            await using var scope = provider.CreateAsyncScope();
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser, loggerFactory: loggerFactory);
+            using var scope = await CreateScopeAsync(provider);
             scope.ServiceProvider.GetRequiredService<ICultureState>().Subscribe(() => Task.FromException(new InvalidOperationException("A subscriber failed.")));
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
@@ -222,75 +231,49 @@ public sealed class CultureRoutePageTests
             var entry = Assert.Single(loggerFactory.Entries);
 
             Assert.Multiple(
-                () => Assert.Equal(typeof(CultureSwitcher).FullName, entry.Category),
+                () => Assert.Equal(typeof(CultureCoordinatorRegistration).FullName, entry.Category),
                 () => Assert.Equal(LogLevel.Error, entry.Level),
                 () => Assert.Equal(["initialized he he he", "parameters set he he he"], lifecycle),
                 () => Assert.Empty(renderer.Exceptions));
         }
-    }
-
-    public sealed class Cookie
-    {
-        [Theory]
-        [InlineData("http://localhost/", "forma-culture-route", "/", false)]
-        [InlineData("http://localhost/app/", "forma-culture-route%2Fapp", "/app", false)]
-        [InlineData("https://localhost/my%20app/", "forma-culture-route%2Fmy%20app", "/my%20app", true)]
-        public async Task Should_write_the_cookie_of_the_applications_root_where_the_page_changed_the_culture(string baseAddress, string name, string path, bool isSecure)
-        {
-            // Arrange
-            using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri(baseAddress), new Uri(new Uri(baseAddress), "he/about")), CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
-            await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
-
-            // Act
-            await renderer.RenderAsync(CreatePage("he", []));
-
-            // Assert
-            var write = Assert.Single(module.Recorder.GetCalls("write"));
-
-            Assert.Equal([name, "he", path, 31_536_000L, isSecure], write.Arguments);
-        }
 
         [Fact]
-        public async Task Should_write_each_change_in_the_order_the_page_made_it()
+        public async Task Should_render_in_the_culture_state_as_it_stands_and_log_a_landing_that_fails()
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser, loggerFactory: loggerFactory);
+            using var scope = await CreateScopeAsync(provider);
+            browser.FailNext("reportLanding", new JSException("The coordinator is gone."));
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
-            module.Recorder.Hold("write");
 
             // Act
             await renderer.RenderAsync(CreatePage("he", lifecycle));
-            await renderer.RenderAsync(CreatePage(null, lifecycle));
-            var writesWhileHeld = module.Recorder.GetCalls("write").Count;
-            module.Recorder.Release("write");
-            module.Recorder.GetCalls("write")[0].Complete(null);
-            await scope.ServiceProvider.GetRequiredService<CultureSwitcher>().DisposeAsync();
 
             // Assert
+            var entry = Assert.Single(loggerFactory.Entries, candidate => candidate.Category == typeof(CultureSwitcher).FullName);
+
             Assert.Multiple(
-                () => Assert.Equal(1, writesWhileHeld),
-                () => Assert.Equal(["he", "en"], module.Recorder.GetCalls("write").Select(write => write.Arguments[1])));
+                () => Assert.Equal(LogLevel.Error, entry.Level),
+                () => Assert.Equal(["initialized he en en", "parameters set he en en"], lifecycle),
+                () => Assert.Empty(renderer.Exceptions));
         }
     }
 
     public sealed class Eligibility
     {
         [Fact]
-        public async Task Should_leave_the_culture_state_to_the_handoff_for_an_interactive_page_outside_the_culture_route_scope()
+        public async Task Should_leave_the_culture_state_to_the_server_rendered_landing_for_an_interactive_page_outside_the_culture_route_scope()
         {
             // Arrange — an island of its own, which lies outside the culture route scope and whose culture segment the middleware removed
             using var fixture = new CultureFixture("he");
-            await using var module = CreateModule();
+            var browser = new FakeCultureCoordinatorBrowser("he");
             var navigationManager = new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about"));
-            await using var provider = CreateServices(navigationManager, CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            await using var provider = CreateServices(navigationManager, browser);
+            using var scope = await CreateScopeAsync(provider);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
 
@@ -302,7 +285,7 @@ public sealed class CultureRoutePageTests
                 () => Assert.Equal(["initialized - he he", "parameters set - he he"], lifecycle),
                 () => Assert.Equal(0, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
                 () => Assert.Empty(navigationManager.Navigations),
-                () => Assert.Empty(module.Recorder.Calls));
+                () => Assert.Empty(GetLandings(browser)));
         }
 
         [Fact]
@@ -310,9 +293,9 @@ public sealed class CultureRoutePageTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser);
+            using var scope = await CreateScopeAsync(provider);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, Static);
             var lifecycle = new List<string>();
 
@@ -323,7 +306,7 @@ public sealed class CultureRoutePageTests
             Assert.Multiple(
                 () => Assert.Equal(["initialized he en en", "parameters set he en en"], lifecycle),
                 () => Assert.Equal(0, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
-                () => Assert.Empty(module.Recorder.Calls));
+                () => Assert.Empty(GetLandings(browser)));
         }
 
         [Fact]
@@ -331,9 +314,9 @@ public sealed class CultureRoutePageTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
-            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), CreateJS(module), CultureSwitchMode.FullLoad);
-            await using var scope = provider.CreateAsyncScope();
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser, CultureSwitchMode.FullLoad);
+            using var scope = await CreateScopeAsync(provider);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
 
@@ -344,7 +327,7 @@ public sealed class CultureRoutePageTests
             Assert.Multiple(
                 () => Assert.Equal(["initialized he en en", "parameters set he en en"], lifecycle),
                 () => Assert.Equal(0, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
-                () => Assert.Empty(module.Recorder.Calls));
+                () => Assert.Empty(GetLandings(browser)));
         }
     }
 
@@ -357,12 +340,12 @@ public sealed class CultureRoutePageTests
         {
             // Arrange
             using var fixture = new CultureFixture("en");
-            await using var module = CreateModule();
+            var browser = new FakeCultureCoordinatorBrowser("en");
             var navigationManager = new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/xx/about"));
             var notFound = 0;
             navigationManager.OnNotFound += (_, _) => notFound++;
-            await using var provider = CreateServices(navigationManager, CreateJS(module));
-            await using var scope = provider.CreateAsyncScope();
+            await using var provider = CreateServices(navigationManager, browser);
+            using var scope = await CreateScopeAsync(provider);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, isInteractive ? InteractiveServer : Static);
             var lifecycle = new List<string>();
 
@@ -374,6 +357,7 @@ public sealed class CultureRoutePageTests
                 () => Assert.Equal(1, notFound),
                 () => Assert.Empty(lifecycle),
                 () => Assert.Equal(0, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
+                () => Assert.Empty(GetLandings(browser)),
                 () => Assert.Empty(renderer.Exceptions));
         }
 
@@ -386,10 +370,10 @@ public sealed class CultureRoutePageTests
         {
             // Arrange
             using var fixture = new CultureFixture("he");
-            await using var module = CreateModule();
+            var browser = new FakeCultureCoordinatorBrowser("he");
             var navigationManager = new FakeNavigationManager(new Uri("http://localhost/"), new Uri(address));
-            await using var provider = CreateServices(navigationManager, CreateJS(module), prefix: prefix);
-            await using var scope = provider.CreateAsyncScope();
+            await using var provider = CreateServices(navigationManager, browser, prefix: prefix);
+            using var scope = await CreateScopeAsync(provider);
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
 
@@ -405,7 +389,7 @@ public sealed class CultureRoutePageTests
                 () => Assert.False(navigation.Options.ForceLoad),
                 () => Assert.Empty(lifecycle),
                 () => Assert.Equal(0, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
-                () => Assert.Empty(module.Recorder.Calls));
+                () => Assert.Empty(GetLandings(browser)));
         }
     }
 }

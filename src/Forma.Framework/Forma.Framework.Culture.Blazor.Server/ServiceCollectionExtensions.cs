@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
 
         services.AddFormaCultureCoordination();
         services.TryAddSingleton(policy ?? CultureSwitchPolicy.Default);
-        services.TryAddScoped<ICultureSwitch>(provider => new CoordinatedCultureSwitch(provider.GetRequiredService<CultureCoordinatorRegistration>()));
+        services.TryAddScoped<ICultureSwitch>(provider => new CoordinatedCultureSwitch(provider.GetRequiredService<CultureCoordinatorRegistration>(), provider.GetService<ICultureAddressing>()));
         services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, CultureCircuitHandler>(provider => new CultureCircuitHandler(provider.GetRequiredService<ICultureState>(), provider.GetRequiredService<CultureCoordinatorRegistration>())));
 
         return services;

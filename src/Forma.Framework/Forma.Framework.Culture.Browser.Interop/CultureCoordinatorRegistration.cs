@@ -24,6 +24,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     private readonly string _identity = Guid.CreateVersion7().ToString("N");
     private JSModule _module;
     private Task<IJSObjectReference>? _attempt;
+    private int _landings;
     private IJSObjectReference? _registration;
     private volatile bool _isUnavailable;
     private volatile bool _isDisposed;
@@ -97,17 +98,50 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     }
 
     /// <summary>Requests a switch to <paramref name="culture"/> and <paramref name="uiCulture"/> from the coordinator, completing once the coordinator accepted it and delivered it to this registration's state.</summary>
+    /// <remarks>Where culture addresses decide the culture, the switch is a navigation to the pair's address, and a navigation that didn't land leaves it canceled.</remarks>
     internal async Task RequestAsync(CultureInfo culture, CultureInfo uiCulture)
     {
         var registration = await GetRegistrationAsync().ConfigureAwait(false);
         var direction = uiCulture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+        var outcome = await registration.InvokeAsync<string>("request", culture.Name, uiCulture.Name, direction).ConfigureAwait(false);
 
-        await registration.InvokeVoidAsync("request", culture.Name, uiCulture.Name, direction).ConfigureAwait(false);
+        if (outcome == "canceled")
+        {
+            throw new TaskCanceledException($"The switch to the culture '{culture.Name}' with the UI culture '{uiCulture.Name}' navigated, but the navigation didn't land.");
+        }
     }
 
-    /// <summary>Applies a pair the coordinator delivered.</summary>
+    /// <summary>Reports the interactive landing at the culture route <paramref name="token"/> names, or at a plain address where it is <see langword="null"/>, completing once the coordinator accepted it and this registration's state applied the page's pair.</summary>
+    /// <remarks>Each report carries its place among this registration's reports, so a report reaching the coordinator after a later one accepts nothing.</remarks>
+    public async Task ReportLandingAsync(string? token)
+    {
+        var registration = await GetRegistrationAsync().ConfigureAwait(false);
+        var order = Interlocked.Increment(ref _landings);
+
+        await registration.InvokeVoidAsync("reportLanding", token, order).ConfigureAwait(false);
+    }
+
+    /// <summary>Applies a pair the coordinator delivered, completing once the state holds it.</summary>
+    /// <remarks>The state's subscribers are notified after the delivery completes, so what waits on the delivery, a switch or a page's landing, goes on in the new pair as the rest of the page renders again; a notification that fails is logged.</remarks>
     internal Task ApplyAsync(AcceptedCulture accepted)
-        => _isDisposed ? Task.CompletedTask : _integration.ApplyAsync(accepted);
+    {
+        if (!_isDisposed)
+        {
+            _ = ObserveAsync(_integration.ApplyAsync(accepted), accepted);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task ObserveAsync(Task notification, AcceptedCulture accepted)
+    {
+        await notification.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+        if (notification.Exception?.InnerException is { } exception)
+        {
+            CultureBrowserInteropLog.NotificationFailed(_environment.Logger, exception, accepted.UICulture.Name, _environment.RuntimeId);
+        }
+    }
 
     // A switch waits on a registration under way and fails with it; with none under way, or one unavailable, it fails at once.
     private async Task<IJSObjectReference> GetRegistrationAsync()

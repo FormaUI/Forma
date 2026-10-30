@@ -31,6 +31,54 @@ public sealed class CultureTests(BrowserHost host)
             () => Assert.Equal("Ada", typed));
     }
 
+    [Theory]
+    [MemberData(nameof(Routing))]
+    public async Task Should_switch_by_address_in_place_through_the_culture_switch(string routing)
+    {
+        // Arrange
+        var (context, page) = await host.OpenPageAsync(GetAddress(routing));
+        await using var _ = context;
+        await page.GotoAsync("culture");
+        await WaitForPanelAsync(page);
+        await page.Locator("#typed").FillAsync("Ada");
+
+        // Act
+        await page.Locator("#switch-state").ClickAsync();
+
+        // Assert
+        await WaitForDocumentAsync(page, "he/rtl");
+        await Assertions.Expect(page.Locator("#switch-outcome")).ToHaveTextAsync("accepted");
+        await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync("he");
+        var typed = await page.Locator("#typed").InputValueAsync();
+        Assert.Multiple(
+            () => Assert.EndsWith("/he/culture", new Uri(page.Url).AbsolutePath, StringComparison.Ordinal),
+            () => Assert.Equal("Ada", typed));
+    }
+
+    [Theory]
+    [MemberData(nameof(Routing))]
+    public async Task Should_refuse_a_pair_no_route_carries_before_anything_changes(string routing)
+    {
+        // Arrange
+        var (context, page) = await host.OpenPageAsync(GetAddress(routing));
+        await using var _ = context;
+        await page.GotoAsync("culture");
+        await WaitForPanelAsync(page);
+        await WaitForDocumentAsync(page, "en/ltr");
+
+        // Act
+        await page.Locator("#switch-unrouted").ClickAsync();
+
+        // Assert
+        await Assertions.Expect(page.Locator("#switch-outcome")).ToHaveTextAsync("refused");
+        await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync("en");
+        var document = await GetDocumentAsync(page);
+        Assert.Multiple(
+            () => Assert.EndsWith("/culture", new Uri(page.Url).AbsolutePath, StringComparison.Ordinal),
+            () => Assert.DoesNotContain("/he/", new Uri(page.Url).AbsolutePath, StringComparison.Ordinal),
+            () => Assert.Equal("en/ltr", document));
+    }
+
     [Fact]
     public async Task Should_keep_the_document_through_an_enhanced_navigation_within_the_culture()
     {

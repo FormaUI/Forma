@@ -1,17 +1,17 @@
-namespace Forma.Framework.Culture.Router.AspNetCore;
+namespace Forma.Framework.Culture.Router;
 
-/// <summary>The cultures an application serves and how they are addressed.</summary>
+/// <summary>The culture pairs an application serves and how they are addressed.</summary>
 public sealed class CultureRouterOptions
 {
-    /// <summary>The <see cref="CultureRoute.Token"/> of the culture serving a request that names none.</summary>
+    /// <summary>The <see cref="CultureRoute.Token"/> of the route serving a request that names none.</summary>
     public required string DefaultCulture { get; init; }
 
     /// <summary>Where a culture token appears in a URL.</summary>
     public CulturePrefix Prefix { get; init; } = CulturePrefix.Always;
 
-    /// <summary>Every culture the application serves.</summary>
+    /// <summary>Every route the application serves.</summary>
     public required IReadOnlyList<CultureRoute> Routes { get; init; }
 
-    /// <summary>How a switch to another culture navigates.</summary>
+    /// <summary>How a switch to another route navigates.</summary>
     public CultureSwitchMode Switch { get; init; } = CultureSwitchMode.FullLoad;
 }

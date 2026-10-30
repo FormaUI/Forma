@@ -318,54 +318,6 @@ public sealed class CultureRoutingMiddlewareTests
         Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
     }
 
-    [Theory]
-    [InlineData("", "forma-culture=en")]
-    [InlineData("/app", "forma-culture=en")]
-    [InlineData("", "forma-culture=en; forma-culture-route=en")]
-    [InlineData("/app", "forma-culture-route%2Fapp=en; forma-culture=en")]
-    public async Task Should_replace_the_cookie_an_earlier_version_wrote(string pathBase, string cookies)
-    {
-        // Arrange
-        using var fixture = new CultureFixture();
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
-        var context = CreateContext("/he/file-viewer");
-        context.Request.PathBase = pathBase;
-        context.Request.Headers.Cookie = cookies;
-
-        // Act
-        await middleware.InvokeAsync(context);
-
-        // Assert
-        var written = context.Response.Headers.SetCookie.ToArray();
-
-        Assert.Multiple(() =>
-        {
-            Assert.Contains(written, cookie => cookie!.StartsWith("forma-culture=;", StringComparison.Ordinal)
-                && cookie.Contains("expires=Thu, 01 Jan 1970", StringComparison.Ordinal)
-                && cookie.Contains("path=/", StringComparison.Ordinal)
-                && !cookie.Contains("path=/app", StringComparison.Ordinal));
-            Assert.Contains(written, cookie => cookie!.StartsWith($"forma-culture-route{Uri.EscapeDataString(pathBase)}=he;", StringComparison.Ordinal)
-                && cookie.Contains($"path={(pathBase.Length > 0 ? pathBase : "/")}", StringComparison.Ordinal));
-        });
-    }
-
-    [Fact]
-    public async Task Should_only_expire_the_earlier_cookie_when_the_culture_cookie_already_matches()
-    {
-        // Arrange
-        using var fixture = new CultureFixture();
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
-        var context = CreateContext("/he/file-viewer");
-        context.Request.Headers.Cookie = "forma-culture=en; forma-culture-route=he";
-
-        // Act
-        await middleware.InvokeAsync(context);
-
-        // Assert
-        var written = Assert.Single(context.Response.Headers.SetCookie.ToArray());
-        Assert.StartsWith("forma-culture=;", written, StringComparison.Ordinal);
-    }
-
     [Fact]
     public async Task Should_write_the_canonical_token_rather_than_the_alias_that_was_requested()
     {
@@ -436,29 +388,6 @@ public sealed class CultureRoutingMiddlewareTests
     }
 
     [Theory]
-    [InlineData("forma-culture=he", "he")]
-    [InlineData("forma-culture=he; forma-culture-route=en", "en")]
-    [InlineData("forma-culture-route=en; forma-culture=he", "en")]
-    public async Task Should_take_the_earlier_cookie_for_a_framework_endpoint_only_where_the_culture_cookie_is_absent(string cookies, string culture)
-    {
-        // Arrange
-        using var fixture = new CultureFixture();
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
-        var context = CreateContext("/_blazor/negotiate");
-        context.Request.Headers.Cookie = cookies;
-
-        // Act
-        await middleware.InvokeAsync(context);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(culture, CultureInfo.CurrentUICulture.Name);
-            Assert.Equal(string.Empty, context.Response.Headers.SetCookie.ToString());
-        });
-    }
-
-    [Theory]
     [InlineData(CulturePrefix.ExceptDefault, "/he/_blazor/negotiate", "he")]
     [InlineData(CulturePrefix.ExceptDefault, "/HE/_blazor/disconnect", "he")]
     [InlineData(CulturePrefix.Always, "/en/_blazor/negotiate", "en")]
@@ -508,9 +437,9 @@ public sealed class CultureRoutingMiddlewareTests
             DefaultCulture = "en",
             Routes =
             [
-                new() { Token = "en", Culture = new("en") },
-                new() { Token = "he", Culture = new("he") },
-                new() { Token = "es", Culture = new("es-419"), HrefLang = "es", Aliases = ["es-419"] }
+                new() { Token = "en", UICulture = new("en") },
+                new() { Token = "he", UICulture = new("he") },
+                new() { Token = "es", UICulture = new("es-419"), HrefLang = "es", Aliases = ["es-419"] }
             ]
         });
 

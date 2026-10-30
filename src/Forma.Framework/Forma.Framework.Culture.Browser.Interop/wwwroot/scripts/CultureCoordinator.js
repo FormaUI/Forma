@@ -3,6 +3,9 @@
 
 const root = document.documentElement;
 
+// A year, in seconds: how long the browser keeps the cookie naming the culture route last chosen.
+const routeCookieMaxAge = 31536000;
+
 // What the coordinator read as the document loaded: the document's key and the switch's policy, or why it can't start.
 let initialization = null;
 
@@ -21,6 +24,12 @@ let queue = Promise.resolve();
 let hold = null;
 let isTracking = false;
 let isNavigationPending = false;
+
+// Blazor's API, which an in-place switch navigates through.
+let blazorApi = null;
+
+// The switch by address waiting for its navigation's landing.
+let pendingSwitch = null;
 
 /** Reads the page's culture marker and the switch's policy from the document's head, once, as the document loads. */
 export function initialize(head = document.head) {
@@ -80,6 +89,7 @@ export function track(blazor) {
     }
 
     isTracking = true;
+    blazorApi = blazor;
 
     blazor.addEventListener('enhancednavigationstart', () => {
         isNavigationPending = true;
@@ -100,11 +110,13 @@ export function track(blazor) {
         }
     });
 
-    // A navigation that ends without landing ends the hold, leaving the accepted pair.
+    // A navigation that ends without landing ends the hold, leaving the accepted pair, and leaves a switch waiting on it
+    // canceled.
     blazor.addEventListener('enhancednavigationend', () => {
         if (isNavigationPending) {
             isNavigationPending = false;
             endHold();
+            cancelPendingSwitch();
         }
     });
 }
@@ -113,6 +125,7 @@ export function track(blazor) {
 class CultureCoordinatorRegistration {
     #identity;
     #runtime;
+    #lastLanding = 0;
     receiver = null;
 
     constructor(identity, runtime) {
@@ -128,8 +141,19 @@ class CultureCoordinatorRegistration {
         return registrations.get(this.#identity) === this;
     }
 
-    /** Requests a switch to `culture` and `uiCulture`, written `direction`, completing once the switch was accepted and this registration's state applied it. */
+    /**
+     * Requests a switch to `culture` and `uiCulture`, written `direction`, completing with `accepted` once the switch was
+     * accepted and this registration's state applied it, or with `canceled` where its navigation didn't land. Under the
+     * address policy a pair no route carries is refused before anything changes.
+     */
     request(culture, uiCulture, direction) {
+        const policy = getInitialization().policy;
+        const route = policy?.kind === 'address' ? findRouteByPair(policy, culture, uiCulture) : null;
+
+        if (policy?.kind === 'address' && route === null) {
+            return Promise.reject(new Error(`No configured culture route represents the culture ${culture} with the UI culture ${uiCulture}, so the switch can't be made by address.`));
+        }
+
         const pending = queue.then(async () => {
             await hold?.promise;
 
@@ -137,14 +161,44 @@ class CultureCoordinatorRegistration {
                 throw new Error('The culture state requesting the switch is no longer registered with the page.');
             }
 
+            if (route !== null) {
+                return await navigate(policy, route, this);
+            }
+
             persist(culture, uiCulture);
-            await this.deliver(accept({ culture, uiCulture, direction }, this));
+            await this.deliver(accept({ culture, uiCulture, direction }, [this]));
+
+            return 'accepted';
         });
 
         // The next request waits for this one to settle, whatever its outcome, which reaches its own requester.
         queue = pending.then(() => {}, () => {});
 
         return pending;
+    }
+
+    /**
+     * Accepts the interactive landing a culture route page reports at the route `token` names, or at a plain address where
+     * it is null, completing once this registration's state applied the page's pair. A report this registration made
+     * before one already received is obsolete and accepts nothing; interactive routing without culture routes records
+     * nothing.
+     */
+    async reportLanding(token, order) {
+        if (order <= this.#lastLanding) {
+            return;
+        }
+
+        this.#lastLanding = order;
+        const policy = getInitialization().policy;
+        const route = policy?.kind === 'address' ? findRouteByToken(policy, token) : null;
+
+        if (route === null) {
+            return;
+        }
+
+        // No request carries an interactive landing to the server, so the browser names the route last chosen.
+        writeRouteCookie(policy, route.token);
+        await acceptLanding(toPair(route), this);
     }
 
     /** Delivers an accepted pair to this registration's state, completing once the state has applied it. */
@@ -182,19 +236,46 @@ function getInitialization() {
     return initialization;
 }
 
-// A landing is accepted as the next switch, unless it is the accepted pair already; a response without a valid marker
-// leaves the accepted pair.
+// A server-rendered landing takes its pair from its own response's marker; a response without a valid marker leaves the
+// accepted pair.
 function land(marker) {
-    if (marker !== null && accepted !== null && (marker.culture !== accepted.culture || marker.uiCulture !== accepted.uiCulture)) {
-        accept({ ...marker, direction: servedPair.direction });
+    if (marker !== null && accepted !== null) {
+        acceptLanding({ ...marker, direction: servedPair.direction }).then(() => {}, () => {});
+    } else {
+        cancelPendingSwitch();
     }
 
     endHold();
 }
 
-// The accepted pair is delivered to every registration but the requester's, which awaits its own; a delivery that fails is
+// A landing is accepted as the next switch, without waiting for any registration, unless it is the accepted pair
+// already. The registration that reported it, and the requester of a switch waiting on it, await their own delivery; a
+// switch waiting on a landing at another pair was replaced by it, and is canceled.
+async function acceptLanding(pair, reporter = null) {
+    const waiting = pendingSwitch;
+    pendingSwitch = null;
+
+    const awaited = [reporter, waiting?.requester].filter(registration => registration != null);
+    const isNew = pair.culture !== accepted.culture || pair.uiCulture !== accepted.uiCulture;
+    const current = isNew ? accept(pair, awaited) : accepted;
+    const deliveries = isNew ? new Map([...new Set(awaited)].map(registration => [registration, registration.deliver(current)])) : new Map();
+
+    if (waiting !== null) {
+        if (isSamePair(pair, waiting.route)) {
+            deliveries.get(waiting.requester)?.then(() => waiting.resolve('accepted'), waiting.reject) ?? waiting.resolve('accepted');
+        } else {
+            waiting.resolve('canceled');
+        }
+    }
+
+    if (reporter !== null) {
+        await deliveries.get(reporter);
+    }
+}
+
+// The accepted pair is delivered to every registration but those that await their own; a delivery that fails is
 // recovered as its runtime registers again, which adopts the accepted pair.
-function accept(pair, requester = null) {
+function accept(pair, excluded = []) {
     accepted = { ...pair, number: accepted.number + 1 };
 
     if (hold === null) {
@@ -202,12 +283,40 @@ function accept(pair, requester = null) {
     }
 
     for (const registration of registrations.values()) {
-        if (registration !== requester) {
+        if (!excluded.includes(registration)) {
             registration.deliver(accepted).then(() => {}, () => {});
         }
     }
 
     return accepted;
+}
+
+// A switch by address navigates to the current page's address in its route: a full load leaves the document, and an
+// in-place navigation completes once its landing is accepted.
+function navigate(policy, route, requester) {
+    const destination = buildDestination(policy, route, location.href);
+
+    if (isSamePair(accepted, route) && isSameAddress(destination, location.href)) {
+        return Promise.resolve('accepted');
+    }
+
+    if (!policy.switchesInPlace) {
+        location.assign(destination);
+
+        return new Promise(() => {});
+    }
+
+    return new Promise((resolve, reject) => {
+        cancelPendingSwitch();
+        pendingSwitch = { route, requester, resolve, reject };
+        blazorApi.navigateTo(destination);
+    });
+}
+
+function cancelPendingSwitch() {
+    const waiting = pendingSwitch;
+    pendingSwitch = null;
+    waiting?.resolve('canceled');
 }
 
 function endHold() {
@@ -258,11 +367,99 @@ function serializeCookie(policy, value) {
     return attributes.join('; ');
 }
 
+// The cookie the server reads for a request whose address names no culture, its name carrying the application's path
+// base already escaped.
+function writeRouteCookie(policy, token) {
+    const attributes = [`${policy.cookieName}=${encodeURIComponent(token)}`, `path=${policy.cookiePath}`, `max-age=${routeCookieMaxAge}`, 'samesite=lax'];
+
+    if (location.protocol === 'https:') {
+        attributes.push('secure');
+    }
+
+    document.cookie = attributes.join('; ');
+}
+
 function readCookie(name) {
     const prefix = `${encodeURIComponent(name)}=`;
     const entry = document.cookie.split('; ').find(cookie => cookie.startsWith(prefix));
 
     return entry === undefined ? null : decodeURIComponent(entry.slice(prefix.length));
+}
+
+/**
+ * The address `href` carries in `route`'s culture, as the server builds it: the address relative to the application's
+ * root, its culture segment replaced by the route's token, or left without one for the default route where the default
+ * carries none, its query kept and its fragment dropped. An address outside the root is the root's.
+ */
+export function buildDestination(policy, route, href) {
+    const url = new URL(href);
+    const rootPath = policy.root;
+    const rootAddress = rootPath.slice(0, -1);
+    let relative = '';
+
+    if (url.pathname.toLowerCase().startsWith(rootPath.toLowerCase())) {
+        relative = url.pathname.slice(rootPath.length);
+    } else if (url.pathname.toLowerCase() !== rootAddress.toLowerCase()) {
+        url.search = '';
+    }
+
+    // The culture segment the path opens with is replaced; a path without one is kept as written.
+    let path = `/${relative}`;
+    const segments = path.split('/').filter(segment => segment !== '');
+
+    if (segments.length > 0 && findRouteByToken(policy, decodeSegment(segments[0]), false) !== null) {
+        path = segments.length === 1 ? '/' : `/${segments.slice(1).join('/')}`;
+    }
+
+    const token = escapeData(route.token);
+    const isUnprefixed = route.token === policy.defaultToken && !policy.prefixesDefault;
+    const prefixed = isUnprefixed ? path : path === '/' ? `/${token}` : `/${token}${path}`;
+
+    return `${url.origin}${rootPath}${prefixed.replace(/^\/+/, '')}${url.search}`;
+}
+
+// Escapes as .NET's Uri.EscapeDataString does, every character but the unreserved ones.
+function escapeData(value) {
+    return encodeURIComponent(value).replace(/[!'()*]/g, character => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
+/** The route a token or alias names, in any case, or the default route for a plain address, where `token` is null. */
+export function findRouteByToken(policy, token, defaultsToPlain = true) {
+    if (token === null || token === undefined) {
+        return defaultsToPlain ? policy.routes.find(route => route.token === policy.defaultToken) ?? null : null;
+    }
+
+    const name = token.toLowerCase();
+
+    return policy.routes.find(route => route.token.toLowerCase() === name || route.aliases.some(alias => alias.toLowerCase() === name)) ?? null;
+}
+
+// A segment whose escapes don't decode is compared as written, which names no token.
+function decodeSegment(segment) {
+    try {
+        return decodeURIComponent(segment);
+    } catch {
+        return segment;
+    }
+}
+
+function findRouteByPair(policy, culture, uiCulture) {
+    return policy.routes.find(route => isSamePair({ culture, uiCulture }, route)) ?? null;
+}
+
+function toPair(route) {
+    return { culture: route.culture, uiCulture: route.uiCulture, direction: route.direction };
+}
+
+function isSamePair(pair, other) {
+    return pair.culture.toLowerCase() === other.culture.toLowerCase() && pair.uiCulture.toLowerCase() === other.uiCulture.toLowerCase();
+}
+
+function isSameAddress(destination, href) {
+    const current = new URL(href);
+    current.hash = '';
+
+    return destination === current.href;
 }
 
 function readMarker(head) {
@@ -279,9 +476,23 @@ function readMarker(head) {
     return isCultureName(culture) && isCultureName(uiCulture) ? { culture, uiCulture } : null;
 }
 
-function readPolicy(head) {
+/** The switch's policy the page published in `head`, the state alone where it published none. */
+export function readPolicy(head) {
     const policy = head?.querySelector('meta[name="forma-culture-policy"]');
     const kind = policy?.getAttribute('content') ?? 'state';
+
+    if (kind === 'address') {
+        return {
+            kind,
+            routes: JSON.parse(policy.getAttribute('data-routes') ?? '[]'),
+            defaultToken: policy.getAttribute('data-default'),
+            prefixesDefault: policy.getAttribute('data-prefix') === 'always',
+            switchesInPlace: policy.getAttribute('data-switch') === 'in-place',
+            root: policy.getAttribute('data-root') ?? '/',
+            cookieName: policy.getAttribute('data-cookie-name'),
+            cookiePath: policy.getAttribute('data-cookie-path') ?? '/',
+        };
+    }
 
     if (kind !== 'cookie') {
         return { kind };

@@ -1,4 +1,4 @@
-namespace Forma.Framework.Culture.Router.AspNetCore;
+namespace Forma.Framework.Culture.Router;
 
 /// <summary>Where a culture token appears in a URL.</summary>
 public enum CulturePrefix

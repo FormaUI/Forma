@@ -5,7 +5,7 @@ using Forma.Tests.Interop;
 
 using Microsoft.JSInterop;
 
-/// <summary>A stand-in for the page's culture coordinator: a runtime importing its module, which accepts each request in the document's sequence and delivers each accepted pair to every registration as the script does, recording every call and failing the calls a test names.</summary>
+/// <summary>A stand-in for the page's culture coordinator: a runtime importing its module, which accepts each request and each interactive landing in the document's sequence and delivers each accepted pair to every registration as the script does, recording every call and failing the calls a test names.</summary>
 public sealed class FakeCultureCoordinatorBrowser
 {
     /// <summary>The culture coordinator's module.</summary>
@@ -13,6 +13,10 @@ public sealed class FakeCultureCoordinatorBrowser
 
     private readonly Dictionary<string, Queue<Failure>> _failures = [];
     private readonly Dictionary<string, Registration> _registrations = new(StringComparer.Ordinal);
+    private readonly Queue<string> _requestOutcomes = [];
+    private readonly List<string> _routeCookies = [];
+    private (string Token, string Culture, string UICulture)[] _routes = [];
+    private string? _defaultToken;
 
     /// <summary>Creates the coordinator over a page the server rendered in <paramref name="culture"/> and <paramref name="uiCulture"/>.</summary>
     public FakeCultureCoordinatorBrowser(string culture = "en-US", string? uiCulture = null)
@@ -39,6 +43,21 @@ public sealed class FakeCultureCoordinatorBrowser
     /// <summary>The identities of the live registrations.</summary>
     public IReadOnlyCollection<string> Identities
         => _registrations.Keys;
+
+    /// <summary>The tokens the coordinator wrote to the culture-route cookie, one per interactive landing it accepted, in order.</summary>
+    public IReadOnlyList<string> RouteCookies
+        => _routeCookies;
+
+    /// <summary>Publishes the culture routes the page's address policy maps, each token to its pair, the address naming none taking <paramref name="defaultToken"/>.</summary>
+    public void UseRoutes(string defaultToken, params (string Token, string Culture, string UICulture)[] routes)
+    {
+        _defaultToken = defaultToken;
+        _routes = routes;
+    }
+
+    /// <summary>Answers the next request with <paramref name="outcome"/>; <c>canceled</c> accepts nothing, as a navigation that didn't land.</summary>
+    public void AnswerNextRequest(string outcome)
+        => _requestOutcomes.Enqueue(outcome);
 
     /// <summary>The registrations asked for so far.</summary>
     public int CountRegistrations()
@@ -101,20 +120,56 @@ public sealed class FakeCultureCoordinatorBrowser
         => identifier switch
         {
             "request" => Run(identifier, () => Request(registration, (string)args[0]!, (string)args[1]!)),
+            "reportLanding" => Run(identifier, () => ReportLanding(registration, (string?)args[0], (int)args[1]!)),
             "dispose" => Run(identifier, () => Dispose(registration)),
             _ => throw new JSException($"A registration has no '{identifier}'."),
         };
 
-    private object? Request(Registration registration, string culture, string uiCulture)
+    private string Request(Registration registration, string culture, string uiCulture)
     {
         if (!_registrations.ContainsKey(registration.Identity))
         {
             throw new JSException("The culture state requesting the switch is no longer registered with the page.");
         }
 
+        if (_requestOutcomes.TryDequeue(out var outcome) && outcome == "canceled")
+        {
+            return outcome;
+        }
+
         foreach (var live in Accept(culture, uiCulture))
         {
             _ = DeliverAsync(live);
+        }
+
+        return "accepted";
+    }
+
+    // A report this registration made before one already received is obsolete; an accepted landing at a pair already
+    // accepted delivers nothing.
+    private object? ReportLanding(Registration registration, string? token, int order)
+    {
+        if (order <= registration.LastLanding)
+        {
+            return null;
+        }
+
+        registration.LastLanding = order;
+        var route = _routes.FirstOrDefault(candidate => string.Equals(candidate.Token, token ?? _defaultToken, StringComparison.OrdinalIgnoreCase));
+
+        if (route.Token is null)
+        {
+            return null;
+        }
+
+        _routeCookies.Add(route.Token);
+
+        if (route.Culture != Accepted.Culture || route.UICulture != Accepted.UICulture)
+        {
+            foreach (var live in Accept(route.Culture, route.UICulture))
+            {
+                _ = DeliverAsync(live);
+            }
         }
 
         return null;
@@ -146,5 +201,7 @@ public sealed class FakeCultureCoordinatorBrowser
         public RecordingJSObjectReference Reference { get; set; } = default!;
 
         public DotNetObjectReference<CultureCoordinatorReceiver>? Receiver { get; set; }
+
+        public int LastLanding { get; set; }
     }
 }

@@ -1,9 +1,10 @@
 # Forma.Framework.Culture.Router.AspNetCore
 
-Culture routing for ASP.NET Core: the first segment of the URL path selects the request culture,
-as in `/he/about`, every page has one canonical address per culture, and `CultureRouter` builds
-the link to any page in any culture. It suits a localized site whose addresses are shared,
-bookmarked and indexed per language.
+Culture routing's request side for ASP.NET Core: the middleware that runs a request in the pair its
+address names, removes the culture segment before routing, redirects to the canonical address and keeps
+the cookie naming the route last chosen. The routes, the switcher and the pages that follow their route
+are [`formaui-net.Framework.Culture.Router`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router/README.md)'s,
+whose README sets the whole arrangement out.
 
 ## Install and register
 
@@ -12,21 +13,10 @@ dotnet add package formaui-net.Framework.Culture.Router.AspNetCore
 ```
 
 ```csharp
-using Forma.Blazor;
+using Forma.Framework.Culture.Router;
 using Forma.Framework.Culture.Router.AspNetCore;
 
-builder.AddFormaUIServer();
-builder.Services.AddFormaCultureRouting(new CultureRouterOptions
-{
-    Prefix = CulturePrefix.ExceptDefault,
-    DefaultCulture = "en",
-    Routes =
-    [
-        new() { Token = "en", Culture = new("en") },
-        new() { Token = "es", Culture = new("es-419"), Aliases = ["es-419"] },
-        new() { Token = "he", Culture = new("he") }
-    ]
-});
+builder.Services.AddFormaCultureRouting(new CultureRouterOptions { ... });
 
 var app = builder.Build();
 
@@ -34,267 +24,36 @@ app.UseFormaCultureRouting();
 app.UseRouting();
 ```
 
-`AddFormaCultureRouting` validates the options and registers `CultureRouter` as a singleton, the
-`CultureSwitcher` each user scope switches through, and the culture state those scopes hold. The
-switcher requests through the culture switch, which
-[`formaui-net.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Server/README.md)'s
-`AddFormaUIServer()` registers with the page's culture coordinator: the coordinator accepts each enhanced
-navigation's landing from the culture its response was rendered in, and a circuit adopts the page's
-pair as it registers. An address outside the
-application, at another origin or outside its path base, leaves the state as it is.
-`UseFormaCultureRouting` goes before routing, so endpoints see the path with the culture segment
-removed, and after `UsePathBase` under a path base; an endpoint chosen for the address with its
-culture segment, as `UsePathBase` chooses one, is chosen again for the path without it. With
-these options `/about` serves English, `/he/about` Hebrew and `/es/about` Latin American
-Spanish.
-
-| Option | What it is |
-| --- | --- |
-| `CultureRouterOptions.Routes` | Every culture the application serves, in order. |
-| `CultureRouterOptions.DefaultCulture` | The `Token` of the culture serving a request that names none. |
-| `CultureRouterOptions.Prefix` | `CulturePrefix.Always`, the default, puts a token on every culture; `CulturePrefix.ExceptDefault` leaves the default culture without one. |
-| `CultureRouterOptions.Switch` | `CultureSwitchMode.FullLoad`, the default, loads another culture's address as a new document; `CultureSwitchMode.InPlace` reaches it in the same circuit, as [switching in place](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md#switching-in-place) sets out. |
-| `CultureRoute.Token` | The canonical first path segment selecting the culture. |
-| `CultureRoute.Culture` | The `CultureInfo` a request that selects the route runs in. |
-| `CultureRoute.Aliases` | Further tokens that select the route and redirect to `Token`. |
-| `CultureRoute.HrefLang` | The value written in `hreflang` annotations; `Token` by default. |
-
-`CultureRouter` throws `ArgumentException` for options with no route, a `DefaultCulture` that is
-not a route's `Token`, a token containing `/` or claimed by two routes, or an `HrefLang` that is
-not a language with an optional script and region, such as `en`, `en-GB` or `zh-Hant-TW`. A
-token that is not a valid `hreflang` value sets one:
-
-```csharp
-new CultureRoute { Token = "latam", Culture = new("es-419"), HrefLang = "es" }
-```
+`UseFormaCultureRouting` goes before routing, so endpoints see the path with the culture segment removed,
+and after `UsePathBase` under a path base; an endpoint chosen for the address with its culture segment, as
+`UsePathBase` chooses one, is chosen again for the path without it.
 
 ## Requests
 
 For a page request, the middleware:
 
-- sets `CultureInfo.CurrentCulture`, `CultureInfo.CurrentUICulture`, the `Content-Language`
-  header and the `IRequestCultureFeature` a Blazor interactive circuit reads, from the route the
-  first segment names or the default route;
+- sets `CultureInfo.CurrentCulture` to the route's culture and `CultureInfo.CurrentUICulture` to its UI
+  culture, the `Content-Language` header to the UI culture, and the `IRequestCultureFeature` a Blazor
+  interactive circuit reads, from the route the first segment names or the default route;
 - removes the culture segment from the path before routing;
-- redirects with `302 Found` to the canonical address, keeping the path base and query, when the
-  address used an alias, a token in another case, a token on the default culture under
-  `ExceptDefault`, or no token under `Always`;
-- stores the route's token in a `forma-culture-route` cookie at the path base, which the
-  browser's script can read and write, and expires an `HttpOnly` `forma-culture` cookie at `/`. Under a path base the cookie's name carries it, escaped,
+- redirects with `302 Found` to the canonical address, keeping the path base and query, when the address
+  used an alias, a token in another case, a token on the default route under `ExceptDefault`, or no token
+  under `Always`;
+- stores the route's token in a `forma-culture-route` cookie at the path base, which the browser's script
+  can read and write. Under a path base the cookie's name carries it, escaped,
   `forma-culture-route%2Fapp` under `/app`, so applications sharing a host each read their own.
 
-A request for a static file, one whose last segment has an extension, or for a framework endpoint
-under `/_`, such as `/_blazor` or `/he/_blazor`, judged by its path without the culture segment,
-neither redirects nor writes the cookie. It takes the culture its culture segment names, the cookie's
-where it has none, a `forma-culture` cookie's where the request carries only that one,
-and the default culture where neither names a route, then goes straight on to routing. A first
-segment that is no token stays in the path, and a path naming cultures in two consecutive
-segments, such as `/he/en`, is answered with `400 Bad Request`.
+A request for a static file, one whose last segment has an extension, or for a framework endpoint under
+`/_`, such as `/_blazor` or `/he/_blazor`, judged by its path without the culture segment, neither
+redirects nor writes the cookie. It takes the route its culture segment names, the cookie's where it has
+none, and the default route where neither names one, then goes straight on to routing. A first segment
+that is no token stays in the path, and a path naming cultures in two consecutive segments, such as
+`/he/en`, is answered with `400 Bad Request`.
 
-An interactive circuit's culture state follows its page: as the circuit registers with the page's
-culture coordinator, and again as a paused circuit resumes, it adopts the pair the page was rendered
-in, which its address named, whatever culture the circuit's connection arrived with, so a tab at
-`/about` stays English after another tab has loaded `/he/about`.
-
-## The document's base
-
-The document's `<base>` is in the request's culture, `/he/` for a Hebrew page and `/app/he/` under
-the path base `/app`, so interactive routing finds the pages of the document's culture, and an
-address in another culture, where it finds none, loads as a new document whose circuit opens in
-that culture. Under `CultureSwitchMode.InPlace` it is the application's root, `/` or `/app/`.
-
-`FormaPageHead`, from
-[`formaui-net.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Server/README.md),
-writes the document's head, the culture marker and switch policy the page's culture coordinator starts
-from among it, and the page's one `<base>`, so `App.razor` hands it that base through `BaseHref`:
-
-```razor
-@using System.Globalization
-@using Forma.Blazor.Components.Page
-@using Forma.Framework.Culture.Router.AspNetCore
-@using Microsoft.AspNetCore.Http
-@inject CultureRouter Router
-@inject CultureSwitcher Switcher
-
-<!DOCTYPE html>
-<html lang="@CultureInfo.CurrentUICulture.Name"
-      dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : "ltr")">
-<head>
-    <FormaPageHead Title="My App" BaseHref="@BaseHref" />
-</head>
-<body>
-    <Routes />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
-</body>
-</html>
-
-@code {
-    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
-
-    // The request's culture under the path base, or the application's root where a switch is made in place.
-    private string BaseHref
-        => HttpContext.Request.PathBase
-            .Add(Router.Switch is CultureSwitchMode.InPlace ? PathString.Empty : Router.GetPath(Switcher.CurrentRoute, "/"))
-            .ToUriComponent().TrimEnd('/') + "/";
-}
-```
-
-The application's root is the base without its culture segment, so a path base doesn't end in a
-segment that is a culture's token.
-
-## Switching culture
-
-A page or component injects `CultureSwitcher` to switch to another culture. The switch navigates to
-the current page's address in that culture: by default it loads the address as a new document, whose
-circuit adopts the culture the address names; under `CultureSwitchMode.InPlace` it stays
-in the circuit, and the page it reaches follows its route.
-
-| Member | What it does |
-| --- | --- |
-| `CurrentRoute` | The route of the culture state's UI culture. |
-| `GetUri(route)` | The current page's address in a route's culture, query string included. |
-| `GetUri(route, relativeAddress)` | An address relative to the application's root, such as `about?tab=2`, in a route's culture. |
-| `SwitchTo(route)` | Navigates to the current page's address in a route's culture. |
-
-```razor
-@using Forma.Framework.Culture.Router.AspNetCore
-@inject CultureRouter Router
-@inject CultureSwitcher Switcher
-
-@foreach (var route in Router.Routes)
-{
-    <a href="@Switcher.GetUri(route)" aria-current="@(route == Switcher.CurrentRoute ? "true" : null)">@route.Token</a>
-}
-```
-
-## Switching in place
-
-`CultureSwitchMode.InPlace` keeps the circuit through a switch, so the user's work stays where it was.
-Under an interactive router, interactive routing reaches every culture's address, and the culture
-state follows the page it routes to. Three things make it so:
-
-- `Switch = CultureSwitchMode.InPlace` in the options, under which [the document's base](#the-documents-base)
-  is the application's root, so every culture's address lies within it.
-- `CultureRouteScope` around the `Router`, inside the host's `Routes` component, so it renders in the
-  router's own tree:
-
-  ```razor
-  @using Forma.Framework.Culture.Router.AspNetCore
-
-  <CultureRouteScope>
-      <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
-          <Found Context="routeData">
-              <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-          </Found>
-      </Router>
-  </CultureRouteScope>
-  ```
-
-- Every page carrying its culture route beside its plain one, and deriving `CultureRoutePage`:
-
-  ```razor
-  @page "/about"
-  @page "/{culture}/about"
-  @inherits CultureRoutePage
-  ```
-
-`CultureRoutePage` supplies the `Culture` parameter and acts on it before the page's lifecycle runs:
-
-- a segment that isn't a culture's token renders the `Router`'s `NotFoundPage`, and a full request
-  answers `404 Not Found` with it;
-- an alias, a token in another case, the default culture's token under `ExceptDefault`, or a plain
-  address under `Always` is replaced by the canonical address;
-- otherwise, where an interactive router renders the page within `CultureRouteScope`, the culture state
-  takes the route's culture, so `OnInitialized` and `OnParametersSet` run in it, in the state and as
-  the ambient culture, and the `forma-culture-route` cookie is written from the browser for a change,
-  since no request carries it. The layout and other components render again as each is notified;
-  a notification that fails is logged at `Error` under `CultureSwitcher`.
-
-A page that is an island of its own never receives `CultureRouteScope`, and its circuit follows the
-address an enhanced navigation lands at instead, as it does without `InPlace`. Nothing reports a
-missing `CultureRouteScope`, since an island's absence of it is expected: without it no page follows its
-route, and a navigation within one culture looks the same either way, so check a switch.
-
-A page that doesn't derive `CultureRoutePage` follows nothing. One that carries only its plain
-route has no page at another culture's address: Blazor's router loads the address as a new
-document for a link, whose circuit takes the address's culture as it opens, and renders its
-not-found page for `NavigateTo`.
-
-### Where the pages are islands
-
-A host whose pages each carry their own interactive render mode, under a static router, needs only
-`Switch = CultureSwitchMode.InPlace`, under which [the document's base](#the-documents-base) is the
-application's root. A link to another culture's address is then an enhanced navigation: the server
-renders the page in that culture, each island the page already holds keeps its state, and the
-circuit's culture state follows the address the navigation lands at. The pages keep their plain
-routes.
-
-An island keeps the markup it rendered before the switch until it renders again, so a component of
-the host's own that shows text in the culture follows as Forma's components do. It renders again on
-each change of `ICultureState`, and reads its strings through a locale bound to the state, which
-`Forma.Framework.Localization` creates, so a render that work begun before the switch asks for is in
-the new culture too:
-
-```razor
-@implements IDisposable
-@inject ICultureState CultureState
-@inject IStringLocaleFactory LocaleFactory
-
-<p>@(_isSaved ? L["Saved."] : L["Not saved yet."])</p>
-
-@code {
-    private IStringLocale? _locale;
-    private bool _isSaved;
-
-    private IStringLocale L
-        => _locale ??= LocaleFactory.Create(GetType(), CultureState);
-
-    protected override void OnInitialized()
-        => CultureState.Subscribe(RenderAgainAsync);
-
-    public void Dispose()
-        => CultureState.Unsubscribe(RenderAgainAsync);
-
-    private Task RenderAgainAsync()
-        => InvokeAsync(StateHasChanged);
-}
-```
-
-Text that presents the component's current state, as `_isSaved` does here, is looked up as the
-component renders, and a label it builds once, such as an option it offers, it builds again before it
-renders again, keeping the reader's choices among them. Text an event produced, an announcement or a
-validation message, keeps the language it was produced in until the next such event.
-
-## Building links
-
-A link in markup takes its address from `CultureSwitcher.GetUri`, which knows the application's
-root under any path base and document base. `CultureRouter` builds the paths beneath it:
-
-| Member | What it does |
-| --- | --- |
-| `Routes` | Every route, in registration order. |
-| `DefaultRoute` | The route serving a request that names none. |
-| `GetRoute(culture)` | The route serving a culture, or `DefaultRoute`. |
-| `GetPath(route, path)` | The `PathString` of a path in a route's culture, replacing any culture segment it carries. |
-| `GetUrl(route, relativeUrl)` | A URL relative to the application's root in a route's culture, from that root, query string included. |
-| `Match(path)` | The `CultureMatch` of a path: its `Route`, its `Path` without the culture segment, its `CanonicalPath` and whether it `IsCanonical`. |
-| `HasConsecutiveCultures(path)` | Whether a path names cultures in two consecutive segments. |
-
-```razor
-@using Forma.Framework.Culture.Router.AspNetCore
-@inject CultureRouter Router
-@inject CultureSwitcher Switcher
-
-<a href="@Switcher.GetUri(Switcher.CurrentRoute, "about")">About</a>
-
-@foreach (var route in Router.Routes)
-{
-    <link rel="alternate" hreflang="@route.HrefLang" href="@Switcher.GetUri(route)" />
-}
-```
-
-`GetUri` over the current route keeps a link in the reader's culture, and over another route
-links the same page in that culture.
+An interactive circuit's culture state follows its page: as the circuit registers with the page's culture
+coordinator, and again as a paused circuit resumes, it adopts the pair the page was rendered in, which its
+address named, whatever culture the circuit's connection arrived with, so a tab at `/about` stays English
+after another tab has loaded `/he/about`.
 
 ## License
 

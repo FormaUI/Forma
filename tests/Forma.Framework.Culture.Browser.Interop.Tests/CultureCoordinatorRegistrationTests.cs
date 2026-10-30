@@ -6,6 +6,7 @@ using Forma.Tests.Culture;
 using Forma.Tests.Shared;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 public sealed class CultureCoordinatorRegistrationTests
@@ -128,6 +129,76 @@ public sealed class CultureCoordinatorRegistrationTests
             Assert.Multiple(
                 () => Assert.Equal("de-DE/he", $"{state.Culture.Name}/{state.UICulture.Name}"),
                 () => Assert.Equal(1, state.Version.Number));
+        }
+
+        [Fact]
+        public async Task Should_complete_a_delivery_once_the_state_holds_the_pair_before_its_subscribers_are_notified()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+            var gate = new TaskCompletionSource();
+            GetCultureState(scope).Subscribe(() => gate.Task);
+
+            // Act
+            await browser.LandAsync("he", "he");
+
+            // Assert
+            Assert.Equal("he", GetCultureState(scope).UICulture.Name);
+            gate.SetResult();
+        }
+
+        [Fact]
+        public async Task Should_log_a_subscriber_that_fails_as_it_is_notified()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = new ServiceCollection()
+                .AddSingleton<IJSRuntime>(browser.Runtime)
+                .AddSingleton<ILoggerFactory>(loggerFactory)
+                .AddSingleton(typeof(ILogger<>), typeof(Logger<>))
+                .AddFormaCultureCoordination()
+                .BuildServiceProvider();
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+            GetCultureState(scope).Subscribe(() => Task.FromException(new InvalidOperationException("A subscriber failed.")));
+
+            // Act
+            await browser.LandAsync("he", "he");
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.Equal(typeof(CultureCoordinatorRegistration).FullName, entry.Category),
+                () => Assert.Equal(LogLevel.Error, entry.Level));
+        }
+
+        [Fact]
+        public async Task Should_report_each_landing_with_its_place_among_the_registrations_reports()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser("en", "en");
+            browser.UseRoutes("en", ("en", "en", "en"), ("he", "he", "he"));
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var registration = GetRegistration(scope);
+            await registration.RegisterAsync();
+
+            // Act
+            await registration.ReportLandingAsync("he");
+            await registration.ReportLandingAsync(null);
+
+            // Assert
+            var reports = browser.GetRegistration(browser.Identities.Single()).Recorder.GetCalls("reportLanding");
+            Assert.Multiple(
+                () => Assert.Equal([("he", 1), (null, 2)], reports.Select(report => ((string?)report.Arguments[0], (int)report.Arguments[1]!))),
+                () => Assert.Equal("en", GetCultureState(scope).UICulture.Name));
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
+namespace Forma.Framework.Culture.Router.Tests;
 
 using System.Globalization;
 
@@ -11,7 +11,7 @@ public sealed class CultureRouterTests
         var options = new CultureRouterOptions
         {
             DefaultCulture = "es",
-            Routes = [new() { Token = "en", Culture = new("en") }]
+            Routes = [new() { Token = "en", UICulture = new("en") }]
         };
 
         // Act
@@ -28,7 +28,7 @@ public sealed class CultureRouterTests
         var options = new CultureRouterOptions
         {
             DefaultCulture = "es-419",
-            Routes = [new() { Token = "es", Culture = new("es-419"), HrefLang = "es", Aliases = ["es-419"] }]
+            Routes = [new() { Token = "es", UICulture = new("es-419"), HrefLang = "es", Aliases = ["es-419"] }]
         };
 
         // Act
@@ -62,8 +62,8 @@ public sealed class CultureRouterTests
             DefaultCulture = "en",
             Routes =
             [
-                new() { Token = "en", Culture = new("en"), Aliases = [first] },
-                new() { Token = "he", Culture = new("he"), Aliases = [second] }
+                new() { Token = "en", UICulture = new("en"), Aliases = [first] },
+                new() { Token = "he", UICulture = new("he"), Aliases = [second] }
             ]
         };
 
@@ -87,8 +87,8 @@ public sealed class CultureRouterTests
             DefaultCulture = "en",
             Routes =
             [
-                new() { Token = "en", Culture = new("en") },
-                new() { Token = token, Culture = new("es-419") }
+                new() { Token = "en", UICulture = new("en") },
+                new() { Token = token, UICulture = new("es-419") }
             ]
         };
 
@@ -110,7 +110,7 @@ public sealed class CultureRouterTests
         var options = new CultureRouterOptions
         {
             DefaultCulture = token,
-            Routes = [new() { Token = token, Culture = new("en") }]
+            Routes = [new() { Token = token, UICulture = new("en") }]
         };
 
         // Act
@@ -129,8 +129,8 @@ public sealed class CultureRouterTests
             DefaultCulture = "en",
             Routes =
             [
-                new() { Token = "en", Culture = new("en") },
-                new() { Token = "latam", Culture = new("es-419"), HrefLang = "es" }
+                new() { Token = "en", UICulture = new("en") },
+                new() { Token = "latam", UICulture = new("es-419"), HrefLang = "es" }
             ]
         };
 
@@ -158,7 +158,7 @@ public sealed class CultureRouterTests
         var result = router.GetPath(route, path);
 
         // Assert
-        Assert.Equal(expected, result.Value);
+        Assert.Equal(expected, result);
     }
 
     [Theory]
@@ -174,7 +174,7 @@ public sealed class CultureRouterTests
         var result = router.GetPath(route, path);
 
         // Assert
-        Assert.Equal(expected, result.Value);
+        Assert.Equal(expected, result);
     }
 
     [Theory]
@@ -194,7 +194,7 @@ public sealed class CultureRouterTests
         Assert.Multiple(() =>
         {
             Assert.Equal(token, match.Route.Token);
-            Assert.Equal(remainder, match.Path.Value);
+            Assert.Equal(remainder, match.Path);
         });
     }
 
@@ -214,7 +214,7 @@ public sealed class CultureRouterTests
         Assert.Multiple(() =>
         {
             Assert.Equal(router.DefaultRoute, match.Route);
-            Assert.Equal(requested, match.Path.Value);
+            Assert.Equal(requested, match.Path);
         });
     }
 
@@ -249,7 +249,7 @@ public sealed class CultureRouterTests
         var match = router.Match("/es-419/file-viewer");
 
         // Assert
-        Assert.Equal("/es/file-viewer", match.CanonicalPath.Value);
+        Assert.Equal("/es/file-viewer", match.CanonicalPath);
     }
 
     // A segment equal to a registered token is always a culture, so two in a row name no address.
@@ -328,31 +328,66 @@ public sealed class CultureRouterTests
     }
 
     [Theory]
-    [InlineData("he", "he")]
-    [InlineData("HE", "he")]
-    [InlineData("es-419", "es")]
-    public void Should_find_the_route_serving_a_culture(string culture, string token)
+    [InlineData("he", "he", "he")]
+    [InlineData("HE", "HE", "he")]
+    [InlineData("es-419", "es-419", "es")]
+    [InlineData("de-DE", "he", "he-de")]
+    public void Should_find_the_route_carrying_a_pair(string culture, string uiCulture, string token)
     {
         // Arrange
         var router = CreateRouter(CulturePrefix.ExceptDefault);
 
         // Act
-        var route = router.GetRoute(CultureInfo.GetCultureInfo(culture));
+        var route = router.FindRoute(CultureInfo.GetCultureInfo(culture), CultureInfo.GetCultureInfo(uiCulture));
 
         // Assert
-        Assert.Equal(token, route.Token);
+        Assert.Equal(token, route?.Token);
     }
 
     [Theory]
-    [InlineData("fr")]
-    [InlineData("es")]
-    public void Should_fall_back_to_the_default_route_for_a_culture_no_route_serves(string culture)
+    [InlineData("fr", "fr")]
+    [InlineData("he", "de-DE")]
+    [InlineData("en", "he")]
+    public void Should_find_no_route_for_a_pair_none_carries(string culture, string uiCulture)
     {
         // Arrange
         var router = CreateRouter(CulturePrefix.ExceptDefault);
 
-        // Act & Assert
-        Assert.Equal(router.DefaultRoute, router.GetRoute(CultureInfo.GetCultureInfo(culture)));
+        // Act
+        var route = router.FindRoute(CultureInfo.GetCultureInfo(culture), CultureInfo.GetCultureInfo(uiCulture));
+
+        // Assert
+        Assert.Null(route);
+    }
+
+    [Theory]
+    [InlineData("he", "he")]
+    [InlineData("HE", "he")]
+    [InlineData("es-419", "es")]
+    [InlineData("xx", null)]
+    public void Should_find_the_route_a_token_or_alias_selects_in_any_case(string token, string? expected)
+    {
+        // Arrange
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
+
+        // Act
+        var route = router.FindRoute(token);
+
+        // Assert
+        Assert.Equal(expected, route?.Token);
+    }
+
+    [Fact]
+    public void Should_take_a_routes_ui_culture_as_its_culture_where_it_names_none()
+    {
+        // Arrange
+        var route = new CultureRoute { Token = "he", UICulture = CultureInfo.GetCultureInfo("he") };
+
+        // Act
+        var culture = route.Culture;
+
+        // Assert
+        Assert.Equal("he", culture.Name);
     }
 
     private static CultureRouter CreateRouter(CulturePrefix prefix)
@@ -362,9 +397,10 @@ public sealed class CultureRouterTests
             DefaultCulture = "en",
             Routes =
             [
-                new() { Token = "en", Culture = new("en") },
-                new() { Token = "he", Culture = new("he") },
-                new() { Token = "es", Culture = new("es-419"), HrefLang = "es", Aliases = ["es-419"] }
+                new() { Token = "en", UICulture = new("en") },
+                new() { Token = "he", UICulture = new("he") },
+                new() { Token = "es", UICulture = new("es-419"), HrefLang = "es", Aliases = ["es-419"] },
+                new() { Token = "he-de", Culture = new("de-DE"), UICulture = new("he"), HrefLang = "he" }
             ]
         });
 }

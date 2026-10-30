@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import routeCases from './culture-routes.json';
 
 const root = document.documentElement;
 
@@ -65,14 +66,52 @@ function readDocument() {
     return `${root.getAttribute('lang')}/${root.getAttribute('dir')}`;
 }
 
-// A stand-in for the Blazor object an initializer receives, raising the events a test names.
+// A stand-in for the Blazor object an initializer receives, raising the events a test names and recording each address
+// it is asked to navigate to.
 function fakeBlazor() {
     const listeners = new Map();
+    const navigations = [];
 
     return {
+        navigations,
         addEventListener: (name, callback) => listeners.set(name, [...(listeners.get(name) ?? []), callback]),
         raise: name => (listeners.get(name) ?? []).forEach(callback => callback({})),
+        navigateTo: address => navigations.push(address),
     };
+}
+
+// The address policy as FormaPageHead publishes the map culture routing gives it.
+function toPolicy(map) {
+    return {
+        content: 'address',
+        'data-routes': JSON.stringify(map.routes),
+        'data-default': map.defaultToken,
+        'data-prefix': map.prefixesDefault ? 'always' : 'except-default',
+        'data-switch': map.switchesInPlace ? 'in-place' : 'full-load',
+        'data-root': map.root,
+        'data-cookie-name': map.cookieName,
+        'data-cookie-path': map.cookiePath,
+    };
+}
+
+// An English route, the default without a token, and a Hebrew one, reached in place at the host's root.
+function addressPolicy({ switchesInPlace = true } = {}) {
+    return toPolicy({
+        routes: [
+            { token: 'en', aliases: [], culture: 'en', uiCulture: 'en', direction: 'ltr' },
+            { token: 'he', aliases: ['iw'], culture: 'he', uiCulture: 'he', direction: 'rtl' },
+        ],
+        defaultToken: 'en',
+        prefixesDefault: false,
+        switchesInPlace,
+        root: '/',
+        cookieName: 'forma-culture-route',
+        cookiePath: '/',
+    });
+}
+
+function readRouteCookie() {
+    return document.cookie.split('; ').find(cookie => cookie.startsWith('forma-culture-route='))?.split('=')[1] ?? null;
 }
 
 // An enhanced navigation whose response patches the document to the pair `served` and the marker it carries.
@@ -518,6 +557,209 @@ describe('CultureCoordinator', () => {
             // Assert
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['en-US/en-US #0']);
             expect(readDocument()).toBe('he/rtl');
+        });
+    });
+
+    describe('mapping', () => {
+        // The cases the server's router wrote, so the browser builds and reads addresses as the server does.
+        it.each(routeCases.configurations.map(configuration => [configuration.map.root, configuration.map.prefixesDefault ? 'always' : 'except-default', configuration]))(
+            'builds each destination and resolves each token as the server does, under the root %s with the prefix %s',
+            async (_, __, configuration) => {
+                // Arrange
+                setHead({ culture: 'en', uiCulture: 'en', policy: toPolicy(configuration.map) });
+                const coordinator = await import('#culture/CultureCoordinator.js');
+
+                // Act
+                const policy = coordinator.readPolicy(document.head);
+                const destinations = configuration.destinations.map(({ href, token }) => coordinator.buildDestination(policy, policy.routes.find(route => route.token === token), href));
+                const tokens = configuration.tokens.map(({ token }) => coordinator.findRouteByToken(policy, token, false)?.token ?? null);
+
+                // Assert
+                expect(destinations).toEqual(configuration.destinations.map(({ destination }) => destination));
+                expect(tokens).toEqual(configuration.tokens.map(({ route }) => route));
+            });
+    });
+
+    describe('addressing', () => {
+        beforeEach(() => {
+            window.happyDOM.setURL('http://localhost/about');
+        });
+
+        it('refuses a pair no route carries before anything changes', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+
+            // Act
+            const switching = registration.request('fr', 'fr', 'ltr');
+
+            // Assert
+            await expect(switching).rejects.toThrow(/No configured culture route represents the culture fr with the UI culture fr/);
+            expect(blazor.navigations).toEqual([]);
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+            expect(readDocument()).toBe('en/ltr');
+            expect(readRouteCookie()).toBeNull();
+        });
+
+        it('switches in place by navigating to the route\'s address, completing once the landing is accepted and applied', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+
+            // Act
+            const switching = registration.request('he', 'he', 'rtl');
+            await settle();
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            await expect(switching).resolves.toBe('accepted');
+            expect(blazor.navigations).toEqual(['http://localhost/he/about']);
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            expect(readDocument()).toBe('he/rtl');
+            expect(readRouteCookie()).toBe('he');
+        });
+
+        it('completes a switch whose navigation lands by an enhanced navigation, as the pages of islands do', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+
+            // Act
+            const switching = registration.request('he', 'he', 'rtl');
+            await settle();
+            navigate(blazor, { lang: 'he', dir: 'rtl', culture: 'he' });
+
+            // Assert
+            await expect(switching).resolves.toBe('accepted');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+        });
+
+        it('completes a switch as canceled where its navigation ends without landing, accepting nothing', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+
+            // Act
+            const switching = registration.request('he', 'he', 'rtl');
+            await settle();
+            blazor.raise('enhancednavigationstart');
+            blazor.raise('enhancednavigationend');
+
+            // Assert
+            await expect(switching).resolves.toBe('canceled');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+            expect(readDocument()).toBe('en/ltr');
+        });
+
+        it('completes a switch as canceled where a landing at another pair replaced its navigation', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'he', lang: 'he', dir: 'rtl', policy: addressPolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+
+            // Act
+            const switching = registration.request('en', 'en', 'ltr');
+            await settle();
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            await expect(switching).resolves.toBe('canceled');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['he/he #0']);
+        });
+
+        it('loads the route\'s address as a new document where the switch doesn\'t stay in place', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy({ switchesInPlace: false }) });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const registration = await coordinator.register('a', fakeReceiver());
+            const assign = vi.spyOn(window.location, 'assign').mockImplementation(() => {});
+
+            // Act
+            registration.request('he', 'he', 'rtl');
+            await settle();
+
+            // Assert
+            expect(assign).toHaveBeenCalledWith('http://localhost/he/about');
+            expect(blazor.navigations).toEqual([]);
+        });
+
+        it('accepts an interactive landing at the route its page reports, writing the route cookie and delivering it to every registration', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const reporter = fakeReceiver();
+            const other = fakeReceiver();
+            const registration = await coordinator.register('a', reporter);
+            await coordinator.register('b', other);
+
+            // Act
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            expect(reporter.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            expect(other.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            expect(readRouteCookie()).toBe('he');
+            expect(readDocument()).toBe('he/rtl');
+        });
+
+        it('takes the default route for a landing at a plain address, and accepts nothing at the pair already accepted', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+
+            // Act
+            await registration.reportLanding(null, 1);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+            expect(readRouteCookie()).toBe('en');
+        });
+
+        it('accepts nothing from a report the runtime made before one already received', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+            await registration.reportLanding('he', 2);
+
+            // Act
+            await registration.reportLanding(null, 1);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            expect(readRouteCookie()).toBe('he');
+        });
+
+        it('records nothing for a token no route names, or where culture routes don\'t decide the culture', async () => {
+            // Arrange
+            const routed = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const receiver = fakeReceiver();
+            await (await routed.register('a', receiver)).reportLanding('xx', 1);
+            const unrouted = await load({ culture: 'en', lang: 'en' });
+            const other = fakeReceiver();
+
+            // Act
+            await (await unrouted.register('b', other)).reportLanding('he', 1);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+            expect(other.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+            expect(readRouteCookie()).toBeNull();
         });
     });
 

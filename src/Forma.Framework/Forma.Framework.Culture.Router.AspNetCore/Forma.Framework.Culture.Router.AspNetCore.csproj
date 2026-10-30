@@ -9,9 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
-        <ProjectReference Include="..\Forma.Framework.Culture.Router.Interop\Forma.Framework.Culture.Router.Interop.csproj" />
-        <ProjectReference Include="..\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
     </ItemGroup>
 
 </Project>

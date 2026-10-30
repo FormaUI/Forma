@@ -12,6 +12,7 @@
         <ProjectReference Include="..\..\src\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />

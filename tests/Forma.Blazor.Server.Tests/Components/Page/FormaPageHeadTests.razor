@@ -1,9 +1,29 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Page
+@using System.Text.Json
 @using Forma.Framework.Culture.Browser.Interop
+@using Forma.Framework.Culture.Router
+@using Forma.Tests.Shared
 @using Microsoft.Extensions.DependencyInjection
 
 @code {
+    // Culture routing under the application at the path base, escaped, with an English route and a Hebrew one.
+    private static void AddRouting(FormaPageHeadTests ctx, CultureSwitchMode cultureSwitchMode, CulturePrefix prefix, string pathBase)
+    {
+        ctx.Services.AddSingleton<NavigationManager>(new FakeNavigationManager(new Uri($"http://localhost{pathBase}/"), new Uri($"http://localhost{pathBase}/about")));
+        ctx.Services.AddFormaCultureRouting(new CultureRouterOptions
+        {
+            Prefix = prefix,
+            Switch = cultureSwitchMode,
+            DefaultCulture = "en",
+            Routes =
+            [
+                new() { Token = "en", UICulture = new("en") },
+                new() { Token = "he", UICulture = new("he"), Aliases = ["iw"] }
+            ]
+        });
+    }
+
     public sealed class Component
     {
         [Fact]
@@ -102,6 +122,89 @@
 
             // Assert
             Assert.Equal("/", cut.Find("base").GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_default_the_base_address_to_the_applications_root_under_its_path_base()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+            ctx.Services.AddSingleton<NavigationManager>(new FakeNavigationManager(new Uri("http://localhost/my%20app/"), new Uri("http://localhost/my%20app/about")));
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            Assert.Equal("/my%20app/", cut.Find("base").GetAttribute("href"));
+        }
+
+        [Theory]
+        [InlineData(CultureSwitchMode.FullLoad, CulturePrefix.ExceptDefault, "he", "", "/he/")]
+        [InlineData(CultureSwitchMode.FullLoad, CulturePrefix.ExceptDefault, "he", "/app", "/app/he/")]
+        [InlineData(CultureSwitchMode.FullLoad, CulturePrefix.ExceptDefault, "en", "", "/")]
+        [InlineData(CultureSwitchMode.FullLoad, CulturePrefix.ExceptDefault, "en", "/app", "/app/")]
+        [InlineData(CultureSwitchMode.FullLoad, CulturePrefix.Always, "en", "", "/en/")]
+        [InlineData(CultureSwitchMode.FullLoad, CulturePrefix.Always, "en", "/my%20app", "/my%20app/en/")]
+        [InlineData(CultureSwitchMode.InPlace, CulturePrefix.ExceptDefault, "he", "", "/")]
+        [InlineData(CultureSwitchMode.InPlace, CulturePrefix.ExceptDefault, "he", "/app", "/app/")]
+        [InlineData(CultureSwitchMode.InPlace, CulturePrefix.Always, "en", "/my%20app", "/my%20app/")]
+        public void Should_take_the_base_culture_routing_gives_the_pages_pair(CultureSwitchMode cultureSwitchMode, CulturePrefix prefix, string culture, string pathBase, string href)
+        {
+            // Arrange
+            using var fixture = new CultureFixture(culture);
+            using var ctx = new FormaPageHeadTests();
+            AddRouting(ctx, cultureSwitchMode, prefix, pathBase);
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            var bases = cut.FindAll("base");
+            var element = Assert.Single(bases);
+            Assert.Equal(href, element.GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_reject_a_base_address_where_culture_routing_gives_the_pages()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+            AddRouting(ctx, CultureSwitchMode.FullLoad, CulturePrefix.ExceptDefault, "");
+
+            // Act
+            var act = () => ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" BaseHref="/he/" />);
+
+            // Assert
+            var exception = Assert.Throws<InvalidOperationException>(act);
+            Assert.Contains("BaseHref", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_publish_the_address_policy_with_routings_mapping_where_culture_routing_is_registered()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var ctx = new FormaPageHeadTests();
+            ctx.Services.AddSingleton(new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie });
+            AddRouting(ctx, CultureSwitchMode.InPlace, CulturePrefix.ExceptDefault, "/app");
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            var policy = cut.Find("meta[name='forma-culture-policy']");
+            using var routes = JsonDocument.Parse(policy.GetAttribute("data-routes")!);
+            Assert.Multiple(
+                () => Assert.Equal("address", policy.GetAttribute("content")),
+                () => Assert.Equal("en", policy.GetAttribute("data-default")),
+                () => Assert.Equal("except-default", policy.GetAttribute("data-prefix")),
+                () => Assert.Equal("in-place", policy.GetAttribute("data-switch")),
+                () => Assert.Equal("/app/", policy.GetAttribute("data-root")),
+                () => Assert.Equal("forma-culture-route%2Fapp", policy.GetAttribute("data-cookie-name")),
+                () => Assert.Equal("/app", policy.GetAttribute("data-cookie-path")),
+                () => Assert.Equal(
+                    """[{"token":"en","aliases":[],"culture":"en","uiCulture":"en","direction":"ltr"},{"token":"he","aliases":["iw"],"culture":"he","uiCulture":"he","direction":"rtl"}]""",
+                    routes.RootElement.GetRawText()));
         }
 
         [Fact]

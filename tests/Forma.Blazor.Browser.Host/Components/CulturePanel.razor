@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject DelayedSwitches Delayed
 
-@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, and switches of the state alone, at once or after a delay. *@
+@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, switches at once or after a delay, a switch to a pair no route carries, and the outcome of the last switch made at once. *@
 <output id="state">@CultureState.UICulture.Name</output>
 <output id="interactive">@RendererInfo.IsInteractive</output>
 <input id="typed" @bind="_typed" />
@@ -20,25 +20,50 @@
 <a id="go-static" href="@GetPath("/culture/static")">Static</a>
 <a id="go-state-static" href="/state/static">State static</a>
 <button id="switch-state" @onclick="SwitchStateAsync">Switch the state</button>
+<button id="switch-unrouted" @onclick="SwitchUnroutedAsync">Switch to a pair no route carries</button>
+<output id="switch-outcome">@_outcome</output>
 <button id="switch-later" @onclick="SwitchLater">Switch the state after a delay</button>
 
 @code {
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he");
+    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr");
 
     private string? _typed;
+    private string? _outcome;
 
     // Registered only where the host switches through culture addresses.
     private CultureRouter? Router
         => Services.GetService<CultureRouter>();
 
     private string GetPath(string path)
-        => Router is { } router ? router.GetPath(Services.GetRequiredService<CultureSwitcher>().CurrentRoute, path).Value! : path;
+        => Router is { } router ? router.GetPath(Services.GetRequiredService<CultureSwitcher>().CurrentRoute, path) : path;
 
     protected override void OnInitialized()
         => CultureState.Subscribe(HandleCultureChangedAsync);
 
-    private Task SwitchStateAsync()
-        => CultureSwitch.SwitchAsync(Hebrew);
+    private async Task SwitchStateAsync()
+        => _outcome = await SwitchAsync(Hebrew);
+
+    private async Task SwitchUnroutedAsync()
+        => _outcome = await SwitchAsync(French);
+
+    private async Task<string> SwitchAsync(CultureInfo culture)
+    {
+        try
+        {
+            await CultureSwitch.SwitchAsync(culture);
+
+            return "accepted";
+        }
+        catch (TaskCanceledException)
+        {
+            return "canceled";
+        }
+        catch (InvalidOperationException)
+        {
+            return "refused";
+        }
+    }
 
     // A switch made while the check holds the browser offline, which the check learns the outcome of over HTTP.
     private void SwitchLater()
