@@ -14,10 +14,6 @@
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <Features>runtime-async=on</Features>
-    </PropertyGroup>
-
     <!-- Repo-root-anchored, so a project imports it correctly whatever depth it sits at. -->
     <PropertyGroup>
         <ComponentAnalyzersTargets>$(MSBuildThisFileDirectory)eng\ComponentAnalyzers.targets</ComponentAnalyzersTargets>

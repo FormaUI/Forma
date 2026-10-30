@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-Steps 1 and 2 have landed; step 3 is next.
+Steps 1 to 3 have landed; step 4 is next.
 
 ## Where Forma stood
 
@@ -82,7 +82,7 @@ checks; the Showcase is a smoke check beside it, never the gate.
    circuit registrar became `AddFormaBrowserServer` with the culture's, and `AddFormaUI` registers the
    culture's and the browser's neutral services. On the Showcase, a page turned interactive and switched to
    Hebrew in place, `he/rtl`, keeping the text typed.
-3. **The browser check.** A Web App host of its own in the tests, with Server, WebAssembly and Auto pages,
+3. **The browser check.** ✅ A Web App host of its own in the tests, with Server, WebAssembly and Auto pages,
    which the gate builds, publishes and drives in a browser, with runtime async off for every assembly a
    client loads. The publish's build configuration is recorded, its trim mode and globalization setting
    among them, with evidence of what it actually trims: each assembly's size before and after the linker, so
@@ -93,6 +93,17 @@ checks; the Showcase is a smoke check beside it, never the gate.
    as AngleSharp. Budgets are set from those reproducible builds rather than from the probe's publish of
    every add-on, and an intentional increase changes its budget in a reviewed change of its own. Gate: the
    check passes interactivity, a popover through interop and binding in each runtime, within the budgets.
+
+   The recorded configuration is Release, `TrimMode` `partial`, which trims only the assemblies that declare
+   themselves trimmable, and `BlazorWebAssemblyLoadAllGlobalizationData`, with runtime async off across the
+   solution. The linker trimmed all 49 framework assemblies and none of Forma's 25. The minimal client
+   downloads 3.6 MB compressed: the runtime 2.64 MB, the globalization data 0.35 MB, Forma 0.63 MB; the
+   full client 10.7 MB, OfficeIMO 3.95 MB, DocumentFormat 1.07 MB, Forma 1.05 MB, AngleSharp 0.46 MB and
+   Markdig 0.15 MB beside the runtime's 3.63 MB. Each budget is its measurement and 2%, rounded up to the
+   next 25 KB. The check counts what the runtime fetches, the assemblies, the runtime's own files and the
+   ICU data; the full client is published, not driven. Interactivity, binding and the select's list
+   through interop passed in the Server, WebAssembly and Auto pages, and Auto ran on WebAssembly after
+   its download, every request succeeding and none starting late.
 4. **The culture's checks, automated.** The culture plan's document and address checks, verified by hand in
    Chrome, run in the browser check's host against today's synchronizer: a switch and the document following
    it, the hold through an enhanced navigation and a streaming update, rapid switches, a switch landing

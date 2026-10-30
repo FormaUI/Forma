@@ -1,11 +1,11 @@
 ---
 name: forma-verifying
-description: The build and verification gate — the build, tests, format check and script tests all passing with warnings as failures, the sweep for undocumented public API, rebuilding and running the showcase without serving stale code, inspecting every culture, driving browser checks in a visible browser window, and the shape of a task script. Use when building, testing, formatting, running the showcase, verifying a change in a browser, or adding a task script.
+description: The build and verification gate — the build, tests, format check, script tests and browser check all passing with warnings as failures, the sweep for undocumented public API, rebuilding and running the showcase without serving stale code, inspecting every culture, driving browser checks in a visible browser window and the gate's own headless, and the shape of a task script. Use when building, testing, formatting, running the showcase, verifying a change in a browser, or adding a task script.
 ---
 
 # Build and verification
 
-The gate is the build, every test project, the format check, the locale lint and the script tests, all passing, and the showcase for anything that renders. The repository's own documentation lists the commands.
+The gate is the build, every test project, the format check, the locale lint, the script tests and the browser check, all passing, and the showcase for anything that renders. The repository's own documentation lists the commands.
 
 Every compiler warning is a build failure: warnings are errors for source and tests alike, the `.editorconfig` severity table decides what the compiler reports, and the answer to an unwanted diagnostic is that table, never a local suppression.
 
@@ -19,7 +19,7 @@ No project generates a documentation file, so nothing reports an undocumented pu
 - Do run `scripts/Stop-MsBuild.ps1` when a build fails to copy a file nothing appears to be using: MSBuild keeps its worker nodes alive between builds and they keep a handle on what they last built. `scripts/Stop-DotNet.ps1` goes further and also stops whatever is running out of this repository, such as the showcase; neither touches the language server an editor runs for C# unless asked with `-All`.
 - Do confirm the rebuild actually reached the app before drawing any conclusion from the browser: the showcase runs a compiled binary with no hot reload, so verify the build succeeded and that the library's DLL in the showcase's output is newer than the sources you changed. A stale process silently serves the old code and every experiment against it is void.
 - Do inspect the component in every culture the library ships through the showcase.
-- Do drive end-to-end browser checks in a **visible** browser window rather than a headless one, so the maintainer can watch what is actually being exercised; a headless run reports only what its script thought to assert, so a mis-scoped page and a genuine pass look alike.
+- Do drive end-to-end browser checks in a **visible** browser window rather than a headless one, so the maintainer can watch what is actually being exercised; a headless run reports only what its script thought to assert, so a mis-scoped page and a genuine pass look alike. The gate's browser check is the exception, since the gate runs where no display is: it runs headless, and `browser.ps1 -Visible` opens it in a window to watch.
 - Do slow such a run enough to be followed, and hold the final state on screen before closing.
 - Don't pipe the showcase's output into `Select-String`, `Select-Object`, or another filter; closing the pipeline terminates the server.
 - Don't present a component as complete while build, tests, accessibility, touch, or direction checks remain unresolved.
@@ -30,8 +30,8 @@ The build is entered through `build.ps1` at the repository root. Its module and 
 the narrower loops live under `scripts/build/`.
 
 - Do run `./build.ps1` for the gate, and a wrapper beside the module for one part of it: `compile.ps1`,
-  `test.ps1`, `format.ps1`, `tasks.ps1`, `clean.ps1`. The gate is about two and a half minutes and the
-  format check alone is half of it, so a narrow loop is worth reaching for.
+  `test.ps1`, `format.ps1`, `tasks.ps1`, `browser.ps1`, `clean.ps1`. The format check is the longest step of
+  the gate, so a narrow loop is worth reaching for.
 - Do narrow a test run with `test.ps1 -Project`, `-Filter` and `-NoBuild`, and hunt a test that fails
   sometimes with `-Times`, which continues past a failure so the failure shows as a rate; add `-LoadWith`
   to run other test projects beside it, so a race a busy machine exposes shows here too, and `-WaitLog`

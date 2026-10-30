@@ -3,7 +3,8 @@
 
 <#
 .SYNOPSIS
-Build gate for Forma — build, test, verify formatting, build the task programs, and run the script tests.
+Build gate for Forma — build, test, verify formatting, build the task programs, run the script tests, and drive
+the browser check.
 
 .DESCRIPTION
 Runs the gate a change has to pass, so that a person and a machine run the same checks and neither can
@@ -11,7 +12,7 @@ drift from the other. Warnings are errors across the solution, so a diagnostic f
 breaking are one event.
 
 This script is intentionally small: it only runs the gate. The narrower loops live beside the module under
-scripts/build — compile.ps1, test.ps1, format.ps1, tasks.ps1 and clean.ps1 — and what each action does
+scripts/build — compile.ps1, test.ps1, format.ps1, tasks.ps1, browser.ps1 and clean.ps1 — and what each action does
 lives in scripts/build/Forma.Build.psm1, so the gate and a single action cannot disagree about what a
 build is.
 
@@ -25,7 +26,8 @@ does what it says.
 Narrows the gate:
   DotNet   the solution, its tests, the format check and the task programs
   Scripts  the browser script tests
-  All      both (default)
+  Browser  the browser check, against a published host and its full client
+  All      all three (default)
 
 .PARAMETER Clean
 Delete build output. Used alone it only cleans; combined with a target, including 'All', it cleans first
@@ -50,7 +52,7 @@ and then runs the gate.
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('All', 'DotNet', 'Scripts')]
+    [ValidateSet('All', 'DotNet', 'Scripts', 'Browser')]
     [string] $Target,
 
     [switch] $Clean

@@ -1,0 +1,21 @@
+@* What every runtime is checked for: which runtime renders the panel, a text box binding as it is typed into, and a select whose list opens through interop. *@
+<output id="runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
+<EditForm Model="_model">
+    <FormaTextBox @bind-Value="_model.Name" Label="Name" />
+    <FormaSelect TValue="int" @bind-Value="_model.Status" Options="_statuses" Label="Status" />
+</EditForm>
+<output id="name">@_model.Name</output>
+<output id="status">@_model.Status</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    private readonly IReadOnlyList<SelectOption<int>> _statuses = [new(1, "Open"), new(2, "Closed")];
+
+    private sealed class Entry
+    {
+        public string? Name { get; set; }
+
+        public int Status { get; set; } = 1;
+    }
+}

@@ -70,6 +70,10 @@ function Initialize-BuildContext {
         Scripts        = Join-Path $RepositoryRoot 'scripts'
         TaskPrograms   = Join-Path $RepositoryRoot 'scripts'
         ScriptTests    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Tests.Scripts'
+        BrowserHost    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Host' 'Forma.Blazor.Browser.Host.csproj'
+        BrowserFull    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Full' 'Forma.Blazor.Browser.Full.csproj'
+        BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
+        BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
     }
 }
@@ -1052,6 +1056,77 @@ function Test-BrowserScript {
 
 <#
 .SYNOPSIS
+Publishes the browser check's host and its full client, and drives them in a browser.
+
+.DESCRIPTION
+The components are checked in each runtime a Web App renders them in, a published client's download is held to
+its budgets, and what the publish trims is recorded, so a reference, a compile feature or a trim warning that
+breaks the browser fails here rather than in a host. Both clients are published in Release, the one configuration
+the budgets were measured in, into folders emptied first, since a publish names its files by their content and
+an earlier publish's files would be counted beside the new ones. The browser is headless unless -Visible asks
+for a window to watch.
+
+.PARAMETER Context
+The build context.
+
+.PARAMETER Visible
+Opens a visible browser window rather than a headless one.
+
+.OUTPUTS
+The step's result.
+#>
+function Test-BrowserCheck {
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([psobject])]
+    param(
+        [Parameter(Mandatory)] [psobject] $Context,
+        [switch] $Visible
+    )
+
+    $hostProject = $Context.BrowserHost
+    $fullProject = $Context.BrowserFull
+    $checks = $Context.BrowserChecks
+    $hostOutput = Join-Path $Context.BrowserOutput 'host'
+    $fullOutput = Join-Path $Context.BrowserOutput 'full'
+    $isVisible = $Visible.IsPresent
+    $description = 'dotnet publish the host and the full client, then drive them in a browser'
+
+    if ($isVisible) {
+        $description += ', in a visible window'
+    }
+
+    Invoke-BuildStep -Name 'browser' -Target $checks -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+        foreach ($publish in @(@($hostProject, $hostOutput), @($fullProject, $fullOutput))) {
+            if (Test-Path -LiteralPath $publish[1]) {
+                Remove-Item -LiteralPath $publish[1] -Recurse -Force
+            }
+
+            dotnet publish $publish[0] -c Release -o $publish[1] --nologo -v:q
+
+            if ($LASTEXITCODE -ne 0) {
+                return
+            }
+        }
+
+        $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Visible = $env:FORMA_BROWSER_VISIBLE }
+
+        try {
+            $env:FORMA_BROWSER_HOST = $hostOutput
+            $env:FORMA_BROWSER_FULL = $fullOutput
+            $env:FORMA_BROWSER_VISIBLE = if ($isVisible) { '1' } else { $null }
+
+            dotnet run --project $checks -c Release
+        }
+        finally {
+            $env:FORMA_BROWSER_HOST = $previous.Host
+            $env:FORMA_BROWSER_FULL = $previous.Full
+            $env:FORMA_BROWSER_VISIBLE = $previous.Visible
+        }
+    }.GetNewClosure()
+}
+
+<#
+.SYNOPSIS
 Deletes what the build produced.
 
 .DESCRIPTION
@@ -1180,7 +1255,7 @@ function Invoke-Gate {
     [OutputType([psobject])]
     param(
         [Parameter(Mandatory)] [psobject] $Context,
-        [ValidateSet('DotNet', 'Scripts', 'All')] [string] $Target = 'All'
+        [ValidateSet('DotNet', 'Scripts', 'Browser', 'All')] [string] $Target = 'All'
     )
 
     $results = [System.Collections.Generic.List[psobject]]::new()
@@ -1213,6 +1288,10 @@ function Invoke-Gate {
 
     if ($Target -in 'Scripts', 'All') {
         $results.AddRange([psobject[]]@(Test-BrowserScript -Context $Context -WhatIf:$WhatIfPreference))
+    }
+
+    if ($Target -in 'Browser', 'All') {
+        $results.Add((Test-BrowserCheck -Context $Context -WhatIf:$WhatIfPreference))
     }
 
     $results

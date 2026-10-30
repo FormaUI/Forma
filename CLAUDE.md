@@ -64,7 +64,7 @@ Every component replaces something in the legacy application the repository docu
 
 ## Build and verification
 
-The gate is the build with no warnings, every test project, the script tests, the format check, the locale lint, and the Showcase for anything that renders; the repository document lists the commands.
+The gate is the build with no warnings, every test project, the script tests, the format check, the locale lint, the browser check, and the Showcase for anything that renders; the repository document lists the commands.
 
 - Do treat every compiler warning as a build failure; the `.editorconfig` severity table decides what the compiler reports, and the answer to an unwanted diagnostic is that table, never a local suppression.
 

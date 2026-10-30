@@ -18,6 +18,7 @@
         'Build-TaskProgram',
         'Clear-BuildOutput',
         'Invoke-Gate',
+        'Test-BrowserCheck',
         'Test-BrowserScript',
         'Test-Solution',
         'Test-SolutionFormat',

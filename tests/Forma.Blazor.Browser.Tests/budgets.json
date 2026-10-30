@@ -1,0 +1,19 @@
+{
+  "minimal": {
+    "app": 25600,
+    "forma": 665600,
+    "globalization": 358400,
+    "runtime": 2713600
+  },
+  "full": {
+    "AngleSharp": 486400,
+    "app": 25600,
+    "DocumentFormat": 1100800,
+    "forma": 1075200,
+    "globalization": 358400,
+    "HtmlSanitizer": 25600,
+    "Markdig": 179200,
+    "OfficeIMO": 4044800,
+    "runtime": 3712000
+  }
+}
