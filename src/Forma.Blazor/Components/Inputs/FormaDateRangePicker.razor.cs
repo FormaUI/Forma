@@ -43,8 +43,8 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     private bool IsOpen
         => Popover is { IsOpen: true };
 
-    private CultureInfo Culture => CultureState.Culture;
-    private string TextDirection => CultureState.IsRightToLeft ? "rtl" : "ltr";
+    private CultureInfo Culture => Context.CultureState.Culture;
+    private string TextDirection => Context.CultureState.IsRightToLeft ? "rtl" : "ltr";
 
     private bool HasValue
         => Value is not null;

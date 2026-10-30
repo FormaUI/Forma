@@ -517,7 +517,7 @@ These are correctness requirements for every Forma component, and the composer i
 - **Editing surface:** the `contenteditable` region is labeled, exposes `aria-multiline`, and announces the active block and formatting through a live region — a screen-reader user must be able to learn that the caret is inside a heading or a code block.
 - **Every state without color:** an active toolbar toggle carries `aria-pressed` and a persistent non-color mark, not a tint alone.
 - **Touch:** every control is at least 24×24 CSS px, and 44×44 under `@media (pointer: coarse)`. Every `:hover` rule sits inside `@media (hover: hover)`. The selection bar is clamped to the viewport and reachable by tap; nothing essential hangs off hover.
-- **Direction:** logical properties only, per-block `dir`, and horizontal arrow keys resolved through `CultureState.IsRightToLeft`. Bidi is not a plugin's problem to solve twice.
+- **Direction:** logical properties only, per-block `dir`, and horizontal arrow keys resolved through `Context.CultureState.IsRightToLeft`. Bidi is not a plugin's problem to solve twice.
 
 ---
 

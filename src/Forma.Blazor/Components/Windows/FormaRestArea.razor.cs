@@ -45,7 +45,7 @@ public sealed partial class FormaRestArea : FormaElementBase
     {
         var number = Manager.GetInstanceNumber(window);
 
-        return number == 1 ? GetOriginName(window) : string.Create(CultureState.Culture, $"{GetOriginName(window)} {number}");
+        return number == 1 ? GetOriginName(window) : string.Create(Context.CultureState.Culture, $"{GetOriginName(window)} {number}");
     }
 
     // The workspace's own origin is the library's, so its name is the library's to localize.

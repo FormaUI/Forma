@@ -34,9 +34,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
-
-    /// <summary>The cultures the component writes its strings, formats and direction in.</summary>
-    [Inject] protected ICultureState CultureState { get; set; } = default!;
+    [Inject] private ICultureState CultureState { get; set; } = default!;
 
     private ComponentContext? _context;
     private bool _isSubscribedToCultureState;
@@ -51,9 +49,10 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     protected virtual Type LocalizationSourceType
         => GetType();
 
-    /// <summary>The component's context: its identity, its strings, its log and its JS environment.</summary>
+    /// <summary>The component's context: its identity, its cultures, its strings, its log and its JS environment.</summary>
     protected IComponentContext Context
         => _context ??= new ComponentContext(
+            CultureState,
             () => JSRuntime,
             () => LocaleFactory.Create(LocalizationSourceType, CultureState),
             () => LoggerFactory.CreateLogger(GetType()),

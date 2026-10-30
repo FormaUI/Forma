@@ -139,7 +139,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     // where the adornment stands at the start of a left-to-right culture or the end of a right-to-left one, and its own right otherwise.
     private string? AdornmentRoomClass
         => Adornment is { } adornment
-            ? (adornment.Side is AdornmentSide.Start) != CultureState.IsRightToLeft
+            ? (adornment.Side is AdornmentSide.Start) != Context.CultureState.IsRightToLeft
                 ? "forma-number-input-room-start"
                 : "forma-number-input-room-end"
             : null;
@@ -230,7 +230,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             _valueWhenDrafted = Value;
         }
 
-        _draft.Edit(text, CultureState.Culture);
+        _draft.Edit(text, Context.CultureState.Culture);
     }
 
     // A step starts from the number shown, or from the limit it moves away from, or from zero, and stops at the limits.
@@ -272,7 +272,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         // Dividing by one written to the most decimal places drops the trailing zeros a sum keeps, so 12.5 and a half step shows 13.
         next = Math.Clamp(next, lowest, highest) / 1.0000000000000000000000000000m;
         _draft.Clear();
-        CurrentValueAsString = next.ToString(CultureState.Culture);
+        CurrentValueAsString = next.ToString(Context.CultureState.Culture);
 
         // A routed key is no event of the field's own, so the field draws the number it stepped to itself.
         StateHasChanged();
@@ -454,7 +454,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override string? FormatValueAsString(TValue? value)
-        => value is IFormattable number ? number.ToString(DisplayFormat, CultureState.Culture) : null;
+        => value is IFormattable number ? number.ToString(DisplayFormat, Context.CultureState.Culture) : null;
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -483,7 +483,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             return IsNullable ? null : L["The {Field} field is required.", FieldName];
         }
 
-        var culture = _draft.Culture ?? CultureState.Culture;
+        var culture = _draft.Culture ?? Context.CultureState.Culture;
 
         if (!TryParseNumber(value, culture, out var parsed))
         {
@@ -499,12 +499,12 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
         if (Min is { } min && CompareToLimit(parsed, min) < 0)
         {
-            return L["The {Field} field must be at least {Minimum}.", FieldName, min.ToString(CultureState.Culture)];
+            return L["The {Field} field must be at least {Minimum}.", FieldName, min.ToString(Context.CultureState.Culture)];
         }
 
         if (Max is { } max && CompareToLimit(parsed, max) > 0)
         {
-            return L["The {Field} field must be at most {Maximum}.", FieldName, max.ToString(CultureState.Culture)];
+            return L["The {Field} field must be at most {Maximum}.", FieldName, max.ToString(Context.CultureState.Culture)];
         }
 
         result = parsed;

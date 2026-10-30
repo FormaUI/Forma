@@ -1,10 +1,13 @@
 namespace Forma.Blazor.Tests.Components;
 
+using System.Globalization;
+
 using Forma.Blazor.Components;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Localization;
 using Forma.Tests.Browser;
+using Forma.Tests.Culture;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
@@ -21,6 +24,7 @@ public sealed class ComponentContextTests
         var loggerCreations = 0;
         var runtimeCreations = 0;
         await using var context = new ComponentContext(
+            CreateCultureState(),
             () => { runtimeCreations++; return new FakeJSRuntime((_, _) => null); },
             () => { localeCreations++; return CreateLocale(); },
             () => { loggerCreations++; return NullLogger.Instance; });
@@ -47,7 +51,7 @@ public sealed class ComponentContextTests
     {
         // Arrange
         var logger = NullLogger.Instance;
-        await using var context = new ComponentContext(() => new FakeJSRuntime((_, _) => null), CreateLocale, () => logger);
+        await using var context = new ComponentContext(CreateCultureState(), () => new FakeJSRuntime((_, _) => null), CreateLocale, () => logger);
 
         // Act
         var environment = context.JS;
@@ -67,7 +71,7 @@ public sealed class ComponentContextTests
     public async Task Should_mark_itself_disposed_and_take_another_disposal_safely()
     {
         // Arrange
-        var context = new ComponentContext(CreateRuntime, CreateLocale, CreateLogger);
+        var context = new ComponentContext(CreateCultureState(), CreateRuntime, CreateLocale, CreateLogger);
         var before = context.IsDisposed;
 
         // Act
@@ -97,7 +101,7 @@ public sealed class ComponentContextTests
             });
 
         private static ComponentContext CreateContext(FakeDomBrowser browser, FakeLoggerFactory loggerFactory, DomBridge? bridge = null)
-            => new(() => browser.Runtime, CreateLocale, () => loggerFactory.CreateLogger("Owner"), () => bridge);
+            => new(CreateCultureState(), () => browser.Runtime, CreateLocale, () => loggerFactory.CreateLogger("Owner"), () => bridge);
 
         private static Task<DomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(ComponentContext context, Func<ScrollState, Task>? handler = null)
             => context.DomWatcher.GetElement(Viewport).Scroll.WatchAsync(handler ?? (_ => Task.CompletedTask), new ScrollWatchOptions());
@@ -109,7 +113,7 @@ public sealed class ComponentContextTests
             using var loggerFactory = new FakeLoggerFactory();
             var browser = CreateBrowser();
             var runtimeCreations = 0;
-            await using var context = new ComponentContext(() => { runtimeCreations++; return browser.Runtime; }, CreateLocale, () => loggerFactory.CreateLogger("Owner"));
+            await using var context = new ComponentContext(CreateCultureState(), () => { runtimeCreations++; return browser.Runtime; }, CreateLocale, () => loggerFactory.CreateLogger("Owner"));
 
             // Act
             var before = runtimeCreations;
@@ -252,21 +256,39 @@ public sealed class ComponentContextTests
     }
 
     [Fact]
-    public void Should_refuse_a_missing_function()
+    public async Task Should_carry_the_culture_state_it_is_given()
+    {
+        // Arrange
+        var cultureState = CreateCultureState();
+
+        // Act
+        await using var context = new ComponentContext(cultureState, CreateRuntime, CreateLocale, CreateLogger);
+
+        // Assert
+        Assert.Same(cultureState, context.CultureState);
+    }
+
+    [Fact]
+    public void Should_refuse_a_missing_culture_state_or_function()
     {
         // Act
-        var withoutRuntime = Assert.Throws<ArgumentNullException>(() => new ComponentContext(null!, CreateLocale, CreateLogger));
-        var withoutLocale = Assert.Throws<ArgumentNullException>(() => new ComponentContext(CreateRuntime, null!, CreateLogger));
-        var withoutLogger = Assert.Throws<ArgumentNullException>(() => new ComponentContext(CreateRuntime, CreateLocale, null!));
+        var withoutCultureState = Assert.Throws<ArgumentNullException>(() => new ComponentContext(null!, CreateRuntime, CreateLocale, CreateLogger));
+        var withoutRuntime = Assert.Throws<ArgumentNullException>(() => new ComponentContext(CreateCultureState(), null!, CreateLocale, CreateLogger));
+        var withoutLocale = Assert.Throws<ArgumentNullException>(() => new ComponentContext(CreateCultureState(), CreateRuntime, null!, CreateLogger));
+        var withoutLogger = Assert.Throws<ArgumentNullException>(() => new ComponentContext(CreateCultureState(), CreateRuntime, CreateLocale, null!));
 
         // Assert
         Assert.Multiple(() =>
         {
+            Assert.Equal("cultureState", withoutCultureState.ParamName);
             Assert.Equal("jsRuntime", withoutRuntime.ParamName);
             Assert.Equal("locale", withoutLocale.ParamName);
             Assert.Equal("logger", withoutLogger.ParamName);
         });
     }
+
+    private static FakeCultureState CreateCultureState()
+        => new(CultureInfo.GetCultureInfo("en"));
 
     private static FakeJSRuntime CreateRuntime()
         => new((_, _) => null);

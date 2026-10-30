@@ -38,8 +38,8 @@ public sealed partial class FormaCalendar : FormaComponentBase
     private bool ShowsTwoMonths
         => Months == 2;
 
-    private CultureInfo Culture => CultureState.Culture;
-    private string TextDirection => CultureState.IsRightToLeft ? "rtl" : "ltr";
+    private CultureInfo Culture => Context.CultureState.Culture;
+    private string TextDirection => Context.CultureState.IsRightToLeft ? "rtl" : "ltr";
 
     /// <inheritdoc />
     protected override void OnParametersSet()

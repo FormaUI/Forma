@@ -333,7 +333,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _collection = new CatalogCollectionView(item => item.GetLocalizedLabels(L).KindLabel, () => CultureState.UICulture)
+        _collection = new CatalogCollectionView(item => item.GetLocalizedLabels(L).KindLabel, () => Context.CultureState.UICulture)
         {
             PageNumber = CurrentPage,
             PageSize = PageSize,
@@ -538,7 +538,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             await RejectAsync(
                 CatalogRejectionReason.TotalBytes,
                 Constraints.MaxTotalBytes,
-                L["This explorer holds at most {Size}.", ResourceFormatter.FromByteCount(Constraints.MaxTotalBytes, CultureState.Culture)].Value);
+                L["This explorer holds at most {Size}.", ResourceFormatter.FromByteCount(Constraints.MaxTotalBytes, Context.CultureState.Culture)].Value);
 
             return false;
         }
@@ -618,9 +618,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             _groupField,
             _collection.SortDirection,
             item => item.GetLocalizedLabels(L).KindLabel,
-            CultureState.UICulture,
+            Context.CultureState.UICulture,
             Clock.GetLocalNow(),
-            CultureState.Culture.DateTimeFormat.FirstDayOfWeek);
+            Context.CultureState.Culture.DateTimeFormat.FirstDayOfWeek);
 
     bool IExplorerContentView.IsCollapsed(ExplorerItemGroup group)
     {

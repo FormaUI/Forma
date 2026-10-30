@@ -177,7 +177,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     // The profile is made again for a focus mode or a reading direction other than the one it was made for.
     private InputProfile GetInputProfile()
     {
-        var isRightToLeft = CultureState.IsRightToLeft;
+        var isRightToLeft = Context.CultureState.IsRightToLeft;
 
         if (_inputProfile is null || _profileKeepsFocus != KeepsFocus || _profileIsRightToLeft != isRightToLeft)
         {
@@ -326,7 +326,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         {
             var candidate = visible[(start + step) % visible.Count];
 
-            if (CultureState.Culture.CompareInfo.IsPrefix(View.ItemName(candidate), letter, CompareOptions.IgnoreCase))
+            if (Context.CultureState.Culture.CompareInfo.IsPrefix(View.ItemName(candidate), letter, CompareOptions.IgnoreCase))
             {
                 await MoveToAsync(candidate);
                 return;

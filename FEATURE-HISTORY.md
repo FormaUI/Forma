@@ -65,6 +65,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - The composer's page designer types are gone.
 - A field carries no bottom margin.
 - The culture cookie is `forma-culture-route`.
+- A component reads its culture state as `Context.CultureState`, where both bases gave it as `CultureState`.
 
 <a id="2026-09"></a>
 

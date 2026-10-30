@@ -2,6 +2,7 @@
 @using System.Diagnostics.CodeAnalysis
 @using System.Globalization
 @using Forma.Framework.Css
+@using Forma.Framework.Culture
 @using Microsoft.AspNetCore.Components.Rendering
 
 @code {
@@ -197,6 +198,19 @@
                 Assert.NotEqual(first.OwnContext.RuntimeId, second.OwnContext.RuntimeId);
                 Assert.Equal(7, first.OwnContext.RuntimeId.Version);
             });
+        }
+
+        [Fact]
+        public void Should_carry_its_user_scopes_culture_state_in_its_context()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+
+            // Act
+            var field = RenderField(ctx, new FakeModel()).Instance;
+
+            // Assert
+            Assert.Same(ctx.Services.GetRequiredService<ICultureState>(), field.OwnContext.CultureState);
         }
 
         [Fact]

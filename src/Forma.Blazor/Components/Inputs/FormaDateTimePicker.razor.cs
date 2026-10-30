@@ -105,7 +105,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         => _timeDraft.IsInProgress ? string.IsNullOrWhiteSpace(_timeDraft.Text) : _time is null;
 
     private CultureInfo TimeCulture
-        => _timeDraft.Culture ?? CultureState.Culture;
+        => _timeDraft.Culture ?? Context.CultureState.Culture;
 
     // The two controls wear the field's box and its validation state.
     private string? ControlClass
@@ -310,10 +310,10 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     }
 
     private string FormatTime(TimeOnly time)
-        => time.ToString(HasSeconds ? "T" : "t", CultureState.Culture);
+        => time.ToString(HasSeconds ? "T" : "t", Context.CultureState.Culture);
 
     private string FormatClock(DateTime clock)
-        => clock.ToString(HasSeconds ? "G" : "g", CultureState.Culture);
+        => clock.ToString(HasSeconds ? "G" : "g", Context.CultureState.Culture);
 
     private void HandleChooseDate(DateOnly date)
     {
@@ -328,12 +328,12 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     }
 
     private void HandleInputTime(string? text)
-        => _timeDraft.Edit(text, CultureState.Culture);
+        => _timeDraft.Edit(text, Context.CultureState.Culture);
 
     // Reading the time ends nothing, so its text stays the reader's while the field waits for the date or rejects the value.
     private void HandleChangeTime(string? text)
     {
-        _timeDraft.Edit(text, CultureState.Culture);
+        _timeDraft.Edit(text, Context.CultureState.Culture);
         _time = !string.IsNullOrWhiteSpace(text) && TryReadTime(text.Trim(), TimeCulture, out var time) ? time : null;
         Enter();
     }

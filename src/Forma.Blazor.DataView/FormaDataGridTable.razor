@@ -19,7 +19,7 @@
                 <FormaButton Variant="ButtonVariant.Ghost" class="forma-data-grid-group-heading" aria-expanded="@(isFolded ? "false" : "true")" OnClick="() => Interaction.ToggleGroupAsync(group)">
                     <FormaIcon Icon="@(isFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-grid-group-chevron" />
                     <span class="forma-data-grid-group-name">@group.DisplayName</span>
-                    <span class="forma-data-grid-group-count">@group.Count.ToString("N0", CultureState.Culture)</span>
+                    <span class="forma-data-grid-group-count">@group.Count.ToString("N0", Context.CultureState.Culture)</span>
                 </FormaButton>
             </th>
         </tr>;

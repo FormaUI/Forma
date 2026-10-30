@@ -71,7 +71,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         => GetByteCount(_batch.BytesTransferred, _batch.TotalBytes);
 
     private string TotalRate
-        => ResourceFormatter.FromTransferRate(_batch.BytesPerSecond, CultureState.Culture);
+        => ResourceFormatter.FromTransferRate(_batch.BytesPerSecond, Context.CultureState.Culture);
 
     private string TotalTime
     {
@@ -79,12 +79,12 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         {
             if (Options.ShowEstimate && IsUploading && _batch.EstimatedTimeRemaining is { } estimate)
             {
-                var remaining = ResourceFormatter.FromDuration(estimate, CultureState.Culture);
+                var remaining = ResourceFormatter.FromDuration(estimate, Context.CultureState.Culture);
 
                 return L["{Remaining} left", remaining];
             }
 
-            return Options.ShowElapsed ? ResourceFormatter.FromDuration(_batch.Elapsed, CultureState.Culture) : string.Empty;
+            return Options.ShowElapsed ? ResourceFormatter.FromDuration(_batch.Elapsed, Context.CultureState.Culture) : string.Empty;
         }
     }
 
@@ -197,14 +197,14 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     /// <summary>How much of one file has reached the store, against its total.</summary>
     private string FormatFileByteCount(UploadFile upload)
         => upload.State == UploadState.Pending
-            ? ResourceFormatter.FromByteCount(upload.TotalBytes, CultureState.Culture)
+            ? ResourceFormatter.FromByteCount(upload.TotalBytes, Context.CultureState.Culture)
             : GetByteCount(upload.BytesTransferred, upload.TotalBytes);
 
     /// <summary>How fast one file is reaching the store.</summary>
     private string FormatFileRate(UploadFile upload)
         => upload.State == UploadState.Pending
             ? string.Empty
-            : ResourceFormatter.FromTransferRate(upload.BytesPerSecond, CultureState.Culture);
+            : ResourceFormatter.FromTransferRate(upload.BytesPerSecond, Context.CultureState.Culture);
 
     /// <summary>What one file has left to run while it is moving, and how long it took once it stopped.</summary>
     private string FormatFileTime(UploadFile upload)
@@ -218,23 +218,23 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             && upload.State == UploadState.Uploading
             && upload.EstimatedTimeRemaining is { } estimate)
         {
-            var remaining = ResourceFormatter.FromDuration(estimate, CultureState.Culture);
+            var remaining = ResourceFormatter.FromDuration(estimate, Context.CultureState.Culture);
 
             return L["{Remaining} left", remaining];
         }
 
-        return Options.ShowElapsed ? ResourceFormatter.FromDuration(upload.Elapsed, CultureState.Culture) : string.Empty;
+        return Options.ShowElapsed ? ResourceFormatter.FromDuration(upload.Elapsed, Context.CultureState.Culture) : string.Empty;
     }
 
     private string GetByteCount(long transferred, long total)
     {
         if (transferred >= total)
         {
-            return ResourceFormatter.FromByteCount(total, CultureState.Culture);
+            return ResourceFormatter.FromByteCount(total, Context.CultureState.Culture);
         }
 
-        var sent = ResourceFormatter.FromByteCount(transferred, CultureState.Culture);
-        var size = ResourceFormatter.FromByteCount(total, CultureState.Culture);
+        var sent = ResourceFormatter.FromByteCount(transferred, Context.CultureState.Culture);
+        var size = ResourceFormatter.FromByteCount(total, Context.CultureState.Culture);
 
         return L["{Sent} of {Size}", sent, size];
     }

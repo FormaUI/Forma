@@ -1315,7 +1315,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // A virtualizing view fetches the items as it scrolls, so its groups are the whole set's, known by their sizes alone.
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<DataViewGroupSize>? sizes)
         => GroupBy is { } grouping && sizes is not null
-            ? [.. sizes.Where(size => size.Count > 0).Select(size => grouping.CreateGroup(size.Key, [], CultureState) with { Count = size.Count })]
+            ? [.. sizes.Where(size => size.Count > 0).Select(size => grouping.CreateGroup(size.Key, [], Context.CultureState) with { Count = size.Count })]
             : [];
 
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)
@@ -1335,7 +1335,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
             if (!Equals(itemKey, key))
             {
-                groups.Add(grouping.CreateGroup(key, members, CultureState));
+                groups.Add(grouping.CreateGroup(key, members, Context.CultureState));
                 members = [];
                 key = itemKey;
             }
@@ -1343,7 +1343,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             members.Add(item);
         }
 
-        groups.Add(grouping.CreateGroup(key, members, CultureState));
+        groups.Add(grouping.CreateGroup(key, members, Context.CultureState));
 
         return groups;
     }

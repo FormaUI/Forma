@@ -56,12 +56,12 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     private IReadOnlyList<SelectOption<TValue>> FilteredOptions
         => string.IsNullOrWhiteSpace(_searchText)
             ? Options
-            : [.. Options.Where(o => CultureState.Culture.CompareInfo.IndexOf(o.Label, _searchText, CompareOptions.IgnoreCase) >= 0)];
+            : [.. Options.Where(o => Context.CultureState.Culture.CompareInfo.IndexOf(o.Label, _searchText, CompareOptions.IgnoreCase) >= 0)];
 
     private bool CanAddSearchText
         => AllowAdd
         && !string.IsNullOrWhiteSpace(_searchText)
-        && !Options.Any(o => CultureState.Culture.CompareInfo
+        && !Options.Any(o => Context.CultureState.Culture.CompareInfo
             .Compare(o.Label, _searchText.Trim(), CompareOptions.IgnoreCase) == 0);
 
     private string TriggerText

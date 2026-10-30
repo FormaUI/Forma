@@ -1,13 +1,14 @@
 namespace Forma.Blazor.Components;
 
 using Forma.Framework.Browser.Interop;
+using Forma.Framework.Culture;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-/// <summary>A component's context: its identity, its strings, its log, its JS environment, and the watcher and engine its browser work goes through.</summary>
+/// <summary>A component's context: its identity, its cultures, its strings, its log, its JS environment, and the watcher and engine its browser work goes through.</summary>
 /// <remarks>The context owns the watcher and the engine it makes, and its disposal releases them together, in one call to the browser.</remarks>
 public sealed class ComponentContext : IComponentContext, IAsyncDisposable
 {
@@ -18,13 +19,15 @@ public sealed class ComponentContext : IComponentContext, IAsyncDisposable
     private DomWatcher? _domWatcher;
     private DomEngine? _domEngine;
 
-    /// <summary>Creates a context from the functions that create its JS runtime, strings and log, and that find the bridge its watcher shares imports through.</summary>
-    public ComponentContext(Func<IJSRuntime> jsRuntime, Func<IStringLocale> locale, Func<ILogger> logger, Func<DomBridge?>? domBridge = null)
+    /// <summary>Creates a context over the user scope's culture state, from the functions that create its JS runtime, strings and log, and that find the bridge its watcher shares imports through.</summary>
+    public ComponentContext(ICultureState cultureState, Func<IJSRuntime> jsRuntime, Func<IStringLocale> locale, Func<ILogger> logger, Func<DomBridge?>? domBridge = null)
     {
+        ArgumentNullException.ThrowIfNull(cultureState);
         ArgumentNullException.ThrowIfNull(jsRuntime);
         ArgumentNullException.ThrowIfNull(locale);
         ArgumentNullException.ThrowIfNull(logger);
 
+        CultureState = cultureState;
         _locale = new(locale);
         _logger = new(logger);
         _js = new(() => new JSEnvironment(jsRuntime(), Logger, RuntimeId));
@@ -33,6 +36,9 @@ public sealed class ComponentContext : IComponentContext, IAsyncDisposable
 
     /// <inheritdoc />
     public Guid RuntimeId { get; } = Guid.CreateVersion7();
+
+    /// <inheritdoc />
+    public ICultureState CultureState { get; }
 
     /// <inheritdoc />
     public IStringLocale Locale

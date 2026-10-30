@@ -96,7 +96,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private bool IsSearching => !string.IsNullOrWhiteSpace(_searchQuery);
 
     private InputProfile TabsProfile
-        => CultureState.IsRightToLeft ? RightToLeftTabsProfile : LeftToRightTabsProfile;
+        => Context.CultureState.IsRightToLeft ? RightToLeftTabsProfile : LeftToRightTabsProfile;
 
     private IReadOnlyList<EmojiGroup> Tabs
         => _tabs ??= Recent.Count == 0

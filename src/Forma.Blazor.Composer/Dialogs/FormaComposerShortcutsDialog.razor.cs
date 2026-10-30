@@ -54,7 +54,7 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
     {
         get
         {
-            if (_rowsUICulture is not null && !Equals(_rowsUICulture, CultureState.UICulture))
+            if (_rowsUICulture is not null && !Equals(_rowsUICulture, Context.CultureState.UICulture))
             {
                 RefreshRows();
             }
@@ -70,7 +70,7 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
     private void RefreshRows()
     {
         _rows = BuildRows();
-        _rowsUICulture = CultureState.UICulture;
+        _rowsUICulture = Context.CultureState.UICulture;
     }
 
     // A command is titled as the toolbar titles it, and undo and redo as the composer does; a binding whose command no

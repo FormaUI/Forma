@@ -44,7 +44,7 @@
             }
             @if (ShowsSize)
             {
-                <td class="forma-explorer-cell-size @FormaFreezePane.StopClass" dir="auto">@(item.Resource?.FormatSize(CultureState.Culture) ?? Placeholder)</td>
+                <td class="forma-explorer-cell-size @FormaFreezePane.StopClass" dir="auto">@(item.Resource?.FormatSize(Context.CultureState.Culture) ?? Placeholder)</td>
             }
             @if (ShowsModified)
             {

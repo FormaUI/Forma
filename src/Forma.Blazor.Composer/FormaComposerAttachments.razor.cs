@@ -29,7 +29,7 @@ public sealed partial class FormaComposerAttachments : FormaComponentBase
         => Composer is { IsDisabled: false, IsReadOnly: false, ActiveView: null };
 
     private string TotalSize
-        => ResourceFormatter.FromByteCount(Attachments.Sum(attachment => attachment.Size ?? 0), CultureState.Culture);
+        => ResourceFormatter.FromByteCount(Attachments.Sum(attachment => attachment.Size ?? 0), Context.CultureState.Culture);
 
     private async Task RemoveAsync(ResourceInfo attachment)
     {

@@ -8,7 +8,7 @@
 <title>@Title</title>
 <base href="@BaseHref" />
 @* The cultures the server rendered the page in, and how a switch persists, which the page's culture coordinator reads. *@
-<meta name="forma-culture" data-culture="@CultureState.Culture.Name" data-ui-culture="@CultureState.UICulture.Name" />
+<meta name="forma-culture" data-culture="@Context.CultureState.Culture.Name" data-ui-culture="@Context.CultureState.UICulture.Name" />
 @if (Policy.Persistence is CultureSwitchPersistence.Cookie)
 {
     <meta name="forma-culture-policy" content="cookie" data-name="@Policy.CookieName" data-path="@Policy.CookiePath" data-domain="@Policy.CookieDomain" data-max-age="@CookieMaxAge" data-secure="@Policy.IsCookieSecure" data-same-site="@CookieSameSite" />

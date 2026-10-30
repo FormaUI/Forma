@@ -86,7 +86,7 @@ public sealed partial class FormaCapacityIndicator : FormaElementBase
     }
 
     private string FormatCount(int count)
-        => count.ToString("N0", CultureState.Culture);
+        => count.ToString("N0", Context.CultureState.Culture);
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

@@ -94,7 +94,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
         => _zoom.Percent;
 
     private string? DisplaySize
-        => Resource?.FormatSize(CultureState.Culture);
+        => Resource?.FormatSize(Context.CultureState.Culture);
 
     private string DisplayName
         => Resource?.Name ?? Source;
@@ -119,7 +119,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
     // Resolves once per address and cultures, since a provider may convert a document into text in the culture it resolves in.
     private async Task ResolveAsync()
     {
-        var request = new ResolutionRequest(Source, CultureState.Culture, CultureState.UICulture);
+        var request = new ResolutionRequest(Source, Context.CultureState.Culture, Context.CultureState.UICulture);
 
         if (request == _resolvedRequest)
         {
@@ -185,7 +185,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The arrows belong to the viewer only while it can navigate; the registration runs beside the image's behaviors.
-        var navigation = _navigation.SyncAsync(RootElement, CultureState.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile, wanted: IsNavigable);
+        var navigation = _navigation.SyncAsync(RootElement, Context.CultureState.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile, wanted: IsNavigable);
 
         if (Resource is ImageResourceInfo)
         {
@@ -218,7 +218,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
         await navigation;
 
         // A change of culture renders the viewer again without setting a parameter, so a resolution in the cultures it left starts again here.
-        if (_resolvedRequest is { } resolved && (resolved.Culture != CultureState.Culture || resolved.UICulture != CultureState.UICulture))
+        if (_resolvedRequest is { } resolved && (resolved.Culture != Context.CultureState.Culture || resolved.UICulture != Context.CultureState.UICulture))
         {
             await ResolveAsync();
             StateHasChanged();

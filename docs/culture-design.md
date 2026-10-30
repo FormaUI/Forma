@@ -299,11 +299,11 @@ through `InvokeAsync(StateHasChanged)` or a parameter it sets. Whatever began it
 in the state's cultures, because the component reads them from the state rather than from the ambient
 culture of the flow that rendered it.
 
-Both component bases inject the state as `CultureState`, and a component formats, parses, compares, sorts
-and lays out by its cultures and its direction.
+A component's context carries the state as `Context.CultureState`, and a component formats, parses,
+compares, sorts and lays out by its cultures and its direction.
 
 ```razor
-<span>@date.ToString("d", CultureState.Culture)</span>
+<span>@date.ToString("d", Context.CultureState.Culture)</span>
 ```
 
 An edit in progress parses in the culture it retained, as [editing](#an-edit-in-progress-keeps-its-culture)

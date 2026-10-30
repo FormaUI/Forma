@@ -65,8 +65,8 @@ public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase
     // The culture's currency pattern puts the symbol before the number, $n or $ n, or after it, n$ or n $.
     private NumberAdornment Adornment
         => new(
-            CurrencyCatalog.GetSymbol(CurrencyCode, CultureState.Culture),
-            CultureState.Culture.NumberFormat.CurrencyPositivePattern is 1 or 3 ? AdornmentSide.End : AdornmentSide.Start,
+            CurrencyCatalog.GetSymbol(CurrencyCode, Context.CultureState.Culture),
+            Context.CultureState.Culture.NumberFormat.CurrencyPositivePattern is 1 or 3 ? AdornmentSide.End : AdornmentSide.Start,
             CurrencyCode);
 
     /// <inheritdoc />

@@ -66,12 +66,12 @@ that fails to load, reaches a host through the log the host already configures.
   framework's name, because `InputBase<TValue>` fixes it and the two tiers must read the
   same.
 - **One context per component, handed down whole.** `IComponentContext` is what a
-  component is given: its identity, its strings, its log, its JS environment, and the DOM
-  watcher and engine its browser work goes through. The base builds it once and forwards
-  nothing but `L`, so a component reads `Context.RuntimeId`, `Context.Logger`,
-  `Context.JS`, `Context.DomWatcher` and `Context.DomEngine`, and a new thing every component
-  needs is added to the context once rather than to a base twice or to every constructor
-  that passes it on. `Context` is reserved for it: anything else context-like a component
+  component is given: its identity, its cultures, its strings, its log, its JS environment,
+  and the DOM watcher and engine its browser work goes through. The base builds it once and
+  forwards nothing but `L`, so a component reads `Context.RuntimeId`, `Context.CultureState`,
+  `Context.Logger`, `Context.JS`, `Context.DomWatcher` and `Context.DomEngine`, and a new
+  thing every component needs is added to the context once rather than to a base twice or to
+  every constructor that passes it on. `Context` is reserved for it: anything else context-like a component
   holds is named for its subject alone, `Composer` for `FormaComposer`'s parts' cascaded state
   and `JS` for the environment, never `ComposerContext` or `JSEnvironment`.
 - **The JS environment is a runtime.** `IJSEnvironment : IJSRuntime` adds the owner's
@@ -104,15 +104,15 @@ the component's context once from them and its `LocalizationSourceType`, finding
 scope's DOM bridge where one is registered. It
 gives the component its strings as `L`, reports whether it is disposed, and runs
 `DisposeAsyncCore` once on disposal, then releases a context it built, so the component's
-own cleanup can still use it. The context carries the component's identity, strings, log
-and JS environment, and the DOM watcher and engine it makes on first use, whose
+own cleanup can still use it. The context carries the component's identity, cultures,
+strings, log and JS environment, and the DOM watcher and engine it makes on first use, whose
 observations and interactions its release ends in one call to the browser.
 
-A component writes in the cultures of its user scope's culture state, which both bases inject
-as `CultureState`: its strings come from the state's UI culture, and each change of the state
-renders it again, even where its parameters are unchanged. The [culture design](culture-design.md)
-sets out the state, how a change reaches each component, and how the document and the address
-follow it.
+A component writes in the cultures of its user scope's culture state, which its context carries
+as `Context.CultureState`, the one instance the user scope holds: its strings come from the
+state's UI culture, and each change of the state renders it again, even where its parameters are
+unchanged. The [culture design](culture-design.md) sets out the state, how a change reaches each
+component, and how the document and the address follow it.
 
 The context builds its JS environment once from the runtime, its logger and its identity,
 so the environment's identity and log are the context's by construction. The environment

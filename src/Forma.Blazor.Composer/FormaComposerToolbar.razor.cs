@@ -78,7 +78,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     {
         ArgumentNullException.ThrowIfNull(Editor);
 
-        var inputs = new LayoutInputs(Editor, View, Plugins, CultureState.UICulture.Name);
+        var inputs = new LayoutInputs(Editor, View, Plugins, Context.CultureState.UICulture.Name);
 
         if (inputs == _layoutInputs)
         {

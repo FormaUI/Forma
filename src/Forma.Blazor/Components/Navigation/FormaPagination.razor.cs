@@ -85,7 +85,7 @@ public sealed partial class FormaPagination : FormaElementBase
 
     // The box reads "7 of 200" at rest.
     private string PageSummary
-        => L["{PageNumber} of {PageCount}", ActivePage.ToString(CultureState.Culture), PageCount.ToString("N0", CultureState.Culture)].Value;
+        => L["{PageNumber} of {PageCount}", ActivePage.ToString(Context.CultureState.Culture), PageCount.ToString("N0", Context.CultureState.Culture)].Value;
 
     /// <summary>Turns one page in the direction of a wheel gesture.</summary>
     [JSInvokable]
@@ -224,7 +224,7 @@ public sealed partial class FormaPagination : FormaElementBase
     {
         var entry = await TakeNavigationEntryAsync();
 
-        if (int.TryParse(entry, NumberStyles.Integer, CultureState.Culture, out var page))
+        if (int.TryParse(entry, NumberStyles.Integer, Context.CultureState.Culture, out var page))
         {
             await GoToPageAsync(Math.Clamp(page, 1, PageCount));
         }

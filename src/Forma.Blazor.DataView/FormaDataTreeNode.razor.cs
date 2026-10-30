@@ -61,7 +61,7 @@ public sealed partial class FormaDataTreeNode<TItem> : FormaComponentBase
         // The first draw is not asked about, so what it draws by is recorded here.
         if (!_gate.IsRecorded)
         {
-            _gate.Record(Item, Position, ViewRevision, CultureState.Revision, Tree.GetNodeState(Item), GetShape());
+            _gate.Record(Item, Position, ViewRevision, Context.CultureState.Revision, Tree.GetNodeState(Item), GetShape());
         }
     }
 
@@ -71,12 +71,12 @@ public sealed partial class FormaDataTreeNode<TItem> : FormaComponentBase
         var state = Tree.GetNodeState(Item);
         var shape = GetShape();
 
-        if (!_gate.Differs(Item, Position, ViewRevision, CultureState.Revision, state, shape))
+        if (!_gate.Differs(Item, Position, ViewRevision, Context.CultureState.Revision, state, shape))
         {
             return false;
         }
 
-        _gate.Record(Item, Position, ViewRevision, CultureState.Revision, state, shape);
+        _gate.Record(Item, Position, ViewRevision, Context.CultureState.Revision, state, shape);
 
         return true;
     }
