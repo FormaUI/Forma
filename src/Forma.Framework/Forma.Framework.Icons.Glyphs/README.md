@@ -54,7 +54,7 @@ if (provider.TryGetArtwork(new Rune('Ω'), IconSize.Inline, out var omega))
 ## Artwork and licenses
 
 The glyphs are Forma's own drawings, made to
-[the glyph artwork specification](https://github.com/FormaUI/Forma/blob/main/docs/glyph-artwork-spec.md)
+[the glyph artwork specification](https://github.com/FormaUI/Forma/blob/main/docs/glyph-artwork-specification.md)
 and licensed with the rest of the repository.
 
 Each brand mark is the brand's official mark, taken from a pinned release of an open icon set:

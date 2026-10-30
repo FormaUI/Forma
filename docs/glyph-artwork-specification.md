@@ -44,20 +44,16 @@ These attributes may appear on an individual `<path>`, and no others:
 | `fill="currentColor"` together with `stroke="none"` on a stroke file | A solid dot or wedge that a stroke cannot draw — the bullet in `ListBullet`, the dots in `More`, the triangle of `TriangleRight`. Use sparingly. |
 | `opacity="0.4"` | A secondary element that must recede — the back frame in `Images`, the second figure in `Users`. |
 
-The build script (`scripts/Build-GlyphPack.ps1`) turns the folder into the asset the built-in
-provider reads and rejects any file that breaks the rules above, or a glyph with no drawing.
+The glyph pack's build turns the folder into the asset the built-in provider reads. It rejects a file
+whose structure breaks the rules above, an element, an attribute or a root other than they allow, or a
+coordinate off the grid, and a glyph the complete grid doesn't draw.
 
 ### Brand marks
 
 A brand logo is never drawn by hand: it is a trademark, and its owner's guidelines forbid a
-redrawing. `assets/Brands/` holds the official marks as fetched from a pinned release of an
-icon set that carries them, one list and one `scripts/Get-{Source}Pack.ps1` script per source,
-and none of the rules above apply to them. Every mark there has a member of the `Brand` enum
-named for the brand; `scripts/Build-BrandPack.ps1` compiles the marks, at their own precision
-and with each brand's title as its accessible name, into the asset the library embeds, and
-fails when the enum and the marks on hand disagree in either direction. A mark one source
-withdraws is taken from another source that carries it, and its brand leaves the enum only
-when none does.
+redrawing. The official marks are fetched from a pinned release of an icon set that carries them,
+and none of the rules above apply to them. Every mark is named by a member of the `Brand` enum,
+whose brand's title is its accessible name.
 
 ## Naming
 
@@ -95,9 +91,9 @@ to the grid. Every value below is in grid units.
 | **ViewBox.** Every coordinate is in this space. | `0 0 32 32` | `0 0 24 24` |
 | **Integers only.** Every coordinate and radius is a whole number, so a 2-unit stroke centered on it lands on whole pixels at the grid's sizes. A solid silhouette has no stroke to land, so on the 32 grid alone it may sit on half units, which keeps a crease as narrow as a unit. | — | — |
 | **Live area.** Nothing touches the outer margin on any side; a glyph that needs to read as large (a full-bleed arrow, a square frame) may take one unit of it but never reach the edge. | 3 to 29, may reach 2 | 2 to 22, may reach 1 |
-| **Fill the live area.** A glyph's larger dimension spans it. Three forms stay smaller on purpose, at the proportions the common sets draw them: a chevron is an arrowhead scaled down, a letterform is shorter than the box, and `Close` is narrower than `Plus` and `Minus`. | chevron 8; letterform 20 tall (y 6 to 26); `Close` 7 to 25; `Plus` and `Minus` 5 to 27 | chevron 6; letterform 15 tall (y 5 to 20); `Close` 5 to 19; `Plus` and `Minus` 4 to 20 |
+| **Fill the live area.** A glyph's larger dimension spans it. Three forms stay smaller on purpose, at the proportions the common sets draw them: a chevron is an arrowhead scaled down, a letterform is shorter than the box, and `Cross` is narrower than `Plus` and `Minus`. | chevron 8; letterform 18 tall (y 7 to 25); `Cross` 7 to 25; `Plus` and `Minus` 5 to 27 | chevron 6; letterform 14 tall (y 5 to 19); `Cross` 5 to 19; `Plus` and `Minus` 4 to 20 |
 | **Stroke 2, round caps, round joins.** Set once on the `<svg>`; never overridden on a path. | 2 | 2 |
-| **Every corner of a box is an arc:** one radius on a body (a page, a frame, a tray, a card), a smaller one on a small part (a lid, a key cap, a node, a clasp). A square corner appears only in a bracket (`Crop`, `Maximize`, `Select`) or a page fold. Circles are circles; a rounded square is not a substitute. | body 3; part under 6 units 1 | body 2; part under 5 units 1 |
+| **Every corner of a box is an arc:** one radius on a body (a page, a frame, a tray, a card), a smaller one on a small part (a lid, a key cap, a node, a clasp). A square corner appears only in a bracket (`Crop`, `Maximize`) or a page fold. Circles are circles; a rounded square is not a substitute. | body 3; part under 6 units 1 | body 2; part under 5 units 1 |
 | **Gaps between parallel strokes**, so at the grid's smallest size they stay two lines rather than one smudge. Three-line stacks (`List`, `AlignLeft`) sit at the stated rows. | at least 3; stacks at y 9, 16, 23 | at least 2; stacks at y 7, 12, 17 |
 | **Strokes never cross.** Where one element passes through another's outline — a Slash laid over a glyph, a Badge on its corner, an arrow rising out of a cloud or a tray — the outline breaks rather than being crossed: it stops clear of the crossing stroke's edge on either side, so the crossing stroke meets white and never a join. A part left inside the break, such as `EyeSlash`'s pupil, is dropped. | clear by 2 | clear by 2 |
 | **Optical center, not geometric.** A triangle or an arrow is shifted so its visual mass sits in the middle; a `TriangleRight` sits about a unit right of center. | — | — |
@@ -319,7 +315,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Graduation` | A mortarboard: a rhombus with corners (16, 6), (29, 12), (16, 18) and (3, 12); the cap below it from (8, 15) down to (8, 19), round an elliptical bottom of radii 8 and 4 to (24, 19) and up to (24, 15); a tassel from (29, 12) down to (29, 21). |
 | `GridView` | Four rounded squares of side 9 at (4, 4), (19, 4), (4, 19), (19, 19). |
 | `Group` | Three rhombi seen edge-on: the top one a closed diamond with vertices (16, 4), (28, 10), (16, 16), (4, 10); below it two chevrons from (4, 16) to (16, 22) to (28, 16) and from (4, 22) to (16, 28) to (28, 22). |
-| `Hand…` | The fourteen hands are solid silhouettes, each traced from the reference sheet and fitted to fill the live area: `HandRaisedLeft` and `HandRaisedRight` (an open palm, thumb to the named side), `HandPointDown` (a fist with the index extended), `HandPointUp` (`HandPointDown` turned a half turn), `HandPointLeft` and `HandPointRight`, `HandThumbUp` and `HandThumbDown` (the latter the former turned top to bottom), `HandPeace`, `HandCall`, `HandPen`, `Handshake`, and `HandWave` and `HandClap`, which carry their motion and impact marks as separate solid strokes. |
+| `Hand…` | The hands are solid silhouettes, each traced from the reference sheet and fitted to fill the live area: `HandRaisedLeft` and `HandRaisedRight` (an open palm, thumb to the named side), `HandPointDown` (a fist with the index extended), `HandPointUp` (`HandPointDown` turned a half turn), `HandPointLeft` and `HandPointRight`, `HandThumbUp` and `HandThumbDown` (the latter the former turned top to bottom), `HandPeace`, `HandCall`, `HandPen`, `Handshake`, and `HandWave` and `HandClap`, which carry their motion and impact marks as separate solid strokes. |
 | `HashtagSign` | Two slanted strokes from (12, 5) to (9, 27) and from (23, 5) to (20, 27); two bars from (6, 12) to (27, 12) and from (5, 20) to (26, 20). |
 | `Heading` | A capital H: verticals at x 8 and 24 from y 7 to 25, crossbar at y 16. |
 | `Heart` | A heart from its notch at (16, 9) out to round lobes at (4, 11) and (28, 11), meeting at the point (16, 28). |
@@ -380,7 +376,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `MathLessThan` | A chevron from (24, 6) in to (8, 16) and back to (24, 26). |
 | `MathLessThanOrEqual` | A chevron from (24, 5) in to (8, 13) and back to (24, 21) over a bar from (8, 27) to (24, 27). |
 | `MathMultiply` | Two diagonals: (7, 7)–(25, 25) and (25, 7)–(7, 25). |
-| `MathNotEqual` | `Equals` with a stroke from (20, 5) to (12, 27) through it. |
+| `MathNotEqual` | `MathEquals` with a stroke from (20, 5) to (12, 27) through it. |
 | `MathPercent` | A stroke from (6, 26) to (26, 6) between rings radius 4 at (9, 9) and (23, 23). |
 | `MathPi` | A bar from (4, 9) to (28, 9) with legs at x 9 and 23 down to y 26. |
 | `MathPlusMinus` | A Plus of arms 6 centered at (16, 11) over a bar from (10, 25) to (22, 25). |
@@ -397,7 +393,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `MoreVertical` | Three solid dots radius 3 at (16, 6), (16, 16) and (16, 26). |
 | `Mouse` | A body from (9, 4) to (23, 28) with radius-7 ends; a scroll wheel as a line down the middle from (16, 9) to (16, 13). |
 | `Move` | Two shafts crossing at the center, from (16, 4) to (16, 28) and (4, 16) to (28, 16), each end an arrowhead scaled to 4 so neighboring heads stay clear of each other. |
-| `Mute` | The `SoundOutput` speaker body without its waves, under a Slash, its outline broken 2 units clear of the slash on either side: the cones edge stops at (17, 9) and resumes at (17, 21), and the boxs bottom edge stops at (6, 20). |
+| `Mute` | The `SoundOutput` speaker body without its waves, under a Slash, its outline broken 2 units clear of the slash on either side: the cone's edge stops at (17, 9) and resumes at (17, 21), and the box's bottom edge stops at (6, 20). |
 | `NavigationMenu` | Three full-width lines x 5–27 at y 8, 16, 24 — spaced one unit wider than `List`, so the two read as different things side by side. |
 | `Network` | A top node as a square side 6 at (13, 4); two bottom nodes as squares side 6 at (4, 22) and (22, 22); a trunk from (16, 10) down to (16, 16); a bar at y 16 from x 7 to 25; drops from (7, 16) and (25, 16) down to y 22. |
 | `NeuralNetwork` | A solid silhouette fitted from traced artwork: three layers of ring nodes — two on the left, three in the middle, two on the right — with every node joined to every node in the next layer, the connections crossing as the network's own form. |
@@ -435,7 +431,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Read` | An envelope with its flap open: a body from (4, 14) down to (4, 27) across to (28, 27) up to (28, 14); the flap as a chevron from (4, 14) up to (16, 5) down to (28, 14); the fold as a chevron from (4, 14) down to (16, 22) up to (28, 14). |
 | `Redo` | A curve from (5, 23) rising and sweeping right to (27, 13); an arrowhead scaled to 6 at (27, 13) pointing right. |
 | `Refresh` | One arc of radius 12 about the center, open at the upper right: from (25, 23) clockwise round the bottom, left and top to (25, 9), ending in the same corner-bracket arrowhead as `Sync`. |
-| `RemoveAnchor` | `Anchor` with its right arm and fluke left off, wearing a Badge that carries a Close scaled to fit. |
+| `RemoveAnchor` | `Anchor` with its right arm and fluke left off, wearing a Badge that carries a Cross scaled to fit. |
 | `RemoveHorizontalLink` | Two broken Chain links either side of a Slash: the left keeps its outer end at (6, 16), its top side to (10, 12) and a tail curling to (13, 13); the right is the same turned about the center. |
 | `RemoveLink` | Two broken Chain links either side of a Slash mirrored onto the other diagonal, from (5, 5) to (27, 27), because the chain itself lies along the Slash's own: the lower link keeps its outer end at (6, 26), its sides to (13, 25) and (7, 19), and a tail curling to (12, 18); the upper is the same turned about the center. |
 | `Reply` | A line from (28, 28) up to y 16, turning through a corner of radius 4 to run left along y 11 to (4, 11); an arrowhead at (4, 11) pointing left. |
@@ -522,7 +518,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `ZodiacLibra` | A bar from (4, 27) to (28, 27) under an arch: from (4, 20) to (9, 20), up to (9, 16), over radius 7 to (23, 16), down to (23, 20) and on to (28, 20). |
 | `ZodiacPisces` | Two arcs of radius 12 bowed toward each other, from (8, 6) to (8, 26) and from (24, 6) to (24, 26), with a bar from (4, 16) to (28, 16) through them. |
 | `ZodiacSagittarius` | An arrow from (6, 26) to (26, 6) with a corner-bracket head from (16, 6) to (26, 6) to (26, 16), crossed near its tail by a bar from (9, 17) to (15, 23). |
-| `ZodiacScorpio` | The arches of `Virgo` whose last leg turns through radius 3 at (22, 23) into an arrow along y 26 to (28, 26), with a head from (25, 23) to (28, 26) to (25, 29). |
+| `ZodiacScorpio` | The arches of `ZodiacVirgo` whose last leg turns through radius 3 at (22, 23) into an arrow along y 26 to (28, 26), with a head from (25, 23) to (28, 26) to (25, 29). |
 | `ZodiacTaurus` | A circle radius 7 at (16, 20) under horns as arcs of radius 10 from (6, 5) down to (16, 13) and up to (26, 5). |
 | `ZodiacVirgo` | Three arches 6 wide with radius-3 tops from x 4, 10 and 16 at y 11, their legs down to y 26, the last leg curving out through (22, 27) to (28, 25). |
 | `ZoomIn` | `Search`; a Plus of arms 3 centered at (13, 13). |
@@ -531,15 +527,15 @@ glyph with no parts named is drawn from scratch on the grid.
 ## What not to do
 
 - Don't add perspective, shading, gradients, or a second color; the set is monochrome line art.
-- Don't draw a glyph as a filled silhouette when a stroke will read; fills are for dots, wedges and
-  the alternate variants only.
+- Don't draw a glyph as a filled silhouette when a stroke will read; a fill is for a dot, a wedge, a
+  silhouette the rules above allow on the 32 grid, and the alternate variants.
 - Don't invent a new arrowhead, chevron, page or folder; copy the part from the vocabulary.
 - Don't put text as `<text>`; letters (`Bold`, `Heading`, `Font`, `Subscript`…) are drawn as strokes.
 - Don't leave a glyph out because it seems hard; every member of `Glyph` gets a file.
 
 ## Review
 
-The Showcase's glyph page renders both variants of every glyph at 16, 20, 24 and 48 screen pixels. A
-glyph is done when both variants read correctly at 16px, the size it takes inline with body text,
+The Showcase's icon page renders both variants of every glyph at the sizes `IconSize` names. A glyph is
+done when both variants read correctly at 16px, the size it takes inline with body text,
 sit on the same optical center as their neighbors, share their parts with the rest of the set, and
 swap between each other without moving.

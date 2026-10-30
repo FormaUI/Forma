@@ -15,7 +15,7 @@ it goes, so a drawing that breaks a rule fails the build rather than reaching th
 Writes the asset indented for reading. It is written compact otherwise, which is how it ships.
 
 .LINK
-docs/glyph-artwork-spec.md
+docs/glyph-artwork-specification.md
 #>
 [CmdletBinding()]
 param([switch] $Format)
