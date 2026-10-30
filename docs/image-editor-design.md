@@ -20,10 +20,10 @@ mistakes it avoids.
   callback. A module drives the handles and the live preview through Pointer Events and
   Canvas 2D, hand-written interop for behavior only script can provide.
 - **Never export the canvas.** Returning the finished bitmap from the browser looks
-  simpler and is the wrong trade under Interactive Server: a base64 export of a
-  multi-megabyte photo crosses the SignalR circuit, where the default receive limit rejects
-  it outright, and re-encoding through the browser discards EXIF, ICC color profiles and
-  the original's quality. A rectangle is a few numbers.
+  simpler and is the wrong trade: a base64 export of a multi-megabyte photo crosses interop
+  in every runtime, and over a circuit meets its receive limit, which rejects it outright;
+  and re-encoding through the browser discards EXIF, ICC color profiles and the original's
+  quality. A rectangle is a few numbers.
 - **Coordinates are the image's natural pixels.** The editor scales the image to fit its
   box, and a crop that forgets the scale factor is wrong by exactly that ratio, so the
   rectangle is reported in natural pixels, never displayed CSS pixels.

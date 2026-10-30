@@ -43,7 +43,7 @@ that fails to load, reaches a host through the log the host already configures.
   service is missing; the defaults are null objects registered by `AddFormaUI` with
   `TryAdd`, so a host's own registration wins by coming first, as every Forma default
   behaves.
-- **A logger per component, under its own type.** `Logger` is created lazily from the
+- **A logger per component, under its own type.** `Context.Logger` is created lazily from the
   concrete type through `ILoggerFactory`, so a host filters by
   `Forma.Blazor.Components.Windows.FormaWindow` and nothing else. Interop wrappers take
   the component's JS environment, which carries that logger and the component's identity,
@@ -56,8 +56,8 @@ that fails to load, reaches a host through the log the host already configures.
   library swallows by design is logged at `Debug` through `[LoggerMessage]`. Every
   standard provider hides `Debug` unless asked, so a host sees nothing new until it turns
   a category on. `Warning` and `Error` are decided per site, never blanket-applied: a
-  plugin assembly that loads only partially is a `Warning`, since it can leave plugins
-  unavailable. Normal behavior is silent because it is normal: a superseded delay,
+  culture state that can't register with the page's coordinator is a `Warning`, since the
+  page's switches then leave its components behind. Normal behavior is silent because it is normal: a superseded delay,
   resolve or fetch is the mechanism working, not a failure absorbed.
 - **The host's values in, the root's values out.** `Id`, `Class` and `Style` are what
   the host passed; `RootClass` and `RootStyle` are what the base writes on the root,
@@ -98,9 +98,10 @@ that fails to load, reaches a host through the log the host already configures.
 
 ### `FormaComponentBase`
 
-`FormaComponentBase` injects the runtime, the logger factory and the locale factory, all
-required, and builds the component's context once from them and its
-`LocalizationSourceType`, finding the circuit's DOM bridge where one is registered. It
+`FormaComponentBase` injects the runtime, the logger factory, the locale factory, the
+service provider and the culture state, all required, subscribes to the state, and builds
+the component's context once from them and its `LocalizationSourceType`, finding the user
+scope's DOM bridge where one is registered. It
 gives the component its strings as `L`, reports whether it is disposed, and runs
 `DisposeAsyncCore` once on disposal, then releases a context it built, so the component's
 own cleanup can still use it. The context carries the component's identity, strings, log
@@ -183,7 +184,7 @@ the component's and the host's classes on the root. Its disposal runs `InputBase
 C# has one base slot, so the input base repeats what the other two carry rather than
 deriving from them. The context carries what both can share, the identity, the strings,
 the log and the environment, and the two builders carry the class and style
-composition; what stays written out twice is the three injections,
+composition; what stays written out twice is the injections,
 `LocalizationSourceType`, `IsDisposed`, the dispose pair and the host parameters.
 
 A dialog base a composite owns derives from `FormaComponentBase` and overrides
@@ -200,7 +201,7 @@ A dialog base a composite owns derives from `FormaComponentBase` and overrides
 | `ILogger<T>` | `NullLogger<T>` | Discards; for services that inject a typed logger. |
 | `IStringLocaleFactory` | `NullStringLocaleFactory.Instance` | Every key is its own text, holes and plurals resolved for the source language, as the JSON locale does when no file matches. |
 
-`AddFormaUI` registers all four with `TryAdd`. A host that wants translations calls
+`AddFormaUI` registers all four with `TryAdd`. A host that wants localized strings calls
 `AddJsonLocalization()` first; a host with its own logging or its
 own runtime has it in place before `AddFormaUI` runs, as ASP.NET Core's are. A feature
 registrar whose services log also `TryAdd`s the logger fallback for them, the way the
@@ -214,8 +215,8 @@ a component to a string. In a Blazor host the framework's runtime is registered 
 the null object never takes effect.
 
 `NullStringLocaleFactory` is the name of the null object for the factory; the locales it
-makes are not empty but source-only, the behavior a JSON locale has for a key with no
-translation.
+makes are not empty but source-only, the behavior a JSON locale has for a key no locale file
+localizes.
 
 ### Logging
 
@@ -224,7 +225,7 @@ target framework, which supplies it and the `[LoggerMessage]` generator to every
 project, so no project references the package. Nothing references the concrete logging
 package; a host's providers are the host's.
 
-A component logs through `Logger`. A service that is not a component takes
+A component logs through `Context.Logger`. A service that is not a component takes
 `ILoggerFactory` or `ILogger<T>` through its constructor, required. An interop wrapper,
 `JSInterop` or `JSModule` and every subclass, takes the owner's `IJSEnvironment`, which
 carries the owner's logger and identity, so everything about a frame, its interop
@@ -237,7 +238,7 @@ Messages are source-generated, one `internal static partial class {Feature}Log` 
 feature, so every message a feature can emit is read in one place:
 
 ```csharp
-internal static partial class EmojiLog
+internal static partial class EmojiSpriteLoaderLog
 {
     [LoggerMessage(Level = LogLevel.Debug, Message = "Sprite sheet {Sheet} did not load for {RuntimeId}.")]
     public static partial void SpriteSheetDidNotLoad(ILogger logger, string sheet, Guid runtimeId);
@@ -270,8 +271,8 @@ cannot tell an ordinary step to the parent from a missing expected file.
 
 - A Forma-specific logging abstraction. `ILogger` is the abstraction every host already
   configures and filters.
-- Logging on the script side beyond its one `console.error` for the rare script-side
-  failure; the gap this design closes is on the .NET side.
+- Logging on the script side beyond a `console.error` for the rare script-side failure;
+  the gap this design closes is on the .NET side.
 - Retiring `IStringLocale<T>`. It stays for services and hosts.
 - A root object, `Root.Class` and `Root.Style`, owning the splatted attributes. With the
   class and style built through the two builders, such an object holds two strings and no

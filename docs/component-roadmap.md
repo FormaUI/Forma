@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**29 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 21 not yet started, and one in progress stands in the catalog's structure until then.
+**29 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 21 not yet started, and the 8 in progress stand in the catalog's structure until then.
 
 ## Components Structure
 
@@ -45,15 +45,15 @@ The components still to build, in the order dependency and reuse suggest.
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
-| 2 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
-| 3 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
-| 4 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
-| 5 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
-| 6 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
-| 7 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
-| 8 | `FormaVirtualize` | Forma's virtualization; the data view's views move onto it, so it comes before the data view is finished — see [the virtualization design](virtualization-design.md) |
-| 9 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch` | The engine every collection surface shares, with its views and controls; the explorer adopts it and the gallery is built on it, so it comes before the gallery — see [the data view design](data-view-design.md) |
+| 1 | `FormaVirtualize` | Forma's virtualization, which every view of the data view draws through; in progress, awaiting approval — see [the virtualization design](virtualization-design.md) |
+| 2 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch` | The engine every collection surface shares, with its views and controls; in progress, the explorer adopting it and the gallery built on it — see [the data view design](data-view-design.md) |
+| 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
+| 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
+| 5 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
+| 6 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
+| 7 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
+| 8 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
+| 9 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
 | 10 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
 | 11 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
 
@@ -214,7 +214,7 @@ A searchable grid of fonts in a dialog, each cell set in the font it names.
 
 ### `FormaGallery`
 
-A media-only browsing surface: every image and video as a date-grouped thumbnail, and folders as date-labeled collections with favorites and categories.
+A media-only browsing surface: every image and video as a thumbnail, and folders as collections. Its design is [gallery-design.md](gallery-design.md).
 
 | | |
 |---|---|
@@ -232,12 +232,12 @@ Crops, rotates, flips and resizes an image, describing the edit for the host to 
 
 ### `FormaLaunchBar`
 
-The bar a workspace's applications are launched from, hosting the rest area beside its launchers.
+The bar a workspace's applications are launched from, hosting the rest area beside its launchers. Its design is [window-design.md](window-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | None |
-| **Used in** | The Admin Console's shell, as the bar its applications are launched from |
+| **Used in** | A host's shell, as the bar its applications are launched from |
 
 ### `FormaMediaPicker`
 

@@ -21,7 +21,7 @@ A WebAssembly app runs only assemblies built for the browser, and the shared fra
 packages it compiles against, `Microsoft.JSInterop`, `Microsoft.AspNetCore.Components`,
 `Microsoft.AspNetCore.Components.Forms`, `Microsoft.AspNetCore.Components.Web` or
 `Microsoft.AspNetCore.WebUtilities`, and the shared framework stays with the halves that serve the server
-alone: the circuit integrations and the culture router's middleware.
+alone: the product's server half, the circuit integrations and the culture router's middleware.
 
 Dependencies point from the server to the client, never back. The components assembly references no
 server half, and what only a server can do lives in the product's server half: the circuit integrations'
@@ -45,8 +45,10 @@ A host makes one call on each side, and still overrides any single service by re
 - **The server** calls `AddFormaUIServer` on its builder, which registers what `AddFormaUI` does and the
   circuit halves. A server prerenders every client component, so it registers everything a client
   component resolves, whether or not it renders interactive server components itself.
-- **`AddFormaUI`** registers every service a component resolves in any runtime, the culture state and the
-  switch among them, and nothing that needs a circuit or a WebAssembly runtime. A component never fails
+- **`AddFormaUI`** registers every service a component resolves in any runtime, the culture state among
+  them, and nothing that needs a circuit or a WebAssembly runtime; each render mode's half registers the
+  switch that requests through the page's coordinator, or the local switch where its host chose an
+  independent client culture. A component never fails
   to render for want of a service its render mode's half registers.
 
 The culture's own registrars follow the same pattern, `AddFormaCultureServer` and
@@ -84,13 +86,12 @@ from its own startup, which supplies the initial pair and the switch's policy.
 ## The client's build
 
 - **Runtime async** stays off for every assembly a client loads: WebAssembly's runtime throws
-  `InvalidProgramException` for an async method compiled with the feature. It returns when that runtime
-  supports it, which the browser check in the gate decides.
+  `InvalidProgramException` for an async method compiled with the feature.
 - **Trimming.** Every library a client loads is trim-compatible and declares itself `IsTrimmable`, with
   the trim analyzer on in its build, so a trim warning fails the build as any warning does. What reaches
   reflection carries the annotation its target declares: a generic value passed to interop or to binding
   carries the members the target requires, JSON is read and written through source-generated contexts,
-  and a component type rendered by its type, through `DynamicComponent` among others, or a plugin type
+  and a component type rendered by its type, through a render fragment that opens it, or a plugin type
   created through its constructor, is annotated where it enters.
 - **Locale packs** reach a trimmed client because the host's build records each pack it references in
   the host's assembly, the package's own targets doing what the repository's build does for its hosts.
@@ -99,8 +100,8 @@ from its own startup, which supplies the initial pair and the switch's policy.
 
 A string is looked up synchronously in every runtime, so each locale file a lookup reads is in the client
 before the first lookup. The library's packs are embedded in their assemblies, and a host's own locale
-files are embedded in its client assembly the same way, by the package's targets, under resource names and
-discovery metadata the browser's loader finds without a file system, so a host's string switches with the
+files are embedded in its client assembly the same way, by the package's targets, as the
+[localization design](localization-design.md#host-files) sets out, so a host's string switches with the
 library's.
 
 ## The culture across the handoff
@@ -123,7 +124,7 @@ render matches its prerender and the page never flips language as it hydrates:
   therefore requires it. Publishing the pair tells the coordinator what the document shows; it gives no
   runtime permission to take it.
 - **A disabled capture stays disabled.** The client's registration with the coordinator never stands in
-  for a handoff its host turned off, so Forma restores the server's pair to a client by no second
+  for a handoff its host turned off, so Forma never restores the server's pair to a client by a second
   route; a host that turns it off chooses the independent arrangement, and one that turns it off under
   coordinated pages is stopped at startup, as [registration](#registration) sets out.
 - **The process default is WebAssembly's alone.** Applying an accepted pair under WebAssembly also sets
@@ -136,7 +137,7 @@ render matches its prerender and the page never flips language as it hydrates:
 | --- | --- | --- |
 | W1 | What does a client library reference? | The packages it compiles against, never the shared framework, which has no browser runtime pack |
 | W2 | Where do the server-only and WebAssembly-only parts live? | In the product's halves, `Forma.Blazor.Server` with `AddFormaUIServer` and `Forma.Blazor.WebAssembly` with `AddFormaUIWebAssembly`, beside the neutral `AddFormaUI`, so the components assembly references no server half |
-| W3 | Does a client compile with runtime async? | No, until WebAssembly's runtime supports it |
+| W3 | Does a client compile with runtime async? | No, since WebAssembly's runtime throws for a method compiled with it |
 | W4 | Are the client libraries trim-compatible? | Yes, declared `IsTrimmable` with the analyzer on, reflection annotated where it enters and JSON source-generated |
 | W5 | How does a prerendered client start in the server's culture? | Through the framework's capture, which `AddFormaUIServer` supplies as a default only where the configuration names none; `FormaPageHead`'s culture marker tells the coordinator the page's pair, and a capture the host turned off is never restored by another route |
 | W6 | Who sets the process's default cultures? | WebAssembly's culture half, as it applies each accepted pair; never a server |

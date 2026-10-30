@@ -40,14 +40,16 @@ exclusions, listener-registration order, or incidental event propagation.
 - `defaultPrevented` coordinates behaviors inside one scope; ownership between scopes is
   the router's.
 - `FormaDialog` registers a modal scope and keeps native dialog semantics.
-- Host policy and the host's own routes reach the script through a scoped .NET bridge
-  configured in `AddFormaUI`, where the host registers the library. A host route is
+- Host policy and the host's own routes reach the script through a scoped .NET bridge,
+  configured where the host registers the library, `AddFormaUIServer` or
+  `AddFormaUIWebAssembly`. A host route is
   answered once every component scope on the path has declined.
 - The router stamps each active registration's element with its place in the ordering,
   `data-forma-layer`, for a surface outside the top layer to draw from; the visual order
   of the rest of the page is the page's.
-- Every resolution is queryable: `resolve(event)` is the single result, and `owns`,
-  `ownerOf`, `describe`, and `stack` are views over it.
+- Every resolution is queryable: `resolve(event)` is the single result, and `owns` and
+  `ownerOf` are views over it; `describe` and `stack` answer what a scope declares and how
+  the scopes are ordered.
 
 The governing rule:
 
@@ -87,7 +89,7 @@ arbitrates ownership.
 | Part | Responsibility |
 | --- | --- |
 | `InputRouter.js` | Registers scopes and routes, resolves ownership synchronously from composed event paths, keeps the active ordering, installs whichever listeners each input class needs, applies `preventDefault` and propagation per resolution, and answers queries. |
-| The .NET bridge | `InputRoute`, `InputProfile`, and `InputRouterOptions` records, with a binding record and an input record per family — keyboard, pointer, click, wheel, drop, a click's input described as a pointer's; a scoped service that transfers host policy, bindings, and host routes to the script once per circuit, the first time a scope is registered. No component is mounted. |
+| The .NET bridge | `InputRoute`, `InputProfile`, and `InputRouterOptions` records, with a binding record and an input record per family — keyboard, pointer, click, wheel, drop, a click's input described as a pointer's; a scoped service that transfers host policy, bindings, and host routes to the script once per user scope, before the first scope or routed interaction is registered. No component is mounted. |
 | A participating component | Declares its scope and routes and implements the semantic actions. |
 
 ## Input scopes
@@ -129,8 +131,7 @@ named as its own parent, or a parent that would close a cycle through the scope 
 rejected, and a scope created for a rejected registration is not left behind. A parent
 that is not yet registered is allowed and resolves once it is. The nearest registered scope
 containing an element is found by scanning the registered scopes rather than through an
-index the router would have to keep in step with the DOM: a hundred registered scopes, ten
-of them active, resolve in a few hundredths of a millisecond.
+index the router would have to keep in step with the DOM.
 
 ### Actions and bindings
 
@@ -360,7 +361,7 @@ trigger (`ReturnsFocus`), whether a press away dismisses it (`PressAway`), and h
 state is reported. A press away passes through: it dismisses the popover and then belongs to
 whatever was pressed, so one press on another control closes the popover and acts on the
 control, and a press on another popover's trigger swaps the popovers. It has no document Escape
-listener and no backdrop element of its own; the trigger is declared `within`,
+listener and no scrim of its own; the trigger is declared `within`,
 so a press on it toggles rather than dismisses.
 
 ## Focus and Tab
@@ -371,9 +372,9 @@ interaction declares the keys it answers as routes on the surface it is attached
 arranged surface, and the arrows along the axis, Home and End on a roving one, each matching
 only where the surface has a control to send focus to, so a Tab past the end of an arranged
 surface with nothing after it is left to the browser. A profile carries no focus setting of
-its own. Native dialogs continue to contain focus, and `FormaSelect` continues to close on
-Tab, through its popover's key callback, since a popover that does not keep focus routes no
-Tab. Closing an inner interaction returns focus to its own trigger without disturbing the
+its own. Native dialogs contain focus, and `FormaSelect` closes on Tab through a route its
+popover's registration declares, since a popover that does not keep focus routes no Tab of
+its own. Closing an inner interaction returns focus to its own trigger without disturbing the
 containing interaction.
 
 ## Visual stacking
@@ -394,7 +395,7 @@ Three roles, not an override chain:
 | Role | Holds | Who sets it |
 | --- | --- | --- |
 | Router invariants | The modal barrier, structural isolation, one ambient owner, the native table | The router; not configurable |
-| Host policy | Application-wide defaults (what a press away does, what Escape does, what a close request does); the bindings it remaps by action; its own routes, answered through its `IInputActionHandler` — `Routes` once every component scope has declined, `PreemptiveRoutes` before anything local | `InputRouterOptions` through `AddFormaUI` |
+| Host policy | Application-wide defaults (what a press away does, what Escape does, what a close request does); the bindings it remaps by action; its own routes, answered through its `IInputActionHandler` — `Routes` once every component scope has declined, `PreemptiveRoutes` before anything local | `InputRouterOptions` through `AddFormaUIServer` or `AddFormaUIWebAssembly` |
 | Scope profiles | A component's capabilities, its actions with their default bindings, its local dismissal behavior | The component, exposing to its host only what a host would reasonably choose |
 
 The resolver combines them into one decision. A host cannot casually override an invariant;
@@ -436,9 +437,8 @@ stack()                   // the active ordering, foremost last, with the rule t
 route, the native control, the boundary, the ambient input, or why nothing owns it; `tie`
 names what decided between rival bindings; `source` says whether the winning route's
 bindings are its defaults or the host's. A boundary is reported as owner with no action,
-so a question about an input the router deliberately left alone still has an answer.
-
-Tests assert resolutions directly. The Showcase carries an inspector that shows them live.
+so a question about an input the router deliberately left alone still has an answer, and
+`FormaInputInspector` shows the resolutions live.
 
 ## Conflict resolution matrix
 

@@ -16,7 +16,7 @@ asserted in order, proves them on every run, in every culture the Showcase serve
 
 ## The check
 
-`scripts/Test-ScreenReaderSpeech.ps1` needs nothing done by hand. It provides each thing the check
+The check's task script needs nothing done by hand. It provides each thing the check
 needs, in order, installing what is missing into a per-user folder of its own: the .NET SDK the
 repository pins, NVDA as a portable copy, and Playwright's Chromium, the same build on every machine.
 It starts the Showcase when nothing answers at the address and stops it again at the end. Uninstalling
@@ -25,8 +25,9 @@ NVDA's accessibility bridge loaded into an editor, is moved to a temporary folde
 uninstall clears once the program has let go of it.
 
 The script starts NVDA with a profile of its own, so a reader's own settings and add-ons take no part,
-the profile's synthesizer being the speech recorder. It then runs `scripts/nvda/CheckScreenReaderSpeech.cs`
-and quits NVDA when the program is done. The program:
+the profile's synthesizer being the speech recorder. It then runs the check's program, beside the
+recorder in the folder the repository keeps for NVDA, and quits NVDA when the program is done. The
+program:
 
 1. Opens Chromium through Playwright, visibly, since NVDA reads the window the desktop shows.
 2. Runs each scenario: it opens the scenario's page in its culture and waits until the page is

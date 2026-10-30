@@ -36,9 +36,9 @@ so a reader learns each once and no page draws its own.
   dense row.
 - **The button owns no policy.** Confirmation before a delete stays the caller's through
   the confirm dialog service, so a delete can join a bulk action that confirms once for
-  every item it holds. What duplication means, whether an edit navigates or begins in
-  place, and what sharing means, which needs a product decision about the platform's share
-  sheet and its fallback, are all the caller's. Scheduling stays out of the publish
+  every item it holds. What duplication means and whether an edit navigates or begins in
+  place are the caller's, and the share button opens `FormaShareMenu`, whose
+  [design](share-design.md) decides what sharing reaches. Scheduling stays out of the publish
   button: draft, scheduled and published are three states and a button offers two, so
   "Schedule…" belongs in a menu beside it.
 - **Refresh shows it is busy.** A slow refresh spins and announces that it is busy, so it

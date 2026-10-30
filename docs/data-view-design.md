@@ -9,7 +9,8 @@ else describes them; and `FormaDataTree`, items as nodes under their parents, op
 node at a time. The engine owns everything a view does not draw: the source, the
 selection, the sort, the page, the address, virtualization, grouping and the states. A view
 owns its presentation and the settings only that presentation has, so the grid carries
-columns and nothing else does.
+columns and nothing else does. Beside them, `FormaDataSortMenu` offers the sorts a data view
+can take, and `FormaDataViewSwitch` chooses its active view.
 
 ## Vocabulary
 
@@ -55,7 +56,7 @@ And the toolbar that crossfades between search and bulk actions is not the grid'
 page composes the selection toolbar over it, which is the same swap done once for every
 list.
 
-### Modernisations
+### Modernizations
 
 - **The direction of a sort is shown**, and the sorted column is marked, through the glyph
   and `aria-sort`.
@@ -143,7 +144,7 @@ list.
 enumerates through `IDataViewQueryExecutor`, a service that says whether it handles a
 queryable and counts and reads it asynchronously; the library registers an in-memory one
 that handles every queryable, and a host registers its store's ahead of it so a query
-backed by a database runs there without blocking a circuit.
+backed by a database runs there without blocking the user scope's renderer.
 
 A new `Items` queryable, or a new provider, is a new source, which the engine asks again,
 keeping what the reader did: the selection, the page, the current node, and the nodes
@@ -173,7 +174,7 @@ library's default sentence.
 ### Selection
 
 Checked selection, `EnableCheckedSelection`, gives every item a box the view draws, and a
-master control the view places, in the grid's header cell or above the cards. The master
+master control the view places, the grid in its header cell. The master
 control is a tri-state box: unchecked with nothing selected on the page, indeterminate with
 some, checked with all. What pressing it reaches is `SelectAllMode` in the checked
 selection options:
@@ -415,8 +416,9 @@ accepted, and `BeginEdit`, `IsEditing` and `EditingItem` complete the surface, d
 a template column through a reference to the grid. The item is a reference type, since
 the editors write through to the copy. The row being edited leaves every selection gesture
 for the duration. The editors are the library's inputs, chosen by the value's type: the
-text box for text, the checkbox for a Boolean, the date picker for a date, the number
-input for a number; anything else needs an edit template.
+text box for text, the checkbox for a Boolean, the date picker for a date, the time picker
+for a time of day, the date and time picker for a date with a time, the number input for a
+number; anything else needs an edit template.
 
 ### The list
 

@@ -29,7 +29,7 @@ to its question.
   it accepts and joining the row for those items alone.
 - **Kinds decide what applies.** An image adds Pinterest, pointed at its media; a file
   reaches the destinations that take its resource and keeps Download and Copy Link; a
-  contact keeps email and its card. A resource yields Download as a plain download link
+  contact keeps Email, and Download where it carries its card as a resource. A resource yields Download as a plain download link
   saved from its source under its name, the same way `FormaFileViewer` offers a file. A
   consumer holding content in memory adds its own action for it.
 - **The built-in commands are Download, Email, Copy Link and Print.** Where the browser
@@ -71,10 +71,10 @@ to its question.
   drawing itself from status alone. A connected status can still fail at share time, so a
   share is reported inside the menu either way: shared, or needing a connected account,
   which is also what a host that reports no status gets.
-- **The native hand-off reaches the rest.** A network whose share needs an instance the
-  reader chooses, or an app with a share endpoint only on its own platform, is reached
-  through the native hand-off, where the platform lists it itself. Instagram publishes
-  only through Meta's Graph API for professional accounts, so it would be an account
-  destination shaped like TikTok's. TikTok and Discord share content through their APIs
-  alone, which is why each ships here by publish-by-pull and by webhook. Skype's share
-  endpoint redirects to Teams.
+- **The native hand-off reaches the rest.** An app with a share endpoint only on its own
+  platform is reached through the native hand-off, where the platform lists it itself; a
+  network whose instance the reader names, as Mastodon's, is a destination through the server
+  source. TikTok and Discord share content through their APIs alone, which is why each ships
+  here by publish-by-pull and by webhook. Instagram is no destination, since it publishes only
+  through Meta's Graph API for professional accounts, and neither is Skype, whose share
+  endpoint leads to Teams.

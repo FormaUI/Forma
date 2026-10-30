@@ -30,12 +30,9 @@ surface. One component owns them so no consumer can leave one out.
   that takes focus or attaches a behavior of its own. One positioning path serves every
   browser.
 - **Dismissal through the router.** The popover registers an input scope and activates it
-  while open, so Escape and a press away are answered by the router wherever focus is, for
-  every consumer, and a dialog hosting the popover keeps its own Escape. The trigger
-  counts as inside the popover, so a press on it toggles. A press away passes through: it
-  dismisses the popover and then belongs to whatever was pressed, so one press on another
-  control closes the popover and acts on the control, and a press on another popover's
-  trigger swaps the popovers. A consumer can turn press-away dismissal off. The content's
+  while open, so Escape and a press away are answered by the router wherever focus is, as the
+  input router design's [popover integration](input-router-design.md#popover-integration) sets
+  out. A consumer can turn press-away dismissal off. The content's
   own keys, a list's arrows, Home, End and Tab, are routes it declares and answers through
   the popover.
 - **Every close takes one path, and focus goes back when it was inside.** However the

@@ -6,8 +6,8 @@
 ways data arrives, the two options records and the constraints, item state and
 capabilities, and what the parts read and ask of the explorer.
 
-Sharing, tagging, search past an item's name, and bulk edit are later additions rather than
-non-goals: each is a surface the explorer is expected to grow, and none is designed here.
+Sharing, tagging, search past an item's name, and bulk edit are outside this design: each is a
+surface of its own, designed where it is built.
 
 ## Purpose
 
@@ -70,7 +70,8 @@ callback, and an upload goes into the host's `IFileStore`.
   to exactly one batch.
 - **The parts read a view and act through an interaction.** The explorer exposes what its
   parts read and what they may ask as view and interaction pairs named for their subjects,
-  configuration, location, content, search, selection and item. A part takes the narrowest
+  location, content, search, selection, item and the sidebar, and configuration as a view alone,
+  since a part reads it and asks nothing of it. A part takes the narrowest
   pair it reads, so adding an action or a column is a one-file change and every selection
   change is reported exactly once.
 - **One confirmation surface.** Rename, delete, delete-selected and create-folder are

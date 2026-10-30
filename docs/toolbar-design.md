@@ -43,7 +43,7 @@ component of the host's own.
   `FormaDropDownMenu` showing the active option's title or a color swatch, the first
   option standing in while none is active; a readout
   becomes a span that gains `role="status"` and a polite live region when it announces;
-  a custom item becomes a `DynamicComponent`. The root carries `role="toolbar"` and the
+  a custom item renders its component by its type, with its parameters, keyed by its id. The root carries `role="toolbar"` and the
   label whichever way it renders.
 - **`Scrollable` decides the root.** Set, the items go on a `FormaCommandBar` rather than
   reinventing its scrolling track and overflow arrows, with `CommandBarOptions` deciding
@@ -84,7 +84,7 @@ component of the host's own.
   options whole and owns the debounce. The search field is not optional, since a search
   toolbar with only actions is a toolbar; `OnSearch` is required and so is the
   placeholder, the field's only accessible name.
-- **`FormaSelectionToolbar`** pairs with `FormaDataGrid`'s checked selection, taking only the
+- **`FormaSelectionToolbar`** pairs with the data view's checked selection, taking only the
   count, or a `Caption` standing in for the count text, so it stays non-generic, renders
   its actions with `ShowLabels`, and keeps `FormaCloseButton` beside them as the clear
   control while `OnClear` is handled. It collapses in place, imposing no positioning on

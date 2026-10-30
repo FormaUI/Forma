@@ -50,8 +50,7 @@ the reader's culture decides only how the number and the symbol are written.
   own left or right, chosen from the symbol's side and the culture's direction.
 - **The adornment is not the number.** The symbol stands outside the editable text, so selecting,
   typing and reading the number never meet it, and the field's accessible description names the
-  currency, since a symbol alone can stand for several currencies: by its name in the formatting
-  culture where the catalog holds one, and by its ISO code otherwise, never by both.
+  currency by its ISO code, since a symbol alone can stand for several currencies.
 - **Negative amounts are amounts.** The field takes a negative amount unless the host sets a
   `Min`; a price that must not be negative says so through `Min`, never through the field. The
   sign belongs to the number, and the symbol keeps the side the culture's positive pattern gives
@@ -71,7 +70,7 @@ the reader's culture decides only how the number and the symbol are written.
   `MaxDecimalPlaces`, unrestricted unless a host sets it, beside the fewest places a number is
   shown with. A labeled number input with an adornment pins its label above the number, since a
   label floating over an empty field would cover a symbol at its start. A number input that sets
-  none of them behaves as it did.
+  none of them draws no adornment and limits no places.
 - **One field, one input.** The currency input specializes the number input by composition: it
   is not an input of its own but hands its value, its binding, its label and its host surface to
   the one number input it draws. There is one input component under one field, so one label, one

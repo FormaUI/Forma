@@ -136,16 +136,16 @@ The library's button: one scale of variants and sizes, a busy state, and the hov
 
 ### `FormaCalendar`
 
-One or two months of days with month and year selectors, drawing whatever highlight it is given and reporting the day picked or hovered.
+One or two months of days with month and year selectors.
 
 | | |
 |---|---|
 | **Old pattern** | The month panels inside `FormaDatePicker` |
-| **Used in** | `FormaDatePicker` with one month, `FormaDateRangePicker` with two |
+| **Used in** | `FormaDatePicker` and `FormaDateTimePicker` with one month, `FormaDateRangePicker` with two |
 
 ### `FormaCapacityIndicator`
 
-A readout of how much of a limit is used, as the count against the limit and optionally a bar, nearly full once the count reaches 80% of the limit or a share the host sets, at that share as well as above it, full at the limit, over it past the limit, and full from the start where the limit is zero.
+A readout of how much of a limit is used, as the count against the limit and optionally a bar, marking it nearly full, full or over.
 
 | | |
 |---|---|
@@ -163,16 +163,16 @@ A form checkbox with an indeterminate state, usable bare as a control.
 
 ### `FormaChrome`
 
-A frame whose drag region is a title bar carrying the icon, the title and the host's commands, with optional header and footer bands around the body.
+A frame whose drag region is a title bar carrying the icon, the title and the host's commands, with header and footer bands around the body. Its design is [window-design.md](window-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | Each panel drawing its own title strip, header band and footer band |
-| **Used in** | `FormaWindow` as the chrome it floats; the Showcase's chrome page; the Admin Console's panels; any host that wants a titled region in a layout, or a titled panel it can drag |
+| **Used in** | `FormaWindow` as the chrome it floats; the Showcase's chrome page; any host that wants a titled region in a layout, or a titled panel it can drag |
 
 ### `FormaCloseButton`
 
-The one dismiss control: an icon-only button with the cross glyph.
+The one dismiss control: an icon-only button with the cross glyph. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
@@ -181,7 +181,7 @@ The one dismiss control: an icon-only button with the cross glyph.
 
 ### `FormaColorPicker`
 
-A hex color field with the platform's own color dialog behind the swatch beside it, optionally with alpha.
+A hex color field with the platform's own color dialog behind the swatch beside it.
 
 | | |
 |---|---|
@@ -226,7 +226,7 @@ A form input for an amount of money in a currency the application names, typed a
 
 ### `FormaDatePicker`
 
-A form input for one date: a trigger opening an anchored calendar, with the culture's own months on request.
+A form input for one date: a trigger opening an anchored calendar.
 
 | | |
 |---|---|
@@ -289,7 +289,7 @@ A categorized emoji palette with search, recently used entries and a tab per cat
 
 ### `FormaExplorer`
 
-A file manager for what is already on the server: a folder tree, an address bar, thumbnail, details and list views over any kind of resource, upload, and every mutation reported to the host as intent. Its design is [explorer-design.md](explorer-design.md).
+A file manager for what is already on the server: a folder tree, an address bar, thumbnail, details and list views over any kind of resource, and upload. Its design is [explorer-design.md](explorer-design.md).
 
 | | |
 |---|---|
@@ -298,12 +298,12 @@ A file manager for what is already on the server: a folder tree, an address bar,
 
 ### `FormaEyeButton`
 
-An icon-only button showing an eye, struck through while what it guards is hidden.
+An icon-only button showing an eye, struck through while what it guards is hidden. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | `<span onclick="TogglePass(this)" class="fas fa-eye-slash">` beside a password field — a clickable span, not a button |
-| **Used in** | Single source of truth for reveal controls — `FormaPasswordBox`'s toggle, and any later show/hide or preview affordance |
+| **Used in** | Single source of truth for reveal controls — `FormaPasswordBox`'s toggle |
 
 ### `FormaField`
 
@@ -312,7 +312,7 @@ The chrome every labeled input shares: the floating label, the box, the focus ri
 | | |
 |---|---|
 | **Old pattern** | `<label class="lblForm">` over a `.form-control`, floating on focus or value, with `<span class="mand">` for required and the error text below |
-| **Used in** | Chrome for every labeled form component — `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaSelect`, `FormaMultiSelect`, `FormaDatePicker`, `FormaDateRangePicker`, `FormaColorPicker`, `FormaSlider` and `FormaToggleSwitch` |
+| **Used in** | Chrome for every labeled form component — `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaSelect`, `FormaMultiSelect`, `FormaDatePicker`, `FormaDateRangePicker`, `FormaColorPicker`, `FormaSlider`, `FormaToggleSwitch`, `FormaNumberInput`, `FormaSearchBox`, `FormaTimePicker` and `FormaDateTimePicker` |
 
 ### `FormaFilePicker`
 
@@ -343,7 +343,7 @@ Shows a stored resource for what it is, image, video, audio, document or markup,
 
 ### `FormaFrame`
 
-A raised backdrop with a box of its own, which the reader can move, resize and maximize, or which drives its parent's box.
+A raised backdrop with a box of its own, which the reader can move, resize and maximize, or which drives its parent's box. Its design is [window-design.md](window-design.md).
 
 | | |
 |---|---|
@@ -379,7 +379,7 @@ A file picker pinned to image types, previewing each accepted file as a thumbnai
 
 ### `FormaInputInspector`
 
-A panel showing the input router's latest decisions and the active ordering, live.
+A panel showing the input router's latest decisions and the active ordering, live. Its design is [input-router-design.md](input-router-design.md).
 
 | | |
 |---|---|
@@ -388,7 +388,7 @@ A panel showing the input router's latest decisions and the active ordering, liv
 
 ### `FormaInputScope`
 
-An element registered with the input router as a scope, declared from markup.
+An element registered with the input router as a scope, declared from markup. Its design is [input-router-design.md](input-router-design.md).
 
 | | |
 |---|---|
@@ -415,7 +415,7 @@ A form input for a number, typed as the formatting culture writes it and stepped
 
 ### `FormaOverflowMenu`
 
-A drop-down menu behind an ellipsis trigger.
+A drop-down menu behind an ellipsis trigger. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
@@ -469,12 +469,12 @@ A panel in the top layer anchored to its trigger, for every dropdown, menu and p
 
 ### `FormaRestArea`
 
-One persistent handle per window in the workspace, grouped by origin or instance, as the way back to any window whatever its state.
+One persistent handle per window in the workspace, grouped by origin or instance, as the way back to any window whatever its state. Its design is [window-design.md](window-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | None — the legacy application had no way back to a panel once it was out of sight |
-| **Used in** | The Showcase's window page; the Admin Console's shell |
+| **Used in** | The Showcase's window page; a host's shell |
 
 ### `FormaSearchBox`
 
@@ -577,7 +577,7 @@ A tinted label for a status the host's catalog defines.
 
 ### `FormaStatusStrip`
 
-A toolbar of readouts and commands along the bottom of a surface, announcing a readout when asked. Its design is [toolbar-design.md](toolbar-design.md).
+A toolbar of readouts and commands along the bottom of a surface. Its design is [toolbar-design.md](toolbar-design.md).
 
 | | |
 |---|---|
@@ -595,7 +595,7 @@ A tab list over tab panels.
 
 ### `FormaTextArea`
 
-A multi-line text input in a field, resizable downward, with an optional running character count.
+A multi-line text input in a field, resizable downward.
 
 | | |
 |---|---|
@@ -610,6 +610,15 @@ A single-line text input, bare or in a field with a floating label.
 |---|---|
 | **Old pattern** | `<input type="text" class="form-control">` without floating labels or dedicated label wrappers |
 | **Used in** | Every text field: labeled form fields, compact inline forms, inline grid filters, dialog fields, toolbars and filter rows |
+
+### `FormaTimePicker`
+
+A form input for a time of day, typed as the formatting culture writes it or chosen from a list of suggested times. Its design is [time-inputs-design.md](time-inputs-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | Forms taking a time of day, and `FormaPropertyColumn`'s editor for a member holding one |
 
 ### `FormaToastContainer`
 
@@ -629,15 +638,6 @@ A ghost button for a toolbar or a bar of tools: a glyph, a label or both, and fo
 | **Old pattern** | The legacy toolbar buttons, each styled by hand |
 | **Used in** | `FormaToolbar`, `FormaRestArea`, `FormaExplorerToolbar` and `FormaExplorerSelectionBar` |
 
-### `FormaTimePicker`
-
-A form input for a time of day, typed as the formatting culture writes it or chosen from a list of suggested times. Its design is [time-inputs-design.md](time-inputs-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | None |
-| **Used in** | Forms taking a time of day, and `FormaPropertyColumn`'s editor for a member holding one |
-
 ### `FormaToggleSwitch`
 
 A form input for a Boolean, drawn as a sliding switch.
@@ -649,7 +649,7 @@ A form input for a Boolean, drawn as a sliding switch.
 
 ### `FormaToolbar`
 
-A row of commands, toggles, menus, readouts and custom items described as data. Its design is [toolbar-design.md](toolbar-design.md).
+A row of commands, toggles, menus, readouts and custom items. Its design is [toolbar-design.md](toolbar-design.md).
 
 | | |
 |---|---|
@@ -667,7 +667,7 @@ Plays a video by its address, from the services its providers know. Its design i
 
 ### `FormaVisibility`
 
-Collapses its content to nothing without unmounting it.
+Collapses its content to nothing.
 
 | | |
 |---|---|
@@ -676,9 +676,9 @@ Collapses its content to nothing without unmounting it.
 
 ### `FormaWindow`
 
-A chrome floated into the top layer as a member of the workspace: activated, stacked, minimized, locked, modal and closed under the manager.
+A chrome floated into the top layer as a member of the workspace: activated, stacked, minimized, locked, modal and closed under the manager. Its design is [window-design.md](window-design.md).
 
 | | |
 |---|---|
 | **Old pattern** | Every floating box — the composer maximized, a dialog — inventing its own chrome |
-| **Used in** | The Showcase's window page; the Admin Console's floating panels |
+| **Used in** | The Showcase's window page; a host's floating panels |

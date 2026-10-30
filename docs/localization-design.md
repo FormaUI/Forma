@@ -9,9 +9,9 @@ component reads strings through, holes, plural forms and the file format are the
 `Forma.Framework.Localization` README's; the checks run over the files are the `Forma.Locali`
 linter's.
 
-Out of scope: a source reads its folder once and watches it for no change; a path names
-`$Culture` and nothing chooses a path by it; and a misplaced file is the linter's to report,
-since the build embeds files the ordinary way.
+A source reads its folder once, as the application starts; a path that names `$Culture` is
+read for whichever culture its file names, never chosen by the culture asked for; and a
+misplaced file is the linter's to report, since the build embeds files the ordinary way.
 
 ## Purpose
 
@@ -137,6 +137,10 @@ A host's folder is named by `LocalesPath`, `.locales` beside the application by 
 whose name starts with a dot is hidden from a default listing on Linux and macOS and is read like
 any other; the source walks its folder with nothing skipped, since .NET treats such names as
 hidden and skips them unless told not to.
+
+A WebAssembly client has no file system to read a folder from, so there a host's files are embedded in
+its client assembly by the package's targets, under the resource names and discovery metadata the
+loader reads, and they stand where a host's folder stands in the order below.
 
 ## Roots
 
@@ -321,7 +325,7 @@ different paths are both read, and the linter reports the pair.
 | L1 | Is a file's placement a build setting or a library feature? | A library feature. A project embeds its files the ordinary way, and the paths are read at runtime, so every consumer gets it by referencing the package. |
 | L2 | One canonical form or many? | One canonical form with two files: a folder's own `.locales` folder holding the folder's file per culture and, beside it, a file per culture named for a type or namespace beneath the folder, as every source's default, and one mechanism for any other form a project states. A host's folder is itself a folder of locale files, so inside it both may sit directly in the folder; the two forms resolve equally, at one anchor, with no precedence between them, and a file in both places is a duplicate. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
-| L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds translations alone, so neither carries the other's keys. |
+| L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds localized strings alone, so neither carries the other's keys. |
 | L5 | What marks an assembly's root? | Its `.locale.json`, which sits at the assembly's root and nowhere else; an assembly with none is rooted where its names begin and read by the defaults. |
 | L6 | Do a host's paths have to match the library's? | No. A host's folder is always the canonical form, a folder per anchor with its files in the folder's own `.locales` or directly in it, whatever paths the assembly states for its own files; the anchor is the one currency both sides trade in, so an override or a contribution is written the same way for every assembly, and host entries are applied after every embedded entry. |
 | L7 | Can a file be named for an assembly whose root namespace is not its name? | Yes. A path names `$AssemblyName` outright, which a project keeping such a file states in its config. |

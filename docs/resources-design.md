@@ -18,7 +18,7 @@ without any of them knowing where bytes live.
 ## Decision summary
 
 - **The picker picks and nothing more.** `FormaFilePicker` opens the OS dialog or takes a
-  drop and yields the `IBrowserFile`s the server has never seen. It owns no transfer, so
+  drop and yields the `IBrowserFile`s still on the reader's device. It owns no transfer, so
   it shows no progress; a progress bar measures bytes moving, and moving them is the
   uploader's. It is not a browser of stored files, which is what `FormaExplorer` is.
 - **A drop and a click converge.** The `InputFile` sits inside the drop zone's `<label>`,
@@ -34,7 +34,7 @@ without any of them knowing where bytes live.
   `OnFilesSelected`.
 - **The type-restricted pickers are skins.** `FormaImagePicker` pins `Accept` to image
   types and previews each accepted file as a thumbnail drawn from the browser's own copy,
-  so no image bytes cross the circuit; `FormaMediaPicker` pins image,
+  so no image bytes pass through .NET; `FormaMediaPicker` pins image,
   video and audio and previews through `FormaFileViewer`, so a picked video shows as a
   player. Neither carries dialog, drop, validation or transfer logic of its own; each
   exists so one decision about what counts is made once rather than in every caller's
@@ -48,7 +48,7 @@ without any of them knowing where bytes live.
   registration serves every instance.
 - **`ResourceInfo` closes the chain.** It is what `FormaExplorer` can list, an item being
   a resource or nothing at all, so an upload feeds the browsing surface with no host-side
-  translation. `IFileStore` and
+  conversion. `IFileStore` and
   `FileContent` live in `Forma.Framework.Resources` beside it, which carries no ASP.NET
   Core reference, so a host implements a store from a plain class library.
 - **Failure is per file, and a rollback that fails is a failure.** A failed file leaves the

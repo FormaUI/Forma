@@ -38,7 +38,7 @@ a relationship needs an owner that sees every window at once.
   and the activation history have no Blazor dependency. `FormaWindow` implements
   `IManagedWindow`.
 - **The manager is a scoped service; a nested workspace cascades its own.** One manager
-  per circuit is the default workspace. A host that needs a second workspace cascades
+  per user scope is the default workspace. A host that needs a second workspace cascades
   another manager to the windows and rest area inside it.
 - **Stacking is re-shown, not z-indexed.** A floating window is a manual popover, and the
   top layer stacks in show order; z-index has no effect there. The manager holds the
@@ -61,8 +61,8 @@ a relationship needs an owner that sees every window at once.
   the raised backdrop with a box of its own, moved, resized and maximized, that knows no
   workspace; `FormaChrome` is a frame whose drag region is a title bar; `FormaWindow`
   is a chrome floated into the top layer and the only kind of workspace member, whose
-  frame drives the window's box. A window is never embedded, so it has no mode; a frame
-  is never closed or minimized, so it has no membership.
+  frame drives the window's box. A window always floats; a frame is never closed or
+  minimized, so it has no membership.
 - **A window's state is bindable.** Whether it is active, minimized and maximized are each
   a value a host binds, beside the modality and availability it sets.
 
@@ -105,7 +105,7 @@ parent's lifecycle whatever its origin.
 ### The selector
 
 A `WindowSelector` names windows by reference, origin, instance, title, or parent, over
-direct children or all descendants, and five markers stand for all windows, the current,
+direct children or all descendants, and markers stand for all windows, the current,
 the frontmost, the backmost and the previous one.
 
 `All` is explicit so it cannot be mistaken for a selector nobody filled in.
@@ -158,7 +158,7 @@ operation changed when it applied, and who declined when it was declined.
 manager drives: it tells the window when it becomes active, minimized, hidden by an
 ancestor, blocked by a modal, or raised to the top of the floating windows, asks whether
 it may close, and tells it to close once every affected window has accepted. `FormaWindow` implements
-both; a test drives the manager with a fake.
+both.
 
 ## The manager
 
@@ -170,7 +170,7 @@ descendants live in the same one. Origin and instance group windows within a wor
 neither defines one. Keyboard focus is coordinated across workspaces: independent
 activation histories do not mean two windows hold focus at once.
 
-The manager is registered scoped, so a circuit has one workspace with nothing to write.
+The manager is registered scoped, so a user scope has one workspace with nothing to write.
 A host that wants a nested workspace cascades another manager, and every window and
 rest area inside that cascade belongs to it.
 
@@ -221,10 +221,11 @@ decline aborts the whole operation.
 | Parent | `Parent` | Parameter, validated by the manager. |
 | Activation | `Active` / `ActiveChanged` | Bound state, coordinated by the manager. |
 | Minimization | `Minimized` / `MinimizedChanged` | Bound state. |
-| Lock | `Locked` / `LockedChanged`, `Options.Lockable` | Bound state; the option adds the command. Locked, a floating window is neither moved, resized nor maximized; everything else stays. |
+| Lock | `Locked` / `LockedChanged`, `Options.Lockable` | Bound state; the option adds the command. Locked, a window is neither moved, resized nor maximized; everything else stays. |
 | Modality | `Modal` | Parameter; a composing dialog derives it from itself. |
 | Availability | `Disabled` | Parameter, as elsewhere in the library. |
 | Closing | `OnClosing` with cancelable args, then `OnClose` | Callbacks. |
+| Title bar commands | `Options.Closable`, `Options.Minimizable`, `Options.Maximizable`; `Commands` with `OnCommand` | The options show the window's own commands, each shown by default; the host's commands stand beside them. |
 | Stacking | `BringToFrontAsync()`, `SendToBackAsync()` | Methods. |
 | Lifecycle | `ActivateAsync()`, `MinimizeAsync()`, `RestoreAsync()`, `CloseAsync()` | Methods, each taking an optional subtree selector. |
 | Press away | `Options.PressAway` | `Ignore` or `SendToBack`. |
@@ -265,8 +266,8 @@ state survive: its popover is hidden and the element stays.
 Minimizing a parent hides and deactivates every descendant, at every depth, as inherited
 suppression: each descendant keeps its own `Minimized`, `Placement`, `Maximized`, and
 `Disabled`. A descendant is never visible or active under a minimized
-ancestor, and one registered under an already-minimized parent starts hidden. Hidden
-windows release their input scopes and modal blocking until visible again.
+ancestor, and one registered under an already-minimized parent starts hidden. A hidden
+window holds its input scope inactive and releases its modal blocking until visible again.
 
 Restoring a parent lifts its suppression only. Descendants minimized on their own stay
 minimized; those under another minimized ancestor stay hidden. Restoration activates a
@@ -349,7 +350,7 @@ workspace is a window. They are separate components, each composing the one bene
 A frame is a raised backdrop with a box of its own. Without a placement it stands in its
 layout like any backdrop and offers no interaction. Given a placement, or maximized, it
 stands in the viewport within its bounds: the reader moves it by the drag region the
-host designates, resizes it at eight handles over its edges and corners, and steps or
+host designates, resizes it at handles over its edges and corners, and steps or
 grows it with the arrow keys on the focused drag region, Shift resizing. Maximized, it
 fills its bounds; locked, it stays where it is. It can be hidden, keeping what it holds,
 and disabled, going `inert`. It has no title, no commands and no workspace: it is never
@@ -389,7 +390,7 @@ either.
 A window composes a chrome and owns everything else: membership in the workspace with
 the identity, origin and parent it declares, activation, minimization, hiding under a
 minimized ancestor, blocking, closing with `OnClosing` asked first, press-away, modality
-and the scrim, stacking in the top layer, `Window.js`, and the input scope. Its box is
+and the scrim, stacking in the top layer, its script, and the input scope. Its box is
 the popover element it renders, and it cascades `FrameBox.Parent` so its chrome's frame
 drives that box: the
 title bar drags the window, the handles resize it, the frame's script holds it within
@@ -424,7 +425,7 @@ away, and adds two things the router models: a `Modal` scope while
 dismissal with the press-away reason and the window answers by sending itself back when
 `Options.PressAway` says so, never by closing. Neither routes through `OnClose`. The scope
 registers for the component's lifetime, activates with manager activation
-rather than raw focus events alone, and is released while the window is hidden.
+rather than raw focus events alone, and is held inactive while the window is hidden.
 
 ## Non-goals
 

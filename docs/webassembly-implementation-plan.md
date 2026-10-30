@@ -6,7 +6,8 @@ what has landed.
 
 ## Status
 
-Steps 1 to 5 have landed; step 6 is next.
+Steps 1 to 5, 7 and 8 have landed, and step 6 has, but for the libraries' trimming, which awaits a
+decision; step 9 is next.
 
 ## Where Forma stood
 
@@ -232,8 +233,9 @@ checks; the Showcase is a smoke check beside it, never the gate.
    rests on the runner's culture. The script tests, the C# tests and the browser check pass.
 9. **Routing in coordination.** The routes, their tokens, their mapping, the address policy's switch, the
    page base and the route scope move into the new `Forma.Framework.Culture.Router`, with its test project;
-   routes name a pair; the mapping is published to the page; destinations are built from it, and a pair no
-   route names is rejected before anything changes; and the interactive landing path, on step 5's hook, is
+   routes name a pair; the mapping is published to the page; destinations are built from it, and a pair without
+   a route is rejected before anything changes; the coordinator writes the culture-route cookie for an
+   interactive landing, retiring `Forma.Framework.Culture.Router.Interop`; and the interactive landing path, on step 5's hook, is
    wired into coordination beside the server-rendered one step 8 wired; and the document is
    held through every enhanced navigation, as the culture design's
    [document](culture-design.md#the-document-follows-the-state) section sets out. Under WebAssembly the
@@ -247,8 +249,10 @@ checks; the Showcase is a smoke check beside it, never the gate.
     transitional switch under coordinated pages as the local switch does under an independent client
     culture, and the runtime's current and the process's default cultures on every application, the local
     switch's included; `AddFormaUIServer` supplying capture on where the configuration names none; the
-    culture arrangement on both product registrars; and the startup check that rejects capture off under
-    coordinated pages. An `IStringLocalizerFactory` over Forma's localization stays optional, adopted only
+    culture arrangement on both product registrars; the startup check that rejects capture off under
+    coordinated pages; a standalone app's startup initializing the coordinator with its pair and the
+    switch's policy; and the local switch leaving `AddFormaUI`, so a runtime switches through the
+    coordinator, or through the local switch where its host chose an independent client culture. An `IStringLocalizerFactory` over Forma's localization stays optional, adopted only
     once it proves its contract: both factory overloads map to Forma's resources; missing resources,
     fallback, enumeration and `ResourceNotFound` behave consistently; resource selection reads the UI
     culture and argument formatting the formatting culture; its lifetime captures no one user's state; and
@@ -301,7 +305,7 @@ those steps fix.
   and adopting a pair never changes the policy.
 - A switch made during the first interactive render waits for its runtime's registration, and fails when
   that registration fails or disconnects.
-- Under the address policy, a switch to a pair no route names throws, naming the pair, and changes
+- Under the address policy, a switch to a pair without a route throws, naming the pair, and changes
   nothing.
 - Under the independent arrangement, a WebAssembly client's local switch sets the process's defaults, so
   an event after it runs in the new pair.
