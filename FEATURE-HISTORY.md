@@ -22,6 +22,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - Inputs bound as they are typed into keep every key typed, and a button with no click handler makes no round trip.
 - [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through a group's items in the group's place.
 - [`FormaTimePicker`](docs/component-catalog.md#formatimepicker)'s list and [`FormaDateTimePicker`](docs/component-catalog.md#formadatetimepicker)'s open on the time held, whatever was chosen before.
+- An open surface that closes gives up its layer among the input router's.
 - [`FormaPopover`](docs/component-catalog.md#formapopover) follows a change of reading direction while it is open, [`FormaTabs`](docs/component-catalog.md#formatabs) draws its strip again when a tab's header changes, and [`FormaFileViewer`](docs/component-catalog.md#formafileviewer) resolves its document again when the culture changes.
 - Every component [follows the culture state](docs/culture-design.md#components-follow-the-state): its strings, its formats and its direction follow a switch in place, and it [writes its output in the state's cultures](docs/culture-design.md#output-takes-its-culture-from-the-state), whatever culture the flow that renders it holds.
 - [An edit in progress keeps the culture it was typed in](docs/culture-design.md#an-edit-in-progress-keeps-its-culture), so `1,234` typed in English commits as a thousand and more after a switch to German.

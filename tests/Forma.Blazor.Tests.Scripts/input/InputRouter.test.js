@@ -1395,6 +1395,19 @@ describe('InputRouter queries', () => {
         expect(describeScope(elsewhere())).toBeNull();
     });
 
+    it('takes the layer from a scope once its registration is disposed or released', () => {
+        const disposed = scope(popup(), {});
+        disposed.activate();
+        const released = scope(elsewhere(), {});
+        released.activate();
+
+        disposed.dispose();
+        released.release();
+
+        expect(popup().hasAttribute('data-forma-layer')).toBe(false);
+        expect(elsewhere().hasAttribute('data-forma-layer')).toBe(false);
+    });
+
     it('stamps active scopes with their layer and explains the ordering', () => {
         scope(grid(), {}).activate();
         scope(popup(), {}).activate();

@@ -941,14 +941,21 @@ function depthOf(entry, among, chains) {
     return chains.get(entry).filter(ancestor => among.some(other => other.scope === ancestor)).length;
 }
 
+// The elements the last refresh stamped, so one that is released or no longer active loses its layer.
+let layered = new Set();
+
 function refreshLayers() {
     const ordered = orderedActive();
+    const stamped = new Set(ordered.map(entry => entry.element));
 
-    for (const entry of activeEntries) {
-        entry.element.removeAttribute('data-forma-layer');
+    for (const element of layered) {
+        if (!stamped.has(element)) {
+            element.removeAttribute('data-forma-layer');
+        }
     }
 
     ordered.forEach((entry, index) => entry.element.setAttribute('data-forma-layer', String(index + 1)));
+    layered = stamped;
 }
 
 function specificity(binding) {
