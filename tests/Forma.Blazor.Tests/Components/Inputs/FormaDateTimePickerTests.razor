@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using System.Globalization
+@using Forma.Tests.Globalization
 @using AngleSharp.Dom
 @using Forma.Framework.Browser.Interop.Focus
 
@@ -30,7 +31,7 @@
                 () => Assert.Single(cut.FindAll(".forma-field")),
                 () => Assert.Equal(["Date", "3/15/2026"], names),
                 () => Assert.Equal("Time", time.GetAttribute("aria-label")),
-                () => Assert.Equal("9:30 AM", time.GetAttribute("value")));
+                () => Assert.Equal(FormatInEnglish("9:30 AM"), time.GetAttribute("value")));
         }
 
         [Fact]
@@ -419,8 +420,8 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(bound, model.Starts),
-                () => Assert.Equal("10:00 AM", GetTime(cut).GetAttribute("value")),
-                () => Assert.Equal("The Starts field must be 3/15/2026 2:00 PM or later.", cut.Find(".forma-field-message").TextContent));
+                () => Assert.Equal(FormatInEnglish("10:00 AM"), GetTime(cut).GetAttribute("value")),
+                () => Assert.Equal(FormatInEnglish("The Starts field must be 3/15/2026 2:00 PM or later."), cut.Find(".forma-field-message").TextContent));
         }
 
         [Fact]
@@ -438,7 +439,7 @@
             GetTime(cut).Change("11:30 AM");
 
             // Assert
-            Assert.Equal("The Starts field must be between 3/15/2026 2:00 PM and 3/17/2026 11:00 AM.", cut.Find(".forma-field-message").TextContent);
+            Assert.Equal(FormatInEnglish("The Starts field must be between 3/15/2026 2:00 PM and 3/17/2026 11:00 AM."), cut.Find(".forma-field-message").TextContent);
         }
 
         [Theory]
@@ -463,7 +464,7 @@
             var options = cut.FindAll("[role=option]");
             Assert.Multiple(
                 () => Assert.All(options, option => Assert.Equal(count.ToString(CultureInfo.InvariantCulture), option.GetAttribute("aria-setsize"))),
-                () => Assert.Equal(first, options.Single(option => option.GetAttribute("aria-posinset") == "1").TextContent.Trim()));
+                () => Assert.Equal(FormatInEnglish(first), options.Single(option => option.GetAttribute("aria-posinset") == "1").TextContent.Trim()));
         }
 
         [Fact]
@@ -484,7 +485,7 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(bound, model.Starts),
-                () => Assert.Equal("The Starts field must be 9:00 AM or 9:15 AM.", cut.Find(".forma-field-message").TextContent));
+                () => Assert.Equal(FormatInEnglish("The Starts field must be 9:00 AM or 9:15 AM."), cut.Find(".forma-field-message").TextContent));
         }
     }
 
@@ -511,7 +512,7 @@
             Assert.Multiple(
                 () => Assert.Equal("1:30 אחה״צ", textAfterChange),
                 () => Assert.Equal(new DateTime(2026, 3, 15, 13, 30, 0), model.Starts),
-                () => Assert.Equal("1:30 PM", GetTime(cut).GetAttribute("value")));
+                () => Assert.Equal(FormatInEnglish("1:30 PM"), GetTime(cut).GetAttribute("value")));
         }
 
         [Fact]
@@ -537,7 +538,7 @@
                 () => Assert.Equal("1:30 אחה״צ", textAfterChange),
                 () => Assert.Equal(15, model.Starts!.Value.Day),
                 () => Assert.Equal(new TimeSpan(13, 30, 0), model.Starts!.Value.TimeOfDay),
-                () => Assert.Equal("1:30 PM", GetTime(cut).GetAttribute("value")));
+                () => Assert.Equal(FormatInEnglish("1:30 PM"), GetTime(cut).GetAttribute("value")));
         }
 
         [Fact]
@@ -563,7 +564,7 @@
             Assert.Multiple(
                 () => Assert.Equal("1:10 אחה״צ", textAfterChange),
                 () => Assert.Equal(bound, model.Starts),
-                () => Assert.Equal("The Starts field must be 1:00 PM or 1:15 PM.", cut.Find(".forma-field-message").TextContent));
+                () => Assert.Equal(FormatInEnglish("The Starts field must be 1:00 PM or 1:15 PM."), cut.Find(".forma-field-message").TextContent));
         }
 
         [Fact]
@@ -605,7 +606,7 @@
             cut.Render(parameters => parameters.Add(p => p.Value, new DateTime(2026, 3, 15, 14, 0, 0)));
 
             // Assert
-            Assert.Equal("2:00 PM", cut.Find("input[role=combobox]").GetAttribute("value"));
+            Assert.Equal(FormatInEnglish("2:00 PM"), cut.Find("input[role=combobox]").GetAttribute("value"));
         }
     }
 
@@ -633,4 +634,7 @@
 
         public string? Note { get; set; }
     }
+
+    private static string FormatInEnglish(string text)
+        => CultureText.FormatTimes(text, CultureInfo.GetCultureInfo("en-US"));
 }
