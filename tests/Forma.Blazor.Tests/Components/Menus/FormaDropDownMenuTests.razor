@@ -306,6 +306,37 @@
         }
 
         [Fact]
+        public async Task Should_move_through_a_group_s_items_in_the_group_s_place()
+        {
+            // Arrange — a group, which renders its own items after the item beside it
+            using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuGroup Label="Edit">
+                            <FormaDropDownMenuItem>Rename</FormaDropDownMenuItem>
+                            <FormaDropDownMenuItem>Duplicate</FormaDropDownMenuItem>
+                        </FormaDropDownMenuGroup>
+                        <FormaDropDownMenuDivider />
+                        <FormaDropDownMenuItem>Delete</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            var items = cut.FindComponents<FormaDropDownMenuItem>().Select(item => item.Instance.RootElement.Id).ToList();
+            var opened = GetFocused(ctx.JSInterop);
+
+            // Act
+            await router.RouteAsync(popover.RootElement, "menu.next", "ArrowDown");
+            await router.RouteAsync(popover.RootElement, "menu.next", "ArrowDown");
+
+            // Assert — the menu opened on Rename and moved to Duplicate, then Delete
+            Assert.Equal([items[0], items[1], items[2]], [opened[^1], .. GetFocused(ctx.JSInterop).Skip(opened.Count)]);
+        }
+
+        [Fact]
         public async Task Should_open_the_popover_on_arrow_down()
         {
             // Arrange

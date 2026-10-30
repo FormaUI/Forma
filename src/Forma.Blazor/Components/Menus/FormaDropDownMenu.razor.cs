@@ -55,7 +55,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    private readonly List<FormaDropDownMenuItem> _items = [];
+    private readonly List<IDropDownMenuEntry> _entries = [];
 
     private bool _openAtLastItem;
     private int _focusedIndex = -1;
@@ -89,11 +89,16 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _trigger.SyncAsync(TriggerButton.RootElement, TriggerProfile);
 
-    internal void RegisterItem(FormaDropDownMenuItem item)
-        => _items.Add(item);
+    // An entry registers as it is first rendered, which places a group among its siblings before its own items render.
+    internal void RegisterEntry(IDropDownMenuEntry entry)
+        => _entries.Add(entry);
 
-    internal void UnregisterItem(FormaDropDownMenuItem item)
-        => _items.Remove(item);
+    internal void UnregisterEntry(IDropDownMenuEntry entry)
+        => _entries.Remove(entry);
+
+    // Every item in the order the menu shows it, a group's in the group's place.
+    private List<FormaDropDownMenuItem> GetItems()
+        => [.. _entries.SelectMany(entry => entry.Items)];
 
     /// <summary>Closes the menu and returns focus to the trigger.</summary>
     internal Task RequestActivateAsync()
@@ -108,7 +113,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
             NextAction => MoveFocusAsync(1),
             PreviousAction => MoveFocusAsync(-1),
             FirstAction => FocusIndexAsync(FindEnabledIndex(0, 1)),
-            LastAction => FocusIndexAsync(FindEnabledIndex(_items.Count - 1, -1)),
+            LastAction => FocusIndexAsync(FindEnabledIndex(GetItems().Count - 1, -1)),
             _ => Task.CompletedTask,
         };
     }
@@ -131,7 +136,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     }
 
     private Task HandleOpenedAsync()
-        => FocusIndexAsync(_openAtLastItem ? FindEnabledIndex(_items.Count - 1, -1) : FindEnabledIndex(0, 1));
+        => FocusIndexAsync(_openAtLastItem ? FindEnabledIndex(GetItems().Count - 1, -1) : FindEnabledIndex(0, 1));
 
     private Task MoveFocusAsync(int delta)
         => FocusIndexAsync(FindEnabledIndex(_focusedIndex + delta, delta));
@@ -139,11 +144,13 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     /// <summary>Finds the index of the first enabled item at or past <paramref name="start"/> in the direction of <paramref name="step"/>, wrapping around the ends.</summary>
     private int? FindEnabledIndex(int start, int step)
     {
-        for (var visited = 0; visited < _items.Count; visited++)
-        {
-            var index = ((start + visited * step) % _items.Count + _items.Count) % _items.Count;
+        var items = GetItems();
 
-            if (!_items[index].Disabled)
+        for (var visited = 0; visited < items.Count; visited++)
+        {
+            var index = ((start + visited * step) % items.Count + items.Count) % items.Count;
+
+            if (!items[index].Disabled)
             {
                 return index;
             }
@@ -160,7 +167,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         }
 
         _focusedIndex = target;
-        await _items[_focusedIndex].FocusAsync();
+        await GetItems()[_focusedIndex].FocusAsync();
     }
 
     /// <inheritdoc />

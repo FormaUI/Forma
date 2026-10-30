@@ -12,5 +12,7 @@
     {
         <div class="forma-dropdown-menu-group-label" id="@LabelId">@Label</div>
     }
-    @ChildContent
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
 </div>
