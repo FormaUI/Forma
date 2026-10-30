@@ -60,7 +60,7 @@ Every component derives from one of three bases, and never from `ComponentBase` 
 - Do add the component's own classes in `BuildRootClass` with `builder.Add("forma-x").Add("is-open", IsOpen)`, and its own declarations in `BuildRootStyle` with `builder.Add("inline-size", Width)`, a `CssLength` rendering in its unit whatever the culture; the base appends the host's `Class` and `Style` itself, so a root's style reads `inline-size: 12ch; color: red;`, every declaration terminated.
 - Do take a generated id from the base's `ElementId`, the host's `Id` or one minted from the runtime id, and derive a part's id from it by the part's role, `PopoverId => $"{ElementId}-popover"`; the `forma-naming` skill's identifiers rule has the full shape. Never initialize a field from `Context.RuntimeId`: the context is made on first read, and a derived class's initializers run before the base's.
 - Do hold a reference to a child component (`@ref`) in a private property, `private FormaX Trigger { get; set; } = default!;`, because every component is disposable and CA2213 would otherwise ask the holder to dispose what the renderer owns.
-- Don't declare `Id`, `Class`, `AdditionalAttributes`, an `IJSRuntime`, an `IStringLocale` or an `ILogger` on a component; the base has them, and the compiler reports the shadowing.
+- Don't declare `Id`, `Class`, `AdditionalAttributes`, an `IJSRuntime`, an `IStringLocale` or an `ILogger` on a component; the base and its context carry them, and the compiler reports the shadowing of what the base declares.
 
 ## Component authoring
 
@@ -128,9 +128,9 @@ Every component derives from one of three bases, and never from `ComponentBase` 
 
 ## Logging
 
-A component logs through the base's `Logger`, whose category is the component's concrete type, so a host filters by the component's full type name and sees the component's interop under the same name.
+A component logs through its context's logger, `Context.Logger`, whose category is the component's concrete type, so a host filters by the component's full type name and sees the component's interop under the same name.
 
-- Do hand the context's `JS` to every interop wrapper the component constructs, `new Wrapper(Context.JS)`; it is the component's `IJSEnvironment`, the runtime carrying the component's `Logger` and `RuntimeId`, so what the wrapper absorbs lands under the component and names the instance.
+- Do hand the context's `JS` to every interop wrapper the component constructs, `new Wrapper(Context.JS)`; it is the component's `IJSEnvironment`, the runtime carrying the context's `Logger` and `RuntimeId`, so what the wrapper absorbs lands under the component and names the instance.
 - Do give a service that is not a component a required `ILogger<T>` through its constructor, and have its registrar `TryAdd` the `NullLogger<>` fallback beside it, so the service resolves in a host that configures no logging.
 - Do write every message through `[LoggerMessage]` on one `internal static partial class {Feature}Log` per feature, named for the event it records, `CircuitDroppedWhileCalling`, so every message a feature can emit is read in one place.
 - Do log at `Debug` what the library absorbs by design — a dropped circuit or a thrown script behind a `Try*` call, an asset that would not load, a plural argument that is not a count — so the silence is visible to whoever turns the category on and nothing changes for a host that does not.
