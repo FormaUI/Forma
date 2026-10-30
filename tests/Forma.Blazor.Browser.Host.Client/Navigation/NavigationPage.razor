@@ -6,7 +6,7 @@
 @inject NavigationRecorder Recorder
 @inject NavigationManager Navigation
 
-@* The page each navigation lands at, and the navigations the check starts from it. *@
+@* The page each navigation lands at, the navigations the check starts from it, and whether the guard preventing them is registered, which the runtime tells the browser before it renders. *@
 <p id="nav-page">navigation page</p>
 <button id="go-b" @onclick='() => Navigation.NavigateTo("nav/b")'>To b</button>
 <a id="link-b" href="nav/b">Link to b</a>
@@ -15,6 +15,7 @@
 <button id="go-missing" @onclick='() => Navigation.NavigateTo("nav/missing")'>To a page that isn't there</button>
 <button id="reload-b" @onclick='() => Navigation.NavigateTo("nav/b", forceLoad: true)'>Load b as a new document</button>
 <label><input id="guard" type="checkbox" @onchange="Guard" /> Prevent leaving</label>
+<output id="guarded">@(_guard is not null)</output>
 
 @code {
     private IDisposable? _guard;

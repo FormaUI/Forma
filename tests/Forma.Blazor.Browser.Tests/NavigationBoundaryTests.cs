@@ -53,6 +53,7 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
         await using var _ = context;
         await OpenAsync(page, runtime);
         await page.Locator("#guard").CheckAsync();
+        await Assertions.Expect(page.Locator("#guarded")).ToHaveTextAsync("True");
 
         // Act
         await page.Locator("#link-b").ClickAsync();
