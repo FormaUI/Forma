@@ -31,6 +31,7 @@
     <!-- What the build checks the library with, which ships with nothing. -->
     <ItemGroup>
         <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
     </ItemGroup>
 
     <!-- What the tests run on; bUnit decides the AngleSharp a test project may use. -->

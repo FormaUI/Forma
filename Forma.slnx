@@ -83,6 +83,8 @@
     <Project Path="tests\Forma.Framework.Composer.Tests\Forma.Framework.Composer.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Sanitization.Tests\Forma.Framework.Sanitization.Tests.csproj" />
     <Project Path="tests\Forma.Scripts.Tests\Forma.Scripts.Tests.csproj" />
+    <Project Path="eng\Forma.Analyzers\Forma.Analyzers.csproj" />
+    <Project Path="tests\Forma.Analyzers.Tests\Forma.Analyzers.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Composer.Plugins.Explorer.Tests\Forma.AddOns.Composer.Plugins.Explorer.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Share.Targets.Tests\Forma.AddOns.Share.Targets.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Explorer.Tests\Forma.Framework.Explorer.Tests.csproj" />
