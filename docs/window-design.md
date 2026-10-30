@@ -222,7 +222,7 @@ decline aborts the whole operation.
 | Activation | `Active` / `ActiveChanged` | Bound state, coordinated by the manager. |
 | Minimization | `Minimized` / `MinimizedChanged` | Bound state. |
 | Lock | `Locked` / `LockedChanged`, `Options.Lockable` | Bound state; the option adds the command. Locked, a window is neither moved, resized nor maximized; everything else stays. |
-| Modality | `Modal` | Parameter; a composing dialog derives it from itself. |
+| Modality | `Modal` | Parameter; a consumer composing a modal window derives it from itself. |
 | Availability | `Disabled` | Parameter, as elsewhere in the library. |
 | Closing | `OnClosing` with cancelable args, then `OnClose` | Callbacks. |
 | Title bar commands | `Options.Closable`, `Options.Minimizable`, `Options.Maximizable`; `Commands` with `OnCommand` | The options show the window's own commands, each shown by default; the host's commands stand beside them. |
@@ -233,8 +233,8 @@ decline aborts the whole operation.
 
 `Options.PressAway` and `FrameOptions.Bounds` are settings a composing consumer forwards
 unchanged, which is what puts them on the record. `Modal` is a parameter because a
-dialog that composes a window decides it for itself. The window is named by `aria-label`
-from its title.
+consumer that composes a modal window decides it for itself. The window is named by
+`aria-label` from its title.
 
 ### Activation and focus
 
@@ -432,7 +432,7 @@ rather than raw focus events alone, and is held inactive while the window is hid
 - Application launching. `FormaLaunchBar` owns it and may host the rest area.
 - Persisting windows across circuits. The host binds `Placement`, `Maximized`, and
   `Minimized` and decides what to keep.
-- Moving `FormaDialog` out of `Feedback`. It stays classified by its purpose, prompting for
-  a decision; composing a window does not change that.
+- Making `FormaDialog` a window. It stays the browser's native modal dialog in `Feedback`,
+  classified by its purpose, prompting for a decision.
 - Moving content between a frame and a window. A host chooses a frame, a chrome or a
   window when it renders.
