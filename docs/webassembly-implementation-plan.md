@@ -198,7 +198,7 @@ checks; the Showcase is a smoke check beside it, never the gate.
    without the integration fails as a scope first creates it, and an instance registration fails as it is
    registered. The test switch lives in the shared test support, and the bUnit context registers it. Every
    test and step 4's regression checks pass.
-8. **Coordination.** The coordinator takes the document culture synchronizer's script and ownership, and the
+8. **Coordination.** ✅ The coordinator takes the document culture synchronizer's script and ownership, and the
    switch that requests through it replaces step 7's transitional switch for circuits: the culture marker
    `FormaPageHead` publishes; the switch's policy, chosen where the host registers the culture and published
    apart from the marker; each circuit's registration, its lifecycle and its three states; versions and the
@@ -213,12 +213,25 @@ checks; the Showcase is a smoke check beside it, never the gate.
    accepted only through the coordinator, the last registration's release, a head update alone changing
    nothing, and a missing or invalid marker failing initialization; and step 4's checks, each as the design
    now states it.
+
+   The coordinator replaces the synchronizer, its script and its C# both, and the circuit's switch
+   requests through it under the policy of the state alone or of the cookie, which `FormaPageHead`
+   publishes beside the marker. Every accepted pair reaches a state through its registration's receiver,
+   the requester's and a registering state's included, and the coordinator answers a request once the
+   requester's state has applied it. A circuit registers before it renders, so its components start in
+   the page's pair. One departure: the server-rendered landing takes its pair from its own response's
+   marker already, rather than through the route handler's reply. The reply needed a live registration,
+   and the marker path is the one step 9 was to build. So `ICultureRouteHandler` and the reconciliation of
+   a circuit with its address retire here, adoption on registration replacing the second. Step 4's offline
+   check changed: under Chrome's offline emulation the circuit keeps its connection, so the switch is
+   accepted once the browser is back, and the check asserts that the document and the state settle on
+   the pair the switch's outcome gives. The closed circuit's check still passes, now through the landing
+   that leaves the page. The script tests, the C# tests and the browser check pass.
 9. **Routing in coordination.** The routes, their tokens, their mapping, the address policy's switch, the
    page base and the route scope move into the new `Forma.Framework.Culture.Router`, with its test project;
    routes name a pair; the mapping is published to the page; destinations are built from it, and a pair no
-   route names is rejected before anything changes; and both landing paths, the server-rendered one from its
-   own response's marker and the interactive one on step 5's hook, are wired into coordination in place of
-   the route handler's resolve-and-reply, which retires with `ICultureRouteHandler`; and the document is
+   route names is rejected before anything changes; and the interactive landing path, on step 5's hook, is
+   wired into coordination beside the server-rendered one step 8 wired; and the document is
    held through every enhanced navigation, as the culture design's
    [document](culture-design.md#the-document-follows-the-state) section sets out. Under WebAssembly the
    interactive landing runs end to end from step 10, once the runtime registers with the coordinator. Gate:
