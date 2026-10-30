@@ -538,7 +538,7 @@
         {
             // Arrange — the typing culture reads the text as half past one in the afternoon, and English refuses it
             using var ctx = new FormaTimePickerTests();
-            using var culture = new CultureFixture(typingCulture);
+            using var culture = new CultureFixture(PinnedCultures.GetCulture(typingCulture));
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
@@ -564,7 +564,7 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
@@ -585,7 +585,7 @@
         {
             // Arrange — English would refuse the text as no time at all
             using var ctx = new FormaTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" Max="new TimeOnly(12, 0)" />
@@ -610,7 +610,7 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift { End = new TimeOnly(13, 30) };
             var editContext = new EditContext(model);
             var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
@@ -634,7 +634,7 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift { End = new TimeOnly(9, 0) };
             var cut = ctx.Render<FormaTimePicker<TimeOnly?>>(parameters => parameters
                 .Add(p => p.Label, "Ends")
@@ -655,7 +655,7 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift { End = new TimeOnly(9, 0) };
             var cut = ctx.Render<FormaTimePicker<TimeOnly?>>(parameters => parameters
                 .Add(p => p.Label, "Ends")

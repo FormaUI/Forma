@@ -496,7 +496,7 @@
         {
             // Arrange — Hebrew reads the text as half past one in the afternoon, and English refuses it
             using var ctx = new FormaDateTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 0, 0) };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
@@ -520,7 +520,7 @@
         {
             // Arrange
             using var ctx = new FormaDateTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Booking();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
@@ -546,7 +546,7 @@
         {
             // Arrange — English would refuse the text as no time at all
             using var ctx = new FormaDateTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var bound = new DateTime(2026, 3, 15, 9, 0, 0);
             var model = new Booking { Starts = bound };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -593,7 +593,7 @@
         {
             // Arrange
             using var ctx = new FormaDateTimePickerTests();
-            using var culture = new CultureFixture("he");
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 0, 0) };
             var cut = ctx.Render<FormaDateTimePicker<DateTime?>>(parameters => parameters
                 .Add(p => p.Label, "Starts")

@@ -17,16 +17,20 @@ public sealed class CultureFixture : IDisposable
 
     /// <summary>Captures the current culture and switches to the named one.</summary>
     public CultureFixture(string name)
+        : this(GetNamedCulture(name))
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+    }
+
+    /// <summary>Captures the current culture and switches to <paramref name="culture"/>.</summary>
+    public CultureFixture(CultureInfo culture)
+    {
+        ArgumentNullException.ThrowIfNull(culture);
 
         _culture = CultureInfo.CurrentCulture;
         _uiCulture = CultureInfo.CurrentUICulture;
 
-        var replacement = CultureInfo.GetCultureInfo(name);
-
-        CultureInfo.CurrentCulture = replacement;
-        CultureInfo.CurrentUICulture = replacement;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
     }
 
     /// <inheritdoc />
@@ -34,5 +38,12 @@ public sealed class CultureFixture : IDisposable
     {
         CultureInfo.CurrentCulture = _culture;
         CultureInfo.CurrentUICulture = _uiCulture;
+    }
+
+    private static CultureInfo GetNamedCulture(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        return CultureInfo.GetCultureInfo(name);
     }
 }
