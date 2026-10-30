@@ -1,6 +1,7 @@
 namespace Forma.Framework.Share;
 
 using System.Net.Http.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using Forma.Framework.Icons;
 
@@ -26,11 +27,15 @@ public abstract class WebhookShare(string id, string title, Icon icon, Uri webho
             return false;
         }
 
-        using var response = await Http.PostAsJsonAsync(_webhookAddress, payload, cancellationToken).ConfigureAwait(false);
+        using var content = JsonContent.Create(payload, PayloadType);
+        using var response = await Http.PostAsync(_webhookAddress, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         return true;
     }
+
+    /// <summary>The JSON type information that writes the payload <see cref="GetPayload"/> makes.</summary>
+    protected abstract JsonTypeInfo PayloadType { get; }
 
     /// <summary>The payload posted for the item, where null means the target has nothing to post for it.</summary>
     protected abstract object? GetPayload(ShareItem item);

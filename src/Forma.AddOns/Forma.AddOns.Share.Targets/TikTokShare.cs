@@ -23,11 +23,11 @@ public sealed class TikTokShare(IShareTokenSource tokens, HttpClient? http = nul
 
         using var request = new HttpRequestMessage(HttpMethod.Post, PublishEndpoint);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        request.Content = JsonContent.Create(new
-        {
-            post_info = new { title = item.Name ?? item.Resource!.Name, privacy_level = "SELF_ONLY" },
-            source_info = new { source = "PULL_FROM_URL", video_url = GetReachableSource(item) },
-        });
+        request.Content = JsonContent.Create(
+            new TikTokPublish(
+                new TikTokPostInfo(item.Name ?? item.Resource!.Name, "SELF_ONLY"),
+                new TikTokSourceInfo("PULL_FROM_URL", GetReachableSource(item))),
+            ShareTargetsJsonContext.Default.TikTokPublish);
 
         using var response = await Http.SendAsync(request, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();

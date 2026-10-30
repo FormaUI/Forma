@@ -1,5 +1,6 @@
 namespace Forma.Framework.Plugins;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 /// <summary>Builds one owner's plugins from its registrations, resolving what each constructor asks for.</summary>
@@ -129,7 +130,7 @@ internal static class PluginActivator
         return registrations.FirstOrDefault(candidate => parameterType.IsAssignableFrom(candidate.PluginType));
     }
 
-    private static ConstructorInfo GetConstructor(Type pluginType)
+    private static ConstructorInfo GetConstructor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type pluginType)
     {
         var constructors = pluginType.GetConstructors();
 

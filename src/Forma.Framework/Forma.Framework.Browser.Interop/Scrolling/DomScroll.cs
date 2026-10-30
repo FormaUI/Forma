@@ -29,7 +29,7 @@ public sealed class DomScroll : IDomScrollObservation
         ArgumentNullException.ThrowIfNull(handler);
         ArgumentNullException.ThrowIfNull(options);
 
-        var observation = new DomObservation<ScrollWatchOptions, ScrollState>(_watcher.Session, Watching, handler);
+        var observation = new DomObservation<ScrollWatchOptions, ScrollState>(_watcher.Session, Watching, DomJsonContext.Default.ScrollState, handler);
         await observation.SyncAsync(_element, options, shouldObserve);
 
         return observation;

@@ -1,5 +1,7 @@
 namespace Forma.Framework.JavaScript.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -26,10 +28,10 @@ public sealed class JSEnvironment : IJSEnvironment
     public ILogger Logger { get; }
 
     /// <inheritdoc />
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, object?[]? args)
         => _runtime.InvokeAsync<TValue>(identifier, args);
 
     /// <inheritdoc />
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => _runtime.InvokeAsync<TValue>(identifier, cancellationToken, args);
 }

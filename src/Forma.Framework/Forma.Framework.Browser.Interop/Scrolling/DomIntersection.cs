@@ -24,7 +24,7 @@ public sealed class DomIntersection : IDomIntersectionObservation
         ArgumentNullException.ThrowIfNull(options);
         ArgumentOutOfRangeException.ThrowIfNegative(options.RootMarginPixels, nameof(options));
 
-        var observation = new DomObservation<IntersectionWatchOptions, IntersectionState>(_watcher.Session, Watching, handler);
+        var observation = new DomObservation<IntersectionWatchOptions, IntersectionState>(_watcher.Session, Watching, DomJsonContext.Default.IntersectionState, handler);
         await observation.SyncAsync(_element, options, shouldObserve);
 
         return observation;

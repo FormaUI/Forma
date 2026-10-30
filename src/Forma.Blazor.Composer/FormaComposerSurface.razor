@@ -16,14 +16,14 @@
     @if (View is not null)
     {
         <CascadingValue Value="View" IsFixed="true">
-            <DynamicComponent Type="View.ViewComponent" />
+            @ViewContent
         </CascadingValue>
     }
     else
     {
         <CascadingValue Value="Editor" IsFixed="true">
             <CascadingValue Value="SelectionBar">
-                <DynamicComponent Type="Editor.EditorComponent" />
+                @EditorContent
             </CascadingValue>
         </CascadingValue>
     }

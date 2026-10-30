@@ -1,11 +1,13 @@
 namespace Forma.Framework.Composer.Dialogs;
 
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 /// <summary>A dialog a plugin asks the composer to open, whose body the plugin supplies and whose shell the composer owns.</summary>
 public sealed record ComposerInsertionRequest
 {
     /// <summary>The component filling the dialog, which implements <see cref="IComposerInsertionDialog"/>.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public required Type Body { get; init; }
 
     /// <summary>The parameters handed to the body.</summary>

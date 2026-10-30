@@ -454,9 +454,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override string? FormatValueAsString(TValue? value)
-        => DisplayFormat is { } format && value is IFormattable number
-            ? number.ToString(format, CultureState.Culture)
-            : BindConverter.FormatValue(value, CultureState.Culture)?.ToString();
+        => value is IFormattable number ? number.ToString(DisplayFormat, CultureState.Culture) : null;
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)

@@ -2,6 +2,7 @@ namespace Forma.Framework.Browser.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Components;
 
@@ -14,22 +15,25 @@ using Microsoft.AspNetCore.Components;
 /// called once at a time, in the order the states were measured. A state that crosses while the handler is still busy waits in the browser,
 /// which keeps only the latest.
 /// </remarks>
-public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomRegistrationHost<TOptions>
+public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TState> : IAsyncDisposable, IDomRegistrationHost<TOptions>
     where TOptions : notnull
     where TState : class
 {
     private readonly DomSession _session;
     private readonly Func<TState, Task> _handler;
+    private readonly JsonTypeInfo<TState> _stateType;
     private readonly DomRegistration<TOptions> _registration;
     private EstablishmentBarrier? _barrier;
     private Task _delivery = Task.CompletedTask;
 
-    internal DomObservation(DomSession session, DomCapability<TOptions> capability, Func<TState, Task> handler)
+    internal DomObservation(DomSession session, DomCapability<TOptions> capability, JsonTypeInfo<TState> stateType, Func<TState, Task> handler)
     {
+        ArgumentNullException.ThrowIfNull(stateType);
         ArgumentNullException.ThrowIfNull(handler);
 
         _session = session;
         _handler = handler;
+        _stateType = stateType;
         _registration = new DomRegistration<TOptions>(session, capability, this);
         session.AddStateTarget(_registration.Token, DeliverAsync);
     }
@@ -142,7 +146,7 @@ public sealed class DomObservation<TOptions, TState> : IAsyncDisposable, IDomReg
             return;
         }
 
-        var state = payload.Deserialize<TState>(JsonSerializerOptions.Web)
+        var state = payload.Deserialize(_stateType)
             ?? throw new JsonException($"The browser delivered no {typeof(TState).Name}.");
 
         Current = state;

@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer.PlainTextEditor;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Plugins;
@@ -9,6 +11,7 @@ using Forma.Framework.Icons;
 public sealed class PlainTextEditorPlugin : IComposerEditorPlugin
 {
     /// <inheritdoc />
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public Type EditorComponent
         => typeof(FormaPlainTextEditor);
 

@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
@@ -44,6 +46,7 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     public ComposerDocumentFormat Format => ComposerDocumentFormat.Html;
 
     /// <inheritdoc />
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public Type EditorComponent => typeof(FormaRichTextEditor);
 
     /// <inheritdoc />

@@ -1,5 +1,7 @@
 namespace Forma.Framework.JavaScript.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.JSInterop;
 
 /// <summary>A JS runtime whose every call throws <see cref="JSRuntimeUnavailableException"/>.</summary>
@@ -13,11 +15,11 @@ public sealed class UnavailableJSRuntime : IJSRuntime
     public static UnavailableJSRuntime Instance { get; } = new();
 
     /// <inheritdoc />
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, object?[]? args)
         => throw new JSRuntimeUnavailableException(FormatMessage(identifier));
 
     /// <inheritdoc />
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => throw new JSRuntimeUnavailableException(FormatMessage(identifier));
 
     private static string FormatMessage(string identifier)

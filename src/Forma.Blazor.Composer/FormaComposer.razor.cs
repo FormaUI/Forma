@@ -58,7 +58,7 @@ public sealed partial class FormaComposer(
     private bool _isShortcutsOpen;
     private ComposerInsertionRequest? _dialog;
     private Dictionary<string, object>? _dialogParameters;
-    private DynamicComponent? _dialogComponent;
+    private object? _dialogInstance;
     private bool _isDialogBodyReady;
     private string? _dialogRefusal;
 
@@ -418,7 +418,7 @@ public sealed partial class FormaComposer(
 
         _dialog = request;
         _dialogParameters = request.Parameters.ToDictionary(parameter => parameter.Key, parameter => parameter.Value!, StringComparer.Ordinal);
-        _dialogComponent = null;
+        _dialogInstance = null;
         _isDialogBodyReady = false;
         _dialogRefusal = null;
 
@@ -434,8 +434,23 @@ public sealed partial class FormaComposer(
             : _activeEditor.TryInsertAsync(insertion);
     }
 
+    // The dialog's body, rendered by its type with its parameters, its instance held so the composer reaches it.
+    private RenderFragment RenderDialogBody(ComposerInsertionRequest dialog)
+        => builder =>
+        {
+            builder.OpenComponent(0, dialog.Body);
+
+            foreach (var (name, value) in _dialogParameters ?? [])
+            {
+                builder.AddComponentParameter(1, name, value);
+            }
+
+            builder.AddComponentReferenceCapture(2, instance => _dialogInstance = instance);
+            builder.CloseComponent();
+        };
+
     private IComposerInsertionDialog? DialogBody
-        => _dialogComponent?.Instance as IComposerInsertionDialog;
+        => _dialogInstance as IComposerInsertionDialog;
 
     // The body's messages, followed by the composer's refusal of an insertion no editor took.
     private IReadOnlyList<string> DialogMessages
@@ -485,7 +500,7 @@ public sealed partial class FormaComposer(
     {
         _dialog = null;
         _dialogParameters = null;
-        _dialogComponent = null;
+        _dialogInstance = null;
         _isDialogBodyReady = false;
         _dialogRefusal = null;
     }

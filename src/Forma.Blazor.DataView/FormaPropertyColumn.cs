@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.DataView;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -268,22 +269,22 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         switch (_editorKind)
         {
             case EditorKind.TextBox:
-                RenderInput(builder, typeof(FormaTextBox), value, valueChanged, GetValueExpression(draft));
+                RenderInput<FormaTextBox>(builder, value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.CheckBox:
-                RenderInput(builder, typeof(FormaCheckBox), value, valueChanged, GetValueExpression(draft));
+                RenderInput<FormaCheckBox>(builder, value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.DatePicker:
-                RenderPicker(builder, typeof(FormaDatePicker<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+                RenderPicker<FormaDatePicker<TValue>>(builder, value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.TimePicker:
-                RenderPicker(builder, typeof(FormaTimePicker<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+                RenderPicker<FormaTimePicker<TValue>>(builder, value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.NumberInput:
-                RenderInput(builder, typeof(FormaNumberInput<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+                RenderInput<FormaNumberInput<TValue>>(builder, value, valueChanged, GetValueExpression(draft));
                 break;
             case EditorKind.DateTimePicker:
-                RenderPicker(builder, typeof(FormaDateTimePicker<>).MakeGenericType(typeof(TValue)), value, valueChanged, GetValueExpression(draft));
+                RenderPicker<FormaDateTimePicker<TValue>>(builder, value, valueChanged, GetValueExpression(draft));
                 break;
             default:
                 throw new InvalidOperationException($"'{_editorKind}' is not a known {nameof(EditorKind)}.");
@@ -291,9 +292,10 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     }
 
     // A library input takes the editor's class as its own and names itself by the column, since a cell carries no label.
-    private void RenderInput(RenderTreeBuilder builder, Type inputType, object? value, object valueChanged, object valueExpression)
+    private void RenderInput<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TInput>(RenderTreeBuilder builder, object? value, object valueChanged, object valueExpression)
+        where TInput : ComponentBase
     {
-        builder.OpenComponent(3, inputType);
+        builder.OpenComponent<TInput>(3);
         builder.AddComponentParameter(4, "Value", value);
         builder.AddComponentParameter(5, "ValueChanged", valueChanged);
         builder.AddComponentParameter(6, "ValueExpression", valueExpression);
@@ -303,9 +305,10 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
     }
 
     // A picker is a field and asks for its label, the column's title, which the cell hides while it stays the picker's name.
-    private void RenderPicker(RenderTreeBuilder builder, Type pickerType, object? value, object valueChanged, object valueExpression)
+    private void RenderPicker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TPicker>(RenderTreeBuilder builder, object? value, object valueChanged, object valueExpression)
+        where TPicker : ComponentBase
     {
-        builder.OpenComponent(15, pickerType);
+        builder.OpenComponent<TPicker>(15);
         builder.AddComponentParameter(16, "Value", value);
         builder.AddComponentParameter(17, "ValueChanged", valueChanged);
         builder.AddComponentParameter(18, "ValueExpression", valueExpression);

@@ -97,7 +97,7 @@
                              Messages="DialogMessages"
                              OnConfirm="HandleDialogConfirmAsync"
                              OnCancel="CloseDialog">
-            <DynamicComponent Type="dialog.Body" Parameters="_dialogParameters" @ref="_dialogComponent" />
+            @RenderDialogBody(dialog)
         </FormaComposerDialog>
     }
 </CascadingValue>

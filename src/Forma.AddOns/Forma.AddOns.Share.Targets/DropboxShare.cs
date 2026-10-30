@@ -23,7 +23,7 @@ public sealed class DropboxShare(IShareTokenSource tokens, HttpClient? http = nu
 
         using var request = new HttpRequestMessage(HttpMethod.Post, SaveUrlEndpoint);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        request.Content = JsonContent.Create(new { path = $"/{item.Resource!.Name}", url = GetReachableSource(item) });
+        request.Content = JsonContent.Create(new DropboxSaveUrl($"/{item.Resource!.Name}", GetReachableSource(item)), ShareTargetsJsonContext.Default.DropboxSaveUrl);
 
         using var response = await Http.SendAsync(request, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();

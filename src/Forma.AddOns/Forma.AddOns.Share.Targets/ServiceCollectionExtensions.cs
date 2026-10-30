@@ -1,5 +1,7 @@
 namespace Forma.Framework.Share.Targets;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -123,7 +125,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddFormaTikTokSharing(this IServiceCollection services)
         => services.AddAccountSharing<TikTokShare>();
 
-    private static IServiceCollection AddAccountSharing<TTarget>(this IServiceCollection services)
+    private static IServiceCollection AddAccountSharing<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TTarget>(this IServiceCollection services)
         where TTarget : class, IShareTarget
     {
         ArgumentNullException.ThrowIfNull(services);

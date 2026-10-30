@@ -1,5 +1,7 @@
 namespace Forma.Framework.Culture.Browser.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.Extensions.Logging;
@@ -221,7 +223,7 @@ public sealed class DocumentCultureSynchronizer : IAsyncDisposable, IDisposable
         return _module;
     }
 
-    private async Task<TValue?> TryInvokeAsync<TValue>(IJSObjectReference registration, string identifier, params object?[] args)
+    private async Task<TValue?> TryInvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(IJSObjectReference registration, string identifier, params object?[] args)
         where TValue : struct
     {
         try

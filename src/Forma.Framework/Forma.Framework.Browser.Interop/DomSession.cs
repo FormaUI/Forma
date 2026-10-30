@@ -1,5 +1,6 @@
 namespace Forma.Framework.Browser.Interop;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 
@@ -102,7 +103,7 @@ internal sealed class DomSession
     /// <param name="isWanted">Whether the call is still wanted once the entry has been imported.</param>
     /// <param name="createsState">Whether the call can leave state in the browser that the owner's release has to reach.</param>
     /// <param name="args">The export's arguments.</param>
-    public async Task<TResult?> TryInvokeAsync<TResult>(DomRoot root, string identifier, string operation, Func<bool> isWanted, bool createsState, params object?[] args)
+    public async Task<TResult?> TryInvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TResult>(DomRoot root, string identifier, string operation, Func<bool> isWanted, bool createsState, params object?[] args)
     {
         var module = await TryImportAsync(root, operation);
 
@@ -209,7 +210,7 @@ internal sealed class DomSession
         return null;
     }
 
-    private async Task<TResult?> TryInvokeCoreAsync<TResult>(IJSObjectReference module, DomRoot root, string identifier, string operation, object?[] args)
+    private async Task<TResult?> TryInvokeCoreAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TResult>(IJSObjectReference module, DomRoot root, string identifier, string operation, object?[] args)
     {
         try
         {

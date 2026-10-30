@@ -304,8 +304,20 @@ public sealed partial class FormaToolbar : FormaElementBase
         return showsLabel && tooltip == GetEffectiveTitle(action) ? null : tooltip;
     }
 
-    private static Dictionary<string, object>? ToParameters(IReadOnlyDictionary<string, object>? parameters)
-        => parameters is null ? null : [with(parameters)];
+    // A custom item's component, rendered by its type with its parameters, keyed so a reordered toolbar keeps each one's state.
+    private static RenderFragment RenderCustomItem(ToolbarCustomItem custom)
+        => builder =>
+        {
+            builder.OpenComponent(0, custom.Component);
+            builder.SetKey(custom.Id);
+
+            foreach (var (name, value) in custom.Parameters ?? new Dictionary<string, object>())
+            {
+                builder.AddComponentParameter(1, name, value);
+            }
+
+            builder.CloseComponent();
+        };
 
     /// <summary>One rendered run of items: a group and its contents, or a single ungrouped item.</summary>
     private sealed record Row(string Key, ToolbarGroup? Group, IReadOnlyList<ToolbarItem> Items);

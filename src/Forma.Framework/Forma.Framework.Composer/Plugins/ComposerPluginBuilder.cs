@@ -1,5 +1,7 @@
 namespace Forma.Framework.Composer.Plugins;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Plugins;
 
 /// <summary>Describes the plugins a composer has: its editors, the views over them, and the capabilities around both.</summary>
@@ -15,7 +17,7 @@ public sealed class ComposerPluginBuilder
     /// <summary>Registers an editor, and the plugins and views that belong to it.</summary>
     /// <typeparam name="TPlugin">The editor to create.</typeparam>
     /// <param name="configure">Registers the editor's own plugins and views.</param>
-    public ComposerPluginBuilder AddEditorPlugin<TPlugin>(Action<ComposerEditorBuilder<TPlugin>>? configure = null)
+    public ComposerPluginBuilder AddEditorPlugin<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPlugin>(Action<ComposerEditorBuilder<TPlugin>>? configure = null)
         where TPlugin : class, IComposerEditorPlugin
     {
         _registry.Add<TPlugin>(editor => configure?.Invoke(new ComposerEditorBuilder<TPlugin>(editor)));
@@ -28,7 +30,7 @@ public sealed class ComposerPluginBuilder
     /// <param name="factory">Creates the editor for one composer, from the host's services.</param>
     /// <param name="configure">Registers the editor's own plugins and views.</param>
     /// <remarks>The factory runs once for each composer, and each composer uses the instance it returns.</remarks>
-    public ComposerPluginBuilder AddEditorPlugin<TPlugin>(
+    public ComposerPluginBuilder AddEditorPlugin<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPlugin>(
         Func<IServiceProvider, TPlugin> factory,
         Action<ComposerEditorBuilder<TPlugin>>? configure = null)
         where TPlugin : class, IComposerEditorPlugin
@@ -40,7 +42,7 @@ public sealed class ComposerPluginBuilder
 
     /// <summary>Registers a capability that spans every editor and view.</summary>
     /// <typeparam name="TPlugin">The plugin to create.</typeparam>
-    public ComposerPluginBuilder AddFeaturePlugin<TPlugin>()
+    public ComposerPluginBuilder AddFeaturePlugin<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPlugin>()
         where TPlugin : class, IComposerFeaturePlugin
     {
         _registry.Add<TPlugin>();
@@ -52,7 +54,7 @@ public sealed class ComposerPluginBuilder
     /// <typeparam name="TPlugin">The plugin to create.</typeparam>
     /// <typeparam name="TOptions">The options record the plugin declares through <see cref="IPluginConfigurable{TOptions}"/>.</typeparam>
     /// <param name="configure">Fills the options record created for this registration.</param>
-    public ComposerPluginBuilder AddFeaturePlugin<TPlugin, TOptions>(Action<TOptions> configure)
+    public ComposerPluginBuilder AddFeaturePlugin<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPlugin, TOptions>(Action<TOptions> configure)
         where TPlugin : class, IComposerFeaturePlugin, IPluginConfigurable<TOptions>
         where TOptions : class, new()
     {
@@ -65,7 +67,7 @@ public sealed class ComposerPluginBuilder
     /// <typeparam name="TPlugin">The plugin the factory creates.</typeparam>
     /// <param name="factory">Creates the plugin for one composer, from the host's services.</param>
     /// <remarks>The factory runs once for each composer, and each composer uses the instance it returns.</remarks>
-    public ComposerPluginBuilder AddFeaturePlugin<TPlugin>(Func<IServiceProvider, TPlugin> factory)
+    public ComposerPluginBuilder AddFeaturePlugin<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPlugin>(Func<IServiceProvider, TPlugin> factory)
         where TPlugin : class, IComposerFeaturePlugin
     {
         _registry.Add(factory);
@@ -75,7 +77,7 @@ public sealed class ComposerPluginBuilder
 
     /// <summary>Registers a capability at the composer's root unless the root already registers it itself.</summary>
     /// <typeparam name="TPlugin">The plugin to fall back on.</typeparam>
-    public ComposerPluginBuilder TryAddFeaturePlugin<TPlugin>()
+    public ComposerPluginBuilder TryAddFeaturePlugin<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPlugin>()
         where TPlugin : class, IComposerFeaturePlugin
     {
         _registry.TryAdd<TPlugin>();

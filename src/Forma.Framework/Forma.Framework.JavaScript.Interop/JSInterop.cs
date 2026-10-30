@@ -1,5 +1,7 @@
 namespace Forma.Framework.JavaScript.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.JSInterop;
 
 /// <summary>A JS module attached to an element.</summary>
@@ -68,7 +70,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
     }
 
     /// <summary>Invokes a method on the attached instance and returns its result, where <see langword="default"/> means the call did not run.</summary>
-    protected async ValueTask<TValue?> InvokeAsync<TValue>(string identifier, params object?[] args)
+    protected async ValueTask<TValue?> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, params object?[] args)
     {
         if (_handle is null)
         {

@@ -14,7 +14,7 @@
                 @switch (item)
                 {
                     case ToolbarCustomItem custom:
-                        <DynamicComponent Type="custom.Component" Parameters="ToParameters(custom.Parameters)" @key="custom.Id" />
+                        @RenderCustomItem(custom)
                         break;
 
                     case ToolbarMenu menu:

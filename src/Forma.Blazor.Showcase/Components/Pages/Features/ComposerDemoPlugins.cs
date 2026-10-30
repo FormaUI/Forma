@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -36,6 +37,7 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
 
     /// <inheritdoc />
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public Type EditorComponent => typeof(DemoSourceEditor);
 
     /// <inheritdoc />
@@ -106,6 +108,7 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
     public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
 
     /// <inheritdoc />
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public Type EditorComponent => typeof(DemoTextEditor);
 
     /// <inheritdoc />

@@ -28,7 +28,7 @@ public sealed class DomFocus : IDomFocusObservation
     {
         ArgumentNullException.ThrowIfNull(handler);
 
-        var observation = new DomObservation<FocusWatchOptions, FocusState>(_watcher.Session, Watching, handler);
+        var observation = new DomObservation<FocusWatchOptions, FocusState>(_watcher.Session, Watching, DomJsonContext.Default.FocusState, handler);
         await observation.SyncAsync(_element, new FocusWatchOptions(), shouldObserve);
 
         return observation;

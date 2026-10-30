@@ -14,6 +14,11 @@
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
+    <!-- Every library a WebAssembly client loads is analyzed for trimming, so a trim warning fails its build as any warning does: everything under src but the halves serving the server alone, the locale packs, which hold no code, and the Showcase. -->
+    <PropertyGroup Condition="$(MSBuildProjectDirectory.StartsWith('$(MSBuildThisFileDirectory)src')) and !$(MSBuildProjectName.EndsWith('.Server')) and !$(MSBuildProjectName.EndsWith('.AspNetCore')) and !$(MSBuildProjectName.Contains('.Locales.')) and '$(MSBuildProjectName)' != 'Forma.Blazor.Showcase'">
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    </PropertyGroup>
+
     <!-- Repo-root-anchored, so a project imports it correctly whatever depth it sits at. -->
     <PropertyGroup>
         <ComponentAnalyzersTargets>$(MSBuildThisFileDirectory)eng\ComponentAnalyzers.targets</ComponentAnalyzersTargets>

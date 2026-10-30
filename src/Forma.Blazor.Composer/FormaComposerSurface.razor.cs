@@ -68,4 +68,20 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     /// <summary>What the selection bar is built from.</summary>
     /// <remarks>The plugins compare by identity, as the composer hands the same instances over across renders.</remarks>
     private sealed record SelectionBarInputs(IComposerEditorPlugin Editor, IReadOnlyList<IComposerPlugin> Plugins, ComposerKeyBindingCatalog KeyBindings, string Culture);
+
+    // The view's component, rendered by its type.
+    private RenderFragment ViewContent
+        => builder =>
+        {
+            builder.OpenComponent(0, View!.ViewComponent);
+            builder.CloseComponent();
+        };
+
+    // The editor's component, rendered by its type.
+    private RenderFragment EditorContent
+        => builder =>
+        {
+            builder.OpenComponent(0, Editor.EditorComponent);
+            builder.CloseComponent();
+        };
 }

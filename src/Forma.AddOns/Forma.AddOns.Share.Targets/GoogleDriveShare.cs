@@ -24,7 +24,7 @@ public sealed class GoogleDriveShare(IShareTokenSource tokens, HttpClient? http 
 
         var bytes = await Http.GetByteArrayAsync(new Uri(GetReachableSource(item)!), cancellationToken).ConfigureAwait(false);
 
-        using var metadata = new StringContent(JsonSerializer.Serialize(new { name = item.Resource!.Name }), Encoding.UTF8, "application/json");
+        using var metadata = new StringContent(JsonSerializer.Serialize(new GoogleDriveMetadata(item.Resource!.Name), ShareTargetsJsonContext.Default.GoogleDriveMetadata), Encoding.UTF8, "application/json");
         using var media = new ByteArrayContent(bytes);
         using var content = new MultipartContent("related") { metadata, media };
 

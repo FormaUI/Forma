@@ -1,5 +1,7 @@
 namespace Forma.Framework.Composer.Plugins;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Icons;
@@ -17,6 +19,7 @@ public interface IComposerEditorPlugin : IComposerPlugin
     ComposerDocumentFormat Format { get; }
 
     /// <summary>The component filling this editor's canvas.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     Type EditorComponent { get; }
 
     /// <summary>Puts an insertion into this editor's surface, reporting whether it takes one of that kind.</summary>

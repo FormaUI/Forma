@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Views;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
@@ -45,6 +47,7 @@ public sealed class RichTextSourceViewPlugin : IComposerViewPlugin
     public Icon Icon => Glyph.FileCode;
 
     /// <inheritdoc />
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public Type ViewComponent => typeof(FormaRichTextSource);
 
     /// <inheritdoc />

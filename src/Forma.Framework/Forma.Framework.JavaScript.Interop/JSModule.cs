@@ -26,7 +26,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
     }
 
     /// <summary>Invokes an export of the module returning <typeparamref name="TValue"/>.</summary>
-    public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object?[] args)
+    public async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, params object?[] args)
     {
         var module = await ImportAsync();
 
@@ -64,7 +64,7 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
     }
 
     /// <summary>Tries to invoke an export and returns its result, where <see langword="default"/> means the call did not succeed.</summary>
-    public async ValueTask<TValue?> TryInvokeAsync<TValue>(string identifier, params object?[] args)
+    public async ValueTask<TValue?> TryInvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, params object?[] args)
     {
         var module = await TryImportAsync();
 

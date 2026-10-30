@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A registration of a capability, kept in step with the element and options its owner last asked for.</summary>
@@ -77,7 +79,7 @@ internal sealed class DomRegistration<TOptions> : IDomRegistration
         => _request is { } request ? SyncAsync(request.Element, request.Options, request.ShouldApply) : Task.CompletedTask;
 
     /// <summary>Invokes <paramref name="identifier"/> on the registration's entry under its current generation and returns its result, where <see langword="default"/> means the call did not run.</summary>
-    public Task<TResult?> TryInvokeAsync<TResult>(string identifier, bool createsState, params object?[] args)
+    public Task<TResult?> TryInvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TResult>(string identifier, bool createsState, params object?[] args)
     {
         var generation = Generation;
 

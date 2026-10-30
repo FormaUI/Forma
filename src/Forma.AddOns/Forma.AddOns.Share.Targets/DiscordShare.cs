@@ -1,5 +1,7 @@
 namespace Forma.Framework.Share.Targets;
 
+using System.Text.Json.Serialization.Metadata;
+
 using Forma.Framework.Icons;
 
 /// <summary>Posts a share item into the Discord channel a webhook address names.</summary>
@@ -7,6 +9,10 @@ using Forma.Framework.Icons;
 /// <param name="http">The connection to post over, or null for one of the target's own.</param>
 public sealed class DiscordShare(Uri webhookAddress, HttpClient? http = null) : WebhookShare("discord", "Discord", Brand.Discord, webhookAddress, http)
 {
+    /// <inheritdoc />
+    protected override JsonTypeInfo PayloadType
+        => ShareTargetsJsonContext.Default.DiscordMessage;
+
     /// <inheritdoc />
     protected override object? GetPayload(ShareItem item)
     {
@@ -17,6 +23,6 @@ public sealed class DiscordShare(Uri webhookAddress, HttpClient? http = null) : 
             return null;
         }
 
-        return new { content = string.IsNullOrEmpty(item.Name) ? address : $"{item.Name}\n{address}" };
+        return new DiscordMessage(string.IsNullOrEmpty(item.Name) ? address : $"{item.Name}\n{address}");
     }
 }

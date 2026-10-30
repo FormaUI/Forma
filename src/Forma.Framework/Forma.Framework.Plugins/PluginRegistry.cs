@@ -1,5 +1,7 @@
 namespace Forma.Framework.Plugins;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>What one owner registers: its plugins in order, the defaults it falls back on, and what each of them registers in turn.</summary>
 /// <typeparam name="TPlugin">The plugin family this registers.</typeparam>
 /// <remarks>
@@ -30,7 +32,7 @@ public sealed class PluginRegistry<TPlugin>
     /// <summary>Registers a plugin, and whatever is registered under it.</summary>
     /// <typeparam name="TImplementation">The plugin to create.</typeparam>
     /// <param name="children">Registers the plugins that sit under this one.</param>
-    public PluginRegistry<TPlugin> Add<TImplementation>(Action<PluginRegistry<TPlugin>>? children = null)
+    public PluginRegistry<TPlugin> Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(Action<PluginRegistry<TPlugin>>? children = null)
         where TImplementation : class, TPlugin
         => Record(typeof(TImplementation), optionsType: null, configure: null, factory: null, children);
 
@@ -39,7 +41,7 @@ public sealed class PluginRegistry<TPlugin>
     /// <typeparam name="TOptions">The options record the plugin declares through <see cref="IPluginConfigurable{TOptions}"/>.</typeparam>
     /// <param name="configure">Fills the options record created for this registration.</param>
     /// <param name="children">Registers the plugins that sit under this one.</param>
-    public PluginRegistry<TPlugin> Add<TImplementation, TOptions>(
+    public PluginRegistry<TPlugin> Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TOptions>(
         Action<TOptions> configure,
         Action<PluginRegistry<TPlugin>>? children = null)
         where TImplementation : class, TPlugin, IPluginConfigurable<TOptions>
@@ -55,7 +57,7 @@ public sealed class PluginRegistry<TPlugin>
     /// <param name="factory">Creates the plugin for one owner, from the host's services.</param>
     /// <param name="children">Registers the plugins that sit under this one.</param>
     /// <remarks>What a factory creates is autonomous, and the host disposes it.</remarks>
-    public PluginRegistry<TPlugin> Add<TImplementation>(
+    public PluginRegistry<TPlugin> Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
         Func<IServiceProvider, TImplementation> factory,
         Action<PluginRegistry<TPlugin>>? children = null)
         where TImplementation : class, TPlugin
@@ -67,7 +69,7 @@ public sealed class PluginRegistry<TPlugin>
 
     /// <summary>Registers a plugin to fall back on.</summary>
     /// <typeparam name="TImplementation">The plugin to fall back on.</typeparam>
-    public PluginRegistry<TPlugin> TryAdd<TImplementation>()
+    public PluginRegistry<TPlugin> TryAdd<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>()
         where TImplementation : class, TPlugin
     {
         if (!_defaults.Exists(held => held.PluginType == typeof(TImplementation)))
@@ -108,8 +110,8 @@ public sealed class PluginRegistry<TPlugin>
     }
 
     private PluginRegistry<TPlugin> Record(
-        Type pluginType,
-        Type? optionsType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type pluginType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type? optionsType,
         Action<object>? configure,
         Func<IServiceProvider, TPlugin>? factory,
         Action<PluginRegistry<TPlugin>>? children)
@@ -140,8 +142,8 @@ public sealed class PluginRegistry<TPlugin>
     }
 
     private PluginRegistration<TPlugin> Create(
-        Type pluginType,
-        Type? optionsType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type pluginType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type? optionsType,
         Action<object>? configure,
         Func<IServiceProvider, TPlugin>? factory)
         => new()

@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Views;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using Forma.Framework.Composer.Editing;
@@ -64,6 +65,7 @@ public sealed class RichTextPreviewViewPlugin : IComposerViewPlugin
     public Icon Icon => Glyph.Preview;
 
     /// <inheritdoc />
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public Type ViewComponent => typeof(FormaRichTextPreview);
 
     /// <inheritdoc />
