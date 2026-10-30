@@ -41,12 +41,12 @@ src/
 
 ## Build order
 
-The components still to build, in the order dependency and reuse suggest.
+The components still to build, in the order dependency and reuse suggest. What is in progress finishes before the next starts, and the data view group is finished by its plan's explorer and tree steps: its gallery step is built with `FormaGallery`, and stays open in the plan until the gallery starts.
 
 | Order | Components | Rationale |
 |---|---|---|
 | 1 | `FormaVirtualize` | Forma's virtualization, which every view of the data view draws through; in progress, awaiting approval — see [the virtualization design](virtualization-design.md) |
-| 2 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch` | The engine every collection surface shares, with its views and controls; in progress, the explorer adopting it and the gallery built on it — see [the data view design](data-view-design.md) |
+| 2 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch` | The engine every collection surface shares, with its views and controls; in progress — see [the data view design](data-view-design.md) |
 | 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
 | 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
 | 5 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
