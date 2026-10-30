@@ -1,5 +1,6 @@
 namespace Forma.Framework.Input;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Forma.Framework.Input.Click;
@@ -9,6 +10,7 @@ using Forma.Framework.Input.Pointer;
 using Forma.Framework.Input.Wheel;
 
 /// <summary>A binding: the input a route is raised by, matched by the rules of its family.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "family")]
 [JsonDerivedType(typeof(KeyBinding), "keyboard")]
 [JsonDerivedType(typeof(TypingBinding), "typing")]

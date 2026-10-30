@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Explorer.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -17,6 +19,16 @@ internal sealed class Breakpoint(IJSEnvironment js)
         ArgumentException.ThrowIfNullOrWhiteSpace(property);
         ArgumentNullException.ThrowIfNull(owner);
 
-        return AttachCoreAsync(target, new { owner, property });
+        return AttachCoreAsync(target, new AttachOptions<TOwner> { Owner = owner, Property = property });
+    }
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+
+        public required string Property { get; init; }
     }
 }

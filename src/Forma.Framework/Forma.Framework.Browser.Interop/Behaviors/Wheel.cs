@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Behaviors;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -16,7 +18,7 @@ public sealed class Wheel(IJSEnvironment js)
         ArgumentNullException.ThrowIfNull(wheel);
         ArgumentNullException.ThrowIfNull(owner);
 
-        return AttachCoreAsync(target, new { action = wheel.Action, owner, modifier = GetModifierName(wheel.Modifier) });
+        return AttachCoreAsync(target, new AttachOptions<TOwner> { Action = wheel.Action, Owner = owner, Modifier = GetModifierName(wheel.Modifier) });
     }
 
     private static string? GetModifierName(WheelModifier modifier) => modifier switch
@@ -26,4 +28,16 @@ public sealed class Wheel(IJSEnvironment js)
         WheelModifier.Alt => "alt",
         _ => null,
     };
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required string Action { get; init; }
+
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+
+        public required string? Modifier { get; init; }
+    }
 }

@@ -1,11 +1,13 @@
 namespace Forma.Framework.Browser.Interop.Focus;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>An element's focus: observing whether the reader is within it, and the interaction that decides where the focus goes inside it.</summary>
 public sealed class DomFocus : IDomFocusObservation
 {
-    private static readonly DomCapability<FocusWatchOptions> Watching = new(DomRoot.Watcher, "focus", _ => new { });
+    private static readonly DomCapability<FocusWatchOptions> Watching = new(DomRoot.Watcher, "focus", _ => new());
 
     private static readonly DomCapability<FocusInteractionOptions> Interacting = new(DomRoot.Engine, "focus", DescribeInteraction)
     {
@@ -54,17 +56,34 @@ public sealed class DomFocus : IDomFocusObservation
         return interaction;
     }
 
-    private static object DescribeInteraction(FocusInteractionOptions options)
-        => new
+    private static InteractionDescription DescribeInteraction(FocusInteractionOptions options)
+        => new()
         {
-            wrap = options.Wraps,
-            order = options.RegionSelectors,
-            roving = options.RovingOrientation switch
+            Wrap = options.Wraps,
+            Order = options.RegionSelectors,
+            Roving = options.RovingOrientation switch
             {
                 FocusOrientation.Horizontal => "horizontal",
                 FocusOrientation.Vertical => "vertical",
                 _ => null,
             },
-            heir = options.HeirAttribute,
+            Heir = options.HeirAttribute,
         };
+
+    /// <summary>The focus watch as the browser reads it, which takes no options.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record WatchDescription;
+
+    /// <summary>The focus interaction as the browser reads it.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record InteractionDescription
+    {
+        public required bool Wrap { get; init; }
+
+        public required IReadOnlyList<string> Order { get; init; }
+
+        public required string? Roving { get; init; }
+
+        public required string? Heir { get; init; }
+    }
 }

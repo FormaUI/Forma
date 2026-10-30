@@ -199,7 +199,7 @@
             using var ctx = new FormaRichTextEditorTests();
             var canvas = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
             canvas.Setup<RichTextCommandResult>("exec", _ => true)
-                .SetResult(new RichTextCommandResult("<p><strong>Initial Text</strong></p>", new RichTextSelectionDto(0, 0, true, "p", ["bold"])));
+                .SetResult(new RichTextCommandResult { Html = "<p><strong>Initial Text</strong></p>", Selection = new RichTextSelectionDto { Start = 0, End = 0, IsCollapsed = true, BlockType = "p", ActiveStyles = ["bold"] } });
             var model = new TestModel();
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
 

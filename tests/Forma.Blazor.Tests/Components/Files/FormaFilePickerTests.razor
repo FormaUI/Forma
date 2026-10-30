@@ -20,8 +20,8 @@
             // Assert
             var options = Assert.Single(zone.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
             Assert.Multiple(
-                () => Assert.Equal("file-picker.drop", options.GetType().GetProperty("action")!.GetValue(options)),
-                () => Assert.Equal("forma-file-picker-dragging", options.GetType().GetProperty("activeClass")!.GetValue(options)));
+                () => Assert.Equal("file-picker.drop", InteropPayload.GetValue(options, "action")),
+                () => Assert.Equal("forma-file-picker-dragging", InteropPayload.GetValue(options, "activeClass")));
         }
 
         [Fact]

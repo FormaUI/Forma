@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Scrolling;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>An element's scrolling: observing how far it can still move, moving it a step, and the interaction that moves it in the browser.</summary>
@@ -81,24 +83,76 @@ public sealed class DomScroll : IDomScrollObservation
         }
     }
 
-    private static object DescribeWatch(ScrollWatchOptions options)
-        => new { axis = GetAxisName(options.Axis), frozen = options.FrozenSelector, viewportExtent = options.ReportsViewportExtent };
+    private static WatchDescription DescribeWatch(ScrollWatchOptions options)
+        => new() { Axis = GetAxisName(options.Axis), Frozen = options.FrozenSelector, ViewportExtent = options.ReportsViewportExtent };
 
-    private static object DescribeInteraction(ScrollInteractionOptions options)
-        => new
+    private static InteractionDescription DescribeInteraction(ScrollInteractionOptions options)
+        => new()
         {
-            axis = GetAxisName(options.Steps.Axis),
-            stops = options.Steps.StopSelector,
-            frozen = options.Steps.FrozenSelector,
-            wheel = options.WheelAction,
-            buttons = options.Buttons is { } buttons
-                ? new { container = buttons.Container, back = buttons.BackSelector, forward = buttons.ForwardSelector, backAction = buttons.BackAction, forwardAction = buttons.ForwardAction }
+            Axis = GetAxisName(options.Steps.Axis),
+            Stops = options.Steps.StopSelector,
+            Frozen = options.Steps.FrozenSelector,
+            Wheel = options.WheelAction,
+            Buttons = options.Buttons is { } buttons
+                ? new ButtonsDescription { Container = buttons.Container, Back = buttons.BackSelector, Forward = buttons.ForwardSelector, BackAction = buttons.BackAction, ForwardAction = buttons.ForwardAction }
                 : null,
         };
 
-    private static object DescribeSteps(ScrollStepOptions options)
-        => new { axis = GetAxisName(options.Axis), stops = options.StopSelector, frozen = options.FrozenSelector };
+    private static StepsDescription DescribeSteps(ScrollStepOptions options)
+        => new() { Axis = GetAxisName(options.Axis), Stops = options.StopSelector, Frozen = options.FrozenSelector };
 
     private static string GetAxisName(ScrollAxis axis)
         => axis == ScrollAxis.Block ? "block" : "inline";
+
+    /// <summary>The scroll watch as the browser reads it.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record WatchDescription
+    {
+        public required string Axis { get; init; }
+
+        public required string? Frozen { get; init; }
+
+        public required bool ViewportExtent { get; init; }
+    }
+
+    /// <summary>The scroll interaction as the browser reads it.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record InteractionDescription
+    {
+        public required string Axis { get; init; }
+
+        public required string? Stops { get; init; }
+
+        public required string? Frozen { get; init; }
+
+        public required string? Wheel { get; init; }
+
+        public required ButtonsDescription? Buttons { get; init; }
+    }
+
+    /// <summary>The scroll buttons as the browser reads them.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record ButtonsDescription
+    {
+        public required ElementReference Container { get; init; }
+
+        public required string Back { get; init; }
+
+        public required string Forward { get; init; }
+
+        public required string BackAction { get; init; }
+
+        public required string ForwardAction { get; init; }
+    }
+
+    /// <summary>The scroll steps as the browser reads them.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record StepsDescription
+    {
+        public required string Axis { get; init; }
+
+        public required string? Stops { get; init; }
+
+        public required string? Frozen { get; init; }
+    }
 }

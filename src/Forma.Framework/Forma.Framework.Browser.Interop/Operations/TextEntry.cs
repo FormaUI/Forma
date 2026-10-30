@@ -29,6 +29,12 @@ public sealed class TextEntry(IJSEnvironment js) : IAsyncDisposable
         => _module.DisposeAsync();
 
     /// <summary>A selected range within a text entry.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
     [SuppressMessage("Performance", "CA1812", Justification = "Constructed by JSON deserialization when JS interop returns this shape.")]
-    public sealed record TextRange(int Start, int End);
+    public sealed record TextRange
+    {
+        public int Start { get; init; }
+
+        public int End { get; init; }
+    }
 }

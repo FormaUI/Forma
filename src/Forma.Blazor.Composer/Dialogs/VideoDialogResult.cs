@@ -1,10 +1,17 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>The data collected from the video embed dialog.</summary>
-/// <param name="Source">The address of the video to embed.</param>
-/// <param name="Title">The accessible title of the video.</param>
-/// <param name="Autoplay">Whether the video plays automatically.</param>
-public sealed record VideoDialogResult(
-    string Source,
-    string? Title,
-    bool Autoplay) : ComposerDialogResult;
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+public sealed record VideoDialogResult : ComposerDialogResult
+{
+    /// <summary>The address of the video to embed.</summary>
+    public string Source { get; init; } = "";
+
+    /// <summary>The accessible title of the video.</summary>
+    public string? Title { get; init; }
+
+    /// <summary>Whether the video plays automatically.</summary>
+    public bool Autoplay { get; init; }
+}

@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Behaviors;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -11,5 +13,14 @@ public sealed class FileDropZone(IJSEnvironment js)
 {
     /// <summary>Attaches the drop zone, its drop routed as <paramref name="action"/>, marking the element with <paramref name="activeClass"/> while a drag is over it.</summary>
     public ValueTask<bool> AttachAsync(ElementReference dropZone, string action, string activeClass)
-        => AttachCoreAsync(dropZone, new { action, activeClass });
+        => AttachCoreAsync(dropZone, new AttachOptions { Action = action, ActiveClass = activeClass });
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions
+    {
+        public required string Action { get; init; }
+
+        public required string ActiveClass { get; init; }
+    }
 }

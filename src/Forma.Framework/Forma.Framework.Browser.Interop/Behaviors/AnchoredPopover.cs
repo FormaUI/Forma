@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Behaviors;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -55,7 +57,7 @@ public sealed class AnchoredPopover(IJSEnvironment js)
     private async Task OpenAsync(ElementReference popover, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened, bool keepsFocus, PopoverAlignment alignment)
     {
         // A failed attach leaves the popover closed, so the next sync attaches again.
-        _isOpen = await AttachCoreAsync(popover, new { anchor, keepsFocus, align = alignment switch { PopoverAlignment.Start => "start", PopoverAlignment.End => "end", _ => "auto" } });
+        _isOpen = await AttachCoreAsync(popover, new AttachOptions { Anchor = anchor, KeepsFocus = keepsFocus, Align = alignment switch { PopoverAlignment.Start => "start", PopoverAlignment.End => "end", _ => "auto" } });
 
         if (!_isOpen)
         {
@@ -68,5 +70,16 @@ public sealed class AnchoredPopover(IJSEnvironment js)
         {
             await onOpened();
         }
+    }
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions
+    {
+        public required ElementReference Anchor { get; init; }
+
+        public required bool KeepsFocus { get; init; }
+
+        public required string Align { get; init; }
     }
 }

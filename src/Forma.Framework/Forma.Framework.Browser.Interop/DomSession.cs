@@ -82,14 +82,14 @@ internal sealed class DomSession
     }
 
     /// <summary>The owner's established observations, each by its token and current generation.</summary>
-    public object? DescribeObservations()
+    public DomObservedOwner? DescribeObservations()
     {
         var observations = _registrations
             .Where(registration => registration.Root == DomRoot.Watcher && registration.IsActive)
-            .Select(registration => new { token = registration.Token, generation = registration.Generation })
+            .Select(registration => new DomObservedRegistration { Token = registration.Token, Generation = registration.Generation })
             .ToList();
 
-        return observations.Count == 0 ? null : new { runtimeKey = RuntimeKey, registrations = observations };
+        return observations.Count == 0 ? null : new DomObservedOwner { RuntimeKey = RuntimeKey, Registrations = observations };
     }
 
     /// <summary>Delivers a state the browser measured to the registration holding <paramref name="token"/>.</summary>

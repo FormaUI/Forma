@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Components;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -26,7 +28,15 @@ public sealed class Frame(IJSEnvironment js)
         double stepPixels,
         ElementReference? bounds)
         where TOwner : class
-        => AttachCoreAsync(frame, new { owner, box, dragRegionClass, handleClass, stepPixels, bounds });
+        => AttachCoreAsync(frame, new AttachOptions<TOwner>
+        {
+            Owner = owner,
+            Box = box,
+            DragRegionClass = dragRegionClass,
+            HandleClass = handleClass,
+            StepPixels = stepPixels,
+            Bounds = bounds,
+        });
 
     /// <summary>Tells the owner where the box stands now.</summary>
     public ValueTask<bool> MeasureAsync()
@@ -35,4 +45,22 @@ public sealed class Frame(IJSEnvironment js)
     /// <summary>Holds the box within its bounds again.</summary>
     public ValueTask<bool> FitAsync()
         => InvokeAsync("fit");
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+
+        public required string Box { get; init; }
+
+        public required string DragRegionClass { get; init; }
+
+        public required string HandleClass { get; init; }
+
+        public required double StepPixels { get; init; }
+
+        public required ElementReference? Bounds { get; init; }
+    }
 }

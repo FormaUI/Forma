@@ -425,7 +425,7 @@
             // Assert
             var invocation = Assert.Single(ctx.JSInterop.Invocations["attach"]);
             var options = invocation.Arguments[1]!;
-            Assert.Equal(true, options.GetType().GetProperty("dragFromItem")!.GetValue(options));
+            Assert.Equal(true, InteropPayload.GetValue(options, "dragFromItem"));
         }
 
         [Fact]

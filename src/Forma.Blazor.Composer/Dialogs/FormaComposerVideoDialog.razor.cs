@@ -43,6 +43,6 @@ public sealed partial class FormaComposerVideoDialog : ComposerDialogBase
             return;
         }
 
-        await OnInsert.InvokeAsync(new VideoDialogResult(source, _title, _autoplay));
+        await OnInsert.InvokeAsync(new VideoDialogResult { Source = source, Title = _title, Autoplay = _autoplay });
     }
 }

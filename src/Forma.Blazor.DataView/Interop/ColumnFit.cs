@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.DataView.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -21,6 +23,18 @@ internal sealed class ColumnFit(IJSEnvironment js)
         ArgumentException.ThrowIfNullOrWhiteSpace(measuringClass);
         ArgumentNullException.ThrowIfNull(owner);
 
-        return AttachCoreAsync(table, new { owner, columnAttribute, measuringClass });
+        return AttachCoreAsync(table, new AttachOptions<TOwner> { Owner = owner, ColumnAttribute = columnAttribute, MeasuringClass = measuringClass });
+    }
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+
+        public required string ColumnAttribute { get; init; }
+
+        public required string MeasuringClass { get; init; }
     }
 }

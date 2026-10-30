@@ -335,7 +335,7 @@
             // Assert
             var interaction = Assert.Single(probe.Interactions);
             var buttons = DomProbe<ScrollState>.GetOption(interaction, "buttons")!;
-            object? GetButtonOption(string name) => buttons.GetType().GetProperty(name)!.GetValue(buttons);
+            object? GetButtonOption(string name) => InteropPayload.GetValue(buttons, name);
             Assert.Multiple(
                 () => Assert.Equal(".forma-freeze-pane-stop", DomProbe<ScrollState>.GetOption(interaction, "stops")),
                 () => Assert.Equal(".forma-freeze-pane-frozen", DomProbe<ScrollState>.GetOption(interaction, "frozen")),

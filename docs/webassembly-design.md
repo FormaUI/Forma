@@ -90,9 +90,16 @@ from its own startup, which supplies the initial pair and the switch's policy.
 - **Trimming.** Every library a client loads is trim-compatible and declares itself `IsTrimmable`, with
   the trim analyzer on in its build, so a trim warning fails the build as any warning does. What reaches
   reflection carries the annotation its target declares: a generic value passed to interop or to binding
-  carries the members the target requires, JSON is read and written through source-generated contexts,
+  carries the members the target requires, JSON Forma reads itself goes through source-generated contexts,
   and a component type rendered by its type, through a render fragment that opens it, or a plugin type
   created through its constructor, is annotated where it enters.
+- **What crosses the interop boundary** is serialized by the framework's interop through reflection, so
+  every type crossing it, an argument, anything nested in one, a result or a `[JSInvokable]` parameter, is a
+  named type annotated at the type with `DynamicallyAccessedMembers` keeping its public constructors and
+  properties, which reaches every use of it, and has a public parameterless constructor with `init`
+  properties, since trimming removes the parameter names serialization matches a constructor by. An
+  anonymous object never crosses it. Forma's own analyzer fails the build of every client library that
+  breaks either rule.
 - **Locale packs** reach a trimmed client because the host's build records each pack it references in
   the host's assembly, the package's own targets doing what the repository's build does for its hosts.
 
@@ -138,7 +145,7 @@ render matches its prerender and the page never flips language as it hydrates:
 | W1 | What does a client library reference? | The packages it compiles against, never the shared framework, which has no browser runtime pack |
 | W2 | Where do the server-only and WebAssembly-only parts live? | In the product's halves, `Forma.Blazor.Server` with `AddFormaUIServer` and `Forma.Blazor.WebAssembly` with `AddFormaUIWebAssembly`, beside the neutral `AddFormaUI`, so the components assembly references no server half |
 | W3 | Does a client compile with runtime async? | No, since WebAssembly's runtime throws for a method compiled with it |
-| W4 | Are the client libraries trim-compatible? | Yes, declared `IsTrimmable` with the analyzer on, reflection annotated where it enters and JSON source-generated |
+| W4 | Are the client libraries trim-compatible? | Yes, declared `IsTrimmable` with the analyzer on, reflection annotated where it enters, and every type crossing the interop annotated and built through a parameterless constructor, which Forma's analyzer enforces |
 | W5 | How does a prerendered client start in the server's culture? | Through the framework's capture, which `AddFormaUIServer` supplies as a default only where the configuration names none; `FormaPageHead`'s culture marker tells the coordinator the page's pair, and a capture the host turned off is never restored by another route |
 | W6 | Who sets the process's default cultures? | WebAssembly's culture half, as it applies each accepted pair; never a server |
 | W7 | What does a server choose for a client's culture? | The culture arrangement, an option on both product registrars: coordinated by default, which needs the server's initialization and rejects an explicit capture `false` at startup, reading the final configuration; or an independent client culture, declared on both sides, with the local switch on the client |

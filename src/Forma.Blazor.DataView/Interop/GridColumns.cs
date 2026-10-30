@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.DataView.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -16,6 +18,14 @@ internal sealed class GridColumns(IJSEnvironment js)
     {
         ArgumentNullException.ThrowIfNull(owner);
 
-        return AttachCoreAsync(target, new { owner });
+        return AttachCoreAsync(target, new AttachOptions<TOwner> { Owner = owner });
+    }
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
     }
 }

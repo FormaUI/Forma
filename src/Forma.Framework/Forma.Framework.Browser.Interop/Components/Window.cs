@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Components;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -11,7 +13,7 @@ public sealed class Window(IJSEnvironment js)
 {
     /// <summary>Attaches to the window, shown in the top layer while <paramref name="presented"/>; a <paramref name="modal"/> one keeps Tab inside itself and shows <paramref name="scrim"/> beneath it.</summary>
     public ValueTask<bool> AttachAsync(ElementReference window, bool presented, bool modal, ElementReference? scrim)
-        => AttachCoreAsync(window, new { presented, modal, scrim });
+        => AttachCoreAsync(window, new AttachOptions { Presented = presented, Modal = modal, Scrim = scrim });
 
     /// <summary>Moves focus into the window.</summary>
     /// <remarks>Focus already on a control inside the window stays there; otherwise it goes to the element last focused inside the window, else its first control, else the window itself.</remarks>
@@ -25,4 +27,15 @@ public sealed class Window(IJSEnvironment js)
     /// <summary>Shows the window in the top layer or takes it out, to match <paramref name="presented"/>.</summary>
     public ValueTask<bool> PresentAsync(bool presented)
         => InvokeAsync("present", presented);
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions
+    {
+        public required bool Presented { get; init; }
+
+        public required bool Modal { get; init; }
+
+        public required ElementReference? Scrim { get; init; }
+    }
 }

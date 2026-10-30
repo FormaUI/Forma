@@ -1,5 +1,7 @@
 namespace Forma.Framework.Input.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -12,5 +14,13 @@ public sealed class InputInspector(IJSEnvironment js)
     /// <summary>Starts reporting to <paramref name="owner"/> through <c>ReportAsync</c>.</summary>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference element, DotNetObjectReference<TOwner> owner)
         where TOwner : class
-        => AttachCoreAsync(element, new { owner });
+        => AttachCoreAsync(element, new AttachOptions<TOwner> { Owner = owner });
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+    }
 }

@@ -1,6 +1,9 @@
 namespace Forma.Blazor.Components.Debugging.InputInspector;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>One active registration's place in the input router's ordering.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record InputLayer
 {
     /// <summary>The registration's element, described as a selector.</summary>

@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -27,16 +29,29 @@ internal sealed class SelectionFollower(IJSEnvironment js)
         string? activeClass = null,
         SelectionFollowerPlacement placement = SelectionFollowerPlacement.Below,
         string? handleSelector = null)
-        => AttachCoreAsync(target, owner, new
+        => AttachCoreAsync(target, owner, new AttachOptions
         {
-            activeClass,
-            placement = placement == SelectionFollowerPlacement.Above ? "above" : "below",
-            handleSelector,
+            ActiveClass = activeClass,
+            Placement = placement == SelectionFollowerPlacement.Above ? "above" : "below",
+            HandleSelector = handleSelector,
             // An owner that resolves to nothing in the browser hides the element.
-            requiresOwner = owner is not null,
+            RequiresOwner = owner is not null,
         });
 
     /// <summary>Moves the element to the current selection.</summary>
     public ValueTask<bool> UpdateAsync()
         => InvokeAsync("update");
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions
+    {
+        public required string? ActiveClass { get; init; }
+
+        public required string Placement { get; init; }
+
+        public required string? HandleSelector { get; init; }
+
+        public required bool RequiresOwner { get; init; }
+    }
 }

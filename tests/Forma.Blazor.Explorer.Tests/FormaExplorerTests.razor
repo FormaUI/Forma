@@ -571,9 +571,9 @@
             var options = Assert.Single(zone.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
             var rows = cut.FindAll(".forma-explorer-folder-row");
             Assert.Multiple(
-                () => Assert.Equal("explorer.drop", options.GetType().GetProperty("action")!.GetValue(options)),
-                () => Assert.Equal("[data-drop-target]", options.GetType().GetProperty("targets")!.GetValue(options)),
-                () => Assert.Equal("move", options.GetType().GetProperty("dropEffect")!.GetValue(options)),
+                () => Assert.Equal("explorer.drop", InteropPayload.GetValue(options, "action")),
+                () => Assert.Equal("[data-drop-target]", InteropPayload.GetValue(options, "targets")),
+                () => Assert.Equal("move", InteropPayload.GetValue(options, "dropEffect")),
                 () => Assert.Equal("true", rows[0].GetAttribute("data-drop-target")),
                 () => Assert.Null(rows[0].GetAttribute("data-drop-key")),
                 () => Assert.Equal("races", rows[1].GetAttribute("data-drop-key")),

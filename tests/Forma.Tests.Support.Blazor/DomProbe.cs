@@ -5,6 +5,7 @@ using System.Text.Json;
 using Bunit;
 
 using Forma.Framework.Browser.Interop;
+using Forma.Tests.Interop;
 
 using Microsoft.JSInterop;
 
@@ -55,7 +56,7 @@ public sealed class DomProbe<TState>
     {
         var request = attach.Arguments[^1]!;
 
-        return request.GetType().GetProperty(field)!.GetValue(request);
+        return InteropPayload.GetValue(request, field);
     }
 
     /// <summary>Reads an option of what an attach asked the browser for.</summary>
@@ -63,7 +64,7 @@ public sealed class DomProbe<TState>
     {
         var options = GetRequestField(attach, "options")!;
 
-        return options.GetType().GetProperty(option)!.GetValue(options);
+        return InteropPayload.GetValue(options, option);
     }
 
     /// <summary>Reports <paramref name="state"/> as the browser measured it for the last observation attached, on the renderer.</summary>

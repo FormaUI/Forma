@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Behaviors;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -14,5 +16,14 @@ public sealed class PanGesture(IJSEnvironment js)
     /// <param name="action">The action the press is routed as.</param>
     /// <param name="whileClass">The class that marks the container as pannable.</param>
     public ValueTask<bool> AttachAsync(ElementReference container, string action, string whileClass)
-        => AttachCoreAsync(container, new { action, whileClass });
+        => AttachCoreAsync(container, new AttachOptions { Action = action, WhileClass = whileClass });
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions
+    {
+        public required string Action { get; init; }
+
+        public required string WhileClass { get; init; }
+    }
 }

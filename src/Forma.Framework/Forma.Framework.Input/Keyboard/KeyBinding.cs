@@ -1,17 +1,32 @@
 namespace Forma.Framework.Input.Keyboard;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>A key binding: Control, Alt, and Meta must be absent unless stated, and Shift matches either way unless stated.</summary>
 public sealed record KeyBinding : InputBinding
 {
+    /// <summary>Creates a binding whose key its initializer sets.</summary>
+    public KeyBinding()
+    {
+    }
+
     /// <summary>Creates a binding for <paramref name="key"/>.</summary>
+    [SetsRequiredMembers]
     public KeyBinding(string key)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
         Key = key;
     }
 
     /// <summary>The key, compared without regard to case.</summary>
-    public string Key { get; }
+    public required string Key
+    {
+        get;
+        init
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(value, nameof(Key));
+            field = value;
+        }
+    }
 
     /// <summary>The modifiers the key must be pressed with.</summary>
     public ModifierRequirement Modifiers { get; init; } = ModifierRequirement.None;

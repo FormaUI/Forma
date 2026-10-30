@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>An interaction the browser runs on an element, kept in step with the target and options its owner last gave it.</summary>
@@ -44,13 +46,13 @@ public sealed class DomInteraction<TOptions> : IAsyncDisposable, IDomRegistratio
             await inputRouter.ConfigureAsync();
         }
 
-        return await _registration.TryInvokeAsync<bool>("attach", createsState: true, _session.RuntimeKey, new
+        return await _registration.TryInvokeAsync<bool>("attach", createsState: true, _session.RuntimeKey, new DomAttachRequest
         {
-            token = _registration.Token,
-            generation,
-            capability = capability.Name,
-            target = element,
-            options = capability.DescribeOptions(options),
+            Token = _registration.Token,
+            Generation = generation,
+            Capability = capability.Name,
+            Target = element,
+            Options = capability.DescribeOptions(options),
         });
     }
 

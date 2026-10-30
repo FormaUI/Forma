@@ -38,6 +38,6 @@ public sealed partial class FormaComposerEmbedDialog : ComposerDialogBase
             return;
         }
 
-        await OnInsert.InvokeAsync(new EmbedDialogResult(_embedType!.Trim(), _identifier!.Trim(), _settings));
+        await OnInsert.InvokeAsync(new EmbedDialogResult { EmbedType = _embedType!.Trim(), Identifier = _identifier!.Trim(), Settings = _settings });
     }
 }

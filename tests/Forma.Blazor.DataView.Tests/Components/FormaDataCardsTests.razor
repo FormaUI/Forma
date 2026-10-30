@@ -237,7 +237,7 @@
             // Assert — the new ruler is watched from when it shows, the one taken away no longer
             var rulerAttaches = ctx.JSInterop.Invocations.Count(invocation => invocation.Identifier == "attach"
                 && invocation.Arguments is [ElementReference, { } options]
-                && options.GetType().GetProperties() is [{ Name: "owner" }]);
+                && InteropPayload.GetNames(options) is ["owner"]);
             Assert.Equal(2, rulerAttaches);
         }
 

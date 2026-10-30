@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Input.Interop;
 using Forma.Framework.JavaScript.Interop;
 
@@ -70,7 +72,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
             return;
         }
 
-        var owners = _liveSessions.Select(session => session.DescribeObservations()).OfType<object>().ToList();
+        var owners = _liveSessions.Select(session => session.DescribeObservations()).OfType<DomObservedOwner>().ToList();
 
         if (owners.Count > 0)
         {
@@ -101,7 +103,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
         return module.ImportAsync();
     }
 
-    private async Task RefreshAsync(List<object> owners)
+    private async Task RefreshAsync(List<DomObservedOwner> owners)
     {
         const string Operation = "refresh after reconnecting";
 

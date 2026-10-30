@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Components;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -19,7 +21,7 @@ public sealed class Virtualize(IJSEnvironment js)
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentException.ThrowIfNullOrWhiteSpace(spacerAttribute);
 
-        return AttachCoreAsync(start, new { owner, spacerAttribute });
+        return AttachCoreAsync(start, new AttachOptions<TOwner> { Owner = owner, SpacerAttribute = spacerAttribute });
     }
 
     /// <summary>Scrolls so the point <paramref name="offset"/> pixels into the list stands at the top of the viewport.</summary>
@@ -33,4 +35,14 @@ public sealed class Virtualize(IJSEnvironment js)
     /// <returns>Whether the item is in view.</returns>
     public async ValueTask<bool> RevealAsync(int ordinal, bool start)
         => await InvokeAsync<bool>("reveal", ordinal, start ? "start" : "nearest");
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+
+        public required string SpacerAttribute { get; init; }
+    }
 }

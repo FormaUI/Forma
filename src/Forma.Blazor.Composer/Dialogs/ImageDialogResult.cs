@@ -1,10 +1,17 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>The data collected from the image dialog.</summary>
-/// <param name="Source">The address of the image.</param>
-/// <param name="AltText">The alternative text describing the image.</param>
-/// <param name="Caption">The caption of the image.</param>
-public sealed record ImageDialogResult(
-    string Source,
-    string? AltText,
-    string? Caption) : ComposerDialogResult;
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+public sealed record ImageDialogResult : ComposerDialogResult
+{
+    /// <summary>The address of the image.</summary>
+    public string Source { get; init; } = "";
+
+    /// <summary>The alternative text describing the image.</summary>
+    public string? AltText { get; init; }
+
+    /// <summary>The caption of the image.</summary>
+    public string? Caption { get; init; }
+}

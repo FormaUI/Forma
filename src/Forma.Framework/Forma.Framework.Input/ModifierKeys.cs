@@ -1,6 +1,9 @@
 namespace Forma.Framework.Input;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>The modifier keys held when an input was raised.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record ModifierKeys
 {
     /// <summary>Whether Control was held.</summary>

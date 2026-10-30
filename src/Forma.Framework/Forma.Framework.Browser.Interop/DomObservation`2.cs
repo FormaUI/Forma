@@ -80,13 +80,13 @@ public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerF
     {
         var barrier = _barrier = new EstablishmentBarrier(generation);
         var capability = _registration.Capability;
-        var baseline = await _registration.TryInvokeAsync<TState>("attach", createsState: true, _session.RuntimeKey, _session.Receiver, new
+        var baseline = await _registration.TryInvokeAsync<TState>("attach", createsState: true, _session.RuntimeKey, _session.Receiver, new DomAttachRequest
         {
-            token = _registration.Token,
-            generation,
-            capability = capability.Name,
-            target = element,
-            options = capability.DescribeOptions(options),
+            Token = _registration.Token,
+            Generation = generation,
+            Capability = capability.Name,
+            Target = element,
+            Options = capability.DescribeOptions(options),
         });
 
         if (baseline is null)

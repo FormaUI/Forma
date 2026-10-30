@@ -1,6 +1,9 @@
 namespace Forma.Framework.Input;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>Application-wide input policy: the ambient defaults a scope inherits, the host's own routes, and the bindings it remaps by action.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record InputRouterOptions
 {
     /// <summary>Escape and an outside press both dismiss, a close request does what Escape does, the host answers no route, and every action keeps its default bindings.</summary>

@@ -2,6 +2,7 @@ namespace Forma.Framework.Browser.Interop.Tests.Scrolling;
 
 using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Tests.Browser;
+using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
@@ -70,7 +71,7 @@ public sealed class DomScrollTests
             var buttons = FakeDomBrowser.GetOption(attach, "buttons")!;
             object? GetButtonOption(string name)
             {
-                return buttons.GetType().GetProperty(name)!.GetValue(buttons);
+                return InteropPayload.GetValue(buttons, name);
             }
 
             Assert.Multiple(
@@ -124,7 +125,7 @@ public sealed class DomScrollTests
             var options = run.Arguments[4]!;
             object? GetOption(string name)
             {
-                return options.GetType().GetProperty(name)!.GetValue(options);
+                return InteropPayload.GetValue(options, name);
             }
 
             Assert.Multiple(

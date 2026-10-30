@@ -66,7 +66,7 @@ public sealed class FakeDomBrowser
 
         var request = attach.Arguments[^1]!;
 
-        return request.GetType().GetProperty(field)!.GetValue(request);
+        return InteropPayload.GetValue(request, field);
     }
 
     /// <summary>Reads an option of what an attach asked the browser for.</summary>
@@ -74,7 +74,7 @@ public sealed class FakeDomBrowser
     {
         var options = GetRequestField(attach, "options")!;
 
-        return options.GetType().GetProperty(option)!.GetValue(options);
+        return InteropPayload.GetValue(options, option);
     }
 
     /// <summary>Delivers <paramref name="state"/> through the receiver the observation's <paramref name="attach"/> carried, under its token and generation, as the browser does.</summary>

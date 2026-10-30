@@ -1,5 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Behaviors;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -16,14 +18,14 @@ public sealed class DropZone(IJSEnvironment js)
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(options);
 
-        return AttachCoreAsync(zone, new
+        return AttachCoreAsync(zone, new AttachOptions<TOwner>
         {
-            action,
-            owner,
-            accepts = options.Accepts,
-            dropEffect = GetDropEffectName(options.DropEffect),
-            targets = options.Targets,
-            activeClass = options.ActiveClass,
+            Action = action,
+            Owner = owner,
+            Accepts = options.Accepts,
+            DropEffect = GetDropEffectName(options.DropEffect),
+            Targets = options.Targets,
+            ActiveClass = options.ActiveClass,
         });
     }
 
@@ -33,4 +35,22 @@ public sealed class DropZone(IJSEnvironment js)
         DropEffect.Link => "link",
         _ => "copy",
     };
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required string Action { get; init; }
+
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+
+        public required IReadOnlyList<string>? Accepts { get; init; }
+
+        public required string DropEffect { get; init; }
+
+        public required string? Targets { get; init; }
+
+        public required string? ActiveClass { get; init; }
+    }
 }

@@ -1,8 +1,10 @@
 namespace Forma.Framework.Input;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 /// <summary>What a registration contributes to an input scope: routes, boundaries, and how the scope treats ambient input while foremost.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record InputProfile
 {
     /// <summary>A profile with no routes that inherits the host's ambient defaults.</summary>

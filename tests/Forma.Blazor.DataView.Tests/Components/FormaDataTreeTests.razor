@@ -1084,14 +1084,12 @@
     // Reports where the tree stands in its viewport, as the virtualizer's script does through the reference it attached with.
     private static Task ReportViewportAsync(FormaDataTreeTests ctx, IRenderedComponent<IComponent> cut, double offset, double viewport, double itemSize)
     {
-        var options = ctx.JSInterop.Invocations.Last(invocation => invocation.Identifier == "attach" && invocation.Arguments is [_, { } candidate] && Read(candidate, "spacerAttribute") is "data-virtualize-spacer").Arguments[1]!;
-        var virtualizer = Read(Read(options, "owner")!, "Value")!;
+        var options = ctx.JSInterop.Invocations.Last(invocation => invocation.Identifier == "attach" && invocation.Arguments is [_, { } candidate] && InteropPayload.TryGetValue(candidate, "spacerAttribute", out var spacer) && spacer is "data-virtualize-spacer").Arguments[1]!;
+        var owner = InteropPayload.GetValue(options, "owner")!;
+        var virtualizer = owner.GetType().GetProperty("Value")!.GetValue(owner)!;
         var report = virtualizer.GetType().GetMethod("HandleViewportAsync")!;
 
         return cut.InvokeAsync(() => (Task)report.Invoke(virtualizer, [offset, viewport, itemSize])!);
-
-        static object? Read(object source, string property)
-            => source.GetType().GetProperty(property)?.GetValue(source);
     }
 
     // Presses a row the way the selection behavior reports it, by the token the row carries.

@@ -1,5 +1,7 @@
 namespace Forma.Framework.Input.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -39,7 +41,7 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
             return null;
         }
 
-        var handle = await _module.TryInvokeAsync<IJSObjectReference>("register", element, profile, owner, new { parent, within = within ?? [] });
+        var handle = await _module.TryInvokeAsync<IJSObjectReference>("register", element, profile, owner, new ScopePlacement { Parent = parent, Within = within ?? [] });
 
         return handle is null ? null : new InputScope(handle, _environment);
     }
@@ -104,9 +106,27 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
         }
 
         _selfReference ??= DotNetObjectReference.Create(this);
-        var handle = await _module.TryInvokeAsync<IJSObjectReference>("registerHost", new { _options.Routes, _options.PreemptiveRoutes }, _selfReference);
+        var handle = await _module.TryInvokeAsync<IJSObjectReference>("registerHost", new HostProfile { Routes = _options.Routes, PreemptiveRoutes = _options.PreemptiveRoutes }, _selfReference);
         _hostScope = handle is null ? null : new InputScope(handle, _environment);
 
         return handle is not null;
+    }
+
+    /// <summary>Where a scope stands: inside its parent, with the elements counted as inside it.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record ScopePlacement
+    {
+        public required ElementReference? Parent { get; init; }
+
+        public required IReadOnlyList<ElementReference> Within { get; init; }
+    }
+
+    /// <summary>The host's profile: its routes, and those that take an input before any scope does.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record HostProfile
+    {
+        public required IReadOnlyList<InputRoute> Routes { get; init; }
+
+        public required IReadOnlyList<InputRoute> PreemptiveRoutes { get; init; }
     }
 }

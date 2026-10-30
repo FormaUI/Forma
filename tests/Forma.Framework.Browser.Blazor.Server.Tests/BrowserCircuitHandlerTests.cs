@@ -1,10 +1,9 @@
 namespace Forma.Framework.Browser.Blazor.Server.Tests;
 
-using System.Text.Json;
-
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Tests.Browser;
+using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
@@ -79,7 +78,7 @@ public sealed class BrowserCircuitHandlerTests
             var refresh = Assert.Single(browser.Watcher.Recorder.GetCalls("refreshAll"));
             Assert.Equal(
                 $$"""[{"runtimeKey":"{{first}}","registrations":[{"token":"1","generation":1},{"token":"2","generation":1}]},{"runtimeKey":"{{second}}","registrations":[{"token":"1","generation":1}]}]""",
-                JsonSerializer.Serialize(refresh.Arguments[0]));
+                InteropPayload.ToJson(refresh.Arguments[0]));
         }
 
         [Fact]
@@ -102,7 +101,7 @@ public sealed class BrowserCircuitHandlerTests
 
             // Assert
             var refresh = Assert.Single(browser.Watcher.Recorder.GetCalls("refreshAll"));
-            Assert.Equal($$"""[{"runtimeKey":"{{runtimeId}}","registrations":[{"token":"1","generation":2}]}]""", JsonSerializer.Serialize(refresh.Arguments[0]));
+            Assert.Equal($$"""[{"runtimeKey":"{{runtimeId}}","registrations":[{"token":"1","generation":2}]}]""", InteropPayload.ToJson(refresh.Arguments[0]));
         }
 
         [Fact]

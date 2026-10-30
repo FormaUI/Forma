@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.DataView.Interop;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -25,7 +27,17 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentException.ThrowIfNullOrWhiteSpace(itemSelector);
 
-        return AttachCoreAsync(container, new { owner, itemSelector, itemKeyAttribute, controlSelector, selects, moves, positionAttribute, seeks });
+        return AttachCoreAsync(container, new AttachOptions<TOwner>
+        {
+            Owner = owner,
+            ItemSelector = itemSelector,
+            ItemKeyAttribute = itemKeyAttribute,
+            ControlSelector = controlSelector,
+            Selects = selects,
+            Moves = moves,
+            PositionAttribute = positionAttribute,
+            Seeks = seeks,
+        });
     }
 
     /// <summary>Lands the focus on the item at <paramref name="position"/> once it is drawn, answering the move <paramref name="request"/> named, unless the reader moved on meanwhile.</summary>
@@ -37,4 +49,26 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <summary>Lets go of a move asked of the owner, which it can no longer answer.</summary>
     public ValueTask<bool> CancelSeekAsync()
         => InvokeAsync("cancelSeek");
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+
+        public required string ItemSelector { get; init; }
+
+        public required string? ItemKeyAttribute { get; init; }
+
+        public required string? ControlSelector { get; init; }
+
+        public required bool Selects { get; init; }
+
+        public required bool Moves { get; init; }
+
+        public required string? PositionAttribute { get; init; }
+
+        public required bool Seeks { get; init; }
+    }
 }

@@ -1,6 +1,9 @@
 namespace Forma.Framework.Input;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>How a host changes the bindings of one action: replacing them outright, or adding to and removing from the defaults.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record InputBindingOverride
 {
     /// <summary>Leaves the action with no binding.</summary>

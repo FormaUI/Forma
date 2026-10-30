@@ -1,6 +1,9 @@
 namespace Forma.Framework.Input;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>The modifier keys a binding requires; what is left <see langword="null"/> is decided by the binding's family.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record ModifierRequirement
 {
     /// <summary>No modifier stated.</summary>

@@ -14,7 +14,7 @@ internal sealed class RichTextEditor(IJSEnvironment js)
     /// <summary>Attaches the rich text canvas to the contenteditable target.</summary>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference target, DotNetObjectReference<TOwner> owner, int debounceDelay = 400)
         where TOwner : class
-        => AttachCoreAsync(target, new { owner, debounceDelay });
+        => AttachCoreAsync(target, new AttachOptions<TOwner> { Owner = owner, DebounceDelay = debounceDelay });
 
     /// <summary>Sets the HTML content of the editor.</summary>
     public ValueTask<bool> SetHtmlAsync(string html)
@@ -35,14 +35,50 @@ internal sealed class RichTextEditor(IJSEnvironment js)
     /// <summary>Executes a rich text formatting command on the active selection.</summary>
     public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, object? value = null)
         => InvokeAsync<RichTextCommandResult>("exec", command, value);
+
+    /// <summary>The options the script attaches with.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+    private sealed record AttachOptions<TOwner>
+        where TOwner : class
+    {
+        public required DotNetObjectReference<TOwner> Owner { get; init; }
+
+        public required int DebounceDelay { get; init; }
+    }
 }
 
 /// <summary>The result of executing a rich text command.</summary>
-public sealed record RichTextCommandResult(string Html, RichTextSelectionDto? Selection);
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+public sealed record RichTextCommandResult
+{
+    public string Html { get; init; } = "";
+
+    public RichTextSelectionDto? Selection { get; init; }
+}
 
 /// <summary>What a link dialog acts on: the text it covers, the address of the single link it covers, and the number of links.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
-internal sealed record RichTextLinkTargetDto(string Text, string? Href, int Count);
+internal sealed record RichTextLinkTargetDto
+{
+    public string Text { get; init; } = "";
+
+    public string? Href { get; init; }
+
+    public int Count { get; init; }
+}
 
 /// <summary>A selection snapshot reported by the rich text editor.</summary>
-public sealed record RichTextSelectionDto(int Start, int End, bool IsCollapsed, string? BlockType, IReadOnlyList<string> ActiveStyles);
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+public sealed record RichTextSelectionDto
+{
+    public int Start { get; init; }
+
+    public int End { get; init; }
+
+    public bool IsCollapsed { get; init; }
+
+    public string? BlockType { get; init; }
+
+    public IReadOnlyList<string> ActiveStyles { get; init; } = [];
+}

@@ -1,8 +1,11 @@
 namespace Forma.Blazor.Components.Debugging.InputInspector;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Input;
 
 /// <summary>One resolution of the input router, as the inspector shows it.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record InputDecision
 {
     /// <summary>The input that was resolved.</summary>

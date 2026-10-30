@@ -6,8 +6,7 @@ what has landed.
 
 ## Status
 
-Steps 1 to 5, 7 and 8 have landed, and step 6 has, but for the libraries' trimming, which awaits a
-decision; step 9 is next.
+Steps 1 to 8 have landed; step 9 is next.
 
 ## Where Forma stood
 
@@ -155,7 +154,7 @@ checks; the Showcase is a smoke check beside it, never the gate.
    received, and the identity is the order its runtime reports in. Under WebAssembly in RC 3, `NavigateTo`
    bypasses a location-changing handler that prevents a link's navigation; the design doesn't rest on
    preventing a navigation, since one that lands reports as any landing does.
-6. **Trimming.** The 27 warnings resolved, each client library `IsTrimmable` with the analyzer on. The four
+6. **Trimming.** ✅ The 27 warnings resolved, each client library `IsTrimmable` with the analyzer on. The four
    `DynamicComponent.Type` warnings come first: each is reduced to its cause, to find whether the fix
    belongs in Forma's use of the component, in the code Razor generates or in the toolchain, and the remedy
    is chosen from that, within the rule that no warning is suppressed. The publish records the final
@@ -164,22 +163,22 @@ checks; the Showcase is a smoke check beside it, never the gate.
    as if they were alike. Gate: the gate with no trim warning, and the browser check on that publish, within
    the budgets.
 
-   The 27 warnings are resolved and every client library builds with the trim analyzer on, so a trim
-   warning fails it; the libraries aren't yet `IsTrimmable`, which stays open. The four `DynamicComponent`
-   warnings had one cause, in neither Forma's use nor the generated code alone: a component opened by
-   its type keeps all its members, `DynamicComponent`'s annotated `Type` setter among them, so every use of
-   it reports `IL2111`, and a member of Forma's own with an annotated parameter on a component does the
-   same. The toolbar, the composer and its surface render the type through a render fragment instead,
-   from properties annotated where the type enters. Marking the libraries `IsTrimmable` broke the select's
-   list under WebAssembly: the linker kept the anonymous objects Forma passes to its scripts but none of
-   their getters, so each reached the script empty, and the analyzer reports nothing, since the
-   framework's interop takes its arguments as `object`. The linker keeps a type's members only one level
-   deep and a source-generated context can't write the `DotNetObjectReference` and `ElementReference`
-   values those payloads carry, so trimming needs the interop's payloads reshaped first, which changes the
-   behaviors' script contract. The publish trims the 49 framework assemblies and keeps Forma's whole, as
-   step 3 measured: the minimal client downloads Forma's 0.64 MB beside the runtime's 2.64 MB, and the full
-   client, which now renders the composer, a grid and cards and registers the explorer plugin, Forma's
-   1.07 MB beside the runtime's 3.62 MB, all within the budgets. The check passes in every runtime.
+   The 27 warnings are resolved, and every client library is `IsTrimmable` with the trim analyzer on. The four
+   `DynamicComponent` warnings had one cause, in neither Forma's use nor the generated code alone: a component
+   opened by its type keeps all its members, `DynamicComponent`'s annotated `Type` setter among them, so every
+   use of it reports `IL2111`, and a member of Forma's own with an annotated parameter on a component does the
+   same. The toolbar, the composer and its surface render the type through a render fragment instead, from
+   properties annotated where the type enters. Declaring the libraries trimmable first broke the select's list
+   under WebAssembly, and the analyzer reported nothing, since the framework's interop takes its arguments as
+   `object` and serializes them by reflection. Two causes stood behind it: the linker kept the anonymous objects
+   Forma passed to its scripts but none of their getters, and it removes every constructor's parameter names,
+   which serialization matches a parameterized constructor by, even to write a positional record. So every type
+   crossing the interop is now a named type annotated at the type, which reaches its nested uses, with a public
+   parameterless constructor and `init` properties, as [the client's build](webassembly-design.md#the-clients-build)
+   states; the payloads keep their shape, so no script changed. Forma's analyzer, `eng/Forma.Analyzers`, fails the
+   build of a client library that sends, receives or invokes across the boundary any other way. The publish trims
+   Forma's libraries beside the framework's, `Forma.Blazor` from 633 KB to 68 KB in the minimal client, and the
+   browser check passes in every runtime on it, within the budgets.
 7. **The switch's contract and its application.** ✅ `ICultureState` reads the pair, its revision and its
    version; `ICultureStateIntegration`, resolved from the state's own instance, applies an accepted pair,
    and a replacement state without it is rejected as the state is first resolved; `ICultureSwitch` requests

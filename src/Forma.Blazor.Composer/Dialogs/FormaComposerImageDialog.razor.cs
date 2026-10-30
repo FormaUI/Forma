@@ -41,6 +41,6 @@ public sealed partial class FormaComposerImageDialog : ComposerDialogBase
             return;
         }
 
-        await OnInsert.InvokeAsync(new ImageDialogResult(source, _altText, _caption));
+        await OnInsert.InvokeAsync(new ImageDialogResult { Source = source, AltText = _altText, Caption = _caption });
     }
 }

@@ -27,7 +27,7 @@ public sealed class DownloadTests(BrowserHost host)
     }
 
     [Fact]
-    public void Should_trim_the_framework_and_leave_forma_s_libraries_whole()
+    public void Should_trim_the_framework_and_forma_s_libraries()
     {
         // Arrange — the linker reads the build output and writes what it keeps beside the client's intermediate files
         var client = Path.Combine(host.RepositoryRoot, "tests", "Forma.Blazor.Browser.Host.Client");
@@ -44,9 +44,11 @@ public sealed class DownloadTests(BrowserHost host)
         TestContext.Current.TestOutputHelper?.WriteLine(string.Join(Environment.NewLine, assemblies.Select(assembly => $"{assembly.Name,-50} {assembly.Before,10:N0} -> {assembly.After,10:N0}")));
         var forma = assemblies.Where(assembly => assembly.Name.StartsWith("Forma.", StringComparison.Ordinal)).ToList();
         var framework = assemblies.Except(forma).ToList();
+        var libraries = forma.Where(assembly => assembly.Name != "Forma.Blazor.Browser.Host.Client").ToList();
         Assert.Multiple(
-            () => Assert.NotEmpty(forma),
-            () => Assert.All(forma, assembly => Assert.Equal(assembly.Before, assembly.After)),
+            () => Assert.NotEmpty(libraries),
+            () => Assert.All(libraries, assembly => Assert.True(assembly.After <= assembly.Before, $"{assembly.Name} grew")),
+            () => Assert.True(libraries.Sum(assembly => assembly.After) < libraries.Sum(assembly => assembly.Before), "Forma's libraries were not trimmed"),
             () => Assert.All(framework, assembly => Assert.True(assembly.After < assembly.Before, $"{assembly.Name} was not trimmed")));
     }
 

@@ -312,8 +312,8 @@
             // Assert
             var options = Assert.Single(pan.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
             Assert.Multiple(
-                () => Assert.Equal("file-viewer.pan", options.GetType().GetProperty("action")!.GetValue(options)),
-                () => Assert.Equal("zoomed", options.GetType().GetProperty("whileClass")!.GetValue(options)));
+                () => Assert.Equal("file-viewer.pan", InteropPayload.GetValue(options, "action")),
+                () => Assert.Equal("zoomed", InteropPayload.GetValue(options, "whileClass")));
         }
 
         [Fact]
@@ -329,8 +329,8 @@
             // Assert
             var options = Assert.Single(wheel.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
             Assert.Multiple(
-                () => Assert.Equal("file-viewer.zoom", options.GetType().GetProperty("action")!.GetValue(options)),
-                () => Assert.Equal("ctrl", options.GetType().GetProperty("modifier")!.GetValue(options)));
+                () => Assert.Equal("file-viewer.zoom", InteropPayload.GetValue(options, "action")),
+                () => Assert.Equal("ctrl", InteropPayload.GetValue(options, "modifier")));
         }
 
         [Fact]

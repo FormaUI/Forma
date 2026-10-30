@@ -83,7 +83,7 @@
 
             // Assert — attached for activation alone, then again to select
             var selects = selection.Invocations.Where(invocation => invocation.Identifier == "attach")
-                .Select(invocation => invocation.Arguments[1]!.GetType().GetProperty("selects")!.GetValue(invocation.Arguments[1]))
+                .Select(invocation => InteropPayload.GetValue(invocation.Arguments[1]!, "selects"))
                 .ToList();
             Assert.Equal([false, true], selects);
         }
@@ -110,7 +110,7 @@
             // Assert — attached with no marker to move among, then again to move among the boxes without selecting
             var attached = selection.Invocations.Where(invocation => invocation.Identifier == "attach")
                 .Select(invocation => invocation.Arguments[1]!)
-                .Select(options => (Selects: (bool)options.GetType().GetProperty("selects")!.GetValue(options)!, Moves: (bool)options.GetType().GetProperty("moves")!.GetValue(options)!))
+                .Select(options => (Selects: (bool)InteropPayload.GetValue(options, "selects")!, Moves: (bool)InteropPayload.GetValue(options, "moves")!))
                 .ToList();
             Assert.Equal([(false, false), (false, true)], attached);
         }
@@ -2527,7 +2527,7 @@
 
         // Reports every header cell that names a column as wanting one width, and the container as giving the width asked for.
         private static ColumnFitReport CreateFitReport(IRenderedComponent<IComponent> cut, double availableWidth, double columnWidth = 100)
-            => new(availableWidth, [.. cut.FindAll("thead th[data-column]").Select(cell => new ColumnWidth(cell.GetAttribute("data-column")!, columnWidth))]);
+            => new() { AvailableWidth = availableWidth, Columns = [.. cut.FindAll("thead th[data-column]").Select(cell => new ColumnWidth { Key = cell.GetAttribute("data-column")!, Width = columnWidth })] };
 
         private static Task FitAsync(IRenderedComponent<IComponent> cut, double availableWidth, double columnWidth = 100)
         {

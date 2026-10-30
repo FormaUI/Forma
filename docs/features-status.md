@@ -20,7 +20,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 
 | Work | State |
 | --- | --- |
-| [WebAssembly](#webassembly) | Steps 9 to 12 next; step 6's trimming awaits a decision |
+| [WebAssembly](#webassembly) | Steps 9 to 12 next |
 | [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
@@ -99,7 +99,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The server half, `AddFormaUIServer` and `FormaPageHead` | [`Forma.Blazor.Server`](../src/Forma.Blazor.Server/README.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented in part: the components load and render under WebAssembly and Auto; [steps 9 to 12](#webassembly) open | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| Trimming | [The client's build](webassembly-design.md#the-clients-build) | Every client library analyzed for trimming; declaring them trimmable is an [open decision](#open-decisions) | [October 2026](../FEATURE-HISTORY.md#2026-10) |
+| Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, and Forma's analyzer keeping each type crossing the interop serializable | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Hybrid | [WebAssembly and Hybrid](culture-design.md#webassembly-and-hybrid) | [Deferred](#deferred) | — |
 
 ### Build and verification
@@ -115,7 +115,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## WebAssembly
 
-[The WebAssembly plan](webassembly-implementation-plan.md) builds [the WebAssembly design](webassembly-design.md) and the parts of [the culture design](culture-design.md) a page holding several runtimes needs. Steps 1 to 5, 7 and 8 have landed: the client libraries reference packages rather than the shared framework, the product has its two render-mode halves, the browser check runs the components in every runtime, the culture's checks and the navigation boundary are automated, the culture state switches through `ICultureSwitch`, and a page's circuits share one coordinator. Step 6 landed the trim analyzer on every client library and left the libraries' trimming [open](#open-decisions). What remains:
+[The WebAssembly plan](webassembly-implementation-plan.md) builds [the WebAssembly design](webassembly-design.md) and the parts of [the culture design](culture-design.md) a page holding several runtimes needs. Steps 1 to 8 have landed: the client libraries reference packages rather than the shared framework, the product has its two render-mode halves, the browser check runs the components in every runtime, the culture's checks and the navigation boundary are automated, every client library is trimmed, the culture state switches through `ICultureSwitch`, and a page's circuits share one coordinator. What remains:
 
 - **9, routing in coordination:** the culture routes move into a neutral `Forma.Framework.Culture.Router`, name a pair and are published to the page; the interactive landing joins the coordinator; and a pair without a route is refused before anything changes.
 - **10, the culture under WebAssembly:** the culture's WebAssembly half registers each runtime with the coordinator and sets the process's default cultures, and the culture arrangement, coordinated or independent, is chosen on both registrars.
@@ -176,7 +176,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 Each needs the maintainer's decision; each is given with a proposal.
 
-- **Trimming Forma's libraries.** Declaring them `IsTrimmable` broke the select's list under WebAssembly: the linker strips the members of the objects Forma passes to its scripts, which only the framework's reflection reads, and the trim analyzer can't see it. *Proposal:* every interop payload becomes a record in its assembly's source-generated context, the references it carries travel as arguments of their own, a component analyzer refuses any other argument to Forma's interop bases, and the libraries then declare `IsTrimmable`. It changes every behavior's script contract, so the approach is first proven on the failing select, its callbacks and object references included, in a trimmed publish under the browser check, before the change reaches the rest.
 - **The document's base under culture addresses.** `FormaPageHead` writes the page's `<base>`, so a host loading each culture as a new document builds the culture's base and hands it in through `BaseHref`, as [the router's README](../src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md#the-documents-base) shows, and `CultureBaseHref`, which writes a `<base>` of its own, has no place in a head `FormaPageHead` renders. *Proposal:* `FormaPageHead` takes its base from culture routing where it is registered, as step 9 moves the page base into the neutral router, and `CultureBaseHref` retires.
 - **The earlier culture cookie.** The middleware still reads and expires a `forma-culture` cookie, which no release ever wrote. *Proposal:* drop it from the code and the culture design.
 - **The bases of host-placed components.** The component foundations design gives each placement one base, a component a host places being an element, while an element is a component with a root its host addresses. `FormaConfirmDialog`, `FormaToastContainer`, `FormaPageHead` and `FormaVirtualize` are placed by a host on the base of a part, though `FormaPageHead` and `FormaVirtualize` draw no root of their own, and `FormaColumnBase` derives from `ComponentBase` directly. `FormaCurrencyInput` and `FormaSearchBox` stand on the element base as the authoring rules set out: the first composes `FormaNumberInput` and forwards its value, expression and validation to it, and the second is a search field no form binds. *Proposal:* the design chooses a base by responsibility and composition rather than by placement, the element base for a component drawing a root its host addresses, and each case is then reviewed on its own against that rule rather than moved mechanically.

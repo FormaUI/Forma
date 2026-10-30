@@ -44,6 +44,11 @@
         <None Update="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
+    <!-- A library a WebAssembly client loads builds with Forma's own analyzers, which keep what its interop serializes through trimming. -->
+    <ItemGroup Condition="'$(IsTrimmable)' == 'true'">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)eng\Forma.Analyzers\Forma.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+
     <!-- What the build does for an assembly that localizes ships with the localization library, and a project here references the library rather than its package, which imports nothing, so it is imported here for every project; it does nothing to one that has no locale files. -->
     <Import Project="$(MSBuildThisFileDirectory)src\Forma.Framework\Forma.Framework.Localization\build\Forma.Framework.Localization.targets" />
 

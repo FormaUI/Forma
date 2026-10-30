@@ -1,5 +1,6 @@
 namespace Forma.Framework.Input;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Forma.Framework.Input.Drop;
@@ -8,6 +9,7 @@ using Forma.Framework.Input.Pointer;
 using Forma.Framework.Input.Wheel;
 
 /// <summary>The input that raised an action, as its family describes it.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "family")]
 [JsonDerivedType(typeof(InputKeyInfo), "keyboard")]
 [JsonDerivedType(typeof(InputPointerInfo), "pointer")]

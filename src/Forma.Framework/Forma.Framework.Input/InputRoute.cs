@@ -1,33 +1,55 @@
 namespace Forma.Framework.Input;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>A semantic action a scope answers, and the bindings that raise it by default.</summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed partial record InputRoute
 {
+    /// <summary>Declares a route whose action and bindings its initializer sets.</summary>
+    public InputRoute()
+    {
+    }
+
     /// <summary>Declares <paramref name="action"/>, raised by <paramref name="bindings"/> by default.</summary>
     /// <param name="action">The action's name, <c>{owner}.{action}</c>, such as <c>composer.bold</c>.</param>
     /// <param name="bindings">The inputs that raise the action by default.</param>
+    [SetsRequiredMembers]
     public InputRoute(string action, params IReadOnlyList<InputBinding> bindings)
     {
-        ArgumentNullException.ThrowIfNull(action);
-        ArgumentNullException.ThrowIfNull(bindings);
-
-        if (!ActionIdentifier().IsMatch(action))
-        {
-            throw new ArgumentException($"The action '{action}' must be named '{{owner}}.{{action}}', such as 'composer.bold', so a host override keys one thing.", nameof(action));
-        }
-
         Action = action;
         Bindings = bindings;
     }
 
-    /// <summary>The action's name, <c>{owner}.{action}</c>.</summary>
-    public string Action { get; }
+    /// <summary>The action's name, <c>{owner}.{action}</c>, such as <c>composer.bold</c>.</summary>
+    public required string Action
+    {
+        get;
+        init
+        {
+            ArgumentNullException.ThrowIfNull(value, nameof(Action));
+
+            if (!ActionIdentifier().IsMatch(value))
+            {
+                throw new ArgumentException($"The action '{value}' must be named '{{owner}}.{{action}}', such as 'composer.bold', so a host override keys one thing.", nameof(Action));
+            }
+
+            field = value;
+        }
+    }
 
     /// <summary>The inputs that raise the action by default.</summary>
-    public IReadOnlyList<InputBinding> Bindings { get; }
+    public required IReadOnlyList<InputBinding> Bindings
+    {
+        get;
+        init
+        {
+            ArgumentNullException.ThrowIfNull(value, nameof(Bindings));
+            field = value;
+        }
+    }
 
     /// <summary>The route's priority among routes whose bindings match equally well; higher wins.</summary>
     public int Priority { get; init; }
