@@ -64,8 +64,10 @@ without any of them knowing where bytes live.
   and the viewer owns the markup for every kind, so a converting package never ships
   Razor or CSS: an image is an `<img>` in the zoomable frame, a video plays through
   `FormaVideoPlayer` with nothing held back, audio through the browser's `<audio>`, and a
-  document as below. Resolution runs once per address rather than once per render, and a
-  resolve that finishes after the address has changed is discarded. Providers the host
+  document as below. Resolution runs once per source and culture rather than once per render,
+  keyed by the source, the UI culture and, where the converted output depends on it, the
+  formatting culture, each captured as it starts; a resolve that finishes after another
+  began is discarded, so a conversion finishing after a switch never replaces the newer one. Providers the host
   registered are tried first; `BrowserResourceProvider` comes last and claims only what a
   browser renders unaided, mapping the media type its extension implies onto the matching
   resource type, so an address no provider claims degrades to a file glyph, the name, the

@@ -117,9 +117,10 @@ list.
   a folded group staying folded across views and opening on a new grouping.
 - **The engine draws the states and the footer**; a view draws items. Empty, busy and
   the loading placeholder belong to the engine, as do the paginator and the status region.
-- **Virtualization is the library's own, `FormaVirtualize`**, driven by the engine and
-  measured by the view, since a row and a row of cards are different heights, and keeping
-  the item that holds the focus rendered wherever it lies.
+- **Virtualization is the library's own, `FormaVirtualize`**, driven by the engine in the
+  unit each view names, since a row and a row of cards are different heights, measuring
+  that unit as it draws it, and keeping the item that holds the focus rendered wherever it
+  lies.
 - **The grid fits its width before it scrolls**, by column priority, with what left
   reachable through a columns menu, and frozen columns held through the freeze pane. The
   cards view packs before it stacks, keeping several cards across a narrow column.
@@ -280,17 +281,28 @@ page, so a short last page does not shrink it.
 `Virtualize` is for the bounded case with paging off: the engine renders only the items
 near the viewport through `FormaVirtualize`, in units the view names,
 a row for the grid and the list, a row of cards for the cards, with `ItemHeight` the
-height of that unit and `OverscanCount` the units drawn beyond each edge. A row of cards
+estimate of that unit's height until the virtualizer has measured the units it drew, and
+`OverscanCount` the units drawn beyond each edge. A row of cards
 holds as many as the pack lays out at the width, a count the browser resolves from the
 card size and tells the cards, so a narrower width packs fewer across and more rows down.
 Grouped, a heading is a row of its own before its group's rows, a group starts a row of
 its own, and a folded group keeps its heading while its rows are neither drawn nor read.
 The items a view draws say where they stand in the whole set, since the page holds only
 some of them. An item whose slice has not loaded draws the view's placeholder. `AnchorMode` says where the viewport
-holds when items arrive at an edge, `ItemComparer` tells a prepend from an append so the
+holds when items arrive at an edge, the items' keys telling a prepend from an append so the
 items on screen stay put, `InitialItemIndex` opens the data view on an item, and
 `ScrollToItemAsync` scrolls to one later, and moves a paged data view to the item's page. The region announces its real item count, so
 assistive technology knows how many items exist rather than how many are drawn.
+
+A view whose markers carry the focus pins the focused item with the items either side of
+it, so the item an arrow reaches is drawn beside the focused one however far the view has
+scrolled; the cards keep those neighbors as rows, so a focus moving along a row of cards or
+onto the row beside it stays drawn, and the tree keeps the nodes either side of a focused
+checkbox. Two guarantees hold beside the virtualizer: the rows found under a scroll that has
+not landed are held back, since a source that cannot count still grows the set the
+virtualizer holds and a scroll in flight must not see it change under it; and the focus is
+taken back onto an item a render drew afresh, since a view that does not virtualize still
+draws an item afresh when the group it stands in changes.
 
 ### The footer and the states
 
@@ -320,8 +332,8 @@ view with one view shows it; one with several shows the active view,
 `cards`, `tree`, or the host's own. A view reads `IDataView<TItem>`: the items on screen with
 their keys, the selection with what each item may do, the sort, the groups, the busy and
 empty states, and the options the engine holds. It acts through
-`IDataViewInteraction<TItem>`: select, toggle, range, clear, sort, fold a group, activate
-an item, and report a measurement virtualization needs. A view draws the item's selected,
+`IDataViewInteraction<TItem>`: select, toggle, range, clear, sort, fold a group and activate
+an item. A view draws the item's selected,
 disabled and focused states with a channel beside color each, and gives every target the
 floor. A selection box stands at the center of a target the size of the floor, so a press
 near the box still reaches it; the grid keeps its box on the column's leading edge.
@@ -468,8 +480,8 @@ page's focus stays where it is. None of these moves changes the selection.
 A component that registers with the engine and reads the pair is a view, so a host
 presents a set any way it needs, a calendar, a map, a kanban board, without the library
 shipping a mode for it. It names itself with a key the view switch and the address use,
-draws the items the engine hands it, reports its selection gestures through the
-interaction, and tells the engine how tall its virtualization unit is. Everything the
+draws the items the engine hands it, and reports its selection gestures through the
+interaction. Everything the
 engine does, the source, the selection, the address, the states and the footer, comes with
 it.
 
@@ -507,9 +519,12 @@ its design.
   is judged by value where it has one and by reference where it has not, so a template that
   stays the same delegate while the state it reads changes is not noticed, and an item changed
   in place is drawn again once the data view is refreshed or given its items again.
-- **Measurement is observed, not polled.** One resize observer per data view reports the
-  width the fit reads and the heights virtualization needs, and the interop it takes is
+- **Measurement is observed, not polled.** Each measurement, the width the grid's fit
+  reads and the heights virtualization needs, is a behavior with an observer of its own,
   attached once and released on disposal, never a call per row.
+- **The focus costs a render only where it must.** A view that does not virtualize attaches
+  no handler for a marker taking the focus, and one that does draws again only when the
+  items it pins change.
 - **Script is for what markup cannot do.** Sticky headers, packing, hover and direction
   are stylesheet work; script is for measurement, the selection gestures the keyboard and
   pointer need, and nothing else.

@@ -2,9 +2,10 @@
 
 ## Scope
 
-A Windows check that drives the Showcase in Chrome with NVDA running, records what NVDA speaks after
-each action, and compares it with what a scenario expects, for the announcements a component makes:
-a busy state, a count, a refusal, a status.
+A Windows check that drives the Showcase in Chromium with NVDA running, records what NVDA speaks after
+each action, and compares it with what a scenario expects: the announcements a component makes, a busy
+state, a count, a refusal, a status, and what a reader hears as the focus moves, a control's name, role
+and state, and the item the focus lands on when the one holding it goes away.
 
 ## Purpose
 
@@ -28,9 +29,11 @@ the profile's synthesizer being the speech recorder. It then runs `scripts/nvda/
 and quits NVDA when the program is done. The program:
 
 1. Opens Chromium through Playwright, visibly, since NVDA reads the window the desktop shows.
-2. Runs each scenario: it opens the scenario's page in its culture, then for each step marks the
-   position in the recorded speech, performs the step's action, and waits for the step's expected
-   utterances, in order, after that mark, each within a timeout.
+2. Runs each scenario: it opens the scenario's page in its culture and waits until the page is
+   interactive, since a step acting on the prerendered markup acts on what the interactive render then
+   replaces; then for each step it marks the position in the recorded speech, performs the step's
+   action, and waits for the step's expected utterances, in order, after that mark, each within a
+   timeout.
 3. Writes a transcript of every step, what it expected and what NVDA said, and exits non-zero when
    any expectation was not met.
 
@@ -45,13 +48,13 @@ Speech Viewer shows a reader checking by hand. The program reads the file from t
 A scenario is a page, a culture and a list of steps; a step is an action, a click, a key, or a
 navigation, and the utterances it must produce, each matched as whole words an utterance contains,
 so a count of 9 is never satisfied by 19. Marking before every action means an utterance from an
-earlier step, such as a count spoken while the page loaded, can never satisfy a later one.
+earlier step, such as a count spoken while the page loaded, can never satisfy a later one. An expected
+utterance is matched further along the utterance it began in as well as in a later one, since NVDA
+speaks a control's name, role and state as one utterance or as several.
 
-The first scenarios are the data view's, in English and in Hebrew: the slow source's first load, a
-move to its second page and a refresh each saying loading and then the count; the tree's first load
-the same; taking away the last page's only item and putting everything back each saying the new
-count; and a fourth box pressed in the bounded selection saying the refusal. The slow sources answer
-after a fixed delay, which leaves the busy announcement its time to be spoken before the count.
+Every announcement a component makes, and every guarantee it gives of what a reader hears as the focus
+moves, has a scenario, in each culture the Showcase serves. A source the scenario slows answers after a
+fixed delay, which leaves a busy announcement its time to be spoken before the count.
 
 ## Where it runs
 

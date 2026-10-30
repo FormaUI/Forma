@@ -24,7 +24,8 @@ surface. One component owns them so no consumer can leave one out.
   reading-start or reading-end edge, mirrored in RTL, as the consumer chooses, or by
   default from the edge away from the nearer side of the viewport so the popover extends
   toward the room; it flips above when there is no room below, clamps into the viewport,
-  and follows scroll, resize and its own content's growth. The trigger that opens it is
+  and follows scroll, resize, its own content's growth and a change of reading direction, read
+  from the anchor's computed direction, so a local `dir` is respected. The trigger that opens it is
   where focus returns, and the consumer hears once the popover is positioned, for content
   that takes focus or attaches a behavior of its own. One positioning path serves every
   browser.

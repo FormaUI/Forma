@@ -20,6 +20,7 @@ No project generates a documentation file, so nothing reports an undocumented pu
 - Do confirm the rebuild actually reached the app before drawing any conclusion from the browser: the showcase runs a compiled binary with no hot reload, so verify the build succeeded and that the library's DLL in the showcase's output is newer than the sources you changed. A stale process silently serves the old code and every experiment against it is void.
 - Do inspect the component in every culture the library ships through the showcase.
 - Do drive end-to-end browser checks in a **visible** browser window rather than a headless one, so the maintainer can watch what is actually being exercised; a headless run reports only what its script thought to assert, so a mis-scoped page and a genuine pass look alike. The gate's browser check is the exception, since the gate runs where no display is: it runs headless, and `browser.ps1 -Visible` opens it in a window to watch.
+- Do delay a circuit's inbound events on the server to check a slow connection; Chrome's emulated latency doesn't reach a circuit's WebSocket.
 - Do slow such a run enough to be followed, and hold the final state on screen before closing.
 - Don't pipe the showcase's output into `Select-String`, `Select-Object`, or another filter; closing the pipeline terminates the server.
 - Don't present a component as complete while build, tests, accessibility, touch, or direction checks remain unresolved.

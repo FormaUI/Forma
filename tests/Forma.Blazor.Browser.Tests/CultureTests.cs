@@ -2,7 +2,7 @@ namespace Forma.Blazor.Browser.Tests;
 
 using static Forma.Blazor.Browser.Tests.CulturePages;
 
-/// <summary>Today's culture behavior on the Server, the culture plan's checks made by hand in Chrome, as regression checks the coordinator's steps are measured against.</summary>
+/// <summary>The culture's behavior on the Server: a switch, the document following it through navigations and updates, and the culture in the address.</summary>
 public sealed class CultureTests(BrowserHost host)
 {
     /// <summary>The two ways the host routes its pages: islands under a static router, and an interactive router.</summary>

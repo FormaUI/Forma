@@ -5,9 +5,9 @@ with a new load or in place; every component follows it, in every runtime on the
 document and the address. This design states the contract, the culture state each user scope holds, the
 switch that changes it for the whole page, how a render, an edit, the document and a culture address
 follow it, and where each part lives. The locale files themselves, their paths, packs and precedence, are
-the [localization design](localization-design.md)'s, what WebAssembly asks of the platform is the
-[WebAssembly design](webassembly-design.md)'s, and the steps that build this design are the
-[implementation plan](culture-implementation-plan.md)'s.
+the [localization design](localization-design.md)'s, and what WebAssembly asks of the platform is the
+[WebAssembly design](webassembly-design.md)'s, whose [implementation plan](webassembly-implementation-plan.md)
+carries the steps this design still has to build.
 
 ## Purpose
 
@@ -510,7 +510,11 @@ cascaded value reaches every page an interactive router renders within it and st
 page that is an island of its own, as every cascading value stops where the render mode changes. Such an
 island receives no culture segment, since the middleware removed it before the static render, and is left to
 the server-rendered landing, as every enhanced navigation is; a static render is the middleware's. The
-scope's absence raises nothing, since an island never receives it, so in-place following rests on the host
+scope is what tells the two apart: neither the renderer nor the assigned render mode does, since both read
+the same for a page an interactive router rendered and for a page that is an island of its own. And no
+routing component can match an address without its culture segment in the router's place, since Blazor
+offers no public way from an address to its route data, so the page's own culture route carries the
+segment. The scope's absence raises nothing, since an island never receives it, so in-place following rests on the host
 placing the scope: without it no page follows, and a navigation within one culture conceals that.
 
 The page reports the address it was routed to, never the navigation manager's latest address, so a delivery
@@ -547,6 +551,9 @@ sends two same-named cookies is never part of the contract, an application at `/
 The culture segment is the first segment after the path base, and a request whose culture segment the
 middleware removes is routed again, since `UsePathBase` routes a request as it removes the base. The
 circuit's transport takes the culture its own address names, which the document's base makes the page's.
+A framework request, one under `/_` such as the circuit's negotiation or its disconnect beacon, is told by
+its path without the culture segment: it takes the culture its segment names before the cookie's and writes
+no cookie, so the old page's disconnect beacon, arriving after a switch, can't set the cookie back.
 
 ## WebAssembly and Hybrid
 

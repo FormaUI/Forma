@@ -263,7 +263,7 @@ checks; the Showcase is a smoke check beside it, never the gate.
     gate from the README's own setup, so the README can't drift from what is supported. Gate: both example
     hosts start and switch as their README says.
 
-Hybrid stays the [culture plan](culture-implementation-plan.md)'s, after its ownership is chosen.
+Hybrid waits for its ownership to be chosen, as [the features status](features-status.md#deferred) records.
 
 ## To verify
 
