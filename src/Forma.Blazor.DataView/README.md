@@ -7,7 +7,7 @@ aligned columns, `FormaDataList` as a list, `FormaDataCards` as cards and `Forma
 or a view of the host's own. One data view can hold several views, with a switch choosing between
 them.
 
-**.NET 11 · Interactive Server components.**
+**.NET 11 · Blazor components.**
 
 ## Install and register
 

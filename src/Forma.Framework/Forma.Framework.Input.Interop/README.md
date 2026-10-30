@@ -7,7 +7,7 @@ dismissals it resolves back to their owners.
 
 The package comes with `formaui-net.Blazor`, and `AddFormaUI` registers the router through
 `AddFormaInputRouter(options)`: the policy as a singleton `InputRouterOptions` and `InputRouter` as a
-scoped service, one per circuit. Its scripts are served from `_content/forma/input/scripts/`.
+scoped service, one per user scope, a circuit or a WebAssembly runtime. Its scripts are served from `_content/forma/input/scripts/`.
 
 ## Registering a component's element
 

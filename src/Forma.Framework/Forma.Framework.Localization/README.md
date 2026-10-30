@@ -1,8 +1,8 @@
 # Forma.Framework.Localization
 
 A localization contract for .NET libraries and applications. A type looks a string up by its
-English source text, so a string with no translation renders as written, and translations are
-found by the name of the type asking. The package carries the
+English source text, so a string no locale file localizes renders as written, and localized strings
+are found by the name of the type asking. The package carries the
 hole and plural syntax a string is written in, the CLDR plural rules, and the build that makes a
 project a locale pack.
 
@@ -14,7 +14,7 @@ A library that looks strings up references the contract alone:
 dotnet add package formaui-net.Framework.Localization
 ```
 
-An application registers a backend to read the translations. `Forma.Framework.Localization.Json`
+An application registers a backend to read the locale files. `Forma.Framework.Localization.Json`
 is the one Forma ships, reading JSON locale files:
 
 ```pwsh
@@ -59,12 +59,12 @@ A lookup returns a `LocalizedText`, which converts to `string` and reports how t
 ```csharp
 var text = locale["Save"];
 
-text.Value              // "Guardar" under es; "Save" where no translation exists
+text.Value              // "Guardar" under es; "Save" where no locale file localizes it
 text.ResourceNotFound   // true when the lookup fell back to the key
 text.SearchedLocation   // the full name of the type that was searched
 ```
 
-`GetAllStrings(includeParentCultures)` lists every translation the locale's UI culture has for the type.
+`GetAllStrings(includeParentCultures)` lists every localized string the locale's UI culture has for the type.
 
 ### Cultures
 
@@ -89,9 +89,9 @@ such as one that began before the switch.
 
 A hole is `{Name}`, optionally with an alignment and a format specifier, `{Name,8}` or
 `{Ratio:P1}`. Values pair with the key's holes by position, in the order the holes first appear,
-one value per distinct hole; any other count throws `ArgumentException`. A translation refers to
+one value per distinct hole; any other count throws `ArgumentException`. A localized string refers to
 the holes by name, so it may reorder them, and it may choose its own specifier. A literal brace is
-doubled, `{{`, in keys and translations alike.
+doubled, `{{`, in keys and localized strings alike.
 
 ### Plural forms
 
@@ -104,8 +104,8 @@ A plural expression selects one of its fields by a count:
 `[Files]` names the argument holding the count, and is left out when the count is the only value.
 `#` in a field is the count, formatted for the culture on screen. The categories are CLDR's,
 `zero`, `one`, `two`, `few`, `many` and `other`, and each language uses the ones it distinguishes:
-English `one` and `other`, Hebrew adds `two`. A field a translation omits falls back to `other`.
-A key with no translation selects its field by the rules of `SourceLanguage`.
+English `one` and `other`, Hebrew adds `two`. A field a localized string omits falls back to `other`.
+A key no locale file localizes selects its field by the rules of `SourceLanguage`.
 
 The rules are CLDR 48's cardinal rules for every locale CLDR publishes, held by
 `CommonPluralRuleSet.Default` in `Forma.Framework.Localization.Language`, which also answers a
@@ -136,18 +136,18 @@ foreach (var segment in pattern.EnumerateSegments())
 }
 ```
 
-Segments come in the order the translation writes them.
+Segments come in the order the localized string writes them.
 
-## Where translations live
+## Where locale files live
 
-**In the assembly.** A folder keeps its translations in a `.locales` folder of its own, one file
+**In the assembly.** A folder keeps its locale files in a `.locales` folder of its own, one file
 per culture. A file named for the culture alone holds a section per type in the folder; a file
-named for a type holds that type's entries. Both of these localize
-`Forma.Blazor.Components.Bars.FormaSelectionToolbar`:
+named for a type holds that type's entries. Both of these localize the
+`UploadStatus` above, in a folder `Uploads`:
 
 ```text
-Components/Bars/.locales/he.json                          { "FormaSelectionToolbar": { "Clear Selection": "נקה בחירה" } }
-Components/Bars/.locales/FormaSelectionToolbar.he.json    { "Clear Selection": "נקה בחירה" }
+Uploads/.locales/he.json                   { "UploadStatus": { "Saved": "נשמר" } }
+Uploads/.locales/UploadStatus.he.json      { "Saved": "נשמר" }
 ```
 
 A folder's file may also sit higher up, spelling the rest of the name in its sections. A regional
@@ -232,7 +232,7 @@ pack directly; a class library or a test that references one names it in `Locale
 | Setting | Default | What it does |
 | --- | --- | --- |
 | `SourceLanguage` | `en` | The language the keys are written in. |
-| `RequireMatchingLocalization` | `false` | Throws `LocalizationNotFoundException` for a key with no translation, so a development build finds what is missing. |
+| `RequireMatchingLocalization` | `false` | Throws `LocalizationNotFoundException` for a key no locale file localizes, so a development build finds what is missing. |
 | `LocalesPath` | `.locales` | The host's folder of locale files, relative to the application's base directory; empty reads none. |
 | `LocalePacks` | none | Locale packs read beside the ones the application's build recorded. |
 

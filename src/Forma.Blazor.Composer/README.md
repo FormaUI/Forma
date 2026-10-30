@@ -5,7 +5,7 @@ views and attachments an article or a page body needs, assembled from plugins th
 a Forma input bound to a `ComposerDocument`, the content together with the format it is written
 in, and it holds every HTML document to the library's sanitizer on the way in and on the way out.
 
-**.NET 11 · Interactive Server components.**
+**.NET 11 · Blazor components.**
 
 ## Install
 
@@ -207,7 +207,8 @@ The video placeholder holds a link to the address, so it reads as a link where i
 
 ## Localization
 
-The composer's strings localize through the library's localization, with `AddJsonLocalization()`.
+The composer's strings localize through the library's localization, with `AddJsonLocalization()` from
+`formaui-net.Framework.Localization.Json`.
 Each language is a locale pack the application references, such as
 `formaui-net.Blazor.Locales.Hebrew` or `formaui-net.Blazor.Locales.Spanish`.
 

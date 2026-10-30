@@ -12,7 +12,7 @@ The package comes with `formaui-net.Blazor`, and `AddFormaUI()` registers its st
 
 | Service | Registered as |
 | --- | --- |
-| `ICultureState` | `DefaultCultureState`, scoped. |
+| `ICultureState` | Forma's own state, scoped. |
 | `ICultureStateIntegration` | The same instance as the scope's `ICultureState`. |
 
 They are added with `TryAdd`, so a host registers its own `ICultureState` first to replace it. The state
@@ -21,12 +21,12 @@ starts from the cultures in force when the scope first resolves it, which on a s
 ## Switching
 
 `ICultureSwitch.SwitchAsync(culture, uiCulture)` requests both cultures; an omitted `uiCulture` takes
-`culture`. `AddFormaUI()` registers `LocalCultureSwitch` as the switch, which accepts each switch at once
-and applies it to the user scope's state: the state holds the new cultures, and the calling flow runs in
-them, as soon as the call returns, and its task completes once every subscriber has been notified. On an
-Interactive Server circuit,
+`culture`. On an Interactive Server circuit, which `AddFormaUIServer()` sets up, the switch requests
+through the page's culture coordinator, so every circuit on the page and the document follow it, as
 [`Forma.Framework.Culture.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Blazor.Server/README.md)
-applies them before every later event too.
+sets out. Where no render-mode half registers a switch, `AddFormaUI()` registers `LocalCultureSwitch`,
+which accepts each switch at once and applies it to the user scope's state alone. Either way, once the
+switch completes, the state holds the new cultures and its subscribers have been notified.
 
 ```razor
 @using System.Globalization

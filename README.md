@@ -1,6 +1,6 @@
 # Forma.Blazor
 
-A Blazor component library for .NET 11 Interactive Server applications: form inputs and pickers,
+A Blazor component library for .NET 11: form inputs and pickers,
 dialogs, popovers and toasts, toolbars and menus, tabs and layout, file pickers, uploaders and
 viewers, icons, emoji and windows. Every component is localized, lays itself out in either reading
 direction, and draws from one set of design tokens a host can retheme.
@@ -46,7 +46,10 @@ so a host replaces any one of them by registering its own first, and calls `AddF
 are passed as `AddFormaUIServer(options => options.InputRouting = new InputRouterOptions { ... })`,
 which
 [`Forma.Framework.Input`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Input/README.md)
-documents.
+documents, and `options.CultureSwitchPolicy` chooses whether a culture switch also writes request
+localization's culture cookie, as
+[`Forma.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Server/README.md)
+sets out.
 
 **2. Render the document head** in `App.razor`:
 
@@ -241,8 +244,8 @@ pack for:
 
 ```text
 .locales/MyApp/Components/Pages/he.json          { "Orders": { "Save": "שמירה" } }
-.locales/Forma.Blazor/Components/Bars/he.json    { "FormaToolbar": { "Bold": "עבה" } }
-.locales/Forma.Blazor/Components/Bars/fr.json    { "FormaToolbar": { "Bold": "Gras" } }
+.locales/Forma.Blazor/Components/Bars/he.json    { "FormaSelectionToolbar": { "Clear Selection": "ניקוי הבחירה" } }
+.locales/Forma.Blazor/Components/Bars/fr.json    { "FormaSelectionToolbar": { "Clear Selection": "Effacer la sélection" } }
 ```
 
 Each file opens with a `$localization` entry naming its culture:

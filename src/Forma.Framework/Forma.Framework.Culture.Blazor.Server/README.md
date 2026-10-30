@@ -6,7 +6,7 @@ every inbound activity, each UI event and each call from script into .NET, and r
 state with the page's culture coordinator of
 [`Forma.Framework.Culture.Browser.Interop`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Browser.Interop/README.md)
 as each connection comes up, before the circuit renders. The circuit's `ICultureSwitch` requests through
-the coordinator, so a switch reaches every runtime on the page and the document, and code that reads the
+the coordinator, so a switch reaches every circuit on the page and the document, and code that reads the
 ambient culture in an event after a switch reads the new cultures. While the connection is down a switch
 fails at once with `InvalidOperationException`, as it does in a static render.
 

@@ -15,7 +15,9 @@ dotnet add package formaui-net.AddOns.Resources.Markdown
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Markdown;
 
-builder.Services.AddScoped<IResourceContentReader, UploadFolderReader>();
+var uploads = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+
+builder.Services.AddScoped<IResourceContentReader>(_ => new UploadFolderReader(uploads));
 builder.Services.AddScoped<IResourceProvider, MarkdownResourceProvider>();
 ```
 

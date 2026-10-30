@@ -43,12 +43,6 @@ of them draws from the pack's sprite sheets; a skin-toned variant, or an emoji f
 release, draws in the reader's own font. An unqualified spelling such as "⚠" draws as its fully
 qualified "⚠️".
 
-## Updating the artwork
-
-`scripts/Get-TwemojiPack.ps1` in the repository rebuilds the sprite sheets and the catalog from the
-Unicode emoji release it pins, the current CLDR English annotations and the current Twemoji artwork;
-`-Format` writes the catalog indented.
-
 ## Artwork and licenses
 
 The graphics are Twemoji, copyright 2020 Twitter, Inc and other contributors and copyright 2023 the

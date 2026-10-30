@@ -9,7 +9,7 @@ built on it, and a host uses it to drive those windows from its own code.
 
 The package comes with `formaui-net.Blazor`. `AddFormaUI()` registers the
 workspace through `AddFormaWindowServices()`, which adds `WindowManager` scoped, one workspace per
-circuit, with `TryAdd`, so a manager the host registered first is the one used.
+user scope, a circuit or a WebAssembly runtime, with `TryAdd`, so a manager the host registered first is the one used.
 
 Inject `WindowManager` wherever windows are driven from code:
 

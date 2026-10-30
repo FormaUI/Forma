@@ -1,6 +1,6 @@
 # Forma.Framework.Localization.Json
 
-The JSON backend for `Forma.Framework.Localization`. It reads translations from JSON locale files
+The JSON backend for `Forma.Framework.Localization`. It reads localized strings from JSON locale files
 embedded in the assembly whose types they localize, from the locale packs the application
 references, and from the host's own `.locales` folder, and serves them through `IStringLocale<T>`.
 
@@ -87,11 +87,11 @@ A locale file is a JSON object. Comments and trailing commas are allowed.
 | Entry | What it is |
 | --- | --- |
 | `"$localization"` | The metadata, required: `SchemaVersion` and `Culture`, optionally `Author` and `Revision`. |
-| `"Key": "text"` | A translation, keyed by the source text. |
-| `"Key": null` | A translation that is the source text itself, for an acronym, a brand or a borrowed term. |
+| `"Key": "text"` | A localized string, keyed by the source text. |
+| `"Key": null` | A localized string that is the source text itself, for an acronym, a brand or a borrowed term. |
 | `"Name": { … }` | A section completing a type's name from where the file sits, `"Bars.FormaSelectionToolbar"` or one segment at a time. |
 | `"@.Name": { … }` | A top-level section spelling the type's name from the assembly's root namespace, wherever the file sits. |
-| `"$shared": { … }` | Translations every type beneath this node gets; a type's own entry wins. |
+| `"$shared": { … }` | Localized strings every type beneath this node gets; a type's own entry wins. |
 | `"$$key"` | The key `$key`, for a key shaped like a reserved entry. |
 
 ```json
@@ -110,7 +110,7 @@ a differing minor is read, and a field the reader does not know is ignored. A fi
 read throws `LocaleFileException`, or `LocalizationMetadataException` for bad metadata.
 
 A `null` entry and a missing one both render the source text; the `null` entry counts as
-translated, so `RequireMatchingLocalization` accepts it and `GetAllStrings` lists it.
+localized, so `RequireMatchingLocalization` accepts it and `GetAllStrings` lists it.
 
 ## How a lookup resolves
 

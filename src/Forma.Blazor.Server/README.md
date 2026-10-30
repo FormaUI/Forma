@@ -24,7 +24,7 @@ builder.AddFormaUIServer();
 
 `AddFormaUIServer()` registers what `AddFormaUI()` registers for every render mode, and beside it the
 circuit's integrations: the culture applied before every event and registered with the page's culture
-coordinator, whose switch reaches every runtime on the page and the document, and the browser's
+coordinator, whose switch reaches every circuit on the page and the document, and the browser's
 observations measured again when a circuit reconnects. Each is registered only where nothing is
 registered for it yet. `UIServerOptions.InputRouting` sets the application's input policy, and
 `UIServerOptions.CultureSwitchPolicy` how a switch persists, in the states alone by default, or also in

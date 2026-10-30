@@ -8,6 +8,7 @@ A resource provider that converts Word, Excel and PowerPoint documents into sani
 
 ```pwsh
 dotnet add package formaui-net.AddOns.Resources.Office
+dotnet add package formaui-net.Framework.Localization.Json
 ```
 
 ```csharp
@@ -16,7 +17,9 @@ using Forma.Framework.Resources;
 using Forma.Framework.Resources.Office;
 
 builder.Services.AddJsonLocalization();
-builder.Services.AddScoped<IResourceContentReader, UploadFolderReader>();
+var uploads = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+
+builder.Services.AddScoped<IResourceContentReader>(_ => new UploadFolderReader(uploads));
 builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();
 ```
 

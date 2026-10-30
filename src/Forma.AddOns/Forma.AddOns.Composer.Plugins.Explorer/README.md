@@ -47,7 +47,8 @@ builder.Services.AddScoped<ICatalogProvider, MediaLibrary>();
 builder.Services.AddScoped<IFileStore, UploadFolderStore>();
 ```
 
-The explorer's README shows an `ICatalogProvider`, and
+[`Forma.Framework.Catalog`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Catalog/README.md)
+shows an `ICatalogProvider`, and
 [`Forma.Framework.Resources`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Resources/README.md)
 an `IFileStore`.
 

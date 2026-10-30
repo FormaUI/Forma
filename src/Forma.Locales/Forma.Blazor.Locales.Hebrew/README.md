@@ -9,6 +9,7 @@ Hebrew.
 
 ```pwsh
 dotnet add package formaui-net.Blazor.Locales.Hebrew
+dotnet add package formaui-net.Framework.Localization.Json
 ```
 
 Reference the pack from the application itself. The package records the pack in the application
@@ -22,7 +23,7 @@ builder.Services.AddJsonLocalization();
 builder.AddFormaUIServer();
 ```
 
-Forma's strings then appear in Hebrew wherever `CultureInfo.CurrentUICulture` is `he` or a culture
+Forma's strings then appear in Hebrew wherever the culture state's UI culture is `he` or a culture
 beneath it, such as `he-IL`. The pack carries strings for each of the four assemblies, so it serves
 whichever of them the application installs.
 

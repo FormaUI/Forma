@@ -37,10 +37,14 @@ CurrencyCatalog.GetSymbol("USD", CultureInfo.GetCultureInfo("en-AU")); // "USD",
 A code outside the currencies in use, such as a retired one, is refused with an `ArgumentException`.
 The symbol is looked up from the culture through the locales it derives from, as Unicode CLDR
 defines them, so a culture CLDR names differently, such as `zh-TW`, finds the locale it belongs to.
-The catalog states facts alone: it never rounds, validates, formats or converts an amount.
 
 ## Where the data comes from
 
 The data is a snapshot of [Unicode CLDR](https://cldr.unicode.org) embedded in the assembly, so
-nothing is fetched at run time. `scripts/Update-CurrencyData.ps1` in the repository regenerates it
-from a CLDR release; the release it was read from is recorded in the snapshot.
+nothing is fetched at run time; the release it was read from is recorded in the snapshot. CLDR's data
+is under the Unicode License, whose notice the package carries in
+[`THIRD-PARTY-NOTICES.md`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Currencies/THIRD-PARTY-NOTICES.md).
+
+## License
+
+Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

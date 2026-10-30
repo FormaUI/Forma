@@ -9,6 +9,7 @@ Spanish.
 
 ```pwsh
 dotnet add package formaui-net.Blazor.Locales.Spanish
+dotnet add package formaui-net.Framework.Localization.Json
 ```
 
 Reference the pack from the application itself. The package records the pack in the application
@@ -22,7 +23,7 @@ builder.Services.AddJsonLocalization();
 builder.AddFormaUIServer();
 ```
 
-Forma's strings then appear in Spanish wherever `CultureInfo.CurrentUICulture` is `es` or a culture
+Forma's strings then appear in Spanish wherever the culture state's UI culture is `es` or a culture
 beneath it, such as `es-419` or `es-MX`. The pack carries strings for each of the four
 assemblies, so it serves whichever of them the application installs.
 

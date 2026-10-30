@@ -6,12 +6,13 @@ list views, search, sorting and grouping, selection, drag and drop between folde
 preview of any item. The host supplies the items and carries out each change the reader asks for,
 and uploads go into the host's `IFileStore`.
 
-**.NET 11 · Interactive Server components.**
+**.NET 11 · Blazor components.**
 
 ## Install
 
 ```pwsh
 dotnet add package formaui-net.Blazor.Explorer
+dotnet add package formaui-net.Framework.Localization.Json
 ```
 
 The package depends on `formaui-net.Blazor` and `formaui-net.Framework.Catalog`, which restore

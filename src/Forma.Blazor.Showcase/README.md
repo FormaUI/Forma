@@ -10,15 +10,16 @@ composer and the AddOns the way a host does.
 ## Running it
 
 ```pwsh
-dotnet run --project src/Forma.Blazor.Showcase
+./scripts/Start-Showcase.ps1
 ```
 
-It listens on `http://localhost:5000` and opens a browser.
+The script builds the Showcase and starts it at `http://localhost:5000`; `-Port` chooses another port,
+and `-Force` stops the Showcase already listening there first.
 
-- It runs a compiled build. After a change, stop it, rebuild and start it again; the library's DLL in
-  the Showcase's `bin` output being newer than the sources you changed shows the rebuild reached it.
-- Stop it before rebuilding, since a running Showcase holds its `bin` DLLs open and the copy fails
-  with `MSB3027`.
+- It runs a compiled build. After a change, start it again; the library's DLL in the Showcase's `bin`
+  output being newer than the sources you changed shows the rebuild reached it.
+- A running Showcase holds its `bin` DLLs open, so a build started beside it fails to copy them with
+  `MSB3027`; `-Force` stops it first.
 - Let its output go to the terminal; piping it into `Select-String`, `Select-Object` or another
   filter ends the server when the pipeline closes.
 
@@ -26,7 +27,7 @@ It listens on `http://localhost:5000` and opens a browser.
 
 The sidebar lists one page per component, grouped by the category folder the component lives in;
 the home page indexes the same list with a count per group. Features holds `FormaComposer`,
-`FormaDataView`, `FormaDataGrid` and `FormaExplorer`; Libraries shows a
+`FormaDataView`, whose grid, list, cards and tree are tabs of its page, and `FormaExplorer`; Libraries shows a
 Framework library on its own, such as localization; and Debugging holds tooling, such as the input
 inspector that shows which owner each key, wheel turn and drop resolves to.
 

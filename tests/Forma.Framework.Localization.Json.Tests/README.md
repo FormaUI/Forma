@@ -29,8 +29,8 @@ folder named for it, so a malformed file troubles no other type.
 | `PathScoped` | `…Tests.Fixtures` | A file under a folder of its own, read by a path the config names | `Resources/Fixtures/PathScoped.he.json` |
 | `ForeignRoot` | `Contoso.Widgets` | A type whose namespace does not start with the assembly's name | `Fixtures/Foreign/ForeignRoot/.locales/he.json` |
 | `GlobalRoot` | none | A type declared without a namespace | `Fixtures/GlobalRoot/.locales/he.json` |
-| `Pluralized` | `…Tests.Fixtures` | A translation carrying a plural expression | `Fixtures/Pluralized/.locales/he.json` |
-| `NullValued` | `…Tests.Fixtures` | A `null` value, the source text as the translation | `Fixtures/NullValued/.locales/{he,fr}.json` |
+| `Pluralized` | `…Tests.Fixtures` | A localized string carrying a plural expression | `Fixtures/Pluralized/.locales/he.json` |
+| `NullValued` | `…Tests.Fixtures` | A `null` value, the source text as the localized string | `Fixtures/NullValued/.locales/{he,fr}.json` |
 | `Escaped` | `…Tests.Fixtures` | Keys starting with `$`, one escaped with `$$` and one plain text | `Fixtures/Escaped/.locales/he.json` |
 | `Unmarked` | `…Tests.Fixtures` | A file with no metadata entry | `Fixtures/Unmarked/.locales/he.json` |
 | `MalformedMetadata` | `…Tests.Fixtures` | A metadata value that is not a field list | `Fixtures/MalformedMetadata/.locales/he.json` |

@@ -30,7 +30,7 @@ record says what kind of resource it is:
 | `ArchiveResourceInfo` | `Count`, the resources it holds. |
 
 `IVisualResource` exposes `Width` and `Height`, and `ITimedResource` exposes `Duration`, across
-the records that have them. Every property except `Source` is set in an object initializer:
+the records that have them. Every optional property is set in an object initializer:
 
 ```csharp
 using Forma.Framework.Resources;

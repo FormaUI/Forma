@@ -12,8 +12,10 @@ dotnet add package formaui-net.Framework.Culture.Router.AspNetCore
 ```
 
 ```csharp
+using Forma.Blazor;
 using Forma.Framework.Culture.Router.AspNetCore;
 
+builder.AddFormaUIServer();
 builder.Services.AddFormaCultureRouting(new CultureRouterOptions
 {
     Prefix = CulturePrefix.ExceptDefault,
@@ -34,8 +36,11 @@ app.UseRouting();
 
 `AddFormaCultureRouting` validates the options and registers `CultureRouter` as a singleton, the
 `CultureSwitcher` each user scope switches through, and the culture state those scopes hold. The
-page's culture coordinator accepts each enhanced navigation's landing from the culture its response
-was rendered in, and a circuit adopts the page's pair as it registers. An address outside the
+switcher requests through the culture switch, which
+[`formaui-net.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Server/README.md)'s
+`AddFormaUIServer()` registers with the page's culture coordinator: the coordinator accepts each enhanced
+navigation's landing from the culture its response was rendered in, and a circuit adopts the page's
+pair as it registers. An address outside the
 application, at another origin or outside its path base, leaves the state as it is.
 `UseFormaCultureRouting` goes before routing, so endpoints see the path with the culture segment
 removed, and after `UsePathBase` under a path base; an endpoint chosen for the address with its
@@ -48,7 +53,7 @@ Spanish.
 | `CultureRouterOptions.Routes` | Every culture the application serves, in order. |
 | `CultureRouterOptions.DefaultCulture` | The `Token` of the culture serving a request that names none. |
 | `CultureRouterOptions.Prefix` | `CulturePrefix.Always`, the default, puts a token on every culture; `CulturePrefix.ExceptDefault` leaves the default culture without one. |
-| `CultureRouterOptions.Switch` | `CultureSwitchMode.FullLoad`, the default, loads another culture's address as a new document; `CultureSwitchMode.InPlace` reaches it in the same circuit, as [switching in place](#switching-in-place) sets out. |
+| `CultureRouterOptions.Switch` | `CultureSwitchMode.FullLoad`, the default, loads another culture's address as a new document; `CultureSwitchMode.InPlace` reaches it in the same circuit, as [switching in place](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Router.AspNetCore/README.md#switching-in-place) sets out. |
 | `CultureRoute.Token` | The canonical first path segment selecting the culture. |
 | `CultureRoute.Culture` | The `CultureInfo` a request that selects the route runs in. |
 | `CultureRoute.Aliases` | Further tokens that select the route and redirect to `Token`. |
@@ -75,22 +80,21 @@ For a page request, the middleware:
   address used an alias, a token in another case, a token on the default culture under
   `ExceptDefault`, or no token under `Always`;
 - stores the route's token in a `forma-culture-route` cookie at the path base, which the
-  browser's script can read and write, and expires the `HttpOnly` `forma-culture` cookie an
-  earlier version wrote at `/`. Under a path base the cookie's name carries it, escaped,
+  browser's script can read and write, and expires an `HttpOnly` `forma-culture` cookie at `/`. Under a path base the cookie's name carries it, escaped,
   `forma-culture-route%2Fapp` under `/app`, so applications sharing a host each read their own.
 
 A request for a static file, one whose last segment has an extension, or for a framework endpoint
 under `/_`, such as `/_blazor` or `/he/_blazor`, judged by its path without the culture segment,
 neither redirects nor writes the cookie. It takes the culture its culture segment names, the cookie's
-where it has none, the earlier `forma-culture` cookie's where the request carries only that one,
+where it has none, a `forma-culture` cookie's where the request carries only that one,
 and the default culture where neither names a route, then goes straight on to routing. A first
 segment that is no token stays in the path, and a path naming cultures in two consecutive
 segments, such as `/he/en`, is answered with `400 Bad Request`.
 
-An interactive circuit's culture state follows its address too: as the circuit opens, and again
-as a paused circuit resumes, the state takes the culture the address names, whatever culture the
-circuit's connection arrived with, so a tab at `/about` stays English after another tab has
-loaded `/he/about`.
+An interactive circuit's culture state follows its page: as the circuit registers with the page's
+culture coordinator, and again as a paused circuit resumes, it adopts the pair the page was rendered
+in, which its address named, whatever culture the circuit's connection arrived with, so a tab at
+`/about` stays English after another tab has loaded `/he/about`.
 
 ## The document's base
 
@@ -114,8 +118,8 @@ segment that is a culture's token.
 ## Switching culture
 
 A page or component injects `CultureSwitcher` to switch to another culture. The switch navigates to
-the current page's address in that culture: by default it loads the address as a new document, and
-the culture state follows the address as its circuit opens; under `CultureSwitchMode.InPlace` it stays
+the current page's address in that culture: by default it loads the address as a new document, whose
+circuit adopts the culture the address names; under `CultureSwitchMode.InPlace` it stays
 in the circuit, and the page it reaches follows its route.
 
 | Member | What it does |

@@ -3,7 +3,7 @@
 The browser capabilities Forma's components reach through JavaScript. The DOM watcher and engine give
 an owner typed objects for what it observes of its elements and what it does to them, with one
 lifetime and one notification path for all of them. Beside them, scripts with typed C# wrappers:
-behaviors that attach to an element for a lifetime, such as roving focus or a drop zone; operations
+behaviors that attach to an element for a lifetime, such as a drop zone or an anchored popover; operations
 that make a single call, such as writing to the clipboard; and the browser side of components such as
 `FormaDialog` and `FormaWindow`.
 

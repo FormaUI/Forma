@@ -143,7 +143,7 @@ Each shell takes the target's `id`, `title` and `icon` through its constructor:
 | --- | --- | --- |
 | `LinkShare` | A target reached by navigation, supporting every item it answers an address for. | `GetAddress`, with `EscapeAddress`, `EscapeName` and `EscapeText` to percent-encode the item for a query string. |
 | `ApiShare` | A target that posts over `Http`, an `HttpClient` the host passes or one it creates and disposes. | `Supports` and `ShareAsync`, with `GetReachableSource` for the public `http` or `https` address of the item's resource. |
-| `WebhookShare` | An `ApiShare` that posts a JSON payload to the webhook address the host configured. | `GetPayload`, answering `null` for an item it cannot post. |
+| `WebhookShare` | An `ApiShare` that posts a JSON payload to the webhook address the host configured. | `GetPayload`, answering `null` for an item it cannot post, and `PayloadType`, the JSON type information that writes the payload. |
 | `AccountShare` | An `ApiShare` that shares under the current user's token from `IShareTokenSource`, reporting `false` without one. | `Supports` and the protected `ShareAsync(item, accessToken, cancellationToken)`. |
 
 ## What the host answers
