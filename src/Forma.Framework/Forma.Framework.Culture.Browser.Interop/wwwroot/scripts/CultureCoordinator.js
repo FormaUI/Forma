@@ -266,9 +266,15 @@ function readCookie(name) {
 }
 
 function readMarker(head) {
-    const marker = head?.querySelector('meta[name="forma-culture"]');
-    const culture = marker?.getAttribute('data-culture') ?? null;
-    const uiCulture = marker?.getAttribute('data-ui-culture') ?? null;
+    const marker = head?.querySelector('meta[name="forma-culture"]') ?? null;
+
+    if (marker === null) {
+        return null;
+    }
+
+    // Each name is read on its own, and a missing attribute reads as null, which names no culture.
+    const culture = marker.getAttribute('data-culture');
+    const uiCulture = marker.getAttribute('data-ui-culture');
 
     return isCultureName(culture) && isCultureName(uiCulture) ? { culture, uiCulture } : null;
 }
@@ -294,8 +300,8 @@ function readPolicy(head) {
     };
 }
 
-// A name the platform can't read as a language tag names no culture; the empty name is the invariant culture, which a
-// server renders in where nothing chose another.
+// The marker names the invariant culture by the empty name; any other name has to read as a language tag, a check of its
+// syntax alone, never of whether the browser supports the culture.
 function isCultureName(name) {
     if (name === null) {
         return false;
