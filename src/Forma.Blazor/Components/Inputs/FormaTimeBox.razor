@@ -40,10 +40,10 @@
             <FormaIcon Icon="Glyph.Clock" Size="IconSize.Small" />
         </FormaButton>
     </span>
-    <FormaPopover @ref="Popover" Anchor="_anchorElement" Alignment="PopoverAlignment.Start" OnOpenChanged="HandleOpenChanged" OnOpened="HandleOpenedAsync">
+    <FormaPopover @ref="Popover" Anchor="_anchorElement" Alignment="PopoverAlignment.Start" OnOpenChanged="HandleOpenChanged">
         @* A press on the list keeps the focus in the field, so choosing a time never takes it away. *@
         <div id="@ListId" class="forma-time-box-list" role="listbox" aria-label="@ListLabel" @onpointerdown:preventDefault @onmousedown:preventDefault>
-            <FormaVirtualize TItem="TimeOption" @ref="Virtualizer" Items="_options" ItemKey="@(option => option.Index)" ItemSize="40" PinnedKeys="PinnedIndexes">
+            <FormaVirtualize TItem="TimeOption" @ref="Virtualizer" Items="_options" ItemKey="@(option => option.Index)" ItemSize="40" PinnedKeys="PinnedIndexes" InitialItemIndex="@Math.Max(_activeIndex, 0)">
                 <ItemContent Context="option">
                     <div id="@GetOptionId(option.Index)"
                          class="@GetOptionClass(option)"

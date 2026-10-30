@@ -244,14 +244,6 @@ public sealed partial class FormaTimeBox : FormaComponentBase
         }
     }
 
-    private async Task HandleOpenedAsync()
-    {
-        if (_activeIndex >= 0 && Virtualizer is { } virtualizer)
-        {
-            await virtualizer.ScrollToIndexAsync(_activeIndex);
-        }
-    }
-
     // The suggestion a clock face puts nearest the time held, the distance read both ways round midnight.
     private int? GetNearestIndex()
     {

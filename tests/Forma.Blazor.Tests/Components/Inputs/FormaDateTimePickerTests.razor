@@ -443,16 +443,16 @@
         }
 
         [Theory]
-        [InlineData(15, 20, "2:00 PM")]
-        [InlineData(16, 48, "12:00 AM")]
-        [InlineData(17, 23, "12:00 AM")]
-        public async Task Should_suggest_only_the_times_the_date_allows(int day, int count, string first)
+        [InlineData(15, 14, 20, "2:00 PM")]
+        [InlineData(16, 0, 48, "12:00 AM")]
+        [InlineData(17, 0, 23, "12:00 AM")]
+        public async Task Should_suggest_only_the_times_the_date_allows(int day, int hour, int count, string first)
         {
-            // Arrange
+            // Arrange — the value at the date's first time, which the list opens on
             using var ctx = new FormaDateTimePickerTests();
             using var culture = new CultureFixture("en-US");
             var router = new InputRouterProbe(ctx);
-            var model = new Booking { Starts = new DateTime(2026, 3, day, 10, 0, 0) };
+            var model = new Booking { Starts = new DateTime(2026, 3, day, hour, 0, 0) };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" Min="new DateTime(2026, 3, 15, 14, 0, 0)" Max="new DateTime(2026, 3, 17, 11, 0, 0)" />
             </FakeFormHost>);
