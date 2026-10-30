@@ -306,10 +306,11 @@
         }
 
         [Fact]
-        public async Task Should_move_through_a_group_s_items_in_the_group_s_place()
+        public async Task Should_move_through_its_items_in_the_order_the_document_holds_them()
         {
-            // Arrange — a group, which renders its own items after the item beside it
+            // Arrange — a group, which renders its own items after the item beside it, and the browser's answer of where each stands
             using var ctx = new FormaDropDownMenuTests();
+            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/DocumentOrder.js").Setup<int[]>("sort", _ => true).SetResult([1, 2, 0]);
             var router = new InputRouterProbe(ctx);
             var cut = ctx.Render(
                 @<FormaDropDownMenu>
@@ -334,6 +335,40 @@
 
             // Assert — the menu opened on Rename and moved to Duplicate, then Delete
             Assert.Equal([items[0], items[1], items[2]], [opened[^1], .. GetFocused(ctx.JSInterop).Skip(opened.Count)]);
+        }
+
+        [Fact]
+        public async Task Should_read_the_document_s_order_again_once_an_item_is_added()
+        {
+            // Arrange — a menu that has read its order, and an item a condition then adds
+            using var ctx = new FormaDropDownMenuTests();
+            var order = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/DocumentOrder.js");
+            order.Setup<int[]>("sort", _ => true).SetResult([0]);
+            var router = new InputRouterProbe(ctx);
+            var showsNotes = false;
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                        @if (showsNotes)
+                        {
+                            <FormaDropDownMenuItem>Notes</FormaDropDownMenuItem>
+                        }
+                    </ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            var read = order.Invocations.Count(invocation => invocation.Identifier == "sort");
+            showsNotes = true;
+            cut.FindComponent<FormaDropDownMenu>().Render();
+
+            // Act
+            await router.RouteAsync(popover.RootElement, "menu.next", "ArrowDown");
+
+            // Assert
+            Assert.Equal(2, cut.FindComponents<FormaDropDownMenuItem>().Count);
+            Assert.Equal(read + 1, order.Invocations.Count(invocation => invocation.Identifier == "sort"));
         }
 
         [Fact]

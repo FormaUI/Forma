@@ -20,7 +20,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaField`](docs/component-catalog.md#formafield) describes the input it holds by its validation messages, so a reader hears why a value is refused; fields leave their spacing to the layout around them, and [`FormaSearchBox`](docs/component-catalog.md#formasearchbox) takes a label.
 - [`FormaCheckBox`](docs/component-catalog.md#formacheckbox) is drawn from the design tokens, its focus ring an outline.
 - Inputs bound as they are typed into keep every key typed, and a button with no click handler makes no round trip.
-- [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through a group's items in the group's place.
+- [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through its items in the order the page holds them, a group's and those added later among them.
 - [`FormaSplitter`](docs/component-catalog.md#formasplitter) follows a drag in the browser, ending it wherever the pointer is let go, and Escape returns the size the drag started from.
 - [`FormaTimePicker`](docs/component-catalog.md#formatimepicker)'s list and [`FormaDateTimePicker`](docs/component-catalog.md#formadatetimepicker)'s open on the time held, whatever was chosen before.
 - An open surface that closes gives up its layer among the input router's.

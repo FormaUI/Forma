@@ -5,11 +5,9 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A single command inside a <see cref="FormaDropDownMenu"/>.</summary>
-public sealed partial class FormaDropDownMenuItem : FormaElementBase, IDropDownMenuEntry
+public sealed partial class FormaDropDownMenuItem : FormaElementBase
 {
     [CascadingParameter] private FormaDropDownMenu Menu { get; set; } = default!;
-
-    [CascadingParameter] private FormaDropDownMenuGroup? Group { get; set; }
 
     /// <summary>The address the item links to.</summary>
     [Parameter] public string? Href { get; set; }
@@ -39,10 +37,6 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase, IDropDownM
         => IsSelected is null ? null : IsSelected.Value ? "true" : "false";
 
     /// <inheritdoc />
-    IEnumerable<FormaDropDownMenuItem> IDropDownMenuEntry.Items
-        => [this];
-
-    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (Menu is null)
@@ -50,14 +44,7 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase, IDropDownM
             throw new InvalidOperationException($"{nameof(FormaDropDownMenuItem)} must be placed inside a {nameof(FormaDropDownMenu)} component.");
         }
 
-        if (Group is { } group)
-        {
-            group.RegisterItem(this);
-        }
-        else
-        {
-            Menu.RegisterEntry(this);
-        }
+        Menu.RegisterItem(this);
     }
 
     internal ValueTask FocusAsync()
@@ -88,15 +75,7 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase, IDropDownM
     /// <inheritdoc />
     protected override ValueTask DisposeAsyncCore()
     {
-        if (Group is { } group)
-        {
-            group.UnregisterItem(this);
-        }
-        else
-        {
-            Menu.UnregisterEntry(this);
-        }
-
+        Menu.UnregisterItem(this);
         return base.DisposeAsyncCore();
     }
 }
