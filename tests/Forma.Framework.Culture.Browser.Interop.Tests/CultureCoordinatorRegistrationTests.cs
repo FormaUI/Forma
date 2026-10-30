@@ -100,12 +100,43 @@ public sealed class CultureCoordinatorRegistrationTests
             await using var scope = provider.CreateAsyncScope();
 
             // Act
-            var exception = await Record.ExceptionAsync(GetRegistration(scope).RegisterAsync);
+            var exception = await Record.ExceptionAsync(() => GetRegistration(scope).RegisterAsync());
 
             // Assert
             Assert.Multiple(
                 () => Assert.IsType<JSException>(exception),
                 () => Assert.Equal(0, GetCultureState(scope).Revision));
+        }
+    }
+
+    public sealed class Starting
+    {
+        [Fact]
+        public async Task Should_hand_the_coordinator_the_start_it_is_given_and_none_where_it_is_given_none()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var registration = GetRegistration(scope);
+            var start = new CultureCoordinatorStart
+            {
+                Marker = CulturePublication.GetMarkerAttributes(CultureInfo.GetCultureInfo("he"), CultureInfo.GetCultureInfo("he")),
+                Policy = CulturePublication.GetPolicyAttributes(CultureSwitchPolicy.Default, map: null),
+                Direction = "rtl",
+            };
+
+            // Act
+            await registration.RegisterAsync(start);
+            registration.MarkUnavailable();
+            await registration.RegisterAsync();
+
+            // Assert
+            var calls = browser.Module.Recorder.GetCalls("register");
+            Assert.Multiple(
+                () => Assert.Same(start, calls[0].Arguments[3]),
+                () => Assert.Null(calls[1].Arguments[3]));
         }
     }
 

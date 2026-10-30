@@ -41,7 +41,9 @@ A host makes one call on each side, and still overrides any single service by re
 
 - **The client** calls `AddFormaUIWebAssembly`, which registers what `AddFormaUI` does and the WebAssembly
   halves: the culture's startup, which registers the runtime's state with the page's coordinator under
-  coordinated pages, or sets up the local switch under an independent client culture.
+  coordinated pages, or sets up the local switch under an independent client culture. A runtime's culture
+  services are one per runtime, the runtime being one user scope, since it starts its hosted services
+  apart from the scope its components resolve from and the startup registers the state they read.
 - **The server** calls `AddFormaUIServer` on its builder, which registers what `AddFormaUI` does and the
   circuit halves. A server prerenders every client component, so it registers everything a client
   component resolves, whether or not it renders interactive server components itself.
@@ -81,7 +83,9 @@ where the server renders WebAssembly components under coordinated pages: install
 a server that renders no WebAssembly, checks nothing. It throws `InvalidOperationException` naming the
 setting, the coordinated arrangement and the two ways out, removing the `false` or declaring the
 client's culture independent. A standalone WebAssembly app has no server and initializes its coordinator
-from its own startup, which supplies the initial pair and the switch's policy.
+from its own startup, which supplies the initial pair, the runtime's own, and the switch's policy, the one
+`AddFormaUIWebAssembly` takes; the registration carries them, and the coordinator starts from them only on
+a page whose load initialized nothing, so a Web App page without `FormaPageHead` still fails as it should.
 
 ## The client's build
 

@@ -1,11 +1,20 @@
-@* Every package a client can load, each in use, so a trimmed publish keeps what a host using it downloads. *@
+@* Every package a client can load, each in use, so a trimmed publish keeps what a host using it downloads, with what the culture checks read and press on a standalone app's page. *@
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Web
 @using Forma.Blazor.Components.Composer
 @using Forma.Blazor.Components.DataView
 @using Forma.Framework.Composer.Documents
+@using Forma.Framework.Culture
+@implements IDisposable
+@inject ICultureState CultureState
+@inject ICultureSwitch CultureSwitch
+
+<output id="standalone-state">@CultureState.Culture.Name/@CultureState.UICulture.Name</output>
+<button id="standalone-switch" @onclick="SwitchAsync">Switch to Hebrew</button>
 
 <FormaComposer @bind-Value="_document" />
 
-<FormaDataView TItem="Row" Items="_rows">
+<FormaDataView TItem="Row" Items="_rows" PageSize="10">
     <FormaDataGrid TItem="Row">
         <Columns>
             <FormaPropertyColumn Property="@(row => row.Name)" Sortable="true" />
@@ -14,7 +23,7 @@
     </FormaDataGrid>
 </FormaDataView>
 
-<FormaDataView TItem="Row" Items="_rows">
+<FormaDataView TItem="Row" Items="_rows" PageSize="10">
     <FormaDataCards TItem="Row" />
 </FormaDataView>
 
@@ -22,6 +31,18 @@
     private ComposerDocument? _document;
 
     private readonly IQueryable<Row> _rows = new Row[] { new("One", 1), new("Two", 2) }.AsQueryable();
+
+    protected override void OnInitialized()
+        => CultureState.Subscribe(HandleCultureChangedAsync);
+
+    private Task SwitchAsync()
+        => CultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo("he"));
+
+    private Task HandleCultureChangedAsync()
+        => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+        => CultureState.Unsubscribe(HandleCultureChangedAsync);
 
     internal sealed record Row(string Name, int Count);
 }

@@ -1,8 +1,5 @@
 namespace Forma.Blazor.Components.Page;
 
-using System.Globalization;
-using System.Text.Json;
-
 using Forma.Framework.Culture.Browser.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -16,8 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 /// </remarks>
 public sealed partial class FormaPageHead : FormaComponentBase
 {
-    private static readonly JsonSerializerOptions MapOptions = new(JsonSerializerDefaults.Web);
-
     private ICultureAddressing? _addressing;
     private CultureRouteMap? _map;
 
@@ -49,26 +44,11 @@ public sealed partial class FormaPageHead : FormaComponentBase
     private string DocumentBase
         => _addressing?.GetDocumentBase(Root, Context.CultureState.Culture, Context.CultureState.UICulture) ?? BaseHref ?? Root;
 
-    private string? MapRoutes
-        => _map is { } map ? JsonSerializer.Serialize(map.Routes, MapOptions) : null;
+    private IReadOnlyDictionary<string, object> MarkerAttributes
+        => ToAttributes(CulturePublication.GetMarkerAttributes(Context.CultureState.Culture, Context.CultureState.UICulture));
 
-    private string? MapPrefix
-        => _map?.PrefixesDefault is true ? "always" : "except-default";
-
-    private string? MapSwitch
-        => _map?.SwitchesInPlace is true ? "in-place" : "full-load";
-
-    // The cookie's lifetime in whole seconds, as a cookie's max-age reads it.
-    private string? CookieMaxAge
-        => Policy.CookieLifetime is { } lifetime ? ((long)lifetime.TotalSeconds).ToString(CultureInfo.InvariantCulture) : null;
-
-    private string CookieSameSite
-        => Policy.CookieSameSite switch
-        {
-            CultureCookieSameSite.Strict => "strict",
-            CultureCookieSameSite.None => "none",
-            _ => "lax",
-        };
+    private IReadOnlyDictionary<string, object> PolicyAttributes
+        => ToAttributes(CulturePublication.GetPolicyAttributes(Policy, _map));
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -92,4 +72,7 @@ public sealed partial class FormaPageHead : FormaComponentBase
 
         _map = _addressing?.GetMap(Root);
     }
+
+    private static Dictionary<string, object> ToAttributes(IReadOnlyDictionary<string, string> attributes)
+        => attributes.ToDictionary(attribute => attribute.Key, attribute => (object)attribute.Value);
 }

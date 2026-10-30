@@ -2,7 +2,8 @@
 
 The page's culture coordinator: one per document, it orders every culture switch on the page, gives each
 the next number in the document's sequence, and delivers the accepted pair to the culture state of every
-runtime registered with it, each Interactive Server circuit on the page, so they converge on one pair. It
+runtime registered with it, each Interactive Server circuit and WebAssembly runtime on the page, so they
+converge on one pair. It
 keeps the page's `<html lang dir>` on the accepted pair, so a page switched to Hebrew in place is laid out
 right to left and read as Hebrew by browsers and screen readers.
 
@@ -10,7 +11,8 @@ right to left and read as Hebrew by browsers and screen readers.
 
 The package comes with `formaui-net.Blazor`, whose `AddFormaUI()` registers it through
 `AddFormaCultureCoordination()`, and `formaui-net.Framework.Culture.Blazor.Server`'s circuit handler
-registers each circuit with it:
+registers each circuit with it, as `formaui-net.Framework.Culture.Blazor.WebAssembly`'s startup registers
+each WebAssembly runtime:
 
 | Service | Registered as |
 | --- | --- |
@@ -27,7 +29,10 @@ the server rendered the page in; a page without it can't be coordinated, and eve
 with an error naming `FormaPageHead`. `CultureSwitchPolicy`, which the page publishes beside the marker,
 says how a switch persists: in the states alone, by default, or also in request localization's culture
 cookie, which the coordinator writes in its `c=…|uic=…` serialization and reads back before it accepts
-the switch.
+the switch. `AddFormaCultureSwitchPolicy(policy)` registers it, refusing a cookie a browser can't keep, and
+`CulturePublication` gives the marker's and the policy's attributes as the page publishes them. A
+standalone app's page has no server, so its runtime registers with a `CultureCoordinatorStart` carrying
+both, which the coordinator starts from on a page whose load initialized nothing.
 
 A switch completes once its own runtime's state has applied the pair it accepted. An enhanced
 navigation's landing changes the page's pair to the one its response was rendered in, and a switch

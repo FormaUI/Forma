@@ -4,6 +4,8 @@ using Forma.Blazor;
 using Forma.Blazor.Browser.Host;
 using Forma.Blazor.Browser.Host.Client.Navigation;
 using Forma.Blazor.Browser.Host.Components;
+using Forma.Framework.Culture;
+using Forma.Framework.Culture.Browser.Interop;
 using Forma.Framework.Culture.Router;
 using Forma.Framework.Culture.Router.AspNetCore;
 
@@ -11,7 +13,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-builder.AddFormaUIServer();
+builder.AddFormaUIServer(options =>
+{
+    options.CultureArrangement = HostModes.Arrangement;
+    options.CultureSwitchPolicy = HostModes.UsesCultureCookie ? new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie } : null;
+});
+if (HostModes.Arrangement is CultureArrangement.Independent)
+{
+    // The client's culture is its own, so the server hands it nothing.
+    builder.Configuration.AddInMemoryCollection([new("Components:UseCultureFromServer", "false")]);
+}
+
 if (HostModes.UsesCultureAddresses)
 {
     builder.Services.AddFormaCultureRouting(new CultureRouterOptions
@@ -50,6 +62,14 @@ if (HostModes.RequestCulture is { } requestCulture)
 if (HostModes.UsesCultureAddresses)
 {
     app.UseFormaCultureRouting();
+}
+
+if (HostModes.UsesCultureCookie)
+{
+    app.UseRequestLocalization(new RequestLocalizationOptions()
+        .SetDefaultCulture("en-US")
+        .AddSupportedCultures("en-US", "he")
+        .AddSupportedUICultures("en-US", "he"));
 }
 
 // Routed after the culture segment is removed, which an implicit routing at the pipeline's start would precede.

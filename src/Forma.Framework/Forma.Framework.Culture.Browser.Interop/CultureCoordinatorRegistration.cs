@@ -44,15 +44,16 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     }
 
     /// <summary>Registers the culture state with the page's coordinator, as each connection to the browser comes up, and adopts the pair the page accepted.</summary>
+    /// <param name="start">What the coordinator starts from where no server published the page's culture marker, as on a standalone app's page; a page whose server published it starts from its own.</param>
     /// <returns>A task that completes once the state has adopted the accepted pair, faulted where the registration failed.</returns>
-    public Task RegisterAsync()
+    public Task RegisterAsync(CultureCoordinatorStart? start = null)
     {
         if (_isDisposed)
         {
             return Task.CompletedTask;
         }
 
-        var attempt = RegisterCoreAsync();
+        var attempt = RegisterCoreAsync(start);
         _attempt = attempt;
         _isUnavailable = false;
 
@@ -158,11 +159,13 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
             : registration;
     }
 
-    private async Task<IJSObjectReference> RegisterCoreAsync()
+    private async Task<IJSObjectReference> RegisterCoreAsync(CultureCoordinatorStart? start)
     {
         try
         {
-            var registration = await GetModule().InvokeAsync<IJSObjectReference>("register", _identity, _receiverReference).ConfigureAwait(false);
+            // A runtime in the browser is a WebAssembly one, whose registration a closing circuit leaves in place.
+            var runtime = OperatingSystem.IsBrowser() ? "webassembly" : "server";
+            var registration = await GetModule().InvokeAsync<IJSObjectReference>("register", _identity, _receiverReference, runtime, start).ConfigureAwait(false);
 
             if (_registration is { } replaced && !ReferenceEquals(replaced, registration))
             {

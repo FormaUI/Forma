@@ -163,7 +163,8 @@ one document and marks where a new document begins:
     arrangement that requires it, and never falls back to the first runtime that registers.
   - A standalone WebAssembly app has neither a server nor a marker: its startup initializes the
     coordinator with the pair and the switch's policy, and its runtime's registration adopts the pair as
-    any registration does.
+    any registration does. Its policy is the state alone or the cookie, since without a server nothing gives
+    its document a base in each culture an address carries.
 - **The marker describes what the server rendered,** never a second copy of the coordinator's pair.
   Registration never reads it, and after the first load it is read only as part of the landing it came
   with, as [landings](#landings) set out, so a head update alone, a delayed response's or a stale one,
@@ -556,7 +557,7 @@ no cookie, so the old page's disconnect beacon, arriving after a switch, can't s
 
 - **WebAssembly** takes part in the contract. Under coordinated pages, the default, a runtime's state
   registers with the page's coordinator as a circuit's does, as the runtime starts, and is released as
-  its scope is disposed; a prerendered runtime starts in the pair the server rendered its prerender in,
+  the runtime ends; a prerendered runtime starts in the pair the server rendered its prerender in,
   which the server hands it, as the [WebAssembly design](webassembly-design.md) sets out; and, being one
   user scope in one process, it applies each accepted pair to the process's default cultures too, as
   [output](#output-takes-its-culture-from-the-state) sets out. A host that declares its client's culture

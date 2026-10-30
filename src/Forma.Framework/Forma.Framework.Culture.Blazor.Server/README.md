@@ -13,8 +13,7 @@ fails at once with `InvalidOperationException`, as it does in a static render.
 The package comes with `formaui-net.Blazor.Server`, and `AddFormaUIServer()` registers it through
 `AddFormaCultureServer()`, which also registers the culture state, its registration with the coordinator,
 the coordinated switch and the switch's policy. A host without `AddFormaUIServer()` makes the same call
-ahead of `AddFormaUI()`, whose own switch it replaces, and names the policy where a switch writes the
-culture cookie:
+beside `AddFormaUI()`, and names the policy where a switch writes the culture cookie:
 
 ```csharp
 builder.Services.AddFormaCultureServer(new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie });

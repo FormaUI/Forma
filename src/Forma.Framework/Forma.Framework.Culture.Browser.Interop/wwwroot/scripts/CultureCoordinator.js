@@ -52,9 +52,13 @@ export function initialize(head = document.head) {
     accepted = { ...marker, direction: servedPair.direction, number: 0 };
 }
 
-/** Registers the culture state named `identity` with the receiver every accepted pair is delivered to, recovering its live registration where it has one, and completes once the state has adopted the accepted pair. */
-export async function register(identity, receiver, runtime = 'server') {
-    const { error } = getInitialization();
+/**
+ * Registers the culture state named `identity` with the receiver every accepted pair is delivered to, recovering its live
+ * registration where it has one, and completes once the state has adopted the accepted pair. On a page the document's
+ * load didn't initialize the coordinator on, a standalone app's, `start` starts it.
+ */
+export async function register(identity, receiver, runtime = 'server', start = null) {
+    const { error } = getInitialization(start);
 
     if (error) {
         throw error;
@@ -228,12 +232,45 @@ class DocumentHold {
     }
 }
 
-function getInitialization() {
+function getInitialization(start = null) {
     if (initialization === null) {
-        initialize();
+        if (start === null || document.head.querySelector('meta[name="forma-culture"]') !== null) {
+            initialize();
+        } else {
+            startPage(start);
+        }
     }
 
     return initialization;
+}
+
+// A page no server published a marker in publishes the marker and policy its runtime supplies, as a server publishes them,
+// and takes the marker's pair; its coordinator then starts from them as any page's does.
+function startPage(start, head = document.head) {
+    if (start.policy.content === 'address') {
+        initialization = {
+            error: new Error('A page without a server has no base for each culture its addresses carry, so a standalone app switches its culture state alone or through a cookie rather than through culture addresses.'),
+        };
+        console.error(initialization.error);
+
+        return;
+    }
+
+    head.append(createMeta('forma-culture', start.marker), createMeta('forma-culture-policy', start.policy));
+    writePair({ uiCulture: start.marker['data-ui-culture'] ?? null, direction: start.direction });
+    servedPair = readPair();
+    initialize(head);
+}
+
+function createMeta(name, attributes) {
+    const meta = document.createElement('meta');
+    meta.name = name;
+
+    for (const [attribute, value] of Object.entries(attributes)) {
+        meta.setAttribute(attribute, value);
+    }
+
+    return meta;
 }
 
 // A server-rendered landing takes its pair from its own response's marker; a response without a valid marker leaves the

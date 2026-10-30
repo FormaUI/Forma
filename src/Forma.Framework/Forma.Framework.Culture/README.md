@@ -24,9 +24,11 @@ starts from the cultures in force when the scope first resolves it, which on a s
 `culture`. On an Interactive Server circuit, which `AddFormaUIServer()` sets up, the switch requests
 through the page's culture coordinator, so every circuit on the page and the document follow it, as
 [`Forma.Framework.Culture.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Blazor.Server/README.md)
-sets out. Where no render-mode half registers a switch, `AddFormaUI()` registers `LocalCultureSwitch`,
-which accepts each switch at once and applies it to the user scope's state alone. Either way, once the
-switch completes, the state holds the new cultures and its subscribers have been notified.
+sets out; a WebAssembly runtime's, which `AddFormaUIWebAssembly()` sets up, requests through the same
+coordinator. `LocalCultureSwitch` accepts each switch at once and applies it to the user scope's state alone,
+the switch of a client whose culture its host declared independent, `CultureArrangement.Independent`.
+Either way, once the switch completes, the state holds the new cultures and its subscribers have been
+notified.
 
 ```razor
 @using System.Globalization

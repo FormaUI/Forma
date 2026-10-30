@@ -4,17 +4,20 @@
 @inject ICultureState CultureState
 @inject ICultureSwitch CultureSwitch
 
-@* What the culture checks read and press under WebAssembly: the state at the first interactive render and now, a switch, and the ambient culture an event after it runs in. *@
+@* What the culture checks read and press under WebAssembly: the state at the first interactive render and now, a switch, and the ambient culture an event after it runs in, and work it schedules. *@
 <output id="wasm-runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
 <output id="wasm-first">@_first</output>
 <output id="wasm-state">@CultureState.Culture.Name/@CultureState.UICulture.Name</output>
 <output id="wasm-ambient">@_ambient</output>
+<output id="wasm-later">@_later</output>
 <button id="wasm-switch" @onclick="SwitchAsync">Switch to Hebrew</button>
 <button id="wasm-read" @onclick="Read">Read the ambient culture</button>
+<button id="wasm-read-later" @onclick="ReadLaterAsync">Read the ambient culture after a delay</button>
 
 @code {
     private string? _first;
     private string? _ambient;
+    private string? _later;
 
     protected override void OnInitialized()
     {
@@ -31,6 +34,12 @@
 
     private void Read()
         => _ambient = $"{CultureInfo.CurrentCulture.Name}/{CultureInfo.CurrentUICulture.Name}";
+
+    private async Task ReadLaterAsync()
+    {
+        await Task.Delay(10);
+        _later = $"{CultureInfo.CurrentCulture.Name}/{CultureInfo.CurrentUICulture.Name}";
+    }
 
     private Task HandleCultureChangedAsync()
         => InvokeAsync(StateHasChanged);

@@ -5,6 +5,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Forma.Framework.Culture.Blazor.WebAssembly" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Forma.Framework.Events\Forma.Framework.Events.csproj" />
     </ItemGroup>
 

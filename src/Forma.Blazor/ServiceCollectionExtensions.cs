@@ -41,8 +41,6 @@ public static class ServiceCollectionExtensions
 
         services.AddFormaEventServices();
         services.AddFormaCultureCoordination();
-        // Where no render-mode half registered a switch, a switch applies to the user scope's own state alone.
-        services.TryAddScoped<ICultureSwitch, LocalCultureSwitch>();
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();

@@ -38,6 +38,21 @@ builder.AddFormaUIServer(options =>
 });
 ```
 
+## WebAssembly components
+
+A server that renders WebAssembly components, through `AddInteractiveWebAssemblyComponents()`, chooses how
+its pages treat a client's culture with `UIServerOptions.CultureArrangement`, and the client declares the
+same on `AddFormaUIWebAssembly`. Under `Coordinated`, the default, every runtime on the page follows the
+page's coordinator, and a prerendered client starts in the pair the server rendered it in: the
+registration turns on `Components:UseCultureFromServer`, the framework's handoff of the server's culture to
+the client, wherever the host's configuration names no value, and the host fails to start where the
+configuration sets it to `false`. Under `Independent` the client's culture is its own, and the setting is
+the host's:
+
+```csharp
+builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
+```
+
 ## The document head
 
 `FormaPageHead`, in `Forma.Blazor.Components.Page`, renders the head a host's `App.razor` needs: the

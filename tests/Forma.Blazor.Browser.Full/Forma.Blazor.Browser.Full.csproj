@@ -21,6 +21,7 @@
         <ProjectReference Include="..\..\src\Forma.AddOns\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
         <ProjectReference Include="..\..\src\Forma.AddOns\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
         <ProjectReference Include="..\..\src\Forma.AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\..\src\Forma.Locales\Forma.Blazor.Locales.Hebrew\Forma.Blazor.Locales.Hebrew.csproj" />

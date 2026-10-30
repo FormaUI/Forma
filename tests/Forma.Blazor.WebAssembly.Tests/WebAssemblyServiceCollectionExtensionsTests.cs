@@ -10,13 +10,13 @@ using Xunit;
 public sealed class WebAssemblyServiceCollectionExtensionsTests
 {
     [Fact]
-    public void Should_register_one_culture_state_per_scope()
+    public void Should_register_one_culture_state_per_runtime()
     {
         // Act
         var services = new ServiceCollection().AddFormaUIWebAssembly();
 
         // Assert
-        Assert.Equal(ServiceLifetime.Scoped, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime);
+        Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime);
     }
 
     [Fact]

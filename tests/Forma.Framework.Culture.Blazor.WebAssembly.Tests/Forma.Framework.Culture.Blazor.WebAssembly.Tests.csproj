@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Blazor.WebAssembly\Forma.Framework.Culture.Blazor.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Browser.Interop\Forma.Framework.Culture.Browser.Interop.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+    </ItemGroup>
+
+</Project>

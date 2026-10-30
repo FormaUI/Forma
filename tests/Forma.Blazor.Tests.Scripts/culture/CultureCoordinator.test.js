@@ -16,6 +16,21 @@ async function load({ culture = 'en-US', uiCulture = culture, lang = 'en-US', di
     return coordinator;
 }
 
+// A standalone app's page: no server published a marker or a policy, and nothing initializes the coordinator as the document
+// loads, since only a Web App's script runs the initializer that does.
+async function loadStandalone({ lang = 'en', dir = 'ltr' } = {}) {
+    setAttributes({ lang, dir });
+    document.head.innerHTML = '';
+    vi.resetModules();
+
+    return await import('#culture/CultureCoordinator.js');
+}
+
+// What a WebAssembly runtime's startup supplies: its pair as a marker, the switch's policy, and the pair's direction.
+function startOf({ culture = 'de-DE', uiCulture = 'he', direction = 'rtl', policy = { content: 'state' } } = {}) {
+    return { marker: { 'data-culture': culture, 'data-ui-culture': uiCulture }, policy, direction };
+}
+
 async function loadInitializer() {
     vi.resetModules();
 
@@ -213,6 +228,89 @@ describe('CultureCoordinator', () => {
 
             // Assert
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['de-DE/he #0']);
+        });
+    });
+
+    describe('starting a standalone page', () => {
+        it('starts from the pair its runtime supplies, publishing it in the head and setting the document to it', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+
+            // Act
+            const registration = await coordinator.register('a', receiver, 'webassembly', startOf());
+            await registration.request('fr-FR', 'fr-FR', 'ltr');
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['de-DE/he #0', 'fr-FR/fr-FR #1']);
+            expect(document.head.querySelector('meta[name="forma-culture"]').getAttribute('data-ui-culture')).toBe('he');
+            expect(document.head.querySelector('meta[name="forma-culture-policy"]').getAttribute('content')).toBe('state');
+            expect(readDocument()).toBe('fr-FR/ltr');
+        });
+
+        it('sets the document to the pair it starts from', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+
+            // Act
+            await coordinator.register('a', fakeReceiver(), 'webassembly', startOf());
+
+            // Assert
+            expect(readDocument()).toBe('he/rtl');
+        });
+
+        it('persists a switch through the cookie policy its runtime supplies', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const policy = { content: 'cookie', 'data-name': '.AspNetCore.Culture', 'data-path': '/', 'data-same-site': 'lax' };
+            const registration = await coordinator.register('a', fakeReceiver(), 'webassembly', startOf({ policy }));
+
+            // Act
+            await registration.request('fr-FR', 'fr-FR', 'ltr');
+
+            // Assert
+            expect(document.cookie).toContain(`${encodeURIComponent('.AspNetCore.Culture')}=${encodeURIComponent('c=fr-FR|uic=fr-FR')}`);
+        });
+
+        it('refuses culture addresses, which need a server to give each culture its base', async () => {
+            // Arrange
+            vi.spyOn(console, 'error').mockImplementation(() => {});
+            const coordinator = await loadStandalone();
+
+            // Act
+            const registering = coordinator.register('a', fakeReceiver(), 'webassembly', startOf({ policy: addressPolicy() }));
+
+            // Assert
+            await expect(registering).rejects.toThrow(/standalone app/);
+            expect(console.error).toHaveBeenCalledOnce();
+            expect(document.head.querySelector('meta[name="forma-culture"]')).toBeNull();
+        });
+
+        it('starts from the marker a server published, whatever a runtime supplies', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en-US', uiCulture: 'en-US' });
+            const receiver = fakeReceiver();
+
+            // Act
+            await coordinator.register('a', receiver, 'webassembly', startOf());
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en-US/en-US #0']);
+            expect(document.head.querySelectorAll('meta[name="forma-culture"]')).toHaveLength(1);
+            expect(readDocument()).toBe('en-US/ltr');
+        });
+
+        it('starts from the marker a page carries, though nothing initialized it as the document loaded', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            setHead({ culture: 'en-US', uiCulture: 'en-US' });
+            const receiver = fakeReceiver();
+
+            // Act
+            await coordinator.register('a', receiver, 'webassembly', startOf());
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en-US/en-US #0']);
         });
     });
 

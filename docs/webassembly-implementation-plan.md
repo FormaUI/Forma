@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-Steps 1 to 9 have landed; step 10 is next.
+Steps 1 to 10 have landed; step 11 is next.
 
 ## Where Forma stood
 
@@ -264,7 +264,7 @@ checks; the Showcase is a smoke check beside it, never the gate.
    completes as canceled once another landing replaces it, or an enhanced navigation ends without one. The
    browser check gained a switch by address in place, under islands and under the interactive router, and a
    pair no route carries refused; it passes with the script tests and the C# tests.
-10. **The culture under WebAssembly.** The culture's WebAssembly half,
+10. **The culture under WebAssembly.** ✅ The culture's WebAssembly half,
     `Forma.Framework.Culture.Blazor.WebAssembly` with its test project and `AddFormaCultureWebAssembly`,
     which `AddFormaUIWebAssembly` now calls; its registration at startup, which replaces step 7's
     transitional switch under coordinated pages as the local switch does under an independent client
@@ -279,6 +279,37 @@ checks; the Showcase is a smoke check beside it, never the gate.
     culture and argument formatting the formatting culture; its lifetime captures no one user's state; and
     it coexists with a host's own factory in both registration orders, since `TryAdd` keeps only a factory
     registered before it. Gate: every check under [To verify](#to-verify), in the browser check's host.
+
+    `Forma.Framework.Culture.Blazor.WebAssembly` holds the runtime's state, its integration, which applies
+    each accepted pair to the state and to the process's default cultures, the switch and, under coordinated
+    pages, the registration and its startup; `AddFormaUIWebAssembly` calls it with the client's arrangement
+    and policy, and `AddFormaUI` registers no switch. `AddFormaUIServer` takes the arrangement too: under
+    coordinated pages it supplies capture on as the configuration's lowest-priority source and adds the
+    startup check, which reads the final configuration and fails a server rendering WebAssembly components
+    where capture is false, naming the setting, the arrangement and both ways out. Both live in
+    `Forma.Blazor.Server`, which owns the setting's name, rather than in the culture's server half. The
+    switch's policy is registered and checked by one registrar both halves call, and `FormaPageHead` and the
+    WebAssembly startup publish the marker and the policy through one set of attributes. A standalone app's
+    runtime carries its pair and its client's policy in its registration, which starts the coordinator only on
+    a page the document's load didn't initialize it on, publishing them in the head as a server does and
+    setting the document to the pair; a page a server published a marker in starts from that marker, so no
+    runtime stands in for a missing `FormaPageHead`. An `IStringLocalizerFactory` over Forma's localization
+    stays unadopted: nothing in the plan needs one, and the contract it would have to prove stays recorded
+    above for when a host asks for it. Departures from the design: a WebAssembly runtime's culture services
+    are one per runtime rather than one per scope, since the runtime starts its hosted services from its root
+    provider, apart from the scope its components resolve from, and the startup has to register the state they
+    read; and a standalone app can't switch through culture addresses, since without a server nothing gives
+    its document a base in each culture, so its coordinator refuses the address policy. The full client's
+    page in a browser surfaced a fault of step 6: the trimmer applies a type-level annotation only where code
+    asks a value typed as that type for its type, which the interop never does, so `InputRoute` lost the
+    constructor serialization takes and every type the browser sends back lost its setters; Forma's analyzer
+    package now generates, for each library, a dependency on every annotated type's members, and every type
+    derived from one, which the trimmer keeps with the library. The browser check gained an independent
+    client culture, a host persisting a switch in the culture cookie, the full client served as a standalone
+    app, a switch from a WebAssembly island reaching a Server island, the server's next response agreeing with
+    a WebAssembly switch by address and by cookie, and Auto's reload running on WebAssembly in the pair; its
+    four known failures are plain checks. The plan's other checks below are held by the coordinator's script
+    tests and the C# tests, as steps 8 and 9 recorded.
 11. **A host's strings in the browser.** A host's locale files embedded in its client assembly by the
     package's targets, under resource names and discovery metadata the browser's loader finds. Gate: a
     consumer of the packed packages, published trimmed, whose host string switches with the library's.

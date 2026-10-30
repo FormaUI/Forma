@@ -12,6 +12,10 @@
     {
         <Routes @rendermode="HostModes.Routes" />
     }
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
+    @* Each WebAssembly runtime reads the host's arrangement from the variable the host's own environment names. *@
+    <script>
+        Blazor.start({ webAssembly: { configureRuntime: dotnet => dotnet.withEnvironmentVariable('FORMA_BROWSER_ARRANGEMENT', '@(HostModes.ArrangementVariable ?? string.Empty)') } });
+    </script>
 </body>
 </html>

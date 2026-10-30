@@ -4,13 +4,18 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 
-/// <summary>The published host the checks drive, running on free ports three ways, and the browser they drive it in.</summary>
-/// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, and with the recording router in each runtime. The gate publishes the host and the full client and names their folders in <c>FORMA_BROWSER_HOST</c> and <c>FORMA_BROWSER_FULL</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+
+/// <summary>The published host the checks drive, running on free ports in each of its modes, the published full client served as a standalone app, and the browser they drive them in.</summary>
+/// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, with islands persisting a switch in the culture cookie, with islands and culture addresses beside an independent client culture, and with the recording router in each runtime. The gate publishes the host and the full client and names their folders in <c>FORMA_BROWSER_HOST</c> and <c>FORMA_BROWSER_FULL</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
 public sealed class BrowserHost : IAsyncLifetime
 {
     private readonly List<Process> _processes = [];
     private readonly HttpClient _client = new();
     private IPlaywright? _playwright;
+    private WebApplication? _standalone;
 
     /// <summary>The repository the checks run in.</summary>
     public string RepositoryRoot { get; } = FindRepositoryRoot();
@@ -33,6 +38,15 @@ public sealed class BrowserHost : IAsyncLifetime
     /// <summary>The address of the host whose pages are islands, switching the culture state alone, which renders every request in the invariant culture.</summary>
     public Uri InvariantStateAddress { get; private set; } = default!;
 
+    /// <summary>The address of the host whose pages are islands, persisting a switch in the culture cookie request localization reads.</summary>
+    public Uri CookieAddress { get; private set; } = default!;
+
+    /// <summary>The address of the host whose pages are islands switching through culture addresses, beside a client culture each WebAssembly runtime keeps as its own, with culture capture off.</summary>
+    public Uri IndependentAddress { get; private set; } = default!;
+
+    /// <summary>The address the full client is served at as a standalone app, with no server of its own.</summary>
+    public Uri StandaloneAddress { get; private set; } = default!;
+
     /// <summary>The address of the host rendering the recording router on the Server.</summary>
     public Uri NavigationServerAddress { get; private set; } = default!;
 
@@ -49,6 +63,9 @@ public sealed class BrowserHost : IAsyncLifetime
         InteractiveAddress = await StartAsync(routes: "interactive", culture: null).ConfigureAwait(false);
         StateAddress = await StartAsync(routes: null, culture: "state", requestCulture: "en-US").ConfigureAwait(false);
         InvariantStateAddress = await StartAsync(routes: null, culture: "state", requestCulture: "invariant").ConfigureAwait(false);
+        CookieAddress = await StartAsync(routes: null, culture: "cookie").ConfigureAwait(false);
+        IndependentAddress = await StartAsync(routes: null, culture: null, arrangement: "independent").ConfigureAwait(false);
+        StandaloneAddress = await StartStandaloneAsync().ConfigureAwait(false);
         NavigationServerAddress = await StartAsync(routes: "navigation-server", culture: null).ConfigureAwait(false);
         NavigationWebAssemblyAddress = await StartAsync(routes: "navigation-webassembly", culture: null).ConfigureAwait(false);
 
@@ -93,6 +110,11 @@ public sealed class BrowserHost : IAsyncLifetime
 
         _playwright?.Dispose();
 
+        if (_standalone is not null)
+        {
+            await _standalone.DisposeAsync().ConfigureAwait(false);
+        }
+
         foreach (var process in _processes)
         {
             if (!process.HasExited)
@@ -107,7 +129,7 @@ public sealed class BrowserHost : IAsyncLifetime
         _client.Dispose();
     }
 
-    private async Task<Uri> StartAsync(string? routes, string? culture, string? requestCulture = null)
+    private async Task<Uri> StartAsync(string? routes, string? culture, string? requestCulture = null, string? arrangement = null)
     {
         var address = new Uri($"http://127.0.0.1:{GetFreePort()}/");
         var start = new ProcessStartInfo("dotnet", "Forma.Blazor.Browser.Host.dll")
@@ -122,6 +144,7 @@ public sealed class BrowserHost : IAsyncLifetime
         start.Environment["FORMA_BROWSER_ROUTES"] = routes;
         start.Environment["FORMA_BROWSER_CULTURE"] = culture;
         start.Environment["FORMA_BROWSER_REQUEST_CULTURE"] = requestCulture;
+        start.Environment["FORMA_BROWSER_ARRANGEMENT"] = arrangement;
 
         var process = Process.Start(start) ?? throw new InvalidOperationException("The host did not start.");
         _processes.Add(process);
@@ -129,6 +152,24 @@ public sealed class BrowserHost : IAsyncLifetime
         process.BeginErrorReadLine();
 
         await WaitForHostAsync(process, address).ConfigureAwait(false);
+
+        return address;
+    }
+
+    // The full client's published files, served as a static host serves a standalone app: each file as it is, and the page for
+    // every address that names none.
+    private async Task<Uri> StartStandaloneAsync()
+    {
+        var address = new Uri($"http://127.0.0.1:{GetFreePort()}/");
+        var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = Path.Combine(FullClientFolder, "wwwroot") });
+        builder.Logging.ClearProviders();
+        builder.WebHost.UseUrls(address.ToString());
+
+        var app = builder.Build();
+        app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
+        app.MapFallbackToFile("index.html");
+        await app.StartAsync().ConfigureAwait(false);
+        _standalone = app;
 
         return address;
     }
