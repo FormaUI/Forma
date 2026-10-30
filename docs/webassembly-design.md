@@ -5,8 +5,7 @@ Interactive WebAssembly and Interactive Auto, and in a standalone WebAssembly ap
 a WebAssembly client must be able to load, how a host registers Forma on each side of a Web App, what a
 client's build keeps, how strings reach the browser, and how the culture crosses from the server to the
 client. The culture's own contract, with the switch and the coordinator every runtime on a page shares, is
-the [culture design](culture-design.md)'s; the steps that build this design are the
-[implementation plan](webassembly-implementation-plan.md)'s.
+the [culture design](culture-design.md)'s.
 
 ## The contract
 

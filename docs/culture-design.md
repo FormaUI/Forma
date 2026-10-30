@@ -6,8 +6,7 @@ document and the address. This design states the contract, the culture state eac
 switch that changes it for the whole page, how a render, an edit, the document and a culture address
 follow it, and where each part lives. The locale files themselves, their paths, packs and precedence, are
 the [localization design](localization-design.md)'s, and what WebAssembly asks of the platform is the
-[WebAssembly design](webassembly-design.md)'s, whose [implementation plan](webassembly-implementation-plan.md)
-carries the steps this design still has to build.
+[WebAssembly design](webassembly-design.md)'s.
 
 ## Purpose
 
