@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-No step has landed.
+Step 1 has landed; step 2 is next.
 
 ## Where Forma stood
 
@@ -55,10 +55,16 @@ Each step is a stage, built and reviewed on its own in as many commits as it tak
 buildable. From the third step on, the browser check's host gates every step beside the step's own
 checks; the Showcase is a smoke check beside it, never the gate.
 
-1. **The client's references.** Every client library references the packages it compiles against in place of
-   the shared framework, which stays with the circuit halves and the culture router, and from step 9 with
+1. **The client's references.** ✅ Every client library references the packages it compiles against in place
+   of the shared framework, which stays with the circuit halves and the culture router, and from step 9 with
    the router's middleware alone, as the design's [first section](webassembly-design.md#what-a-client-loads)
    sets out. Gate: the gate, and every client library restoring for `browser-wasm`.
+
+   Nine of the eleven client libraries reference the packages they compile against, and two need none. The
+   three products' imports dropped their authorization and `Microsoft.AspNetCore.Http` usings, which no
+   code used, so none of them references an authorization package. Until step 2, `Forma.Blazor` still
+   reaches the shared framework through the circuit halves it references, so a library in its graph
+   restores for `browser-wasm` but doesn't yet build for it.
 2. **The product's halves.** `Forma.Blazor.Server` takes `FormaPageHead` and `AddFormaUIServer`, on the
    host's builder, which registers what `AddFormaUI` does and the circuit halves; `Forma.Blazor.WebAssembly`
    takes `AddFormaUIWebAssembly`, which registers what `AddFormaUI` does until step 10 gives it the

@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Microsoft.AspNetCore.Components" />
     </ItemGroup>
 
     <!-- The contracts the plugin is written against, the explorer its dialog composes, and the product both build on; each is a package this one depends on. -->

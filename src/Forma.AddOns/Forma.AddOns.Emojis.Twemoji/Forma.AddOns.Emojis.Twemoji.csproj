@@ -6,10 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\Forma.Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
     </ItemGroup>
 

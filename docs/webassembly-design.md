@@ -19,7 +19,7 @@ a published, trimmed WebAssembly app behaves as its untrimmed build does.
 A WebAssembly app runs only assemblies built for the browser, and the shared framework,
 `Microsoft.AspNetCore.App`, has no runtime pack for it. So every library a client can load references the
 packages it compiles against, `Microsoft.JSInterop`, `Microsoft.AspNetCore.Components`,
-`Microsoft.AspNetCore.Components.Web`, `Microsoft.AspNetCore.Components.Authorization` or
+`Microsoft.AspNetCore.Components.Forms`, `Microsoft.AspNetCore.Components.Web` or
 `Microsoft.AspNetCore.WebUtilities`, and the shared framework stays with the halves that serve the server
 alone: the circuit integrations and the culture router's middleware.
 
