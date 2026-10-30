@@ -1,7 +1,7 @@
 @page "/{Runtime}/share-menu"
 @using Forma.Framework.Share
 
-@* A share menu for a link, with its own commands and the page's action behind More, the command it last raised written where the check reads it. *@
+@* A share menu for a link, with the social networks, its own commands and the page's action behind More, the command it last raised written where the check reads it. *@
 <FormaShareMenu Id="share" Item="_shareItem" Actions="_shareActions" OnCommand="@(command => _lastCommand = command)" />
 <output id="result">@_lastCommand</output>
 

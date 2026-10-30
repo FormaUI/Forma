@@ -186,5 +186,22 @@ public sealed class FeedbackTests
             // Assert
             await Assertions.Expect(toast).ToBeHiddenAsync();
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_dismiss_a_toast_once_its_duration_passes(string runtime)
+        {
+            // Arrange — a toast raised for two seconds
+            var (context, page) = await OpenAsync(host, runtime, "toast-container");
+            await using var _ = context;
+            var toast = page.Locator("#toasts").GetByText("Published.");
+
+            // Act
+            await page.Locator("#publish").ClickAsync();
+            await Assertions.Expect(toast).ToBeVisibleAsync();
+
+            // Assert
+            await Assertions.Expect(toast).ToBeHiddenAsync(new() { Timeout = 10000 });
+        }
     }
 }

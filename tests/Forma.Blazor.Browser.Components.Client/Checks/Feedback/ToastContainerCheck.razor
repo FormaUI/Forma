@@ -2,8 +2,9 @@
 @using Forma.Framework.Feedback
 @inject IToastService ToastService
 
-@* A toast raised through the toast service from a button, drawn by the container the page places. *@
+@* Toasts raised through the toast service from buttons, one held until dismissed and one leaving on its own, drawn by the container the page places. *@
 <FormaButton Id="save" OnClick="SaveAsync">Save Draft</FormaButton>
+<FormaButton Id="publish" OnClick="PublishAsync">Publish</FormaButton>
 <div id="toasts">
     <FormaToastContainer />
 </div>
@@ -14,4 +15,8 @@
     // Long enough that the toast leaves only when the check dismisses it.
     private Task SaveAsync()
         => ToastService.ShowAsync("Draft saved.", ToastType.Success, TimeSpan.FromMinutes(5));
+
+    // Long enough to be seen before it leaves.
+    private Task PublishAsync()
+        => ToastService.ShowAsync("Published.", ToastType.Info, TimeSpan.FromSeconds(2));
 }

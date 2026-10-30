@@ -18,6 +18,7 @@
         <ProjectReference Include="..\..\src\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
         <ProjectReference Include="..\..\src\Forma.AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
+        <ProjectReference Include="..\..\src\Forma.AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Catalog\Forma.Framework.Catalog.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />

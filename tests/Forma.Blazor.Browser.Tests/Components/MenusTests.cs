@@ -68,6 +68,29 @@ public sealed class MenusTests
 
     public sealed class ShareMenu(BrowserHost host)
     {
+        private static readonly string[] Networks = ["Facebook", "X", "WhatsApp", "Telegram", "Bluesky", "Reddit", "Snapchat", "LinkedIn"];
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_list_the_networks_that_take_a_link_and_open_the_one_chosen_on_the_item(string runtime)
+        {
+            // Arrange — the menu opened on the link it shares, X's composer answered on this machine
+            var (context, page) = await OpenAsync(host, runtime, "share-menu");
+            await using var _ = context;
+            await context.RouteAsync("https://x.com/**", route => route.FulfillAsync(new() { ContentType = "text/html", Body = "<title>X</title>" }));
+            var menu = page.GetByRole(AriaRole.Menu);
+            await page.Locator("#share").ClickAsync();
+            await Assertions.Expect(menu.Locator(".forma-share-menu-primary [role=menuitem][href]")).ToHaveTextAsync(Networks);
+
+            // Act
+            var composer = await page.RunAndWaitForPopupAsync(() => menu.GetByRole(AriaRole.Menuitem, new() { Name = "X", Exact = true }).ClickAsync());
+
+            // Assert
+            await composer.WaitForLoadStateAsync();
+            Assert.Equal("https://x.com/intent/post?url=https%3A%2F%2Fexample.com%2Freports%2Fquarterly&text=Quarterly%20Report", composer.Url);
+            await Assertions.Expect(menu).ToBeHiddenAsync();
+        }
+
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_list_its_commands_and_raise_the_action_behind_more(string runtime)
