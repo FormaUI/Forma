@@ -29,6 +29,8 @@ public sealed partial class FormaImagePicker : FormaElementBase
 
     private bool _isPreviewPending;
 
+    private bool _isPreviewAttached;
+
     private readonly List<string> _previewFileNames = [];
 
     private string EffectivePrompt
@@ -45,15 +47,17 @@ public sealed partial class FormaImagePicker : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!_isPreviewAttached)
         {
-            await _preview.AttachAsync(RootElement);
+            // Claimed before the await, so a render arriving mid-call attaches no second preview.
+            _isPreviewAttached = true;
+            _isPreviewAttached = await _preview.AttachAsync(RootElement);
         }
 
-        if (_isPreviewPending)
+        // A preview asked for before the script attached waits for it, so an image chosen as the page loads still shows.
+        if (_isPreviewPending && _preview.IsAttached)
         {
-            _isPreviewPending = false;
-            await _preview.ShowAsync(_previewFileNames);
+            _isPreviewPending = !await _preview.ShowAsync(_previewFileNames);
         }
     }
 

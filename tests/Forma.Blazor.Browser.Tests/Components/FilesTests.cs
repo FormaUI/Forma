@@ -87,12 +87,11 @@ public sealed partial class FilesTests
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_take_the_image_picked_and_show_its_thumbnail(string runtime)
         {
-            // Arrange — the thumbnails' script attaches in the render the drop zone's does, which registers with the input router after it
+            // Arrange — the picker's file input ready, its thumbnails' script left to attach in its own time
             var (context, page) = await OpenAsync(host, runtime, "image-picker");
             await using var _ = context;
             var input = page.Locator("#check input[type=file]");
             await WaitForFileInputAsync(page, "#check input[type=file]");
-            await WaitForInputScopeAsync(page, "#check .forma-file-picker-drop-zone");
 
             // Act
             await input.SetInputFilesAsync(new FilePayload { Name = "pixel.png", MimeType = "image/png", Buffer = PixelImage });
