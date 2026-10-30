@@ -1,0 +1,14 @@
+<Project>
+
+    <!--
+        Forma Example Build Properties
+
+        The examples build as a host outside the repository builds, so the repository's own properties,
+        analyzers and targets stop here; what Forma's packages bring is all they get.
+    -->
+
+    <PropertyGroup>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+</Project>

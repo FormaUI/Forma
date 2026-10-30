@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
-/// <summary>The published host the checks drive, running on free ports in each of its modes, the published full client served as a standalone app, and the browser they drive them in.</summary>
-/// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, with islands persisting a switch in the culture cookie, with islands and culture addresses beside an independent client culture, and with the recording router in each runtime. The gate publishes the host and the full client and names their folders in <c>FORMA_BROWSER_HOST</c> and <c>FORMA_BROWSER_FULL</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
+/// <summary>The published host the checks drive, running on free ports in each of its modes, the published full client served as a standalone app, the published example hosts, and the browser they drive them in.</summary>
+/// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, with islands persisting a switch in the culture cookie, with islands and culture addresses beside an independent client culture, and with the recording router in each runtime. The gate publishes the host, the full client and the example hosts and names their folders in <c>FORMA_BROWSER_HOST</c>, <c>FORMA_BROWSER_FULL</c> and <c>FORMA_BROWSER_EXAMPLES</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
 public sealed class BrowserHost : IAsyncLifetime
 {
     private readonly List<Process> _processes = [];
@@ -25,6 +25,9 @@ public sealed class BrowserHost : IAsyncLifetime
 
     /// <summary>The folder the full client was published to.</summary>
     public string FullClientFolder { get; } = GetFolder("FORMA_BROWSER_FULL", Path.Combine("artifacts", "browser", "full"));
+
+    /// <summary>The folder each example host was published to a folder of its own in.</summary>
+    public string ExamplesFolder { get; } = GetFolder("FORMA_BROWSER_EXAMPLES", Path.Combine("artifacts", "browser", "examples"));
 
     /// <summary>The address of the host whose pages are islands under a static router, switching through culture addresses.</summary>
     public Uri Address { get; private set; } = default!;
@@ -47,6 +50,12 @@ public sealed class BrowserHost : IAsyncLifetime
     /// <summary>The address the full client is served at as a standalone app, with no server of its own.</summary>
     public Uri StandaloneAddress { get; private set; } = default!;
 
+    /// <summary>The address of the example host whose client follows the page's culture.</summary>
+    public Uri CoordinatedExampleAddress { get; private set; } = default!;
+
+    /// <summary>The address of the example host whose client's culture is its own.</summary>
+    public Uri IndependentExampleAddress { get; private set; } = default!;
+
     /// <summary>The address of the host rendering the recording router on the Server.</summary>
     public Uri NavigationServerAddress { get; private set; } = default!;
 
@@ -66,6 +75,8 @@ public sealed class BrowserHost : IAsyncLifetime
         CookieAddress = await StartAsync(routes: null, culture: "cookie").ConfigureAwait(false);
         IndependentAddress = await StartAsync(routes: null, culture: null, arrangement: "independent").ConfigureAwait(false);
         StandaloneAddress = await StartStandaloneAsync().ConfigureAwait(false);
+        CoordinatedExampleAddress = await StartExampleAsync("Coordinated").ConfigureAwait(false);
+        IndependentExampleAddress = await StartExampleAsync("Independent").ConfigureAwait(false);
         NavigationServerAddress = await StartAsync(routes: "navigation-server", culture: null).ConfigureAwait(false);
         NavigationWebAssemblyAddress = await StartAsync(routes: "navigation-webassembly", culture: null).ConfigureAwait(false);
 
@@ -129,29 +140,43 @@ public sealed class BrowserHost : IAsyncLifetime
         _client.Dispose();
     }
 
-    private async Task<Uri> StartAsync(string? routes, string? culture, string? requestCulture = null, string? arrangement = null)
+    private Task<Uri> StartAsync(string? routes, string? culture, string? requestCulture = null, string? arrangement = null)
+        => StartProcessAsync(HostFolder, "Forma.Blazor.Browser.Host.dll", "_check/delayed", new()
+        {
+            ["FORMA_BROWSER_ROUTES"] = routes,
+            ["FORMA_BROWSER_CULTURE"] = culture,
+            ["FORMA_BROWSER_REQUEST_CULTURE"] = requestCulture,
+            ["FORMA_BROWSER_ARRANGEMENT"] = arrangement,
+        });
+
+    // An example host answers its page alone, as a host built from the README does.
+    private Task<Uri> StartExampleAsync(string name)
+        => StartProcessAsync(Path.Combine(ExamplesFolder, name), $"Forma.Examples.{name}.dll", string.Empty, []);
+
+    private async Task<Uri> StartProcessAsync(string folder, string assembly, string readyPath, Dictionary<string, string?> environment)
     {
         var address = new Uri($"http://127.0.0.1:{GetFreePort()}/");
-        var start = new ProcessStartInfo("dotnet", "Forma.Blazor.Browser.Host.dll")
+        var start = new ProcessStartInfo("dotnet", assembly)
         {
-            WorkingDirectory = HostFolder,
+            WorkingDirectory = folder,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
         };
         start.Environment["ASPNETCORE_URLS"] = address.ToString().TrimEnd('/');
         start.Environment["ASPNETCORE_ENVIRONMENT"] = "Production";
-        start.Environment["FORMA_BROWSER_ROUTES"] = routes;
-        start.Environment["FORMA_BROWSER_CULTURE"] = culture;
-        start.Environment["FORMA_BROWSER_REQUEST_CULTURE"] = requestCulture;
-        start.Environment["FORMA_BROWSER_ARRANGEMENT"] = arrangement;
 
-        var process = Process.Start(start) ?? throw new InvalidOperationException("The host did not start.");
+        foreach (var (name, value) in environment)
+        {
+            start.Environment[name] = value;
+        }
+
+        var process = Process.Start(start) ?? throw new InvalidOperationException($"{assembly} did not start.");
         _processes.Add(process);
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
-        await WaitForHostAsync(process, address).ConfigureAwait(false);
+        await WaitForHostAsync(process, new Uri(address, readyPath)).ConfigureAwait(false);
 
         return address;
     }
@@ -174,7 +199,7 @@ public sealed class BrowserHost : IAsyncLifetime
         return address;
     }
 
-    private async Task WaitForHostAsync(Process process, Uri address)
+    private async Task WaitForHostAsync(Process process, Uri ready)
     {
         var deadline = DateTime.UtcNow.AddMinutes(1);
 
@@ -187,7 +212,7 @@ public sealed class BrowserHost : IAsyncLifetime
 
             try
             {
-                using var response = await _client.GetAsync(new Uri(address, "_check/delayed")).ConfigureAwait(false);
+                using var response = await _client.GetAsync(ready).ConfigureAwait(false);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -202,7 +227,7 @@ public sealed class BrowserHost : IAsyncLifetime
             await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
         }
 
-        throw new TimeoutException($"The host at {address} did not answer within a minute.");
+        throw new TimeoutException($"The host at {ready} did not answer within a minute.");
     }
 
     private static int GetFreePort()

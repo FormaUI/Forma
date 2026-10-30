@@ -91,6 +91,97 @@ app.MapRazorComponents<App>()
 [The Showcase](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Showcase) is a complete
 host that renders every component in every state.
 
+## WebAssembly components
+
+A Web App that renders components under WebAssembly or Auto sets up its client beside its server, and both
+declare the same culture arrangement: how the page treats the client's culture. Each arrangement below is an
+[example host](https://github.com/FormaUI/Forma/blob/main/tests/Forma.Examples/README.md) the gate builds from
+Forma's packages and drives in a browser, with `MyApp` standing for the example's name.
+
+**Coordinated, the default.** Every runtime on the page follows the page's culture coordinator: a switch made in
+a Server island or a WebAssembly one reaches both and the document, and a prerendered client starts in the
+culture the server rendered it in. The server adds the WebAssembly render mode and registers as above:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Coordinated/Program.cs -->
+```csharp
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
+builder.Services.AddJsonLocalization();
+builder.AddFormaUIServer();
+```
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Coordinated/Program.cs -->
+```csharp
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(MyApp.Client._Imports).Assembly);
+```
+
+`AddFormaUIServer()` turns on `Components:UseCultureFromServer`, the framework's handoff of the server's culture
+to the client, wherever the configuration names no value, and the host fails to start where its configuration
+sets it to `false`. `FormaPageHead` publishes the cultures the server rendered the page in, which the page's
+coordinator starts from, so a coordinated page needs it in its head. The client registers its half:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Coordinated.Client/Program.cs -->
+```csharp
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Services.AddJsonLocalization();
+builder.Services.AddFormaUIWebAssembly();
+
+await builder.Build().RunAsync();
+```
+
+The host's locale files stay in the server's `.locales` folder, which the server copies beside its binary, and
+the client names the same folder, which its build embeds for the browser, so both runtimes read one set of files:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Coordinated/Forma.Examples.Coordinated.csproj -->
+```xml
+<ItemGroup>
+    <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+</ItemGroup>
+```
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Coordinated.Client/Forma.Examples.Coordinated.Client.csproj -->
+```xml
+<PropertyGroup>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    <LocalesPath>..\MyApp\.locales</LocalesPath>
+</PropertyGroup>
+```
+
+The client loads the globalization data of every culture, since the default covers only the one it starts in.
+
+**Independent client culture.** The client's culture is its own: a switch in a WebAssembly island changes that
+runtime alone, never the document, the coordinator, the address or the cookie, while the server's islands follow
+the page as before. Both sides declare it, and the handoff may then be off:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Independent/Program.cs -->
+```csharp
+builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
+```
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Independent.Client/Program.cs -->
+```csharp
+builder.Services.AddFormaUIWebAssembly(options => options.CultureArrangement = CultureArrangement.Independent);
+```
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Independent/appsettings.json -->
+```json
+{
+  "Components": {
+    "UseCultureFromServer": false
+  }
+}
+```
+
+A standalone WebAssembly app has no server: its runtime starts the page's coordinator itself, from the culture it
+starts in, as
+[`Forma.Blazor.WebAssembly`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.WebAssembly/README.md)
+sets out.
+
 ## Use the components
 
 Components live in `Forma.Blazor.Components.{Category}` namespaces, such as

@@ -73,6 +73,7 @@ function Initialize-BuildContext {
         BrowserHost    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Host' 'Forma.Blazor.Browser.Host.csproj'
         BrowserFull    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Full' 'Forma.Blazor.Browser.Full.csproj'
         BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
+        BrowserExamples = Join-Path $RepositoryRoot 'tests' 'Forma.Examples'
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
     }
@@ -1056,15 +1057,18 @@ function Test-BrowserScript {
 
 <#
 .SYNOPSIS
-Publishes the browser check's host and its full client, and drives them in a browser.
+Publishes the browser check's host, its full client and the example hosts, and drives them in a browser.
 
 .DESCRIPTION
 The components are checked in each runtime a Web App renders them in, a published client's download is held to
 its budgets, and what the publish trims is recorded, so a reference, a compile feature or a trim warning that
 breaks the browser fails here rather than in a host. Both clients are published in Release, the one configuration
 the budgets were measured in, into folders emptied first, since a publish names its files by their content and
-an earlier publish's files would be counted beside the new ones. The browser is headless unless -Visible asks
-for a window to watch.
+an earlier publish's files would be counted beside the new ones. The example hosts are built from the solution's
+packages rather than its projects, as a host outside the repository builds: the solution is packed at a version
+only the examples use, and that version is cleared from the machine's package cache first, so a package an
+earlier run cached never stands in for the one just packed. The browser is headless unless -Visible asks for a
+window to watch.
 
 .PARAMETER Context
 The build context.
@@ -1088,8 +1092,12 @@ function Test-BrowserCheck {
     $checks = $Context.BrowserChecks
     $hostOutput = Join-Path $Context.BrowserOutput 'host'
     $fullOutput = Join-Path $Context.BrowserOutput 'full'
+    $examples = $Context.BrowserExamples
+    $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
+    $examplesOutput = Join-Path $Context.BrowserOutput 'examples'
+    $solution = $Context.Solution
     $isVisible = $Visible.IsPresent
-    $description = 'dotnet publish the host and the full client, then drive them in a browser'
+    $description = 'dotnet publish the host and the full client, dotnet pack the solution and publish the example hosts from it, then drive them in a browser'
 
     if ($isVisible) {
         $description += ', in a visible window'
@@ -1108,11 +1116,39 @@ function Test-BrowserCheck {
             }
         }
 
-        $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Visible = $env:FORMA_BROWSER_VISIBLE }
+        foreach ($folder in @($packagesOutput, $examplesOutput)) {
+            if (Test-Path -LiteralPath $folder) {
+                Remove-Item -LiteralPath $folder -Recurse -Force
+            }
+        }
+
+        $version = '1.0.0-examples'
+        dotnet pack $solution -c Release -o $packagesOutput "-p:PackageVersion=$version" --nologo -v:q
+
+        if ($LASTEXITCODE -ne 0) {
+            return
+        }
+
+        $cache = (dotnet nuget locals global-packages --list) -replace '^global-packages:\s*', ''
+        Get-ChildItem -LiteralPath $cache -Directory -Filter 'formaui-net.*' -ErrorAction SilentlyContinue |
+            ForEach-Object { Join-Path $_.FullName $version } |
+            Where-Object { Test-Path -LiteralPath $_ } |
+            ForEach-Object { Remove-Item -LiteralPath $_ -Recurse -Force }
+
+        foreach ($example in @('Coordinated', 'Independent')) {
+            dotnet publish (Join-Path $examples "Forma.Examples.$example") -c Release -o (Join-Path $examplesOutput $example) "-p:FormaVersion=$version" --nologo -v:q
+
+            if ($LASTEXITCODE -ne 0) {
+                return
+            }
+        }
+
+        $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
 
         try {
             $env:FORMA_BROWSER_HOST = $hostOutput
             $env:FORMA_BROWSER_FULL = $fullOutput
+            $env:FORMA_BROWSER_EXAMPLES = $examplesOutput
             $env:FORMA_BROWSER_VISIBLE = if ($isVisible) { '1' } else { $null }
 
             dotnet run --project $checks -c Release
@@ -1120,6 +1156,7 @@ function Test-BrowserCheck {
         finally {
             $env:FORMA_BROWSER_HOST = $previous.Host
             $env:FORMA_BROWSER_FULL = $previous.Full
+            $env:FORMA_BROWSER_EXAMPLES = $previous.Examples
             $env:FORMA_BROWSER_VISIBLE = $previous.Visible
         }
     }.GetNewClosure()

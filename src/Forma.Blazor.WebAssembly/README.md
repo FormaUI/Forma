@@ -41,6 +41,9 @@ builder.Services.AddFormaUIWebAssembly(options =>
 });
 ```
 
+The [library's README](https://github.com/FormaUI/Forma/blob/main/README.md#webassembly-components) sets a Web
+App up with both halves, in either arrangement, the host's locale files included.
+
 ## A standalone app
 
 A standalone WebAssembly app has no server to publish the page's culture, so its runtime starts the page's

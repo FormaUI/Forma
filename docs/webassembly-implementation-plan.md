@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-Steps 1 to 11 have landed; step 12 is next.
+Every step has landed.
 
 ## Where Forma stood
 
@@ -324,11 +324,21 @@ checks; the Showcase is a smoke check beside it, never the gate.
     beside a library string, and the browser check switches both. Departure from the plan: the consumer of
     the packed packages is step 12's example hosts, which the gate builds from those packages, so step 11
     is checked in the repository's own client and the packed form with step 12.
-12. **The host's setup.** The READMEs set out both arrangements, each complete on both sides: the client's
+12. **The host's setup.** ✅ The READMEs set out both arrangements, each complete on both sides: the client's
     and the server's registration, `FormaPageHead` and the marker it publishes, the capture setting, and the
     host's locale files. Each arrangement is also an example host in the tests, built and exercised by the
     gate from the README's own setup, so the README can't drift from what is supported. Gate: both example
     hosts start and switch as their README says.
+
+    The library's README gained a section for WebAssembly components, each block of its setup tagged with the
+    example file it comes from, `MyApp` standing for the example's name. `tests/Forma.Examples` holds the two
+    examples, each a server and its client, behind build files of their own, so the repository's properties,
+    analyzers and targets stop there and a package's own targets do what a host gets. The browser step packs
+    the solution at `1.0.0-examples`, a version only the examples use, clears that version from the machine's
+    package cache, and publishes both; the check starts them, switches each island in each arrangement, reads
+    the host's string from the server's folder and a library label from the Hebrew pack in both runtimes, and
+    holds every tagged block, line by line in order, to its file. This is step 11's consumer of the packed
+    packages too: its client's build embeds the server's folder through the package's targets.
 
 Hybrid waits for its ownership to be chosen, as [the features status](features-status.md#deferred) records.
 

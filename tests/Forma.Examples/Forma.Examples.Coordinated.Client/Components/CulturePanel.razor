@@ -1,0 +1,14 @@
+@inherits FormaComponentBase
+
+@* What a runtime shows of the page's culture: the runtime, a string of the host's own, a library component's label, and a switch to Hebrew. *@
+<output class="runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
+<output class="welcome">@L["Welcome"]</output>
+<FormaPagination TotalItems="20" PageSize="10" CurrentPage="1" />
+<button class="switch" @onclick="SwitchAsync">עברית</button>
+
+@code {
+    [Inject] private ICultureSwitch CultureSwitch { get; set; } = default!;
+
+    private Task SwitchAsync()
+        => CultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo("he"));
+}
