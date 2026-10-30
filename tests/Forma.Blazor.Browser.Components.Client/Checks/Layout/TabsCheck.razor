@@ -1,0 +1,22 @@
+@page "/{Runtime}/tabs"
+
+@* Three tabs whose selections, by press or by keyboard, show in order where the check reads them. *@
+<FormaTabs Id="tabs" Label="Settings" ActiveTabId="@_active" ActiveTabIdChanged="Select">
+    <FormaTab TabId="general" Title="General">General settings</FormaTab>
+    <FormaTab TabId="privacy" Title="Privacy">Privacy settings</FormaTab>
+    <FormaTab TabId="advanced" Title="Advanced">Advanced settings</FormaTab>
+</FormaTabs>
+<output id="result">@(string.Join(' ', _selections))</output>
+
+@code {
+    private readonly List<string> _selections = [];
+    private string _active = "general";
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private void Select(string tabId)
+    {
+        _active = tabId;
+        _selections.Add(tabId);
+    }
+}

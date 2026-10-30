@@ -1,0 +1,18 @@
+@page "/{Runtime}/text-box"
+
+@* A text box bound in a form, its text shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaTextBox Id="check" Label="Name" @bind-Value="_model.Name" />
+</EditForm>
+<output id="result">@_model.Name</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public string? Name { get; set; }
+    }
+}

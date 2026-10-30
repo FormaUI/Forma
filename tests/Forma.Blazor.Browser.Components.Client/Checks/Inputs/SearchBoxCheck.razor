@@ -1,0 +1,12 @@
+@page "/{Runtime}/search-box"
+
+@* A search box reporting a search at every keystroke, the search it reported last shown where the check reads it. *@
+<FormaSearchBox Id="check" Label="Search" @bind-Value="_text" OnSearch="@((string searchTerm) => _searchTerm = searchTerm)" />
+<output id="result">@_searchTerm</output>
+
+@code {
+    private string _text = string.Empty;
+    private string? _searchTerm;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

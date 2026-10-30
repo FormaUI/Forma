@@ -1,0 +1,8 @@
+@page "/{Runtime}/video-player"
+
+@* A video the host's own provider embeds as a hosting service would, held behind its play control until it is pressed. *@
+<FormaVideoPlayer Id="check" Source="check:video" Title="Check video" />
+
+@code {
+    [Parameter] public string Runtime { get; set; } = default!;
+}

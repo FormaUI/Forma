@@ -1,0 +1,25 @@
+@page "/{Runtime}/input-scope"
+@using Forma.Blazor.Components.Interaction
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
+
+@* A scope routing ArrowDown on the element inside it to its action, each action shown in order where the check reads it. *@
+<button id="outside" type="button">Outside</button>
+<FormaInputScope Id="scope" Profile="ScopeProfile" OnAction="Record">
+    <div id="inside" tabindex="0">Inside</div>
+</FormaInputScope>
+<output id="result">@(string.Join(' ', _actions))</output>
+
+@code {
+    private static readonly InputProfile ScopeProfile = new()
+    {
+        InputRoutes = [new InputRoute("check.next", new KeyBinding("ArrowDown"))],
+    };
+
+    private readonly List<string> _actions = [];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private void Record(InputAction action)
+        => _actions.Add(action.Action);
+}

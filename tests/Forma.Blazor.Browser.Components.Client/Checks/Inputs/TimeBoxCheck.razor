@@ -1,0 +1,22 @@
+@page "/{Runtime}/time-box"
+
+@* A time box holding 09:30, the text it commits shown where the check reads it. *@
+<FormaTimeBox ElementId="check"
+              Text="@_text"
+              Suggestions="Suggestions"
+              FormatTime="FormatTime"
+              ListLabel="Start"
+              OnChange="text => _text = text" />
+<output id="result">@_text</output>
+
+@code {
+    // Every half hour of the day.
+    private static readonly TimeOnly[] Suggestions = [.. Enumerable.Range(0, 48).Select(index => TimeOnly.MinValue.AddMinutes(30 * index))];
+
+    private string? _text = "09:30";
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private static string FormatTime(TimeOnly time)
+        => time.ToString("HH:mm", CultureInfo.InvariantCulture);
+}

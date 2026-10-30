@@ -1,0 +1,28 @@
+@page "/{Runtime}/rest-area"
+
+@* A rest area holding the handle of a window a button opens, the window's minimizing and restoring shown where the check reads it. *@
+<FormaRestArea Id="rest-area" />
+<FormaButton Id="open" OnClick="@(() => _isOpen = true)">Open Notes</FormaButton>
+@if (_isOpen)
+{
+    <FormaWindow Id="notes"
+                 Title="Notes"
+                 Placement="NotesPlacement"
+                 MinimizedChanged="Track"
+                 OnClose="@(() => _isOpen = false)">
+        <Body>Kept while minimized</Body>
+    </FormaWindow>
+}
+<output id="result">@_state</output>
+
+@code {
+    private static readonly FramePlacement NotesPlacement = new(320, 160, 360, 240);
+
+    private bool _isOpen;
+    private string? _state;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private void Track(bool minimized)
+        => _state = minimized ? "minimized" : "restored";
+}

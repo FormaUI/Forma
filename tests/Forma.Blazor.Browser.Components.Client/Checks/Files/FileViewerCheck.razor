@@ -1,0 +1,13 @@
+@page "/{Runtime}/file-viewer"
+
+@* A viewer on the first of two documents the host resolves to markup, the address it steps to written where the check reads it. *@
+<FormaFileViewer Id="check" Source="@_source" Siblings="Documents" OnNavigate="@(source => _source = source)" />
+<output id="result">@_source</output>
+
+@code {
+    private static readonly string[] Documents = ["check:notes.md", "check:todo.md"];
+
+    private string _source = Documents[0];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

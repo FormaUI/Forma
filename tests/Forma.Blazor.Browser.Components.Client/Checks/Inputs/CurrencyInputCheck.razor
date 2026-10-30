@@ -1,0 +1,18 @@
+@page "/{Runtime}/currency-input"
+
+@* A currency input bound to an amount in US dollars in a form, its amount shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaCurrencyInput TValue="decimal" Id="check" CurrencyCode="USD" Label="Price" @bind-Value="_model.Price" />
+</EditForm>
+<output id="result">@_model.Price.ToString(CultureInfo.InvariantCulture)</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public decimal Price { get; set; }
+    }
+}

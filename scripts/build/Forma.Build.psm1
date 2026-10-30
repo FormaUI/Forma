@@ -72,6 +72,7 @@ function Initialize-BuildContext {
         ScriptTests    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Tests.Scripts'
         BrowserHost    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Host' 'Forma.Blazor.Browser.Host.csproj'
         BrowserFull    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Full' 'Forma.Blazor.Browser.Full.csproj'
+        BrowserComponents = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Components' 'Forma.Blazor.Browser.Components.csproj'
         BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
         BrowserExamples = Join-Path $RepositoryRoot 'tests' 'Forma.Examples'
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
@@ -1057,7 +1058,7 @@ function Test-BrowserScript {
 
 <#
 .SYNOPSIS
-Publishes the browser check's host, its full client and the example hosts, and drives them in a browser.
+Publishes the browser check's host, its full client, the components host and the example hosts, and drives them in a browser.
 
 .DESCRIPTION
 The components are checked in each runtime a Web App renders them in, a published client's download is held to
@@ -1092,19 +1093,21 @@ function Test-BrowserCheck {
     $checks = $Context.BrowserChecks
     $hostOutput = Join-Path $Context.BrowserOutput 'host'
     $fullOutput = Join-Path $Context.BrowserOutput 'full'
+    $componentsProject = $Context.BrowserComponents
+    $componentsOutput = Join-Path $Context.BrowserOutput 'components'
     $examples = $Context.BrowserExamples
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
     $examplesOutput = Join-Path $Context.BrowserOutput 'examples'
     $solution = $Context.Solution
     $isVisible = $Visible.IsPresent
-    $description = 'dotnet publish the host and the full client, dotnet pack the solution and publish the example hosts from it, then drive them in a browser'
+    $description = 'dotnet publish the host, the full client and the components host, dotnet pack the solution and publish the example hosts from it, then drive them in a browser'
 
     if ($isVisible) {
         $description += ', in a visible window'
     }
 
     Invoke-BuildStep -Name 'browser' -Target $checks -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
-        foreach ($publish in @(@($hostProject, $hostOutput), @($fullProject, $fullOutput))) {
+        foreach ($publish in @(@($hostProject, $hostOutput), @($fullProject, $fullOutput), @($componentsProject, $componentsOutput))) {
             if (Test-Path -LiteralPath $publish[1]) {
                 Remove-Item -LiteralPath $publish[1] -Recurse -Force
             }
@@ -1143,11 +1146,12 @@ function Test-BrowserCheck {
             }
         }
 
-        $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
+        $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Components = $env:FORMA_BROWSER_COMPONENTS; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
 
         try {
             $env:FORMA_BROWSER_HOST = $hostOutput
             $env:FORMA_BROWSER_FULL = $fullOutput
+            $env:FORMA_BROWSER_COMPONENTS = $componentsOutput
             $env:FORMA_BROWSER_EXAMPLES = $examplesOutput
             $env:FORMA_BROWSER_VISIBLE = if ($isVisible) { '1' } else { $null }
 
@@ -1156,6 +1160,7 @@ function Test-BrowserCheck {
         finally {
             $env:FORMA_BROWSER_HOST = $previous.Host
             $env:FORMA_BROWSER_FULL = $previous.Full
+            $env:FORMA_BROWSER_COMPONENTS = $previous.Components
             $env:FORMA_BROWSER_EXAMPLES = $previous.Examples
             $env:FORMA_BROWSER_VISIBLE = $previous.Visible
         }

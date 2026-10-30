@@ -1,0 +1,18 @@
+@page "/{Runtime}/toggle-switch"
+
+@* A switch bound in a form, its Boolean shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaToggleSwitch Id="check" Label="Notifications" @bind-Value="_model.HasNotifications" />
+</EditForm>
+<output id="result">@_model.HasNotifications</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public bool HasNotifications { get; set; }
+    }
+}

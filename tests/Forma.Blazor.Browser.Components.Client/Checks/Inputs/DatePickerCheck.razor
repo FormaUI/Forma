@@ -1,0 +1,18 @@
+@page "/{Runtime}/date-picker"
+
+@* A date picker bound in a form on 14 March 2026, the date chosen shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaDatePicker TValue="DateOnly" Id="check" @bind-Value="_model.Date" Label="Date" />
+</EditForm>
+<output id="result">@(_model.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public DateOnly Date { get; set; } = new(2026, 3, 14);
+    }
+}

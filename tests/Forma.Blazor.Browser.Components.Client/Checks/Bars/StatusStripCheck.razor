@@ -1,0 +1,21 @@
+@page "/{Runtime}/status-strip"
+@using Forma.Framework.Toolbar
+
+@* A status strip reading out the words a button adds, beside a save command run where the check reads it. *@
+<FormaStatusStrip Id="status-strip" Label="Document" Items="Items" OnCommand="@(command => _command = command)" />
+<FormaButton Id="add-word" OnClick="@(() => _words++)">Add Word</FormaButton>
+<output id="result">@_command</output>
+
+@code {
+    private int _words;
+    private string? _command;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private IReadOnlyList<ToolbarItem> Items
+        =>
+        [
+            new ToolbarReadout { Id = "words", Title = "Words", Value = string.Create(CultureInfo.InvariantCulture, $"{_words} words"), IsAnnounced = true },
+            new ToolbarCommand { Id = "save", Title = "Save", Command = "save" },
+        ];
+}

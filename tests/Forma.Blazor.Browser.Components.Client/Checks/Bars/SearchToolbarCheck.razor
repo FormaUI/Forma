@@ -1,0 +1,21 @@
+@page "/{Runtime}/search-toolbar"
+@using Forma.Framework.Toolbar
+
+@* A search field beside an export command, the search and the command reported where the check reads them. *@
+<FormaSearchToolbar Id="search-toolbar"
+                    Label="Orders"
+                    Search="SearchOptions"
+                    Items="Items"
+                    OnSearch="@(search => _search = search)"
+                    OnCommand="@(command => _command = command)" />
+<output id="result">@_search @_command</output>
+
+@code {
+    private static readonly SearchBoxOptions SearchOptions = new() { Placeholder = "Search Orders" };
+    private static readonly IReadOnlyList<ToolbarItem> Items = [new ToolbarCommand { Id = "export", Title = "Export", Command = "export" }];
+
+    private string? _search;
+    private string? _command;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

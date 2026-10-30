@@ -1,0 +1,14 @@
+@page "/{Runtime}/share-menu"
+@using Forma.Framework.Share
+
+@* A share menu for a link, with its own commands and the page's action behind More, the command it last raised written where the check reads it. *@
+<FormaShareMenu Id="share" Item="_shareItem" Actions="_shareActions" OnCommand="@(command => _lastCommand = command)" />
+<output id="result">@_lastCommand</output>
+
+@code {
+    private readonly ShareItem _shareItem = new() { Name = "Quarterly Report", Address = "https://example.com/reports/quarterly" };
+    private readonly IReadOnlyList<ShareAction> _shareActions = [new() { Id = "archive", Title = "Archive", Command = "archive" }];
+    private string? _lastCommand;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

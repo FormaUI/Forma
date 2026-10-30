@@ -1,0 +1,11 @@
+@page "/{Runtime}/pagination"
+
+@* Two hundred items ten to a page, the bound page shown where the check reads it. *@
+<FormaPagination Id="pagination" TotalItems="200" PageSize="10" CurrentPage="_page" OnPageChanged="@(page => _page = page)" />
+<output id="result">@_page</output>
+
+@code {
+    private int _page = 1;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

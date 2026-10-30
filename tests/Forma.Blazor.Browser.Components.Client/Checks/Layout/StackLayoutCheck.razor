@@ -1,0 +1,15 @@
+@page "/{Runtime}/stack-layout"
+
+@* Two backdrops stacked one above the other, which a button lays out side by side. *@
+<FormaStackLayout Id="stack" Orientation="_orientation">
+    <FormaBackdrop Id="first">First</FormaBackdrop>
+    <FormaBackdrop Id="second">Second</FormaBackdrop>
+</FormaStackLayout>
+<FormaButton Id="turn" OnClick="@(() => _orientation = StackOrientation.Horizontal)">Side by Side</FormaButton>
+<output id="result">@_orientation</output>
+
+@code {
+    private StackOrientation _orientation = StackOrientation.Vertical;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

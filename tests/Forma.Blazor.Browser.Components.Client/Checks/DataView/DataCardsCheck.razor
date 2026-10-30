@@ -1,0 +1,18 @@
+@page "/{Runtime}/data-cards"
+@using Forma.Blazor.Components.DataView
+
+@* Three cards, selected by the card pressed, the selection named where the check reads it. *@
+<FormaDataView Id="check" TItem="Row" Items="Rows" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" EnablePagination="false" EnableItemSelection="true" @bind-SelectedItems="_selectedRows">
+    <FormaDataCards TItem="Row" />
+</FormaDataView>
+<output id="result">@string.Join(", ", _selectedRows.Select(row => row.Name))</output>
+
+@code {
+    private static readonly IQueryable<Row> Rows = new Row[] { new("Alpha"), new("Beta"), new("Gamma") }.AsQueryable();
+
+    private IReadOnlyList<Row> _selectedRows = [];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    internal sealed record Row(string Name);
+}

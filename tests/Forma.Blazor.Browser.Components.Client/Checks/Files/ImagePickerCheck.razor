@@ -1,0 +1,14 @@
+@page "/{Runtime}/image-picker"
+
+@* A picker taking images, each one taken shown as a thumbnail and named with its size where the check reads it. *@
+<FormaImagePicker Id="check" OnFilesSelected="@(files => _pickedImages = files)" />
+<output id="result">@string.Join(", ", _pickedImages.Select(FormatFile))</output>
+
+@code {
+    private IReadOnlyList<IBrowserFile> _pickedImages = [];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private static string FormatFile(IBrowserFile file)
+        => $"{file.Name} ({file.Size.ToString(CultureInfo.InvariantCulture)} bytes)";
+}

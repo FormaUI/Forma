@@ -1,0 +1,18 @@
+@page "/{Runtime}/time-picker"
+
+@* A time picker bound in a form at 09:30, the time chosen shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaTimePicker TValue="TimeOnly" Id="check" @bind-Value="_model.Time" Label="Time" />
+</EditForm>
+<output id="result">@(_model.Time.ToString("HH:mm", CultureInfo.InvariantCulture))</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public TimeOnly Time { get; set; } = new(9, 30);
+    }
+}

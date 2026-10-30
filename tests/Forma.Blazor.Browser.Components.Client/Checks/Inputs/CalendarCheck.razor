@@ -1,0 +1,12 @@
+@page "/{Runtime}/calendar"
+@using Forma.Blazor.Models
+
+@* A calendar on 14 March 2026, the day pressed drawn as chosen and shown where the check reads it. *@
+<FormaCalendar Highlight="@(new DateRange(_date, _date))" OnDaySelected="day => _date = day" />
+<output id="result">@(_date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))</output>
+
+@code {
+    private DateOnly _date = new(2026, 3, 14);
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

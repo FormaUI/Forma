@@ -1,0 +1,17 @@
+@page "/{Runtime}/file-uploader"
+@using Forma.Framework.Resources
+
+@* A picker handing its files to an uploader, which writes them to the host's store, the files stored named with their sizes where the check reads them. *@
+<FormaFilePicker Id="picker" OnFilesSelected="@(files => _pickedFiles = files)" />
+<FormaFileUploader Id="check" Files="_pickedFiles" OnCompleted="@(resources => _storedResources = resources)" />
+<output id="result">@string.Join(", ", _storedResources.Select(FormatResource))</output>
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _pickedFiles;
+    private IReadOnlyList<ResourceInfo> _storedResources = [];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private static string FormatResource(ResourceInfo resource)
+        => $"{resource.Name} ({resource.Size?.ToString(CultureInfo.InvariantCulture)} bytes)";
+}

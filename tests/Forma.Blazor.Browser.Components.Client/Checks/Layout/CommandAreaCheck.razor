@@ -1,0 +1,22 @@
+@page "/{Runtime}/command-area"
+
+@* A command area stacking one command bar, to which a button adds a second. *@
+<FormaCommandArea Id="command-area">
+    <FormaCommandBar role="toolbar" aria-label="Clipboard">
+        <FormaButton>Copy</FormaButton>
+    </FormaCommandBar>
+    @if (_hasFormatting)
+    {
+        <FormaCommandBar role="toolbar" aria-label="Formatting">
+            <FormaButton>Bold</FormaButton>
+        </FormaCommandBar>
+    }
+</FormaCommandArea>
+<FormaButton Id="add" OnClick="@(() => _hasFormatting = true)">Add Formatting</FormaButton>
+<output id="result">@_hasFormatting</output>
+
+@code {
+    private bool _hasFormatting;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

@@ -1,0 +1,14 @@
+@page "/{Runtime}/close-button"
+
+@* A notice the close button dismisses, whether it still shows written where the check reads it. *@
+@if (_isShown)
+{
+    <p id="notice">The draft was saved. <FormaCloseButton Label="Dismiss Notice" OnClick="@(() => _isShown = false)" /></p>
+}
+<output id="result">@(_isShown ? "Shown" : "Dismissed")</output>
+
+@code {
+    private bool _isShown = true;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

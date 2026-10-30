@@ -1,0 +1,18 @@
+@page "/{Runtime}/chrome"
+@using Forma.Framework.Toolbar
+
+@* A chrome named by its title, which a button renames, with a title bar command run where the check reads it. *@
+<FormaChrome Id="chrome" Title="@_title" Commands="Commands" OnCommand="@(command => _command = command)">
+    <Body>Quarterly figures</Body>
+</FormaChrome>
+<FormaButton Id="rename" OnClick="@(() => _title = "Summary")">Rename</FormaButton>
+<output id="result">@_command</output>
+
+@code {
+    private static readonly IReadOnlyList<ToolbarItem> Commands = [new ToolbarCommand { Id = "refresh", Title = "Refresh", Command = "refresh" }];
+
+    private string _title = "Report";
+    private string? _command;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

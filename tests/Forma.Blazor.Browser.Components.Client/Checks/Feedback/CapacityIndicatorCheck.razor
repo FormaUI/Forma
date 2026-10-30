@@ -1,0 +1,11 @@
+@page "/{Runtime}/capacity-indicator"
+
+@* Seats used against their limit, which the page adds to from a button. *@
+<FormaCapacityIndicator Id="capacity" Label="Seats" Used="_usedSeats" Limit="10" ShowBar="true" />
+<FormaButton Id="add" OnClick="@(() => _usedSeats++)">Add Seat</FormaButton>
+
+@code {
+    private int _usedSeats = 7;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

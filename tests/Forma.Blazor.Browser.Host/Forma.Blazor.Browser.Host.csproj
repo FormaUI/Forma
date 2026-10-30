@@ -3,6 +3,9 @@
     <!-- The Web App the browser check drives: Server, WebAssembly and Auto pages over the same panel. -->
     <PropertyGroup>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <IsPackable>false</IsPackable>
+        <!-- The gate packs the whole solution, and the Web SDK alone warns for a project that is not packable. -->
+        <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
     </PropertyGroup>
 
     <ItemGroup>

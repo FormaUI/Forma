@@ -1,0 +1,14 @@
+@page "/{Runtime}/file-picker"
+
+@* A picker taking any file, the files it hands over named with their sizes where the check reads them. *@
+<FormaFilePicker Id="check" OnFilesSelected="@(files => _pickedFiles = files)" />
+<output id="result">@string.Join(", ", _pickedFiles.Select(FormatFile))</output>
+
+@code {
+    private IReadOnlyList<IBrowserFile> _pickedFiles = [];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private static string FormatFile(IBrowserFile file)
+        => $"{file.Name} ({file.Size.ToString(CultureInfo.InvariantCulture)} bytes)";
+}

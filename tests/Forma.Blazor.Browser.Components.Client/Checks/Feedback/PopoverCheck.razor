@@ -1,0 +1,32 @@
+@page "/{Runtime}/popover"
+
+@* Two popovers opened from their triggers, the last one to open or close written where the check reads it. *@
+<p id="outside">A press here lands outside both popovers.</p>
+<span @ref="_detailsAnchor">
+    <FormaButton @ref="_detailsTrigger" Id="details-trigger" OnClick="() => _detailsPopover.ToggleAsync(_detailsTrigger.RootElement)">Details</FormaButton>
+</span>
+<FormaPopover @ref="_detailsPopover" Id="details" Anchor="_detailsAnchor" OnOpenChanged="@(isOpen => Record("Details", isOpen))">
+    <p>Shipped on Monday.</p>
+</FormaPopover>
+<span @ref="_filtersAnchor">
+    <FormaButton @ref="_filtersTrigger" Id="filters-trigger" OnClick="() => _filtersPopover.ToggleAsync(_filtersTrigger.RootElement)">Filters</FormaButton>
+</span>
+<FormaPopover @ref="_filtersPopover" Id="filters" Anchor="_filtersAnchor" OnOpenChanged="@(isOpen => Record("Filters", isOpen))">
+    <p>Only open orders.</p>
+</FormaPopover>
+<output id="result">@_lastChange</output>
+
+@code {
+    private ElementReference _detailsAnchor;
+    private FormaButton _detailsTrigger = default!;
+    private FormaPopover _detailsPopover = default!;
+    private ElementReference _filtersAnchor;
+    private FormaButton _filtersTrigger = default!;
+    private FormaPopover _filtersPopover = default!;
+    private string? _lastChange;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private void Record(string popoverName, bool isOpen)
+        => _lastChange = $"{popoverName} {(isOpen ? "opened" : "closed")}";
+}

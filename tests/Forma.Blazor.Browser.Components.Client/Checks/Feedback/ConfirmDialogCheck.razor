@@ -1,0 +1,17 @@
+@page "/{Runtime}/confirm-dialog"
+@using Forma.Framework.Feedback
+@inject IConfirmDialogService ConfirmService
+
+@* A confirmation asked through the confirm service from a button, its answer written where the check reads it. *@
+<FormaButton Id="ask" OnClick="AskAsync">Delete Draft</FormaButton>
+<FormaConfirmDialog />
+<output id="result">@_answer</output>
+
+@code {
+    private string? _answer;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private async Task AskAsync()
+        => _answer = await ConfirmService.ConfirmAsync("Delete the draft?", "Delete", "Keep") ? "Confirmed" : "Canceled";
+}

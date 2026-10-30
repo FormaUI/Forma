@@ -1,0 +1,20 @@
+@page "/{Runtime}/multi-select"
+
+@* A multi-select bound in a form, the values of the options chosen shown where the check reads them. *@
+<EditForm Model="_model">
+    <FormaMultiSelect TValue="string" Id="check" @bind-Value="_model.Colors" Options="_colors" Label="Colors" />
+</EditForm>
+<output id="result">@(string.Join(", ", _model.Colors))</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    private readonly IReadOnlyList<SelectOption<string>> _colors = [new("red", "Red"), new("green", "Green"), new("blue", "Blue")];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public List<string> Colors { get; set; } = [];
+    }
+}

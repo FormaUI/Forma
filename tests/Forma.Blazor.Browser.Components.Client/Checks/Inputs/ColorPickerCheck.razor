@@ -1,0 +1,18 @@
+@page "/{Runtime}/color-picker"
+
+@* A color picker bound in a form, its hex color shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaColorPicker Id="check" Label="Color" @bind-Value="_model.Color" />
+</EditForm>
+<output id="result">@_model.Color</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public string Color { get; set; } = "#1E90FF";
+    }
+}

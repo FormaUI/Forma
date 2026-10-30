@@ -1,0 +1,17 @@
+@page "/{Runtime}/toast-container"
+@using Forma.Framework.Feedback
+@inject IToastService ToastService
+
+@* A toast raised through the toast service from a button, drawn by the container the page places. *@
+<FormaButton Id="save" OnClick="SaveAsync">Save Draft</FormaButton>
+<div id="toasts">
+    <FormaToastContainer />
+</div>
+
+@code {
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    // Long enough that the toast leaves only when the check dismisses it.
+    private Task SaveAsync()
+        => ToastService.ShowAsync("Draft saved.", ToastType.Success, TimeSpan.FromMinutes(5));
+}

@@ -1,0 +1,11 @@
+@page "/{Runtime}/button"
+
+@* A button pressed, counted where the check reads it. *@
+<FormaButton Id="check" OnClick="@(() => _presses++)">Press</FormaButton>
+<output id="result">@_presses</output>
+
+@code {
+    private int _presses;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

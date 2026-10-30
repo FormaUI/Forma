@@ -1,0 +1,15 @@
+@page "/{Runtime}/command-bar"
+
+@* A command bar of clipboard commands, the one pressed shown where the check reads it. *@
+<FormaCommandBar Id="command-bar" role="toolbar" aria-label="Clipboard">
+    <FormaButton Id="cut" OnClick="@(() => _command = "cut")">Cut</FormaButton>
+    <FormaButton Id="copy" OnClick="@(() => _command = "copy")">Copy</FormaButton>
+    <FormaButton Id="paste" OnClick="@(() => _command = "paste")">Paste</FormaButton>
+</FormaCommandBar>
+<output id="result">@_command</output>
+
+@code {
+    private string? _command;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

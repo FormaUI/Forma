@@ -1,0 +1,14 @@
+@page "/{Runtime}/spinner"
+
+@* A spinner the page shows while it loads, started and finished from a button. *@
+<FormaButton Id="load" OnClick="@(() => _isLoading = !_isLoading)">@(_isLoading ? "Finish Loading" : "Start Loading")</FormaButton>
+@if (_isLoading)
+{
+    <FormaSpinner Id="spinner" Label="Loading Orders" />
+}
+
+@code {
+    private bool _isLoading;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

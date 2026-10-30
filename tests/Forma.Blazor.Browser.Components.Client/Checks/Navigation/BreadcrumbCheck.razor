@@ -1,0 +1,18 @@
+@page "/{Runtime}/breadcrumb"
+
+@* A trail to the current page, whose pressed segment reports its value where the check reads it. *@
+<FormaBreadcrumb Id="breadcrumb" TItem="string" Items="Trail" OnItemClick="@((string? value) => _pressed = value)" />
+<output id="result">@_pressed</output>
+
+@code {
+    private static readonly BreadcrumbItem<string>[] Trail =
+    [
+        new("Home") { Value = "home" },
+        new("Store") { Value = "store" },
+        new("Orders") { Value = "orders", IsCurrent = true },
+    ];
+
+    private string? _pressed;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

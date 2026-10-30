@@ -1,0 +1,22 @@
+@page "/{Runtime}/toolbar"
+@using Forma.Framework.Toolbar
+
+@* A formatting toolbar whose commands, pressed or keyed, show in order where the check reads them. *@
+<FormaToolbar Id="toolbar" Label="Formatting" Items="Items" OnCommand="Record" />
+<output id="result">@(string.Join(' ', _commands))</output>
+
+@code {
+    private static readonly IReadOnlyList<ToolbarItem> Items =
+    [
+        new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" },
+        new ToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" },
+        new ToolbarCommand { Id = "underline", Title = "Underline", Command = "underline" },
+    ];
+
+    private readonly List<string> _commands = [];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private void Record(string command)
+        => _commands.Add(command);
+}

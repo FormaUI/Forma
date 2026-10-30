@@ -1,0 +1,22 @@
+@page "/{Runtime}/status-badge"
+@using Forma.Framework.Css
+@using Forma.Framework.Icons
+
+@* A record's status badge, which the page moves from draft to published from a button. *@
+<FormaStatusBadge Id="badge" Text="@StatusText" Marker="StatusMarker" Foreground="StatusColor" />
+<FormaButton Id="publish" OnClick="@(() => _isPublished = true)">Publish</FormaButton>
+
+@code {
+    private bool _isPublished;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private string StatusText
+        => _isPublished ? "Published" : "Draft";
+
+    private Icon? StatusMarker
+        => _isPublished ? Icon.FromGlyph(Glyph.CircleCheck) : null;
+
+    private CssColor StatusColor
+        => _isPublished ? CssColor.FromHex(0x198754) : CssColor.FromHex(0x6c757d);
+}

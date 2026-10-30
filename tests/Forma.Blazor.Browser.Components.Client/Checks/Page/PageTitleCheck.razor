@@ -1,0 +1,18 @@
+@page "/{Runtime}/page-title"
+@using Forma.Blazor.Components.Page
+
+@* A page's heading beneath its trail, which the action beside it renames, the title shown where the check reads it. *@
+<FormaPageTitle Id="page-title" Title="@_title" Breadcrumbs="Trail">
+    <Actions>
+        <FormaButton Id="rename" OnClick="@(() => _title = "Invoices")">Rename</FormaButton>
+    </Actions>
+</FormaPageTitle>
+<output id="result">@_title</output>
+
+@code {
+    private static readonly BreadcrumbItem<object?>[] Trail = [new("Home", "/"), new("Store", "/store")];
+
+    private string _title = "Orders";
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

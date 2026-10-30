@@ -1,0 +1,12 @@
+@page "/{Runtime}/emoji-picker"
+
+@* An emoji picker whose chosen emoji is shown where the check reads it, keeping the recents it is bound to. *@
+<FormaEmojiPicker Id="picker" OnSelect="@(sequence => _chosen = sequence)" @bind-Recent="_recent" />
+<output id="result">@_chosen</output>
+
+@code {
+    private IReadOnlyList<string> _recent = [];
+    private string? _chosen;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

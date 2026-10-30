@@ -1,0 +1,16 @@
+@page "/{Runtime}/virtualize"
+
+@* A thousand items in a box that scrolls, drawn only around its viewport. *@
+<div id="check" style="block-size: 200px; overflow-y: auto">
+    <FormaVirtualize TItem="int" Items="Items" ItemKey="@(item => item)" ItemSize="40">
+        <ItemContent Context="item">
+            <div style="block-size: 40px">Item @item</div>
+        </ItemContent>
+    </FormaVirtualize>
+</div>
+
+@code {
+    private static readonly int[] Items = [.. Enumerable.Range(0, 1000)];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

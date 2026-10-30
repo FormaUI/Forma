@@ -1,0 +1,18 @@
+@page "/{Runtime}/slider"
+
+@* A slider bound in a form, at 50 percent and stepping by ten, its value shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaSlider TValue="int" Id="check" Label="Volume" Min="0" Max="100" Step="10" Unit="%" @bind-Value="_model.Volume" />
+</EditForm>
+<output id="result">@_model.Volume.ToString(CultureInfo.InvariantCulture)</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public int Volume { get; set; } = 50;
+    }
+}

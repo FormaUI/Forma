@@ -1,0 +1,19 @@
+@page "/{Runtime}/splitter"
+
+@* A sidebar sized by the splitter beside it, its bound width shown where the check reads it. *@
+<div style="display: flex; block-size: 8rem;">
+    <div id="pane" style="@PaneStyle">Sidebar</div>
+    <FormaSplitter Id="splitter" Label="Sidebar Width" @bind-Value="_width" Min="8" Max="24" />
+    <div style="flex: 1;">Content</div>
+</div>
+<output id="result">@_width.ToString(CultureInfo.InvariantCulture)</output>
+
+@code {
+    private double _width = 12;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    // One unit of the splitter's value spans its default sixteen pixels.
+    private string PaneStyle
+        => string.Create(CultureInfo.InvariantCulture, $"flex: none; inline-size: {_width * 16}px;");
+}

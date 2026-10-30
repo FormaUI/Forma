@@ -1,0 +1,18 @@
+@page "/{Runtime}/check-box"
+
+@* A checkbox bound in a form, its Boolean shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaCheckBox Id="check" @bind-Value="_model.IsAccepted">Accept the terms</FormaCheckBox>
+</EditForm>
+<output id="result">@_model.IsAccepted</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Entry
+    {
+        public bool IsAccepted { get; set; }
+    }
+}

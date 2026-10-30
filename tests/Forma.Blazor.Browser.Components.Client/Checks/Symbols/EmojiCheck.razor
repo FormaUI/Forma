@@ -1,0 +1,20 @@
+@page "/{Runtime}/emoji"
+@using Forma.Framework.Emojis
+
+@* An emoji named for assistive technology, which a button swaps for another, the name shown where the check reads it. *@
+<FormaEmoji Id="emoji" Emoji="_emoji" Label="@_label" />
+<FormaButton Id="swap" OnClick="Swap">Swap</FormaButton>
+<output id="result">@_label</output>
+
+@code {
+    private Emoji _emoji = "\U0001F600";
+    private string _label = "grinning face";
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private void Swap()
+    {
+        _emoji = "\U0001F389";
+        _label = "party popper";
+    }
+}

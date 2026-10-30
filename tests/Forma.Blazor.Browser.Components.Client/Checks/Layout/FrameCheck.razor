@@ -1,0 +1,19 @@
+@page "/{Runtime}/frame"
+
+@* A frame placed past the viewport's end, its bound placement shown where the check reads it as the frame is held, moved and resized. *@
+<FormaFrame Id="frame" Label="Inspector" @bind-Placement="_placement">
+    <DragRegion>Inspector</DragRegion>
+    <ChildContent>Properties of the selection</ChildContent>
+</FormaFrame>
+<output id="result">@FormatPlacement()</output>
+
+@code {
+    private FramePlacement? _placement = new(4000, 96, 320, 192);
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private string FormatPlacement()
+        => _placement is { } placement
+            ? string.Create(CultureInfo.InvariantCulture, $"{placement.Left},{placement.Top},{placement.Width},{placement.Height}")
+            : string.Empty;
+}

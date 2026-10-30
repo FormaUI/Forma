@@ -1,0 +1,16 @@
+@page "/{Runtime}/eye-button"
+
+@* A code the eye button reveals and hides, written plain or masked where the check reads it. *@
+<FormaEyeButton Id="check"
+                Label="@(_isRevealed ? "Hide Code" : "Show Code")"
+                Revealed="_isRevealed"
+                OnClick="@(() => _isRevealed = !_isRevealed)" />
+<output id="result">@(_isRevealed ? Code : new string('•', Code.Length))</output>
+
+@code {
+    private const string Code = "4242";
+
+    private bool _isRevealed;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

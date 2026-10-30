@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
-/// <summary>The published host the checks drive, running on free ports in each of its modes, the published full client served as a standalone app, the published example hosts, and the browser they drive them in.</summary>
-/// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, with islands persisting a switch in the culture cookie, with islands and culture addresses beside an independent client culture, and with the recording router in each runtime. The gate publishes the host, the full client and the example hosts and names their folders in <c>FORMA_BROWSER_HOST</c>, <c>FORMA_BROWSER_FULL</c> and <c>FORMA_BROWSER_EXAMPLES</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
+/// <summary>The published host the checks drive, running on free ports in each of its modes, the published full client served as a standalone app, the published components host and example hosts, and the browser they drive them in.</summary>
+/// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, with islands persisting a switch in the culture cookie, with islands and culture addresses beside an independent client culture, and with the recording router in each runtime. The gate publishes the host, the full client, the components host and the example hosts and names their folders in <c>FORMA_BROWSER_HOST</c>, <c>FORMA_BROWSER_FULL</c>, <c>FORMA_BROWSER_COMPONENTS</c> and <c>FORMA_BROWSER_EXAMPLES</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
 public sealed class BrowserHost : IAsyncLifetime
 {
     private readonly List<Process> _processes = [];
@@ -25,6 +25,9 @@ public sealed class BrowserHost : IAsyncLifetime
 
     /// <summary>The folder the full client was published to.</summary>
     public string FullClientFolder { get; } = GetFolder("FORMA_BROWSER_FULL", Path.Combine("artifacts", "browser", "full"));
+
+    /// <summary>The folder the components host was published to.</summary>
+    public string ComponentsFolder { get; } = GetFolder("FORMA_BROWSER_COMPONENTS", Path.Combine("artifacts", "browser", "components"));
 
     /// <summary>The folder each example host was published to a folder of its own in.</summary>
     public string ExamplesFolder { get; } = GetFolder("FORMA_BROWSER_EXAMPLES", Path.Combine("artifacts", "browser", "examples"));
@@ -49,6 +52,9 @@ public sealed class BrowserHost : IAsyncLifetime
 
     /// <summary>The address the full client is served at as a standalone app, with no server of its own.</summary>
     public Uri StandaloneAddress { get; private set; } = default!;
+
+    /// <summary>The address of the components host, whose check pages each render one component in the runtime their address names.</summary>
+    public Uri ComponentsAddress { get; private set; } = default!;
 
     /// <summary>The address of the example host whose client follows the page's culture.</summary>
     public Uri CoordinatedExampleAddress { get; private set; } = default!;
@@ -75,6 +81,7 @@ public sealed class BrowserHost : IAsyncLifetime
         CookieAddress = await StartAsync(routes: null, culture: "cookie").ConfigureAwait(false);
         IndependentAddress = await StartAsync(routes: null, culture: null, arrangement: "independent").ConfigureAwait(false);
         StandaloneAddress = await StartStandaloneAsync().ConfigureAwait(false);
+        ComponentsAddress = await StartProcessAsync(ComponentsFolder, "Forma.Blazor.Browser.Components.dll", "_check/ready", []).ConfigureAwait(false);
         CoordinatedExampleAddress = await StartExampleAsync("Coordinated").ConfigureAwait(false);
         IndependentExampleAddress = await StartExampleAsync("Independent").ConfigureAwait(false);
         NavigationServerAddress = await StartAsync(routes: "navigation-server", culture: null).ConfigureAwait(false);

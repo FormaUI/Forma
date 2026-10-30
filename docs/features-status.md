@@ -2,13 +2,13 @@
 
 ## Current state
 
-**Forma has 65 implemented components and 8 in progress. Interactive Server is its established hosting mode, and WebAssembly and Auto are implemented in part.** The current work is [WebAssembly](#webassembly), every component checked in each render mode; the product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
+**Forma has 65 implemented components and 8 in progress. It runs under Interactive Server, WebAssembly and Auto, every component's main interaction checked in each.** The current work is the [splitter's drag](#webassembly), the one gap those checks found open; the product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
 
 | Measure | Now |
 | --- | --- |
 | Components | 65 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview`, packed locally and unpublished |
-| Render modes | Interactive Server established; WebAssembly and Auto implemented: the components load and render, every runtime on a page follows its culture coordinator, a client reads its host's own strings, and a host sets either arrangement up as the README says; each component's own interaction is still to be checked in each render mode |
+| Render modes | Interactive Server, WebAssembly and Auto implemented: every component's main interaction checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says |
 
 The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto. It passes locally on Windows. In CI, on Linux and Windows, every step passes but the locale lint, which fails with a 403 until the repository is given access to the package feed it restores `locali` from.
 
@@ -20,7 +20,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 
 | Work | State |
 | --- | --- |
-| [WebAssembly](#webassembly) | Each component checked in each render mode |
+| [WebAssembly](#webassembly) | The splitter's drag |
 | [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
@@ -74,8 +74,8 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The component bases and the component context | [Component foundations design](component-foundations-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | Design tokens, backdrops and theming | [Styling and theming](../README.md#styling-and-theming) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
-| The culture state and the switch | [Culture design](culture-design.md) | Implemented for circuits, coordinated across a page; WebAssembly's registration is [step 10](#webassembly) | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| Culture addresses | [Culture addresses](culture-design.md#culture-addresses) | Implemented, in coordination; under WebAssembly from [step 10](#webassembly) | [March 2026](../FEATURE-HISTORY.md#2026-03) |
+| The culture state and the switch | [Culture design](culture-design.md) | Implemented, coordinated across a page's circuits and WebAssembly runtimes | [October 2026](../FEATURE-HISTORY.md#2026-10) |
+| Culture addresses | [Culture addresses](culture-design.md#culture-addresses) | Implemented, in coordination, in every runtime | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Localization and locale packs | [Localization design](localization-design.md) | Implemented; a host's strings in the browser are [step 11](#webassembly) | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | The input router | [Input router design](input-router-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The DOM watcher and engine | [DOM watcher and engine design](dom-watcher-engine-design.md) | Implemented for focus, scrolling and intersection; [the rest](#the-dom-watcher-and-engine) open | [October 2026](../FEATURE-HISTORY.md#2026-10) |
@@ -98,7 +98,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | Feature | Contract | State | Since |
 | --- | --- | --- | --- |
 | The server half, `AddFormaUIServer` and `FormaPageHead` | [`Forma.Blazor.Server`](../src/Forma.Blazor.Server/README.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented in part: the components load and render under WebAssembly and Auto, and each runtime follows the page's culture coordinator, an independent client culture and a standalone app's page included, a client reads its host's own strings, and the README's setup is an example host for each arrangement; [each component's checks](#webassembly) open | [October 2026](../FEATURE-HISTORY.md#2026-10) |
+| The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented: every component's main interaction checked under WebAssembly and Auto, each runtime following the page's culture coordinator, an independent client culture and a standalone app's page included, a client reading its host's own strings, and the README's setup an example host for each arrangement | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, Forma's analyzer keeping each type crossing the interop serializable and its generator keeping those types' members with their library | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Hybrid | [WebAssembly and Hybrid](culture-design.md#webassembly-and-hybrid) | [Deferred](#deferred) | — |
 
@@ -115,9 +115,9 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## WebAssembly
 
-[The WebAssembly design](webassembly-design.md) is built, with the parts of [the culture design](culture-design.md) a page holding several runtimes needs: the client libraries reference packages rather than the shared framework, the product has its two render-mode halves, the browser check runs the components in every runtime, the culture's checks and the navigation boundary are automated, every client library is trimmed, the culture state switches through `ICultureSwitch`, a page's circuits share one coordinator, culture routing takes part in coordination, its pairs published to the page and its interactive landings accepted by the coordinator, and each WebAssembly runtime registers with the coordinator as it starts and sets the process's default cultures, under the culture arrangement both registrars choose, a standalone app's runtime starting its page's coordinator itself, a client's build embeds its host's locale files, which the browser's loader reads where a host's folder stands, and the README sets both arrangements up, each an example host the gate builds from the packages and runs. What remains:
+[The WebAssembly design](webassembly-design.md) is built, with the parts of [the culture design](culture-design.md) a page holding several runtimes needs: the client libraries reference packages rather than the shared framework, the product has its two render-mode halves, the browser check runs the components in every runtime, the culture's checks and the navigation boundary are automated, every client library is trimmed, the culture state switches through `ICultureSwitch`, a page's circuits share one coordinator, culture routing takes part in coordination, its pairs published to the page and its interactive landings accepted by the coordinator, and each WebAssembly runtime registers with the coordinator as it starts and sets the process's default cultures, under the culture arrangement both registrars choose, a standalone app's runtime starting its page's coordinator itself, a client's build embeds its host's locale files, which the browser's loader reads where a host's folder stands, the README sets both arrangements up, each an example host the gate builds from the packages and runs, and every component's main interaction is checked under Server, WebAssembly and Auto in a host of its own. What remains:
 
-- **Each component in each render mode:** every component's own interaction checked in the browser check under Server, WebAssembly and Auto, its root cause fixed wherever one fails, as the browser check already does for interactivity, binding and the select's list.
+- **The splitter's drag:** a drag starts once .NET has captured the pointer, so the moves a reader makes before that round trip completes are dropped, which a slow connection shows as a drag that starts late. *Proposal:* the drag gesture captures the pointer in the browser as it starts, as the DOM engine's other gestures do, and reports to .NET what it moved; the splitter's check then drags it.
 
 <a id="components-to-build"></a>
 

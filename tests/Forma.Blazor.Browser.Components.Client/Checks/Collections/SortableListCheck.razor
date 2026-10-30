@@ -1,0 +1,13 @@
+@page "/{Runtime}/sortable-list"
+
+@* Three items reordered by the keys on their handles, in the order the check reads. *@
+<FormaSortableList Id="check" TItem="string" @bind-Items="_items">
+    <ItemTemplate Context="item">@item</ItemTemplate>
+</FormaSortableList>
+<output id="result">@string.Join(", ", _items)</output>
+
+@code {
+    private IReadOnlyList<string> _items = ["Alpha", "Beta", "Gamma"];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

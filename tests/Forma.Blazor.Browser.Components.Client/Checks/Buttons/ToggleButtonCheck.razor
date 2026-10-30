@@ -1,0 +1,11 @@
+@page "/{Runtime}/toggle-button"
+@using Forma.Framework.Icons
+
+@* A toggle each press turns on or off, its pressed state carried on the button. *@
+<FormaToggleButton Id="check" Icon="Glyph.Bold" Label="Bold" Pressed="_isPressed" OnClick="@(() => _isPressed = !_isPressed)" />
+
+@code {
+    private bool _isPressed;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

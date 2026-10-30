@@ -1,0 +1,16 @@
+@page "/{Runtime}/freeze-pane"
+
+@* A narrow freeze pane over a row of months behind a frozen name, moved by its arrows. *@
+<FormaFreezePane Id="freeze-pane" Options="FreezePaneOptions.Arrows" Style="inline-size: 20rem;">
+    <div style="display: flex; inline-size: max-content;">
+        <div id="frozen" class="@FormaFreezePane.FrozenClass" style="flex: none; inline-size: 6rem;">Name</div>
+        @for (var month = 1; month <= 12; month++)
+        {
+            <div class="@FormaFreezePane.StopClass" style="flex: none; inline-size: 6rem;">Month @month</div>
+        }
+    </div>
+</FormaFreezePane>
+
+@code {
+    [Parameter] public string Runtime { get; set; } = default!;
+}

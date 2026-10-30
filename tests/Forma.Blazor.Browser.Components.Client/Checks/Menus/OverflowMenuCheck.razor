@@ -1,0 +1,15 @@
+@page "/{Runtime}/overflow-menu"
+
+@* An ellipsis menu of a row's commands, the command it last ran written where the check reads it. *@
+<FormaOverflowMenu Id="more" Label="More Actions">
+    <FormaDropDownMenuItem OnClick="@(() => _lastCommand = "Pin")">Pin</FormaDropDownMenuItem>
+    <FormaDropDownMenuItem OnClick="@(() => _lastCommand = "Archive")">Archive</FormaDropDownMenuItem>
+    <FormaDropDownMenuItem IsDestructive="true" OnClick="@(() => _lastCommand = "Delete")">Delete</FormaDropDownMenuItem>
+</FormaOverflowMenu>
+<output id="result">@_lastCommand</output>
+
+@code {
+    private string? _lastCommand;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

@@ -1,0 +1,12 @@
+@page "/{Runtime}/backdrop"
+
+@* A flat backdrop holding its content, which a button raises. *@
+<FormaBackdrop Id="backdrop" Variant="_variant">Quarterly figures</FormaBackdrop>
+<FormaButton Id="raise" OnClick="@(() => _variant = BackdropVariant.Raised)">Raise</FormaButton>
+<output id="result">@_variant</output>
+
+@code {
+    private BackdropVariant _variant = BackdropVariant.Flat;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

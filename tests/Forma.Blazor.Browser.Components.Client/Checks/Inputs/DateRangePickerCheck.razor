@@ -1,0 +1,25 @@
+@page "/{Runtime}/date-range-picker"
+@using Forma.Blazor.Models
+
+@* A date range picker bound in a form from 14 March to 14 April 2026, the range chosen shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaDateRangePicker Id="check" @bind-Value="_model.Stay" Label="Stay" />
+</EditForm>
+<output id="result">@Result</output>
+
+@code {
+    private readonly Entry _model = new();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    // The range as an ISO 8601 interval, the same in every culture.
+    private string Result
+        => _model.Stay is { } stay
+            ? string.Create(CultureInfo.InvariantCulture, $"{stay.Start:yyyy-MM-dd}/{stay.End:yyyy-MM-dd}")
+            : string.Empty;
+
+    private sealed class Entry
+    {
+        public DateRange? Stay { get; set; } = new DateRange(new(2026, 3, 14), new(2026, 4, 14));
+    }
+}

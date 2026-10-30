@@ -1,0 +1,50 @@
+@page "/{Runtime}/window"
+
+@* Two overlapping windows, each opened by a button, the workspace's current one shown where the check reads it. *@
+<FormaButton Id="open-alpha" OnClick="@(() => _isAlphaOpen = true)">Open Alpha</FormaButton>
+<FormaButton Id="open-beta" OnClick="@(() => _isBetaOpen = true)">Open Beta</FormaButton>
+@if (_isAlphaOpen)
+{
+    <FormaWindow Id="alpha"
+                 Title="Alpha"
+                 Placement="AlphaPlacement"
+                 ActiveChanged="@(active => Track("Alpha", active))"
+                 OnClose="@(() => _isAlphaOpen = false)">
+        <Body>The first window</Body>
+    </FormaWindow>
+}
+@if (_isBetaOpen)
+{
+    <FormaWindow Id="beta"
+                 Title="Beta"
+                 Placement="BetaPlacement"
+                 ActiveChanged="@(active => Track("Beta", active))"
+                 OnClose="@(() => _isBetaOpen = false)">
+        <Body>The second window</Body>
+    </FormaWindow>
+}
+<output id="result">@_current</output>
+
+@code {
+    // Beta overlaps the lower right of Alpha, leaving Alpha's left part and its title bar uncovered.
+    private static readonly FramePlacement AlphaPlacement = new(40, 120, 360, 240);
+    private static readonly FramePlacement BetaPlacement = new(240, 200, 360, 240);
+
+    private bool _isAlphaOpen;
+    private bool _isBetaOpen;
+    private string? _current;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private void Track(string title, bool active)
+    {
+        if (active)
+        {
+            _current = title;
+        }
+        else if (_current == title)
+        {
+            _current = null;
+        }
+    }
+}

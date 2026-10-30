@@ -1,0 +1,7 @@
+@* The interactive router over every check page, with the runtime that renders it, which a check waits for before it acts. *@
+<output id="runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
+<Router AppAssembly="typeof(Routes).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" />
+    </Found>
+</Router>

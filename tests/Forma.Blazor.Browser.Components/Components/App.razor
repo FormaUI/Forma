@@ -1,0 +1,26 @@
+@* The page's runtime is its address's first segment, server, webassembly or auto, and the interactive router renders every check in it. *@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <FormaPageHead Title="Forma Component Checks">
+        <link rel="stylesheet" href="@Assets["Forma.Blazor.Browser.Components.styles.css"]" />
+    </FormaPageHead>
+</head>
+<body>
+    <Routes @rendermode="RenderModeOf(HttpContext?.Request.Path.Value)" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+</html>
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private static IComponentRenderMode? RenderModeOf(string? path)
+        => path?.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() switch
+        {
+            "server" => InteractiveServer,
+            "webassembly" => InteractiveWebAssembly,
+            "auto" => InteractiveAuto,
+            _ => null,
+        };
+}

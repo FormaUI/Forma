@@ -1,0 +1,13 @@
+@page "/{Runtime}/composer"
+@using Forma.Blazor.Components.Composer
+@using Forma.Framework.Composer.Documents
+
+@* A composer bound to an empty HTML document, whose content is written where the check reads it. *@
+<FormaComposer Id="check" @bind-Value="_document" />
+<output id="result">@(_document?.Content)</output>
+
+@code {
+    private ComposerDocument? _document = new(ComposerDocumentFormat.Html, string.Empty);
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

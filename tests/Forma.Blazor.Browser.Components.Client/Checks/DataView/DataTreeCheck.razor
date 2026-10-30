@@ -1,0 +1,21 @@
+@page "/{Runtime}/data-tree"
+@using Forma.Blazor.Components.DataView
+
+@* A tree of a folder holding two more beside a file, the folder opened from its disclosure. *@
+<FormaDataView Id="check" TItem="Node" Items="Nodes" ItemKey="@(node => node.Id)" ItemName="@(node => node.Name)" ParentKey="@(node => node.ParentId)" HasChildren="@(node => node.IsFolder)" EnablePagination="false">
+    <FormaDataTree TItem="Node" aria-label="Folders" />
+</FormaDataView>
+
+@code {
+    private static readonly IQueryable<Node> Nodes = new Node[]
+    {
+        new(1, null, "Documents", true),
+        new(2, null, "Readme.txt", false),
+        new(3, 1, "Reports", true),
+        new(4, 1, "Contracts", true),
+    }.AsQueryable();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    internal sealed record Node(int Id, int? ParentId, string Name, bool IsFolder);
+}

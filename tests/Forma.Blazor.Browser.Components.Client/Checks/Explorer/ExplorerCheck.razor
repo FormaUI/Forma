@@ -1,0 +1,36 @@
+@page "/{Runtime}/explorer"
+@using Forma.Blazor.Components.Explorer
+@using Forma.Framework.Catalog
+@using Forma.Framework.Resources
+
+@* Two folders and a file in each, every file listed until a folder opens, the folder open named where the check reads it. *@
+<FormaExplorer Id="check" Items="_items" Folders="Folders" CurrentFolder="_currentFolder" OnFolderChanged="OpenFolder" />
+<output id="result">@(_currentFolder?.Name)</output>
+
+@code {
+    private static readonly IReadOnlyList<ICatalogItem> Folders = CatalogItem.ForAll(
+    [
+        new FolderResourceInfo("covers") { Name = "Covers" },
+        new FolderResourceInfo("races") { Name = "Races" },
+    ]);
+
+    private static readonly (string FolderKey, ResourceInfo Resource)[] FolderFiles =
+    [
+        ("covers", new DocumentResourceInfo("files/cover.txt")),
+        ("races", new DocumentResourceInfo("files/lap-times.txt")),
+    ];
+
+    private IReadOnlyList<ICatalogItem> _items = GetItems(null);
+    private ICatalogFolderItem? _currentFolder;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private void OpenFolder(ICatalogFolderItem? folder)
+    {
+        _currentFolder = folder;
+        _items = GetItems(folder?.Key);
+    }
+
+    private static IReadOnlyList<ICatalogItem> GetItems(string? folderKey)
+        => CatalogItem.ForAll(FolderFiles.Where(file => folderKey is null || file.FolderKey == folderKey).Select(file => file.Resource));
+}

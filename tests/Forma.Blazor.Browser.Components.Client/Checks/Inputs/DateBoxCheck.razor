@@ -1,0 +1,11 @@
+@page "/{Runtime}/date-box"
+
+@* A date box on 14 March 2026, the day chosen from its calendar shown where the check reads it. *@
+<FormaDateBox ElementId="check" Date="_date" OnChoose="date => _date = date" OnClear="() => _date = null" />
+<output id="result">@(_date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))</output>
+
+@code {
+    private DateOnly? _date = new DateOnly(2026, 3, 14);
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}
