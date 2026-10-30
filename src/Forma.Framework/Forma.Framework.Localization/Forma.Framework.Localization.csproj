@@ -8,11 +8,11 @@
         <ProjectReference Include="..\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
     </ItemGroup>
 
-    <!-- What makes a project a locale pack ships with the library, so a pack can be written by anyone who references it; NuGet imports the file named for the package, so the library's own targets file takes that name in the package and its template rides beside it. -->
+    <!-- What makes a project a locale pack, and what embeds a WebAssembly client's own locale files, ships with the library to every project that references it, directly or through another package; NuGet imports the file named for the package, so the library's own targets file takes that name in the package and its template rides beside it. -->
     <ItemGroup>
         <None Remove="build\*.targets" />
-        <None Include="build\Forma.Framework.Localization.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
-        <None Include="build\LocalePack.targets" Pack="true" PackagePath="build\" />
+        <None Include="build\Forma.Framework.Localization.targets" Pack="true" PackagePath="buildTransitive\$(PackageId).targets" />
+        <None Include="build\LocalePack.targets" Pack="true" PackagePath="buildTransitive\" />
     </ItemGroup>
 
 </Project>

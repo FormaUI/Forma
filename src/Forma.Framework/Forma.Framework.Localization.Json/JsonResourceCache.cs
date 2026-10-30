@@ -7,7 +7,7 @@ using System.Reflection;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>A cache of the translations for a type in one culture, merged from the files embedded in the type's assembly, the locale packs and the host's own files, in that order.</summary>
+/// <summary>A cache of the translations for a type in one culture, merged from the files embedded in the type's assembly, the locale packs and the host's own files, those embedded in the host's assembly and then its folder's, in that order.</summary>
 internal sealed class JsonResourceCache
 {
     private readonly ILocaleFileFormat _format;
@@ -15,17 +15,20 @@ internal sealed class JsonResourceCache
     private readonly ConcurrentDictionary<string, EmbeddedLocaleSource> _embeddedByAssemblyName = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<CacheKey, FrozenDictionary<string, JsonResourceEntry>?> _files = new();
     private readonly LocalePackSource[] _packs;
-    private readonly HostLocaleSource _host;
+    private readonly LocaleSource[] _host;
 
     /// <summary>Creates a cache reading files in one format.</summary>
     /// <param name="format">The format the files are written in.</param>
     /// <param name="localesPath">The folder the host keeps its own locale files in.</param>
     /// <param name="packs">The locale packs, in the order they are laid over one another.</param>
-    public JsonResourceCache(ILocaleFileFormat format, string localesPath, IReadOnlyList<Assembly> packs)
+    /// <param name="hostAssembly">The assembly the host's own files are embedded in, where they are.</param>
+    public JsonResourceCache(ILocaleFileFormat format, string localesPath, IReadOnlyList<Assembly> packs, Assembly? hostAssembly = null)
     {
         _format = format;
-        _host = new HostLocaleSource(localesPath, format, GetRootNamespace);
         _packs = [.. packs.Select(pack => new LocalePackSource(pack, format, GetRootNamespace))];
+
+        var folder = new HostLocaleSource(localesPath, format, GetRootNamespace);
+        _host = hostAssembly is null ? [folder] : [new LocalePackSource(hostAssembly, format, GetRootNamespace, HostLocalesAttribute.ResourcePrefix), folder];
     }
 
     /// <summary>The translations for a location in one culture.</summary>
@@ -40,7 +43,7 @@ internal sealed class JsonResourceCache
         _embeddedByAssemblyName[assemblyName] = embedded;
 
         var entries = new Dictionary<string, string?>(StringComparer.Ordinal);
-        foreach (var source in (LocaleSource[])[embedded, .. _packs, _host])
+        foreach (var source in (LocaleSource[])[embedded, .. _packs, .. _host])
         {
             foreach (var entry in source.Read(assemblyName, typeName, key.CultureName))
             {

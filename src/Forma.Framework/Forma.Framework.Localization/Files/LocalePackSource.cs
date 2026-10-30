@@ -2,16 +2,18 @@ namespace Forma.Framework.Localization.Files;
 
 using System.Reflection;
 
-/// <summary>The locale files a pack carries for other assemblies' types, with a folder inside it for each assembly, the files known by their resource names.</summary>
+/// <summary>The locale files a pack carries for other assemblies' types, with a folder inside it for each assembly, the files known by their resource names after <paramref name="resourcePrefix"/>.</summary>
 /// <param name="pack">The assembly the files are embedded in.</param>
 /// <param name="format">The format the files are written in.</param>
 /// <param name="rootNamespaces">The root namespace each assembly's own config declares, by the assembly's name.</param>
+/// <param name="resourcePrefix">What the resource name of each of the files starts with, as a host's files embedded in its assembly start with <see cref="HostLocalesAttribute.ResourcePrefix"/>; the pack's other resources are no files of it.</param>
 /// <remarks>A pack is read as a host's folder is: an assembly's folder is laid out by the root namespace the assembly's own config declares.</remarks>
-public sealed class LocalePackSource(Assembly pack, ILocaleFileFormat format, Func<string, string?> rootNamespaces) : LocaleSource(format)
+public sealed class LocalePackSource(Assembly pack, ILocaleFileFormat format, Func<string, string?> rootNamespaces, string resourcePrefix = "") : LocaleSource(format)
 {
     private readonly Assembly _pack = pack ?? throw new ArgumentNullException(nameof(pack));
     private readonly string _packName = pack.GetName().Name ?? string.Empty;
     private readonly Func<string, string?> _rootNamespaces = rootNamespaces ?? throw new ArgumentNullException(nameof(rootNamespaces));
+    private readonly string _resourcePrefix = resourcePrefix ?? throw new ArgumentNullException(nameof(resourcePrefix));
 
     /// <inheritdoc />
     protected override char FolderSeparator
@@ -23,7 +25,9 @@ public sealed class LocalePackSource(Assembly pack, ILocaleFileFormat format, Fu
 
     /// <inheritdoc />
     protected override IEnumerable<string> EnumerateNames()
-        => _pack.GetManifestResourceNames();
+        => _pack.GetManifestResourceNames()
+            .Where(name => name.StartsWith(_resourcePrefix, StringComparison.Ordinal))
+            .Select(name => name[_resourcePrefix.Length..]);
 
     /// <inheritdoc />
     protected override string GetDefaultRootDir(string assemblyName)
@@ -36,9 +40,9 @@ public sealed class LocalePackSource(Assembly pack, ILocaleFileFormat format, Fu
 
     /// <inheritdoc />
     protected override string GetDisplayName(string name)
-        => $"{_packName}/{name}";
+        => $"{_packName}/{_resourcePrefix}{name}";
 
     /// <inheritdoc />
     protected override Stream? OpenFile(string name)
-        => _pack.GetManifestResourceStream(name);
+        => _pack.GetManifestResourceStream(_resourcePrefix + name);
 }

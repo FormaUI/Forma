@@ -8,6 +8,8 @@
     "src/Forma.Blazor.Showcase/**": ["embedded", "host"],
     // The tests read a host's folder; every other arrangement they cover is a fixture, left unread on purpose.
     "tests/Forma.Framework.Localization.Json.Tests/**": ["host"],
+    // The full client is a WebAssembly client, whose build embeds the host's folder for the browser to read.
+    "tests/Forma.Blazor.Browser.Full/**": ["embedded", "host"],
     // The support strings cover a file embedded in the assembly and one the build moves into a satellite.
     "tests/Forma.Tests.Support/**": ["embedded", "satellite"]
   },
@@ -25,6 +27,8 @@
     "src/Forma.Blazor.Composer/FormaComposerCommandBar.razor.cs": ["LOC0208"],
     // A format's name comes from the table that lists the formats, where each is written as text.
     "src/Forma.Blazor.Composer/RichTextEditor/FormaRichTextEditor.razor.cs": ["LOC0208"],
+    // The full client embeds its host's folder for the browser, which the linter reads as the client's own files, holding the folder to types it names in other assemblies.
+    "tests/Forma.Blazor.Browser.Full/.locales/**": ["LOC0112"],
     // The tests look a key up by variable to prove what the locale does with an empty one and with the key under test.
     "tests/Forma.Framework.Localization.Json.Tests/JsonStringLocaleTests.cs": ["LOC0208"],
     "tests/Forma.Framework.Localization.Tests/NullStringLocaleFactoryTests.cs": ["LOC0208"],

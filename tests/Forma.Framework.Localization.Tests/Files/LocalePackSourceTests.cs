@@ -131,4 +131,23 @@ public sealed class LocalePackSourceTests
             Assert.Empty(entries);
         }
     }
+
+    public sealed class Prefix
+    {
+        [Fact]
+        public void Should_read_only_the_files_under_its_prefix_by_their_names_after_it()
+        {
+            // Arrange — a host's file under the prefix, and a resource of the assembly's own beside it.
+            var pack = new FakeAssembly(Pack);
+            var format = new FakeLocaleFileFormat();
+            var hostFile = AddFile(pack, format, ".locales.Contoso.Widgets.Bars.he.fake", CreateToolbarSection("host's file"));
+            AddFile(pack, format, "Contoso.Widgets.Bars.he.fake", CreateToolbarSection("the assembly's own"));
+
+            // Act
+            var entries = new LocalePackSource(pack, format, _ => null, ".locales.").Read(Assembly, Toolbar, "he");
+
+            // Assert
+            Assert.Equal([new(hostFile, "Toolbar", "Bold", "host's file")], entries);
+        }
+    }
 }

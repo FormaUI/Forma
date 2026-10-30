@@ -6,7 +6,7 @@ what has landed.
 
 ## Status
 
-Steps 1 to 10 have landed; step 11 is next.
+Steps 1 to 11 have landed; step 12 is next.
 
 ## Where Forma stood
 
@@ -310,9 +310,20 @@ checks; the Showcase is a smoke check beside it, never the gate.
     a WebAssembly switch by address and by cookie, and Auto's reload running on WebAssembly in the pair; its
     four known failures are plain checks. The plan's other checks below are held by the coordinator's script
     tests and the C# tests, as steps 8 and 9 recorded.
-11. **A host's strings in the browser.** A host's locale files embedded in its client assembly by the
+11. **A host's strings in the browser.** ✅ A host's locale files embedded in its client assembly by the
     package's targets, under resource names and discovery metadata the browser's loader finds. Gate: a
     consumer of the packed packages, published trimmed, whose host string switches with the library's.
+
+    The localization package's targets ship as `buildTransitive`, so they reach a client that references
+    the library only through `Forma.Blazor.WebAssembly`. In a project on the WebAssembly SDK they embed the
+    folder its `LocalesPath` property names, `.locales` by default, each file under `.locales.` and its
+    path, and write `HostLocalesAttribute` into the assembly; `WithRecordedLocales`, which
+    `WithRecordedPacks` became, takes the entry assembly as the host's where it carries the attribute, and
+    the loader reads those files as a pack under the prefix, after the packs and before the host's folder.
+    The full client, published trimmed and served as a standalone app, shows a string of its host's own
+    beside a library string, and the browser check switches both. Departure from the plan: the consumer of
+    the packed packages is step 12's example hosts, which the gate builds from those packages, so step 11
+    is checked in the repository's own client and the packed form with step 12.
 12. **The host's setup.** The READMEs set out both arrangements, each complete on both sides: the client's
     and the server's registration, `FormaPageHead` and the marker it publishes, the capture setting, and the
     host's locale files. Each arrangement is also an example host in the tests, built and exercised by the

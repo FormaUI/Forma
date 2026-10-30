@@ -140,7 +140,15 @@ hidden and skips them unless told not to.
 
 A WebAssembly client has no file system to read a folder from, so there a host's files are embedded in
 its client assembly by the package's targets, under the resource names and discovery metadata the
-loader reads, and they stand where a host's folder stands in the order below.
+loader reads, and they stand where a host's folder stands in the order below. The targets reach every
+project that references the library, through another package too, and in a client they embed the folder
+the project's `LocalesPath` property names, `.locales` beside the project by default, so a Web App's
+client can name its server's folder and both runtimes read one set of files. Each file is embedded as a
+pack's is, under its path in the folder with its folders joined by dots, after the prefix `.locales.`,
+which no resource name the build forms starts with, so the client's own embedded files and any other
+resource stay apart from them; and the assembly is marked as carrying them, which is how the loader,
+reading the entry assembly, finds them. They are read as a pack is, ahead of a host's folder, so a
+folder on disk, where one exists, still has the last word.
 
 ## Roots
 
@@ -306,7 +314,7 @@ say and the file's name to spell, so a file declares no root and no path of its 
 For one type and one culture, entries are applied in this order, each overriding the one before:
 
 1. An assembly's own embedded files, then each locale pack in the order the entry assembly's
-   attributes name them, then host files.
+   attributes name them, then host files: those a client embedded, then the host's folder.
 2. Within a source, shallower anchors, then deeper ones.
 3. Within one anchor, files in the order of the assembly's paths, then the files whose rooted
    sections name the anchor.

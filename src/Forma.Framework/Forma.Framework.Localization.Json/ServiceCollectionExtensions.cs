@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddJsonLocalization(this IServiceCollection services)
         => services.AddJsonLocalization(new LocalizationOptions());
 
-    /// <summary>Registers JSON localization configured by the given options, with the locale packs the application was built against placed before the ones the options name.</summary>
+    /// <summary>Registers JSON localization configured by the given options, with the locale packs the application was built against placed before the ones the options name, and the host's own locale files its build embedded in it.</summary>
     public static IServiceCollection AddJsonLocalization(this IServiceCollection services, LocalizationOptions options)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -27,9 +27,9 @@ public static class ServiceCollectionExtensions
         {
             var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
 
-            // The application's build records the packs it references in the entry assembly.
+            // The application's build records the packs it references in the entry assembly, and a client's embeds the host's files there.
             var configured = Assembly.GetEntryAssembly() is { } application
-                ? options.WithRecordedPacks(application, loggerFactory.CreateLogger(typeof(LocalePackLoader)))
+                ? options.WithRecordedLocales(application, loggerFactory.CreateLogger(typeof(LocalePackLoader)))
                 : options;
 
             return new JsonStringLocaleFactory(configured, loggerFactory);

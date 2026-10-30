@@ -159,7 +159,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
     }
 
     [Fact]
-    public async Task Should_start_a_standalone_app_s_page_from_its_runtime_s_pair_and_follow_its_switch()
+    public async Task Should_start_a_standalone_app_s_page_from_its_runtime_s_pair_and_follow_its_switch_in_the_host_s_strings_and_the_library_s()
     {
         // Arrange — a browser in German, whose language the standalone runtime starts in
         await using var context = await host.Browser.NewContextAsync(new() { BaseURL = host.StandaloneAddress.ToString(), Locale = "de-DE" });
@@ -167,6 +167,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
         await page.GotoAsync(string.Empty);
         await Assertions.Expect(page.Locator("#standalone-state")).ToHaveTextAsync("de-DE/de-DE", new() { Timeout = 60000 });
         await WaitForDocumentAsync(page, "de-DE/ltr");
+        await Assertions.Expect(page.Locator("#standalone-host-string")).ToHaveTextAsync("Host String");
 
         // Act
         await page.Locator("#standalone-switch").ClickAsync();
@@ -174,6 +175,8 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
         // Assert
         await Assertions.Expect(page.Locator("#standalone-state")).ToHaveTextAsync("he/he");
         await WaitForDocumentAsync(page, "he/rtl");
+        await Assertions.Expect(page.Locator("#standalone-host-string")).ToHaveTextAsync("מחרוזת המארח");
+        await Assertions.Expect(page.Locator("nav[aria-label='ניווט עמודים']")).ToHaveCountAsync(1);
     }
 
     private static string GetCookies(IReadOnlyList<BrowserContextCookiesResult> cookies)

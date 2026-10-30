@@ -46,7 +46,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var format = new JsonLocaleFileFormat();
 
         _context = new JsonLocaleContext(
-            new JsonResourceCache(format, GetLocalesPath(options.LocalesPath), options.LocalePacks),
+            new JsonResourceCache(format, GetLocalesPath(options.LocalesPath), options.LocalePacks, options.HostLocaleAssembly),
             sourceCulture,
             new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>()),
             options);

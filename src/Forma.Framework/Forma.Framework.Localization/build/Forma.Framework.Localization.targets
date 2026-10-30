@@ -2,12 +2,14 @@
 
     <!--
         What the build does for an assembly that localizes. This file ships in the library's package,
-        named for the package there, and is imported into every project that references it.
-        For any project it embeds the config file, and for a locale pack, a project that declared
-        IsLocalePack, it does the rest: a pack is a project of nothing but locale files, for other
-        assemblies' types, so it compiles no code, embeds every locale file beneath it under its own
-        path so that a resource name spells the tree a reader sees, and carries in its own package a
-        targets file that records the pack in whatever references it, since nothing else would.
+        named for the package there, and is imported into every project that references it, directly or
+        through another package. For any project it embeds the config file; for a WebAssembly client it
+        embeds the host's own locale files, since the browser has no folder to read them from; and for a
+        locale pack, a project that declared IsLocalePack, it does the rest: a pack is a project of
+        nothing but locale files, for other assemblies' types, so it compiles no code, embeds every
+        locale file beneath it under its own path so that a resource name spells the tree a reader sees,
+        and carries in its own package a targets file that records the pack in whatever references it,
+        since nothing else would.
     -->
 
     <!-- An assembly's config file sits at its root and is embedded whenever it is there, since the SDK embeds nothing by default and would ship it as content instead. -->
@@ -15,6 +17,25 @@
         <EmbeddedResource Include=".locale.json" />
         <Content Remove=".locale.json" />
         <None Remove=".locale.json" />
+    </ItemGroup>
+
+    <!--
+        A WebAssembly client embeds the host's folder of locale files, the one LocalesPath names, .locales
+        beside the project by default, as a pack embeds its own, each under its path in the folder, after
+        the prefix HostLocalesAttribute names, which no resource name the build forms starts with; the
+        attribute tells the runtime the assembly carries them, and where it reads them.
+    -->
+    <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(LocalesPath)' == ''">
+        <LocalesPath>.locales</LocalesPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+        <_HostLocaleFile Include="$(LocalesPath)/**/*.json" />
+        <EmbeddedResource Include="$(LocalesPath)/**/*.json" WithCulture="false" LogicalName=".locales.$([System.String]::Copy('%(RecursiveDir)%(Filename)%(Extension)').Replace('\', '.').Replace('/', '.'))" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'@(_HostLocaleFile)' != ''">
+        <AssemblyAttribute Include="Forma.Framework.Localization.HostLocalesAttribute" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(IsLocalePack)' == 'true'">

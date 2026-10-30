@@ -170,8 +170,20 @@ The folder reaches the output as content:
 </ItemGroup>
 ```
 
+**In a WebAssembly client.** The browser has no folder to read, so the client's build embeds the
+host's folder in the client's assembly, laid out as above, and the runtime reads it from there. The
+folder is `.locales` beside the client project unless its `LocalesPath` property names another, as a Web
+App's client names its server's, so both runtimes read the same files:
+
+```xml
+<PropertyGroup>
+    <LocalesPath>..\MyApp\.locales</LocalesPath>
+</PropertyGroup>
+```
+
 **Which entry wins.** The assembly's own files are read first, then each locale pack, then the
-host's files, each overriding the one before; within each, a file closer to the type wins.
+host's files, those a client embedded and then the folder's, each overriding the one before; within
+each, a file closer to the type wins.
 
 **Another layout.** An assembly that keeps its files elsewhere, or whose root namespace differs
 from its name, states it in a `.locale.json` at the project root, which the build embeds:

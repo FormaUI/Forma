@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization.Tests;
 
 public sealed class LocalizationOptionsTests
 {
-    public sealed class RecordedPacks
+    public sealed class RecordedLocales
     {
         [Fact]
         public void Should_lay_the_recorded_packs_before_the_named_ones_each_once()
@@ -15,7 +15,7 @@ public sealed class LocalizationOptionsTests
             var options = new LocalizationOptions { LocalePacks = [named, recorded] };
 
             // Act
-            var configured = options.WithRecordedPacks(application, loggerFactory.CreateLogger("packs"));
+            var configured = options.WithRecordedLocales(application, loggerFactory.CreateLogger("packs"));
 
             // Assert
             Assert.Equal([recorded, named], configured.LocalePacks);
@@ -30,13 +30,31 @@ public sealed class LocalizationOptionsTests
             var options = new LocalizationOptions { SourceLanguage = "fr", RequireMatchingLocalization = true, LocalesPath = "strings" };
 
             // Act
-            var configured = options.WithRecordedPacks(application, loggerFactory.CreateLogger("packs"));
+            var configured = options.WithRecordedLocales(application, loggerFactory.CreateLogger("packs"));
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal("fr", configured.SourceLanguage),
                 () => Assert.True(configured.RequireMatchingLocalization),
                 () => Assert.Equal("strings", configured.LocalesPath));
+        }
+
+        [Fact]
+        public void Should_take_the_application_as_the_host_s_assembly_where_its_build_embedded_the_host_s_files()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var client = new FakeAssembly("Contoso.Client") { Attributes = { new HostLocalesAttribute() } };
+            var server = new FakeAssembly("Contoso.Server");
+
+            // Act
+            var clientOptions = new LocalizationOptions().WithRecordedLocales(client, loggerFactory.CreateLogger("packs"));
+            var serverOptions = new LocalizationOptions().WithRecordedLocales(server, loggerFactory.CreateLogger("packs"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Same(client, clientOptions.HostLocaleAssembly),
+                () => Assert.Null(serverOptions.HostLocaleAssembly));
         }
 
         [Fact]
@@ -48,7 +66,7 @@ public sealed class LocalizationOptionsTests
             var options = new LocalizationOptions { LocalePacks = [new FakeAssembly("Contoso.Pack")] };
 
             // Act
-            var configured = options.WithRecordedPacks(application, loggerFactory.CreateLogger("packs"));
+            var configured = options.WithRecordedLocales(application, loggerFactory.CreateLogger("packs"));
 
             // Assert
             Assert.Same(options, configured);

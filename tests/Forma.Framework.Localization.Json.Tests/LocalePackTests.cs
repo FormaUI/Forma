@@ -179,4 +179,62 @@ public sealed class LocalePackTests
                 () => Assert.Contains("Contoso.Missing", Assert.Single(loggerFactory.Entries).Message, StringComparison.Ordinal));
         }
     }
+
+    public sealed class HostAssembly
+    {
+        private const string Fixtures = "Forma.Framework.Localization.Json.Tests.Fixtures.he.json";
+
+        private static IStringLocale CreateLocale<T>(Assembly host, string localesPath, params Assembly[] packs)
+            => new JsonStringLocaleFactory(new LocalizationOptions { LocalePacks = packs, HostLocaleAssembly = host, LocalesPath = localesPath }).Create(typeof(T));
+
+        [Fact]
+        public void Should_override_the_packs_with_the_hosts_files_embedded_under_the_prefix_alone()
+        {
+            // Arrange — the host's assembly carries a file under the prefix and one of its own beside it.
+            using var culture = new CultureScope("he");
+            var pack = CreatePack("Contoso.Pack", """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Open": "pack", "Save": "pack" } }""");
+            var host = new FakeAssembly("Contoso.Client")
+            {
+                Resources =
+                {
+                    [HostLocalesAttribute.ResourcePrefix + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Open": "host" } }""",
+                    [Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Save": "not the host's" } }""",
+                },
+            };
+            var strings = CreateLocale<Unlocalized>(host, string.Empty, pack);
+
+            // Act
+            var open = strings["Open"];
+            var save = strings["Save"];
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("host", open.Value),
+                () => Assert.Equal("pack", save.Value));
+        }
+
+        [Fact]
+        public void Should_yield_to_the_hosts_folder()
+        {
+            // Arrange — the host's folder's root file overrides Save, and the embedded file Open.
+            using var culture = new CultureScope("he");
+            var host = new FakeAssembly("Contoso.Client")
+            {
+                Resources =
+                {
+                    [HostLocalesAttribute.ResourcePrefix + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "HostOverridden": { "Open": "embedded", "Save": "embedded" } }""",
+                },
+            };
+            var strings = CreateLocale<HostOverridden>(host, new LocalizationOptions().LocalesPath);
+
+            // Act
+            var save = strings["Save"];
+            var open = strings["Open"];
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("root file", save.Value),
+                () => Assert.Equal("embedded", open.Value));
+        }
+    }
 }
