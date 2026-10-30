@@ -55,7 +55,7 @@ A project's references are part of its contract, because every consumer inherits
 
 ## Designing from what came before
 
-Every component replaces something in the legacy application the repository document names.
+Every component replaces something in the legacy application the repository document describes.
 
 - Do study the matching legacy markup, code-behind, styles and widgets before designing a replacement.
 - Do preserve its real states, vocabulary, edge cases and required behavior.

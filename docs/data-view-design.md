@@ -32,9 +32,9 @@ It is the library's own engine, so how items are laid out, which are on screen, 
 column gives way when the width runs out, what a select-all names and the presentation of
 one set as cards all follow the library's rules for tokens, direction and fit.
 
-## Coi parity and what changes
+## Parity with the legacy application, and what changes
 
-Coi is the floor, not the specification. Its list pages say what the grid must be able to
+The legacy application is the floor, not the specification. Its list pages say what the grid must be able to
 do, because every one of them is a table its administrators used daily; they do not say
 how, and they are not a visual target.
 
@@ -46,7 +46,7 @@ state, the headerless dense picker, the image library's tiles and the toolbar's 
 actions are in scope. The cell kinds are the caller's templates over the library's
 components, the status badge, the icon buttons and the thumbnail; the row tints are the
 caller's row class; the bulk actions are the selection toolbar the page composes. Nothing
-Coi's administrators could do from a list is lost.
+the legacy application's administrators could do from a list is lost.
 
 Two behaviors are not reproduced as authored. The hover-revealed editor button and the
 tooltip-only action labels leave a keyboard or touch reader with no way to reach or name
@@ -61,8 +61,8 @@ list.
   and `aria-sort`.
 - **The header stays put** while the rows scroll.
 - **Columns give way by priority** before the table scrolls sideways, and a dropped column
-  stays reachable, where Coi could only scroll.
-- **Numbers, dates and amounts align to the end** so digits line up, where Coi centered
+  stays reachable, where the legacy application could only scroll.
+- **Numbers, dates and amounts align to the end** so digits line up, where the legacy application centered
   them; a caller can center a column.
 - **The pager is the library's**, with the page controls a reader expects and the ones a
   caller turns off.
@@ -71,7 +71,7 @@ list.
 - **The view says when it has nothing and when it is waiting**, in its own body, rather
   than leaving a bare header under a spinner elsewhere.
 - **One set, three presentations.** A page that shows records as a table can show them as
-  cards with a view switch, where Coi had one layout per page.
+  cards with a view switch, where the legacy application had one layout per page.
 - **Logical properties throughout**, so the same stylesheet serves both directions rather
   than one mirrored by hand.
 

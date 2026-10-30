@@ -203,7 +203,7 @@ An authoring surface for rich text, Markdown, code and page composition, every c
 
 | | |
 |---|---|
-| **Old pattern** | Two Coi surfaces: CKEditor 4 in three presets with custom plugins for images, video, emoji, line height and forms, and the drag-and-drop page designer over `admin/pops/template.aspx` |
+| **Old pattern** | Two legacy surfaces: CKEditor 4 in three presets with custom plugins for images, video, emoji, line height and forms, and the drag-and-drop page designer over `admin/pops/template.aspx` |
 | **Used in** | page editor, product description, product and category templates, popups, custom menus — and in Épica, the News article body |
 
 ### `FormaConfirmDialog`
@@ -248,7 +248,7 @@ A form input for a date with its time of day, the date picked from a calendar an
 
 | | |
 |---|---|
-| **Old pattern** | None — Coi's dates carried no time |
+| **Old pattern** | None — the legacy dates carried no time |
 | **Used in** | Forms taking a moment, and `FormaPropertyColumn`'s editor for a member holding one |
 
 ### `FormaDialog`
@@ -473,7 +473,7 @@ One persistent handle per window in the workspace, grouped by origin or instance
 
 | | |
 |---|---|
-| **Old pattern** | None — Coi had no way back to a panel once it was out of sight |
+| **Old pattern** | None — the legacy application had no way back to a panel once it was out of sight |
 | **Used in** | The Showcase's window page; the Admin Console's shell |
 
 ### `FormaSearchBox`
@@ -545,7 +545,7 @@ An indeterminate rotating ring announcing that something is loading.
 
 | | |
 |---|---|
-| **Old pattern** | Coi's `btn-load` class and its loading indicator |
+| **Old pattern** | The legacy `btn-load` class and its loading indicator |
 | **Used in** | `FormaEmojiPicker` while a sheet loads; a host surface waiting on something |
 
 ### `FormaSplitter`
@@ -626,7 +626,7 @@ A ghost button for a toolbar or a bar of tools: a glyph, a label or both, and fo
 
 | | |
 |---|---|
-| **Old pattern** | Coi's toolbar buttons, each styled by hand |
+| **Old pattern** | The legacy toolbar buttons, each styled by hand |
 | **Used in** | `FormaToolbar`, `FormaRestArea`, `FormaExplorerToolbar` and `FormaExplorerSelectionBar` |
 
 ### `FormaTimePicker`

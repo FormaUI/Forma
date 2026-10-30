@@ -4,7 +4,7 @@ The plan for building the data view that [the data view design](data-view-design
 
 ## What the plan rests on
 
-### What Coi shipped
+### What the legacy application shipped
 
 Every tenant admin list is one `GridView` under a card: pages, products, orders,
 abandoned orders, leads, comments, coupons, users, invoices and design sets, and a

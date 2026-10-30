@@ -5,7 +5,7 @@ A component for **media**, images and videos, beside `FormaExplorer`, which brow
 - **Files** — every media item as an individual thumbnail, grouped and labeled by date.
 - **Collections** — folders shown as thumbnailed groups, also date-labeled, with a **favorites** flag and **categories** as an organizing dimension.
 
-The split takes after the iOS Photos app's Library and Albums, named in the library's own vocabulary, as an inspiration in the way Coi is one: the gallery takes its shape in Forma's own design language.
+The split takes after the iOS Photos app's Library and Albums, named in the library's own vocabulary, as an inspiration in the way the legacy application is one: the gallery takes its shape in Forma's own design language.
 
 ## Architecture
 

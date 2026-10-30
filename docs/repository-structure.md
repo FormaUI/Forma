@@ -120,7 +120,7 @@ The build is entered through `build.ps1` at the root, with its module and its wr
 
 ## Origins
 
-Every component derives from the legacy Coi admin, which sits outside the workspace in a repository of its own:
+Every component derives from the legacy admin application, which sits outside the workspace in a repository of its own:
 
 | What | Where |
 |------|-------|
@@ -129,8 +129,8 @@ Every component derives from the legacy Coi admin, which sits outside the worksp
 | Behavior and rendering helpers | Matching `*.aspx.cs` files |
 | Replaced jQuery widgets | `admin/Client/{toggle,date,cp,modal,Tabs,jcrop,minibar}` |
 
-Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch` is the intended level of fidelity: the real states, vocabulary, edge cases and required behavior survive; the visuals are Forma's.
+The legacy admin's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch` is the intended level of fidelity: the real states, vocabulary, edge cases and required behavior survive; the visuals are Forma's.
 
 ## Consumers
 
-The current consumers are **Coi** and **Épica Deportiva**, brought in by project reference or local NuGet. Épica's own documentation lists the subset it requires and tracks its status.
+The current consumers are the admin application Forma first served and **Épica Deportiva**, brought in by project reference or local NuGet. Épica's own documentation lists the subset it requires and tracks its status.

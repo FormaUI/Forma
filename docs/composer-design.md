@@ -1,11 +1,11 @@
 # Forma Composer Design
 
-An extensible authoring surface for the **Forma** component library, replacing both halves of Coi's authoring stack: the CKEditor 4 rich text editor and the `template.aspx` drag-and-drop page designer. It hosts rich text, Markdown, code and page composition, and every capability it has — including every editor — arrives as a plugin.
+An extensible authoring surface for the **Forma** component library, replacing both halves of the legacy application's authoring stack: the CKEditor 4 rich text editor and the `template.aspx` drag-and-drop page designer. It hosts rich text, Markdown, code and page composition, and every capability it has — including every editor — arrives as a plugin.
 
-The name is the claim: **the composer composes content, and content can be composed of more content.** A page designer places widgets; one of those widgets is a text widget; that text widget hosts the rich text editor. Coi did exactly this with `CKEDITOR.inline`, and the plugin model makes it fall out rather than be special-cased.
+The name is the claim: **the composer composes content, and content can be composed of more content.** A page designer places widgets; one of those widgets is a text widget; that text widget hosts the rich text editor. The legacy application did exactly this with `CKEDITOR.inline`, and the plugin model makes it fall out rather than be special-cased.
 
 - **Root component:** `FormaComposer`
-- **Supersedes:** the standalone rich text editor, and Coi's `admin/pops/template.aspx` over `Controls/Edit/`
+- **Supersedes:** the standalone rich text editor, and the legacy application's `admin/pops/template.aspx` over `Controls/Edit/`
 
 ## Vocabulary
 
@@ -13,17 +13,17 @@ There is no such thing as a composer *mode*. An editing surface is an **editor p
 
 The page designer places **widgets**. Deliberately not *element*, which the repository's naming section reserves for raw HTML against *component* for something Forma ships; and deliberately not *block*, which this document already uses for a code block, a Markdown block, a blockquote and a `<style>` block. Widget is a fresh word for a genuinely distinct thing — a palette entry describing something the designer can place — so all four concepts keep one word each.
 
-Coi called its palette entries *elements* (`iElm`, `elm.js`, *גרור מכאן אלמנטים*), which is what a reader of the legacy source will find.
+The legacy application called its palette entries *elements* (`iElm`, `elm.js`, *גרור מכאן אלמנטים*), which is what a reader of the legacy source will find.
 
 ---
 
-## 1. Coi parity and what changes
+## 1. Parity with the legacy application, and what changes
 
-**Coi is the floor, not the specification.** It establishes what the component must be able to do, because a surface Coi's authors used daily is a surface Forma cannot ship without. It does not establish *how*, and it is not a visual target. Where Coi's software design, code quality or appearance can be bettered — and in a 2014 jQuery admin most of it can — Forma betters it. Every place this document deliberately departs from Coi says so and says why; nothing here is a port.
+**The legacy application is the floor, not the specification.** It establishes what the component must be able to do, because a surface the legacy application's authors used daily is a surface Forma cannot ship without. It does not establish *how*, and it is not a visual target. Where the legacy application's software design, code quality or appearance can be bettered — and in a 2014 jQuery admin most of it can — Forma betters it. Every place this document deliberately departs from the legacy application says so and says why; nothing here is a port.
 
-### 1.1 What Coi shipped
+### 1.1 What the legacy application shipped
 
-Coi shipped two surfaces: CKEditor 4 in three presets with custom plugins, and a drag-and-drop page designer over `admin/pops/template.aspx`, the surface Coi actually composed pages with. Two of its details decide this design:
+The legacy application shipped two surfaces: CKEditor 4 in three presets with custom plugins, and a drag-and-drop page designer over `admin/pops/template.aspx`, the surface the legacy application actually composed pages with. Two of its details decide this design:
 
 - **It persisted HTML plus a scoped `<style>` block.** There was no structured document; the DOM was the document.
 - **A text element hosted the rich text editor inline.** The designer was the outer surface, and the rich text editor one element inside it.
@@ -32,11 +32,11 @@ That second point is the whole argument for this component's name. **The compose
 
 ### 1.2 Full parity, nothing dropped
 
-Every toolbar entry Coi's `Website` preset carried is in scope, mapped to a plugin in §4, and so is the page designer. Coi removed Subscript and Superscript; Forma keeps them available but out of the default preset.
+Every toolbar entry the legacy application's `Website` preset carried is in scope, mapped to a plugin in §4, and so is the page designer. The legacy application removed Subscript and Superscript; Forma keeps them available but out of the default preset.
 
-Two Coi behaviors are deliberately **not** reproduced as-authored:
+Two legacy behaviors are deliberately **not** reproduced as-authored:
 
-| Coi behavior | Why not, and what replaces it |
+| Legacy behavior | Why not, and what replaces it |
 |---|---|
 | `allowedContent = true` — no content filtering | An unfiltered editor is a stored-XSS pipe. Replaced by the sanitization pipeline in §6, which is mandatory and cannot be switched off. |
 | `qform` inserting `<script src="/c.js">` | Author-authored `<script>` tags are arbitrary code execution by design. Replaced by `EmbedPlugin`, which inserts a declarative, attribute-only placeholder element the **host** resolves when it renders the document. The author gets the same capability — drop a form into an article — without the editor ever becoming a script injector. |
@@ -44,7 +44,7 @@ Two Coi behaviors are deliberately **not** reproduced as-authored:
 ### 1.3 Modernisations
 
 - **Font size** in `rem`, not `px`: the picker labels a size by its pixel value at the reader's default and writes it as that value over 16 — `12` becomes `0.75rem`, `16` becomes `1rem` — so authored content follows the reader's font size preference; a host wanting a fixed physical size chooses points through `TypographyPluginOptions.FontSizeUnit`.
-- **Line height** as unitless multipliers: `1.0`, `1.15`, `1.5`, `1.6`, `2.0` — replacing Coi's 72 pixel values.
+- **Line height** as unitless multipliers: `1.0`, `1.15`, `1.5`, `1.6`, `2.0` — replacing the legacy application's 72 pixel values.
 - **Composition over reimplementation:** `FormaToolbar` menus for the format, font, size and color pickers, `FormaCommandArea` and `FormaOverflowMenu` for the toolbar and its overflow, `FormaTabs` for the editor switcher, `FormaExplorer` for stored media, `FormaFilePicker` + `FormaFileUploader` for uploads, `FormaEmojiPicker` for emoji, `FormaDialog` for dialogs.
 - **Logical CSS** throughout, and per-block `dir` so bidi is a first-class property of the document rather than a toolbar afterthought.
 
@@ -248,7 +248,7 @@ Being pushed makes a status readout change often, which decides how it is announ
 | `RichTextEditorPlugin` | Visual `contenteditable` canvas. Hosts the feature plugins, the selection bar, and embedded Markdown and code blocks. |
 | `MarkdownEditorPlugin` | Markdown source with line numbers, highlighting and a live rendered preview. |
 | `CodeEditorPlugin` | Lightweight code editor — line numbers, active-line marker, smart `Tab`, bracket pairing, language picker. Not a Monaco replacement, and not HTML-only: HTML, CSS, JavaScript, TypeScript, C#, SQL, JSON, YAML, Bash, Python. |
-| `PageDesignerPlugin` | Drag-and-drop widget canvas with a palette, per-widget chrome, nesting through rows and columns, and a settings panel per widget. Replaces Coi's `template.aspx`. |
+| `PageDesignerPlugin` | Drag-and-drop widget canvas with a palette, per-widget chrome, nesting through rows and columns, and a settings panel per widget. Replaces the legacy application's `template.aspx`. |
 
 #### Views
 
@@ -258,7 +258,7 @@ The rich text editor ships two views. **Preview** lays the document out as a rea
 
 The designer is an editor plugin like the others, so it costs the engine nothing: it appears in the switcher when registered, and a host that only wants a rich text field never sees it.
 
-What it adds is a second extension point, because a palette that only Forma can fill is useless — Coi's palette was half host-domain (product price, buy button, page summary) and Épica's would be too (race results, rider cards, stage profiles).
+What it adds is a second extension point, because a palette that only Forma can fill is useless — the legacy application's palette was half host-domain (product price, buy button, page summary) and Épica's would be too (race results, rider cards, stage profiles).
 
 ```csharp
 public interface IComposerDesignerPlugin : IComposerPlugin
@@ -286,7 +286,7 @@ public sealed record ComposerWidget
 }
 ```
 
-Built-in widgets cover Coi's generic palette — text, image, gallery, video, button, row, column, spacer, divider, form, map, embed, code. Everything domain-specific is the host's, registered the same way Forma's own are, so Épica adds a race-results widget without forking anything.
+Built-in widgets cover the legacy application's generic palette — text, image, gallery, video, button, row, column, spacer, divider, form, map, embed, code. Everything domain-specific is the host's, registered the same way Forma's own are, so Épica adds a race-results widget without forking anything.
 
 #### The saved document is a widget tree
 
@@ -349,35 +349,35 @@ The engine never deserializes `Settings`. It hands the `JsonElement` to the widg
 }
 ```
 
-Those token widgets carry no content and barely any settings, because *what* they render is fixed and the value comes from whichever product the page is displaying. One template renders ten thousand products. Coi approximated this with `{TOPMENU}`-style tokens substituted into an HTML string.
+Those token widgets carry no content and barely any settings, because *what* they render is fixed and the value comes from whichever product the page is displaying. One template renders ten thousand products. The legacy application approximated this with `{TOPMENU}`-style tokens substituted into an HTML string.
 
 **HTML is output, not storage.** `FormaWidgetRenderer` walks the tree emitting a `<DynamicComponent>` per widget — the same walk the canvas performs, minus `FormaWidgetFrame` — so it works under static SSR and needs no `HtmlRenderer`. A host wanting an HTML *string*, for an email, an API or a cache, calls an opt-in service; that is the only path needing `HtmlRenderer`, and it lives in `Forma.Blazor` because the composer project may not reference ASP.NET Core.
 
-This is why the tree wins over Coi's saved HTML. Coi froze rendering decisions at save time — `<img src="/media/8842.jpg">`, `style="width:60%"` — so a new image format, a CDN move or a theme change could not reach an already-saved page, and a widget dropped from the palette left stale markup rendering silently instead of a visible "no longer available". Storing `mediaId: 8842` and `raceId: 42` keeps the author's *intent* and decides the markup at render time. Coi's approach also never escaped the tree: recovering a widget's identity and settings from HTML requires `data-widget` and `data-settings` attributes, which is the same JSON in a worse container, read back with an HTML parser the tree does not need.
+This is why the tree wins over the legacy application's saved HTML. The legacy application froze rendering decisions at save time — `<img src="/media/8842.jpg">`, `style="width:60%"` — so a new image format, a CDN move or a theme change could not reach an already-saved page, and a widget dropped from the palette left stale markup rendering silently instead of a visible "no longer available". Storing `mediaId: 8842` and `raceId: 42` keeps the author's *intent* and decides the markup at render time. The legacy application's approach also never escaped the tree: recovering a widget's identity and settings from HTML requires `data-widget` and `data-settings` attributes, which is the same JSON in a worse container, read back with an HTML parser the tree does not need.
 
 **Document metadata is the host's, not Forma's.** Identity, author, timestamps, revision, title, tags, publish state, visibility and access all belong on the host's row, which Épica's own conventions already mandate. Keeping them out of the tree avoids two sources of truth, keeps a publishing workflow out of a component library, and — decisively — keeps authorization out of a client-authored blob: the document round-trips through the browser, so anything inside it is attacker-controlled, and an editor that can write its own `Access` value is broken access control. A host that wants metadata traveling alongside wraps the tree in its own record.
 
 One shape considered and rejected: **HTML authoritative for rendering with a sidecar tree for editing.** It appears to offer both and is the worst available option — two persisted representations of one document, free to disagree, with no rule for which wins after a hand-edit.
 
-**A text widget hosts `FormaRichTextEditor`.** That is the recursion Coi had through `CKEDITOR.inline`, and it falls out of the plugin model rather than being special-cased: a widget's `Component` is a component, and a component may be an editor. The engine's selection, history and sanitization stay single and shared, so an undo inside a text widget and a widget reorder sit on one stack.
+**A text widget hosts `FormaRichTextEditor`.** That is the recursion the legacy application had through `CKEDITOR.inline`, and it falls out of the plugin model rather than being special-cased: a widget's `Component` is a component, and a component may be an editor. The engine's selection, history and sanitization stay single and shared, so an undo inside a text widget and a widget reorder sit on one stack.
 
-**Drag-and-drop follows the rules `FormaSortableList` already established** — Pointer Events rather than mouse events, press-and-hold before a touch drag so an ordinary swipe still scrolls, and a guarded non-passive `touchmove` so the compositor cannot cancel the gesture mid-drag. Reordering must also be possible from the keyboard; Coi's was mouse-only, and that is not a bar Forma clears by matching.
+**Drag-and-drop follows the rules `FormaSortableList` already established** — Pointer Events rather than mouse events, press-and-hold before a touch drag so an ordinary swipe still scrolls, and a guarded non-passive `touchmove` so the compositor cannot cancel the gesture mid-drag. Reordering must also be possible from the keyboard; the legacy application's was mouse-only, and that is not a bar Forma clears by matching.
 
 #### Templates, layouts and themes
 
-Three separate concerns, and Coi did **not** bundle them under one umbrella:
+Three separate concerns, and the legacy application did **not** bundle them under one umbrella:
 
-| Concern | What it is | Coi's surface |
+| Concern | What it is | Legacy surface |
 |---|---|---|
 | **Theme** | The skin — colors, type scale, spacing tokens | `App_Themes/{Name}/` CSS, 28 of them, chosen through `Website.Theme`; plus `design.aspx` for the background, primary and secondary colors, fonts and site width, and `pops/designs.aspx` as a gallery of skins with desktop and mobile screenshots |
-| **Layout** | The structural frame — header, side, footer, content region, column grid | **Coi had no separate concept.** `SavePage()` posted `header`, `side`, `footer` and `body` as four independent HTML strings, and swapping a design wiped header and footer while leaving pages intact |
+| **Layout** | The structural frame — header, side, footer, content region, column grid | **The legacy application had no separate concept.** `SavePage()` posted `header`, `side`, `footer` and `body` as four independent HTML strings, and swapping a design wiped header and footer while leaving pages intact |
 | **Template** | The composed content — which widgets, in what order, with what settings | `pops/template.aspx`, plus `pops/premade.aspx` and `pops/templates.aspx` as pickers over ready-made ones |
 
-So the gap is layout, and it is the one Coi papered over: because there was no layout object, structure and content were the same HTML string, which is why changing a design had to destroy the header and footer rather than re-frame them.
+So the gap is layout, and it is the one the legacy application papered over: because there was no layout object, structure and content were the same HTML string, which is why changing a design had to destroy the header and footer rather than re-frame them.
 
 **Neither a theme nor a layout is the composer's.** A theme is a set of design tokens, and a layout is a structural frame — both are library-wide concerns that outlive any one editor, and building either *inside* the composer would put them in the wrong place and make them unreusable. `FormaLayout` and `FormaTheme` come first, as components in their own right; the designer then composes them the way it already composes `FormaExplorer` and `FormaVideoPlayer`.
 
-What the designer keeps for itself is the template: the widget tree, its ordering and its settings. `TemplatePlugin` (§4.3) covers loading a ready-made one, which is Coi's `premade.aspx` without the design-wiping.
+What the designer keeps for itself is the template: the widget tree, its ordering and its settings. `TemplatePlugin` (§4.3) covers loading a ready-made one, which is the legacy application's `premade.aspx` without the design-wiping.
 
 #### What the canvas may contain
 
@@ -395,7 +395,7 @@ A designer **is** an editor plugin — it is a surface the switcher offers — *
 
 ### 4.3 Feature plugins
 
-| Plugin | Covers | Coi origin |
+| Plugin | Covers | Legacy origin |
 |---|---|---|
 | `BasicFormattingPlugin` | Bold, Italic, Underline, Strike, Inline code, Subscript, Superscript, Remove formatting | Bold/Italic/Underline/Strike, RemoveFormat |
 | `TypographyPlugin` | Font family, `rem` (or point) font size, line-height multiplier, text color, highlight color | Font, FontSize, TextColor, `lineheight` |
@@ -425,7 +425,7 @@ Clipboard note: browsers do not grant programmatic cut/copy/paste without user a
 
 Where each is registered follows what it acts on. Maximizing and the shortcut reference act on the composer, so they sit at the root and reach every editor and every view. Attaching changes the document, and a view never edits it, so it is each editor's default rather than the root's; the selection bar follows formatting a surface must have for it to show anything, so it is a default of the rich text editor alone. An editor registering its own copy is one surface's plugin, never a second one beside the first, because only one surface is in play at a time and a surface's own registration answers in place of the composer's.
 
-| Plugin | Covers | Coi origin |
+| Plugin | Covers | Legacy origin |
 |---|---|---|
 | `MaximizePlugin` | Full-viewport editing | Maximize |
 | `SelectionBarPlugin` | Showing or hiding the bar that follows the selection | — |
@@ -446,9 +446,9 @@ Three components differing only in which plugins they register, each taking the 
 
 | Component | Plugin set | Replaces |
 |---|---|---|
-| `FormaComposer` | Everything registered | Coi `Website` |
-| `FormaStandardRichTextEditor` | Formatting, typography, paragraph, lists, alignment/bidi, link, image, table, horizontal rule | Coi `Basic` |
-| `FormaCompactRichTextEditor` | Formatting, typography, alignment/bidi, link | Coi `Mini` |
+| `FormaComposer` | Everything registered | Legacy `Website` |
+| `FormaStandardRichTextEditor` | Formatting, typography, paragraph, lists, alignment/bidi, link, image, table, horizontal rule | Legacy `Basic` |
+| `FormaCompactRichTextEditor` | Formatting, typography, alignment/bidi, link | Legacy `Mini` |
 
 ---
 
@@ -480,7 +480,7 @@ The refusal is surfaced, not swallowed: the switcher disables the Markdown edito
 
 ## 6. Security
 
-An editor that accepts HTML, offers a code editor over raw markup, and pastes from Word is a stored-XSS surface. Coi got this wrong with `allowedContent = true`.
+An editor that accepts HTML, offers a code editor over raw markup, and pastes from Word is a stored-XSS surface. The legacy application got this wrong with `allowedContent = true`.
 
 A sanitizer applies a markup policy to HTML.
 
@@ -538,8 +538,8 @@ These are correctness requirements for every Forma component, and the composer i
 | C3 | Should there be a plain-text editor plugin, or is plain text only ever a conversion target? | Both. `ComposerDocumentFormat.PlainText` is a format any converter may target, and `PlainTextEditorPlugin` authors it over a `<textarea>` as the editor the catalog falls back to when no registered editor is available, so a composer always has a surface. |
 | C4 | What does `@bind-Value` carry when the active editor's format is not the bound format? | A `ComposerDocument` — the content together with the format it is written in (§3.7). A bare string would force every document through HTML and rewrite a Markdown author's source on each round-trip. The format is a string-keyed value rather than an enum, so a new format costs the library nothing. |
 | C5 | Are `TemplatePlugin`'s templates host-supplied or does Forma ship a set? | Host-supplied, through `TemplatePluginOptions`; the default options carry two sample layouts a host replaces with its own. A template is editorial content and Forma has no editorial opinion. |
-| C6 | What *is* the page designer's saved document? | A `ComposerWidgetTree` — JSON, with HTML as output rather than storage (§4.2). Coi's saved HTML froze rendering decisions at save time and never escaped the tree anyway, since recovering a widget needs `data-widget` and `data-settings` attributes. Columns are nodes, not an array on the row. Document metadata stays on the host's row. |
-| C7 | One designer plugin or several, given Coi drove seven targets through `OpenTemplate`'s numeric type? | One, varied by its options and the registered widget set. The palette is already extensible, so a second plugin would only re-register widgets. |
+| C6 | What *is* the page designer's saved document? | A `ComposerWidgetTree` — JSON, with HTML as output rather than storage (§4.2). The legacy application's saved HTML froze rendering decisions at save time and never escaped the tree anyway, since recovering a widget needs `data-widget` and `data-settings` attributes. Columns are nodes, not an array on the row. Document metadata stays on the host's row. |
+| C7 | One designer plugin or several, given the legacy application drove seven targets through `OpenTemplate`'s numeric type? | One, varied by its options and the registered widget set. The palette is already extensible, so a second plugin would only re-register widgets. |
 | C8 | Who owns layout and theme? | Not the composer. `FormaLayout` and `FormaTheme` are library-wide components built first and composed afterwards; the designer ships template-only and nothing in the composer waits on them. |
 | C9 | May a designer be placed on a designer canvas? | No. `PageDesignerPlugin` implements both `IComposerEditorPlugin` and `IComposerDesignerPlugin`, so the placeable set is "any editor plugin that is not also a designer plugin" — a type test, and a designer excludes itself. |
 | C10 | How does an editor choose between the shared toolbar row and one of its own? | By the row each item names through `ComposerToolbarItem.RowId` (§3.8). Both editors and external plugins declare rows through `Rows`, so there is one mechanism rather than a separate registration path per category. |

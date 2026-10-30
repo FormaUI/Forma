@@ -92,7 +92,7 @@ A view over the data view drawing each item as a card: its image, its name and w
 
 | | |
 |---|---|
-| **Old pattern** | The image library's tile grid in Coi, and the explorer's thumbnails view, each drawing tiles of its own |
+| **Old pattern** | The legacy image library's tile grid, and the explorer's thumbnails view, each drawing tiles of its own |
 | **Used in** | The explorer's cards view, the gallery's browsing, and any page that shows records as tiles |
 
 ### `FormaDataGrid`
@@ -128,7 +128,7 @@ A view over the data view drawing the hierarchy as nodes under their parents. It
 
 | | |
 |---|---|
-| **Old pattern** | The page tree in Coi's page editor, and the explorer's folder-tree sidebar, which draws a tree of its own |
+| **Old pattern** | The page tree in the legacy page editor, and the explorer's folder-tree sidebar, which draws a tree of its own |
 | **Used in** | The explorer's sidebar, and any page that navigates a hierarchy |
 
 ### `FormaDataView`
@@ -173,7 +173,7 @@ An icon button for duplicating. Its design is [icon-buttons-design.md](icon-butt
 
 | | |
 |---|---|
-| **Old pattern** | None in Coi's action columns |
+| **Old pattern** | None in the legacy action columns |
 | **Used in** | Row actions on list pages |
 
 ### `FormaEditButton`
@@ -218,7 +218,7 @@ A media-only browsing surface: every image and video as a date-grouped thumbnail
 
 | | |
 |---|---|
-| **Old pattern** | The image library's tile grid in Coi, which listed every upload as a thumbnail with no grouping and no way to mark or categorize one |
+| **Old pattern** | The legacy image library's tile grid, which listed every upload as a thumbnail with no grouping and no way to mark or categorize one |
 | **Used in** | The media module's own view of its library, beside the explorer that manages it; the picker a cover or a gallery tile is chosen from |
 
 ### `FormaImageEditor`
@@ -245,7 +245,7 @@ A file picker pinned to image, video and audio types. Its design is [resources-d
 
 | | |
 |---|---|
-| **Old pattern** | None — Coi's library was images-only, and video arrived as a pasted YouTube URL |
+| **Old pattern** | None — the legacy library was images-only, and video arrived as a pasted YouTube URL |
 | **Used in** | Surfaces taking an image or a video off the device: a videos module, article media and `FormaComposer` |
 
 ### `FormaNotesEditor`
@@ -281,7 +281,7 @@ A stateful icon button for publishing and unpublishing. Its design is [icon-butt
 
 | | |
 |---|---|
-| **Old pattern** | Coi's per-item active/publish toggle |
+| **Old pattern** | The legacy per-item active/publish toggle |
 | **Used in** | Editor footers and row actions |
 
 ### `FormaRefreshButton`
@@ -290,7 +290,7 @@ An icon button for refreshing, with a busy state. Its design is [icon-buttons-de
 
 | | |
 |---|---|
-| **Old pattern** | None — Coi reloaded the whole page |
+| **Old pattern** | None — the legacy application reloaded the whole page |
 | **Used in** | Any list fed by a provider that can go stale, such as a `FormaDataGrid` |
 
 ### `FormaShareButton`
