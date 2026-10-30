@@ -1,6 +1,7 @@
 using Forma.Blazor;
 using Forma.Blazor.Browser.Full;
 using Forma.Blazor.Components.Composer;
+using Forma.Blazor.Components.Composer.Plugins;
 using Forma.Blazor.Components.DataView;
 using Forma.Framework.Emojis.Twemoji;
 using Forma.Framework.Localization.Json;
@@ -18,7 +19,9 @@ builder.Services.AddFormaTwemojiPack();
 builder.Services.AddFormaUIWebAssembly();
 builder.Services.AddFormaDataView();
 builder.Services.AddFormaComposer(composer => composer
-    .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
+    .AddRichTextEditor(editor => editor
+        .TryAddDefaultFeatures()
+        .AddFeaturePlugin<ExplorerPlugin>())
     .TryAddDefaultPlugins());
 builder.Services.AddFormaShareNetworks();
 builder.Services.AddScoped<IResourceProvider, MarkdownResourceProvider>();
