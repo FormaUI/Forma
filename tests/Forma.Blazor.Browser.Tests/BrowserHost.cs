@@ -67,11 +67,17 @@ public sealed class BrowserHost : IAsyncLifetime
         return (context, page);
     }
 
-    /// <summary>Asks a host how many of its delayed switches have landed, past the browser, which a check may hold offline.</summary>
+    /// <summary>Asks a host how many of its delayed switches have settled, past the browser, which a check may hold offline.</summary>
     /// <param name="address">The host asked.</param>
-    /// <returns>The switches landed so far.</returns>
+    /// <returns>The switches settled so far.</returns>
     public async Task<int> GetDelayedSwitchesAsync(Uri address)
         => int.Parse(await _client.GetStringAsync(new Uri(address, "_check/delayed")).ConfigureAwait(false), System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>Asks a host how many of its settled delayed switches failed.</summary>
+    /// <param name="address">The host asked.</param>
+    /// <returns>The switches failed so far.</returns>
+    public async Task<int> GetDelayedSwitchFailuresAsync(Uri address)
+        => int.Parse(await _client.GetStringAsync(new Uri(address, "_check/delayed-failures")).ConfigureAwait(false), System.Globalization.CultureInfo.InvariantCulture);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

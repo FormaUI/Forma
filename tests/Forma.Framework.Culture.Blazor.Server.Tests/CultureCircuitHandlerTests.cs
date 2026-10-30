@@ -14,9 +14,9 @@ public sealed class CultureCircuitHandlerTests
     private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he-IL");
 
-    private static ServiceProvider CreateServices(FakeDocumentCultureSynchronizerBrowser? browser = null)
+    private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser? browser = null)
         => new ServiceCollection()
-            .AddSingleton<IJSRuntime>((browser ?? new FakeDocumentCultureSynchronizerBrowser()).Runtime)
+            .AddSingleton<IJSRuntime>((browser ?? new FakeCultureCoordinatorBrowser()).Runtime)
             .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureServer()
             .BuildServiceProvider();
@@ -24,6 +24,10 @@ public sealed class CultureCircuitHandlerTests
     // The circuit is not read by the handler, and a test cannot make one.
     private static Task ConnectAsync(IServiceProvider services)
         => Assert.Single(services.GetServices<CircuitHandler>()).OnConnectionUpAsync(null!, TestContext.Current.CancellationToken);
+
+    // The circuit is not read by the handler, and a test cannot make one.
+    private static Task DisconnectAsync(IServiceProvider services)
+        => Assert.Single(services.GetServices<CircuitHandler>()).OnConnectionDownAsync(null!, TestContext.Current.CancellationToken);
 
     // The context is not read by the handler, and a test cannot make one.
     private static Task RunActivityAsync(IServiceProvider services, Func<Task> activity)
@@ -76,11 +80,11 @@ public sealed class CultureCircuitHandlerTests
     }
 
     [Fact]
-    public async Task Should_keep_the_document_on_the_state_from_the_connection_up()
+    public async Task Should_adopt_the_pair_the_page_accepted_as_the_connection_comes_up()
     {
         // Arrange
-        using var fixture = new CultureFixture("he-IL");
-        var browser = new FakeDocumentCultureSynchronizerBrowser("en", "ltr");
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser("he-IL");
         await using var provider = CreateServices(browser);
         await using var scope = provider.CreateAsyncScope();
 
@@ -88,15 +92,15 @@ public sealed class CultureCircuitHandlerTests
         await ConnectAsync(scope.ServiceProvider);
 
         // Assert
-        Assert.Equal(("he-IL", "rtl"), browser.Document);
+        Assert.Equal(Hebrew, scope.ServiceProvider.GetRequiredService<ICultureState>().UICulture);
     }
 
     [Fact]
-    public async Task Should_start_the_document_culture_synchronizer_on_a_later_connection_after_an_expected_failure()
+    public async Task Should_register_again_on_a_later_connection_after_an_expected_failure()
     {
         // Arrange — the first connection drops while the module is imported
-        using var fixture = new CultureFixture("he-IL");
-        var browser = new FakeDocumentCultureSynchronizerBrowser("en", "ltr");
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser("he-IL");
         browser.FailNext("import", new JSDisconnectedException("The circuit dropped."));
         await using var provider = CreateServices(browser);
         await using var scope = provider.CreateAsyncScope();
@@ -106,6 +110,29 @@ public sealed class CultureCircuitHandlerTests
         await ConnectAsync(scope.ServiceProvider);
 
         // Assert
-        Assert.Equal(("he-IL", "rtl"), browser.Document);
+        Assert.Multiple(
+            () => Assert.Single(browser.Identities),
+            () => Assert.Equal(Hebrew, scope.ServiceProvider.GetRequiredService<ICultureState>().UICulture));
+    }
+
+    [Fact]
+    public async Task Should_fail_a_switch_at_once_while_the_connection_is_down()
+    {
+        // Arrange
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser();
+        await using var provider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(browser.Runtime)
+            .AddFormaCultureServer()
+            .BuildServiceProvider();
+        await using var scope = provider.CreateAsyncScope();
+        await ConnectAsync(scope.ServiceProvider);
+
+        // Act
+        await DisconnectAsync(scope.ServiceProvider);
+        var exception = await Record.ExceptionAsync(() => scope.ServiceProvider.GetRequiredService<ICultureSwitch>().SwitchAsync(German));
+
+        // Assert
+        Assert.IsType<InvalidOperationException>(exception);
     }
 }

@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Page
+@using Forma.Framework.Culture.Browser.Interop
+@using Microsoft.Extensions.DependencyInjection
 
 @code {
     public sealed class Component
@@ -15,6 +17,61 @@
 
             // Assert
             Assert.Equal("Admin Console", cut.Find("title").TextContent);
+        }
+
+        [Fact]
+        public async Task Should_publish_the_cultures_the_page_is_rendered_in()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+            await ctx.ChangeCultureAsync("de-DE", "he");
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            var marker = cut.Find("meta[name='forma-culture']");
+            Assert.Equal("de-DE/he", $"{marker.GetAttribute("data-culture")}/{marker.GetAttribute("data-ui-culture")}");
+        }
+
+        [Fact]
+        public void Should_publish_the_policy_that_persists_nothing_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            Assert.Equal("state", cut.Find("meta[name='forma-culture-policy']").GetAttribute("content"));
+        }
+
+        [Fact]
+        public void Should_publish_everything_writing_the_cookie_takes()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+            ctx.Services.AddSingleton(new CultureSwitchPolicy
+            {
+                Persistence = CultureSwitchPersistence.Cookie,
+                CookieName = "culture",
+                CookiePath = "/app",
+                CookieDomain = "example.com",
+                CookieLifetime = TimeSpan.FromDays(1),
+                IsCookieSecure = true,
+                CookieSameSite = CultureCookieSameSite.Strict,
+            });
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            var policy = cut.Find("meta[name='forma-culture-policy']");
+            Assert.Multiple(
+                () => Assert.Equal("cookie", policy.GetAttribute("content")),
+                () => Assert.Equal("culture /app example.com 86400 strict", string.Join(' ', new[] { "data-name", "data-path", "data-domain", "data-max-age", "data-same-site" }.Select(policy.GetAttribute))),
+                () => Assert.True(policy.HasAttribute("data-secure")));
         }
 
         [Fact]

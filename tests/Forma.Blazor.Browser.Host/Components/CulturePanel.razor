@@ -1,3 +1,4 @@
+@using Microsoft.JSInterop
 @implements IDisposable
 @inject ICultureState CultureState
 @inject ICultureSwitch CultureSwitch
@@ -39,18 +40,22 @@
     private Task SwitchStateAsync()
         => CultureSwitch.SwitchAsync(Hebrew);
 
-    // A switch that lands while the check holds the browser offline, which the check learns of over HTTP as soon as the
-    // state has changed, since the notification that follows waits on the browser.
+    // A switch made while the check holds the browser offline, which the check learns the outcome of over HTTP.
     private void SwitchLater()
         => _ = Task.Run(async () =>
         {
             await Task.Delay(TimeSpan.FromSeconds(2));
-            await InvokeAsync(() =>
+            await InvokeAsync(async () =>
             {
-                var change = CultureSwitch.SwitchAsync(Hebrew);
-                Delayed.Record();
-
-                return change;
+                try
+                {
+                    await CultureSwitch.SwitchAsync(Hebrew);
+                    Delayed.Record(isFailed: false);
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or JSException)
+                {
+                    Delayed.Record(isFailed: true);
+                }
             });
         });
 

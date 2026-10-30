@@ -99,30 +99,35 @@ public sealed class CultureTests(BrowserHost host)
     }
 
     [Fact]
-    public async Task Should_follow_a_switch_that_lands_while_the_connection_is_down()
+    public async Task Should_leave_the_document_and_the_state_on_one_pair_after_a_switch_made_while_the_browser_is_offline()
     {
         // Arrange
         var (context, page) = await host.OpenPageAsync(host.StateAddress);
         await using var _ = context;
         await page.GotoAsync("state");
         await WaitForPanelAsync(page);
-        var landed = await host.GetDelayedSwitchesAsync(host.StateAddress);
+        var served = await GetDocumentAsync(page);
+        var servedState = await page.Locator("#state").TextContentAsync();
+        var settled = await host.GetDelayedSwitchesAsync(host.StateAddress);
+        var failed = await host.GetDelayedSwitchFailuresAsync(host.StateAddress);
         await page.Locator("#switch-later").ClickAsync();
         await context.SetOfflineAsync(true);
 
-        // Act — the server switches while the browser is offline, which the check learns of past the browser
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        while (await host.GetDelayedSwitchesAsync(host.StateAddress) == landed)
+        // Act — the server switches while the browser is offline, and the switch settles once the browser is back: accepted
+        // where the coordinator was reached, failed where the circuit lost its connection
+        await Task.Delay(TimeSpan.FromSeconds(4), TestContext.Current.CancellationToken);
+        await context.SetOfflineAsync(false);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        while (await host.GetDelayedSwitchesAsync(host.StateAddress) == settled)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(200), timeout.Token);
         }
 
-        var whileOffline = await GetDocumentAsync(page);
-        await context.SetOfflineAsync(false);
-
         // Assert
-        await WaitForDocumentAsync(page, "he/rtl", timeout: 60000);
-        TestContext.Current.TestOutputHelper?.WriteLine($"the document while offline: {whileOffline}");
+        var isFailed = await host.GetDelayedSwitchFailuresAsync(host.StateAddress) > failed;
+        TestContext.Current.TestOutputHelper?.WriteLine($"the switch {(isFailed ? "failed" : "was accepted")}");
+        await WaitForDocumentAsync(page, isFailed ? served : "he/rtl", timeout: 60000);
+        await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync(isFailed ? servedState! : "he");
     }
 
     [Fact]

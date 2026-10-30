@@ -33,10 +33,10 @@ app.UseRouting();
 ```
 
 `AddFormaCultureRouting` validates the options and registers `CultureRouter` as a singleton, the
-`CultureSwitcher` each user scope switches through, the `ICultureRouteHandler` that changes a
-scope's culture state to the culture of each address an enhanced navigation lands at, and the
-culture state those scopes hold. An address outside the application, at another origin or outside
-its path base, leaves the state as it is.
+`CultureSwitcher` each user scope switches through, and the culture state those scopes hold. The
+page's culture coordinator accepts each enhanced navigation's landing from the culture its response
+was rendered in, and a circuit adopts the page's pair as it registers. An address outside the
+application, at another origin or outside its path base, leaves the state as it is.
 `UseFormaCultureRouting` goes before routing, so endpoints see the path with the culture segment
 removed, and after `UsePathBase` under a path base; an endpoint chosen for the address with its
 culture segment, as `UsePathBase` chooses one, is chosen again for the path without it. With

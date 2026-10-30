@@ -2,19 +2,23 @@
 
 What the culture state needs from an Interactive Server host: a circuit handler that sets
 `CultureInfo.CurrentCulture` and `CultureInfo.CurrentUICulture` from the circuit's culture state before
-every inbound activity, each UI event and each call from script into .NET, and starts the document
-culture synchronizer of
+every inbound activity, each UI event and each call from script into .NET, and registers the circuit's
+state with the page's culture coordinator of
 [`Forma.Framework.Culture.Browser.Interop`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Culture.Browser.Interop/README.md)
-as each connection comes up. Code that reads the ambient culture in an event after a switch reads the new
-cultures, the page's `lang` and `dir` follow the state's UI culture until the circuit closes, and a switch
-in one circuit leaves every other circuit's in place.
+as each connection comes up, before the circuit renders. The circuit's `ICultureSwitch` requests through
+the coordinator, so a switch reaches every runtime on the page and the document, and code that reads the
+ambient culture in an event after a switch reads the new cultures. While the connection is down a switch
+fails at once with `InvalidOperationException`, as it does in a static render.
 
 The package comes with `formaui-net.Blazor.Server`, and `AddFormaUIServer()` registers it through
-`AddFormaCultureServer()`, which also registers the culture state and the document culture
-synchronizer. A host without `AddFormaUIServer()` makes the same call:
+`AddFormaCultureServer()`, which also registers the culture state, its registration with the coordinator,
+the coordinated switch and the switch's policy. A host without `AddFormaUIServer()` makes the same call
+ahead of `AddFormaUI()`, whose own switch it replaces, and names the policy where a switch writes the
+culture cookie:
 
 ```csharp
-builder.Services.AddFormaCultureServer();
+builder.Services.AddFormaCultureServer(new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie });
+builder.Services.AddFormaUI();
 ```
 
 ## License

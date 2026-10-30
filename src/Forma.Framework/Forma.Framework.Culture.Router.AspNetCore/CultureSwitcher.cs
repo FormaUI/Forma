@@ -136,31 +136,6 @@ public sealed class CultureSwitcher : IAsyncDisposable, IDisposable
         return true;
     }
 
-    /// <summary>Switches to the culture the current address names.</summary>
-    internal Task ReconcileAsync()
-        => ReconcileAsync(new Uri(_navigationManager.Uri));
-
-    /// <summary>Switches to the culture <paramref name="address"/> names.</summary>
-    internal Task ReconcileAsync(Uri address)
-    {
-        // An address outside the application's root belongs to another application and names none of its cultures.
-        if (GetRelativeAddress(ReadRoot(), address) is not { } relativeAddress)
-        {
-            return Task.CompletedTask;
-        }
-
-        var pathEnd = relativeAddress.IndexOfAny(['?', '#']);
-        var path = PathString.FromUriComponent("/" + (pathEnd < 0 ? relativeAddress : relativeAddress[..pathEnd]));
-
-        // An address naming cultures in two consecutive segments names neither, and the middleware refuses it.
-        if (_cultureRouter.HasConsecutiveCultures(path))
-        {
-            return Task.CompletedTask;
-        }
-
-        return _cultureSwitch.SwitchAsync(_cultureRouter.Match(path).Route.Culture);
-    }
-
     // The address relative to the application's root, its culture segment included, where it lies under the root's
     // origin and path; the root's path compares as a path base does, ignoring case.
     private static string? GetRelativeAddress(Uri root, Uri address)

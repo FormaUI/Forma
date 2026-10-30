@@ -39,6 +39,7 @@ app.UseRouting();
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapGet("/_check/delayed", (DelayedSwitches switches) => switches.Count);
+app.MapGet("/_check/delayed-failures", (DelayedSwitches switches) => switches.Failures);
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

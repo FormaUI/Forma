@@ -6,17 +6,22 @@ using Forma.Framework.Culture.Browser.Interop;
 
 using Microsoft.AspNetCore.Components.Server.Circuits;
 
-/// <summary>Applies a circuit's culture state before every inbound activity, each UI event and each call from script into .NET, and keeps the document on it from each connection.</summary>
+/// <summary>Applies a circuit's culture state before every inbound activity, each UI event and each call from script into .NET, and registers it with the page's culture coordinator from each connection.</summary>
 /// <remarks>
-/// The cultures are set in the activity's own flow, so the work it runs reads them, and the flow that dispatched the
-/// activity keeps its own cultures once the activity ends.
+/// The cultures are set in the activity's own flow, so the work it runs reads them, and the flow that dispatched the activity keeps its own
+/// cultures once the activity ends. A connection's registration completes before the circuit renders, so its components render in the pair
+/// the page accepted.
 /// </remarks>
-internal sealed class CultureCircuitHandler(ICultureState cultureState, DocumentCultureSynchronizer documentCultureSynchronizer) : CircuitHandler
+internal sealed class CultureCircuitHandler(ICultureState cultureState, CultureCoordinatorRegistration registration) : CircuitHandler
 {
     /// <inheritdoc />
-    public override Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
+    public override async Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
+        => await registration.RegisterAsync().ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+    /// <inheritdoc />
+    public override Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken)
     {
-        documentCultureSynchronizer.BeginFollowing();
+        registration.MarkUnavailable();
 
         return Task.CompletedTask;
     }
@@ -27,7 +32,6 @@ internal sealed class CultureCircuitHandler(ICultureState cultureState, Document
         {
             CultureInfo.CurrentCulture = cultureState.Culture;
             CultureInfo.CurrentUICulture = cultureState.UICulture;
-
             await next(context).ConfigureAwait(false);
         };
 }

@@ -19,8 +19,9 @@ public static class HostApplicationBuilderExtensions
         var options = new UIServerOptions();
         configure?.Invoke(options);
 
+        // Ahead of the neutral registration, so the circuit's switch requests through the page's coordinator.
+        builder.Services.AddFormaCultureServer(options.CultureSwitchPolicy);
         builder.Services.AddFormaUI(options.InputRouting);
-        builder.Services.AddFormaCultureServer();
         builder.Services.AddFormaBrowserServer();
 
         return builder;

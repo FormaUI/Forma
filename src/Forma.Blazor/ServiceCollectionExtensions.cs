@@ -40,8 +40,8 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IJSRuntime>(UnavailableJSRuntime.Instance);
 
         services.AddFormaEventServices();
-        services.AddFormaCultureBrowserSynchronization();
-        // A switch applies to the user scope's own state, which the document culture synchronizer follows.
+        services.AddFormaCultureCoordination();
+        // Where no render-mode half registered a switch, a switch applies to the user scope's own state alone.
         services.TryAddScoped<ICultureSwitch, LocalCultureSwitch>();
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
