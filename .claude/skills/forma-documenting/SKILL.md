@@ -1,6 +1,6 @@
 ---
 name: forma-documenting
-description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a specification the contract of a language, format or protocol, a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, a README what its project is and how to use it, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, specification, design document, implementation plan, catalog or roadmap entry, and when deciding whether a code change should touch any prose at all.
+description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a specification the contract of a language, format or protocol, a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, the features status where the project stands and the feature history what each month added, a README what its project is and how to use it, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, specification, design document, implementation plan, catalog or roadmap entry, the features status or the feature history, and when deciding whether a code change should touch any prose at all.
 ---
 
 # Documentation
@@ -16,6 +16,8 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 | An implementation plan | The steps, their gates, what landed and where it departed from the design, what is still open | The design itself, restated |
 | The component catalog | Which components exist or are in progress, one line saying what each is, and the structure they live in | Parameters, options, approach, technical design, anything not yet started |
 | The component roadmap | Which components are still to build, in what order, one line saying what each will be | Technical design, anything already built |
+| The features status | Where the project stands: each feature with its state, the work that remains, the decisions open for the maintainer and what is deferred | The design, the steps of a plan under way, what a month added |
+| The feature history | What each month added to the project and what it broke, newest first | Work not yet landed, how a change was made, fixes that changed nothing a reader relies on |
 | A README | What its project is, what it is useful for, and how to use it | Who consumes it, how it works inside, what may or might happen |
 | An instruction, a skill or the repository's working rules | How to work | Project structure, project names, the change that prompted the rule |
 
@@ -59,7 +61,7 @@ A design document states a design: the concepts, their names, how they relate, a
 - Do change a design document when the design changes, and leave it alone when code lands that follows it.
 - Do record progress in the implementation plan: a step that landed, a departure from the design and why, a survey the plan rested on, what remains.
 - Do start both documents together when an area is designed, and split a document that mixes the two along that line.
-- Do retire a plan once every step has landed and nothing is open, moving any reasoning it holds alone into the design first, since what a finished plan records is the code and the history.
+- Do retire a plan once every step has landed and nothing is open, moving any reasoning it holds alone into the design first, since what a finished plan records is the code and the history; retire one whose remaining steps nobody is building the same way, moving those steps to the features status as remaining work.
 - Don't record the state of the code in a design document: no status paragraph, no "built" markers, no list of what departed from a sketch and why, no commit references.
 - Don't carry technical detail that belongs in the code and its summaries — signatures, member lists, file names, test names, counts.
 - Don't restate the design in the implementation plan; the plan refers to the design's sections and says what was done about them.
@@ -81,6 +83,15 @@ The catalog lists the components that exist and the roadmap the components still
 - Do refer to a component by name alone, never by a number or a position.
 - Don't put parameters, options, the rendering approach, notes on mechanics or any other API or design detail in an entry; a component that needs a technical design gets its own design document.
 
+## The features status and the feature history
+
+The features status says where the project stands and where it goes next, and the feature history what it has become, month by month. Each points at the documents that state a feature, never restating them.
+
+- Do change the features status in the change that changes what it records: a feature landing or changing state, a plan's step landing, a decision opened or taken, work deferred or taken up.
+- Do give every open decision a proposal, and move a decision out once the maintainer takes it, into the document the decision changes.
+- Do add to the feature history, in the month a change lands, what the change gives a reader of the project or takes away from one, naming each feature by the document that states it.
+- Don't record in the feature history a fix, a refactoring or a document that changes nothing a reader relies on.
+
 ## Instructions
 
 An instruction — a skill, or the repository's working rules — describes how to work, so it stays true when the project around it changes.
@@ -93,5 +104,5 @@ An instruction — a skill, or the repository's working rules — describes how 
 ## When a code change touches prose
 
 - Do fix a summary, comment, banner or README sentence the change made false, as part of the change.
-- Do update an instruction when the change changes a rule, a design document when it changes the design, and the implementation plan when a step lands or departs from the design.
+- Do update an instruction when the change changes a rule, a design document when it changes the design, the implementation plan when a step lands or departs from the design, and the features status and the feature history when a feature lands or changes.
 - Don't update an instruction, a design document, a catalog entry or a roadmap entry because code landed; landing a step is not a rule change and not a design change.

@@ -16,16 +16,17 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 | `forma-styling` | Writing or changing a stylesheet or a token: regions on backdrops, spacing, type, radii, targets, and fitting a width |
 | `forma-verifying` | Building, testing, formatting, running the Showcase, checking in a browser, or adding a task script |
 | `forma-naming` | Naming anything: a type, member, variable, parameter, file, CSS class, script or test |
-| `forma-documenting` | Writing or changing a summary, comment, remarks block, banner, README passage, design document, implementation plan, catalog or roadmap entry, or deciding whether a code change touches prose at all |
+| `forma-documenting` | Writing or changing a summary, comment, remarks block, banner, README passage, design document, implementation plan, catalog or roadmap entry, the features status or the feature history, or deciding whether a code change touches prose at all |
 
 ## Source of truth
 
 - Do use [docs/repository-structure.md](docs/repository-structure.md) for what the repository is made of: the solution structure, where components, scripts, stylesheets and tests live, the build and verification commands, where components' designs derive from, and who consumes the library.
 - Do use [docs/repository-vocabulary.md](docs/repository-vocabulary.md) for the words the library uses for its concepts, and use them the same way in code, tokens, documents and the Showcase.
 - Do use [docs/component-catalog.md](docs/component-catalog.md) for the components that exist, and [docs/component-roadmap.md](docs/component-roadmap.md) for the components still to build and the order they are built in.
+- Do use [docs/features-status.md](docs/features-status.md) for where Forma stands and where it goes next: every feature with its state, the work that remains, and the decisions open for the maintainer; and [FEATURE-HISTORY.md](FEATURE-HISTORY.md) for what Forma gained, month by month.
 - Do use [README.md](README.md) for host consumption: install, service registration, stylesheets, and localization from the consumer's side.
 - Do read the design document for an area before changing it, `docs/{area}-design.md`, and the implementation plan beside it, `docs/{area}-implementation-plan.md`, where one still stands, which records the steps and what has landed; a catalog or roadmap entry names the design its component belongs to.
-- Do give an area that needs a technical design two documents in `docs/`, `{area}-design.md` for the design alone and `{area}-implementation-plan.md` for the steps, their state and what departed from the design until they are all done; treat the design as authoritative for the area, and keep the catalog entry to a name and one line.
+- Do give an area that needs a technical design two documents in `docs/`, `{area}-design.md` for the design alone and `{area}-implementation-plan.md` for the steps, their state and what departed from the design until they are all done, or until what remains moves to the features status because nobody is building it; treat the design as authoritative for the area, and keep the catalog entry to a name and one line.
 - Do read `.editorconfig` before writing C#; it is the authority on style.
 - Don't invent scope, status, packaging, or style rules when an authoritative file defines them.
 
