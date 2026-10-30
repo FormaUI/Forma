@@ -255,3 +255,5 @@ locale files and their syntax by the same rules the runtime uses, for a tool tha
 ## License
 
 Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).
+The CLDR plural rules the package embeds are used under the Unicode License, whose notice ships in
+[`THIRD-PARTY-NOTICES.md`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Localization/THIRD-PARTY-NOTICES.md).

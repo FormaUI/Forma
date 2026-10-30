@@ -6,3 +6,4 @@ README, so the notice ships inside that package and credits nothing another pack
 - [`Forma.AddOns.Emojis.Twemoji`](src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/THIRD-PARTY-NOTICES.md) — Twemoji artwork and Unicode CLDR annotations
 - [`Forma.Framework.Currencies`](src/Forma.Framework/Forma.Framework.Currencies/THIRD-PARTY-NOTICES.md) — Unicode CLDR currency data
 - [`Forma.Framework.Icons.Glyphs`](src/Forma.Framework/Forma.Framework.Icons.Glyphs/THIRD-PARTY-NOTICES.md) — Bootstrap Icons brand marks
+- [`Forma.Framework.Localization`](src/Forma.Framework/Forma.Framework.Localization/THIRD-PARTY-NOTICES.md) — Unicode CLDR plural rules
