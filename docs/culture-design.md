@@ -155,8 +155,10 @@ one document and marks where a new document begins:
   - A prerendered page's is the pair the server resolved for the request and rendered in, which
     `FormaPageHead` publishes in the document's head as its culture marker, both cultures named, beside
     the language and direction the server serves. The coordinator reads it once, as the document loads.
-    A coordinated prerendered page whose marker is missing or names an invalid culture fails the
-    coordinator's initialization with an error naming `FormaPageHead` and the coordinated prerendered
+    The marker names each culture on its own, and names the invariant culture, which a server can render
+    in, by the empty name; a marker without either name, or with a name that isn't a language tag, names
+    an invalid culture. A coordinated prerendered page whose marker is missing or names an invalid culture
+    fails the coordinator's initialization with an error naming `FormaPageHead` and the coordinated prerendered
     arrangement that requires it, and never falls back to the first runtime that registers.
   - A standalone WebAssembly app has no server and no marker: its startup configures the pair, and its
     runtime's registration brings it.
