@@ -4,9 +4,9 @@ const root = document.documentElement;
 
 // The module keeps the document's coordinator at module level and reads the served pair as it loads, so each test loads it
 // afresh over a page the server rendered with the marker and policy it names.
-async function load({ culture = 'en-US', uiCulture = culture, lang = 'en-US', dir = 'ltr', policy = null, marker = true } = {}) {
+async function load({ culture = 'en-US', uiCulture = culture, lang = 'en-US', dir = 'ltr', policy = null, marker = true, omitted = [] } = {}) {
     setAttributes({ lang, dir });
-    setHead({ culture, uiCulture, policy, marker });
+    setHead({ culture, uiCulture, policy, marker, omitted });
     vi.resetModules();
 
     const coordinator = await import('#culture/CultureCoordinator.js');
@@ -31,15 +31,21 @@ function setAttributes(attributes) {
     }
 }
 
-// The head a response carries: the culture marker FormaPageHead publishes and, where one is named, the switch's policy.
-function setHead({ culture, uiCulture, policy = null, marker = true }) {
+// The head a response carries: the culture marker FormaPageHead publishes, without the attributes `omitted` names, and,
+// where one is named, the switch's policy.
+function setHead({ culture, uiCulture, policy = null, marker = true, omitted = [] }) {
     document.head.innerHTML = '';
 
     if (marker) {
         const meta = document.createElement('meta');
         meta.setAttribute('name', 'forma-culture');
-        meta.setAttribute('data-culture', culture);
-        meta.setAttribute('data-ui-culture', uiCulture);
+
+        for (const [name, value] of [['data-culture', culture], ['data-ui-culture', uiCulture]]) {
+            if (!omitted.includes(name)) {
+                meta.setAttribute(name, value);
+            }
+        }
+
         document.head.append(meta);
     }
 
@@ -117,10 +123,18 @@ afterEach(() => {
 
 describe('CultureCoordinator', () => {
     describe('initializing', () => {
-        it('fails every registration where the page carries no culture marker', async () => {
+        // What the marker holds, and what the coordinator reads it as: a missing element or attribute and a malformed name
+        // are invalid, a present, empty name is the invariant culture, and the two names are read independently.
+        it.each([
+            ['no marker element', { marker: false }],
+            ['no culture attribute', { omitted: ['data-culture'] }],
+            ['no UI culture attribute', { omitted: ['data-ui-culture'] }],
+            ['a malformed culture', { culture: 'not a culture', uiCulture: 'he' }],
+            ['a malformed UI culture', { culture: 'de-DE', uiCulture: 'not a culture' }],
+        ])('fails every registration on a page whose marker has %s', async (_, page) => {
             // Arrange
             vi.spyOn(console, 'error').mockImplementation(() => {});
-            const coordinator = await load({ marker: false });
+            const coordinator = await load(page);
 
             // Act
             const registering = coordinator.register('a', fakeReceiver());
@@ -130,30 +144,22 @@ describe('CultureCoordinator', () => {
             expect(console.error).toHaveBeenCalledOnce();
         });
 
-        it('fails every registration where the marker names no culture', async () => {
+        it.each([
+            ['the invariant culture by its empty name', { culture: '', uiCulture: '' }, '/ #0'],
+            ['an invariant culture beside a named UI culture', { culture: '', uiCulture: 'he' }, '/he #0'],
+            ['a named culture beside an invariant UI culture', { culture: 'de-DE', uiCulture: '' }, 'de-DE/ #0'],
+            ['two named cultures', { culture: 'de-DE', uiCulture: 'he' }, 'de-DE/he #0'],
+        ])('starts from a marker naming %s', async (_, page, adopted) => {
             // Arrange
-            vi.spyOn(console, 'error').mockImplementation(() => {});
-            const coordinator = await load({ culture: 'not a culture' });
-
-            // Act
-            const registering = coordinator.register('a', fakeReceiver());
-
-            // Assert
-            await expect(registering).rejects.toThrow(/FormaPageHead/);
-        });
-
-        it('starts from a marker naming the invariant culture', async () => {
-            // Arrange — a server that renders in the invariant culture, whose name is empty
-            const coordinator = await load({ culture: '', lang: '', dir: 'ltr' });
+            const coordinator = await load(page);
             const receiver = fakeReceiver();
 
             // Act
             const registration = await coordinator.register('a', receiver);
-            await registration.request('he', 'he', 'rtl');
+            await registration.request('fr-FR', 'fr-FR', 'ltr');
 
             // Assert
-            expect(receiver.deliveries.map(describeDelivery)).toEqual(['/ #0', 'he/he #1']);
-            expect(readDocument()).toBe('he/rtl');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual([adopted, 'fr-FR/fr-FR #1']);
         });
 
         it('reads the marker once, as the document loads', async () => {
