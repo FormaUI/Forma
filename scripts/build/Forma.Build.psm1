@@ -571,8 +571,7 @@ function Test-Solution {
     $writeTestProgress = ${function:Write-TestProgress}
     $projectCount = Get-TestProjectCount -Target $target
 
-    # Minimal verbosity prints each failed test with its message and stack, and one summary line per
-    # project, which is what the progress is read from.
+    # Minimal verbosity prints each failed test with its message and stack as it fails.
     $arguments = @($target, '--nologo', '-v:q', '--logger', 'console;verbosity=minimal')
 
     if ($NoBuild) {
@@ -657,12 +656,21 @@ function Test-Solution {
                     Write-Host ("   run {0} of {1}" -f $run, $runs)
                 }
 
-                dotnet test @arguments 2>&1 |
-                    ForEach-Object { "$_" } |
-                    & $writeTestProgress -ProjectCount $projectCount -Estimate $runEstimate
+                # Each run writes each project's results to a folder of its own, which the progress is read from.
+                $resultsDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "forma-test-$([guid]::NewGuid().ToString('N'))"
+                $null = New-Item -ItemType Directory -Path $resultsDirectory
 
-                if ($LASTEXITCODE -ne 0) {
-                    $failures.Add($run)
+                try {
+                    dotnet test @arguments --logger trx --results-directory $resultsDirectory 2>&1 |
+                        ForEach-Object { "$_" } |
+                        & $writeTestProgress -ProjectCount $projectCount -ResultsDirectory $resultsDirectory -Estimate $runEstimate
+
+                    if ($LASTEXITCODE -ne 0) {
+                        $failures.Add($run)
+                    }
+                }
+                finally {
+                    Remove-Item -LiteralPath $resultsDirectory -Recurse -Force -ErrorAction SilentlyContinue
                 }
             }
         }
@@ -719,20 +727,24 @@ function Test-Solution {
 Shows a test run's progress as each test project finishes, and its totals once it ends.
 
 .DESCRIPTION
-The runner prints one summary line per project as the project finishes, and each becomes a line saying
-how many projects have finished, that project's counts and time, the time the run has taken, and the
-time left against the estimate. The runner's announcements of what it is about to run are left out; every
+Each test project writes its results to a TRX file in the run's results folder as it finishes, and each
+file becomes a line saying how many projects have finished, that project's counts and time, the time the
+run has taken, and the time left against the estimate. The projects run side by side and their runners
+write to one stream, so a runner's own summary can arrive split and mixed with another's; it is left out,
+as are the runner's announcements of what it is about to run and of where it wrote its results, and every
 other line, a failed test's message and stack or a build error, is passed through as it arrives.
 
-A project the runner gave no summary for, because its test host crashed or its build failed, is counted
-as unfinished in the totals, so a run that reports fewer projects than it was given never reads as
-complete.
+A project that wrote no results, because its test host crashed or its build failed, is counted as
+unfinished in the totals, so a run that reports fewer projects than it was given never reads as complete.
 
 .PARAMETER Line
 A line the runner printed.
 
 .PARAMETER ProjectCount
 The number of test projects the run reaches.
+
+.PARAMETER ResultsDirectory
+The folder the run writes each project's TRX file to.
 
 .PARAMETER Estimate
 How long the run is expected to take.
@@ -742,6 +754,7 @@ function Write-TestProgress {
     param(
         [Parameter(ValueFromPipeline)] [AllowEmptyString()] [string] $Line,
         [Parameter(Mandatory)] [int] $ProjectCount,
+        [Parameter(Mandatory)] [string] $ResultsDirectory,
         [AllowNull()] [Nullable[timespan]] $Estimate
     )
 
@@ -752,51 +765,89 @@ function Write-TestProgress {
         $failedCount = 0
         $skippedCount = 0
         $failedTests = [System.Collections.Generic.List[string]]::new()
+        $reported = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
         $width = "$ProjectCount".Length
 
         Write-Host ("   running {0} test {1}{2}" -f $ProjectCount, $(if ($ProjectCount -eq 1) { 'project' } else { 'projects' }),
             $(if ($Estimate) { ", about {0:m\:ss} last time" -f $Estimate } else { '' }))
+
+        # Shows each project whose results file appeared since the last look, in the order the files were written.
+        $showFinished = {
+            $files = @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -File -ErrorAction SilentlyContinue |
+                    Sort-Object LastWriteTimeUtc, Name)
+
+            foreach ($file in $files) {
+                if ($reported.Contains($file.FullName)) {
+                    continue
+                }
+
+                # A file still being written doesn't read as XML yet, and is shown once it is whole.
+                try {
+                    $run = [xml][System.IO.File]::ReadAllText($file.FullName)
+                }
+                catch {
+                    continue
+                }
+
+                # Read by local name, since an element a run has nothing for, as one without tests has no results, is absent.
+                $element = { param($Name) $run.SelectSingleNode("//*[local-name()='$Name']") }
+                $null = $reported.Add($file.FullName)
+                $counters = & $element 'Counters'
+                $summary = & $element 'ResultSummary'
+                $times = & $element 'Times'
+                $method = & $element 'TestMethod'
+                $failed = [int]$counters.GetAttribute('failed') + [int]$counters.GetAttribute('error')
+                $total = [int]$counters.GetAttribute('total')
+                $finishedCount++
+                $failedCount += $failed
+                $passedCount += [int]$counters.GetAttribute('passed')
+                $skippedCount += [int]$counters.GetAttribute('notExecuted')
+
+                foreach ($result in $run.SelectNodes("//*[local-name()='UnitTestResult'][@outcome='Failed']")) {
+                    $failedTests.Add($result.GetAttribute('testName'))
+                }
+
+                $name = if ($method) { [System.IO.Path]::GetFileNameWithoutExtension($method.GetAttribute('codeBase')) } else { $file.BaseName }
+                # The run's start includes the test host starting; its creation is when the tests began, as the runner times them.
+                $took = [datetimeoffset]$times.GetAttribute('finish') - [datetimeoffset]$times.GetAttribute('creation')
+                $duration = if ($took.TotalSeconds -lt 1) { '{0} ms' -f [int]$took.TotalMilliseconds } else { '{0} s' -f [int][math]::Round($took.TotalSeconds) }
+
+                $elapsed = [datetime]::UtcNow - $started
+                $remaining = if (-not $Estimate) {
+                    ''
+                }
+                elseif ($Estimate -gt $elapsed) {
+                    ", about {0:m\:ss} left" -f ($Estimate - $elapsed)
+                }
+                else {
+                    ', past last time'
+                }
+
+                $outcome = if ($failed -gt 0 -or $summary.GetAttribute('outcome') -in 'Failed', 'Error', 'Aborted', 'Timeout') { 'FAILED' } else { 'passed' }
+                $counts = if ($failed -gt 0) { "{0} of {1} failed" -f $failed, $total } else { "{0} tests" -f $total }
+
+                Write-Host ("   [{0}/{1}] {2} {3}, {4} in {5}  ({6:m\:ss} so far{7})" -f "$finishedCount".PadLeft($width), $ProjectCount, $outcome,
+                    $name, $counts, $duration, $elapsed, $remaining)
+            }
+        }
     }
 
     process {
-        if ($Line -match '^(Passed|Failed)!\s+-\s+Failed:\s+(\d+),\s+Passed:\s+(\d+),\s+Skipped:\s+(\d+),\s+Total:\s+(\d+),\s+Duration:\s+(.+?)\s+-\s+(.+?)\.dll') {
-            $finishedCount++
-            $failedCount += [int]$Matches[2]
-            $passedCount += [int]$Matches[3]
-            $skippedCount += [int]$Matches[4]
+        $isAnnouncement = $Line -match '^Test run for ' -or $Line -match '^A total of \d+ test files? matched' -or $Line -match '^Results File: ' -or -not $Line.Trim()
 
-            $elapsed = [datetime]::UtcNow - $started
-            $remaining = if (-not $Estimate) {
-                ''
-            }
-            elseif ($Estimate -gt $elapsed) {
-                ", about {0:m\:ss} left" -f ($Estimate - $elapsed)
-            }
-            else {
-                ', past last time'
-            }
+        # A runner's summary, whole or in pieces mixed with another's, gives way to its results file.
+        $isSummary = $Line -match '(Passed|Failed)!' -or $Line -match 'Failed:\s+\d+,\s+Passed:\s+\d+,' -or $Line -match '^\s*-\s+\S+\.dll\s+\(net'
 
-            $outcome = if ($Matches[1] -eq 'Passed') { 'passed' } else { 'FAILED' }
-            $counts = if ([int]$Matches[2] -gt 0) { "{0} of {1} failed" -f $Matches[2], $Matches[5] } else { "{0} tests" -f $Matches[5] }
-
-            Write-Host ("   [{0}/{1}] {2} {3}, {4} in {5}  ({6:m\:ss} so far{7})" -f "$finishedCount".PadLeft($width), $ProjectCount, $outcome,
-                $Matches[7], $counts, $Matches[6], $elapsed, $remaining)
-
-            return
+        if (-not $isAnnouncement -and -not $isSummary) {
+            Write-Host $Line
         }
 
-        if ($Line -match '^Test run for ' -or $Line -match '^A total of \d+ test files? matched' -or -not $Line.Trim()) {
-            return
-        }
-
-        if ($Line -match '^\s+Failed (.+) \[[^\]]*\]\s*$') {
-            $failedTests.Add($Matches[1])
-        }
-
-        Write-Host $Line
+        . $showFinished
     }
 
     end {
+        . $showFinished
+
         $elapsed = [datetime]::UtcNow - $started
         $unfinished = $ProjectCount - $finishedCount
 
