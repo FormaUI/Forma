@@ -3,28 +3,42 @@ namespace Forma.Blazor.Browser.Tests;
 /// <summary>What a component's check does in each runtime: opens the component's check page on the components host, waits until the page's runtime is interactive, and waits for the signals a component gives once its script answers input.</summary>
 public static partial class ComponentChecks
 {
-    /// <summary>The runtimes every component is checked in, as the check pages' addresses name them.</summary>
-    public static TheoryData<string> Runtimes { get; } = ["server", "webassembly", "auto"];
+    /// <summary>The runtimes every component is checked in: the Server, WebAssembly, and Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there.</summary>
+    public static TheoryData<string> Runtimes { get; } = ["server", "webassembly", "auto-server", "auto-webassembly"];
 
-    /// <summary>Opens the check page at <paramref name="path"/> in <paramref name="runtime"/> and waits until it is interactive there, Auto's in whichever runtime it chose.</summary>
+    /// <summary>Opens the check page at <paramref name="path"/> in <paramref name="runtime"/> and waits until it is interactive in the runtime the case names.</summary>
     /// <param name="host">The published hosts.</param>
-    /// <param name="runtime">The runtime, <c>server</c>, <c>webassembly</c> or <c>auto</c>.</param>
+    /// <param name="runtime">The runtime, <c>server</c>, <c>webassembly</c>, <c>auto-server</c> or <c>auto-webassembly</c>.</param>
     /// <param name="path">The component's check page, after the runtime.</param>
     /// <returns>The page and the context that owns it.</returns>
     public static async Task<(IBrowserContext Context, IPage Page)> OpenAsync(BrowserHost host, string runtime, string path)
     {
         ArgumentNullException.ThrowIfNull(host);
 
-        var (context, page) = await host.OpenPageAsync(host.ComponentsAddress).ConfigureAwait(false);
-        await page.GotoAsync($"{runtime}/{path}").ConfigureAwait(false);
-
-        var interactive = runtime switch
+        var (mode, renderer) = runtime switch
         {
-            "server" => "^Server True$",
-            "webassembly" => "^WebAssembly True$",
-            _ => "True$",
+            "server" => ("server", "Server"),
+            "webassembly" => ("webassembly", "WebAssembly"),
+            "auto-server" => ("auto", "Server"),
+            "auto-webassembly" => ("auto", "WebAssembly"),
+            _ => throw new ArgumentOutOfRangeException(nameof(runtime), runtime, "The runtime is server, webassembly, auto-server or auto-webassembly."),
         };
-        await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex(interactive), new() { Timeout = 60000 }).ConfigureAwait(false);
+
+        var (context, page) = await host.OpenPageAsync(host.ComponentsAddress).ConfigureAwait(false);
+
+        // Auto runs on WebAssembly once its resources downloaded, so a first visit on the Server downloads them.
+        if (runtime == "auto-webassembly")
+        {
+            var downloads = new FrameworkDownloads(page);
+            await page.GotoAsync($"{mode}/{path}").ConfigureAwait(false);
+            await WaitForRendererAsync(page, "Server").ConfigureAwait(false);
+            await downloads.WaitAsync().ConfigureAwait(false);
+            await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)))").ConfigureAwait(false);
+            downloads.Stop();
+        }
+
+        await page.GotoAsync($"{mode}/{path}").ConfigureAwait(false);
+        await WaitForRendererAsync(page, renderer).ConfigureAwait(false);
 
         return (context, page);
     }
@@ -70,6 +84,9 @@ public static partial class ComponentChecks
 
         return page.WaitForFunctionAsync("selector => document.querySelector(selector)?._blazorInputFileNextFileId !== undefined", selector);
     }
+
+    private static Task WaitForRendererAsync(IPage page, string renderer)
+        => Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex($"^{renderer} True$"), new() { Timeout = 60000 });
 
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d+$")]
     private static partial System.Text.RegularExpressions.Regex LayerPattern();

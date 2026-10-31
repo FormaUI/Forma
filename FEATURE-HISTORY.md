@@ -60,7 +60,7 @@ Until the first release, a month may break what the one before it allowed, and e
 **Build and verification**
 
 - [The browser check](docs/repository-structure.md#tests): the components driven headless in a real browser under Server, WebAssembly and Auto, the culture's behavior and each router's navigation checked, and each client's download held to a budget.
-- [The component checks](docs/repository-structure.md#tests): every component's main interaction driven in the browser check under Server, WebAssembly and Auto.
+- [The component checks](docs/repository-structure.md#tests): every component's main interaction driven in the browser check under Server, WebAssembly and Auto, Auto both on a first visit, on the Server, and once WebAssembly has downloaded.
 - [The example hosts](tests/Forma.Examples/README.md): a Web App for each culture arrangement, built from Forma's packages as the README sets a host up and driven by the browser check, which holds the README's setup to them.
 - [The screen reader check](docs/screen-reader-checks-design.md): NVDA driven through the Showcase, recording what it speaks.
 - The gate shows each test project as it finishes, can load the machine while a test repeats and list the waits that needed time, and fails a component that reads the ambient culture.
