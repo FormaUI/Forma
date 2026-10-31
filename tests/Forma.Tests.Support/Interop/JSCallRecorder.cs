@@ -49,6 +49,8 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
         }
     }
 
-    private static async Task<TValue> AwaitAnswerAsync<TValue>(RecordedCall call)
-        => (TValue)(await call.Answer.Task.ConfigureAwait(false))!;
+    // Continued synchronously, so the caller's continuation runs where the test answers the call, a renderer's context
+    // included, where an await leaving the context would queue it to the thread pool instead.
+    private static Task<TValue> AwaitAnswerAsync<TValue>(RecordedCall call)
+        => call.Answer.Task.ContinueWith(answer => (TValue)answer.GetAwaiter().GetResult()!, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 }

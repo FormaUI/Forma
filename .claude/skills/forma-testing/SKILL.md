@@ -42,6 +42,7 @@ A test that passes alone and fails under load is broken, not unlucky: its assert
 
 - Do hold a component's asynchronous work in a fake the test controls, and let it go through `cut.ReleaseAsync(...)` from the bUnit support project, which runs the release on the renderer; the component's continuation then runs there at once, so the test asserts directly after.
 - Do give such a fake a plain `TaskCompletionSource`; one created to run its continuations asynchronously queues the component's continuation instead of running it inline, and the assertion races it again.
+- Do hand a fake's answer on through a continuation that runs synchronously, `ContinueWith` with `ExecuteSynchronously`, where it has to convert it; an await with `ConfigureAwait(false)` completing under the renderer's context is queued to the thread pool, and the component's continuation with it.
 - Do await the handler's own task, from `ClickAsync` or `TriggerEventAsync`, where the component's work passes through a library that awaits with `ConfigureAwait(false)`; that work leaves the renderer, and nothing done on the renderer can wait for it.
 - Do give a component a contract to inject, as `IEmojiSpriteLoader` beside `EmojiSpriteLoader`, when a test needs to hold its work and the only way in was a pending script call.
 - Don't wait on the clock for a completion the test controls: no `WaitForAssertion` or `WaitForState` after completing a gate, no `Task.Delay`, and never a widened timeout or a retry, which hide the race rather than remove it.

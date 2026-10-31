@@ -55,11 +55,17 @@ public sealed class HeldJSObjectReference(string heldIdentifier, Func<string, ob
         return ValueTask.CompletedTask;
     }
 
-    private async Task<TValue> AwaitHeldAsync<TValue>()
-    {
-        var result = await _held.Task.ConfigureAwait(false);
-        IsHolding = false;
+    // Continued synchronously, so the wrapper's continuation runs where Answer completes the call, a renderer's context
+    // included, where an await leaving the context would queue it to the thread pool instead.
+    private Task<TValue> AwaitHeldAsync<TValue>()
+        => _held.Task.ContinueWith(
+            answer =>
+            {
+                IsHolding = false;
 
-        return (TValue)result!;
-    }
+                return (TValue)answer.GetAwaiter().GetResult()!;
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
 }

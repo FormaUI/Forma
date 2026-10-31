@@ -9,6 +9,10 @@ public sealed class RecordingJSRuntime(Func<string, object?[], object?> respond)
     /// <summary>The calls the runtime took.</summary>
     public JSCallRecorder Recorder { get; } = new(respond);
 
+    /// <summary>Creates a runtime whose import of the module at <paramref name="path"/> yields <paramref name="module"/>, and of every other module <paramref name="others"/>.</summary>
+    public static RecordingJSRuntime Importing(string path, RecordingJSObjectReference module, RecordingJSObjectReference others)
+        => new((identifier, args) => identifier == "import" ? (args[0] is string imported && imported == path ? module : others) : null);
+
     /// <inheritdoc />
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         => Recorder.TakeAsync<TValue>(identifier, args);
