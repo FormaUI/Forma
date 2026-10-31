@@ -23,6 +23,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through its items in the order the page holds them, a group's, those added later and those the page reorders among them.
 - [`FormaSplitter`](docs/component-catalog.md#formasplitter) follows a drag in the browser, ending it wherever the pointer is let go, and Escape returns the size the drag started from.
 - [`FormaImagePicker`](docs/component-catalog.md#formaimagepicker) previews an image chosen before its script attached, and attaches the preview again on a later render after an attach failed.
+- Every component that attaches a script claims the attach before awaiting it, so a render arriving meanwhile attaches nothing a second time, and [`FormaVirtualize`](docs/component-catalog.md#formavirtualize)'s list, as a time picker's, opens where it should on a slow connection.
 - [`FormaIcon`](docs/component-catalog.md#formaicon) is decorative unless its `Label` names it, a brand mark as every other icon, so a share menu's network, a tab or a toggle button is named once.
 - [`FormaDialog`](docs/component-catalog.md#formadialog) is named by its title.
 - [`FormaTimePicker`](docs/component-catalog.md#formatimepicker)'s list and [`FormaDateTimePicker`](docs/component-catalog.md#formadatetimepicker)'s open on the time held, whatever was chosen before.

@@ -132,6 +132,8 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     {
         if (HasLabel && !_isWatchingAutofill)
         {
+            // Claimed before the await, so a render arriving mid-call watches no second time.
+            _isWatchingAutofill = true;
             _isWatchingAutofill = await _autofill.AttachAsync(RootElement);
         }
     }

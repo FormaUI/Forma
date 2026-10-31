@@ -187,6 +187,7 @@ export function resolve(event) { … }
 
 - Do treat that returned `bool` as the record of whether the call happened, and drive state from it rather than assuming success.
 - Do remember that `OnAfterRenderAsync` runs after *every* render, so a second pass can overtake a first one that is still awaiting its attach round-trip.
+- Do claim an attach before awaiting it, setting the flag that guards it first, `_isAttached = true; _isAttached = await …AttachAsync(…)`; an attach a second pass starts supersedes the first, which then reports that it didn't attach, after the second has already reported that it did.
 - Don't record state as applied beside an interop call whose result you discarded; the state sticks, nothing retries, and no error is raised anywhere.
 
 ## External libraries

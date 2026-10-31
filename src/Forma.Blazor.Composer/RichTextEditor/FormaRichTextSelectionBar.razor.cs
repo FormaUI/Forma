@@ -43,6 +43,9 @@ public sealed partial class FormaRichTextSelectionBar : FormaComponentBase
     {
         if (!_isAttached && EditorElement.HasValue && EditorElement.Value.Id is not null && _menuElement.Id is not null)
         {
+            // Claimed before the await, so a render arriving mid-call attaches no second follower.
+            _isAttached = true;
+
             // The follower registers with the router from script, so the host's policy is configured on the router first.
             await InputRouter.ConfigureAsync();
             _isAttached = await _follower.AttachAsync(_menuElement, EditorElement.Value, ActiveClass, SelectionFollowerPlacement.Below, HandleSelector);

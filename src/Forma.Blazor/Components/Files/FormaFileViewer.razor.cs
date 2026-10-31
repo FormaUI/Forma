@@ -194,12 +194,17 @@ public sealed partial class FormaFileViewer : FormaElementBase
 
             if (!_isDragAttached)
             {
+                // Claimed before the await, so a render arriving mid-call attaches no second pan.
+                _isDragAttached = true;
                 _isDragAttached = await _pan.AttachAsync(_imageFrameElement, PanAction, ZoomedClass);
             }
 
             if (ZoomOnWheelGesture && !_isWheelAttached)
             {
                 _selfReference ??= DotNetObjectReference.Create(this);
+
+                // Claimed before the await, so a render arriving mid-call attaches no second wheel.
+                _isWheelAttached = true;
                 _isWheelAttached = await _wheel.AttachAsync(_imageFrameElement, ScrollWheel.Tells(ZoomAction, WheelModifier.Ctrl), _selfReference);
             }
             else if (!ZoomOnWheelGesture && _isWheelAttached)

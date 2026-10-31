@@ -290,6 +290,9 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         if (!_isAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
+
+            // Claimed before the await, so a render arriving mid-call attaches no second observer.
+            _isAttached = true;
             _isAttached = await _interop.AttachAsync(_startSpacer, _selfReference, SpacerAttribute);
 
             // Opens on the item by its own offset rather than through ScrollToIndexAsync, which would wait on a render of its

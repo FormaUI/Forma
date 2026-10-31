@@ -46,6 +46,8 @@ public sealed partial class FormaRichTextGutter : FormaComponentBase
     {
         if (!_isAttached && CanvasElement.Id is not null && _gutterElement.Id is not null)
         {
+            // Claimed before the await, so a render arriving mid-call aligns the gutter no second time.
+            _isAttached = true;
             _isAttached = await _alignment.AttachAsync(_gutterElement, CanvasElement, RowSelector);
         }
     }

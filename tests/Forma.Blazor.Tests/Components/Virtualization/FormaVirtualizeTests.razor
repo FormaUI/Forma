@@ -749,6 +749,36 @@
         private sealed record Row(int Id, string Name);
     }
 
+    public sealed class Attachment
+    {
+        [Fact]
+        public async Task Should_attach_once_and_open_on_its_item_though_a_render_arrives_while_it_attaches()
+        {
+            // Arrange — the list's script still attaching as the list renders again
+            using var ctx = new FormaVirtualizeTests();
+            await using var script = new RecordingJSObjectReference((_, _) => null);
+            await using var instance = new RecordingJSObjectReference((_, _) => null);
+            await using var scripts = new RecordingJSObjectReference((_, _) => null);
+            script.Recorder.Hold("attach");
+            ctx.Services.AddSingleton<IJSRuntime>(RecordingJSRuntime.Importing(VirtualizePath, script, scripts));
+            IReadOnlyList<int> items = [.. Enumerable.Range(0, 100)];
+            var cut = ctx.Render(
+                @<FormaVirtualize TItem="int" Items="items" ItemKey="@(item => item)" ItemSize="20" InitialItemIndex="40">
+                    <ItemContent Context="item"><div class="row">@item</div></ItemContent>
+                </FormaVirtualize>);
+            cut.FindComponent<FormaVirtualize<int>>().Render();
+
+            // Act
+            await cut.ReleaseAsync(() => Assert.Single(script.Recorder.GetCalls("attach")).Complete(instance));
+
+            // Assert — one attach, and the list scrolled to where the item it opens on stands
+            Assert.Single(script.Recorder.GetCalls("attach"));
+            Assert.Equal(800d, Assert.Single(instance.Recorder.GetCalls("scrollTo")).Arguments[0]);
+        }
+    }
+
+    private const string VirtualizePath = "./_content/forma/browser/scripts/components/Virtualize.js";
+
     // A row's content that records each time it is made.
     public sealed class Stamp : ComponentBase
     {

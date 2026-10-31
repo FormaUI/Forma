@@ -66,6 +66,9 @@ public sealed partial class FormaFilePicker : FormaElementBase
     {
         if (!_isAttached)
         {
+            // Claimed before the await, so a render arriving mid-call attaches no second drop zone.
+            _isAttached = true;
+
             // The drop is a route the script declares itself, so the host's policy reaches the router before it does.
             await InputRouter.ConfigureAsync();
             _isAttached = await _fileDropZone.AttachAsync(_dropZoneElement, DropAction, DraggingClass);

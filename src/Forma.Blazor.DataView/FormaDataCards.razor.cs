@@ -150,6 +150,9 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
         if (showsRuler && !_isRulerAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
+
+            // Claimed before the await, so a render arriving mid-call measures no second ruler.
+            _isRulerAttached = true;
             _isRulerAttached = await _gridColumns.AttachAsync(_rulerElement, _selfReference);
         }
         else if (!showsRuler && _isRulerAttached)

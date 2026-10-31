@@ -131,6 +131,9 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
 
         _selfReference ??= DotNetObjectReference.Create(this);
 
+        // Claimed before the await, so a render arriving mid-call attaches no second drop zone.
+        _isDropZoneAttached = true;
+
         // The drop is a route the script declares itself, so the host's policy reaches the router before it does.
         await InputRouter.ConfigureAsync();
         _isDropZoneAttached = await _dropZone.AttachAsync(_tree, DropAction, _selfReference, TreeDropZoneOptions);
