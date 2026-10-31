@@ -27,6 +27,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaIcon`](docs/component-catalog.md#formaicon) is decorative unless its `Label` names it, a brand mark as every other icon, so a share menu's network, a tab or a toggle button is named once.
 - [`FormaDialog`](docs/component-catalog.md#formadialog) is named by its title.
 - [`FormaTextBox`](docs/component-catalog.md#formatextbox) and [`FormaPasswordBox`](docs/component-catalog.md#formapasswordbox) hold their label above a value the browser fills.
+- [`FormaFileViewer`](docs/component-catalog.md#formafileviewer) zooms an image past its frame, and pans across all of it.
 - [`FormaTimePicker`](docs/component-catalog.md#formatimepicker)'s list and [`FormaDateTimePicker`](docs/component-catalog.md#formadatetimepicker)'s open on the time held, whatever was chosen before.
 - An open surface that closes gives up its layer among the input router's.
 - [`FormaPopover`](docs/component-catalog.md#formapopover) follows a change of reading direction while it is open, [`FormaTabs`](docs/component-catalog.md#formatabs) draws its strip again when a tab's header changes, and [`FormaFileViewer`](docs/component-catalog.md#formafileviewer) resolves its document again when the culture changes.
