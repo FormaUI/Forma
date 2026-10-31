@@ -65,6 +65,7 @@ public sealed partial class FormaDialog : FormaElementBase
     [Parameter] public EventCallback OnCancel { get; set; }
 
     private bool ShowHeader => Title is not null;
+    private string TitleId => $"{ElementId}-title";
     private bool HasDefaultFooterActions => Options.ShowCancelAction || Options.ShowConfirmAction;
     private bool ShowFooter => Footer is not null || HasDefaultFooterActions;
     [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase")]

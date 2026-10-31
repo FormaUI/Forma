@@ -52,6 +52,35 @@
         }
 
         [Fact]
+        public void Should_name_itself_by_its_title()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDialog Id="report" Opened="false" OnClose="@(() => { })" Title="Test Title" />);
+
+            // Assert
+            Assert.Equal("report-title", cut.Find("dialog").GetAttribute("aria-labelledby"));
+            Assert.Equal("Test Title", cut.Find("#report-title").TextContent);
+        }
+
+        [Fact]
+        public void Should_leave_its_name_to_the_host_when_it_has_no_title()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDialog Opened="false" OnClose="@(() => { })" />);
+
+            // Assert
+            Assert.False(cut.Find("dialog").HasAttribute("aria-labelledby"));
+        }
+
+        [Fact]
         public void Should_render_child_content()
         {
             // Arrange

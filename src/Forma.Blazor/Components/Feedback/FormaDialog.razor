@@ -6,12 +6,13 @@
         style="@RootStyle"
         @attributes="AdditionalAttributes"
         @ref="RootElement"
+        aria-labelledby="@(ShowHeader ? TitleId : null)"
         @onclose="HandleDialogClose">
     <div class="forma-dialog-dialog">
         @if (ShowHeader)
         {
             <header class="forma-dialog-header">
-                <h5>@Title</h5>
+                <h5 id="@TitleId">@Title</h5>
                 <FormaCloseButton Label="@L["Close"]" OnClick="RequestCloseAsync" />
             </header>
         }
