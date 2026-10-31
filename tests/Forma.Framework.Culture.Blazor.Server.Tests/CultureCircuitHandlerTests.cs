@@ -96,6 +96,51 @@ public sealed class CultureCircuitHandlerTests
     }
 
     [Fact]
+    public async Task Should_complete_the_first_connection_once_its_registration_completes()
+    {
+        // Arrange — the browser holding the coordinator's module, which the registration imports
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser("he-IL");
+        browser.Runtime.Recorder.Hold("import");
+        await using var provider = CreateServices(browser);
+        await using var scope = provider.CreateAsyncScope();
+
+        // Act
+        var connecting = ConnectAsync(scope.ServiceProvider);
+        var isCompletedBeforeTheBrowserAnswers = connecting.IsCompleted;
+        Assert.Single(browser.Runtime.Recorder.GetCalls("import")).Complete(browser.Module);
+        await connecting;
+
+        // Assert
+        Assert.False(isCompletedBeforeTheBrowserAnswers);
+        Assert.Equal(Hebrew, scope.ServiceProvider.GetRequiredService<ICultureState>().UICulture);
+    }
+
+    [Fact]
+    public async Task Should_complete_a_later_connection_before_the_browser_answers_its_registration()
+    {
+        // Arrange — the first connection registered and dropped, then the browser holding its answer to the next registration,
+        // as it holds every answer while the reconnection that asks is under way
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser("he-IL");
+        await using var provider = CreateServices(browser);
+        await using var scope = provider.CreateAsyncScope();
+        await ConnectAsync(scope.ServiceProvider);
+        await DisconnectAsync(scope.ServiceProvider);
+        browser.Module.Recorder.Hold("register");
+
+        // Act
+        var connecting = ConnectAsync(scope.ServiceProvider);
+        var isCompletedBeforeTheBrowserAnswers = connecting.IsCompletedSuccessfully;
+        var registrations = browser.Module.Recorder.GetCalls("register");
+        registrations[^1].Fail(new JSDisconnectedException("The test answers the registration to let the scope go."));
+
+        // Assert
+        Assert.True(isCompletedBeforeTheBrowserAnswers);
+        Assert.Equal(2, registrations.Count);
+    }
+
+    [Fact]
     public async Task Should_register_again_on_a_later_connection_after_an_expected_failure()
     {
         // Arrange — the first connection drops while the module is imported
