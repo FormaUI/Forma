@@ -162,7 +162,8 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         // A relative path takes the document's own scheme.
         if (trimmed[0] == '/'
             || trimmed.StartsWith("./", StringComparison.Ordinal)
-            || trimmed.StartsWith("../", StringComparison.Ordinal))
+            || trimmed.StartsWith("../", StringComparison.Ordinal)
+            || IsRelativePath(trimmed))
         {
             return true;
         }
@@ -185,5 +186,14 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         }
 
         return false;
+    }
+
+    // A colon before the first separator would name a scheme, and no address holds whitespace or a control character.
+    private static bool IsRelativePath(ReadOnlySpan<char> url)
+    {
+        var separator = url.IndexOfAny('/', '?', '#');
+        var firstSegment = separator < 0 ? url : url[..separator];
+
+        return !firstSegment.Contains(':') && url.IndexOfAnyInRange('\0', ' ') < 0 && !url.Contains('\u007f');
     }
 }

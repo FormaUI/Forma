@@ -76,7 +76,8 @@ least one of its declarations is permitted.
 - **Inline styles**: color, font, text alignment and decoration, line height, margin, padding,
   border and size, and any custom property starting with `--forma-`. A declaration containing
   `url(`, `javascript:`, `expression(`, `@import` or `behavior:` is dropped.
-- **URLs**: `http`, `https`, `mailto` and `tel`; a path starting with `/`, `./` or `../`; a
+- **URLs**: `http`, `https`, `mailto` and `tel`; a path within the site, rooted at `/` or relative to the
+  document, whose first segment holds no colon and which holds no whitespace; a
   fragment; and a `data:` URL carrying a PNG, JPEG, GIF, WebP or AVIF image.
 
 Elements, attributes and style properties are written in lowercase; a `data-` attribute and a

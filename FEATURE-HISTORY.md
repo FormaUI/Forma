@@ -54,6 +54,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [Currencies](src/Forma.Framework/Forma.Framework.Currencies/README.md): the ISO 4217 catalog, with each currency's decimals and each culture's symbol, from CLDR.
 - [Debouncing](src/Forma.Framework/Forma.Framework.Events/README.md) joins the events assembly.
 - [An interop wrapper](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md) releases what an attach gets once a later attach, a detach or the disposal overtook it, and imports a module again after its import failed.
+- [The markup policy](src/Forma.Framework/Forma.Framework.Sanitization/README.md) keeps an address relative to the document, as a catalog writes its files, where it names no scheme.
 
 **Hosting**
 
