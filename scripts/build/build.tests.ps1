@@ -81,6 +81,10 @@ function Invoke-Case {
     $output = (& pwsh -NoProfile -File $script @arguments 2>&1 | Out-String)
     $succeeded = $LASTEXITCODE -eq 0
 
+    # An error is drawn at the width of the console it runs in, each line it wraps continued under the error
+    # view's gutter, so what the run said is read with those lines rejoined, whatever the width.
+    $said = $output -replace '[ \t]*\r?\n[ \t]*\|[ \t]+', ' '
+
     $shouldFail = [bool]$Case['Fails']
 
     # Each expectation speaks when it is missed and says nothing when it is met, so the problems are what
@@ -88,8 +92,8 @@ function Invoke-Case {
     $problems = @(
         if ($shouldFail -and $succeeded) { 'the run succeeded where it should have been refused' }
         if (-not $shouldFail -and -not $succeeded) { 'the run failed' }
-        foreach ($text in @($Case['Expect'])) { if ($text -and $output -notmatch [regex]::Escape($text)) { "nothing said '$text'" } }
-        foreach ($text in @($Case['Reject'])) { if ($text -and $output -match [regex]::Escape($text)) { "something said '$text', which this action does not do" } }
+        foreach ($text in @($Case['Expect'])) { if ($text -and $said -notmatch [regex]::Escape($text)) { "nothing said '$text'" } }
+        foreach ($text in @($Case['Reject'])) { if ($text -and $said -match [regex]::Escape($text)) { "something said '$text', which this action does not do" } }
     )
 
     [pscustomobject]@{
