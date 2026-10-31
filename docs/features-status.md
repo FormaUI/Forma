@@ -10,7 +10,7 @@
 | Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview`, packed locally and unpublished |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every component's main interaction checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says |
 
-The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto. It passes locally on Windows. In CI, on Linux and Windows, every step passes but the locale lint, which fails with a 403 until the repository is given access to the package feed it restores `locali` from.
+The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto. It passes locally on Windows and in CI on Linux and Windows.
 
 [The catalog](component-catalog.md) lists the components that exist and [the roadmap](component-roadmap.md) those to build. Each area's design under `docs/` is its contract, and an implementation plan beside a design carries the steps still to build it. [The feature history](../FEATURE-HISTORY.md) records what each month added and what it broke. This file tracks where each feature stands and the work that remains. "Implemented" means built and passing the gate; a feature waiting for the maintainer's approval stays in progress.
 
@@ -105,7 +105,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 | Feature | Contract | State | Since |
 | --- | --- | --- | --- |
-| The gate and CI on Linux and Windows | [Build and verification](repository-structure.md#build-and-verification) | Implemented; the locale lint awaits package access in CI | [September 2026](../FEATURE-HISTORY.md#2026-09) |
+| The gate and CI on Linux and Windows | [Build and verification](repository-structure.md#build-and-verification) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The browser check | [Tests](repository-structure.md#tests) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | The screen reader check | [Screen reader checks design](screen-reader-checks-design.md) | Implemented in part; [the data view's scenarios](#screen-reader-checks) remain | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Releases | [Build and verification](repository-structure.md#build-and-verification) | Implemented in part; [the rest](#release) planned | [September 2026](../FEATURE-HISTORY.md#2026-09) |
