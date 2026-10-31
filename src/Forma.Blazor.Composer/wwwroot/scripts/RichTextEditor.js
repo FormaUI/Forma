@@ -146,17 +146,6 @@ class RichTextEditor {
         }
     }
 
-    getHtml() {
-        return InlineFormatter.stripMarkers(this.#canvas.html);
-    }
-
-    /** The text of the last selection made inside the canvas, which outlives the focus a dialog takes away. */
-    getSelectionText() {
-        const frozen = this.#memory.freeze();
-
-        return frozen && !frozen.collapsed ? frozen.toString() : '';
-    }
-
     /**
      * What the link dialog is about to act on: the text the selection covers, the address of the single
      * link it touches, and how many links it touches.

@@ -38,10 +38,6 @@ internal sealed class SelectionFollower(IJSEnvironment js)
             RequiresOwner = owner is not null,
         });
 
-    /// <summary>Moves the element to the current selection.</summary>
-    public ValueTask<bool> UpdateAsync()
-        => InvokeAsync("update");
-
     /// <summary>The options the script attaches with.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
     private sealed record AttachOptions

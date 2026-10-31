@@ -140,7 +140,7 @@ wrapper.
 
 | Wrapper | What it does |
 | --- | --- |
-| `Asset` | Loads a module, script, stylesheet or SVG sprite once per page. |
+| `Asset` | Loads a module, stylesheet or SVG sprite once per page. |
 | `CheckBox` | Sets whether a checkbox shows as indeterminate. |
 | `Clipboard` | Places text on the clipboard. |
 | `Download` | Hands the reader a file to save. |

@@ -95,6 +95,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - `Pointer` is gone; a drag captures its pointer in the browser.
 - `FormaIcon` hides a brand mark as it hides every icon, and a host names a mark it places alone through `Label`.
 - `RichTextEditorPlugin.RequestCommand` takes the text or the number a command takes, where it took any object.
+- `Asset.LoadScriptAsync` is gone.
 
 <a id="2026-09"></a>
 

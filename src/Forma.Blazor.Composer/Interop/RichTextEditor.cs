@@ -22,14 +22,6 @@ internal sealed class RichTextEditor(IJSEnvironment js)
     public ValueTask<bool> SetHtmlAsync(string html)
         => InvokeAsync("setHtml", html);
 
-    /// <summary>Gets the current HTML content of the editor.</summary>
-    public ValueTask<string?> GetHtmlAsync()
-        => InvokeAsync<string>("getHtml");
-
-    /// <summary>Gets the text of the last selection made inside the canvas.</summary>
-    public ValueTask<string?> GetSelectionTextAsync()
-        => InvokeAsync<string>("getSelectionText");
-
     /// <summary>Freezes the selection a link dialog will act on, and reports what it covers.</summary>
     public ValueTask<RichTextLinkTargetDto?> BeginLinkDialogAsync(bool isAnchor)
         => InvokeAsync<RichTextLinkTargetDto>("beginLinkDialog", isAnchor ? "a[name]" : "a[href]");

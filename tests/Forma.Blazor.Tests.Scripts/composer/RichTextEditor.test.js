@@ -24,13 +24,12 @@ describe('RichTextEditor', () => {
         vi.useRealTimers();
     });
 
-    it('reads and sets HTML content', () => {
+    it('sets HTML content', () => {
         const handle = attach(editor, { owner });
 
-        expect(handle.getHtml()).toBe('<p>Hello world</p>');
-
         handle.setHtml('<p>Updated</p>');
-        expect(handle.getHtml()).toBe('<p>Updated</p>');
+
+        expect(editor.innerHTML).toBe('<p>Updated</p>');
     });
 
     it('debounces content changes on input', () => {
@@ -448,7 +447,7 @@ describe('RichTextEditor', () => {
         expect(editor.querySelector('a').textContent).toBe('Stage report');
     });
 
-    it('reports the saved selection text so a dialog can prefill from it', () => {
+    it('reports the saved selection text so the link dialog can prefill from it', () => {
         editor.innerHTML = '<p>Stage report</p>';
         const handle = attach(editor, { owner });
 
@@ -459,7 +458,7 @@ describe('RichTextEditor', () => {
         selection.addRange(range);
         document.dispatchEvent(new Event('selectionchange'));
 
-        expect(handle.getSelectionText()).toBe('Stage report');
+        expect(handle.beginLinkDialog().text).toBe('Stage report');
     });
 
     it('anchors the text a dialog was opened against even after the caret collapses', () => {
@@ -474,7 +473,7 @@ describe('RichTextEditor', () => {
         document.dispatchEvent(new Event('selectionchange'));
 
         // Opening the dialog freezes the range; closing it collapses the live caret.
-        handle.getSelectionText();
+        handle.beginLinkDialog('a[name]');
         selection.collapseToEnd();
         document.dispatchEvent(new Event('selectionchange'));
 
