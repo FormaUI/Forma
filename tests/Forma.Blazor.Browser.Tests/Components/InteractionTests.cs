@@ -2,7 +2,7 @@ namespace Forma.Blazor.Browser.Tests.Components;
 
 using static Forma.Blazor.Browser.Tests.ComponentChecks;
 
-/// <summary>The input scope's and the page title's main interactions, in every runtime.</summary>
+/// <summary>The input scope's, the host's routes' and the page title's interactions, in every runtime.</summary>
 public sealed class InteractionTests
 {
     public sealed class InputScope(BrowserHost host)
@@ -25,6 +25,26 @@ public sealed class InteractionTests
 
             // Assert
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("check.next check.next");
+        }
+    }
+
+    public sealed class HostRoute(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_perform_the_host_s_own_shortcut_through_the_host_s_handler(string runtime)
+        {
+            // Arrange — the host's routes configured, as the first scope on the page does
+            var (context, page) = await OpenAsync(host, runtime, "host-route");
+            await using var _ = context;
+            await WaitForInputScopeAsync(page, "#scope");
+            await page.Locator("#inside").FocusAsync();
+
+            // Act
+            await page.Keyboard.PressAsync("F2");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("check.host");
         }
     }
 

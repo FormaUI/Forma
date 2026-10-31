@@ -36,6 +36,51 @@ public sealed class MenusTests
             await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
             await Assertions.Expect(trigger).ToBeFocusedAsync();
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_hold_tab_within_itself_and_wrap_at_either_end(string runtime)
+        {
+            // Arrange — the menu opened and moved to its last item
+            var (context, page) = await OpenAsync(host, runtime, "drop-down-menu");
+            await using var _ = context;
+            await page.Locator("#menu").ClickAsync();
+            await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = page.GetByRole(AriaRole.Menu) }));
+            await page.Keyboard.PressAsync("End");
+            await Assertions.Expect(page.Locator("#pin")).ToBeFocusedAsync();
+
+            // Act
+            await page.Keyboard.PressAsync("Tab");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await Assertions.Expect(page.Locator("#pin")).ToBeFocusedAsync();
+            await Assertions.Expect(page.GetByRole(AriaRole.Menu)).ToBeVisibleAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_move_to_an_item_drawn_ahead_of_the_rest_while_open_by_its_place_on_the_page(string runtime)
+        {
+            // Arrange — Pin, the last item, run by keyboard, which keeps the menu open and draws Unpin first
+            var (context, page) = await OpenAsync(host, runtime, "drop-down-menu");
+            await using var _ = context;
+            await page.Locator("#menu").ClickAsync();
+            await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = page.GetByRole(AriaRole.Menu) }));
+            await page.Keyboard.PressAsync("End");
+            await Assertions.Expect(page.Locator("#pin")).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Enter");
+            await Assertions.Expect(page.Locator("#unpin")).ToBeVisibleAsync();
+
+            // Act
+            await page.Keyboard.PressAsync("Home");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#unpin")).ToBeFocusedAsync();
+        }
     }
 
     public sealed class OverflowMenu(BrowserHost host)
@@ -69,6 +114,12 @@ public sealed class MenusTests
     public sealed class ShareMenu(BrowserHost host)
     {
         private static readonly string[] Networks = ["Facebook", "X", "WhatsApp", "Telegram", "Bluesky", "Reddit", "Snapchat", "LinkedIn"];
+
+        // A share surface standing in for the platform's, recording what it is handed.
+        private const string RecordingShareSurface = "Object.defineProperty(Navigator.prototype, 'share', { configurable: true, value(data) { (window.formaShared ??= []).push(data); return Promise.resolve(); } });";
+
+        // A print standing in for the browser's dialog, counting its calls.
+        private const string CountingPrint = "window.print = () => { window.formaPrints = (window.formaPrints ?? 0) + 1; };";
 
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
@@ -112,6 +163,64 @@ public sealed class MenusTests
 
             // Assert
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("archive");
+            await Assertions.Expect(menu).ToBeHiddenAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_offer_the_platform_s_share_surface_where_the_browser_has_one_and_hand_it_the_item(string runtime)
+        {
+            // Arrange — a share surface standing in for the platform's, which records what it was handed
+            var (context, page) = await OpenAsync(host, runtime, "share-menu", page => page.AddInitScriptAsync(RecordingShareSurface));
+            await using var _ = context;
+            var menu = page.GetByRole(AriaRole.Menu);
+            await page.Locator("#share").ClickAsync();
+            var share = menu.Locator(".forma-share-menu-primary [role=menuitem]").First;
+            await Assertions.Expect(share).ToHaveTextAsync("Share");
+
+            // Act
+            await share.ClickAsync();
+
+            // Assert
+            await page.WaitForFunctionAsync("() => window.formaShared?.length === 1");
+            Assert.Equal("Quarterly Report|https://example.com/reports/quarterly", await page.EvaluateAsync<string>("() => `${window.formaShared[0].title}|${window.formaShared[0].url}`"));
+            await Assertions.Expect(menu).ToBeHiddenAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_copy_the_item_s_link_to_the_clipboard(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "share-menu");
+            await using var _ = context;
+            await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"]);
+            var menu = page.GetByRole(AriaRole.Menu);
+            await page.Locator("#share").ClickAsync();
+
+            // Act
+            await menu.GetByRole(AriaRole.Menuitem, new() { Name = "Copy Link", Exact = true }).ClickAsync();
+
+            // Assert
+            await page.WaitForFunctionAsync("async () => await navigator.clipboard.readText() === 'https://example.com/reports/quarterly'");
+            await Assertions.Expect(menu).ToBeHiddenAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_print_the_page(string runtime)
+        {
+            // Arrange — the page's print standing in for the browser's dialog, which counts its calls
+            var (context, page) = await OpenAsync(host, runtime, "share-menu", page => page.AddInitScriptAsync(CountingPrint));
+            await using var _ = context;
+            var menu = page.GetByRole(AriaRole.Menu);
+            await page.Locator("#share").ClickAsync();
+
+            // Act
+            await menu.GetByRole(AriaRole.Menuitem, new() { Name = "Print", Exact = true }).ClickAsync();
+
+            // Assert
+            await page.WaitForFunctionAsync("() => window.formaPrints === 1");
             await Assertions.Expect(menu).ToBeHiddenAsync();
         }
     }

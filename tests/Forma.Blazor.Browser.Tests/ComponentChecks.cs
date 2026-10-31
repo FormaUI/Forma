@@ -10,8 +10,9 @@ public static partial class ComponentChecks
     /// <param name="host">The published hosts.</param>
     /// <param name="runtime">The runtime, <c>server</c>, <c>webassembly</c>, <c>auto-server</c> or <c>auto-webassembly</c>.</param>
     /// <param name="path">The component's check page, after the runtime.</param>
+    /// <param name="prepare">Prepares the page before it opens the check: a script standing in for what a headless browser lacks, or a route its connections pass through.</param>
     /// <returns>The page and the context that owns it.</returns>
-    public static async Task<(IBrowserContext Context, IPage Page)> OpenAsync(BrowserHost host, string runtime, string path)
+    public static async Task<(IBrowserContext Context, IPage Page)> OpenAsync(BrowserHost host, string runtime, string path, Func<IPage, Task>? prepare = null)
     {
         ArgumentNullException.ThrowIfNull(host);
 
@@ -25,6 +26,11 @@ public static partial class ComponentChecks
         };
 
         var (context, page) = await host.OpenPageAsync(host.ComponentsAddress).ConfigureAwait(false);
+
+        if (prepare is not null)
+        {
+            await prepare(page).ConfigureAwait(false);
+        }
 
         // Auto runs on WebAssembly once its resources downloaded, so a first visit on the Server downloads them.
         if (runtime == "auto-webassembly")

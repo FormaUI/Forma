@@ -1,21 +1,27 @@
 @page "/{Runtime}/drop-down-menu"
 
-@* A menu of commands, two in a group and one past a divider, the command it last ran written where the check reads it. *@
+@* A menu of commands, two in a group, one past a divider and a last one that stays open as it draws another ahead of the rest, the command it last ran written where the check reads it. *@
 <FormaDropDownMenu Id="menu">
     <Trigger>Actions</Trigger>
     <ChildContent>
+        @if (_isPinned)
+        {
+            <FormaDropDownMenuItem Id="unpin" OnClick="@(() => _lastCommand = "Unpin")">Unpin</FormaDropDownMenuItem>
+        }
         <FormaDropDownMenuGroup Label="Edit">
             <FormaDropDownMenuItem Id="rename" OnClick="@(() => _lastCommand = "Rename")">Rename</FormaDropDownMenuItem>
             <FormaDropDownMenuItem Id="duplicate" OnClick="@(() => _lastCommand = "Duplicate")">Duplicate</FormaDropDownMenuItem>
         </FormaDropDownMenuGroup>
         <FormaDropDownMenuDivider />
         <FormaDropDownMenuItem Id="delete" IsDestructive="true" OnClick="@(() => _lastCommand = "Delete")">Delete</FormaDropDownMenuItem>
+        <FormaDropDownMenuItem Id="pin" KeepsOpen="true" OnClick="@(() => _isPinned = true)">Pin</FormaDropDownMenuItem>
     </ChildContent>
 </FormaDropDownMenu>
 <output id="result">@_lastCommand</output>
 
 @code {
     private string? _lastCommand;
+    private bool _isPinned;
 
     [Parameter] public string Runtime { get; set; } = default!;
 }

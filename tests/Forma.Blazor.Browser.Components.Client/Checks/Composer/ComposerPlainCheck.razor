@@ -1,0 +1,19 @@
+@page "/{Runtime}/composer-plain"
+@using Forma.Blazor.Components.Composer
+@using Forma.Framework.Composer.Documents
+@using Forma.Framework.Composer.Plugins
+
+@* A composer on plain text with a plugin of the host's own showing the selection, its document written where the check reads it. *@
+<FormaComposer Id="check" @bind-Value="_document" Plugins="Definition" />
+<output id="result">@(_document?.Content)</output>
+
+@code {
+    private static readonly ComposerDefinition Definition = ComposerDefinition.Create(composer => composer
+        .AddPlainTextEditor(editor => editor.TryAddDefaultFeatures())
+        .TryAddDefaultPlugins()
+        .AddFeaturePlugin<CheckSelectionPlugin>());
+
+    private ComposerDocument? _document = new(ComposerDocumentFormat.PlainText, string.Empty);
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

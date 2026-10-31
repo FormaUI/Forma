@@ -2,13 +2,13 @@
 
 ## Current state
 
-**Forma has 65 implemented components and 8 in progress. It runs under Interactive Server, WebAssembly and Auto, every component's main interaction checked in each.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
+**Forma has 65 implemented components and 8 in progress. It runs under Interactive Server, WebAssembly and Auto, every call a component makes to a script and every call back checked in each.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
 
 | Measure | Now |
 | --- | --- |
 | Components | 65 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview`, packed locally and unpublished |
-| Render modes | Interactive Server, WebAssembly and Auto implemented: every component's main interaction checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says |
+| Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says |
 
 The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto. It passes locally on Windows and in CI on Linux and Windows.
 
@@ -97,7 +97,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | Feature | Contract | State | Since |
 | --- | --- | --- | --- |
 | The server half, `AddFormaUIServer` and `FormaPageHead` | [`Forma.Blazor.Server`](../src/Forma.Blazor.Server/README.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented: every component's main interaction checked under WebAssembly and Auto, each runtime following the page's culture coordinator, an independent client culture and a standalone app's page included, a client reading its host's own strings, and the README's setup an example host for each arrangement | [October 2026](../FEATURE-HISTORY.md#2026-10) |
+| The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented: every call a component makes to a script and every call back checked under WebAssembly and Auto, each runtime following the page's culture coordinator, an independent client culture and a standalone app's page included, a client reading its host's own strings, and the README's setup an example host for each arrangement | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, Forma's analyzer keeping each type crossing the interop serializable and its generator keeping those types' members with their library | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Hybrid | [WebAssembly and Hybrid](culture-design.md#webassembly-and-hybrid) | [Deferred](#deferred) | — |
 

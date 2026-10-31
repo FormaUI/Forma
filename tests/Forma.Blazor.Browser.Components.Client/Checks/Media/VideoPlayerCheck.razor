@@ -1,7 +1,9 @@
 @page "/{Runtime}/video-player"
 
-@* A video the host's own provider embeds as a hosting service would, held behind its play control until it is pressed. *@
+@* A video the host's own provider embeds as a hosting service would, held behind its play control until it is pressed; a file the browser plays itself, starting muted; and a service's markup, whose script loads once it is played. *@
 <FormaVideoPlayer Id="check" Source="check:video" Title="Check video" />
+<FormaVideoPlayer Id="native" Source="media/clip.webm" Title="Clip" Autoplay="true" DeferLoading="false" />
+<FormaVideoPlayer Id="markup" Source="check:markup" Title="Post" />
 
 @code {
     [Parameter] public string Runtime { get; set; } = default!;

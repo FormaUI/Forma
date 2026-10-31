@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
-/// <summary>The bars' main interactions, in every runtime.</summary>
+/// <summary>The bars' interactions, in every runtime.</summary>
 public sealed class BarsTests
 {
     public sealed class SearchToolbar(BrowserHost host)
@@ -99,6 +99,33 @@ public sealed class BarsTests
             // Assert
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("bold underline");
             await Assertions.Expect(underline).ToBeFocusedAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_run_the_command_its_shortcut_names_in_its_target_until_it_is_hidden(string runtime)
+        {
+            // Arrange — Bold's shortcut run in the text area, then the toolbar's items swapped for Italic's
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "toolbar");
+            await using var _ = context;
+            var editor = page.Locator("#editor");
+            var result = page.Locator("#shortcut-result");
+            await ComponentChecks.WaitForInputRouteAsync(page, "#editor", "toolbar.bold");
+            await editor.PressAsync("Control+b");
+            await Assertions.Expect(result).ToHaveTextAsync("bold");
+            await page.Locator("#swap").ClickAsync();
+            await ComponentChecks.WaitForInputRouteAsync(page, "#editor", "toolbar.italic");
+
+            // Act
+            await editor.PressAsync("Control+i");
+            await editor.PressAsync("Control+b");
+            await Assertions.Expect(result).ToHaveTextAsync("bold italic");
+            await page.Locator("#hide").ClickAsync();
+            await page.WaitForFunctionAsync("() => window.formaInputRouter.describe(document.querySelector('#editor')) === null");
+            await editor.PressAsync("Control+i");
+
+            // Assert
+            await Assertions.Expect(result).ToHaveTextAsync("bold italic");
         }
     }
 }

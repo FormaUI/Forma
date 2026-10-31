@@ -1,0 +1,18 @@
+@page "/{Runtime}/composer-plugins"
+@using Forma.Blazor.Components.Composer
+@using Forma.Framework.Composer.Documents
+@using Forma.Framework.Composer.Plugins
+
+@* A composer over two paragraphs with a plugin of the host's own beside the defaults, its document written where the check reads it. *@
+<FormaComposer Id="check" @bind-Value="_document" Plugins="Definition" />
+<output id="result">@(_document?.Content)</output>
+
+@code {
+    private static readonly ComposerDefinition Definition = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor.TryAddDefaultFeatures().AddFeaturePlugin<CheckComposerPlugin>())
+        .TryAddDefaultPlugins());
+
+    private ComposerDocument? _document = new(ComposerDocumentFormat.Html, "<p>First</p><p>Second</p>");
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

@@ -1,13 +1,18 @@
 @page "/{Runtime}/file-viewer"
 
-@* A viewer on the first of two documents the host resolves to markup, the address it steps to written where the check reads it. *@
+@* A viewer on the first of two documents the host resolves to markup, the address it steps to written where the check reads it, and a viewer on an image in a box of its own, whose wheel zoom a button turns off. *@
 <FormaFileViewer Id="check" Source="@_source" Siblings="Documents" OnNavigate="@(source => _source = source)" />
 <output id="result">@_source</output>
+<div style="inline-size: 480px; block-size: 360px">
+    <FormaFileViewer Id="image" Source="images/check.svg" ZoomOnWheelGesture="_zoomsOnWheel" />
+</div>
+<FormaButton Id="wheel-off" OnClick="@(() => _zoomsOnWheel = false)">Wheel Off</FormaButton>
 
 @code {
     private static readonly string[] Documents = ["check:notes.md", "check:todo.md"];
 
     private string _source = Documents[0];
+    private bool _zoomsOnWheel = true;
 
     [Parameter] public string Runtime { get; set; } = default!;
 }

@@ -6,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-builder.AddFormaUIServer();
 builder.Services.AddCheckedComponents();
+builder.AddFormaUIServer(options => options.InputRouting = CheckServices.InputRouting);
 
 var app = builder.Build();
 app.UseAntiforgery();

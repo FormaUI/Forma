@@ -1,9 +1,14 @@
 @page "/{Runtime}/toolbar"
 @using Forma.Framework.Toolbar
 
-@* A formatting toolbar whose commands, pressed or keyed, show in order where the check reads them. *@
+@* A formatting toolbar whose commands, pressed or keyed, show in order where the check reads them, and one whose shortcuts reach a text area, which buttons swap and hide. *@
 <FormaToolbar Id="toolbar" Label="Formatting" Items="Items" OnCommand="Record" />
 <output id="result">@(string.Join(' ', _commands))</output>
+<textarea id="editor" aria-label="Editor" @ref="_editor"></textarea>
+<FormaToolbar Id="shortcuts" Label="Shortcuts" Items="_shortcutItems" Target="_target" Hidden="_isHidden" OnCommand="RecordShortcut" />
+<FormaButton Id="swap" OnClick="@(() => _shortcutItems = ItalicShortcuts)">Swap</FormaButton>
+<FormaButton Id="hide" OnClick="@(() => _isHidden = true)">Hide</FormaButton>
+<output id="shortcut-result">@(string.Join(' ', _shortcutCommands))</output>
 
 @code {
     private static readonly IReadOnlyList<ToolbarItem> Items =
@@ -13,10 +18,34 @@
         new ToolbarCommand { Id = "underline", Title = "Underline", Command = "underline" },
     ];
 
+    private static readonly IReadOnlyList<ToolbarItem> BoldShortcuts =
+        [new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" }];
+
+    private static readonly IReadOnlyList<ToolbarItem> ItalicShortcuts =
+        [new ToolbarCommand { Id = "italic", Title = "Italic", Command = "italic", ShortcutAriaKeys = "Control+I" }];
+
     private readonly List<string> _commands = [];
+    private readonly List<string> _shortcutCommands = [];
+    private IReadOnlyList<ToolbarItem> _shortcutItems = BoldShortcuts;
+    private ElementReference _editor;
+    private ElementReference? _target;
+    private bool _isHidden;
 
     [Parameter] public string Runtime { get; set; } = default!;
 
+    // The text area is the toolbar's target once it has rendered.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _target = _editor;
+            StateHasChanged();
+        }
+    }
+
     private void Record(string command)
         => _commands.Add(command);
+
+    private void RecordShortcut(string command)
+        => _shortcutCommands.Add(command);
 }

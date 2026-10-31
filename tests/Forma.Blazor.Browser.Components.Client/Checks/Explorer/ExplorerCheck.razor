@@ -1,11 +1,13 @@
 @page "/{Runtime}/explorer"
 @using Forma.Blazor.Components.Explorer
 @using Forma.Framework.Catalog
+@using Forma.Framework.Catalog.Requests
 @using Forma.Framework.Resources
 
-@* Two folders and a file in each, every file listed until a folder opens, the folder open named where the check reads it. *@
-<FormaExplorer Id="check" Items="_items" Folders="Folders" CurrentFolder="_currentFolder" OnFolderChanged="OpenFolder" />
+@* Two folders and a file in each, every file listed until a folder opens, the folder open and what is dropped on a folder named where the check reads them. *@
+<FormaExplorer Id="check" Items="_items" Folders="Folders" CurrentFolder="_currentFolder" OnFolderChanged="OpenFolder" OnDrop="Drop" />
 <output id="result">@(_currentFolder?.Name)</output>
+<output id="dropped">@_dropped</output>
 
 @code {
     private static readonly IReadOnlyList<ICatalogItem> Folders = CatalogItem.ForAll(
@@ -22,6 +24,7 @@
 
     private IReadOnlyList<ICatalogItem> _items = GetItems(null);
     private ICatalogFolderItem? _currentFolder;
+    private string? _dropped;
 
     [Parameter] public string Runtime { get; set; } = default!;
 
@@ -30,6 +33,9 @@
         _currentFolder = folder;
         _items = GetItems(folder?.Key);
     }
+
+    private void Drop(CatalogDropRequest request)
+        => _dropped = $"{string.Join(", ", request.Items.Select(item => item.Name))} to {request.TargetFolder?.Name ?? "All Media"}";
 
     private static IReadOnlyList<ICatalogItem> GetItems(string? folderKey)
         => CatalogItem.ForAll(FolderFiles.Where(file => folderKey is null || file.FolderKey == folderKey).Select(file => file.Resource));

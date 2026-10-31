@@ -1,7 +1,9 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
-/// <summary>The inputs' main interactions, in every runtime.</summary>
-public sealed class InputsTests
+using System.Text.RegularExpressions;
+
+/// <summary>The inputs' interactions, in every runtime.</summary>
+public sealed partial class InputsTests
 {
     public sealed class CheckBox(BrowserHost host)
     {
@@ -24,6 +26,25 @@ public sealed class InputsTests
             // Assert
             await Assertions.Expect(result).ToHaveTextAsync("False");
             await Assertions.Expect(checkBox).Not.ToBeCheckedAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_show_the_mixed_state_its_host_sets_and_clear_it(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "check-box");
+            await using var _ = context;
+            var box = page.Locator("#check");
+            var mix = page.Locator("#mix");
+
+            // Act
+            await mix.ClickAsync();
+
+            // Assert
+            await Assertions.Expect(box).ToHaveJSPropertyAsync("indeterminate", true);
+            await mix.ClickAsync();
+            await Assertions.Expect(box).ToHaveJSPropertyAsync("indeterminate", false);
         }
     }
 
@@ -68,6 +89,18 @@ public sealed class InputsTests
             // Assert
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Ada Lovelace");
             await Assertions.Expect(textBox).ToHaveValueAsync("Ada Lovelace");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_hold_its_label_above_a_value_the_browser_fills_until_the_browser_clears_it(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-box");
+            await using var _ = context;
+
+            // Act and assert
+            await ExpectAutofillAsync(page, page.Locator("#check"));
         }
     }
 
@@ -116,6 +149,18 @@ public sealed class InputsTests
             await Assertions.Expect(passwordBox).ToHaveAttributeAsync("type", "text");
             await Assertions.Expect(passwordBox).ToHaveValueAsync("Tr0ub4dor&3");
             await Assertions.Expect(toggle).ToHaveAttributeAsync("aria-pressed", "true");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_hold_its_label_above_a_value_the_browser_fills_until_the_browser_clears_it(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "password-box");
+            await using var _ = context;
+
+            // Act and assert
+            await ExpectAutofillAsync(page, page.Locator("#check"));
         }
     }
 
@@ -241,4 +286,22 @@ public sealed class InputsTests
             await Assertions.Expect(hexInput).ToHaveValueAsync("#336699");
         }
     }
+
+    // A headless browser fills no field, so the check starts the animations the stylesheet runs as one is filled and cleared.
+    private static async Task ExpectAutofillAsync(IPage page, ILocator input)
+    {
+        // The stylesheet names its animations as the field's script reads them.
+        await Assertions.Expect(input).ToHaveCSSAsync("animation-name", "forma-autofill-cancel");
+        Assert.True(await page.EvaluateAsync<bool>("() => [...document.styleSheets].some(sheet => [...sheet.cssRules].some(rule => rule instanceof CSSKeyframesRule && rule.name === 'forma-autofill-start'))"));
+
+        // The script attaches in its own time, so the fill starts again until it answers.
+        await page.WaitForFunctionAsync("input => { input.dispatchEvent(new AnimationEvent('animationstart', { animationName: 'forma-autofill-start' })); return input.classList.contains('has-value'); }", await input.ElementHandleAsync());
+        await Assertions.Expect(input).ToHaveClassAsync(HasValuePattern());
+
+        await input.EvaluateAsync("input => input.dispatchEvent(new AnimationEvent('animationstart', { animationName: 'forma-autofill-cancel' }))");
+        await Assertions.Expect(input).Not.ToHaveClassAsync(HasValuePattern());
+    }
+
+    [GeneratedRegex(@"\bhas-value\b")]
+    private static partial Regex HasValuePattern();
 }

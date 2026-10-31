@@ -1,9 +1,10 @@
 @page "/{Runtime}/date-time-picker"
 
-@* A date and time picker bound in a form at 14 March 2026 09:30, the value entered shown where the check reads it. *@
+@* A date and time picker bound in a form at 14 March 2026 09:30, beside a button outside it, the value entered shown where the check reads it. *@
 <EditForm Model="_model">
     <FormaDateTimePicker TValue="DateTime" Id="check" @bind-Value="_model.Start" Label="Start" />
 </EditForm>
+<FormaButton Id="outside">Outside</FormaButton>
 <output id="result">@(_model.Start.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture))</output>
 
 @code {

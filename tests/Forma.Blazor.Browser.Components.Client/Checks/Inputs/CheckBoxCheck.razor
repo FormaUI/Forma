@@ -1,13 +1,15 @@
 @page "/{Runtime}/check-box"
 
-@* A checkbox bound in a form, its Boolean shown where the check reads it. *@
+@* A checkbox bound in a form, which a button shows mixed, its Boolean shown where the check reads it. *@
 <EditForm Model="_model">
-    <FormaCheckBox Id="check" @bind-Value="_model.IsAccepted">Accept the terms</FormaCheckBox>
+    <FormaCheckBox Id="check" @bind-Value="_model.IsAccepted" Indeterminate="_isMixed">Accept the terms</FormaCheckBox>
 </EditForm>
+<FormaButton Id="mix" OnClick="@(() => _isMixed = !_isMixed)">Mix</FormaButton>
 <output id="result">@_model.IsAccepted</output>
 
 @code {
     private readonly Entry _model = new();
+    private bool _isMixed;
 
     [Parameter] public string Runtime { get; set; } = default!;
 

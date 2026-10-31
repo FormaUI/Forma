@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
-/// <summary>The windows' main interactions, in every runtime.</summary>
+/// <summary>The windows' interactions, in every runtime.</summary>
 public sealed class WindowsTests
 {
     public sealed class Window(BrowserHost host)
@@ -36,6 +36,51 @@ public sealed class WindowsTests
             await Assertions.Expect(alpha).ToHaveCountAsync(0);
             await Assertions.Expect(result).ToHaveTextAsync("Beta");
             await Assertions.Expect(beta).ToContainClassAsync("is-active");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_take_the_focus_as_it_opens_and_move_by_a_drag_of_its_title(string runtime)
+        {
+            // Arrange — Alpha opened, its script handing it the focus
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "window");
+            await using var _ = context;
+            var alpha = page.Locator("#alpha");
+            await page.Locator("#open-alpha").ClickAsync();
+            await page.WaitForFunctionAsync("() => document.getElementById('alpha')?.contains(document.activeElement) === true");
+            var title = (await alpha.Locator(".forma-frame-drag-region").BoundingBoxAsync())!;
+            var x = title.X + (title.Width / 2);
+            var y = title.Y + (title.Height / 2);
+
+            // Act
+            await page.Mouse.MoveAsync(x, y);
+            await page.Mouse.DownAsync();
+            await page.Mouse.MoveAsync(x + 60, y + 40, new() { Steps = 4 });
+            await page.Mouse.UpAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#placement")).ToHaveTextAsync("100,160,360,240");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stand_over_a_scrim_and_hold_the_focus_within_itself_while_modal(string runtime)
+        {
+            // Arrange — the modal window opened on its scrim, the focus on its last control
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "window");
+            await using var _ = context;
+            var modal = page.Locator("#modal");
+            await page.Locator("#open-modal").ClickAsync();
+            await Assertions.Expect(modal).ToHaveAttributeAsync("aria-modal", "true");
+            await page.WaitForFunctionAsync("() => document.querySelector('.forma-window-scrim')?.matches(':popover-open') === true");
+            await page.WaitForFunctionAsync("() => document.getElementById('modal')?.contains(document.activeElement) === true");
+            await page.Locator("#modal-last").FocusAsync();
+
+            // Act
+            await page.Keyboard.PressAsync("Tab");
+
+            // Assert
+            await page.WaitForFunctionAsync("() => document.getElementById('modal')?.contains(document.activeElement) === true");
         }
     }
 

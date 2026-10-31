@@ -2,7 +2,7 @@ namespace Forma.Blazor.Browser.Tests.Components;
 
 using static Forma.Blazor.Browser.Tests.ComponentChecks;
 
-/// <summary>The feedback components' main interactions, in every runtime.</summary>
+/// <summary>The feedback components' interactions, in every runtime.</summary>
 public sealed class FeedbackTests
 {
     public sealed class CapacityIndicator(BrowserHost host)
@@ -88,6 +88,32 @@ public sealed class FeedbackTests
             await Assertions.Expect(dialog).ToBeHiddenAsync();
             await Assertions.Expect(result).ToHaveTextAsync("2");
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_focus_its_body_as_it_opens_and_close_on_a_close_request_and_on_a_press_on_its_scrim(string runtime)
+        {
+            // Arrange — the dialog opened on the field in its body and closed once by the platform's own request, as a back gesture makes it
+            var (context, page) = await OpenAsync(host, runtime, "dialog");
+            await using var _ = context;
+            var dialog = page.Locator("#dialog");
+            var result = page.Locator("#result");
+            await page.Locator("#open").ClickAsync();
+            await Assertions.Expect(page.Locator("#note")).ToBeFocusedAsync();
+            await WaitForLayerAsync(dialog);
+            await dialog.EvaluateAsync("dialog => dialog.requestClose()");
+            await Assertions.Expect(dialog).ToBeHiddenAsync();
+            await Assertions.Expect(result).ToHaveTextAsync("1");
+            await page.Locator("#open").ClickAsync();
+            await Assertions.Expect(page.Locator("#note")).ToBeFocusedAsync();
+
+            // Act
+            await page.Mouse.ClickAsync(4, 4);
+
+            // Assert
+            await Assertions.Expect(dialog).ToBeHiddenAsync();
+            await Assertions.Expect(result).ToHaveTextAsync("2");
+        }
     }
 
     public sealed class Popover(BrowserHost host)
@@ -119,6 +145,27 @@ public sealed class FeedbackTests
             // Assert
             await Assertions.Expect(filters).ToBeHiddenAsync();
             await Assertions.Expect(result).ToHaveTextAsync("Filters closed");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_open_below_its_anchor_at_the_anchor_s_start(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "popover");
+            await using var _ = context;
+            var details = page.Locator("#details");
+            var trigger = page.Locator("#details-trigger");
+
+            // Act
+            await trigger.ClickAsync();
+            await WaitForLayerAsync(details);
+
+            // Assert — four pixels below the anchor, its start edge held four pixels within the viewport
+            var anchor = (await page.Locator("span", new() { Has = trigger }).BoundingBoxAsync())!;
+            var placed = (await details.BoundingBoxAsync())!;
+            Assert.Equal(anchor.Y + anchor.Height + 4, placed.Y, 1.0);
+            Assert.Equal(Math.Max(4, anchor.X), placed.X, 1.0);
         }
     }
 

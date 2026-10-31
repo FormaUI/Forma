@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
-/// <summary>The media components' main interactions, in every runtime.</summary>
+/// <summary>The media components' interactions, in every runtime.</summary>
 public sealed class MediaTests
 {
     public sealed class VideoPlayer(BrowserHost host)
@@ -24,6 +24,39 @@ public sealed class MediaTests
             await Assertions.Expect(play).ToHaveCountAsync(0);
             await Assertions.Expect(frame).ToHaveAttributeAsync("title", "Check video");
             await Assertions.Expect(page.FrameLocator("#check iframe").Locator("body")).ToHaveTextAsync("ready");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_start_a_file_it_autoplays_muted(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "video-player");
+            await using var _ = context;
+
+            // Act
+            var video = page.Locator("#native video");
+
+            // Assert — a browser starts a video on its own only while it plays silently
+            await Assertions.Expect(video).ToHaveJSPropertyAsync("muted", true);
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_load_a_service_s_script_for_its_markup_once_played(string runtime)
+        {
+            // Arrange — the service's script, served by the check, counting the times it loads
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "video-player");
+            await using var _ = context;
+            await context.RouteAsync("**/_check/embed.js", route => route.FulfillAsync(new() { ContentType = "text/javascript", Body = "window.formaEmbedLoads = (window.formaEmbedLoads ?? 0) + 1;" }));
+            var play = page.GetByRole(AriaRole.Button, new() { Name = "Play Post", Exact = true });
+
+            // Act
+            await play.ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#markup .check-post")).ToHaveTextAsync("A post");
+            await page.WaitForFunctionAsync("() => window.formaEmbedLoads === 1");
         }
     }
 }

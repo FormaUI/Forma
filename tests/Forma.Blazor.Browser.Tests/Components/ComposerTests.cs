@@ -1,12 +1,17 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
+using System.Text.RegularExpressions;
+
 using static Forma.Blazor.Browser.Tests.ComponentChecks;
 
-/// <summary>The composer's main interaction, in every runtime.</summary>
+/// <summary>The composer's interactions, in every runtime.</summary>
 public sealed class ComposerTests
 {
     public sealed class Composer(BrowserHost host)
     {
+        // The print a document's frame makes, recorded with what it was given to print.
+        private const string RecordingFramePrint = "const contentWindow = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'contentWindow'); Object.defineProperty(HTMLIFrameElement.prototype, 'contentWindow', { configurable: true, get() { const framed = contentWindow.get.call(this); if (framed) { const frame = this; framed.print = () => { window.formaPrinted = { title: frame.contentDocument.title, html: frame.contentDocument.body.innerHTML }; }; } return framed; } });";
+
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_write_the_text_typed_and_made_bold_into_the_bound_document(string runtime)
@@ -46,7 +51,6 @@ public sealed class ComposerTests
             await page.Locator("#check .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Insert Link", Exact = true }).ClickAsync();
             var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Link" });
 
-
             // Act
             await dialog.GetByLabel("URL").FillAsync("https://example.com/docs");
             await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
@@ -55,5 +59,425 @@ public sealed class ComposerTests
             await Assertions.Expect(canvas.Locator("a[href='https://example.com/docs']")).ToHaveTextAsync("Docs");
             await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("href=\"https://example.com/docs\"");
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_reopen_a_link_on_a_double_click_with_its_address_text_and_tab(string runtime)
+        {
+            // Arrange — the text linked to open in a new tab
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await SelectTypedAsync(page, canvas, "Docs");
+            await GetCommand(page, "Insert Link").ClickAsync();
+            var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Link" });
+            await dialog.GetByLabel("URL").FillAsync("https://example.com/docs");
+            await dialog.GetByText("Open in New Tab").ClickAsync();
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+            await Assertions.Expect(canvas.Locator("a[target=_blank]")).ToHaveTextAsync("Docs");
+
+            // Act
+            await canvas.Locator("a").DblClickAsync();
+
+            // Assert
+            await Assertions.Expect(dialog.GetByLabel("URL")).ToHaveValueAsync("https://example.com/docs");
+            await Assertions.Expect(dialog.GetByLabel("Name", new() { Exact = true })).ToHaveValueAsync("Docs");
+            await Assertions.Expect(dialog.GetByRole(AriaRole.Checkbox, new() { Name = "Open in New Tab" })).ToBeCheckedAsync();
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+            await Assertions.Expect(canvas.Locator("a")).ToHaveCountAsync(1);
+            await Assertions.Expect(canvas.Locator("a[target=_blank]")).ToHaveTextAsync("Docs");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_reopen_an_anchor_on_a_double_click_under_its_own_name(string runtime)
+        {
+            // Arrange — the text made an anchor named apart from it
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await SelectTypedAsync(page, canvas, "Introduction");
+            await GetCommand(page, "Insert Anchor").ClickAsync();
+            var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Anchor" });
+            await dialog.GetByLabel("Anchor Name").FillAsync("intro");
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+            await Assertions.Expect(canvas.Locator("a[name=intro]")).ToHaveTextAsync("Introduction");
+
+            // Act
+            await canvas.Locator("a[name=intro]").DblClickAsync();
+
+            // Assert
+            await Assertions.Expect(dialog.GetByLabel("Anchor Name")).ToHaveValueAsync("intro");
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+            await Assertions.Expect(canvas.Locator("a")).ToHaveCountAsync(1);
+            await Assertions.Expect(canvas.Locator("a[name=intro]")).ToHaveTextAsync("Introduction");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_report_text_typed_and_take_back_a_command_on_undo(string runtime)
+        {
+            // Arrange — the text typed reaches the document with no command, then made bold
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            var result = page.Locator("#result");
+            await canvas.PressSequentiallyAsync("Hello");
+            await Assertions.Expect(result).ToContainTextAsync("Hello");
+            await canvas.PressAsync("ControlOrMeta+A");
+            await page.WaitForFunctionAsync("() => getSelection().toString() === 'Hello'");
+            await GetCommand(page, "Bold").ClickAsync();
+            await Assertions.Expect(canvas.Locator("b")).ToHaveTextAsync("Hello");
+
+            // Act
+            await GetCommand(page, "Undo").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(canvas.Locator("b")).ToHaveCountAsync(0);
+            await Assertions.Expect(canvas).ToHaveTextAsync("Hello");
+            await Assertions.Expect(result).Not.ToContainTextAsync("<b>");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_set_the_block_style_chosen_from_its_menu(string runtime)
+        {
+            // Arrange
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await canvas.PressSequentiallyAsync("Title");
+
+            // Act
+            await GetCommand(page, "Block Style").ClickAsync();
+            await GetOption(page, "Heading 1").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(canvas.Locator("h1")).ToHaveTextAsync("Title");
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("<h1>Title</h1>");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_insert_a_table_with_the_caption_given(string runtime)
+        {
+            // Arrange
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await canvas.ClickAsync();
+            await GetCommand(page, "Table").ClickAsync();
+            await GetOption(page, "Insert Table...").ClickAsync();
+            var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Table" });
+            await dialog.GetByLabel("Caption").FillAsync("Results");
+
+            // Act
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+
+            // Assert
+            await Assertions.Expect(canvas.Locator("table caption")).ToHaveTextAsync("Results");
+            await Assertions.Expect(canvas.Locator("table thead th").First).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("<caption>Results</caption>");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_insert_an_image_and_reopen_it_whole_on_a_double_click(string runtime)
+        {
+            // Arrange — an image inserted with its text and caption
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await canvas.ClickAsync();
+            await GetCommand(page, "Insert Image").ClickAsync();
+            var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Image" });
+            await dialog.GetByLabel("Source").FillAsync("images/check.svg");
+            await dialog.GetByLabel("Alt Text").FillAsync("A square");
+            await dialog.GetByLabel("Caption").FillAsync("The check's square");
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+            await Assertions.Expect(canvas.Locator("figure.forma-composer-image figcaption")).ToHaveTextAsync("The check's square");
+
+            // Act
+            await canvas.Locator("figure.forma-composer-image img").DblClickAsync();
+
+            // Assert
+            var edit = page.GetByRole(AriaRole.Dialog, new() { Name = "Edit Image" });
+            await Assertions.Expect(edit.GetByLabel("Source")).ToHaveValueAsync("images/check.svg");
+            await Assertions.Expect(edit.GetByLabel("Alt Text")).ToHaveValueAsync("A square");
+            await edit.GetByLabel("Alt Text").FillAsync("A blue square");
+            await edit.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+            await Assertions.Expect(canvas.Locator("figure.forma-composer-image")).ToHaveCountAsync(1);
+            await Assertions.Expect(canvas.Locator("figure.forma-composer-image img")).ToHaveAttributeAsync("alt", "A blue square");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_insert_a_video_and_reopen_it_on_a_double_click(string runtime)
+        {
+            // Arrange
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await canvas.ClickAsync();
+            await GetCommand(page, "Insert Video").ClickAsync();
+            var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Video" });
+            await dialog.GetByLabel("Video URL").FillAsync("https://example.com/clip.mp4");
+            await dialog.GetByLabel("Title").FillAsync("Clip");
+            await dialog.GetByText("Autoplay").ClickAsync();
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+            var video = canvas.Locator(".forma-composer-video");
+            await Assertions.Expect(video).ToHaveAttributeAsync("data-video-url", "https://example.com/clip.mp4");
+            await Assertions.Expect(video).ToHaveAttributeAsync("data-autoplay", "true");
+
+            // Act
+            await video.DblClickAsync();
+
+            // Assert
+            var edit = page.GetByRole(AriaRole.Dialog, new() { Name = "Edit Video" });
+            await Assertions.Expect(edit.GetByLabel("Video URL")).ToHaveValueAsync("https://example.com/clip.mp4");
+            await Assertions.Expect(edit.GetByLabel("Title")).ToHaveValueAsync("Clip");
+            await Assertions.Expect(edit.GetByRole(AriaRole.Checkbox, new() { Name = "Autoplay" })).ToBeCheckedAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_insert_an_embed_from_its_plugin_commands_and_reopen_it_on_a_double_click(string runtime)
+        {
+            // Arrange
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await canvas.ClickAsync();
+            await GetCommand(page, "Plugin Commands").ClickAsync();
+            await GetCommand(page, "Insert Embed").ClickAsync();
+            var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Embed" });
+            await dialog.GetByLabel("Embed Type").FillAsync("poll");
+            await dialog.GetByLabel("Identifier").FillAsync("42");
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+            var embed = canvas.Locator(".forma-composer-embed");
+            await Assertions.Expect(embed).ToHaveAttributeAsync("data-embed-id", "42");
+
+            // Act
+            await embed.DblClickAsync();
+
+            // Assert
+            var edit = page.GetByRole(AriaRole.Dialog, new() { Name = "Edit Embed" });
+            await Assertions.Expect(edit.GetByLabel("Embed Type")).ToHaveValueAsync("poll");
+            await Assertions.Expect(edit.GetByLabel("Identifier")).ToHaveValueAsync("42");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_show_its_selection_bar_by_a_selection_and_run_its_commands_there(string runtime)
+        {
+            // Arrange
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            var bar = page.Locator("#check .forma-composer-selection-bar");
+
+            // Act
+            await SelectTypedAsync(page, canvas, "Hello");
+
+            // Assert
+            await Assertions.Expect(bar).ToBeVisibleAsync();
+            await bar.GetByRole(AriaRole.Button, new() { Name = "Italic", Exact = true }).ClickAsync();
+            await Assertions.Expect(canvas.Locator("i")).ToHaveTextAsync("Hello");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_print_and_export_the_document_from_its_preview(string runtime)
+        {
+            // Arrange — the document's printed frame recorded rather than shown to a headless printer
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime, prepare: page => page.AddInitScriptAsync(RecordingFramePrint));
+            await using var _ = context;
+            await SelectTypedAsync(page, canvas, "Hello");
+            await GetCommand(page, "Bold").ClickAsync();
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("<b>Hello</b>");
+            await page.Locator("#check").GetByRole(AriaRole.Tab, new() { Name = "Preview", Exact = true }).ClickAsync();
+
+            // Act
+            await GetCommand(page, "Print").ClickAsync();
+            var download = await page.RunAndWaitForDownloadAsync(() => GetCommand(page, "Export HTML").ClickAsync());
+
+            // Assert
+            await page.WaitForFunctionAsync("() => window.formaPrinted?.html.includes('<b>Hello</b>') === true && window.formaPrinted.title === 'Document Preview'");
+            Assert.Equal("document.html", download.SuggestedFilename);
+            Assert.Contains("<b>Hello</b>", await ReadAsync(download), StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_copy_and_download_the_document_s_source(string runtime)
+        {
+            // Arrange
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"]);
+            await SelectTypedAsync(page, canvas, "Hello");
+            await GetCommand(page, "Bold").ClickAsync();
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("<b>Hello</b>");
+            await page.Locator("#check").GetByRole(AriaRole.Tab, new() { Name = "Source", Exact = true }).ClickAsync();
+
+            // Act
+            await GetCommand(page, "Copy Source").ClickAsync();
+            var download = await page.RunAndWaitForDownloadAsync(() => GetCommand(page, "Download Source").ClickAsync());
+
+            // Assert
+            await page.WaitForFunctionAsync("async () => (await navigator.clipboard.readText()).includes('<b>Hello</b>')");
+            Assert.Equal("document.html", download.SuggestedFilename);
+            Assert.Contains("<b>Hello</b>", await ReadAsync(download), StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_answer_its_own_shortcut_from_its_toolbar_and_move_tab_from_the_canvas_to_its_commands(string runtime)
+        {
+            // Arrange — the focus in the canvas
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            await using var _ = context;
+            await WaitForInputRouteAsync(page, "#check", "view.shortcuts");
+            await WaitForInputRouteAsync(page, "#check", "focus.next");
+            await canvas.FocusAsync();
+
+            // Act
+            await page.Keyboard.PressAsync("Tab");
+            await page.WaitForFunctionAsync("() => document.getElementById('check').contains(document.activeElement) && !document.activeElement.closest('.forma-composer-canvas')");
+            await page.Keyboard.PressAsync("ControlOrMeta+/");
+
+            // Assert
+            await Assertions.Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Keyboard Shortcuts" })).ToBeVisibleAsync();
+        }
+    }
+
+    public sealed class ComposerPlugins(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_load_the_module_and_the_stylesheet_a_host_s_plugin_declares(string runtime)
+        {
+            // Arrange
+            var (context, page, _) = await OpenComposerAsync(host, runtime, "composer-plugins");
+            await using var __ = context;
+
+            // Act
+            var stylesheets = page.Locator("link[rel=stylesheet][href^='data:text/css']");
+
+            // Assert
+            await page.WaitForFunctionAsync("() => window.formaCheckModule === 1");
+            await Assertions.Expect(stylesheets).ToHaveCountAsync(1);
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stand_a_plugin_s_marker_beside_its_block_and_bring_the_caret_there_when_pressed(string runtime)
+        {
+            // Arrange — the host's plugin marks the second paragraph
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime, "composer-plugins");
+            await using var _ = context;
+            await GetCommand(page, "Plugin Commands").ClickAsync();
+            await GetCommand(page, "Mark Second").ClickAsync();
+            var marker = page.Locator("#check .forma-composer-rich-text-gutter [data-block='1']");
+            await Assertions.Expect(marker).ToBeVisibleAsync();
+
+            // Act
+            await marker.GetByRole(AriaRole.Button).ClickAsync();
+            await page.WaitForFunctionAsync("() => { const selection = getSelection(); const second = document.querySelector('#check .forma-composer-rich-text-canvas').children[1]; return selection.isCollapsed && second.contains(selection.anchorNode); }");
+            await page.Keyboard.TypeAsync("X");
+
+            // Assert
+            await Assertions.Expect(canvas.Locator("p").Nth(1)).ToHaveTextAsync(new Regex("X"));
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("Second");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_insert_what_a_host_s_plugin_hands_it(string runtime)
+        {
+            // Arrange
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime, "composer-plugins");
+            await using var _ = context;
+            await canvas.ClickAsync();
+            await GetCommand(page, "Plugin Commands").ClickAsync();
+
+            // Act
+            await GetCommand(page, "Insert Picture").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(canvas.Locator("img.forma-composer-image[src='images/check.svg']")).ToHaveAttributeAsync("alt", "check.svg");
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("images/check.svg");
+        }
+    }
+
+    public sealed class ComposerPlain(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_bind_text_typed_and_take_it_back_on_undo(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "composer-plain");
+            await using var _ = context;
+            var editor = page.Locator("#check textarea");
+            await WaitForInputRouteAsync(page, "#check textarea", "composer.undo");
+            await editor.PressSequentiallyAsync("abc");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("abc");
+
+            // Act
+            await editor.PressAsync("ControlOrMeta+Z");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync(string.Empty);
+            await Assertions.Expect(editor).ToHaveValueAsync(string.Empty);
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_report_the_selection_made_in_its_text(string runtime)
+        {
+            // Arrange — the first word selected by the keys
+            var (context, page) = await OpenAsync(host, runtime, "composer-plain");
+            await using var _ = context;
+            var editor = page.Locator("#check textarea");
+            await editor.FillAsync("Hello world");
+            await editor.PressAsync("Home");
+            for (var step = 0; step < 5; step++)
+            {
+                await editor.PressAsync("Shift+ArrowRight");
+            }
+
+            await GetCommand(page, "Plugin Commands").ClickAsync();
+
+            // Act — the editor reads the selection in its own time, so the readout is asked for until it has
+            await page.WaitForFunctionAsync(
+                "() => { if ([...document.querySelectorAll('#check .forma-toolbar-readout')].some(readout => readout.textContent.trim() === '0-5')) { return true; } document.querySelector('#check button[aria-label=\"Show Selection\"]')?.click(); return false; }",
+                null,
+                new() { PollingInterval = 250 });
+
+            // Assert
+            await Assertions.Expect(page.Locator("#check .forma-toolbar-readout", new() { HasText = "0-5" })).ToHaveCountAsync(1);
+        }
+    }
+
+    private static async Task<(IBrowserContext Context, IPage Page, ILocator Canvas)> OpenComposerAsync(BrowserHost host, string runtime, string path = "composer", Func<IPage, Task>? prepare = null)
+    {
+        var (context, page) = await OpenAsync(host, runtime, path, prepare);
+        var canvas = page.Locator("#check .forma-composer-rich-text-canvas");
+        await WaitForInputScopeAsync(page, "#check .forma-composer-rich-text-canvas");
+
+        return (context, page, canvas);
+    }
+
+    // The text typed into the canvas, then all of it selected.
+    private static async Task SelectTypedAsync(IPage page, ILocator canvas, string text)
+    {
+        await canvas.PressSequentiallyAsync(text);
+        await canvas.PressAsync("ControlOrMeta+A");
+        await page.WaitForFunctionAsync("text => getSelection().toString() === text", text);
+    }
+
+    private static ILocator GetCommand(IPage page, string name)
+        => page.Locator("#check .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
+    private static ILocator GetOption(IPage page, string name)
+        => page.Locator("[role=menuitem], [role=menuitemradio], [role=menuitemcheckbox]").Filter(new() { HasText = name });
+
+    private static async Task<string> ReadAsync(IDownload download)
+    {
+        using var reader = new StreamReader(await download.CreateReadStreamAsync());
+
+        return await reader.ReadToEndAsync();
     }
 }

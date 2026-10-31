@@ -1,6 +1,6 @@
 @page "/{Runtime}/virtualize"
 
-@* A thousand items in a box that scrolls, drawn only around its viewport. *@
+@* A thousand items in a box that scrolls, drawn only around its viewport, and a thousand more opening on the three hundredth, which buttons scroll to others. *@
 <div id="check" style="block-size: 200px; overflow-y: auto">
     <FormaVirtualize TItem="int" Items="Items" ItemKey="@(item => item)" ItemSize="40">
         <ItemContent Context="item">
@@ -8,9 +8,20 @@
         </ItemContent>
     </FormaVirtualize>
 </div>
+<div id="opened" style="block-size: 200px; overflow-y: auto">
+    <FormaVirtualize @ref="Opened" TItem="int" Items="Items" ItemKey="@(item => item)" ItemSize="40" InitialItemIndex="300">
+        <ItemContent Context="item">
+            <div id="@($"opened-{item}")" style="block-size: 40px">Item @item</div>
+        </ItemContent>
+    </FormaVirtualize>
+</div>
+<FormaButton Id="to-700" OnClick="@(() => Opened.ScrollToIndexAsync(700, ScrollAlignment.Start))">To 700</FormaButton>
+<FormaButton Id="to-302" OnClick="@(() => Opened.ScrollToIndexAsync(302, ScrollAlignment.Start))">To 302</FormaButton>
 
 @code {
     private static readonly int[] Items = [.. Enumerable.Range(0, 1000)];
+
+    private FormaVirtualize<int> Opened { get; set; } = default!;
 
     [Parameter] public string Runtime { get; set; } = default!;
 }

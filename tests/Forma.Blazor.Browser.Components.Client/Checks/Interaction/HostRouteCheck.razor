@@ -1,0 +1,25 @@
+@page "/{Runtime}/host-route"
+@using Forma.Blazor.Browser.Components.Client.Services
+@using Forma.Blazor.Components.Interaction
+@using Forma.Framework.Input
+@implements IDisposable
+@inject CheckInputActions Actions
+
+@* The action the host's own shortcut performed, shown where the check reads it, beside a scope that has the router configured. *@
+<FormaInputScope Id="scope" Profile="new InputProfile()">
+    <div id="inside" tabindex="0">Inside</div>
+</FormaInputScope>
+<output id="result">@Actions.LastAction</output>
+
+@code {
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    protected override void OnInitialized()
+        => Actions.Performed += Refresh;
+
+    public void Dispose()
+        => Actions.Performed -= Refresh;
+
+    private void Refresh()
+        => InvokeAsync(StateHasChanged);
+}

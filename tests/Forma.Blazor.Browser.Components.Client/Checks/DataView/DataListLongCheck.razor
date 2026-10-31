@@ -1,0 +1,39 @@
+@page "/{Runtime}/data-list-long"
+@using Forma.Blazor.Components.DataView
+
+@* Two hundred items, drawn only around the viewport of the narrow box they scroll in one under another, as a list and as a grid a switch offers, the count selected shown where the check reads it. *@
+@if (_dataView is not null)
+{
+    <FormaDataViewSwitch Id="switch" DataView="_dataView" />
+}
+<div id="box" style="inline-size: 320px; block-size: 240px; overflow-y: auto">
+    <FormaDataView @ref="_dataView" Id="check" TItem="Row" Items="Rows" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" EnablePagination="false" Virtualize="true" EnableItemSelection="true" @bind-SelectedItems="_selectedRows">
+        <FormaDataList TItem="Row" />
+        <FormaDataGrid TItem="Row">
+            <Columns>
+                <FormaPropertyColumn Property="@(row => row.Name)" Title="Name" />
+            </Columns>
+        </FormaDataGrid>
+    </FormaDataView>
+</div>
+<output id="count">@_selectedRows.Count</output>
+
+@code {
+    private static readonly IQueryable<Row> Rows = Enumerable.Range(0, 200).Select(index => new Row($"Item {index}")).ToArray().AsQueryable();
+
+    private FormaDataView<Row>? _dataView;
+    private IReadOnlyList<Row> _selectedRows = [];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    // The switch names the view it switches, which is known once rendered.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
+    }
+
+    internal sealed record Row(string Name);
+}

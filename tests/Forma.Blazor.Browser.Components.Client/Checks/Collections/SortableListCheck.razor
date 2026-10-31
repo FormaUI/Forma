@@ -1,13 +1,18 @@
 @page "/{Runtime}/sortable-list"
 
-@* Three items reordered by the keys on their handles, in the order the check reads. *@
+@* Three items reordered by their handles, and three more dragged by their rows, each in the order the check reads. *@
 <FormaSortableList Id="check" TItem="string" @bind-Items="_items">
     <ItemTemplate Context="item">@item</ItemTemplate>
 </FormaSortableList>
 <output id="result">@string.Join(", ", _items)</output>
+<FormaSortableList Id="rows" TItem="string" @bind-Items="_rows" DragFrom="SortableDragFrom.Item">
+    <ItemTemplate Context="item">@item</ItemTemplate>
+</FormaSortableList>
+<output id="rows-result">@string.Join(", ", _rows)</output>
 
 @code {
     private IReadOnlyList<string> _items = ["Alpha", "Beta", "Gamma"];
+    private IReadOnlyList<string> _rows = ["Red", "Green", "Blue"];
 
     [Parameter] public string Runtime { get; set; } = default!;
 }

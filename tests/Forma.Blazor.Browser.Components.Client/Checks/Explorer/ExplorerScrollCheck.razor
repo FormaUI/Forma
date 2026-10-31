@@ -1,0 +1,20 @@
+@page "/{Runtime}/explorer-scroll"
+@using Forma.Blazor.Components.Explorer
+@using Forma.Framework.Catalog
+@using Forma.Framework.Explorer
+@using Forma.Framework.Explorer.Content.Queries
+@using Forma.Framework.Resources
+
+@* Twelve files four to a page, each further page appended as the explorer scrolls to its end. *@
+<div style="block-size: 480px">
+    <FormaExplorer Id="check" Items="Items" PageSize="4" Options="ScrollOptions" />
+</div>
+
+@code {
+    private static readonly ExplorerOptions ScrollOptions = ExplorerOptions.Default with { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic };
+
+    private static readonly IReadOnlyList<ICatalogItem> Items = CatalogItem.ForAll(
+        Enumerable.Range(1, 12).Select(index => (ResourceInfo)new DocumentResourceInfo($"files/report-{index:00}.txt")));
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

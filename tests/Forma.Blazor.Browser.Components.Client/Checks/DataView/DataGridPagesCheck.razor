@@ -1,0 +1,19 @@
+@page "/{Runtime}/data-grid-pages"
+@using Forma.Blazor.Components.DataView
+
+@* A grid of five rows three to a page, the last page holding two. *@
+<FormaDataView Id="check" TItem="Row" Items="Rows" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" PageSize="3">
+    <FormaDataGrid TItem="Row">
+        <Columns>
+            <FormaPropertyColumn Property="@(row => row.Name)" Title="Name" />
+        </Columns>
+    </FormaDataGrid>
+</FormaDataView>
+
+@code {
+    private static readonly IQueryable<Row> Rows = new Row[] { new("Alpha"), new("Beta"), new("Gamma"), new("Delta"), new("Epsilon") }.AsQueryable();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    internal sealed record Row(string Name);
+}

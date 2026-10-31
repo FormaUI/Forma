@@ -1,0 +1,20 @@
+@page "/{Runtime}/input-inspector"
+@using Forma.Blazor.Components.Debugging.InputInspector
+@using Forma.Blazor.Components.Interaction
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
+
+@* An inspector reporting what the router decided for an input in a scope routing ArrowDown beside it. *@
+<FormaInputScope Id="scope" Profile="ScopeProfile">
+    <div id="inside" tabindex="0">Inside</div>
+</FormaInputScope>
+<FormaInputInspector Id="inspector" />
+
+@code {
+    private static readonly InputProfile ScopeProfile = new()
+    {
+        InputRoutes = [new InputRoute("check.next", new KeyBinding("ArrowDown"))],
+    };
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

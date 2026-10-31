@@ -168,6 +168,34 @@ public sealed class PickersTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("10:00");
             await Assertions.Expect(page.Locator("#check-list")).ToBeHiddenAsync();
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_open_on_its_time_and_bring_the_time_the_arrow_keys_reach_into_view(string runtime)
+        {
+            // Arrange — the list opened from the field on 09:30, the twentieth half hour from midnight
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "time-picker");
+            await using var _ = context;
+            var field = page.Locator("#check");
+            await ComponentChecks.WaitForInputRouteAsync(page, "#check", "time-box.next");
+            await field.FocusAsync();
+            await field.PressAsync("ArrowDown");
+            await Assertions.Expect(field).ToHaveAttributeAsync("aria-activedescendant", "check-option-19");
+            await Assertions.Expect(page.Locator("#check-option-19")).ToBeInViewportAsync();
+
+            // Act — six half hours on, to 12:30, past the options the list first drew
+            for (var step = 0; step < 6; step++)
+            {
+                await field.PressAsync("ArrowDown");
+            }
+
+            // Assert
+            await Assertions.Expect(field).ToHaveAttributeAsync("aria-activedescendant", "check-option-25");
+            await Assertions.Expect(page.Locator("#check-option-25")).ToBeInViewportAsync();
+            await field.PressAsync("Enter");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("12:30");
+            await Assertions.Expect(page.Locator("#check-list")).ToBeHiddenAsync();
+        }
     }
 
     public sealed class DateTimePicker(BrowserHost host)
@@ -192,6 +220,29 @@ public sealed class PickersTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("2026-03-20 10:00");
             await Assertions.Expect(page.Locator(".forma-calendar")).ToBeHiddenAsync();
             await Assertions.Expect(page.Locator("#check-time-list")).ToBeHiddenAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_report_the_half_left_missing_once_the_reader_leaves_the_field(string runtime)
+        {
+            // Arrange — the time cleared, which leaves the field waiting for it while the reader is within
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "date-time-picker");
+            await using var _ = context;
+            var message = page.GetByText("The Start field needs a time.", new() { Exact = true });
+            await page.Locator("#check-time").FillAsync(string.Empty);
+            await page.Locator("#check-date").FocusAsync();
+            await Assertions.Expect(message).ToHaveCountAsync(0);
+
+            // Act — the field's focus watch attaches in its own time, so the reader leaves and comes back until it answers
+            await page.WaitForFunctionAsync(
+                "() => { if (document.body.textContent.includes('The Start field needs a time.')) { return true; } const within = document.getElementById('check-date'); (document.activeElement === within ? document.getElementById('outside') : within).focus(); return false; }",
+                null,
+                new() { PollingInterval = 100 });
+
+            // Assert
+            await Assertions.Expect(message).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("2026-03-14 09:30");
         }
     }
 

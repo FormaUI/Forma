@@ -1,19 +1,29 @@
 @page "/{Runtime}/splitter"
 
-@* A sidebar sized by the splitter beside it, its bound width shown where the check reads it. *@
+@* A sidebar sized by the splitter beside it, and a top pane by the splitter below it, each bound size shown where the check reads it. *@
 <div style="display: flex; block-size: 8rem;">
     <div id="pane" style="@PaneStyle">Sidebar</div>
     <FormaSplitter Id="splitter" Label="Sidebar Width" @bind-Value="_width" Min="8" Max="24" />
     <div style="flex: 1;">Content</div>
 </div>
 <output id="result">@_width.ToString(CultureInfo.InvariantCulture)</output>
+<div style="display: flex; flex-direction: column; block-size: 24rem;">
+    <div id="top-pane" style="@TopPaneStyle">Top</div>
+    <FormaSplitter Id="rows-splitter" Label="Top Height" Orientation="SplitterOrientation.Horizontal" @bind-Value="_height" Min="4" Max="16" />
+    <div style="flex: 1;">Bottom</div>
+</div>
+<output id="rows-result">@_height.ToString(CultureInfo.InvariantCulture)</output>
 
 @code {
     private double _width = 12;
+    private double _height = 8;
 
     [Parameter] public string Runtime { get; set; } = default!;
 
     // One unit of the splitter's value spans its default sixteen pixels.
     private string PaneStyle
         => string.Create(CultureInfo.InvariantCulture, $"flex: none; inline-size: {_width * 16}px;");
+
+    private string TopPaneStyle
+        => string.Create(CultureInfo.InvariantCulture, $"flex: none; block-size: {_height * 16}px;");
 }

@@ -1,16 +1,18 @@
 @page "/{Runtime}/data-list"
 @using Forma.Blazor.Components.DataView
 
-@* A list of three items, selected by the item pressed, the selection named where the check reads it. *@
-<FormaDataView Id="check" TItem="Row" Items="Rows" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" EnablePagination="false" EnableItemSelection="true" @bind-SelectedItems="_selectedRows">
+@* A list of three items, selected by the item pressed and activated by Enter, the selection and the item activated named where the check reads them. *@
+<FormaDataView Id="check" TItem="Row" Items="Rows" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" EnablePagination="false" EnableItemSelection="true" @bind-SelectedItems="_selectedRows" OnItemClick="@(row => _activated = row.Name)">
     <FormaDataList TItem="Row" />
 </FormaDataView>
 <output id="result">@string.Join(", ", _selectedRows.Select(row => row.Name))</output>
+<output id="activated">@_activated</output>
 
 @code {
     private static readonly IQueryable<Row> Rows = new Row[] { new("Alpha"), new("Beta"), new("Gamma") }.AsQueryable();
 
     private IReadOnlyList<Row> _selectedRows = [];
+    private string? _activated;
 
     [Parameter] public string Runtime { get; set; } = default!;
 

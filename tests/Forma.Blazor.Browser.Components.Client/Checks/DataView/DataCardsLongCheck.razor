@@ -1,0 +1,17 @@
+@page "/{Runtime}/data-cards-long"
+@using Forma.Blazor.Components.DataView
+
+@* Forty cards, drawn only around the viewport of the box they scroll in, as many to a row as its width holds. *@
+<div id="box" style="block-size: 400px; overflow-y: auto">
+    <FormaDataView Id="check" TItem="Row" Items="Rows" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" EnablePagination="false" Virtualize="true">
+        <FormaDataCards TItem="Row" />
+    </FormaDataView>
+</div>
+
+@code {
+    private static readonly IQueryable<Row> Rows = Enumerable.Range(0, 40).Select(index => new Row($"Card {index}")).ToArray().AsQueryable();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    internal sealed record Row(string Name);
+}

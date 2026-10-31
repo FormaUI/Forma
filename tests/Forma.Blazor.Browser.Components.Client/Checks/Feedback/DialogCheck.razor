@@ -1,10 +1,11 @@
 @page "/{Runtime}/dialog"
 
-@* A dialog the page opens from a button, the times it closed counted where the check reads them. *@
+@* A dialog the page opens from a button, focusing the field in its body, the times it closed counted where the check reads them. *@
 <FormaButton Id="open" OnClick="@(() => _isOpened = true)">Show Order</FormaButton>
 <FormaDialog Id="dialog" Title="Order Details" Opened="_isOpened" OnClose="HandleClose">
     <Body>
         <p>Shipped on Monday.</p>
+        <input id="note" aria-label="Note" />
     </Body>
 </FormaDialog>
 <output id="result">@_closeCount</output>

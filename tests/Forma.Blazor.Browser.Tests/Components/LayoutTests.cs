@@ -4,7 +4,7 @@ using System.Globalization;
 
 using static Forma.Blazor.Browser.Tests.ComponentChecks;
 
-/// <summary>The layout components' main interactions, in every runtime.</summary>
+/// <summary>The layout components' interactions, in every runtime.</summary>
 public sealed class LayoutTests
 {
     public sealed class Backdrop(BrowserHost host)
@@ -122,6 +122,57 @@ public sealed class LayoutTests
             await Assertions.Expect(result).ToHaveTextAsync(FormatPlacement(viewport.Width - 336, 112, 320, 208));
         }
 
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_move_by_a_drag_of_its_title_and_resize_by_a_drag_of_its_edge(string runtime)
+        {
+            // Arrange — the frame pulled back within the viewport by its script
+            var (context, page) = await OpenAsync(host, runtime, "frame");
+            await using var _ = context;
+            var viewport = page.ViewportSize!;
+            var result = page.Locator("#result");
+            await Assertions.Expect(result).ToHaveTextAsync(FormatPlacement(viewport.Width - 320, 96, 320, 192));
+
+            // Act
+            await DragAsync(page, page.Locator("#frame .forma-frame-drag-region"), -100, 40);
+            await Assertions.Expect(result).ToHaveTextAsync(FormatPlacement(viewport.Width - 420, 136, 320, 192));
+            await DragAsync(page, page.Locator("#frame .forma-frame-handle-s"), 0, 32);
+
+            // Assert
+            await Assertions.Expect(result).ToHaveTextAsync(FormatPlacement(viewport.Width - 420, 136, 320, 224));
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_keep_within_a_viewport_that_narrows(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "frame");
+            await using var _ = context;
+            var viewport = page.ViewportSize!;
+            var result = page.Locator("#result");
+            await Assertions.Expect(result).ToHaveTextAsync(FormatPlacement(viewport.Width - 320, 96, 320, 192));
+
+            // Act
+            await page.SetViewportSizeAsync(viewport.Width - 200, viewport.Height);
+
+            // Assert
+            await Assertions.Expect(result).ToHaveTextAsync(FormatPlacement(viewport.Width - 520, 96, 320, 192));
+        }
+
+        // A drag from the middle of the element by the distance given.
+        private static async Task DragAsync(IPage page, ILocator held, float x, float y)
+        {
+            var box = (await held.BoundingBoxAsync())!;
+            var startX = box.X + (box.Width / 2);
+            var startY = box.Y + (box.Height / 2);
+
+            await page.Mouse.MoveAsync(startX, startY);
+            await page.Mouse.DownAsync();
+            await page.Mouse.MoveAsync(startX + x, startY + y, new() { Steps = 4 });
+            await page.Mouse.UpAsync();
+        }
+
         private static string FormatPlacement(int left, int top, int width, int height)
             => string.Create(CultureInfo.InvariantCulture, $"{left},{top},{width},{height}");
     }
@@ -149,6 +200,30 @@ public sealed class LayoutTests
             Assert.NotNull(viewportBox);
             Assert.NotNull(frozenBox);
             Assert.Equal(viewportBox.X, frozenBox.X, 1.0);
+        }
+
+        [Theory]
+        [InlineData("server")]
+        [InlineData("auto-server")]
+        public async Task Should_show_a_scroll_made_while_its_circuit_was_away_once_the_circuit_is_back(string runtime)
+        {
+            // Arrange — the circuit's connection carried through a route the check can drop
+            var connections = new List<(IWebSocketRoute Page, IWebSocketRoute Server)>();
+            var (context, page) = await OpenAsync(host, runtime, "freeze-pane", page => page.RouteWebSocketAsync("**/_blazor**", connection => connections.Add((connection, connection.ConnectToServer()))));
+            await using var _ = context;
+            var viewport = page.Locator("#freeze-pane .forma-freeze-pane-viewport");
+            var back = page.Locator("#freeze-pane .forma-freeze-pane-arrow-back");
+            await WaitForInputScopeAsync(page, "#freeze-pane .forma-freeze-pane-arrow-forward");
+            await Assertions.Expect(back).ToBeHiddenAsync();
+            var (pageSide, serverSide) = connections[^1];
+
+            // Act — the connection dropped and the pane scrolled while nothing can tell the circuit, which the page then reconnects on its own
+            await serverSide.CloseAsync();
+            await pageSide.CloseAsync();
+            await viewport.EvaluateAsync("viewport => viewport.scrollLeft = viewport.scrollWidth");
+
+            // Assert
+            await Assertions.Expect(back).ToBeVisibleAsync(new() { Timeout = 30000 });
         }
     }
 
@@ -200,6 +275,31 @@ public sealed class LayoutTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("16");
             await Assertions.Expect(splitter).ToHaveAttributeAsync("aria-valuenow", "16");
             await Assertions.Expect(splitter).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex("is-resizing"));
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_follow_a_drag_along_the_block_axis_where_it_lies_between_stacked_panes(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "splitter");
+            await using var _ = context;
+            var splitter = page.Locator("#rows-splitter");
+            await WaitForInputRouteAsync(page, "#rows-splitter", "splitter.resize");
+            var bar = (await splitter.BoundingBoxAsync())!;
+            var x = bar.X + (bar.Width / 2);
+            var y = bar.Y + (bar.Height / 2);
+
+            // Act — 64 pixels down, four units
+            await page.Mouse.MoveAsync(x, y);
+            await page.Mouse.DownAsync();
+            await page.Mouse.MoveAsync(x, y + 64, new() { Steps = 4 });
+            await page.Mouse.UpAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#rows-result")).ToHaveTextAsync("12");
+            await Assertions.Expect(splitter).ToHaveAttributeAsync("aria-valuenow", "12");
+            await Assertions.Expect(splitter).ToHaveAttributeAsync("aria-orientation", "horizontal");
         }
 
         [Theory]

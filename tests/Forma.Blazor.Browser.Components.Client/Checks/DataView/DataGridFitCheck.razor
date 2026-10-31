@@ -1,0 +1,25 @@
+@page "/{Runtime}/data-grid-fit"
+@using Forma.Blazor.Components.DataView
+
+@* A grid whose name column stays while its long notes and its count give way to a narrow width. *@
+<FormaDataView Id="check" TItem="Row" Items="Rows" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" EnablePagination="false">
+    <FormaDataGrid TItem="Row">
+        <Columns>
+            <FormaPropertyColumn Property="@(row => row.Name)" Title="Name" Priority="1" />
+            <FormaPropertyColumn Property="@(row => row.Notes)" Title="Notes" />
+            <FormaPropertyColumn Property="@(row => row.Count)" Title="Count" />
+        </Columns>
+    </FormaDataGrid>
+</FormaDataView>
+
+@code {
+    private static readonly IQueryable<Row> Rows = new Row[]
+    {
+        new("Alpha", "The first of the rows, whose notes run long enough to need the room of a wide page", 1),
+        new("Beta", "The second of the rows, whose notes run long enough to need the room of a wide page", 2),
+    }.AsQueryable();
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    internal sealed record Row(string Name, string Notes, int Count);
+}
