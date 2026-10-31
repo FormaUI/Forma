@@ -30,5 +30,30 @@ public sealed class ComposerTests
             await Assertions.Expect(page.Locator("#check .forma-composer-rich-text-announcer")).ToHaveTextAsync("Bold on");
             await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("<b>Hello</b>");
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_link_the_text_selected_through_the_link_dialog(string runtime)
+        {
+            // Arrange — the whole text selected and the link dialog opened on it
+            var (context, page) = await OpenAsync(host, runtime, "composer");
+            await using var _ = context;
+            var canvas = page.Locator("#check .forma-composer-rich-text-canvas");
+            await WaitForInputScopeAsync(page, "#check .forma-composer-rich-text-canvas");
+            await canvas.PressSequentiallyAsync("Docs");
+            await canvas.PressAsync("ControlOrMeta+A");
+            await page.WaitForFunctionAsync("() => getSelection().toString() === 'Docs'");
+            await page.Locator("#check .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Insert Link", Exact = true }).ClickAsync();
+            var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Link" });
+
+
+            // Act
+            await dialog.GetByLabel("URL").FillAsync("https://example.com/docs");
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+
+            // Assert
+            await Assertions.Expect(canvas.Locator("a[href='https://example.com/docs']")).ToHaveTextAsync("Docs");
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("href=\"https://example.com/docs\"");
+        }
     }
 }

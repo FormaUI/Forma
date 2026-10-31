@@ -84,7 +84,7 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
 
         var (jsCommand, jsValue) = command switch
         {
-            AlignLeftCommand => ("justifyLeft", (object?)null),
+            AlignLeftCommand => ("justifyLeft", null),
             AlignCenterCommand => ("justifyCenter", null),
             AlignRightCommand => ("justifyRight", null),
             AlignJustifyCommand => ("justifyFull", null),

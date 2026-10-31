@@ -2,6 +2,8 @@ namespace Forma.Blazor.Components.Composer.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Blazor.Components.Composer.Dialogs;
+using Forma.Framework.Composer.Editing;
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -33,8 +35,20 @@ internal sealed class RichTextEditor(IJSEnvironment js)
         => InvokeAsync<RichTextLinkTargetDto>("beginLinkDialog", isAnchor ? "a[name]" : "a[href]");
 
     /// <summary>Executes a rich text formatting command on the active selection.</summary>
-    public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, object? value = null)
+    public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, string? value = null)
         => InvokeAsync<RichTextCommandResult>("exec", command, value);
+
+    /// <summary>Executes a rich text command that takes a number on the active selection.</summary>
+    public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, int value)
+        => InvokeAsync<RichTextCommandResult>("exec", command, value);
+
+    /// <summary>Executes the command a dialog collected <paramref name="result"/> for on the active selection.</summary>
+    public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, ComposerDialogResult result)
+        => InvokeAsync<RichTextCommandResult>("exec", command, result);
+
+    /// <summary>Executes the command that puts <paramref name="insertion"/> into the document at the active selection.</summary>
+    public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, ComposerInsertion insertion)
+        => InvokeAsync<RichTextCommandResult>("exec", command, insertion);
 
     /// <summary>The options the script attaches with.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]

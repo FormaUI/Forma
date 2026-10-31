@@ -15,7 +15,7 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     /// <summary>The identifier for the rich text editor plugin.</summary>
     public const string EditorId = "rich-text";
 
-    /// <summary>Raised when a plugin requests execution of a rich text command on the active canvas.</summary>
+    /// <summary>Raised when a plugin requests execution of a rich text command on the active canvas, with the text, number or insertion it takes.</summary>
     public event Action<string, object?>? CommandRequested;
 
     /// <summary>Raised when a plugin requests opening the link or anchor dialog.</summary>
@@ -61,13 +61,20 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
             return ValueTask.FromResult(false);
         }
 
-        RequestCommand("insertResource", resource);
+        CommandRequested?.Invoke("insertResource", resource);
 
         return ValueTask.FromResult(true);
     }
 
-    /// <summary>Requests execution of a rich text command on the active canvas.</summary>
-    public void RequestCommand(string command, object? value = null)
+    /// <summary>Requests execution of a rich text command on the active canvas, with the text it takes.</summary>
+    public void RequestCommand(string command, string? value = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(command);
+        CommandRequested?.Invoke(command, value);
+    }
+
+    /// <summary>Requests execution of a rich text command on the active canvas, with the number it takes.</summary>
+    public void RequestCommand(string command, int value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
         CommandRequested?.Invoke(command, value);

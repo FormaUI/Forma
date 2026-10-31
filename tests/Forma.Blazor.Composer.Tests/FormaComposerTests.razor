@@ -29,7 +29,7 @@
 
         public ValueTask<ComposerInsertion?> TryConfirmAsync(CancellationToken cancellationToken = default)
             => ValueTask.FromResult<ComposerInsertion?>(
-                Refusal is null ? new ResourceInsertion("/media/a.png", "a.png", "image", true, false) : null);
+                Refusal is null ? new ResourceInsertion { Source = "/media/a.png", Name = "a.png", Kind = "image", Embed = true, Link = false } : null);
     }
 
     private sealed class NotAnInsertionDialog : ComponentBase;

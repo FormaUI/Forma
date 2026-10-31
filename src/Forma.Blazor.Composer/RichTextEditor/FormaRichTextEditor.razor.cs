@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor;
 
+using System.Diagnostics;
 using System.Globalization;
 
 using Forma.Blazor.Components.Composer.Dialogs;
@@ -250,11 +251,13 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             // The address is prefilled only when the selection holds a single link.
             _dialog = new RichTextDialogState(
                 RichTextDialogKind.Link,
-                new LinkDialogResult(
-                    isAnchor,
-                    target?.Text ?? string.Empty,
-                    target?.Count == 1 ? target.Href ?? string.Empty : string.Empty,
-                    OpenInNewTab: false));
+                new LinkDialogResult
+                {
+                    IsAnchor = isAnchor,
+                    Name = target?.Text ?? string.Empty,
+                    Href = target?.Count == 1 ? target.Href ?? string.Empty : string.Empty,
+                    OpenInNewTab = false,
+                });
 
             StateHasChanged();
         });
@@ -317,14 +320,27 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         await ExecuteCommandAsync("insertEmbed", result);
     }
 
-    private async Task ExecuteCommandAsync(string command, object? value = null)
+    private Task ExecuteCommandAsync(string command, string? value = null)
+        => ApplyCommandAsync(() => _canvas.ExecuteCommandAsync(command, value));
+
+    private Task ExecuteCommandAsync(string command, int value)
+        => ApplyCommandAsync(() => _canvas.ExecuteCommandAsync(command, value));
+
+    private Task ExecuteCommandAsync(string command, ComposerDialogResult result)
+        => ApplyCommandAsync(() => _canvas.ExecuteCommandAsync(command, result));
+
+    private Task ExecuteCommandAsync(string command, ComposerInsertion insertion)
+        => ApplyCommandAsync(() => _canvas.ExecuteCommandAsync(command, insertion));
+
+    /// <summary>Runs a command on the canvas and takes the document and the selection it leaves.</summary>
+    private async Task ApplyCommandAsync(Func<ValueTask<RichTextCommandResult?>> execute)
     {
         if (Composer is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return;
         }
 
-        var result = await _canvas.ExecuteCommandAsync(command, value);
+        var result = await execute();
         if (result is not null)
         {
             var sanitized = Composer.Sanitizer.Sanitize(result.Html);
@@ -341,11 +357,19 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         }
     }
 
+    // The plugin hands over only the text, the number or the insertion a command takes.
     private void HandlePluginCommand(string command, object? value)
     {
         _ = InvokeAsync(async () =>
         {
-            await ExecuteCommandAsync(command, value);
+            await (value switch
+            {
+                null => ExecuteCommandAsync(command),
+                string text => ExecuteCommandAsync(command, text),
+                int number => ExecuteCommandAsync(command, number),
+                ComposerInsertion insertion => ExecuteCommandAsync(command, insertion),
+                _ => throw new UnreachableException($"The command '{command}' carries a {value.GetType()}."),
+            });
         });
     }
 

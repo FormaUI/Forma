@@ -36,7 +36,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [The data view](docs/data-view-design.md)'s grid, list, cards and tree draw through [`FormaVirtualize`](docs/virtualization-design.md), each redrawing only what changed, and the arrow keys move among the checkboxes under checked selection.
 - The grid edits numbers, times and dates with times through the library's own inputs.
 - The data view, [`FormaExplorer`](docs/component-catalog.md#formaexplorer) and [`FormaComposer`](docs/component-catalog.md#formacomposer) write dates and compare text in the culture state's cultures.
-- [`FormaComposer`](docs/component-catalog.md#formacomposer) keeps what is typed as soon as it is editable.
+- [`FormaComposer`](docs/component-catalog.md#formacomposer) keeps what is typed as soon as it is editable, and puts a link, a table and a stored file into the document in a trimmed WebAssembly client.
 
 **Foundations**
 
@@ -83,8 +83,9 @@ Until the first release, a month may break what the one before it allowed, and e
 - `LocalizationOptions.WithRecordedPacks` is `WithRecordedLocales`, and the localization package's targets are `buildTransitive`.
 - `AddFormaUI` registers no culture switch: `AddFormaUIServer` and `AddFormaUIWebAssembly` register the switch of their render mode, and a WebAssembly client's culture services are one per runtime.
 - Culture routing is `Forma.Framework.Culture.Router`, its ASP.NET Core assembly keeping the middleware: a route names its pair, `UICulture` and an optional `Culture`; `CultureRouter` reads paths as strings; `CultureSwitcher.SwitchTo` is `SwitchToAsync`; `CultureBaseHref` and `Forma.Framework.Culture.Router.Interop` are gone, `FormaPageHead` writing the base routing gives and refusing a `BaseHref` beside it; and the `forma-culture` cookie is no longer read.
-- The composer's dialog results and selection reports, `TextRange`, and the data view's `ColumnFitReport` and `ColumnWidth` are records with `init` properties rather than positional ones, and `InputRoute`'s `Action` and `Bindings` and `KeyBinding`'s `Key` are `required` `init` properties beside the constructors that set them.
+- The composer's dialog results, `ResourceInsertion` and selection reports, `TextRange`, and the data view's `ColumnFitReport` and `ColumnWidth` are records with `init` properties rather than positional ones, and `InputRoute`'s `Action` and `Bindings` and `KeyBinding`'s `Key` are `required` `init` properties beside the constructors that set them.
 - `Pointer` is gone; a drag captures its pointer in the browser.
+- `RichTextEditorPlugin.RequestCommand` takes the text or the number a command takes, where it took any object.
 
 <a id="2026-09"></a>
 

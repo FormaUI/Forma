@@ -37,7 +37,7 @@ public sealed partial class FormaComposerLinkDialog : ComposerDialogBase
                 return;
             }
 
-            await OnInsert.InvokeAsync(new LinkDialogResult(IsAnchor: true, _name, string.Empty, _openInNewTab));
+            await OnInsert.InvokeAsync(new LinkDialogResult { IsAnchor = true, Name = _name, Href = string.Empty, OpenInNewTab = _openInNewTab });
 
             return;
         }
@@ -59,6 +59,6 @@ public sealed partial class FormaComposerLinkDialog : ComposerDialogBase
             return;
         }
 
-        await OnInsert.InvokeAsync(new LinkDialogResult(IsAnchor: false, _name ?? string.Empty, href, _openInNewTab));
+        await OnInsert.InvokeAsync(new LinkDialogResult { IsAnchor = false, Name = _name ?? string.Empty, Href = href, OpenInNewTab = _openInNewTab });
     }
 }

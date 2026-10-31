@@ -21,11 +21,13 @@ public sealed partial class FormaComposerTableDialog : ComposerDialogBase
 
     private async Task HandleConfirmAsync()
     {
-        var result = new TableDialogResult(
-            Math.Clamp(_rows, 1, MaxRows),
-            Math.Clamp(_columns, 1, MaxColumns),
-            _includeHeader,
-            _caption);
+        var result = new TableDialogResult
+        {
+            Rows = Math.Clamp(_rows, 1, MaxRows),
+            Columns = Math.Clamp(_columns, 1, MaxColumns),
+            IncludeHeader = _includeHeader,
+            Caption = _caption,
+        };
 
         await OnInsert.InvokeAsync(result);
     }

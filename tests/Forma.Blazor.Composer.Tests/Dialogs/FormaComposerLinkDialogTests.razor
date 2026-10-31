@@ -150,7 +150,7 @@
             // Arrange
             using var ctx = new FormaComposerLinkDialogTests();
             LinkDialogResult? result = null;
-            var selected = new LinkDialogResult(IsAnchor: false, "stage twelve", string.Empty, OpenInNewTab: false);
+            var selected = new LinkDialogResult { IsAnchor = false, Name = "stage twelve", Href = string.Empty, OpenInNewTab = false };
 
             // Act
             var cut = ctx.Render(@<FormaComposerLinkDialog Opened="true" Reopening="selected" OnInsert="value => result = value" />);

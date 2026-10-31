@@ -107,6 +107,12 @@ a page whose load initialized nothing, so a Web App page without `FormaPageHead`
   the interop, serializing values as `object`, never does, so the same package generates for each library a
   dependency on the members of every annotated type that has them, and of every type derived from one, which
   the trimmer keeps with the library.
+- **Whose types cross.** Every type Forma's components, services and contracts send to a script or receive
+  from one is Forma's own, so the rules above keep all of them: what a host hands Forma to send, a plugin's
+  command or an input binding, is one of Forma's types or a scalar. A host's own type crosses only through
+  interop the host writes itself, a wrapper on the interop bases or the `[JSInvokable]` methods of an object
+  it hands a script, and keeps its members as the trimmer requires of any interop, through a dependency or a
+  source-generated context of the host's own, since nothing Forma generates reaches a host's assembly.
 - **Locale packs** reach a trimmed client because the host's build records each pack it references in
   the host's assembly, the package's own targets doing what the repository's build does for its hosts.
 

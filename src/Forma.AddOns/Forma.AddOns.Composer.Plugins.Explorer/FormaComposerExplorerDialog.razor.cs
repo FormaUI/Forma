@@ -98,7 +98,7 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
         var embed = renderable && Options.InsertMode is MediaInsertMode.Embed or MediaInsertMode.Both;
         var link = !renderable || Options.InsertMode is MediaInsertMode.Link or MediaInsertMode.Both;
 
-        return ValueTask.FromResult<ComposerInsertion?>(new ResourceInsertion(chosen.Source, chosen.Name, kind, embed, link));
+        return ValueTask.FromResult<ComposerInsertion?>(new ResourceInsertion { Source = chosen.Source, Name = chosen.Name, Kind = kind, Embed = embed, Link = link });
     }
 
     private static string GetKind(ResourceInfo resource)

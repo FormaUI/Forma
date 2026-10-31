@@ -1,12 +1,20 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>The data collected from the table dialog.</summary>
-/// <param name="Rows">The number of rows in the table.</param>
-/// <param name="Columns">The number of columns in the table.</param>
-/// <param name="IncludeHeader">Whether the first row is a header row.</param>
-/// <param name="Caption">The caption of the table.</param>
-public sealed record TableDialogResult(
-    int Rows,
-    int Columns,
-    bool IncludeHeader,
-    string? Caption) : ComposerDialogResult;
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
+public sealed record TableDialogResult : ComposerDialogResult
+{
+    /// <summary>The number of rows in the table.</summary>
+    public required int Rows { get; init; }
+
+    /// <summary>The number of columns in the table.</summary>
+    public required int Columns { get; init; }
+
+    /// <summary>Whether the first row is a header row.</summary>
+    public required bool IncludeHeader { get; init; }
+
+    /// <summary>The caption of the table.</summary>
+    public required string? Caption { get; init; }
+}
