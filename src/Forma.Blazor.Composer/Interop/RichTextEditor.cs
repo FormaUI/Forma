@@ -70,7 +70,7 @@ public sealed record RichTextCommandResult
     public RichTextSelectionDto? Selection { get; init; }
 }
 
-/// <summary>What a link dialog acts on: the text it covers, the address of the single link it covers, and the number of links.</summary>
+/// <summary>What a link dialog acts on: the text it covers, the address, name and tab of the single link or anchor it covers, and the number it covers.</summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
 internal sealed record RichTextLinkTargetDto
@@ -78,6 +78,10 @@ internal sealed record RichTextLinkTargetDto
     public string Text { get; init; } = "";
 
     public string? Href { get; init; }
+
+    public string? Name { get; init; }
+
+    public bool OpensInNewTab { get; init; }
 
     public int Count { get; init; }
 }

@@ -792,6 +792,32 @@ describe('RichTextEditor', () => {
             expect(target.text).toContain('library');
         });
 
+        it('offers the tab back when the one link touched opens in a new one', () => {
+            editor.innerHTML = '<p><a href="https://a.test" target="_blank" rel="noopener noreferrer">docs</a></p>';
+            const handle = attach(editor, { owner });
+            const inside = editor.querySelector('a').firstChild;
+
+            selectWithin(inside, 0, inside, 4);
+            const target = handle.beginLinkDialog();
+
+            expect(target.href).toBe('https://a.test');
+            expect(target.opensInNewTab).toBe(true);
+        });
+
+        it('offers the name back when the selection touches exactly one anchor', () => {
+            editor.innerHTML = '<p>see <a id="results" name="results">the results</a> below</p>';
+            const handle = attach(editor, { owner });
+            const inside = editor.querySelector('a').firstChild;
+
+            selectWithin(inside, 0, inside, 11);
+            const target = handle.beginLinkDialog('a[name]');
+
+            expect(target.count).toBe(1);
+            expect(target.name).toBe('results');
+            expect(target.text).toBe('the results');
+            expect(target.href).toBeNull();
+        });
+
         it('offers no address when the selection touches several links', () => {
             editor.innerHTML = '<p>a <a href="https://a.test">one</a> and <a href="https://b.test">two</a> b</p>';
             const handle = attach(editor, { owner });

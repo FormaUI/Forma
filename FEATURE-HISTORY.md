@@ -41,6 +41,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - The data view, [`FormaExplorer`](docs/component-catalog.md#formaexplorer) and [`FormaComposer`](docs/component-catalog.md#formacomposer) write dates and compare text in the culture state's cultures.
 - [`FormaComposer`](docs/component-catalog.md#formacomposer) keeps what is typed as soon as it is editable, and puts a link, a table and a stored file into the document in a trimmed WebAssembly client.
 - [`FormaComposer`](docs/component-catalog.md#formacomposer) applies a block style, lead or line height to a line typed into an empty document.
+- [`FormaComposer`](docs/component-catalog.md#formacomposer) reopens a link with the tab it opens in, and an anchor under its own name.
 
 **Foundations**
 

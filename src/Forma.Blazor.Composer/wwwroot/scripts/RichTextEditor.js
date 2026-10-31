@@ -165,7 +165,7 @@ class RichTextEditor {
         const frozen = this.#memory.freeze();
 
         if (!frozen) {
-            return { text: '', href: null, count: 0 };
+            return { text: '', href: null, name: null, opensInNewTab: false, count: 0 };
         }
 
         const selected = frozen.collapsed ? '' : frozen.toString();
@@ -174,7 +174,9 @@ class RichTextEditor {
 
         return {
             text: selected || (single ? single.textContent : ''),
-            href: single ? single.getAttribute(selector === 'a[name]' ? 'name' : 'href') : null,
+            href: single?.getAttribute('href') ?? null,
+            name: single?.getAttribute('name') ?? null,
+            opensInNewTab: single?.getAttribute('target') === '_blank',
             count: touched.length,
         };
     }

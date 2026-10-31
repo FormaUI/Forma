@@ -248,15 +248,16 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         {
             var target = await _canvas.BeginLinkDialogAsync(isAnchor);
 
-            // The address is prefilled only when the selection holds a single link.
+            // A single link or anchor the selection holds prefills its address, its name and its tab.
+            var single = target?.Count == 1 ? target : null;
             _dialog = new RichTextDialogState(
                 RichTextDialogKind.Link,
                 new LinkDialogResult
                 {
                     IsAnchor = isAnchor,
-                    Name = target?.Text ?? string.Empty,
-                    Href = target?.Count == 1 ? target.Href ?? string.Empty : string.Empty,
-                    OpenInNewTab = false,
+                    Name = (isAnchor ? single?.Name : null) ?? target?.Text ?? string.Empty,
+                    Href = single?.Href ?? string.Empty,
+                    OpenInNewTab = single?.OpensInNewTab ?? false,
                 });
 
             StateHasChanged();
