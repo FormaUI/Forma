@@ -5,17 +5,6 @@
    its neighbors by the layout that holds it.
    ============================================================ */
 
-/* Autofill keyframes — global (not scoped by isolation) */
-@keyframes forma-autofill-start {
-    from { }
-    to { }
-}
-
-@keyframes forma-autofill-cancel {
-    from { }
-    to { }
-}
-
 /* ---------- wrapper ---------- */
 .forma-field {
     /* The room a floated label takes above the value: its offset from the top and its line. */
@@ -47,17 +36,6 @@
 .forma-field-label-above:has(input:disabled) .forma-field-label,
 .forma-field-label-inline:has(input:disabled) .forma-field-label {
     color: var(--forma-label-disabled-color, var(--disabled-text-color));
-}
-
-/* Autofill detection — triggers animationstart event */
-::deep .forma-field-input:-webkit-autofill {
-    animation-name: forma-autofill-start;
-    animation-duration: 0.001s;
-}
-
-::deep .forma-field-input:not(:-webkit-autofill) {
-    animation-name: forma-autofill-cancel;
-    animation-duration: 0.001s;
 }
 
 /* Validation states */

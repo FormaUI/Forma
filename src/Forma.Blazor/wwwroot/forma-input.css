@@ -37,6 +37,27 @@
     box-shadow: var(--focus-ring);
 }
 
+/* Global, since isolation renames a keyframe, and the field's script reads these by name as the browser fills a field and clears it. */
+@keyframes forma-autofill-start {
+    from { }
+    to { }
+}
+
+@keyframes forma-autofill-cancel {
+    from { }
+    to { }
+}
+
+.forma-field-input:-webkit-autofill {
+    animation-name: forma-autofill-start;
+    animation-duration: 0.001s;
+}
+
+.forma-field-input:not(:-webkit-autofill) {
+    animation-name: forma-autofill-cancel;
+    animation-duration: 0.001s;
+}
+
 @media (pointer: coarse) {
     .forma-field-input,
     .forma-text-box,
