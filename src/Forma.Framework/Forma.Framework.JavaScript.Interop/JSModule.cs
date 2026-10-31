@@ -111,9 +111,19 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
     }
 
     /// <summary>Imports the module and returns its reference.</summary>
-    /// <remarks>The first call starts the import and every later call shares it, so an import that failed fails every caller.</remarks>
+    /// <remarks>
+    /// The first call starts the import and every later call shares it while it runs and once it succeeded. An import
+    /// that failed fails every caller sharing it and is then dropped, so the next call imports again.
+    /// </remarks>
     public Task<IJSObjectReference> ImportAsync()
-        => _import ??= js.InvokeAsync<IJSObjectReference>("import", path).AsTask();
+    {
+        if (_import is { IsFaulted: true } or { IsCanceled: true })
+        {
+            _import = null;
+        }
+
+        return _import ??= js.InvokeAsync<IJSObjectReference>("import", path).AsTask();
+    }
 
     /// <summary>Tries to import the module.</summary>
     private async ValueTask<IJSObjectReference?> TryImportAsync()

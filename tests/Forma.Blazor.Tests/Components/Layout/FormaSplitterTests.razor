@@ -5,6 +5,46 @@
 @using Forma.Tests.Interop
 
 @code {
+    public sealed class Attachment
+    {
+        [Fact]
+        public async Task Should_attach_its_drag_once_though_a_render_arrives_while_it_attaches()
+        {
+            // Arrange — the drag's script still attaching
+            using var ctx = new FormaSplitterTests();
+            await using var splitter = new RecordingJSObjectReference((_, _) => null);
+            await using var scripts = new RecordingJSObjectReference((_, _) => null);
+            splitter.Recorder.Hold("attach");
+            ctx.Services.AddSingleton<IJSRuntime>(RecordingJSRuntime.Importing(SplitterPath, splitter, scripts));
+            var cut = ctx.Render(@<FormaSplitter Label="Sidebar" Min="10" Max="40" Value="20" />);
+
+            // Act
+            cut.FindComponent<FormaSplitter>().Render();
+
+            // Assert
+            Assert.Single(splitter.Recorder.GetCalls("attach"));
+        }
+
+        [Fact]
+        public async Task Should_attach_its_drag_again_on_a_later_render_once_an_attach_failed()
+        {
+            // Arrange — the drag's first attach failing
+            using var ctx = new FormaSplitterTests();
+            await using var splitter = new RecordingJSObjectReference((_, _) => null);
+            await using var scripts = new RecordingJSObjectReference((_, _) => null);
+            splitter.Recorder.Hold("attach");
+            ctx.Services.AddSingleton<IJSRuntime>(RecordingJSRuntime.Importing(SplitterPath, splitter, scripts));
+            var cut = ctx.Render(@<FormaSplitter Label="Sidebar" Min="10" Max="40" Value="20" />);
+            await cut.ReleaseAsync(() => Assert.Single(splitter.Recorder.GetCalls("attach")).Fail(new JSException("Splitter.js could not attach")));
+
+            // Act
+            cut.FindComponent<FormaSplitter>().Render();
+
+            // Assert
+            Assert.Equal(2, splitter.Recorder.GetCalls("attach").Count);
+        }
+    }
+
     public sealed class Component
     {
         [Fact]
@@ -447,4 +487,6 @@
                 .Add(s => s.Max, 10d)));
         }
     }
+
+    private const string SplitterPath = "./_content/forma/browser/scripts/components/Splitter.js";
 }

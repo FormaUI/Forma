@@ -1,8 +1,9 @@
 # Forma.Framework.JavaScript.Interop
 
 The bases Forma's C# wrappers over JavaScript modules are built from, and the scripts that Forma's
-other scripts share. A wrapper built on them imports its module on first use, logs a failed import
-or call under its owner's logger, and reports a dropped circuit as a call that did not run.
+other scripts share. A wrapper built on them imports its module on first use, and again on the next
+use after an import failed, logs a failed import or call under its owner's logger, and reports a
+dropped circuit as a call that did not run.
 
 The package comes with `formaui-net.Blazor`. Its scripts are served from
 `_content/forma/core/scripts/`.
@@ -44,7 +45,9 @@ public sealed class Clipboard(IJSEnvironment js) : IAsyncDisposable
 ```
 
 A component builds a wrapper from its `Context.JS`, the environment carrying the component's logger
-and `RuntimeId`, attaches it from `OnAfterRenderAsync`, and disposes it from `DisposeAsyncCore`. A
+and `RuntimeId`, attaches it from `OnAfterRenderAsync`, and disposes it from `DisposeAsyncCore`. An
+attach that a later attach, a detach or the disposal overtakes releases the instance it gets and
+reports that it did not attach, so a component disposed mid-attach leaves nothing attached. A
 service builds its own environment from the runtime and logger it is given:
 
 ```csharp

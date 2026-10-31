@@ -5,10 +5,15 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 /// <summary>A JS module attached to an element.</summary>
+/// <remarks>
+/// Every attach and detach starts a new generation, so an attach answering after a later attach, a detach or the
+/// disposal has superseded it releases the instance it got rather than holding it.
+/// </remarks>
 public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposable
 {
     private readonly JSModule _module = new(js, path);
     private IJSObjectReference? _handle;
+    private int _generation;
 
     /// <summary>Whether the module is currently attached.</summary>
     public bool IsAttached
@@ -17,32 +22,28 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
     /// <summary>Attaches the module and reports whether it attached.</summary>
     protected async ValueTask<bool> AttachCoreAsync(params object?[] args)
     {
-        await DetachAsync();
-        _handle = await _module.TryInvokeAsync<IJSObjectReference>("attach", args);
+        var generation = ++_generation;
+        await ReleaseAsync(TakeHandle());
+        var handle = await _module.TryInvokeAsync<IJSObjectReference>("attach", args);
 
-        return _handle is not null;
+        if (generation != _generation)
+        {
+            await ReleaseAsync(handle);
+
+            return false;
+        }
+
+        _handle = handle;
+
+        return handle is not null;
     }
 
-    /// <summary>Releases the current attachment.</summary>
-    public async ValueTask DetachAsync()
+    /// <summary>Releases the current attachment, and the one an attach still in flight gets.</summary>
+    public ValueTask DetachAsync()
     {
-        var handle = _handle;
-        _handle = null;
+        _generation++;
 
-        if (handle is null)
-        {
-            return;
-        }
-
-        try
-        {
-            await handle.InvokeVoidAsync("dispose");
-            await handle.DisposeAsync();
-        }
-        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
-        {
-            LogCallFailure("dispose", ex);
-        }
+        return ReleaseAsync(TakeHandle());
     }
 
     /// <summary>Invokes a function the module exports and reports whether the call ran.</summary>
@@ -94,6 +95,32 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         await DetachAsync();
         await _module.DisposeAsync();
         GC.SuppressFinalize(this);
+    }
+
+    private IJSObjectReference? TakeHandle()
+    {
+        var handle = _handle;
+        _handle = null;
+
+        return handle;
+    }
+
+    private async ValueTask ReleaseAsync(IJSObjectReference? handle)
+    {
+        if (handle is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await handle.InvokeVoidAsync("dispose");
+            await handle.DisposeAsync();
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
+        {
+            LogCallFailure("dispose", ex);
+        }
     }
 
     private void LogCallFailure(string identifier, Exception ex)

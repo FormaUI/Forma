@@ -164,4 +164,75 @@
             Assert.Equal("two.jpg", Assert.Single(cut.FindAll(".forma-image-picker-preview")).QuerySelector(".forma-image-picker-name")!.TextContent);
         }
     }
+
+    public sealed class Preview
+    {
+        [Fact]
+        public async Task Should_show_an_image_chosen_while_its_script_attaches_once_it_attaches()
+        {
+            // Arrange — an image chosen while the preview's script is still attaching
+            using var ctx = new FormaImagePickerTests();
+            await using var preview = new RecordingJSObjectReference((_, _) => null);
+            await using var instance = new RecordingJSObjectReference((_, _) => null);
+            await using var scripts = new RecordingJSObjectReference((_, _) => null);
+            preview.Recorder.Hold("attach");
+            ctx.Services.AddSingleton<IJSRuntime>(RecordingJSRuntime.Importing(PreviewPath, preview, scripts));
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("cover bytes", "cover.jpg", contentType: "image/jpeg"));
+            var attach = Assert.Single(preview.Recorder.GetCalls("attach"));
+
+            // Act
+            await cut.ReleaseAsync(() => attach.Complete(instance));
+
+            // Assert
+            Assert.Equal(["cover.jpg"], (IReadOnlyList<string>)Assert.Single(instance.Recorder.GetCalls("show")).Arguments[0]!);
+        }
+
+        [Fact]
+        public async Task Should_keep_an_image_waiting_through_a_failed_attach_and_show_it_once_a_later_one_attaches()
+        {
+            // Arrange — an image chosen while the preview's script attaches, and that attach failing
+            using var ctx = new FormaImagePickerTests();
+            await using var preview = new RecordingJSObjectReference((_, _) => null);
+            await using var instance = new RecordingJSObjectReference((_, _) => null);
+            await using var scripts = new RecordingJSObjectReference((_, _) => null);
+            preview.Recorder.Hold("attach");
+            ctx.Services.AddSingleton<IJSRuntime>(RecordingJSRuntime.Importing(PreviewPath, preview, scripts));
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("cover bytes", "cover.jpg", contentType: "image/jpeg"));
+            await cut.ReleaseAsync(() => Assert.Single(preview.Recorder.GetCalls("attach")).Fail(new JSException("FilePreview.js could not attach")));
+            Assert.Empty(instance.Recorder.Calls);
+
+            // Act — the picker's next render attaches again
+            cut.FindComponent<FormaImagePicker>().Render();
+            await cut.ReleaseAsync(() => preview.Recorder.GetCalls("attach")[1].Complete(instance));
+
+            // Assert
+            Assert.Equal(["cover.jpg"], (IReadOnlyList<string>)Assert.Single(instance.Recorder.GetCalls("show")).Arguments[0]!);
+        }
+
+        [Fact]
+        public async Task Should_release_the_preview_an_attach_gets_once_the_picker_is_gone()
+        {
+            // Arrange — the picker disposed while the preview's script is still attaching
+            using var ctx = new FormaImagePickerTests();
+            await using var preview = new RecordingJSObjectReference((_, _) => null);
+            await using var instance = new RecordingJSObjectReference((_, _) => null);
+            await using var scripts = new RecordingJSObjectReference((_, _) => null);
+            preview.Recorder.Hold("attach");
+            ctx.Services.AddSingleton<IJSRuntime>(RecordingJSRuntime.Importing(PreviewPath, preview, scripts));
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var attach = Assert.Single(preview.Recorder.GetCalls("attach"));
+            await ctx.DisposeComponentsAsync();
+
+            // Act
+            await cut.ReleaseAsync(() => attach.Complete(instance));
+
+            // Assert
+            Assert.Single(instance.Recorder.GetCalls("dispose"));
+            Assert.Equal(1, instance.Releases);
+        }
+    }
+
+    private const string PreviewPath = "./_content/forma/browser/scripts/behaviors/FilePreview.js";
 }

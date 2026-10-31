@@ -6,6 +6,7 @@ using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 
 using Xunit;
@@ -64,6 +65,90 @@ public sealed class JSInteropTests
                 Assert.Contains("threw", entry.Message, StringComparison.Ordinal);
                 Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
             });
+        }
+
+        [Fact]
+        public async Task Should_release_the_instance_an_attach_gets_once_the_disposal_overtook_it()
+        {
+            // Arrange — an attach still waiting on the script as the wrapper is disposed
+            await using var moduleReference = new RecordingJSObjectReference((_, _) => null);
+            moduleReference.Recorder.Hold("attach");
+            await using var probe = new Probe(CreateEnvironment(CreateImporting(moduleReference)));
+            var attaching = probe.AttachAsync(default).AsTask();
+            await probe.DisposeAsync();
+            await using var instance = new RecordingJSObjectReference((_, _) => null);
+
+            // Act
+            Assert.Single(moduleReference.Recorder.GetCalls("attach")).Complete(instance);
+
+            // Assert
+            Assert.False(await attaching);
+            Assert.False(probe.IsAttached);
+            Assert.Single(instance.Recorder.GetCalls("dispose"));
+            Assert.Equal(1, instance.Releases);
+        }
+
+        [Fact]
+        public async Task Should_release_the_instance_an_attach_gets_once_a_detach_overtook_it()
+        {
+            // Arrange — an attach still waiting on the script as the wrapper detaches
+            await using var moduleReference = new RecordingJSObjectReference((_, _) => null);
+            moduleReference.Recorder.Hold("attach");
+            await using var probe = new Probe(CreateEnvironment(CreateImporting(moduleReference)));
+            var attaching = probe.AttachAsync(default).AsTask();
+            await probe.DetachAsync();
+            await using var instance = new RecordingJSObjectReference((_, _) => null);
+
+            // Act
+            Assert.Single(moduleReference.Recorder.GetCalls("attach")).Complete(instance);
+
+            // Assert
+            Assert.False(await attaching);
+            Assert.False(probe.IsAttached);
+            Assert.Equal(1, instance.Releases);
+        }
+
+        [Fact]
+        public async Task Should_keep_the_later_of_two_attaches_and_release_the_earlier_answering_last()
+        {
+            // Arrange — two attaches in flight, the earlier answering after the later
+            await using var moduleReference = new RecordingJSObjectReference((_, _) => null);
+            moduleReference.Recorder.Hold("attach");
+            await using var probe = new Probe(CreateEnvironment(CreateImporting(moduleReference)));
+            var earlier = probe.AttachAsync(default).AsTask();
+            var later = probe.AttachAsync(default).AsTask();
+            var calls = moduleReference.Recorder.GetCalls("attach");
+            await using var earlierInstance = new RecordingJSObjectReference((_, _) => null);
+            await using var laterInstance = new RecordingJSObjectReference((_, _) => null);
+            calls[1].Complete(laterInstance);
+
+            // Act
+            calls[0].Complete(earlierInstance);
+
+            // Assert
+            Assert.True(await later);
+            Assert.False(await earlier);
+            Assert.True(probe.IsAttached);
+            Assert.Equal(1, earlierInstance.Releases);
+            Assert.Equal(0, laterInstance.Releases);
+        }
+
+        [Fact]
+        public async Task Should_attach_on_a_later_attempt_once_the_import_failed()
+        {
+            // Arrange — a module that could not be fetched once
+            var imports = 0;
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? new FakeJSObjectReference((_, _) => null) : null);
+            var js = new FakeJSRuntime((_, _) => ++imports == 1 ? throw new JSException("Failed to fetch dynamically imported module") : moduleReference);
+            await using var probe = new Probe(CreateEnvironment(js));
+            Assert.False(await probe.AttachAsync(default));
+
+            // Act
+            var attached = await probe.AttachAsync(default);
+
+            // Assert
+            Assert.True(attached);
+            Assert.True(probe.IsAttached);
         }
     }
 
@@ -141,6 +226,12 @@ public sealed class JSInteropTests
 
     private static JSEnvironment CreateEnvironment(IJSRuntime js, FakeLoggerFactory loggerFactory)
         => new(js, loggerFactory.CreateLogger("probe"), Owner);
+
+    private static JSEnvironment CreateEnvironment(IJSRuntime js)
+        => new(js, NullLogger.Instance, Owner);
+
+    private static FakeJSRuntime CreateImporting(IJSObjectReference moduleReference)
+        => new((identifier, _) => identifier == "import" ? moduleReference : throw new JSException($"'{identifier}' is not an import."));
 
     private sealed class Probe(IJSEnvironment js) : JSInterop(js, Path)
     {

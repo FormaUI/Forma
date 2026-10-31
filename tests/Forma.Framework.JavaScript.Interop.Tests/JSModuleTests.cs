@@ -58,6 +58,26 @@ public sealed class JSModuleTests
         }
 
         [Fact]
+        public async Task Should_import_again_once_an_import_failed_and_log_each_failure_once()
+        {
+            // Arrange — a module that could not be fetched once
+            using var loggerFactory = new FakeLoggerFactory();
+            var imports = 0;
+            await using var moduleReference = new FakeJSObjectReference((_, _) => null);
+            var js = new FakeJSRuntime((_, _) => ++imports == 1 ? throw new JSException("Failed to fetch dynamically imported module") : moduleReference);
+            await using var module = new JSModule(CreateEnvironment(js, loggerFactory), Path);
+            Assert.False(await module.TryInvokeVoidAsync("measure"));
+
+            // Act
+            var ran = await module.TryInvokeVoidAsync("measure");
+
+            // Assert
+            Assert.True(ran);
+            Assert.Equal(2, imports);
+            Assert.Contains("could not be imported", Assert.Single(loggerFactory.Entries).Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task Should_log_the_circuit_dropping_during_the_import()
         {
             // Arrange

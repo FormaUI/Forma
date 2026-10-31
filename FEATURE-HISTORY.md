@@ -22,7 +22,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - Inputs bound as they are typed into keep every key typed, and a button with no click handler makes no round trip.
 - [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through its items in the order the page holds them, a group's and those added later among them.
 - [`FormaSplitter`](docs/component-catalog.md#formasplitter) follows a drag in the browser, ending it wherever the pointer is let go, and Escape returns the size the drag started from.
-- [`FormaImagePicker`](docs/component-catalog.md#formaimagepicker) previews an image chosen before its script attached.
+- [`FormaImagePicker`](docs/component-catalog.md#formaimagepicker) previews an image chosen before its script attached, and attaches the preview again on a later render after an attach failed.
 - A brand mark set beside the text naming the same thing is hidden from assistive technology, so a share menu's network, a tab or a toggle button is named once.
 - [`FormaTimePicker`](docs/component-catalog.md#formatimepicker)'s list and [`FormaDateTimePicker`](docs/component-catalog.md#formadatetimepicker)'s open on the time held, whatever was chosen before.
 - An open surface that closes gives up its layer among the input router's.
@@ -49,6 +49,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [The DOM watcher and engine](docs/dom-watcher-engine-design.md): what a component observes in the browser and acts on there goes through one watcher and one engine, its focus and its scrolling among it.
 - [Currencies](src/Forma.Framework/Forma.Framework.Currencies/README.md): the ISO 4217 catalog, with each currency's decimals and each culture's symbol, from CLDR.
 - [Debouncing](src/Forma.Framework/Forma.Framework.Events/README.md) joins the events assembly.
+- [An interop wrapper](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md) releases what an attach gets once a later attach, a detach or the disposal overtook it, and imports a module again after its import failed.
 
 **Hosting**
 
