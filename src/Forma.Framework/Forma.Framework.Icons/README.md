@@ -54,7 +54,7 @@ Glyph.AlignLeft.GetDirectionSensitivity();    // null
 | --- | --- |
 | `IconArtwork` | The artwork used to draw an icon: an `IconVector`, a `BrandIconArtwork` or an `IconCharacter`. `IconArtwork.None` is nothing to draw. |
 | `IconVector` | SVG geometry: a `ViewBox` and the `Paths` composing it, in painting order. Built by `IconArtwork.Vector(viewBox, paths)`. |
-| `BrandIconArtwork` | An `IconVector` carrying the brand's name as `Title`, the mark's accessible name. Built by `IconArtwork.Brand(viewBox, paths, title)`. |
+| `BrandIconArtwork` | An `IconVector` carrying the brand's name as `Title`. Built by `IconArtwork.Brand(viewBox, paths, title)`. |
 | `IconCharacter` | A single character drawn by the font: its `Value`. Built by `IconArtwork.Character(value)`. |
 | `IconPath` | One path: its SVG path `Data`, its `Opacity`, and its `StrokeWidth` in the artwork's own units, where zero fills the path. |
 

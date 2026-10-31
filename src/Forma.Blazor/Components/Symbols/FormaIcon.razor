@@ -11,8 +11,9 @@
          @ref="RootElement"
          viewBox="@brand.ViewBox"
          fill="currentColor"
-         role="img"
-         aria-label="@brand.Title"
+         role="@Role"
+         aria-label="@Label"
+         aria-hidden="@AriaHidden"
          focusable="false">@foreach (var path in brand.Paths)
                            {
                                <path d="@path.Data" />
@@ -29,7 +30,9 @@ else if (_artwork is IconVector vector)
          viewBox="@vector.ViewBox"
          fill="currentColor"
          data-direction="@Direction"
-         aria-hidden="true"
+         role="@Role"
+         aria-label="@Label"
+         aria-hidden="@AriaHidden"
          focusable="false">@foreach (var path in _vectorPaths)
                            {
                                if (path.StrokeWidth is not null)
@@ -50,5 +53,7 @@ else if (_characterText is not null)
           style="@RootStyle"
           @attributes="AdditionalAttributes"
           @ref="RootElement"
-          aria-hidden="true">@_characterText</span>
+          role="@Role"
+          aria-label="@Label"
+          aria-hidden="@AriaHidden">@_characterText</span>
 }

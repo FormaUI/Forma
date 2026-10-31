@@ -52,8 +52,8 @@ coordinate off the grid, and a glyph the complete grid doesn't draw.
 
 A brand logo is never drawn by hand: it is a trademark, and its owner's guidelines forbid a
 redrawing. The official marks are fetched from a pinned release of an icon set that carries them,
-and none of the rules above apply to them. Every mark is named by a member of the `Brand` enum,
-whose brand's title is its accessible name.
+and none of the rules above apply to them. Every mark is named by a member of the `Brand` enum and
+carries its brand's title.
 
 ## Naming
 

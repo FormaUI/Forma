@@ -1,9 +1,9 @@
 @page "/{Runtime}/icon"
 @using Forma.Framework.Icons
 
-@* A glyph a button swaps for another, the glyph shown where the check reads it, beside a brand mark named by its title. *@
+@* A decorative glyph a button swaps for another, the glyph shown where the check reads it, beside a brand mark its label names. *@
 <FormaIcon Id="glyph" Icon="_glyph" Size="IconSize.Large" />
-<FormaIcon Id="brand" Icon="Brand.GitHub" Size="IconSize.Large" />
+<FormaIcon Id="brand" Icon="Brand.GitHub" Size="IconSize.Large" Label="Forma on GitHub" />
 <FormaButton Id="swap" OnClick="@(() => _glyph = Glyph.Star)">Swap</FormaButton>
 <output id="result">@_glyph</output>
 

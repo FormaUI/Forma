@@ -23,7 +23,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through its items in the order the page holds them, a group's, those added later and those the page reorders among them.
 - [`FormaSplitter`](docs/component-catalog.md#formasplitter) follows a drag in the browser, ending it wherever the pointer is let go, and Escape returns the size the drag started from.
 - [`FormaImagePicker`](docs/component-catalog.md#formaimagepicker) previews an image chosen before its script attached, and attaches the preview again on a later render after an attach failed.
-- A brand mark set beside the text naming the same thing is hidden from assistive technology, so a share menu's network, a tab or a toggle button is named once.
+- [`FormaIcon`](docs/component-catalog.md#formaicon) is decorative unless its `Label` names it, a brand mark as every other icon, so a share menu's network, a tab or a toggle button is named once.
 - [`FormaDialog`](docs/component-catalog.md#formadialog) is named by its title.
 - [`FormaTimePicker`](docs/component-catalog.md#formatimepicker)'s list and [`FormaDateTimePicker`](docs/component-catalog.md#formadatetimepicker)'s open on the time held, whatever was chosen before.
 - An open surface that closes gives up its layer among the input router's.
@@ -85,6 +85,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - Culture routing is `Forma.Framework.Culture.Router`, its ASP.NET Core assembly keeping the middleware: a route names its pair, `UICulture` and an optional `Culture`; `CultureRouter` reads paths as strings; `CultureSwitcher.SwitchTo` is `SwitchToAsync`; `CultureBaseHref` and `Forma.Framework.Culture.Router.Interop` are gone, `FormaPageHead` writing the base routing gives and refusing a `BaseHref` beside it; and the `forma-culture` cookie is no longer read.
 - The composer's dialog results, `ResourceInsertion` and selection reports, `TextRange`, and the data view's `ColumnFitReport` and `ColumnWidth` are records with `init` properties rather than positional ones, and `InputRoute`'s `Action` and `Bindings` and `KeyBinding`'s `Key` are `required` `init` properties beside the constructors that set them.
 - `Pointer` is gone; a drag captures its pointer in the browser.
+- `FormaIcon` hides a brand mark as it hides every icon, and a host names a mark it places alone through `Label`.
 - `RichTextEditorPlugin.RequestCommand` takes the text or the number a command takes, where it took any object.
 
 <a id="2026-09"></a>

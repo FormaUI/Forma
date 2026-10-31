@@ -55,7 +55,7 @@
     "Default": "Predeterminada",
     "Alternate": "Alternativa",
     "Brands": "Marcas",
-    "A brand's official mark, fetched rather than drawn, carrying the brand's name as its accessible name so the mark can stand alone as a link.": "El emblema oficial de una marca, obtenido en lugar de dibujado, que lleva el nombre de la marca como nombre accesible para que pueda servir por sí solo como enlace.",
+    "A brand's official mark, fetched rather than drawn. Like every icon it is decorative, and a mark standing alone, as a link, is named by its label.": "El emblema oficial de una marca, obtenido en lugar de dibujado. Como todo icono, es decorativo, y un emblema que aparece solo, como enlace, se nombra por su etiqueta.",
     "Arrows and Navigation": "Flechas y Navegación",
     "Actions": "Acciones",
     "Status and Feedback": "Estado y Avisos",

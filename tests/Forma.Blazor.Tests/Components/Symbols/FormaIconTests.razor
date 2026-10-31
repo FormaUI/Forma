@@ -331,7 +331,7 @@
         }
 
         [Fact]
-        public void Should_name_a_brand_mark_after_its_brand()
+        public void Should_hide_a_brand_mark_from_assistive_technology_as_it_hides_every_icon()
         {
             // Arrange
             using var ctx = new FormaIconTests();
@@ -341,13 +341,38 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal("img", svg.GetAttribute("role")),
-                () => Assert.Equal("GitHub", svg.GetAttribute("aria-label")),
-                () => Assert.Null(svg.GetAttribute("aria-hidden")),
+                () => Assert.Equal("true", svg.GetAttribute("aria-hidden")),
+                () => Assert.Null(svg.GetAttribute("role")),
+                () => Assert.Null(svg.GetAttribute("aria-label")),
                 () => Assert.Equal("forma-icon forma-icon-sm", svg.ClassName),
                 () => Assert.Null(svg.QuerySelector("path")!.GetAttribute("stroke")),
                 // The brand's source artwork draws under the default nonzero fill rule.
                 () => Assert.Null(svg.QuerySelector("path")!.GetAttribute("fill-rule")));
+        }
+
+        [Theory]
+        [InlineData("Brand.GitHub", "svg")]
+        [InlineData("Glyph.Check", "svg")]
+        [InlineData("Rune", "span")]
+        public void Should_draw_an_image_its_label_names(string kind, string element)
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+            Icon icon = kind switch
+            {
+                "Brand.GitHub" => Brand.GitHub,
+                "Glyph.Check" => Glyph.Check,
+                _ => new Rune('Ω'),
+            };
+
+            // Act
+            var root = ctx.Render(@<FormaIcon Icon="icon" Label="Source on GitHub" />).Find(element);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("img", root.GetAttribute("role")),
+                () => Assert.Equal("Source on GitHub", root.GetAttribute("aria-label")),
+                () => Assert.Null(root.GetAttribute("aria-hidden")));
         }
 
         [Fact]

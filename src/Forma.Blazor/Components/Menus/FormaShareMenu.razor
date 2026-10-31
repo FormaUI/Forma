@@ -37,16 +37,16 @@
                     {
                         @if (NeedsConnection(target))
                         {
-                            <FormaDropDownMenuItem @key="target.Id" OnClick="() => ConnectAsync(target)"><FormaIcon Icon="target.Icon" aria-hidden="true" /><span>@L["Connect {Target}", target.Title]</span></FormaDropDownMenuItem>
+                            <FormaDropDownMenuItem @key="target.Id" OnClick="() => ConnectAsync(target)"><FormaIcon Icon="target.Icon" /><span>@L["Connect {Target}", target.Title]</span></FormaDropDownMenuItem>
                         }
                         else if (target.GetAddress(Item!) is { } address)
                         {
-                            <FormaDropDownMenuItem @key="target.Id" Href="@address" target="_blank" rel="noopener noreferrer"><FormaIcon Icon="target.Icon" aria-hidden="true" /><span>@target.Title</span></FormaDropDownMenuItem>
+                            <FormaDropDownMenuItem @key="target.Id" Href="@address" target="_blank" rel="noopener noreferrer"><FormaIcon Icon="target.Icon" /><span>@target.Title</span></FormaDropDownMenuItem>
                         }
                         else
                         {
                             @* A call reports how it went inside the menu, so the menu stays open to show it. *@
-                            <FormaDropDownMenuItem @key="target.Id" KeepsOpen="true" OnClick="() => ShareAsync(target)"><FormaIcon Icon="target.Icon" aria-hidden="true" /><span>@target.Title</span></FormaDropDownMenuItem>
+                            <FormaDropDownMenuItem @key="target.Id" KeepsOpen="true" OnClick="() => ShareAsync(target)"><FormaIcon Icon="target.Icon" /><span>@target.Title</span></FormaDropDownMenuItem>
                         }
                     }
                 </FormaCommandBar>
@@ -82,7 +82,7 @@
                     <FormaDropDownMenuItem @key="action.Id" Disabled="action.IsDisabled" OnClick="() => OnCommand.InvokeAsync(action.Command)">
                         @if (action.Icon is { } icon)
                         {
-                            <FormaIcon Icon="icon" Size="IconSize.Small" aria-hidden="true" />
+                            <FormaIcon Icon="icon" Size="IconSize.Small" />
                         }
                         <span>@action.Title</span>
                     </FormaDropDownMenuItem>
@@ -104,7 +104,7 @@
         ? @<div class="forma-share-menu-item">
                 @if (Item.Icon is { } icon)
                 {
-                    <FormaIcon Icon="icon" Size="IconSize.Medium" aria-hidden="true" />
+                    <FormaIcon Icon="icon" Size="IconSize.Medium" />
                 }
                 <div class="forma-share-menu-item-text">
                     <span class="forma-share-menu-item-name">@Item.Name</span>

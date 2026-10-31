@@ -256,15 +256,21 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 
 ### Icons
 
-`FormaIcon` draws an `Icon`: a `Glyph` named for what it means, a `Brand` mark drawn with the
-brand's name as its accessible name, or a single `Rune` set in the symbol font. Each converts to an
-icon, and `Icon.FromGlyph` picks a glyph's `GlyphVariant`, the outline or the solid shape in the
-library's own set:
+`FormaIcon` draws an `Icon`: a `Glyph` named for what it means, a `Brand` mark, or a single `Rune`
+set in the symbol font. Each converts to an icon, and `Icon.FromGlyph` picks a glyph's
+`GlyphVariant`, the outline or the solid shape in the library's own set:
 
 ```razor
 <FormaIcon Icon="Glyph.Save" />
 <FormaIcon Icon="Brand.GitHub" />
 <FormaIcon Icon="Icon.FromGlyph(Glyph.Save, GlyphVariant.Alternate)" />
+```
+
+An icon is decorative, hidden from assistive technology, so the control or the text beside it names
+what it shows. An icon standing alone, as a mark linking to its brand, is named by its `Label`:
+
+```razor
+<a href="https://github.com/FormaUI/Forma"><FormaIcon Icon="Brand.GitHub" Label="Forma on GitHub" /></a>
 ```
 
 The artwork ships inside the library. A host that wants another set registers its own

@@ -7,7 +7,7 @@ public sealed class SymbolsTests
     {
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
-        public async Task Should_draw_the_glyph_it_is_given_and_name_the_brand_mark(string runtime)
+        public async Task Should_draw_the_glyph_it_is_given_and_name_only_the_mark_its_label_names(string runtime)
         {
             // Arrange
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "icon");
@@ -23,8 +23,9 @@ public sealed class SymbolsTests
             // Assert
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Star");
             await Assertions.Expect(glyphPath).Not.ToHaveAttributeAsync("d", drawn);
+            await Assertions.Expect(page.Locator("#glyph")).ToHaveAttributeAsync("aria-hidden", "true");
             await Assertions.Expect(brand).ToHaveRoleAsync(AriaRole.Img);
-            await Assertions.Expect(brand).ToHaveAccessibleNameAsync("GitHub");
+            await Assertions.Expect(brand).ToHaveAccessibleNameAsync("Forma on GitHub");
         }
     }
 

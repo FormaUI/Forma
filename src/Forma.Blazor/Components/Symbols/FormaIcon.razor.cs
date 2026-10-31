@@ -27,7 +27,17 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElement
     /// <summary>The provider supplying this icon's artwork, where null takes the surrounding subtree's provider or the registered one.</summary>
     [Parameter] public IIconProvider? Provider { get; set; }
 
+    /// <summary>The accessible name that makes the icon an image a reader announces, where null leaves it decorative.</summary>
+    [Parameter] public string? Label { get; set; }
+
     [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
+
+    // An icon is decorative unless it is named, so a reader hears the control or the text beside it once.
+    private string? Role
+        => Label is null ? null : "img";
+
+    private string? AriaHidden
+        => Label is null ? "true" : null;
 
     // Only a glyph drawn as geometry turns; the browser mirrors a character itself, and a brand mark never turns.
     private string? Direction
@@ -47,6 +57,11 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElement
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Icon);
+
+        if (Label is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+        }
 
         // Nearest wins: this icon's own provider, then the surrounding subtree's; the registered one answers what those decline.
         var provider = Provider ?? CascadingProvider;
