@@ -65,6 +65,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [The screen reader check](docs/screen-reader-checks-design.md): NVDA driven through the Showcase, recording what it speaks.
 - The gate shows each test project as it finishes, can load the machine while a test repeats and list the waits that needed time, and fails a component that reads the ambient culture.
 - Every Framework assembly is a package of its own.
+- The interop analyzer checks a type deriving from one that crosses the JavaScript interop boundary as crossing it too.
 
 **Breaking:**
 

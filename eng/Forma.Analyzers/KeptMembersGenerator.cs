@@ -40,7 +40,7 @@ public sealed class KeptMembersGenerator : IIncrementalGenerator
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (GetMemberTypes(type, attribute) is { } memberTypes && type.GetDocumentationCommentId() is { } id)
+                if (GetMemberTypes(type, attribute) is { } memberTypes && HoldsMembers(type, memberTypes) && type.GetDocumentationCommentId() is { } id)
                 {
                     types.Add((id.Substring(2), memberTypes));
                 }
@@ -86,6 +86,22 @@ public sealed class KeptMembersGenerator : IIncrementalGenerator
         }
 
         return memberTypes;
+    }
+
+    // A dependency naming no member a type has fails the trim, as one on an abstract record without properties would, and
+    // what derives from the type is kept by dependencies of its own.
+    private static bool HoldsMembers(INamedTypeSymbol type, int memberTypes)
+    {
+        const int PublicConstructors = 0x0003;
+        const int PublicProperties = 0x0200;
+
+        if ((memberTypes & ~(PublicConstructors | PublicProperties)) != 0)
+        {
+            return true;
+        }
+
+        return ((memberTypes & PublicConstructors) != 0 && type.InstanceConstructors.Any(static constructor => constructor.DeclaredAccessibility == Accessibility.Public))
+            || ((memberTypes & PublicProperties) != 0 && new[] { type }.Concat(GetBaseTypes(type)).Any(static declaring => declaring.GetMembers().OfType<IPropertySymbol>().Any(static property => !property.IsStatic && property.DeclaredAccessibility == Accessibility.Public)));
     }
 
     private static IEnumerable<INamedTypeSymbol> GetBaseTypes(INamedTypeSymbol type)

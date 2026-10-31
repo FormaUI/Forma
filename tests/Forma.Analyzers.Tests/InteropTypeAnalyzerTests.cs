@@ -317,6 +317,42 @@ public sealed class InteropTypeAnalyzerTests
                 ["FORMA0003: 'TextRange' crosses the JavaScript interop boundary, but its serialization matches its constructor by parameter names, which trimming removes; give it a public parameterless constructor and init properties"],
                 GetMessages(diagnostics));
         }
+
+        [Fact]
+        public async Task Should_report_a_type_deriving_from_a_crossing_type_that_serialization_builds_through_its_constructors_parameter_names()
+        {
+            // Arrange — results sent as their base, each serialized as itself
+            const string Source = $$"""
+                namespace Forma.Sample
+                {
+                    [{{Kept}}]
+                    public abstract record DialogResult;
+
+                    public sealed record LinkResult(string Href) : DialogResult;
+
+                    public sealed record TableResult : DialogResult
+                    {
+                        public int Rows { get; init; }
+                    }
+                }
+
+                namespace Forma.Sample.Interop
+                {
+                    public sealed class Caller
+                    {
+                        public Task InsertAsync(Module module, DialogResult result) => module.SendAsync("insert", result);
+                    }
+                }
+                """;
+
+            // Act
+            var diagnostics = await AnalyzeAsync(Source);
+
+            // Assert
+            Assert.Equal(
+                ["FORMA0003: 'LinkResult' crosses the JavaScript interop boundary, but its serialization matches its constructor by parameter names, which trimming removes; give it a public parameterless constructor and init properties"],
+                GetMessages(diagnostics));
+        }
     }
 
     public sealed class Descriptions

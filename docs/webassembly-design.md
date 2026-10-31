@@ -101,10 +101,12 @@ a page whose load initialized nothing, so a Web App page without `FormaPageHead`
   named type annotated at the type with `DynamicallyAccessedMembers` keeping its public constructors and
   properties, and has a public parameterless constructor with `init` properties, since trimming removes the
   parameter names serialization matches a constructor by. An anonymous object never crosses it. Forma's own
-  analyzer fails the build of every client library that breaks either rule. The trimmer applies a type's
-  annotation only where code asks a value typed as that type for its type, which the interop, serializing
-  values as `object`, never does, so the same package generates for each library a dependency on every
-  annotated type's members, and every type derived from one, which the trimmer keeps with the library.
+  analyzer fails the build of every client library that breaks either rule, and checks a type deriving from
+  a crossing type where it is declared, since it crosses as itself wherever a value typed as its base does.
+  The trimmer applies a type's annotation only where code asks a value typed as that type for its type, which
+  the interop, serializing values as `object`, never does, so the same package generates for each library a
+  dependency on the members of every annotated type that has them, and of every type derived from one, which
+  the trimmer keeps with the library.
 - **Locale packs** reach a trimmed client because the host's build records each pack it references in
   the host's assembly, the package's own targets doing what the repository's build does for its hosts.
 

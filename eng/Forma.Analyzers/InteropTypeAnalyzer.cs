@@ -19,7 +19,9 @@ using Microsoft.CodeAnalysis.Operations;
 /// type parameter that declares serialized members, by a <c>[JSInvokable]</c> method's parameters and result, by a value
 /// an interop namespace returns as <c>object</c> or a method it hands over as a delegate returning one, and by an
 /// anonymous object passed as <c>object</c>. A type is followed through its public properties, collections, nullable
-/// values and the derived types it serializes as; a framework type serializes itself.
+/// values and the derived types it serializes as; a framework type serializes itself. A type deriving from or
+/// implementing one of Forma's crossing types crosses wherever a value typed as that one does, serialized as itself,
+/// so one the crossing type doesn't name as a derived type is checked where it is declared.
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class InteropTypeAnalyzer : DiagnosticAnalyzer
@@ -75,6 +77,7 @@ public sealed class InteropTypeAnalyzer : DiagnosticAnalyzer
         context.RegisterOperationAction(AnalyzeConversion, OperationKind.Conversion);
         context.RegisterOperationAction(AnalyzeDelegateCreation, OperationKind.DelegateCreation);
         context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
+        context.RegisterSymbolAction(AnalyzeType, SymbolKind.NamedType);
     }
 
     // A type argument for an interop type parameter that declares serialized members, as an interop result's is.
@@ -159,6 +162,36 @@ public sealed class InteropTypeAnalyzer : DiagnosticAnalyzer
             : method.ReturnType;
 
         Check(context.ReportDiagnostic, result, method.Locations.FirstOrDefault() ?? Location.None);
+    }
+
+    // A type a polymorphic contract names is followed wherever the contract crosses, so this checks the types none names.
+    private static void AnalyzeType(SymbolAnalysisContext context)
+    {
+        var type = (INamedTypeSymbol)context.Symbol;
+
+        if (type.TypeKind is not (TypeKind.Class or TypeKind.Struct))
+        {
+            return;
+        }
+
+        var contracts = GetBaseTypes(type).Concat(type.AllInterfaces).Where(IsCrossingContract).ToList();
+
+        if (contracts.Count > 0 && !contracts.Any(contract => GetDerivedTypes(contract).Contains(type, SymbolEqualityComparer.Default)))
+        {
+            Check(context.ReportDiagnostic, type, type.Locations.FirstOrDefault() ?? Location.None);
+        }
+    }
+
+    // One of Forma's own types whose annotation declares the members its serialization reads.
+    private static bool IsCrossingContract(INamedTypeSymbol type)
+        => !IsFramework(type) && GetKeptMembers(type.GetAttributes()) is { } kept && (kept & PublicProperties) == PublicProperties;
+
+    private static IEnumerable<INamedTypeSymbol> GetBaseTypes(INamedTypeSymbol type)
+    {
+        for (var current = type.BaseType; current is not null; current = current.BaseType)
+        {
+            yield return current;
+        }
     }
 
     private static bool IsInteropArgument(IConversionOperation conversion)

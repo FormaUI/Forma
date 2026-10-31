@@ -33,7 +33,10 @@ public sealed class KeptMembersGeneratorTests
             namespace Forma.Sample
             {
                 [{{Kept}}]
-                public abstract record Binding;
+                public abstract record Binding
+                {
+                    public string Family { get; init; } = "";
+                }
 
                 public sealed record KeyBinding : Binding;
 
@@ -61,6 +64,32 @@ public sealed class KeptMembersGeneratorTests
     }
 
     [Fact]
+    public void Should_leave_out_an_annotated_type_holding_none_of_the_members_it_names_and_keep_what_derives_from_it()
+    {
+        // Arrange
+        var source = $$"""
+            namespace Forma.Sample
+            {
+                [{{Kept}}]
+                public abstract record Insertion;
+
+                public sealed record FileInsertion : Insertion
+                {
+                    public string Source { get; init; } = "";
+                }
+            }
+            """;
+
+        // Act
+        var (generated, _) = Generate(source);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.DoesNotContain("\"Forma.Sample.Insertion\"", generated, StringComparison.Ordinal),
+            () => Assert.Contains("DynamicallyAccessedMemberTypes)515, \"Forma.Sample.FileInsertion\", \"Sample\")]", generated, StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Should_keep_what_an_annotated_interface_names_on_the_types_implementing_it()
     {
         // Arrange
@@ -70,7 +99,10 @@ public sealed class KeptMembersGeneratorTests
                 [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
                 public interface IState;
 
-                public sealed record State : IState;
+                public sealed record State : IState
+                {
+                    public bool IsWithin { get; init; }
+                }
             }
             """;
 
