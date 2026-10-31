@@ -105,6 +105,57 @@ describe('RichTextEditor', () => {
         expect(restored.toString()).toBe('second');
     });
 
+    it('converts text typed straight into the canvas, which stands in no block, as a paragraph of its own', () => {
+        editor.innerHTML = 'Title';
+        const handle = attach(editor, { owner });
+        const text = editor.firstChild;
+        const range = document.createRange();
+        range.setStart(text, 5);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('formatBlock', 'h1');
+        const restored = selection.getRangeAt(0);
+
+        expect(editor.innerHTML).toBe('<h1>Title</h1>');
+        expect(restored.startContainer).toBe(text);
+        expect(restored.startOffset).toBe(5);
+    });
+
+    it('converts loose text a selection spans with the blocks beside it, each run of it a block of its own', () => {
+        editor.innerHTML = 'one<b>two</b><p>three</p>four';
+        const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.setStart(editor, 0);
+        range.setEnd(editor, editor.childNodes.length);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('formatBlock', 'h3');
+        const restored = selection.getRangeAt(0);
+
+        expect(editor.innerHTML).toBe('<h3>one<b>two</b></h3><h3>three</h3><h3>four</h3>');
+        expect(restored.toString()).toBe('onetwothreefour');
+    });
+
+    it('leaves loose text the selection does not touch where it stands', () => {
+        editor.innerHTML = 'before<p>inside</p>';
+        const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.setStart(editor.querySelector('p').firstChild, 2);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('formatBlock', 'h2');
+
+        expect(editor.innerHTML).toBe('before<h2>inside</h2>');
+    });
+
     it('converts every block a selection spans, leaving nested ones to their innermost', () => {
         editor.innerHTML = '<p>first</p><blockquote><p>second</p></blockquote><p>third</p>';
         const handle = attach(editor, { owner });
@@ -262,6 +313,22 @@ describe('RichTextEditor', () => {
         selected.addRange(anchorRange);
 
         expect(handle.exec('bold').selection.activeStyles).toContain('anchor');
+    });
+
+    it('gives lead to the paragraph loose text joins, never to the canvas', () => {
+        editor.innerHTML = 'Intro';
+        const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.setStart(editor.firstChild, 2);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('lead');
+
+        expect(editor.innerHTML).toBe('<p class="forma-composer-lead">Intro</p>');
+        expect(editor.classList.contains('forma-composer-lead')).toBe(false);
     });
 
     it('toggles lead paragraph class', () => {

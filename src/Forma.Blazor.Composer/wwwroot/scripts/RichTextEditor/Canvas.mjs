@@ -69,6 +69,8 @@ export class Canvas {
 
     /** The innermost block holding the selection's anchor, falling back to the canvas's first block. */
     closestBlock() {
+        this.#holdLooseContent();
+
         const selection = window.getSelection();
         const node = Canvas.elementOf((selection && selection.rangeCount > 0) ? selection.anchorNode : null);
 
@@ -83,6 +85,8 @@ export class Canvas {
 
     /** The innermost blocks the selection touches. */
     selectedBlocks() {
+        this.#holdLooseContent();
+
         const range = this.currentRange();
         if (!range) {
             return [];
@@ -97,6 +101,73 @@ export class Canvas {
             .filter(block => range.intersectsNode(block));
 
         return touched.filter(block => !touched.some(other => other !== block && block.contains(other)));
+    }
+
+    /**
+     * Puts content standing loose at the canvas's top level, as typing into an empty canvas leaves it, into a paragraph
+     * of its own wherever the selection touches it, so a command acting on blocks finds one there.
+     * Each run of loose siblings becomes one paragraph, from the last to the first so the earlier runs keep their
+     * places, and the selection is placed back over the same content.
+     */
+    #holdLooseContent() {
+        const range = this.currentRange();
+
+        if (!range || !this.contains(range.commonAncestorContainer)) {
+            return;
+        }
+
+        const runs = this.#looseRuns().filter(run => run.some(node => range.intersectsNode(node)));
+
+        if (runs.length === 0) {
+            return;
+        }
+
+        const bounds = [[range.startContainer, range.startOffset], [range.endContainer, range.endOffset]];
+
+        for (const run of runs.reverse()) {
+            const index = [...this.#element.childNodes].indexOf(run[0]);
+            const paragraph = document.createElement('p');
+            run[0].before(paragraph);
+            paragraph.append(...run);
+
+            // A boundary on the canvas itself counts children, which the run now stands in one paragraph for.
+            for (const bound of bounds) {
+                const [container, offset] = bound;
+
+                if (container === this.#element && offset > index) {
+                    bound.splice(0, 2, ...(offset <= index + run.length ? [paragraph, offset - index] : [container, offset - run.length + 1]));
+                }
+            }
+        }
+
+        const restored = document.createRange();
+        restored.setStart(...bounds[0]);
+        restored.setEnd(...bounds[1]);
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(restored);
+    }
+
+    /** The runs of adjacent top-level children no block holds, each with content beyond whitespace. */
+    #looseRuns() {
+        const runs = [];
+        let run = [];
+
+        for (const child of this.#element.childNodes) {
+            if (child.nodeType === Node.TEXT_NODE || (child.nodeType === Node.ELEMENT_NODE && !child.matches(Canvas.BlockLikeSelector))) {
+                run.push(child);
+            } else if (run.length > 0) {
+                runs.push(run);
+                run = [];
+            }
+        }
+
+        if (run.length > 0) {
+            runs.push(run);
+        }
+
+        return runs.filter(found => found.some(node => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== ''));
     }
 
     /** Moves what follows the range out of its block into a copy standing after it, and returns that copy. */
