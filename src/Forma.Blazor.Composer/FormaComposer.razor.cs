@@ -111,6 +111,10 @@ public sealed partial class FormaComposer(
     private ComposerDocument? _sanitizedValue;
     private DocumentConverterRegistry _converterRegistry = new();
 
+    // The composer's own scope answers the shortcuts of every plugin in play.
+    private InputProfile RootProfile
+        => new() { InputRoutes = _keyBindingCatalog.ToInputRoutes() };
+
     // The same instance comes back until a member changes.
     private ComposerContext? Composer
     {
@@ -186,12 +190,7 @@ public sealed partial class FormaComposer(
     {
         _activeView = view;
 
-        RebuildScope();
-
-        if (view is not null)
-        {
-            await _assetLoader.LoadAssetsAsync(view.Assets);
-        }
+        await RescopeAsync();
 
         StateHasChanged();
     }
@@ -249,6 +248,28 @@ public sealed partial class FormaComposer(
         RebuildScope();
     }
 
+    // The plugins coming into play also answer the composer's shortcuts and have their assets loaded.
+    private async Task RescopeAsync()
+    {
+        RebuildScope();
+
+        if (!_isJsStarted)
+        {
+            return;
+        }
+
+        if (_inputScope is { } inputScope)
+        {
+            await inputScope.UpdateAsync(RootProfile);
+        }
+
+        await LoadSurfaceAssetsAsync();
+    }
+
+    // Every plugin in play on the active surface has its assets, those loaded eagerly at start among them.
+    private ValueTask LoadSurfaceAssetsAsync()
+        => _assetLoader.LoadAssetsAsync(_pluginCatalog.GetSurfacePlugins(_activeEditor, _activeView).SelectMany(plugin => plugin.Assets));
+
     // A command is answered by the plugins in play for the active editor and view.
     private void RebuildScope()
     {
@@ -295,10 +316,11 @@ public sealed partial class FormaComposer(
         _isJsStarted = true;
 
         // The shortcuts route through the composer's scope; the active editor also registers them on its editable element, ahead of the native control.
-        _inputScope = await InputRouter.RegisterAsync(RootElement, new InputProfile { InputRoutes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
+        _inputScope = await InputRouter.RegisterAsync(RootElement, RootProfile, _selfReference);
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
         await Context.DomEngine.GetElement(RootElement).Focus.AttachAsync(TabOrderOptions);
-        await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
+        await _assetLoader.LoadAssetsAsync(_pluginCatalog.Plugins.SelectMany(plugin => plugin.Assets).Where(asset => asset.Loading == ComposerAssetLoading.Eager));
+        await LoadSurfaceAssetsAsync();
     }
 
     /// <summary>Runs the composer command named by the action the router matched.</summary>
@@ -365,9 +387,7 @@ public sealed partial class FormaComposer(
         _activeView = null;
         _activeViews = null;
 
-        RebuildScope();
-
-        await _assetLoader.LoadAssetsAsync(target.Assets);
+        await RescopeAsync();
 
         if (ActiveEditorIdChanged.HasDelegate)
         {

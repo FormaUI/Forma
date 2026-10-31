@@ -42,6 +42,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaComposer`](docs/component-catalog.md#formacomposer) keeps what is typed as soon as it is editable, and puts a link, a table and a stored file into the document in a trimmed WebAssembly client.
 - [`FormaComposer`](docs/component-catalog.md#formacomposer) applies a block style, lead or line height to a line typed into an empty document.
 - [`FormaComposer`](docs/component-catalog.md#formacomposer) reopens a link with the tab it opens in, and an anchor under its own name.
+- [`FormaComposer`](docs/component-catalog.md#formacomposer) loads the assets of every plugin in play, a feature's as an editor's, and answers the shortcuts of the view shown from its toolbar.
 
 **Foundations**
 

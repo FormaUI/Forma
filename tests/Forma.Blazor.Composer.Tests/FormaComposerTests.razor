@@ -251,6 +251,48 @@
             }
         }
 
+        // Declares a module the editor's surface needs.
+        private sealed class EditorAssetPlugin : IComposerFeaturePlugin
+        {
+            public string Id => "editor-asset";
+            public IReadOnlyList<ComposerAsset> Assets => [new(ComposerAssetKind.Module, "/check/editor.js")];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        // Declares a stylesheet a view needs once shown, and a module it needs from the start.
+        private sealed class ViewAssetPlugin : IComposerFeaturePlugin
+        {
+            public string Id => "view-asset";
+            public IReadOnlyList<ComposerAsset> Assets =>
+            [
+                new(ComposerAssetKind.Stylesheet, "/check/view.css"),
+                new(ComposerAssetKind.Module, "/check/eager.js", ComposerAssetLoading.Eager),
+            ];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        // Binds a shortcut on the view it is registered under.
+        private sealed class ViewShortcutPlugin : IComposerFeaturePlugin
+        {
+            public string Id => "view-shortcut";
+            public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
+                [new() { Key = "k", Command = "check.view-shout", Control = true, Shift = true }];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        // Every asset loads, so each is asked for once.
+        private static BunitJSModuleInterop SetupAssets(FormaComposerTests ctx)
+        {
+            var assets = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/Asset.js");
+            assets.Setup<bool>("loadModule", _ => true).SetResult(true);
+            assets.Setup<bool>("loadStyle", _ => true).SetResult(true);
+
+            return assets;
+        }
+
+        private static List<string?> GetLoadedUrls(BunitJSModuleInterop assets)
+            => [.. assets.Invocations.Where(invocation => invocation.Identifier is "loadModule" or "loadStyle").Select(invocation => (string?)invocation.Arguments[0])];
+
         [Fact]
         public void Should_render_composer_container_with_base_class()
         {
@@ -372,6 +414,64 @@
                 () => Assert.Equal(2, profiles.Count),
                 () => Assert.All(profiles, profile => Assert.Contains(profile.InputRoutes, route => route.Action == ComposerCommands.Undo)),
                 () => Assert.All(profiles, profile => Assert.Contains(profile.InputRoutes, route => route.Action == ComposerCommands.Redo && route.Bindings.Count == 2)));
+        }
+
+        [Fact]
+        public void Should_load_the_assets_of_the_plugins_in_play_and_the_eager_ones_of_the_rest_at_start()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var assets = SetupAssets(ctx);
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor
+                .AddFeaturePlugin<EditorAssetPlugin>()
+                .AddViewPlugin<RichTextPreviewViewPlugin>(view => view.AddFeaturePlugin<ViewAssetPlugin>())));
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll("[role=tab]").Count));
+
+            // Assert
+            Assert.Equal(["/check/eager.js", "/check/editor.js"], GetLoadedUrls(assets));
+        }
+
+        [Fact]
+        public void Should_load_the_assets_of_a_feature_registered_under_a_view_once_the_view_shows()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var assets = SetupAssets(ctx);
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor
+                .AddViewPlugin<RichTextPreviewViewPlugin>(view => view.AddFeaturePlugin<ViewAssetPlugin>())));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll("[role=tab]").Count));
+
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            Assert.Equal(["/check/eager.js", "/check/view.css"], GetLoadedUrls(assets));
+        }
+
+        [Fact]
+        public void Should_route_the_shortcuts_of_the_view_shown_through_its_own_scope()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var root = ctx.Router.SetupModule("register", invocation => invocation.Arguments[2] is DotNetObjectReference<FormaComposer>);
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor
+                .AddViewPlugin<RichTextPreviewViewPlugin>(view => view.AddFeaturePlugin<ViewShortcutPlugin>())));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll("[role=tab]").Count));
+
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            var update = Assert.Single(root.Invocations, invocation => invocation.Identifier == "update");
+            Assert.Contains(((InputProfile)update.Arguments[0]!).InputRoutes, route => route.Action == "check.view-shout");
         }
 
         [Fact]
