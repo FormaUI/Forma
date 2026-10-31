@@ -57,10 +57,6 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private readonly List<FormaDropDownMenuItem> _items = [];
-
-    // The items in the order the document holds them, read again once an item comes or goes.
-    private List<FormaDropDownMenuItem>? _orderedItems;
-    private int _itemsVersion;
     private FormaDropDownMenuItem? _focusedItem;
     private DocumentOrder _documentOrder = default!;
 
@@ -99,18 +95,10 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         => _trigger.SyncAsync(TriggerButton.RootElement, TriggerProfile);
 
     internal void RegisterItem(FormaDropDownMenuItem item)
-    {
-        _items.Add(item);
-        _orderedItems = null;
-        _itemsVersion++;
-    }
+        => _items.Add(item);
 
     internal void UnregisterItem(FormaDropDownMenuItem item)
-    {
-        _items.Remove(item);
-        _orderedItems = null;
-        _itemsVersion++;
-    }
+        => _items.Remove(item);
 
     /// <summary>Closes the menu and returns focus to the trigger.</summary>
     internal Task RequestActivateAsync()
@@ -166,30 +154,15 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         await FocusAsync(FindEnabled(items, start, delta));
     }
 
-    // Where the browser can't be asked, the items keep the order they registered in.
+    // The order is read at each move, since the page can reorder the items it keeps; where the browser can't be asked,
+    // they keep the order they registered in.
     private async Task<List<FormaDropDownMenuItem>> GetItemsAsync()
     {
-        if (_orderedItems is not null)
-        {
-            return _orderedItems;
-        }
-
-        var version = _itemsVersion;
         List<FormaDropDownMenuItem> items = [.. _items];
 
-        if (await _documentOrder.SortAsync([.. items.Select(item => item.RootElement)]) is not { } places || places.Length != items.Count)
-        {
-            return items;
-        }
-
-        List<FormaDropDownMenuItem> ordered = [.. places.Select(place => items[place])];
-
-        if (version == _itemsVersion)
-        {
-            _orderedItems = ordered;
-        }
-
-        return ordered;
+        return await _documentOrder.SortAsync([.. items.Select(item => item.RootElement)]) is { } places && places.Length == items.Count
+            ? [.. places.Select(place => items[place])]
+            : items;
     }
 
     /// <summary>Finds the first enabled item at or past <paramref name="start"/> in the direction of <paramref name="step"/>, wrapping around the ends.</summary>

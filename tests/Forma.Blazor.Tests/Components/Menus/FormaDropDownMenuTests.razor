@@ -372,6 +372,42 @@
         }
 
         [Fact]
+        public async Task Should_follow_items_the_page_reorders_while_keeping_each_of_them()
+        {
+            // Arrange — keyed items the host reorders in place, so none comes or goes, and the browser's answer for each order
+            using var ctx = new FormaDropDownMenuTests();
+            var reordered = false;
+            var order = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/DocumentOrder.js");
+            order.Setup<int[]>("sort", _ => !reordered).SetResult([0, 1, 2]);
+            order.Setup<int[]>("sort", _ => reordered).SetResult([2, 0, 1]);
+            var router = new InputRouterProbe(ctx);
+            string[] names = ["Cut", "Copy", "Paste"];
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Edit</Trigger>
+                    <ChildContent>
+                        @foreach (var name in names)
+                        {
+                            <FormaDropDownMenuItem @key="name">@name</FormaDropDownMenuItem>
+                        }
+                    </ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            var items = cut.FindComponents<FormaDropDownMenuItem>().ToDictionary(item => item.Find("[role=menuitem]").TextContent.Trim(), item => item.Instance.RootElement.Id);
+            names = ["Paste", "Cut", "Copy"];
+            reordered = true;
+            cut.FindComponent<FormaDropDownMenu>().Render();
+            var focused = GetFocused(ctx.JSInterop).Count;
+
+            // Act
+            await router.RouteAsync(popover.RootElement, "menu.first", "Home");
+
+            // Assert — the first item is Paste, where the page now holds it
+            Assert.Equal([items["Paste"]], GetFocused(ctx.JSInterop).Skip(focused));
+        }
+
+        [Fact]
         public async Task Should_open_the_popover_on_arrow_down()
         {
             // Arrange
