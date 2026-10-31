@@ -58,8 +58,8 @@ public sealed class CdnEmojiProvider : IEmojiProvider
 }
 ```
 
-Register it as the `IEmojiProvider` before `AddFormaUIServer()`, which registers its default provider
-only where none is registered:
+Register it as the `IEmojiProvider` before `AddFormaUIServer()`, and in a WebAssembly client before
+`AddFormaUIWebAssembly()`, each of which registers its default provider only where none is registered:
 
 ```csharp
 builder.Services.AddSingleton<IEmojiProvider, CdnEmojiProvider>();

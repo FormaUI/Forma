@@ -19,7 +19,8 @@ builder.AddFormaUIServer();
 
 `AddFormaTwemojiPack` registers `TwemojiEmojiProvider` as the `IEmojiProvider` and
 `TwemojiEmojiCatalog` as the `IEmojiCatalog`, both singletons, each only where nothing is registered
-for it yet. Call it before `AddFormaUIServer`, which registers the platform-font provider the same way.
+for it yet. Call it before `AddFormaUIServer`, and in a WebAssembly client before `AddFormaUIWebAssembly`,
+each of which registers the platform-font provider the same way.
 
 The components then draw from the pack:
 
