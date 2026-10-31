@@ -2,13 +2,13 @@
 
 ## Current state
 
-**Forma has 65 implemented components and 8 in progress. It runs under Interactive Server, WebAssembly and Auto, every call a component makes to a script and every call back checked in each.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
+**Forma has 65 implemented components and 8 in progress. It runs under Interactive Server, WebAssembly and Auto, every call a component makes to a script and every call back checked in each, and Blazor Hybrid and every component's static rendering are in progress.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
 
 | Measure | Now |
 | --- | --- |
 | Components | 65 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview`, packed locally and unpublished |
-| Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says |
+| Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; Blazor Hybrid and every component's static rendering in progress, as [the WebView plan](webview-implementation-plan.md) sets out |
 
 The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto. It passes locally on Windows and in CI on Linux and Windows.
 
@@ -21,6 +21,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 | Work | State |
 | --- | --- |
 | [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
+| [Blazor Hybrid and every render mode](#blazor-hybrid-and-every-render-mode) | Steps 2 to 10 open |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
@@ -99,7 +100,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | The server half, `AddFormaUIServer` and `FormaPageHead` | [`Forma.Blazor.Server`](../src/Forma.Blazor.Server/README.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented: every call a component makes to a script and every call back checked under WebAssembly and Auto, each runtime following the page's culture coordinator, an independent client culture and a standalone app's page included, a client reading its host's own strings, and the README's setup an example host for each arrangement | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, Forma's analyzer keeping each type crossing the interop serializable and its generator keeping those types' members with their library | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| Hybrid | [WebAssembly and Hybrid](culture-design.md#webassembly-and-hybrid) | [Deferred](#deferred) | — |
+| Blazor Hybrid, the WebView half | [WebView design](webview-design.md) | In progress: [its plan](webview-implementation-plan.md)'s steps 2 to 10 | — |
 
 ### Build and verification
 
@@ -115,6 +116,12 @@ Each feature, the document that states it, its state, and the month it first lan
 ## Components to build
 
 `FormaVirtualize` is built and awaits approval, after which it moves into the catalog. The data view, with its views and controls, is finished once two steps of [its plan](data-view-implementation-plan.md) land: the explorer's content moving onto it, and a tree's tab stop returning to the node last focused. Its third open step, the gallery's browsing on it, is built with the gallery and stays open until the gallery starts. [The roadmap](component-roadmap.md) orders what follows: the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
+
+<a id="blazor-hybrid-and-every-render-mode"></a>
+
+## Blazor Hybrid and every render mode
+
+[Its plan](webview-implementation-plan.md) carries out [the WebView design](webview-design.md) and the culture design's [Blazor Hybrid](culture-design.md#blazor-hybrid) section, on WebView2 in WPF, Windows Forms and MAUI on Windows, with one culture for the application across its windows, and makes every render mode a gate every component passes, static rendering among them. The design landed with step 1; a probe of two windows comes next, establishing the hooks the rest rests on, then registration in either order, the WebView halves, a host's strings, the components in a web view, static rendering, each host's integration, render modes in the gate and the host's setup.
 
 <a id="the-dom-watcher-and-engine"></a>
 
@@ -175,7 +182,8 @@ Each waits for the trigger named beside it before its design or its implementati
 
 | Work | Why it waits | Reopened by |
 | --- | --- | --- |
-| Hybrid | Forma doesn't support its render mode, and whether one state serves every native window or each its own is unchosen | Supporting Hybrid |
+| Blazor Hybrid on Android, iOS and Mac Catalyst | Outside the scope chosen for the WebView half's implementation and checks, which start on WebView2; those platforms' web views, Android's WebView and WebKit's `WKWebView`, need checks of their own, a driver reaching them among them, and native support for Forma's download, print and share operations where the web view lacks them | Supporting a mobile host |
+| A culture per window under Blazor Hybrid | Forma's components could follow a window's own state, while the host's code and native user interface read the ambient culture, which no window owns, so a window would show two cultures | A design in which a whole window follows a culture of its own |
 | An `IStringLocalizerFactory` over Forma's localization | Nothing needs one. It is adopted only once it proves its contract: both factory overloads map to Forma's resources; missing resources, fallback, enumeration and `ResourceNotFound` behave consistently; resource selection reads the UI culture and argument formatting the formatting culture; its lifetime captures no one user's state; and it coexists with a host's own factory in both registration orders, since `TryAdd` keeps only a factory registered before it | A host asking for one |
 | Observing the document's child list | No consumer needs it, and its cost is unmeasured | A consumer with a measured cost |
 | Growing the DOM watcher and engine's design beyond its plan | Its plan's steps come first | Those steps landed |

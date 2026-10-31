@@ -33,8 +33,8 @@ Every production assembly has exactly one test project named after it, and is ne
 
 bUnit renders markup and drives its own synchronous JS interop, so a green suite is not evidence about CSS, about pointer behavior, or about anything whose timing depends on a real interop round-trip.
 
-- Do verify stylesheet-dependent states, touch targets, gestures, and direction in a real browser instead — the `forma-checking-a11y-touch-rtl` skill covers how.
-- Do give every call a component makes to a script, and every call a script makes back, a browser check in each runtime that asserts what the call did, since a call that fails only once trimmed, or only on WebAssembly's timing, fails nowhere else; a call nothing in the library makes is removed rather than checked.
+- Do verify stylesheet-dependent states, touch targets, gestures, direction and every render mode in a real browser instead — the `forma-checking-components` skill covers how.
+- Do give every call a component makes to a script, and every call a script makes back, a browser check in each interactive runtime, the web view's included, that asserts what the call did, since a call that fails only once trimmed, only on WebAssembly's timing, or only in a web view, fails nowhere else; a call nothing in the library makes is removed rather than checked.
 - Do stand in for what a headless browser lacks, a share surface, a print dialog, the browser filling a field, a file dragged from the desktop, through a script the page runs or an event the check dispatches, and assert the call the component made to it.
 - Don't read a passing bUnit test as proof that the component works in the showcase.
 

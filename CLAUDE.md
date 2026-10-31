@@ -9,7 +9,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 | Skill | Read it before |
 |---|---|
 | `forma-scripting` | Writing or changing a script or an interop wrapper |
-| `forma-checking-a11y-touch-rtl` | Finishing or reviewing a component: the three gates it must pass |
+| `forma-checking-components` | Finishing or reviewing a component: the four gates it must pass, every render mode among them |
 | `forma-localizing` | Adding user-facing strings or locale files |
 | `forma-testing` | Writing component tests or script tests |
 | `forma-authoring-components` | Creating or changing a component: its files, parameters, options record, contracts, composition, disposal, logging, or a service it uses |
@@ -38,6 +38,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do file a project by what it is: what the library builds on is Framework, whether or not the product uses it; a project that is optional and extends a Framework assembly is an AddOn, a host opt-in the host references and registers itself. Optional alone makes nothing an AddOn.
 - Do register a feature's services through one registrar at its root, with `TryAdd`, so a host that registered its own first still wins, and ship the product's aggregate registrars, one for each render-mode half, so a host makes one call on each side and still overrides any single service.
 - Do let a component whose optional contract is unregistered fall back to a default the library carries; a contract carrying data nobody can synthesize leaves the component in its empty state instead.
+- Don't register a stand-in for a service the platform, a package or a host supplies; resolve it where it is registered and fall back in its consumer, so every registration order works and a host's own registration still wins.
 - Do make components depend on abstractions and let the host choose implementations through DI.
 - Do represent colors and other CSS values with typed values, never arbitrary strings.
 - Don't rename or conflate an assembly's identities; a static asset base path is hardcoded by markup and scripts, so it follows the assembly's name exactly.
@@ -74,7 +75,7 @@ The gate is the build with no warnings, every test project, the format check, th
 - Do build, review, and commit one component at a time, finishing what is in progress before taking the next from the roadmap's build order.
 - Do derive parameters, validation, disposal, CSS, ARIA, localization, and tests from established repository patterns.
 - Do deliver the complete component set: markup, logic, stylesheet, warranted locale or script files, tests, and Showcase page.
-- Do verify both directions, color-independent states, accessible names and focus, and touch targets before review; the `forma-checking-a11y-touch-rtl` skill carries the full standard.
+- Do verify both directions, color-independent states, accessible names and focus, touch targets, and every render mode the library supports before review; the `forma-checking-components` skill carries the full standard.
 - Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
 - Do move a component from the roadmap to the catalog after approval, and from the roadmap's structure to the catalog's when its implementation starts.
 - Do finish a piece of work with it unstaged, report what changed and what the gate said, and propose a commit message for the maintainer to run themselves.

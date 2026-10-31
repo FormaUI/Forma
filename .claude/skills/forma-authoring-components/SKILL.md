@@ -131,7 +131,7 @@ Every component derives from one of three bases, and never from `ComponentBase` 
 A component logs through its context's logger, `Context.Logger`, whose category is the component's concrete type, so a host filters by the component's full type name and sees the component's interop under the same name.
 
 - Do hand the context's `JS` to every interop wrapper the component constructs, `new Wrapper(Context.JS)`; it is the component's `IJSEnvironment`, the runtime carrying the context's `Logger` and `RuntimeId`, so what the wrapper absorbs lands under the component and names the instance.
-- Do give a service that is not a component a required `ILogger<T>` through its constructor, and have its registrar `TryAdd` the `NullLogger<>` fallback beside it, so the service resolves in a host that configures no logging.
+- Do give a service that is not a component a required `ILogger<T>` through its constructor, and have its registrar register the platform's logging with `AddLogging` beside it, so the service resolves in a host that configures no logging and the host's providers reach it whichever registrar runs first.
 - Do write every message through `[LoggerMessage]` on one `internal static partial class {Feature}Log` per feature, named for the event it records, `CircuitDroppedWhileCalling`, so every message a feature can emit is read in one place.
 - Do log at `Debug` what the library absorbs by design — a dropped circuit or a thrown script behind a `Try*` call, an asset that would not load, a plural argument that is not a count — so the silence is visible to whoever turns the category on and nothing changes for a host that does not.
 - Do leave normal behavior silent because it is normal: a superseded delay, resolve or fetch, a disposal race, a failure the component already hands to its host as a domain object. Silence follows from the behavior being expected, never from a wish to keep every absorbed failure at `Debug`.
@@ -147,6 +147,7 @@ A component logs through its context's logger, `Context.Logger`, whose category 
 - Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
 - Do subscribe from the component in `OnInitialized` and unsubscribe in `DisposeAsyncCore`.
 - Do let a host replace any service by registering its own before the registrar runs, which is what `TryAdd` is there to allow.
+- Don't register a stand-in for a service the platform, an add-on or a host supplies, a null logger factory, an unavailable JS runtime or a default provider; another registrar adds the real one with `TryAdd` too, and a stand-in registered first keeps it out, so resolve the service where it is registered and fall back in its consumer.
 - Do register a service the whole application shares, and construct one per component instance where each component owns its own state, as an editor owns its own undo history.
 - Don't ship a second registrar from the components assembly; the aggregate registrar is the library's only one, and a feature's own belongs at that feature's root.
 

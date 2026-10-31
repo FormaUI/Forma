@@ -37,12 +37,15 @@ that fails to load, reaches a host through the log the host already configures.
   menu's trigger button, a checkbox's `<input>` inside its label). A wrapper the component
   draws around that control is an internal part, held in a private reference where
   interop needs it. There is no separate control member: the root is the control.
-- **Required services, null defaults in the container.** The runtime, the logger factory
-  and the locale factory are injected, required. A default on an injected property is
-  dead code, since Blazor sets the property after construction and throws when the
-  service is missing; the defaults are null objects registered by `AddFormaUI` with
-  `TryAdd`, so a host's own registration wins by coming first, as every Forma default
-  behaves.
+- **Required services, their null objects in the bases.** The runtime, the logger factory
+  and the locale factory are what every component needs, and each is supplied by another
+  registrar, the platform's or a localization package's, with `TryAdd`. The bases resolve
+  each where it is registered and fall back to its null object where it isn't, so no
+  registration of Forma's stands in for the real one, and the order a host registers in
+  changes nothing.
+- **Every render mode.** A component works under static server rendering, Interactive Server,
+  WebAssembly and Auto, and Blazor Hybrid; under a static render it shows its state and offers
+  no control whose action needs interactivity, as [render modes](#render-modes) sets out.
 - **A logger per component, under its own type.** `Context.Logger` is created lazily from the
   concrete type through `ILoggerFactory`, so a host filters by
   `Forma.Blazor.Components.Windows.FormaWindow` and nothing else. Interop wrappers take
@@ -201,18 +204,28 @@ A dialog base a composite owns derives from `FormaComponentBase` and overrides
 | `ILogger<T>` | `NullLogger<T>` | Discards; for services that inject a typed logger. |
 | `IStringLocaleFactory` | `NullStringLocaleFactory.Instance` | Every key is its own text, holes and plurals resolved for the source language, as the JSON locale does when no file matches. |
 
-`AddFormaUI` registers all four with `TryAdd`. A host that wants localized strings calls
-`AddJsonLocalization()` first; a host with its own logging or its
-own runtime has it in place before `AddFormaUI` runs, as ASP.NET Core's are. A feature
-registrar whose services log also `TryAdd`s the logger fallback for them, the way the
-events registrar registers `TimeProvider.System`, so a feature stays usable on its own.
+No registration Forma makes stands in for a service another registrar supplies, since that
+registrar adds its own with `TryAdd`, as a web view's registrar adds the runtime and a
+localization package its factory, and a stand-in registered first would keep it out. So:
+
+- **The bases fall back themselves.** A base resolves the runtime, the logger factory and the
+  locale factory where they are registered and falls back to their null objects where they
+  aren't.
+- **A registrar whose services log registers the platform's logging,** `AddLogging`, whose
+  own registrations are `TryAdd`s, so a typed logger resolves in every host, the host's
+  providers reach it whichever registrar runs first, and a feature stays usable on its own,
+  as the events registrar's `TimeProvider.System` keeps it.
+- **A contract an add-on or a host supplies,** such as the emoji provider, is resolved where
+  it is registered, and its consumer falls back to the library's default where it isn't.
+
+Each holds in either order, and a host's own registration made first still wins.
 
 The runtime's null object throws rather than discards because a component that reaches
 the browser without one is misconfigured, and a clear exception at the first interop
 call beats a "no registered service" throw at construction. It applies where no runtime
 exists at all: a bare container in a framework test, tooling, or `HtmlRenderer` rendering
-a component to a string. In a Blazor host the framework's runtime is registered first and
-the null object never takes effect.
+a component to a string. In a Blazor host the framework's runtime is registered and the
+null object never takes effect.
 
 `NullStringLocaleFactory` is the name of the null object for the factory; the locales it
 makes are not empty but source-only, the behavior a JSON locale has for a key no locale file
@@ -222,8 +235,9 @@ localizes.
 
 Every assembly that logs takes `Microsoft.Extensions.Logging.Abstractions` from the
 target framework, which supplies it and the `[LoggerMessage]` generator to every
-project, so no project references the package. Nothing references the concrete logging
-package; a host's providers are the host's.
+project, so no project references the package. A registrar whose services take a typed
+logger references `Microsoft.Extensions.Logging` for `AddLogging` alone, which registers
+no provider; a host's providers are the host's.
 
 A component logs through `Context.Logger`. A service that is not a component takes
 `ILoggerFactory` or `ILogger<T>` through its constructor, required. An interop wrapper,
@@ -255,6 +269,19 @@ superseded delay, resolve or fetch, a disposal race, a failure the component alr
 hands to its host as a domain object, a discarded `Try*` result the wrapper already
 reports, and a missing locale file, because the locale walks the culture chain and
 cannot tell an ordinary step to the parent from a missing expected file.
+
+## Render modes
+
+Every component works in every render mode Forma supports: static server rendering, Interactive
+Server, Interactive WebAssembly, Interactive Auto on either of its runtimes, and Blazor Hybrid's
+web view. The interactive ones run the same component the same way, as the
+[WebAssembly design](webassembly-design.md) and the [WebView design](webview-design.md) set out.
+A static render runs no event and no script, so under it a component renders its state as
+markup a reader can read, its accessible names, roles and states included, and offers no control
+whose action needs interactivity: such a control renders disabled, as the button does with a
+click handler, while a link, a native form control and a form's submit keep what the browser
+gives them. A component reads the render it is in from the framework's `RendererInfo`, and
+nothing it starts in a static render waits on the browser.
 
 ## What the bases do not carry
 

@@ -1,11 +1,11 @@
 ---
-name: forma-checking-a11y-touch-rtl
-description: The three gates a Forma component must pass before review — accessibility (color-independent state, contrast, ARIA, focus and keyboard), touch and pointer (24x24 and 44x44 targets, hover media queries, Pointer Events gestures), and RTL/LTR parity (logical properties, mirroring, arrow-key direction). Includes how to verify each in a real browser rather than in bUnit. Use when finishing, reviewing, or auditing a component, or when writing CSS that positions, mirrors, or communicates state.
+name: forma-checking-components
+description: The four gates a Forma component must pass before review — accessibility (color-independent state, contrast, ARIA, focus and keyboard), touch and pointer (24x24 and 44x44 targets, hover media queries, Pointer Events gestures), RTL/LTR parity (logical properties, mirroring, arrow-key direction), and every render mode (static server rendering, Interactive Server, WebAssembly and Auto, and Blazor Hybrid's web view). Includes how to verify each in a real browser rather than in bUnit. Use when finishing, reviewing, or auditing a component, when writing CSS that positions, mirrors, or communicates state, or when a component's behavior depends on how it is rendered.
 ---
 
-# The three gates
+# The four gates
 
-A component is not finished until it works without color, without a mouse, and without sight — and until it mirrors cleanly. For each gate below, assume no legitimate exception exists; if you believe you have found one, raise it rather than shipping without.
+A component is not finished until it works without color, without a mouse, and without sight, until it mirrors cleanly, and until it works in every render mode. For each gate below, assume no legitimate exception exists; if you believe you have found one, raise it rather than shipping without.
 
 # Accessibility
 
@@ -122,3 +122,23 @@ Every component must behave and look the same in both directions — mirrored, n
 - Don't rotate a glyph in a component's stylesheet to change what it points at; the set has a glyph for each way, and one turned by CSS is wrong in one direction or the other.
 - Don't swap unaffected keys such as `ArrowUp`, `ArrowDown`, `Home`, `End`, `Enter`, or `Escape`.
 - Don't rely on `textContent` or coordinates to verify glyph mirroring; screenshot the actual element.
+
+# Render modes
+
+Every component must work in every render mode the library supports: static server rendering, Interactive Server, Interactive WebAssembly, Interactive Auto on both of its runtimes, and Blazor Hybrid's web view. A component that works in one and fails in another is a defect in that component, whatever passes elsewhere.
+
+## The rule
+
+- Do write a component once for every render mode; what differs between modes belongs in a render mode's half and its registrar, never in a branch inside the component.
+- Do read the render a component is in from the framework's `RendererInfo`, never from the type of a service, the operating system, or a setting.
+- Do render a component's state under a static render as markup a reader can read, with its accessible names, roles and states, and render a control whose action needs interactivity disabled, as the button does with a click handler; a link, a native form control and a form's submit keep what the browser gives them.
+- Don't start anything during a static render that waits on the browser, and don't throw from one because a script, an interop call or a subscription is unavailable.
+- Don't register a service that stands in for one the platform or a package supplies; resolve it where it is registered and fall back in the consumer, so every host's registration order works.
+
+## Verification
+
+- Do give every component a check page in the browser check, and drive its interactions, every call it makes to a script and every call back, in every interactive runtime: the Server, WebAssembly, Auto on a first visit and once WebAssembly has downloaded, and the web view.
+- Do render every check page statically too, and require it to show its state, raise no error, and offer no enabled control whose action needs interactivity.
+- Do assert, in every case, the runtime it ran in, so a check that silently ran elsewhere fails.
+- Do run the web view's cases where its web view runs and report them skipped elsewhere, never passed.
+- Don't read a pass in one runtime as evidence for another; trimming, WebAssembly's timing, a circuit's reconnection and a web view's own browser each fail where nothing else does.
