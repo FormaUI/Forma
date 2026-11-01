@@ -30,6 +30,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - The state notifier takes subscriptions from any thread and notifies every subscriber where one fails, where it had stopped at the first failure.
 
+- [The input router](docs/input-router-design.md#a-fields-pending-edit) commits the focused text field's pending edit before it routes an action or a dismissal, so a shortcut pressed in a field that updates on change reads the text as it stands.
+
 - [A host's locale files](src/Forma.Framework/Forma.Framework.Localization/README.md) are embedded in a Blazor Hybrid application's assembly, as in a WebAssembly client's, so an application MAUI packages reads them with no folder beside it.
 
 - [The JavaScript interop](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md), the input registration and the culture registration leave a call into script still under way to finish as they're disposed, releasing what it produced then, where they had waited for it, so a component disposed where its runtime will never answer, as a web view whose document is gone, completes its disposal.

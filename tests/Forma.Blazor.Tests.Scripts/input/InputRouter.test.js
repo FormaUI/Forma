@@ -622,6 +622,62 @@ describe('InputRouter host routes', () => {
     });
 });
 
+describe('InputRouter pending edits', () => {
+    // A field typed into, which has not yet reported its change.
+    function edit(target, value) {
+        target.focus();
+        target.value = value;
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    it("commits the focused field's edit before it routes an action", () => {
+        const order = [];
+        host({ preemptiveRoutes: [route('test.save', () => order.push(`action ${field().value}`), keyBinding('s', { primary: true }))] });
+        field().addEventListener('change', () => order.push(`change ${field().value}`));
+        edit(field(), 'typed');
+
+        key(field(), 's', { ctrlKey: true });
+
+        expect(order).toEqual(['change typed', 'action typed']);
+    });
+
+    it("commits the focused field's edit before it dismisses", () => {
+        const order = [];
+        scope(popup(), { onDismiss: () => order.push('dismiss') }).activate();
+        field().addEventListener('change', () => order.push('change'));
+        edit(field(), 'typed');
+
+        key(field(), 'Escape');
+
+        expect(order).toEqual(['change', 'dismiss']);
+    });
+
+    it('commits nothing for an edit the field already reported', () => {
+        const handled = vi.fn();
+        const changes = vi.fn();
+        host({ preemptiveRoutes: [route('test.save', handled, keyBinding('s', { primary: true }))] });
+        edit(field(), 'typed');
+        field().dispatchEvent(new Event('change', { bubbles: true }));
+        field().addEventListener('change', changes);
+
+        key(field(), 's', { ctrlKey: true });
+
+        expect(handled).toHaveBeenCalledOnce();
+        expect(changes).not.toHaveBeenCalled();
+    });
+
+    it('commits nothing for a key a native field keeps', () => {
+        const changes = vi.fn();
+        host({ preemptiveRoutes: [route('test.save', vi.fn(), keyBinding('s', { primary: true }))] });
+        field().addEventListener('change', changes);
+        edit(field(), 'typed');
+
+        key(field(), 'ArrowLeft');
+
+        expect(changes).not.toHaveBeenCalled();
+    });
+});
+
 describe('InputRouter registrations', () => {
     it('lets several registrations share one scope and disposes each on its own', () => {
         const moves = vi.fn();

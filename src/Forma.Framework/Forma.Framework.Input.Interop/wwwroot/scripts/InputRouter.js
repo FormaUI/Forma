@@ -9,7 +9,9 @@
  * the event's composed path that routes it, and never crosses a boundary outward. Ambient
  * input — Escape, a press outside, a platform close request — belongs to the foremost
  * active registration alone. The router owns the decisions; it installs whichever listener
- * each input class needs and no more.
+ * each input class needs and no more. Before it routes an action or a dismissal, it commits the
+ * edit of the text field holding the focus, which a field that updates on change has not yet
+ * reported, so whatever the action does reads the text as it stands.
  */
 
 import { Controls } from '../../core/scripts/Controls.js';
@@ -108,6 +110,9 @@ let documentListeners = null;
 let suppressedClick = null;
 let pendingPress = null;
 const dispatched = new WeakSet();
+
+// The text fields edited since they last reported a change.
+const editedFields = new WeakSet();
 
 /**
  * Sets the host's policy: the ambient defaults a scope inherits, and the bindings that replace,
@@ -692,6 +697,24 @@ function ensureDocumentListeners() {
     document.addEventListener('pointercancel', event => forgetSuppressedClick(event.pointerId), { signal, capture: true });
     document.addEventListener('click', event => swallowSuppressedClick(event), { signal, capture: true });
     document.addEventListener('cancel', event => offerCloseRequest(event), { signal, capture: true });
+    document.addEventListener('input', event => noteEdit(event.target), { signal, capture: true });
+    document.addEventListener('change', event => editedFields.delete(event.target), { signal, capture: true });
+}
+
+function noteEdit(field) {
+    if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+        editedFields.add(field);
+    }
+}
+
+// The browser reports a text field's change as it loses the focus; an action routed while it holds the focus would run first.
+function commitEdit() {
+    const field = document.activeElement;
+
+    if (field !== null && editedFields.has(field)) {
+        editedFields.delete(field);
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
 }
 
 // A platform close request does not bubble, so it is heard in the capture phase and offered from the element it was raised at.
@@ -742,6 +765,8 @@ function apply(event, resolution) {
     if (resolution.propagation === 'stop') {
         event.stopPropagation();
     }
+
+    commitEdit();
 
     if (resolution.route) {
         resolution.registration.run(resolution.route, resolution.binding, event);
