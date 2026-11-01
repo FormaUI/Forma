@@ -33,7 +33,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType
@@ -46,7 +46,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     private bool _arePluginsShown;
 
     private ComposerPluginLocalizer Localizer
-        => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
+        => field ??= new ComposerPluginLocalizer(Services.GetStringLocaleFactory(), L);
 
     private string PluginsId
         => $"composer-plugins-{Context.RuntimeId:N}";

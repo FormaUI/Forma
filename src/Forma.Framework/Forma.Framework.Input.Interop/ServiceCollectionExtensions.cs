@@ -1,9 +1,10 @@
 namespace Forma.Framework.Input.Interop;
 
+using Forma.Framework.JavaScript.Interop;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>Registers the input router this package ships.</summary>
 public static class ServiceCollectionExtensions
@@ -18,9 +19,13 @@ public static class ServiceCollectionExtensions
 
         services.AddFormaInputServices(options);
 
-        services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
+        services.AddLogging();
 
-        services.TryAddScoped<InputRouter>();
+        services.TryAddScoped(provider => new InputRouter(
+            provider.GetJSRuntime(),
+            provider.GetRequiredService<ILogger<InputRouter>>(),
+            provider.GetRequiredService<InputRouterOptions>(),
+            provider.GetService<IInputActionHandler>()));
 
         return services;
     }

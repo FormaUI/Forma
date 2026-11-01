@@ -1,9 +1,11 @@
 namespace Forma.Framework.Browser.Interop;
 
+using Forma.Framework.Input.Interop;
+using Forma.Framework.JavaScript.Interop;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>Registers the browser services this package ships.</summary>
 public static class ServiceCollectionExtensions
@@ -15,9 +17,9 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
+        services.AddLogging();
 
-        services.TryAddScoped<DomBridge>();
+        services.TryAddScoped(provider => new DomBridge(provider.GetJSRuntime(), provider.GetRequiredService<ILogger<DomBridge>>(), provider.GetService<InputRouter>()));
 
         return services;
     }

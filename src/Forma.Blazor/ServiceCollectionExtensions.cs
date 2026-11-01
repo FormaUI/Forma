@@ -4,22 +4,18 @@ using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Culture;
 using Forma.Framework.Culture.Browser.Interop;
-using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Events;
 using Forma.Framework.Feedback;
-using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.JavaScript.Interop;
-using Forma.Framework.Localization;
 using Forma.Framework.Sanitization;
 using Forma.Framework.Windows;
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.JSInterop;
 
 /// <summary>Registers the services Forma's components need in every render mode.</summary>
 public static class ServiceCollectionExtensions
@@ -28,16 +24,17 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The collection to register into.</param>
     /// <param name="inputRouting">The application-wide input policy; <see langword="null"/> takes <see cref="InputRouterOptions.Default"/>.</param>
     /// <returns>The same collection, for chaining.</returns>
-    /// <remarks>The bundled glyphs and the reader's font are the icon and emoji providers unless the host registered its own or added an artwork pack first.</remarks>
+    /// <remarks>
+    /// It registers the platform's logging and no stand-in for a service the platform or a package supplies, so a host registers
+    /// Forma, its platform's services, its localization and an artwork pack in any order: a component falls back to the source text
+    /// where no localization is registered, to the bundled glyphs and the reader's font where no artwork is, and to a runtime that
+    /// throws at its first call where no JS runtime is.
+    /// </remarks>
     public static IServiceCollection AddFormaUI(this IServiceCollection services, InputRouterOptions? inputRouting = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Fallbacks for what every component injects: a discarding logger, the source-language locale, and a runtime that throws at the first call.
-        services.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-        services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
-        services.TryAddSingleton<IStringLocaleFactory>(NullStringLocaleFactory.Instance);
-        services.TryAddSingleton<IJSRuntime>(UnavailableJSRuntime.Instance);
+        services.AddLogging();
 
         services.AddFormaEventServices();
         services.AddFormaCultureCoordination();
@@ -45,10 +42,11 @@ public static class ServiceCollectionExtensions
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();
 
-        services.AddFormaEmojiServices();
         // Scoped to the circuit, whose own document holds the adopted sheets.
-        services.TryAddScoped<IEmojiSpriteLoader, EmojiSpriteLoader>();
-        services.AddFormaGlyphServices();
+        services.TryAddScoped<IEmojiSpriteLoader>(provider => new EmojiSpriteLoader(
+            provider.GetJSRuntime(),
+            provider.GetRequiredService<ILogger<EmojiSpriteLoader>>(),
+            provider.GetService<NavigationManager>()));
 
         services.AddFormaInputRouter(inputRouting);
         services.AddFormaBrowserServices();

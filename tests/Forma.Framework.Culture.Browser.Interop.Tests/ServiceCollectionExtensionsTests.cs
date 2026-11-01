@@ -1,9 +1,42 @@
 namespace Forma.Framework.Culture.Browser.Interop.Tests;
 
+using Forma.Tests.Shared;
+
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 public sealed class ServiceCollectionExtensionsTests
 {
+    [Fact]
+    public async Task Should_make_the_registration_in_a_container_with_no_runtime()
+    {
+        // Arrange
+        await using var provider = new ServiceCollection().AddFormaCultureCoordination().BuildServiceProvider();
+        await using var scope = provider.CreateAsyncScope();
+
+        // Act
+        var registration = scope.ServiceProvider.GetRequiredService<CultureCoordinatorRegistration>();
+
+        // Assert
+        Assert.NotNull(registration);
+    }
+
+    [Fact]
+    public void Should_log_through_the_logging_a_host_registers_after_it()
+    {
+        // Arrange
+        using var loggerProvider = new FakeLoggerProvider();
+        var services = new ServiceCollection().AddFormaCultureCoordination();
+
+        // Act
+        services.AddLogging(logging => logging.AddProvider(loggerProvider));
+
+        // Assert
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ILogger<CultureCoordinatorRegistration>>().Log(LogLevel.Information, default, "Logged.", null, (message, _) => message);
+        Assert.Contains(loggerProvider.Entries, entry => entry.Message == "Logged.");
+    }
+
     [Fact]
     public void Should_register_the_coordinator_registration_beside_the_culture_state_once_per_scope()
     {

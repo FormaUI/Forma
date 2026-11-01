@@ -49,12 +49,17 @@ gated as it says.
      at its first failed delivery.
    - **Known failures,** which step 4 meets: a switch through the application's switch reaching every
      window's state, and every window's document following it.
-3. **Registration in either order.** The bases resolve the JS runtime, the logger factory and the locale
-   factory where they are registered and fall back to their null objects; every registrar whose services
-   log registers the platform's logging; every contract an add-on or a host supplies is resolved where it
-   is registered, its consumer falling back; and the READMEs drop every order they required. Gate: tests
-   registering each platform's, package's and host's registration before and after Forma's, with a host's
-   own registered first still winning, and the gate.
+3. **Registration in either order.** ✅ The bases resolve the JS runtime and the locale factory where they
+   are registered and fall back to their null objects, as `DomBridge`, `InputRouter`, the culture's
+   registration and the sprite loader resolve the runtime, through `GetJSRuntime`; every registrar whose
+   services log registers the platform's logging through `AddLogging`, `AddJsonLocalization` among them,
+   whose null logger factory had kept a host's logging out where it ran first; the emoji and icon
+   components fall back to the reader's font and the bundled glyphs, so `AddFormaUI` registers no artwork;
+   and the READMEs drop every order they required. Each is checked in both orders against the registrar
+   that supplies the real service, and with a host's own registered first. Departure: the rule covers what
+   another registrar supplies with `TryAdd`, the platform's or a package's; a contract only a host
+   replaces, such as the sanitizer or the time provider, keeps its default, since a host's own
+   registration replaces it in either order with `Add` and, made first, with `TryAdd`.
 4. **The WebView halves.** `Forma.Framework.Culture.Blazor.WebView` and `Forma.Blazor.WebView`, each with
    the test project named after it: the application's state, coordinator and switch; each web view's
    registration, started by its first component, and its release; the ambient cultures applied to the

@@ -11,6 +11,9 @@ using Forma.Framework.Icons;
 /// <summary>Provides the library's own artwork: every glyph and brand mark embedded in this assembly, and any character.</summary>
 public sealed class GlyphIconProvider : IIconProvider
 {
+    /// <summary>The provider every component without a registered one draws through.</summary>
+    public static GlyphIconProvider Instance { get; } = new();
+
     private const string GlyphResourceName = "Forma.Framework.Icons.Glyphs._assets.glyphs.json";
     private const string BrandResourceName = "Forma.Framework.Icons.Glyphs._assets.brands.json";
 

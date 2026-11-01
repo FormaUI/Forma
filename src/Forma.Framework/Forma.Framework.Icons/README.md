@@ -103,8 +103,8 @@ public sealed class HouseIconProvider : IIconProvider
 }
 ```
 
-Register it as the `IIconProvider` before `AddFormaUIServer()`, and in a WebAssembly client before
-`AddFormaUIWebAssembly()`, each of which registers its default provider only where none is registered:
+Register it as the `IIconProvider` on each side that renders icons, in any order beside
+`AddFormaUIServer()` and `AddFormaUIWebAssembly()`, which register no icon provider of their own:
 
 ```csharp
 builder.Services.AddSingleton<IIconProvider, HouseIconProvider>();

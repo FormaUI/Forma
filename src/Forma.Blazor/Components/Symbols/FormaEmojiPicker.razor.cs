@@ -8,6 +8,7 @@ using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis;
+using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
 
@@ -15,8 +16,8 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>A categorized emoji palette with search, recently used entries, and a tab per category.</summary>
 /// <param name="registeredCatalog">The host's registered catalog, or null to browse nothing.</param>
-/// <param name="emojiProvider">The registered emoji provider.</param>
-public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmojiCatalog? registeredCatalog = null)
+/// <param name="emojiProvider">The registered emoji provider, where the reader's font draws an emoji none is registered for.</param>
+public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = null, IEmojiCatalog? registeredCatalog = null)
     : FormaElementBase
 {
     private static readonly TabStripNavigation Navigation = new("emoji-picker");
@@ -24,7 +25,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private static readonly InputProfile RightToLeftTabsProfile = Navigation.CreateProfile(isRightToLeft: true);
 
     private readonly IEmojiCatalog _catalog = registeredCatalog ?? NullEmojiCatalog.Instance;
-    private readonly IEmojiProvider _provider = emojiProvider;
+    private readonly IEmojiProvider _provider = emojiProvider ?? UnicodeEmojiProvider.Instance;
 
     /// <summary>The identifier of the tab holding recently chosen emoji.</summary>
     public const string RecentGroupId = "recent";

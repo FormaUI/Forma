@@ -17,8 +17,9 @@ builder.Services.AddFormaEmojiServices();
 ```
 
 `AddFormaEmojiServices` registers `UnicodeEmojiProvider` as the `IEmojiProvider` singleton with
-`TryAdd`, so a provider registered first is kept. `AddFormaUI()` in `Forma.Blazor` makes this call
-itself.
+`TryAdd`, so a provider registered first is kept. Forma's components draw through
+`UnicodeEmojiProvider.Instance` where no provider is registered, so a host needs this call only to resolve
+the provider itself.
 
 ## Use
 

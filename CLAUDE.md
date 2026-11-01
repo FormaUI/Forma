@@ -38,7 +38,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do file a project by what it is: what the library builds on is Framework, whether or not the product uses it; a project that is optional and extends a Framework assembly is an AddOn, a host opt-in the host references and registers itself. Optional alone makes nothing an AddOn.
 - Do register a feature's services through one registrar at its root, with `TryAdd`, so a host that registered its own first still wins, and ship the product's aggregate registrars, one for each render-mode half, so a host makes one call on each side and still overrides any single service.
 - Do let a component whose optional contract is unregistered fall back to a default the library carries; a contract carrying data nobody can synthesize leaves the component in its empty state instead.
-- Don't register a stand-in for a service the platform, a package or a host supplies; resolve it where it is registered and fall back in its consumer, so every registration order works and a host's own registration still wins.
+- Don't register a stand-in for a service another registrar supplies with `TryAdd`, the platform's or a package's, such as logging, the JS runtime, a locale factory or an artwork provider; resolve it where it is registered and fall back in its consumer, so every registration order works and a host's own registration still wins.
 - Do make components depend on abstractions and let the host choose implementations through DI.
 - Do represent colors and other CSS values with typed values, never arbitrary strings.
 - Don't rename or conflate an assembly's identities; a static asset base path is hardcoded by markup and scripts, so it follows the assembly's name exactly.

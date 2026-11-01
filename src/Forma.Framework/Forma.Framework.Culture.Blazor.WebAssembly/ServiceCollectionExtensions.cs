@@ -48,7 +48,7 @@ public static class ServiceCollectionExtensions
         }
 
         services.AddFormaCultureSwitchPolicy(policy);
-        services.TryAddSingleton<CultureCoordinatorRegistration>();
+        services.TryAddSingleton(CultureCoordinatorRegistration.Create);
         services.AddFormaCultureCoordination();
         services.TryAddSingleton<ICultureSwitch>(provider => new CoordinatedCultureSwitch(provider.GetRequiredService<CultureCoordinatorRegistration>(), provider.GetService<ICultureAddressing>()));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, CultureCoordinatorStartup>(provider => new CultureCoordinatorStartup(

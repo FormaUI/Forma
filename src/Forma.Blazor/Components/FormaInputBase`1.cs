@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 
 /// <summary>The base of every Forma form input: the framework's input with the context, strings, log, host surface and disposal of any Forma component.</summary>
 /// <typeparam name="TValue">The value the input binds.</typeparam>
@@ -30,9 +29,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>The style the host adds to the root element.</summary>
     [Parameter] public string? Style { get; set; }
 
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
-    [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private ICultureState CultureState { get; set; } = default!;
 
@@ -53,8 +50,8 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     protected IComponentContext Context
         => _context ??= new ComponentContext(
             CultureState,
-            () => JSRuntime,
-            () => LocaleFactory.Create(LocalizationSourceType, CultureState),
+            Services.GetJSRuntime,
+            () => Services.GetStringLocaleFactory().Create(LocalizationSourceType, CultureState),
             () => LoggerFactory.CreateLogger(GetType()),
             () => Services.GetService<DomBridge>());
 

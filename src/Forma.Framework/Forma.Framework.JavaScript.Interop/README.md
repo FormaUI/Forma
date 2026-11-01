@@ -60,7 +60,8 @@ _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
 | `JSEnvironment` | An `IJSEnvironment` over an `IJSRuntime`. |
 | `JSInterop` | The base of a wrapper whose module attaches to an element: `AttachCoreAsync`, `InvokeAsync` on the attached instance, `InvokeModuleAsync` on the module's exports, `DetachAsync`, `IsAttached`, and disposal as teardown. |
 | `JSModule` | A lazily imported module: `InvokeAsync` and `InvokeVoidAsync` throw on failure, and `TryInvokeAsync` and `TryInvokeVoidAsync` return `default` or `false`. |
-| `UnavailableJSRuntime` | A runtime whose every call throws `JSRuntimeUnavailableException`, registered where the host has none. |
+| `UnavailableJSRuntime` | A runtime whose every call throws `JSRuntimeUnavailableException`, for a container with no runtime of its own. |
+| `ServiceProviderExtensions.GetJSRuntime` | The JS runtime the platform registered, or `UnavailableJSRuntime.Instance` where it registered none, so a service built on the runtime resolves in any registration order. |
 
 ## Shared scripts
 

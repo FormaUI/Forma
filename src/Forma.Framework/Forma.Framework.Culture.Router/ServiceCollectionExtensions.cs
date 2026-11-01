@@ -4,8 +4,6 @@ using Forma.Framework.Culture.Browser.Interop;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>Registers culture routing.</summary>
 public static class ServiceCollectionExtensions
@@ -17,7 +15,7 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddFormaCultureCoordination();
-        services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
+        services.AddLogging();
         services.TryAddSingleton(new CultureRouter(options));
         services.TryAddSingleton<ICultureAddressing>(provider => provider.GetRequiredService<CultureRouter>());
         services.TryAddScoped<CultureSwitcher>();

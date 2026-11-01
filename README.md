@@ -37,12 +37,13 @@ builder.AddFormaUIServer();
 ```
 
 `AddFormaUIServer()` registers the services the components use, through `AddFormaUI()`: the toast
-and confirmation dialog services, the status badge catalog, the HTML sanitizer, the icon and emoji
-providers, the culture state, and the input router that dispatches keyboard shortcuts. Beside them it
-registers what an interactive server circuit needs, which keeps the culture and the document's
-language in step with each circuit. Each is registered only where nothing is registered for it yet,
-so a host replaces any one of them by registering its own first, and calls `AddFormaUIServer()` after
-`AddRazorComponents()` and `AddJsonLocalization()` so theirs are in place. Application-wide shortcuts
+and confirmation dialog services, the status badge catalog, the HTML sanitizer, the culture state, and
+the input router that dispatches keyboard shortcuts. Beside them it registers what an interactive server
+circuit needs, which keeps the culture and the document's language in step with each circuit. Each is
+registered only where nothing is registered for it yet, so a host replaces any one of them by
+registering its own first. It registers no stand-in for what the platform or a package supplies, its
+logging, its JS runtime, the string locale factory `AddJsonLocalization()` registers or an artwork pack's
+providers, so a host makes those calls in any order. Application-wide shortcuts
 are passed as `AddFormaUIServer(options => options.InputRouting = new InputRouterOptions { ... })`,
 which
 [`Forma.Framework.Input`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Framework/Forma.Framework.Input/README.md)
@@ -282,9 +283,8 @@ The artwork ships inside the library. A host that wants another set registers it
 `FormaEmoji` draws an emoji through `IEmojiProvider`, in the reader's platform font by default,
 and `FormaEmojiPicker` browses the set an `IEmojiCatalog` describes. The
 [Twemoji artwork pack](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md)
-supplies both, registered on each side before the product's registrar there, `AddFormaUIServer()` on the
-server and `AddFormaUIWebAssembly()` in a client, each of which registers the platform-font provider only
-where nothing is registered for it yet:
+supplies both, registered on each side, the server and a client, beside the product's registrar there,
+in either order:
 
 ```pwsh
 dotnet add package formaui-net.AddOns.Emojis.Twemoji

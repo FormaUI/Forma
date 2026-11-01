@@ -2,8 +2,10 @@ namespace Forma.Framework.Browser.Interop.Tests;
 
 using Forma.Framework.Input.Interop;
 using Forma.Tests.Interop;
+using Forma.Tests.Shared;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 using Xunit;
@@ -36,6 +38,36 @@ public sealed class ServiceCollectionExtensionsTests
 
         // Assert
         Assert.NotNull(bridge);
+    }
+
+    [Fact]
+    public async Task Should_make_the_bridge_in_a_container_with_no_runtime()
+    {
+        // Arrange
+        await using var provider = new ServiceCollection().AddFormaBrowserServices().BuildServiceProvider();
+        await using var scope = provider.CreateAsyncScope();
+
+        // Act
+        var bridge = scope.ServiceProvider.GetRequiredService<DomBridge>();
+
+        // Assert
+        Assert.NotNull(bridge);
+    }
+
+    [Fact]
+    public void Should_log_through_the_logging_a_host_registers_after_it()
+    {
+        // Arrange
+        using var loggerProvider = new FakeLoggerProvider();
+        var services = new ServiceCollection().AddFormaBrowserServices();
+
+        // Act
+        services.AddLogging(logging => logging.AddProvider(loggerProvider));
+
+        // Assert
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ILogger<DomBridge>>().Log(LogLevel.Information, default, "Logged.", null, (message, _) => message);
+        Assert.Contains(loggerProvider.Entries, entry => entry.Message == "Logged.");
     }
 
     [Fact]

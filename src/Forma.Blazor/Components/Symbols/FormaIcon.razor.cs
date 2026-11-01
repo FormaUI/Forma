@@ -4,13 +4,16 @@ using System.Globalization;
 
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
+using Forma.Framework.Icons.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Renders an icon as inline SVG or as a single character set by the font.</summary>
-/// <param name="iconProvider">The registered icon provider.</param>
-public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElementBase
+/// <param name="iconProvider">The registered icon provider, where the bundled glyphs draw an icon none is registered for.</param>
+public sealed partial class FormaIcon(IIconProvider? iconProvider = null) : FormaElementBase
 {
+    private readonly IIconProvider _iconProvider = iconProvider ?? GlyphIconProvider.Instance;
+
     /// <summary>One vector path as the markup writes it: its data, its stroke width or null for a filled path, and its opacity.</summary>
     private readonly record struct VectorPathView(string Data, string? StrokeWidth, string? Opacity);
 
@@ -68,7 +71,7 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElement
 
         _artwork = provider is not null && provider.TryGetArtwork(Icon, Size, out var supplied)
             ? supplied
-            : iconProvider.TryGetArtwork(Icon, Size, out var registered) ? registered : IconArtwork.None;
+            : _iconProvider.TryGetArtwork(Icon, Size, out var registered) ? registered : IconArtwork.None;
 
         _vectorPaths = _artwork is IconVector vector
             ? [.. vector.Paths.Select(path => new VectorPathView(path.Data, path.StrokeWidth > 0 ? GetWidth(path) : null, GetFade(path)))]

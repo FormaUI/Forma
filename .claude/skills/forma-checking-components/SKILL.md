@@ -133,7 +133,7 @@ Every component must work in every render mode the library supports: static serv
 - Do read the render a component is in from the framework's `RendererInfo`, never from the type of a service, the operating system, or a setting.
 - Do render a component's state under a static render as markup a reader can read, with its accessible names, roles and states, and render a control whose action needs interactivity disabled, as the button does with a click handler; a link, a native form control and a form's submit keep what the browser gives them.
 - Don't start anything during a static render that waits on the browser, and don't throw from one because a script, an interop call or a subscription is unavailable.
-- Don't register a service that stands in for one the platform or a package supplies; resolve it where it is registered and fall back in the consumer, so every host's registration order works.
+- Don't register a service that stands in for one another registrar supplies, the platform's or a package's; resolve it where it is registered and fall back in the consumer, so every host's registration order works.
 
 ## Verification
 

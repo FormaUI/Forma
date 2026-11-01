@@ -2,6 +2,7 @@
 
     <ItemGroup>
         <PackageReference Include="xunit.v3" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
         <PackageReference Include="xunit.runner.visualstudio" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
     </ItemGroup>

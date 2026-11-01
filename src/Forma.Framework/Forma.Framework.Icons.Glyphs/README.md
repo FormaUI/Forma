@@ -17,8 +17,9 @@ builder.Services.AddFormaGlyphServices();
 ```
 
 `AddFormaGlyphServices` registers `GlyphIconProvider` as the `IIconProvider` singleton with
-`TryAdd`, so a provider registered first is kept. `AddFormaUI()` in `Forma.Blazor` makes this call
-itself. Outside dependency injection, `new GlyphIconProvider()` is the same provider.
+`TryAdd`, so a provider registered first is kept. Forma's components draw through
+`GlyphIconProvider.Instance` where no provider is registered, so a host needs this call only to resolve the
+provider itself.
 
 ## What it draws
 

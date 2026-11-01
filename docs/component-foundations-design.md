@@ -37,12 +37,13 @@ that fails to load, reaches a host through the log the host already configures.
   menu's trigger button, a checkbox's `<input>` inside its label). A wrapper the component
   draws around that control is an internal part, held in a private reference where
   interop needs it. There is no separate control member: the root is the control.
-- **Required services, their null objects in the bases.** The runtime, the logger factory
-  and the locale factory are what every component needs, and each is supplied by another
-  registrar, the platform's or a localization package's, with `TryAdd`. The bases resolve
-  each where it is registered and fall back to its null object where it isn't, so no
-  registration of Forma's stands in for the real one, and the order a host registers in
-  changes nothing.
+- **Required services, never a stand-in for them.** The runtime, the logger factory and the
+  locale factory are what every component needs, and each is supplied by another registrar,
+  the platform's or a localization package's, with `TryAdd`. The bases resolve the runtime and
+  the locale factory where they are registered and fall back to their null objects where they
+  aren't, and the logger factory is the platform's, which `AddFormaUI` registers through
+  `AddLogging`, so no registration of Forma's stands in for the real one, and the order a host
+  registers in changes nothing.
 - **Every render mode.** A component works under static server rendering, Interactive Server,
   WebAssembly and Auto, and Blazor Hybrid; under a static render it shows its state and offers
   no control whose action needs interactivity, as [render modes](#render-modes) sets out.
@@ -208,15 +209,16 @@ No registration Forma makes stands in for a service another registrar supplies, 
 registrar adds its own with `TryAdd`, as a web view's registrar adds the runtime and a
 localization package its factory, and a stand-in registered first would keep it out. So:
 
-- **The bases fall back themselves.** A base resolves the runtime, the logger factory and the
-  locale factory where they are registered and falls back to their null objects where they
-  aren't.
+- **The bases fall back themselves.** A base resolves the runtime and the locale factory where
+  they are registered and falls back to their null objects where they aren't; a service built on
+  the runtime resolves it the same way, through `GetJSRuntime`.
 - **A registrar whose services log registers the platform's logging,** `AddLogging`, whose
   own registrations are `TryAdd`s, so a typed logger resolves in every host, the host's
   providers reach it whichever registrar runs first, and a feature stays usable on its own,
   as the events registrar's `TimeProvider.System` keeps it.
-- **A contract an add-on or a host supplies,** such as the emoji provider, is resolved where
-  it is registered, and its consumer falls back to the library's default where it isn't.
+- **A contract a package supplies,** the emoji and icon providers an artwork pack registers, is
+  resolved where it is registered, and its consumer falls back to the library's default where it
+  isn't, the reader's font for an emoji and the bundled glyphs for an icon.
 
 Each holds in either order, and a host's own registration made first still wins.
 

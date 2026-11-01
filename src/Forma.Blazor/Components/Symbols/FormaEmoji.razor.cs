@@ -3,12 +3,13 @@ namespace Forma.Blazor.Components.Symbols;
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis;
+using Forma.Framework.Emojis.Unicode;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Renders an emoji as inline artwork, drawing it from a host's chosen provider.</summary>
-/// <param name="emojiProvider">The registered emoji provider.</param>
-public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : FormaElementBase
+/// <param name="emojiProvider">The registered emoji provider, where the reader's font draws an emoji none is registered for.</param>
+public sealed partial class FormaEmoji(IEmojiProvider? emojiProvider = null) : FormaElementBase
 {
     private EmojiArtwork _artwork = default!;
 
@@ -39,7 +40,8 @@ public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : FormaElem
         // Nearest wins: this emoji's own provider, then the surrounding subtree's, then the registered one.
         var provider = Provider
             ?? CascadingProvider
-            ?? emojiProvider;
+            ?? emojiProvider
+            ?? UnicodeEmojiProvider.Instance;
 
         _artwork = provider.GetArtwork(Emoji);
     }

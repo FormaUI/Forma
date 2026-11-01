@@ -147,7 +147,7 @@ A component logs through its context's logger, `Context.Logger`, whose category 
 - Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
 - Do subscribe from the component in `OnInitialized` and unsubscribe in `DisposeAsyncCore`.
 - Do let a host replace any service by registering its own before the registrar runs, which is what `TryAdd` is there to allow.
-- Don't register a stand-in for a service the platform, an add-on or a host supplies, a null logger factory, an unavailable JS runtime or a default provider; another registrar adds the real one with `TryAdd` too, and a stand-in registered first keeps it out, so resolve the service where it is registered and fall back in its consumer.
+- Don't register a stand-in for a service another registrar supplies with `TryAdd`, the platform's or a package's, a null logger factory, an unavailable JS runtime, a null locale factory or a default artwork provider; a stand-in registered first keeps the real one out, so resolve the service where it is registered and fall back in its consumer.
 - Do register a service the whole application shares, and construct one per component instance where each component owns its own state, as an editor owns its own undo history.
 - Don't ship a second registrar from the components assembly; the aggregate registrar is the library's only one, and a feature's own belongs at that feature's root.
 

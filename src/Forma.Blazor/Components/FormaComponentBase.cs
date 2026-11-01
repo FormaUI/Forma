@@ -8,14 +8,11 @@ using Forma.Framework.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 
 /// <summary>The base of every Forma component: its context, strings, log and JS environment, and its disposal.</summary>
 public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
 {
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
-    [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private ICultureState CultureState { get; set; } = default!;
 
@@ -33,8 +30,8 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
     protected IComponentContext Context
         => _context ??= new ComponentContext(
             CultureState,
-            () => JSRuntime,
-            () => LocaleFactory.Create(LocalizationSourceType, CultureState),
+            Services.GetJSRuntime,
+            () => Services.GetStringLocaleFactory().Create(LocalizationSourceType, CultureState),
             () => LoggerFactory.CreateLogger(GetType()),
             () => Services.GetService<DomBridge>());
 

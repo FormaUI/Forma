@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.JavaScript.Interop;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -41,6 +42,19 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         _receiverReference = DotNetObjectReference.Create(new CultureCoordinatorReceiver(this));
         _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
         _module = new JSModule(_environment, ModulePath);
+    }
+
+    /// <summary>Creates the registration of a user scope's culture state from the scope's services, over the JS runtime its platform registered.</summary>
+    /// <param name="services">The scope's services.</param>
+    /// <returns>The registration.</returns>
+    public static CultureCoordinatorRegistration Create(IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return new CultureCoordinatorRegistration(
+            services.GetRequiredService<ICultureStateIntegration>(),
+            services.GetJSRuntime(),
+            services.GetRequiredService<ILogger<CultureCoordinatorRegistration>>());
     }
 
     /// <summary>Registers the culture state with the page's coordinator, as each connection to the browser comes up, and adopts the pair the page accepted.</summary>

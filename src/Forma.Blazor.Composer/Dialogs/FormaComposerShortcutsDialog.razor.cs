@@ -28,7 +28,7 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
     /// <summary>The shortcuts the surface answers.</summary>
     [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
 
-    [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
     [Inject] private InputRouterOptions InputRouterOptions { get; set; } = default!;
 
@@ -36,7 +36,7 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
     private CultureInfo? _rowsUICulture;
 
     private ComposerPluginLocalizer Localizer
-        => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
+        => field ??= new ComposerPluginLocalizer(Services.GetStringLocaleFactory(), L);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

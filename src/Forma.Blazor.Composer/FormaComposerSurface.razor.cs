@@ -32,7 +32,7 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType
@@ -43,7 +43,7 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     private SelectionBarInputs? _selectionBarInputs;
 
     private ComposerPluginLocalizer Localizer
-        => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
+        => field ??= new ComposerPluginLocalizer(Services.GetStringLocaleFactory(), L);
 
     // The selection bar is rebuilt only when its inputs change.
     /// <inheritdoc />

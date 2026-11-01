@@ -87,7 +87,6 @@ public sealed partial class FormaComposer(
     [Inject] private IHtmlSanitizer Sanitizer { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
-    [Inject] private IStringLocaleFactory StringLocaleFactory { get; set; } = default!;
 
     private bool ShowToolbar
         => Options.ShowToolbar && !ReadOnly;
@@ -102,7 +101,7 @@ public sealed partial class FormaComposer(
         => _activeView?.Id ?? _activeEditor.Id;
 
     private ComposerPluginLocalizer Localizer
-        => field ??= new ComposerPluginLocalizer(StringLocaleFactory, L);
+        => field ??= new ComposerPluginLocalizer(Services.GetStringLocaleFactory(), L);
 
     private ComposerDocument CurrentDocument
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);

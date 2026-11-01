@@ -8,6 +8,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components" />
         <PackageReference Include="Microsoft.JSInterop" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
     </ItemGroup>
 
     <ItemGroup>
