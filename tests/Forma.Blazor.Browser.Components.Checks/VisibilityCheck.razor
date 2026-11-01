@@ -1,0 +1,13 @@
+@page "/{Runtime}/visibility"
+
+@* Content a button collapses and shows again, keeping what was typed into it while it was collapsed. *@
+<FormaButton Id="toggle" OnClick="@(() => _hidden = !_hidden)">@(_hidden ? "Show" : "Hide")</FormaButton>
+<FormaVisibility Id="check" Hidden="_hidden">
+    <input id="inside" aria-label="Inside" />
+</FormaVisibility>
+
+@code {
+    private bool _hidden;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

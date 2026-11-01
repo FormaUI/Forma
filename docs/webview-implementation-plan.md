@@ -170,11 +170,25 @@ gated as it says.
      two versions of `WindowsBase`; the warning is the package's.
    - The MAUI example needs the `maui-windows` workload, which a machine's elevated shell installs once and
      CI's Windows run installs itself; the browser step stops at once where it is missing.
-9. **Render modes in the gate.** An inventory check that every component a host places has a check page,
+9. **Render modes in the gate.** ✅ An inventory check that every component a host places has a check page,
    and that every check page runs in every interactive runtime and statically; the Windows run of CI
    installs what the WebView checks need, the WebView2 runtime where its image lacks one, and the check
-   reports what the check host wrote where a web view never opens ✅; on another platform they report
-   themselves skipped. Gate: CI on both platforms with the WebView checks counted on Windows.
+   reports what the check host wrote where a web view never opens; on another platform they report
+   themselves skipped. Gate: CI on both platforms with the WebView checks counted on Windows. The inventory
+   reads the components a host places from the catalog's structure, implemented and in progress alike, and
+   finds each on a check page, `FormaPageHead` on the components host's own page; and it finds each check
+   page opened by a check that runs in every interactive runtime, while the static check renders every page
+   by construction. Findings:
+   - The field, the visibility and the data view's sort menu had no check page; each has one now, checked in
+     every runtime.
+   - Under WebAssembly the field's message line, shown only while it holds a message, leaves as the input
+     loses focus, so a press on a submit button beneath it moves the button between its mousedown and its
+     mouseup and the first press submits nothing; under the Server the render arrives after the mouseup.
+     The field's check submits with Enter, and whether the field keeps the room its message takes is
+     open.
+   - The window's and the share menu's checks read a state that follows a script's first answer within an
+     assertion's five seconds, which the full suite's load overran; each now waits for the script's own
+     signal, with the patience every such wait has, before reading it.
 10. **The host's setup.** The README sets out each host, its registration, its page, its persistence and its
     locale files, each block held to its example host; the repository structure, the vocabulary, the
     features status and the feature history describe the WebView half. Gate: the example hosts match their

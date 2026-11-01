@@ -6,6 +6,13 @@ public static partial class ComponentChecks
     /// <summary>The runtimes every component is checked in: the Server, WebAssembly, Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there, and Blazor Hybrid's web view.</summary>
     public static TheoryData<string> Runtimes { get; } = ["server", "webassembly", "auto-server", "auto-webassembly", "webview"];
 
+    /// <summary>Every check page's address after its runtime segment, read from the pages' own routes.</summary>
+    /// <returns>The addresses, in order.</returns>
+    public static IReadOnlyList<string> ReadPagePaths()
+        => [.. Directory.EnumerateFiles(Path.Combine(BrowserHost.FindRepositoryRoot(), "tests", "Forma.Blazor.Browser.Components.Checks"), "*.razor", SearchOption.AllDirectories)
+            .SelectMany(file => PageRoute().Matches(File.ReadAllText(file)).Select(match => match.Groups["path"].Value))
+            .Order(StringComparer.Ordinal)];
+
     /// <summary>Opens the check page at <paramref name="path"/> in <paramref name="runtime"/> and waits until it is interactive in the runtime the case names.</summary>
     /// <param name="host">The published hosts.</param>
     /// <param name="runtime">The runtime, <c>server</c>, <c>webassembly</c>, <c>auto-server</c>, <c>auto-webassembly</c> or <c>webview</c>.</param>
@@ -178,4 +185,7 @@ public static partial class ComponentChecks
 
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d+$")]
     private static partial System.Text.RegularExpressions.Regex LayerPattern();
+
+    [System.Text.RegularExpressions.GeneratedRegex("""@page "/\{Runtime\}/(?<path>[^"]+)"$""", System.Text.RegularExpressions.RegexOptions.Multiline)]
+    private static partial System.Text.RegularExpressions.Regex PageRoute();
 }

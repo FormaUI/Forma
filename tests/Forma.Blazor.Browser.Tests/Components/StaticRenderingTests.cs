@@ -1,9 +1,7 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
-using System.Text.RegularExpressions;
-
 /// <summary>Every check page under static server rendering, which runs no event and no script.</summary>
-public sealed partial class StaticRenderingTests(BrowserHost host)
+public sealed class StaticRenderingTests(BrowserHost host)
 {
     // The controls a component offers in a static render that need interactivity to act: an enabled button other than a form's
     // submit, and an element of a widget's role a reader can reach that isn't marked disabled. A link and a native form control
@@ -61,7 +59,7 @@ public sealed partial class StaticRenderingTests(BrowserHost host)
         """;
 
     /// <summary>Every check page's address after its runtime segment, read from the pages' own routes.</summary>
-    public static TheoryData<string> Pages { get; } = [.. ReadPages()];
+    public static TheoryData<string> Pages { get; } = [.. ComponentChecks.ReadPagePaths()];
 
     [Theory]
     [MemberData(nameof(Pages))]
@@ -100,12 +98,4 @@ public sealed partial class StaticRenderingTests(BrowserHost host)
             () => Assert.True(controls.Length == 0, $"The page offers controls that need interactivity:{Environment.NewLine}{string.Join(Environment.NewLine, controls)}"),
             () => Assert.True(waits.Length == 0, $"The page shows what waits on a script that never runs:{Environment.NewLine}{string.Join(Environment.NewLine, waits)}"));
     }
-
-    private static IEnumerable<string> ReadPages()
-        => Directory.EnumerateFiles(Path.Combine(BrowserHost.FindRepositoryRoot(), "tests", "Forma.Blazor.Browser.Components.Checks"), "*.razor", SearchOption.AllDirectories)
-            .SelectMany(file => PageRoute().Matches(File.ReadAllText(file)).Select(match => match.Groups["path"].Value))
-            .Order(StringComparer.Ordinal);
-
-    [GeneratedRegex("""@page "/\{Runtime\}/(?<path>[^"]+)"$""", RegexOptions.Multiline)]
-    private static partial Regex PageRoute();
 }

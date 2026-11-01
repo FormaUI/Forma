@@ -1,0 +1,25 @@
+@page "/{Runtime}/field"
+@using System.ComponentModel.DataAnnotations
+
+@* A field around an input of the host's own, naming it by its label and showing the form's message for it once a submit finds it empty, the name submitted shown where the check reads it. *@
+<EditForm Model="_model" OnValidSubmit="@(() => _submitted = _model.Name)">
+    <DataAnnotationsValidator />
+    <FormaField Id="check" Label="Name" TargetId="name" Required="true" Field="@FieldIdentifier.Create(() => _model.Name)">
+        <InputText id="name" class="forma-field-input" @bind-Value="_model.Name" />
+    </FormaField>
+    <FormaButton Id="submit" Type="ButtonType.Submit">Save</FormaButton>
+</EditForm>
+<output id="result">@_submitted</output>
+
+@code {
+    private readonly Person _model = new();
+    private string? _submitted;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    private sealed class Person
+    {
+        [Required]
+        public string? Name { get; set; }
+    }
+}

@@ -1,0 +1,22 @@
+@page "/{Runtime}/data-sort-menu"
+@using Forma.Blazor.Components.DataView
+
+@* A list of three products in their source's order, sorted by the menu's choice of name, which opens ascending, or price, which opens descending. *@
+<FormaDataView Id="check" TItem="Product" Items="Products" ItemKey="@(product => product.Name)" ItemName="@(product => product.Name)" EnablePagination="false">
+    <FormaDataSortMenu TItem="Product" Sorts="Sorts" />
+    <FormaDataList TItem="Product" />
+</FormaDataView>
+
+@code {
+    private static readonly IQueryable<Product> Products = new Product[] { new("Hammer", 12), new("Atlas", 8), new("Wrench", 30) }.AsQueryable();
+
+    private static readonly IReadOnlyList<DataViewSortOption<Product>> Sorts =
+    [
+        new("name", "Name", DataViewSort<Product>.ByAscending(product => product.Name)),
+        new("price", "Price", DataViewSort<Product>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
+    ];
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    internal sealed record Product(string Name, int Price);
+}

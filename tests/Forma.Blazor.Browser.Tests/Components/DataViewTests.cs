@@ -309,4 +309,53 @@ public sealed class DataViewTests
             await Assertions.Expect(folder).ToBeFocusedAsync();
         }
     }
+
+    public sealed class DataSortMenu(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_sort_the_list_ascending_by_a_choice_that_opens_ascending(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-sort-menu");
+            await using var _ = context;
+            var names = page.Locator("#check .forma-data-list-item-name");
+            await Assertions.Expect(names).ToHaveTextAsync(["Hammer", "Atlas", "Wrench"]);
+
+            // Act
+            await ChooseAsync(page, "name");
+
+            // Assert
+            await Assertions.Expect(names).ToHaveTextAsync(["Atlas", "Hammer", "Wrench"]);
+            await Assertions.Expect(page.Locator("#check .forma-data-sort-menu-text")).ToHaveTextAsync("Name");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_sort_the_list_descending_by_a_choice_that_opens_descending(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-sort-menu");
+            await using var _ = context;
+            var names = page.Locator("#check .forma-data-list-item-name");
+            await Assertions.Expect(names).ToHaveTextAsync(["Hammer", "Atlas", "Wrench"]);
+
+            // Act
+            await ChooseAsync(page, "price");
+
+            // Assert
+            await Assertions.Expect(names).ToHaveTextAsync(["Wrench", "Hammer", "Atlas"]);
+        }
+
+        // Opens the menu and chooses the sort it names, once the menu stands in the top layer.
+        private static async Task ChooseAsync(IPage page, string sort)
+        {
+            var trigger = page.Locator("#check .forma-data-sort-menu");
+            await trigger.ClickAsync();
+            await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+            var choice = page.Locator($"[data-sort={sort}]");
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = choice }));
+            await choice.ClickAsync();
+        }
+    }
 }

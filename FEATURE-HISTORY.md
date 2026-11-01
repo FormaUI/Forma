@@ -42,6 +42,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - The static check: every check page renders statically too, as the `static` runtime, and is held to show its state, raise no error, show nothing waiting on a script and offer no enabled control whose action needs interactivity.
 
+- The render mode inventory: every component the catalog lists has a check page, and every check page is opened by a check that runs in every interactive runtime and rendered by the static check; [`FormaField`](docs/component-catalog.md#formafield), [`FormaVisibility`](docs/component-catalog.md#formavisibility) and `FormaDataSortMenu` gained check pages.
+
 - [The Blazor Hybrid example hosts](tests/Forma.Examples/README.md): a WPF, a Windows Forms and a MAUI application on Windows, built from Forma's packages and driven through WebView2, each checked for its published assets, a switch across two web views and its native windows' titles, a closed native window's release and the culture it keeps from one run to the next.
 
 **Breaking:**
