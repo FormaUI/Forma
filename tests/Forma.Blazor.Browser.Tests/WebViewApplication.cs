@@ -86,7 +86,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         try
         {
             var endpoint = new Uri($"http://127.0.0.1:{port}/");
-            await WaitForDevToolsAsync(process, endpoint, output).ConfigureAwait(false);
+            await WaitForDevToolsAsync(process, endpoint, output, dataFolder).ConfigureAwait(false);
             var browser = await playwright.Chromium.ConnectOverCDPAsync(endpoint.ToString()).ConfigureAwait(false);
 
             return new WebViewApplication(process, playwright, browser, dataFolder, folder, output);
@@ -169,7 +169,29 @@ public sealed class WebViewApplication : IAsyncDisposable
     private static string Describe(ConcurrentQueue<string> output)
         => output.IsEmpty ? " It wrote nothing." : $" It wrote:{Environment.NewLine}{string.Join(Environment.NewLine, output)}";
 
-    private static async Task WaitForDevToolsAsync(Process process, Uri endpoint, ConcurrentQueue<string> output)
+    // The command line of the browser process WebView2 started for the data folder, which names the arguments it took.
+    private static async Task<string> DescribeBrowserAsync(string dataFolder)
+    {
+        var query = new ProcessStartInfo("pwsh", ["-NoProfile", "-Command", $"Get-CimInstance Win32_Process -Filter \"Name='msedgewebview2.exe'\" | Where-Object {{ $_.CommandLine -like '*{dataFolder}*' -and $_.CommandLine -notlike '*--type=*' }} | ForEach-Object CommandLine"])
+        {
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+        };
+
+        using var describing = Process.Start(query);
+
+        if (describing is null)
+        {
+            return string.Empty;
+        }
+
+        var commandLine = await describing.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
+        await describing.WaitForExitAsync().ConfigureAwait(false);
+
+        return commandLine.Length == 0 ? " WebView2 started no browser process for its data folder." : $" WebView2's browser process started as:{Environment.NewLine}{commandLine.Trim()}";
+    }
+
+    private static async Task WaitForDevToolsAsync(Process process, Uri endpoint, ConcurrentQueue<string> output, string dataFolder)
     {
         using var client = new HttpClient();
         var deadline = DateTime.UtcNow.AddMinutes(1);
@@ -198,6 +220,6 @@ public sealed class WebViewApplication : IAsyncDisposable
             await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
         }
 
-        throw new TimeoutException($"The WebView check host's DevTools at {endpoint} did not answer within a minute.{Describe(output)}");
+        throw new TimeoutException($"The WebView check host's DevTools at {endpoint} did not answer within a minute.{Describe(output)}{await DescribeBrowserAsync(dataFolder).ConfigureAwait(false)}");
     }
 }

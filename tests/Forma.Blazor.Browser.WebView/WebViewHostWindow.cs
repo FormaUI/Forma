@@ -5,6 +5,7 @@ using System.Windows;
 using Forma.Blazor.Browser.WebView.Components;
 
 using Microsoft.AspNetCore.Components.WebView.Wpf;
+using Microsoft.Web.WebView2.Core;
 
 /// <summary>A native window of the check host: one web view rendering the check host's router, at the address it starts at, with the web view's name.</summary>
 internal sealed class WebViewHostWindow : Window
@@ -35,7 +36,21 @@ internal sealed class WebViewHostWindow : Window
         }
 
         _webView = new BlazorWebView { HostPage = "wwwroot/index.html", Services = shell.Services, StartPath = startPath, Width = 1280, Height = 720 };
-        _webView.BlazorWebViewInitializing += (_, _) => Console.WriteLine($"Web view {name} initializing");
+        _webView.BlazorWebViewInitializing += (_, args) =>
+        {
+            Console.WriteLine($"Web view {name} initializing");
+
+            // The browser's arguments and data folder the check names reach WebView2 as the environment's options too, beside its variables.
+            if (Environment.GetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS") is { Length: > 0 } arguments)
+            {
+                args.EnvironmentOptions = new CoreWebView2EnvironmentOptions { AdditionalBrowserArguments = arguments };
+            }
+
+            if (Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER") is { Length: > 0 } folder)
+            {
+                args.UserDataFolder = folder;
+            }
+        };
         _webView.BlazorWebViewInitialized += (_, _) => Console.WriteLine($"Web view {name} initialized");
         _webView.RootComponents.Add(new RootComponent
         {
