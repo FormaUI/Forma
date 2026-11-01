@@ -47,7 +47,8 @@ public sealed class Clipboard(IJSEnvironment js) : IAsyncDisposable
 A component builds a wrapper from its `Context.JS`, the environment carrying the component's logger
 and `RuntimeId`, attaches it from `OnAfterRenderAsync`, and disposes it from `DisposeAsyncCore`. An
 attach that a later attach, a detach or the disposal overtakes releases the instance it gets and
-reports that it did not attach, so a component disposed mid-attach leaves nothing attached. A
+reports that it did not attach, so a component disposed mid-attach leaves nothing attached; a module
+whose import is still under way is released once it completes, without the disposal waiting for it. A
 service builds its own environment from the runtime and logger it is given:
 
 ```csharp

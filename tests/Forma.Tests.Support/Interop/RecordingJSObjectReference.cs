@@ -9,8 +9,14 @@ public sealed class RecordingJSObjectReference(Func<string, object?[], object?> 
     /// <summary>The calls the reference took.</summary>
     public JSCallRecorder Recorder { get; } = new(respond);
 
+    private readonly TaskCompletionSource _released = new();
+
     /// <summary>How many times the reference has been released.</summary>
     public int Releases { get; private set; }
+
+    /// <summary>Completes as the reference is first released.</summary>
+    public Task Released
+        => _released.Task;
 
     /// <inheritdoc />
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
@@ -24,6 +30,7 @@ public sealed class RecordingJSObjectReference(Func<string, object?[], object?> 
     public ValueTask DisposeAsync()
     {
         Releases++;
+        _released.TrySetResult();
 
         return ValueTask.CompletedTask;
     }

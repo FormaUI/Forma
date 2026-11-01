@@ -85,33 +85,20 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    /// <remarks>An import still under way is released once it completes, which disposing doesn't wait for, so a runtime that never answers it, as a web view being torn down answers none, can't hold disposal open.</remarks>
+    public ValueTask DisposeAsync()
     {
         var import = _import;
         _import = null;
 
-        if (import is null || import.IsFaulted)
+        if (import is null || import.IsFaulted || import.IsCanceled)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
-        try
-        {
-            var module = await import;
-            await module.DisposeAsync();
-        }
-        catch (JSDisconnectedException)
-        {
-            InteropLog.CircuitDroppedWhileReleasing(js.Logger, path, js.RuntimeId);
-        }
-        catch (OperationCanceledException)
-        {
-            InteropLog.ReleaseCanceled(js.Logger, path, js.RuntimeId);
-        }
-        catch (JSException ex)
-        {
-            InteropLog.ScriptThrewWhileReleasing(js.Logger, ex, path, js.RuntimeId);
-        }
+        var release = ReleaseAsync(import);
+
+        return import.IsCompleted ? new ValueTask(release) : ValueTask.CompletedTask;
     }
 
     /// <summary>Imports the module and returns its reference.</summary>
@@ -157,6 +144,28 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
     // circuit ended or the call ran out of time, didn't run either.
     private static bool IsInteropFailure(Exception ex)
         => ex is JSDisconnectedException or JSException or OperationCanceledException;
+
+    // The release touches nothing of the owner's, so it needn't return to the owner's context.
+    private async Task ReleaseAsync(Task<IJSObjectReference> import)
+    {
+        try
+        {
+            var module = await import.ConfigureAwait(false);
+            await module.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (JSDisconnectedException)
+        {
+            InteropLog.CircuitDroppedWhileReleasing(js.Logger, path, js.RuntimeId);
+        }
+        catch (OperationCanceledException)
+        {
+            InteropLog.ReleaseCanceled(js.Logger, path, js.RuntimeId);
+        }
+        catch (JSException ex)
+        {
+            InteropLog.ScriptThrewWhileReleasing(js.Logger, ex, path, js.RuntimeId);
+        }
+    }
 
     private void LogCallFailure(string identifier, Exception ex)
     {

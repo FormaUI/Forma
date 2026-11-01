@@ -9,8 +9,14 @@ using Microsoft.JSInterop;
 /// <param name="releaseException">The exception the first release faults with, where <see langword="null"/> is a clean release.</param>
 public sealed class FakeJSObjectReference(Func<string, object?[]?, object?> respond, Exception? releaseException = null) : IJSObjectReference
 {
+    private readonly TaskCompletionSource _released = new();
+
     /// <summary>Whether <see cref="DisposeAsync"/> has run.</summary>
     public bool IsDisposed { get; private set; }
+
+    /// <summary>Completes as <see cref="DisposeAsync"/> first runs.</summary>
+    public Task Released
+        => _released.Task;
 
     /// <inheritdoc />
     [SuppressMessage("Design", "CA1031", Justification = "The call faults with whatever the function throws, as a runtime call does.")]
@@ -35,6 +41,7 @@ public sealed class FakeJSObjectReference(Func<string, object?[]?, object?> resp
     {
         var isFirstRelease = !IsDisposed;
         IsDisposed = true;
+        _released.TrySetResult();
 
         return isFirstRelease && releaseException is not null ? ValueTask.FromException(releaseException) : ValueTask.CompletedTask;
     }

@@ -242,7 +242,7 @@ public sealed class InputRegistrationTests
         }
 
         [Fact]
-        public async Task Should_wait_for_a_registration_in_flight_before_disposing()
+        public async Task Should_release_a_registration_in_flight_once_it_lands_without_its_disposal_waiting_for_it()
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
@@ -253,14 +253,16 @@ public sealed class InputRegistrationTests
 
             // Act
             var disposal = registration.DisposeAsync();
-            var settledEarly = disposal.IsCompleted;
+            var isDisposedAtOnce = disposal.IsCompleted;
+            var isReleasedEarly = script.Handle.Calls.Any(call => call.Identifier == "dispose");
             script.Held!.Answer(script.Handle);
             await pending;
-            await disposal;
+            await script.Handle.Released.WaitAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(
-                () => Assert.False(settledEarly),
+                () => Assert.True(isDisposedAtOnce),
+                () => Assert.False(isReleasedEarly),
                 () => Assert.False(registration.IsRegistered),
                 () => Assert.Contains(script.Handle.Calls, call => call.Identifier == "dispose"));
         }
@@ -355,7 +357,12 @@ public sealed class InputRegistrationTests
 
     private sealed class RecordingHandle : IJSObjectReference
     {
+        private readonly TaskCompletionSource _released = new();
+
         public List<Call> Calls { get; } = [];
+
+        public Task Released
+            => _released.Task;
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
@@ -368,6 +375,10 @@ public sealed class InputRegistrationTests
             => InvokeAsync<TValue>(identifier, args);
 
         public ValueTask DisposeAsync()
-            => ValueTask.CompletedTask;
+        {
+            _released.TrySetResult();
+
+            return ValueTask.CompletedTask;
+        }
     }
 }

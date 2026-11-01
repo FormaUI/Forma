@@ -79,29 +79,20 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         => _isUnavailable = true;
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    /// <remarks>An attempt still under way finishes before the browser's registration is released, which disposing doesn't wait for, so a runtime that never answers the attempt, as a web view being torn down answers none, can't hold disposal open.</remarks>
+    public ValueTask DisposeAsync()
     {
         if (_isDisposed)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         _isDisposed = true;
 
-        if (_attempt is { } attempt)
-        {
-            await ((Task)attempt).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-        }
+        var attempt = _attempt;
+        var ending = EndAsync(attempt);
 
-        if (_registration is { } registration)
-        {
-            _registration = null;
-            await TryInvokeVoidAsync(registration, "dispose").ConfigureAwait(false);
-            await ReleaseAsync(registration).ConfigureAwait(false);
-        }
-
-        _receiverReference.Dispose();
-        await _module.DisposeAsync().ConfigureAwait(false);
+        return attempt is { IsCompleted: false } ? ValueTask.CompletedTask : new ValueTask(ending);
     }
 
     /// <inheritdoc />
@@ -200,6 +191,25 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         {
             CultureBrowserInteropLog.NotificationFailed(_environment.Logger, exception, accepted.UICulture.Name, _environment.RuntimeId);
         }
+    }
+
+    // The browser's registration is released once an attempt under way finished, then the receiver and the module.
+    private async Task EndAsync(Task<IJSObjectReference>? attempt)
+    {
+        if (attempt is not null)
+        {
+            await ((Task)attempt).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        }
+
+        if (_registration is { } registration)
+        {
+            _registration = null;
+            await TryInvokeVoidAsync(registration, "dispose").ConfigureAwait(false);
+            await ReleaseAsync(registration).ConfigureAwait(false);
+        }
+
+        _receiverReference.Dispose();
+        await _module.DisposeAsync().ConfigureAwait(false);
     }
 
     // A switch waits on a registration under way and fails with it; with none under way, or one unavailable, it fails at once.

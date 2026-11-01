@@ -3,6 +3,7 @@ namespace Forma.Framework.Culture.Browser.Interop.Tests;
 using System.Globalization;
 
 using Forma.Tests.Culture;
+using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -250,6 +251,33 @@ public sealed class CultureCoordinatorRegistrationTests
 
             // Assert
             Assert.True(disposal.IsCompletedSuccessfully);
+        }
+
+        [Fact]
+        public async Task Should_release_a_registration_under_way_once_it_lands_without_its_disposal_waiting_for_it()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var registration = GetRegistration(scope);
+            browser.Module.Recorder.Hold("register");
+            var attempt = registration.RegisterAsync();
+            await using var reference = new RecordingJSObjectReference((_, _) => null);
+
+            // Act
+            var disposal = registration.DisposeAsync();
+            var isDisposedAtOnce = disposal.IsCompleted;
+            Assert.Single(browser.Module.Recorder.GetCalls("register")).Complete(reference);
+            await attempt;
+            await reference.Released.WaitAsync(TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isDisposedAtOnce),
+                () => Assert.Single(reference.Recorder.GetCalls("dispose")),
+                () => Assert.Equal(1, reference.Releases));
         }
 
         [Fact]

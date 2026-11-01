@@ -136,6 +136,9 @@ public sealed class DomBridgeTests
             await disposing;
             await using var observation = await watching;
 
+            // The release follows the import's landing, which the disposal doesn't wait for.
+            await browser.Watcher.Released.WaitAsync(TestContext.Current.CancellationToken);
+
             // Assert
             Assert.Equal(1, browser.Watcher.Releases);
         }

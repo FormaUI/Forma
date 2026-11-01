@@ -278,6 +278,9 @@ public sealed class DomWatcherTests
             await disposing;
             await using var observation = await watching;
 
+            // The release follows the import's landing, which the disposal doesn't wait for.
+            await browser.Watcher.Released.WaitAsync(TestContext.Current.CancellationToken);
+
             // Assert
             Assert.Multiple(
                 () => Assert.Empty(browser.Watcher.Recorder.Calls),

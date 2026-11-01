@@ -232,6 +232,31 @@ public sealed class JSModuleTests
         }
 
         [Fact]
+        public async Task Should_release_a_module_whose_import_was_under_way_once_it_lands_without_its_disposal_waiting_for_it()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var moduleReference = new FakeJSObjectReference((_, _) => null);
+            var js = new RecordingJSRuntime((_, _) => moduleReference);
+            js.Recorder.Hold("import");
+            var module = new JSModule(CreateEnvironment(js, loggerFactory), Path);
+            var import = module.ImportAsync();
+
+            // Act
+            var disposal = module.DisposeAsync();
+            var isDisposedAtOnce = disposal.IsCompleted;
+            Assert.Single(js.Recorder.GetCalls("import")).Complete(moduleReference);
+            await import;
+            await moduleReference.Released.WaitAsync(TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isDisposedAtOnce),
+                () => Assert.True(moduleReference.IsDisposed),
+                () => Assert.Empty(loggerFactory.Entries));
+        }
+
+        [Fact]
         public async Task Should_not_report_a_failed_import_a_second_time()
         {
             // Arrange

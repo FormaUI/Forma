@@ -29,6 +29,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [A host's locale files](src/Forma.Framework/Forma.Framework.Localization/README.md) are embedded in a Blazor Hybrid application's assembly, as in a WebAssembly client's, so an application MAUI packages reads them with no folder beside it.
 
+- [The JavaScript interop](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md), the input registration and the culture registration leave a call into script still under way to finish as they're disposed, releasing what it produced then, where they had waited for it, so a component disposed where its runtime will never answer, as a web view whose document is gone, completes its disposal.
+
 **Build and verification**
 
 - [The WebView check host](docs/repository-structure.md#tests): a WPF application whose native windows each render the components to a web view, driven by the browser check through WebView2, checking what Blazor Hybrid guarantees of its renderer, a web view's registration, the culture each web view's events run in, a web view's address replaced and refused, a traversal, and a web view's release.
