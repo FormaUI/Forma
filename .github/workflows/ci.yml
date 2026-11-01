@@ -183,10 +183,13 @@ jobs:
         if: steps.filter.outputs.code == 'true'
         run: dotnet workload install ${{ matrix.workload }}
 
+      # The newest image carries Xcode 26.6 while the release candidate's Apple workloads ask for Xcode 27, so their
+      # check of the Xcode version is skipped, as MSBuild reads the environment, and the newest Xcode builds them.
       - name: Build the MAUI example host for the platform
         if: steps.filter.outputs.code == 'true'
         env:
           NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
+          ValidateXcodeVersion: ${{ runner.os == 'macOS' && 'false' || '' }}
         run: pwsh ./scripts/build/mobile.ps1 -Platform ${{ matrix.platform }}
 
       - name: Report the build was not needed
