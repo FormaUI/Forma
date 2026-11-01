@@ -183,8 +183,13 @@ App's client names its server's, so both runtimes read the same files:
 </PropertyGroup>
 ```
 
+**In a Blazor Hybrid application.** An application MAUI packages has no folder beside it to read, so
+the build of an application referencing its platform's web view package, WPF's, Windows Forms' or
+MAUI's, embeds the host's folder in the application's assembly as a client's build does, `.locales`
+beside the project unless `LocalesPath` names another, and the folder need not be copied beside it.
+
 **Which entry wins.** The assembly's own files are read first, then each locale pack, then the
-host's files, those a client embedded and then the folder's, each overriding the one before; within
+host's files, those an application embedded and then the folder's, each overriding the one before; within
 each, a file closer to the type wins.
 
 **Another layout.** An assembly that keeps its files elsewhere, or whose root namespace differs

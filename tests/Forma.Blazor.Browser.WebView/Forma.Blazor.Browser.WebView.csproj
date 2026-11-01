@@ -20,6 +20,8 @@
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Blazor.WebView\Forma.Framework.Culture.Blazor.WebView.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
     </ItemGroup>
 
 </Project>

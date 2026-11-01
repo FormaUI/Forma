@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Windows;
 
 using Forma.Framework.Culture.Router;
+using Forma.Framework.Localization.Json;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
@@ -36,6 +37,7 @@ internal static class Program
         if (Environment.GetEnvironmentVariable("FORMA_WEBVIEW_ORDER") == "forma-first")
         {
             AddRouting(services);
+            services.AddJsonLocalization();
             services.AddFormaUIWebView();
             services.AddWpfBlazorWebView();
         }
@@ -44,6 +46,7 @@ internal static class Program
             services.AddWpfBlazorWebView();
             services.AddFormaUIWebView();
             AddRouting(services);
+            services.AddJsonLocalization();
         }
 
         services.AddSingleton(shell);

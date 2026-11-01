@@ -138,12 +138,15 @@ whose name starts with a dot is hidden from a default listing on Linux and macOS
 any other; the source walks its folder with nothing skipped, since .NET treats such names as
 hidden and skips them unless told not to.
 
-A WebAssembly client has no file system to read a folder from, so there a host's files are embedded in
-its client assembly by the package's targets, under the resource names and discovery metadata the
-loader reads, and they stand where a host's folder stands in the order below. The targets reach every
-project that references the library, through another package too, and in a client they embed the folder
-the project's `LocalesPath` property names, `.locales` beside the project by default, so a Web App's
-client can name its server's folder and both runtimes read one set of files. Each file is embedded as a
+A WebAssembly client has no file system to read a folder from, and an application MAUI packages has
+none beside it, so in a client and in a Blazor Hybrid application a host's files are embedded in the
+application's assembly by the package's targets, under the resource names and discovery metadata the
+loader reads, and they stand where a host's folder stands in the order below. A Blazor Hybrid
+application is known to the build as an application that references its platform's web view package,
+WPF's, Windows Forms' or MAUI's. The targets reach every project that references the library, through
+another package too, and in such an application they embed the folder the project's `LocalesPath`
+property names, `.locales` beside the project by default, so a Web App's client can name its server's
+folder and both runtimes read one set of files. Each file is embedded as a
 pack's is, under its path in the folder with its folders joined by dots, after the prefix `.locales.`,
 which no resource name the build forms starts with, so the client's own embedded files and any other
 resource stay apart from them; and the assembly is marked as carrying them, which is how the loader,

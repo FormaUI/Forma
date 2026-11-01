@@ -94,9 +94,14 @@ gated as it says.
    - The startup checks run as the application first resolves its coordinator, at its first web view or its
      first switch, since a native application starts no host to check from, and `AddFormaCultureWebView`
      takes no policy, the state alone being the one a web view accepts.
-5. **A host's strings in the application.** The package's targets embed a host's locale files in a Blazor
+5. **A host's strings in the application.** ✅ The package's targets embed a host's locale files in a Blazor
    Hybrid application's assembly. Gate: an application built from the packed packages showing a host
-   string in the switched culture.
+   string in the switched culture. The build knows a Blazor Hybrid application as an executable that
+   references its platform's web view package, WPF's, Windows Forms' or MAUI's, since none of them sets a
+   property a build can read. Departure: the gate is met in the check host, whose publish carries no folder
+   of locale files and whose web views show its own string in the switched culture, through the same
+   targets file a package imports; an application built from the packed packages shows it with step 8's
+   example hosts, which are built from them already.
 6. **The components in a web view.** The check pages move into a Razor class library the components host's
    client and the WebView check host share, and the WPF check host runs every check page as the `webview`
    runtime, beside the Web App's four. Gate: every component check passes in the web view.
@@ -105,7 +110,8 @@ gated as it says.
    each component it finds failing is fixed. Gate: the static check over every check page.
 8. **Each host's integration.** Example hosts for WPF, Windows Forms and MAUI on Windows, set up from the
    packed packages as the README sets them up, published and started, each checked for its registration in
-   either order, its startup, its published assets, a switch across two web views and the web view of a closed native window's
+   either order, its startup, its published assets, a host string from its embedded locale files in the
+   switched culture, a switch across two web views and the web view of a closed native window's
    release. Gate: the example hosts' checks.
 9. **Render modes in the gate.** An inventory check that every component a host places has a check page,
    and that every check page runs in every interactive runtime and statically; the Windows run of CI

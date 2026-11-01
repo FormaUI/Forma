@@ -6,9 +6,10 @@
 @inject NavigationManager Navigation
 @inject ICultureState CultureState
 @inject ICultureSwitch CultureSwitch
+@inject IStringLocale<ProbePage> L
 
-@* One web view's page, a culture route page: what renders it and in which culture, a select reaching its script, an event,
-   a binding, work begun before a switch, the ways a culture is applied, the application's switch from a component and from
+@* One web view's page, a culture route page: what renders it and in which culture, a string of the host's own, a select
+   reaching its script, an event, a binding, work begun before a switch, the ways a culture is applied, the application's switch from a component and from
    native code, the web views it opens and closes, the guards a navigation handler keeps, and what its navigation saw. *@
 <output id="web-view">@WebView</output>
 <output id="renderer">@RendererInfo.Name @RendererInfo.IsInteractive</output>
@@ -17,6 +18,7 @@
 <output id="context">@_context</output>
 <output id="render-culture">@Ambient()</output>
 <output id="state">@CultureState.Culture.Name|@CultureState.UICulture.Name</output>
+<output id="welcome">@L["Welcome"]</output>
 
 <EditForm Model="_entry">
     <FormaSelect TValue="int" @bind-Value="_entry.Status" Options="_statuses" Label="Status" />

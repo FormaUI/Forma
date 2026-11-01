@@ -3,8 +3,9 @@
     <!--
         What the build does for an assembly that localizes. This file ships in the library's package,
         named for the package there, and is imported into every project that references it, directly or
-        through another package. For any project it embeds the config file; for a WebAssembly client it
-        embeds the host's own locale files, since the browser has no folder to read them from; and for a
+        through another package. For any project it embeds the config file; for a WebAssembly client and a
+        Blazor Hybrid application it embeds the host's own locale files, since the browser has no folder to
+        read them from and an application MAUI packages has none beside it; and for a
         locale pack, a project that declared IsLocalePack, it does the rest: a pack is a project of
         nothing but locale files, for other assemblies' types, so it compiles no code, embeds every
         locale file beneath it under its own path so that a resource name spells the tree a reader sees,
@@ -23,13 +24,19 @@
         A WebAssembly client embeds the host's folder of locale files, the one LocalesPath names, .locales
         beside the project by default, as a pack embeds its own, each under its path in the folder, after
         the prefix HostLocalesAttribute names, which no resource name the build forms starts with; the
-        attribute tells the runtime the assembly carries them, and where it reads them.
+        attribute tells the runtime the assembly carries them, and where it reads them. A Blazor Hybrid
+        application embeds them the same way, known as an application referencing its platform's web view
+        package.
     -->
-    <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(LocalesPath)' == ''">
+    <PropertyGroup Condition="'$(LocalesPath)' == ''">
         <LocalesPath>.locales</LocalesPath>
     </PropertyGroup>
 
-    <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <ItemGroup>
+        <_BlazorWebViewPlatformPackage Include="@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.Wpf'));@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.WindowsForms'));@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.Maui'))" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or ('@(_BlazorWebViewPlatformPackage)' != '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'))">
         <_HostLocaleFile Include="$(LocalesPath)/**/*.json" />
         <EmbeddedResource Include="$(LocalesPath)/**/*.json" WithCulture="false" LogicalName=".locales.$([System.String]::Copy('%(RecursiveDir)%(Filename)%(Extension)').Replace('\', '.').Replace('/', '.'))" />
     </ItemGroup>

@@ -41,6 +41,25 @@ public sealed class WebViewCultureTests
     }
 
     [Fact]
+    public async Task Should_show_a_string_of_the_host_s_own_from_files_its_application_embeds_in_the_switched_culture()
+    {
+        // Arrange
+        await using var application = await WebViewApplication.StartAsync();
+        var (first, second) = await OpenTwoWebViewsAsync(application);
+        await Assertions.Expect(first.Locator("#welcome")).ToHaveTextAsync("Welcome");
+
+        // Act
+        await first.Locator("#switch").ClickAsync();
+
+        // Assert
+        await Assertions.Expect(first.Locator("#switched")).ToHaveTextAsync("switched");
+        await Assertions.Expect(first.Locator("#welcome")).ToHaveTextAsync("Bienvenido");
+        await second.GetByRole(AriaRole.Button, new() { Name = "Event" }).ClickAsync();
+        await Assertions.Expect(second.Locator("#welcome")).ToHaveTextAsync("Bienvenido");
+        Assert.False(Directory.Exists(Path.Combine(application.Folder, ".locales")), "The check host's publish carries no folder of locale files, so its strings come from its assembly.");
+    }
+
+    [Fact]
     public async Task Should_bind_in_another_web_view_in_the_switched_culture()
     {
         // Arrange

@@ -12,16 +12,20 @@ public sealed class WebViewApplication : IAsyncDisposable
     private readonly IPlaywright _playwright;
     private readonly string _dataFolder;
 
-    private WebViewApplication(Process process, IPlaywright playwright, IBrowser browser, string dataFolder)
+    private WebViewApplication(Process process, IPlaywright playwright, IBrowser browser, string dataFolder, string folder)
     {
         _process = process;
         _playwright = playwright;
         _dataFolder = dataFolder;
         Browser = browser;
+        Folder = folder;
     }
 
     /// <summary>The browser every web view is a page of.</summary>
     public IBrowser Browser { get; }
+
+    /// <summary>The folder the check host was published to.</summary>
+    public string Folder { get; }
 
     /// <summary>Starts the check host, skipping the check where WebView2 can't run.</summary>
     /// <param name="environment">The environment variables the check host starts with beside its own, by name.</param>
@@ -77,7 +81,7 @@ public sealed class WebViewApplication : IAsyncDisposable
             await WaitForDevToolsAsync(process, endpoint, output).ConfigureAwait(false);
             var browser = await playwright.Chromium.ConnectOverCDPAsync(endpoint.ToString()).ConfigureAwait(false);
 
-            return new WebViewApplication(process, playwright, browser, dataFolder);
+            return new WebViewApplication(process, playwright, browser, dataFolder, folder);
         }
         catch
         {
