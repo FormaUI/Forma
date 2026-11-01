@@ -31,6 +31,8 @@ internal sealed class WebViewHostWindow : Window
         }
 
         _webView = new BlazorWebView { HostPage = "wwwroot/index.html", Services = shell.Services, StartPath = startPath };
+        _webView.BlazorWebViewInitializing += (_, _) => Console.WriteLine($"Web view {name} initializing");
+        _webView.BlazorWebViewInitialized += (_, _) => Console.WriteLine($"Web view {name} initialized");
         _webView.RootComponents.Add(new RootComponent
         {
             Selector = "#app",

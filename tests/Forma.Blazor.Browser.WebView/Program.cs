@@ -6,6 +6,7 @@ using System.Windows;
 using Forma.Framework.Culture.Router;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Web.WebView2.Core;
 
 /// <summary>Starts the WebView check host: its services, shared by every web view, and its first web view.</summary>
 internal static class Program
@@ -13,6 +14,17 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
+        // What the browser check reports where a web view never comes up: the WebView2 runtime the host found, or none.
+        try
+        {
+            Console.WriteLine($"WebView2 runtime {CoreWebView2Environment.GetAvailableBrowserVersionString()}");
+        }
+        catch (WebView2RuntimeNotFoundException exception)
+        {
+            Console.Error.WriteLine($"No WebView2 runtime is installed: {exception.Message}");
+            Environment.Exit(2);
+        }
+
         // A culture assigned to the UI thread, as MAUI assigns the device's, which a switch has to reach past.
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
@@ -39,6 +51,7 @@ internal static class Program
         shell.Services = services.BuildServiceProvider();
 
         var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+        application.DispatcherUnhandledException += (_, args) => Console.Error.WriteLine(args.Exception);
         application.Startup += (_, _) => shell.Open("/en/probe");
         application.Run();
     }

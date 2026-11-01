@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Browser.Tests;
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 
@@ -42,6 +43,8 @@ public sealed class WebViewApplication : IAsyncDisposable
         {
             WorkingDirectory = folder,
             UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
         start.Environment["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = $"--remote-debugging-port={port}";
         start.Environment["WEBVIEW2_USER_DATA_FOLDER"] = dataFolder;
@@ -51,13 +54,27 @@ public sealed class WebViewApplication : IAsyncDisposable
             start.Environment[name] = value;
         }
 
-        var process = Process.Start(start) ?? throw new InvalidOperationException("The WebView check host did not start.");
+        // What the host writes, its WebView2 runtime and each web view's initialization among it, read as it writes.
+        var output = new ConcurrentQueue<string>();
+        var process = new Process { StartInfo = start };
+        process.OutputDataReceived += (_, args) => Record(output, args.Data);
+        process.ErrorDataReceived += (_, args) => Record(output, args.Data);
+
+        if (!process.Start())
+        {
+            process.Dispose();
+
+            throw new InvalidOperationException("The WebView check host did not start.");
+        }
+
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
         var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
 
         try
         {
             var endpoint = new Uri($"http://127.0.0.1:{port}/");
-            await WaitForDevToolsAsync(process, endpoint).ConfigureAwait(false);
+            await WaitForDevToolsAsync(process, endpoint, output).ConfigureAwait(false);
             var browser = await playwright.Chromium.ConnectOverCDPAsync(endpoint.ToString()).ConfigureAwait(false);
 
             return new WebViewApplication(process, playwright, browser, dataFolder);
@@ -129,7 +146,18 @@ public sealed class WebViewApplication : IAsyncDisposable
         }
     }
 
-    private static async Task WaitForDevToolsAsync(Process process, Uri endpoint)
+    private static void Record(ConcurrentQueue<string> output, string? line)
+    {
+        if (line is not null)
+        {
+            output.Enqueue(line);
+        }
+    }
+
+    private static string Describe(ConcurrentQueue<string> output)
+        => output.IsEmpty ? " It wrote nothing." : $" It wrote:{Environment.NewLine}{string.Join(Environment.NewLine, output)}";
+
+    private static async Task WaitForDevToolsAsync(Process process, Uri endpoint, ConcurrentQueue<string> output)
     {
         using var client = new HttpClient();
         var deadline = DateTime.UtcNow.AddMinutes(1);
@@ -138,7 +166,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         {
             if (process.HasExited)
             {
-                throw new InvalidOperationException($"The WebView check host exited with code {process.ExitCode} before its web view opened.");
+                throw new InvalidOperationException($"The WebView check host exited with code {process.ExitCode} before its web view opened.{Describe(output)}");
             }
 
             try
@@ -158,6 +186,6 @@ public sealed class WebViewApplication : IAsyncDisposable
             await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
         }
 
-        throw new TimeoutException($"The WebView check host's DevTools at {endpoint} did not answer within a minute.");
+        throw new TimeoutException($"The WebView check host's DevTools at {endpoint} did not answer within a minute.{Describe(output)}");
     }
 }

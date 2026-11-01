@@ -109,7 +109,9 @@ gated as it says.
    release. Gate: the example hosts' checks.
 9. **Render modes in the gate.** An inventory check that every component a host places has a check page,
    and that every check page runs in every interactive runtime and statically; the Windows run of CI
-   installs what the WebView checks need; on another platform they report themselves skipped. Gate: CI on both platforms with the WebView checks counted on Windows.
+   installs what the WebView checks need, the WebView2 runtime where its image lacks one, and the check
+   reports what the check host wrote where a web view never opens ✅; on another platform they report
+   themselves skipped. Gate: CI on both platforms with the WebView checks counted on Windows.
 10. **The host's setup.** The README sets out each host, its registration, its page, its persistence and its
     locale files, each block held to its example host; the repository structure, the vocabulary, the
     features status and the feature history describe the WebView half. Gate: the example hosts match their
