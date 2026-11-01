@@ -20,6 +20,7 @@
         'Invoke-Gate',
         'Test-BrowserCheck',
         'Test-BrowserScript',
+        'Test-MobileExample',
         'Test-Solution',
         'Test-SolutionFormat',
         'Test-SolutionLocale',

@@ -1257,6 +1257,74 @@ function Test-BrowserCheck {
 
 <#
 .SYNOPSIS
+Builds the MAUI example host from the solution's packages for Android, iOS or Mac Catalyst.
+
+.DESCRIPTION
+A Blazor Hybrid application on a phone, a tablet or a Mac takes Forma's packages as a host outside the repository
+takes them, so the solution is packed at a version only the examples use, that version is cleared from the
+machine's package cache first, and the MAUI example host is built from the packages for the platform named, in
+Release, which trims it as the platform's own build does, so a package that doesn't load or a trim warning there
+fails here. Each platform needs its workload, maui-android, maui-ios or maui-maccatalyst; iOS and Mac Catalyst
+build on a Mac alone, and iOS builds for the simulator, which needs no signing.
+
+.PARAMETER Context
+The build context.
+
+.PARAMETER Platform
+The platform the MAUI example host is built for: Android, iOS or MacCatalyst.
+
+.OUTPUTS
+The step's result.
+#>
+function Test-MobileExample {
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([psobject])]
+    param(
+        [Parameter(Mandatory)] [psobject] $Context,
+        [Parameter(Mandatory)] [ValidateSet('Android', 'iOS', 'MacCatalyst')] [string] $Platform
+    )
+
+    $solution = $Context.Solution
+    $example = Join-Path $Context.BrowserExamples 'Forma.Examples.Maui'
+    $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
+    $platformName = $Platform.ToLowerInvariant()
+    $workload = "maui-$platformName"
+    $isSimulator = $Platform -eq 'iOS'
+
+    Invoke-BuildStep -Name 'mobile' -Target $example -Description "dotnet pack the solution and build the MAUI example host from it for $Platform" -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+        if (-not (dotnet workload list | Select-String -Pattern "^\s*$workload\s" -Quiet)) {
+            throw "The MAUI example host for $Platform needs the $workload workload: dotnet workload install $workload"
+        }
+
+        if (Test-Path -LiteralPath $packagesOutput) {
+            Remove-Item -LiteralPath $packagesOutput -Recurse -Force
+        }
+
+        $version = '1.0.0-examples'
+        dotnet pack $solution -c Release -o $packagesOutput "-p:PackageVersion=$version" --nologo -v:q
+
+        if ($LASTEXITCODE -ne 0) {
+            return
+        }
+
+        $cache = (dotnet nuget locals global-packages --list) -replace '^global-packages:\s*', ''
+        Get-ChildItem -LiteralPath $cache -Directory -Filter 'formaui-net.*' -ErrorAction SilentlyContinue |
+            ForEach-Object { Join-Path $_.FullName $version } |
+            Where-Object { Test-Path -LiteralPath $_ } |
+            ForEach-Object { Remove-Item -LiteralPath $_ -Recurse -Force }
+
+        $arguments = @($example, '-c', 'Release', "-p:FormaVersion=$version", "-p:FormaExamplePlatform=$platformName", '--nologo', '-v:q')
+
+        if ($isSimulator) {
+            $arguments += '-p:RuntimeIdentifier=iossimulator-arm64'
+        }
+
+        dotnet build @arguments
+    }.GetNewClosure()
+}
+
+<#
+.SYNOPSIS
 Deletes what the build produced.
 
 .DESCRIPTION

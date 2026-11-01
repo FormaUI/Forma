@@ -126,3 +126,67 @@ jobs:
       - name: Report the gate was not needed
         if: steps.filter.outputs.code != 'true'
         run: echo 'Only prose changed, so the gate did not need to run.'
+
+  # A Blazor Hybrid application on a phone, a tablet or a Mac builds from Forma's packages on the platform's own
+  # machine, Android's on Linux and Apple's on a Mac, each with the MAUI workload for its platform, which the gate's
+  # machines have no use for.
+  mobile:
+    name: mobile (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Android
+            os: ubuntu-latest
+            workload: maui-android
+          - platform: iOS
+            os: macos-latest
+            workload: maui-ios
+          - platform: MacCatalyst
+            os: macos-latest
+            workload: maui-maccatalyst
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect changes
+        id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
+        with:
+          filters: |
+            code:
+              - '**/*'
+              - '!**/*.md'
+              - '!docs/**'
+              - '!assets/**'
+              - '!.github/ISSUE_TEMPLATE/**'
+
+      - name: Set up .NET
+        if: steps.filter.outputs.code == 'true'
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      # Apple's workloads build with the newest Xcode the image carries, which a pinned SDK's workload asks for.
+      - name: Select the newest Xcode
+        if: steps.filter.outputs.code == 'true' && runner.os == 'macOS'
+        run: |
+          xcode=$(ls -d /Applications/Xcode_*.app | grep -v -i beta | sort -V | tail -1)
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+
+      - name: Install the platform's MAUI workload
+        if: steps.filter.outputs.code == 'true'
+        run: dotnet workload install ${{ matrix.workload }}
+
+      - name: Build the MAUI example host for the platform
+        if: steps.filter.outputs.code == 'true'
+        env:
+          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
+        run: pwsh ./scripts/build/mobile.ps1 -Platform ${{ matrix.platform }}
+
+      - name: Report the build was not needed
+        if: steps.filter.outputs.code != 'true'
+        run: echo 'Only prose changed, so the mobile build did not need to run.'

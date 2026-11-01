@@ -31,7 +31,7 @@ The build is entered through `build.ps1` at the repository root. Its module and 
 the narrower loops live under `scripts/build/`.
 
 - Do run `./build.ps1` for the gate, and a wrapper beside the module for one part of it: `compile.ps1`,
-  `test.ps1`, `format.ps1`, `tasks.ps1`, `browser.ps1`, `clean.ps1`. The format check is the longest step of
+  `test.ps1`, `format.ps1`, `tasks.ps1`, `browser.ps1`, `mobile.ps1`, `clean.ps1`. The format check is the longest step of
   the gate, so a narrow loop is worth reaching for.
 - Do narrow a test run with `test.ps1 -Project`, `-Filter` and `-NoBuild`, and hunt a test that fails
   sometimes with `-Times`, which continues past a failure so the failure shows as a rate; add `-LoadWith`

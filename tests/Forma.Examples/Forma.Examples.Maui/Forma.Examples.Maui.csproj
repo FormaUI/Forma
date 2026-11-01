@@ -1,8 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
+    <!--
+        Windows unless FormaExamplePlatform names android, ios or maccatalyst, each of which needs its MAUI workload,
+        so a machine builds the platforms it has the workload for alone.
+    -->
+    <PropertyGroup>
+        <FormaExamplePlatform Condition="'$(FormaExamplePlatform)' == ''">windows</FormaExamplePlatform>
+        <TargetFramework Condition="'$(FormaExamplePlatform)' == 'windows'">net11.0-windows10.0.19041.0</TargetFramework>
+        <TargetFramework Condition="'$(FormaExamplePlatform)' != 'windows'">net11.0-$(FormaExamplePlatform)</TargetFramework>
+    </PropertyGroup>
+
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
         <Nullable>enable</Nullable>
@@ -11,9 +20,20 @@
         <ApplicationId>com.formaui.examples.maui</ApplicationId>
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
         <ApplicationVersion>1</ApplicationVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(FormaExamplePlatform)' == 'windows'">
         <WindowsPackageType>None</WindowsPackageType>
         <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(FormaExamplePlatform)' == 'android'">
+        <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(FormaExamplePlatform)' == 'ios' Or '$(FormaExamplePlatform)' == 'maccatalyst'">
+        <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     </PropertyGroup>
 
     <ItemGroup>
