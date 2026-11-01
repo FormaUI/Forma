@@ -35,8 +35,9 @@ public sealed class AnchoredPopover(IJSEnvironment js)
             return;
         }
 
-        var next = isOpen ? OpenAsync(popover, anchor, trigger, onOpened, keepsFocus, alignment) : DetachAsync().AsTask();
+        // Set before the transition starts, so an open that fails, at once or later, has the last word.
         _isOpen = isOpen;
+        var next = isOpen ? OpenAsync(popover, anchor, trigger, onOpened, keepsFocus, alignment) : DetachAsync().AsTask();
         _transition = next;
 
         try
@@ -64,7 +65,14 @@ public sealed class AnchoredPopover(IJSEnvironment js)
             return;
         }
 
-        await InvokeAsync("open", trigger);
+        // An open that didn't run leaves the popover closed, as a failed attach does, so the next sync opens it again.
+        if (!await InvokeAsync("open", trigger))
+        {
+            _isOpen = false;
+            await DetachAsync();
+
+            return;
+        }
 
         if (onOpened is not null)
         {

@@ -149,6 +149,26 @@
         }
 
         [Fact]
+        public async Task Should_open_on_the_next_render_once_its_script_failed_to_open_it()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var script = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/AnchoredPopover.js");
+            var popover = script.SetupModule("attach", _ => true);
+            var open = popover.SetupVoid("open", _ => true);
+            open.SetException(new Microsoft.JSInterop.JSException("The popover was not in the document."));
+            var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+            open.SetVoidResult();
+
+            // Act
+            cut.FindComponent<FormaPopover>().Render(parameters => parameters.Add(p => p.Class, "reopened"));
+
+            // Assert
+            Assert.Equal(2, popover.Invocations["open"].Count);
+        }
+
+        [Fact]
         public async Task Should_toggle_between_open_and_closed()
         {
             // Arrange

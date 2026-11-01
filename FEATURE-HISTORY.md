@@ -4,6 +4,17 @@ Each month of Forma's development, newest first, with the features it added and 
 
 Until the first release, a month may break what the one before it allowed, and each month lists what it broke.
 
+<a id="2026-11"></a>
+
+## November 2026
+
+*November 1–30 · 73 components, 65 implemented and 8 in progress*
+
+**Components**
+
+- [`FormaPopover`](docs/component-catalog.md#formapopover) opens on its next render where its script failed to open it, rather than staying hidden while it reads as open.
+
+
 <a id="2026-10"></a>
 
 ## October 2026
