@@ -39,6 +39,11 @@ Every registration resolves the same in either order, since no service Forma reg
 platform supplies, as the [component foundations](component-foundations-design.md#the-services) set out; a
 host's own registration made first still wins.
 
+An application whose web views each hold a culture of their own declares the independent arrangement,
+`AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent)`, which registers the
+culture's state and switch for each web view's scope in place of the application's, as the culture design's
+[culture per web view](culture-design.md#a-culture-per-web-view) sets out.
+
 Culture routing registers as it does in a Web App, `AddFormaCultureRouting`, before or after
 `AddFormaUIWebView`, since it registers only its own services, under `CultureSwitchMode.InPlace`;
 `CultureSwitchMode.FullLoad` and a cookie policy are rejected with `InvalidOperationException` naming the

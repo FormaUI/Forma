@@ -34,6 +34,13 @@ one culture state and one switch for the application, which every web view follo
 services.AddFormaUIWebView(options => options.InputRouting = new InputRouterOptions { ... });
 ```
 
+`UIWebViewOptions.CultureArrangement` gives each web view a culture of its own in place of the application's
+one, each web view switching alone:
+
+```csharp
+services.AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent);
+```
+
 ## The page
 
 The application's `wwwroot/index.html` links Forma's stylesheets, in the order and from the place the

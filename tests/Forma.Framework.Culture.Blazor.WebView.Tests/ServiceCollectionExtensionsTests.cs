@@ -19,7 +19,7 @@ public sealed class ServiceCollectionExtensionsTests
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he");
 
     // Each web view's scope has a document of its own, which the test hands it as it opens the web view.
-    private static ServiceProvider CreateServices(Action<IServiceCollection>? configure = null, Action<IServiceCollection>? configureAfter = null)
+    private static ServiceProvider CreateServices(Action<IServiceCollection>? configure = null, Action<IServiceCollection>? configureAfter = null, CultureArrangement arrangement = CultureArrangement.Coordinated)
     {
         var services = new ServiceCollection()
             .AddScoped(_ => new WebViewDocument())
@@ -27,7 +27,7 @@ public sealed class ServiceCollectionExtensionsTests
             .AddScoped<NavigationManager>(_ => new FakeNavigationManager(new Uri("https://0.0.0.1/"), new Uri("https://0.0.0.1/about")));
 
         configure?.Invoke(services);
-        services.AddFormaCultureWebView();
+        services.AddFormaCultureWebView(arrangement);
         configureAfter?.Invoke(services);
 
         return services.BuildServiceProvider();
@@ -147,6 +147,7 @@ public sealed class ServiceCollectionExtensionsTests
                 () => Assert.Equal("en-US/en-US", $"{marker["data-culture"]}/{marker["data-ui-culture"]}"),
                 () => Assert.Equal("state", policy["content"]),
                 () => Assert.True(policy.ContainsKey("data-follows")),
+                () => Assert.True(policy.ContainsKey("data-web-view")),
                 () => Assert.Equal("ltr", InteropPayload.GetValue(GetStart(browser), "direction")));
         }
 
@@ -394,6 +395,139 @@ public sealed class ServiceCollectionExtensionsTests
 
             // Assert
             Assert.Contains(nameof(CultureSwitchMode.InPlace), Assert.IsType<InvalidOperationException>(exception).Message, StringComparison.Ordinal);
+        }
+    }
+
+    public sealed class CulturePerWebView : IDisposable
+    {
+        private readonly ProcessCultures _cultures = new();
+
+        public void Dispose()
+            => _cultures.Dispose();
+
+        private static ServiceProvider CreateServices(Action<IServiceCollection>? configure = null)
+            => ServiceCollectionExtensionsTests.CreateServices(configure, arrangement: CultureArrangement.Independent);
+
+        private static Task SwitchAsync(AsyncServiceScope webView, CultureInfo culture, CultureInfo uiCulture)
+            => webView.ServiceProvider.GetRequiredService<ICultureSwitch>().SwitchAsync(culture, uiCulture);
+
+        private static string Describe(AsyncServiceScope webView)
+            => ServiceCollectionExtensionsTests.Describe(webView.ServiceProvider.GetRequiredService<ICultureState>());
+
+        [Fact]
+        public async Task Should_hold_a_culture_state_and_a_switch_for_each_web_view()
+        {
+            // Arrange
+            await using var provider = CreateServices();
+
+            // Act
+            await using var first = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            await using var second = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotSame(first.ServiceProvider.GetRequiredService<ICultureState>(), second.ServiceProvider.GetRequiredService<ICultureState>()),
+                () => Assert.NotSame(first.ServiceProvider.GetRequiredService<ICultureSwitch>(), second.ServiceProvider.GetRequiredService<ICultureSwitch>()));
+        }
+
+        [Fact]
+        public async Task Should_start_a_web_view_s_document_from_its_own_pair_under_a_policy_of_its_own()
+        {
+            // Arrange
+            await using var provider = CreateServices();
+            var browser = new FakeCultureCoordinatorBrowser();
+
+            // Act
+            await using var webView = OpenWebView(provider, browser);
+
+            // Assert
+            var marker = GetStartAttributes(browser, "marker");
+            var policy = GetStartAttributes(browser, "policy");
+            Assert.Multiple(
+                () => Assert.Equal("en-US/en-US", $"{marker["data-culture"]}/{marker["data-ui-culture"]}"),
+                () => Assert.Equal("state", policy["content"]),
+                () => Assert.False(policy.ContainsKey("data-follows")),
+                () => Assert.True(policy.ContainsKey("data-web-view")));
+        }
+
+        [Fact]
+        public async Task Should_switch_a_web_view_alone_leaving_the_others_and_the_process_s_defaults()
+        {
+            // Arrange
+            await using var provider = CreateServices();
+            var defaults = GetDefaults();
+            var other = new FakeCultureCoordinatorBrowser();
+            await using var switching = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            await using var otherWebView = OpenWebView(provider, other);
+
+            // Act
+            await SwitchAsync(switching, German, Hebrew);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("de-DE/he", Describe(switching)),
+                () => Assert.Equal("en-US/en-US", Describe(otherWebView)),
+                () => Assert.Equal(defaults, GetDefaults()),
+                () => Assert.Empty(other.Followed));
+        }
+
+        [Fact]
+        public async Task Should_switch_a_web_view_alone_as_it_lands_at_another_culture_s_address()
+        {
+            // Arrange
+            await using var provider = CreateServices();
+            var landing = new FakeCultureCoordinatorBrowser();
+            await using var landingWebView = OpenWebView(provider, landing);
+            await using var otherWebView = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+
+            // Act
+            await landing.LandAsync("he", "he");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("he/he", Describe(landingWebView)),
+                () => Assert.Equal("en-US/en-US", Describe(otherWebView)));
+        }
+
+        [Fact]
+        public async Task Should_reject_a_culture_state_two_web_views_share()
+        {
+            // Arrange
+            await using var provider = CreateServices(services => services.AddSingleton<ICultureState>(_ => new FakeCultureState(Hebrew)));
+            await using var first = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+
+            // Act
+            var exception = Record.Exception(() => OpenWebView(provider, new FakeCultureCoordinatorBrowser()));
+
+            // Assert
+            Assert.Contains("scoped", Assert.IsType<InvalidOperationException>(exception).Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task Should_reject_a_full_load_switch_and_a_cookie_policy_as_a_web_view_starts()
+        {
+            // Arrange
+            await using var fullLoad = CreateServices(services => AddRouting(services, CultureSwitchMode.FullLoad));
+            await using var cookie = CreateServices(services => services.AddFormaCultureSwitchPolicy(new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie }));
+
+            // Act
+            var fullLoadException = Record.Exception(() => OpenWebView(fullLoad, new FakeCultureCoordinatorBrowser()));
+            var cookieException = Record.Exception(() => OpenWebView(cookie, new FakeCultureCoordinatorBrowser()));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains(nameof(CultureSwitchMode.InPlace), Assert.IsType<InvalidOperationException>(fullLoadException).Message, StringComparison.Ordinal),
+                () => Assert.Contains(nameof(CultureSwitchPersistence.State), Assert.IsType<InvalidOperationException>(cookieException).Message, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_reject_an_arrangement_neither_coordinated_nor_independent()
+        {
+            // Act
+            var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureWebView((CultureArrangement)2));
+
+            // Assert
+            Assert.IsType<ArgumentOutOfRangeException>(exception);
         }
     }
 

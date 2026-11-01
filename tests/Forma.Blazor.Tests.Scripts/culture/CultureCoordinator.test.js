@@ -319,10 +319,71 @@ describe('CultureCoordinator', () => {
         });
     });
 
+    describe("a web view's own culture", () => {
+        // A web view's page under a culture per web view: its start names the web view's pair and a policy of its own.
+        function webViewStart({ culture = 'en', uiCulture = culture, direction = 'ltr', policy = addressPolicy() } = {}) {
+            return startOf({ culture, uiCulture, direction, policy: { ...policy, 'data-web-view': '' } });
+        }
+
+        beforeEach(() => {
+            window.happyDOM.setURL('http://localhost/about#part');
+            window.Blazor = fakeBlazor();
+        });
+
+        afterEach(() => {
+            delete window.Blazor;
+        });
+
+        it('starts from the pair its registration supplies, culture addresses included', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+
+            // Act
+            await coordinator.register('a', receiver, 'webview', webViewStart({ culture: 'he', direction: 'rtl' }));
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['he/he #0']);
+            expect(readDocument()).toBe('he/rtl');
+        });
+
+        it("accepts a landing at another culture's address as its own switch, writing no route cookie", async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', webViewStart());
+
+            // Act
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            expect(readDocument()).toBe('he/rtl');
+            expect(readRouteCookie()).toBeNull();
+        });
+
+        it("switches by address through the web view's navigation, completing once its landing is accepted", async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', webViewStart());
+
+            // Act
+            const switching = registration.request('he', 'he', 'rtl');
+            await vi.waitFor(() => expect(window.Blazor.navigations).toEqual(['http://localhost/he/about']));
+            window.happyDOM.setURL('http://localhost/he/about');
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            await expect(switching).resolves.toBe('accepted');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+        });
+    });
+
     describe("following an application's coordinator", () => {
         // A web view's page: its start names the application's pair and a policy that follows the application's coordinator.
         function followingStart({ culture = 'en', uiCulture = culture, direction = 'ltr', policy = addressPolicy() } = {}) {
-            return startOf({ culture, uiCulture, direction, policy: { ...policy, 'data-follows': '' } });
+            return startOf({ culture, uiCulture, direction, policy: { ...policy, 'data-follows': '', 'data-web-view': '' } });
         }
 
         beforeEach(() => {

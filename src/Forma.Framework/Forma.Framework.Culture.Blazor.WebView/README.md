@@ -29,6 +29,25 @@ leaves as it is disposed, leaving the culture to the application. Windows Forms 
 form; a WPF host disposes its `BlazorWebView` as the native window closes, since WPF disposes no control on
 its own.
 
+## A culture per web view
+
+`AddFormaCultureWebView(CultureArrangement.Independent)`, which
+`AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent)` makes, gives each web
+view a culture of its own:
+
+| Service | Registered as |
+| --- | --- |
+| `ICultureState` | Forma's own state, scoped: one for each web view. |
+| `ICultureSwitch` | The web view's switch, scoped, which requests each change through the web view's own document. |
+| `ICultureScopeStart` | Each web view's registration with its own document's culture coordinator, scoped, which the web view's first Forma component starts from the web view's pair. |
+| `CultureCoordinatorRegistration` | Each web view's registration with its document's culture coordinator, scoped. |
+
+A switch in one web view, or a landing at another culture's address, changes that web view's state, its
+components, its document and its address alone. Forma applies no web view's pair to the process's or the UI
+threads' cultures, which every web view shares, so a component of the host's own reads its web view's
+`ICultureState`, and native code switches a web view through that web view's services. A host's own state is
+registered scoped; one two web views share is rejected with `InvalidOperationException` as the second starts.
+
 ## Persistence
 
 The switch persists the pair in the state alone. A native application keeps the user's choice in its own

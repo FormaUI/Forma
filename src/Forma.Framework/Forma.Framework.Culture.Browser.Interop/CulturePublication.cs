@@ -22,12 +22,13 @@ public static class CulturePublication
         };
     }
 
-    /// <summary>The switch policy's attributes: the address policy publishing <paramref name="map"/> where there is one, otherwise <paramref name="policy"/>, and whether the page's document follows an application's coordinator.</summary>
+    /// <summary>The switch policy's attributes: the address policy publishing <paramref name="map"/> where there is one, otherwise <paramref name="policy"/>, whether the page's document follows an application's coordinator, and whether the page is a web view's.</summary>
     /// <param name="policy">How a switch persists the pair the page accepts.</param>
     /// <param name="map">The mapping between culture addresses and pairs the page publishes.</param>
-    /// <param name="follows">Whether the page's document follows the pair an application's coordinator accepts, as a web view's does, rather than accepting one of its own.</param>
+    /// <param name="follows">Whether the page's document follows the pair an application's coordinator accepts, as a coordinated web view's does, rather than accepting one of its own.</param>
+    /// <param name="isWebView">Whether the page is a web view's, whose application gives each culture its base and which no request carries to a server.</param>
     /// <returns>The policy's attributes by name, a present attribute that has no value holding the empty string.</returns>
-    public static IReadOnlyDictionary<string, string> GetPolicyAttributes(CultureSwitchPolicy policy, CultureRouteMap? map, bool follows = false)
+    public static IReadOnlyDictionary<string, string> GetPolicyAttributes(CultureSwitchPolicy policy, CultureRouteMap? map, bool follows = false, bool isWebView = false)
     {
         ArgumentNullException.ThrowIfNull(policy);
 
@@ -36,6 +37,11 @@ public static class CulturePublication
         if (follows)
         {
             attributes["data-follows"] = string.Empty;
+        }
+
+        if (isWebView)
+        {
+            attributes["data-web-view"] = string.Empty;
         }
 
         return attributes;

@@ -571,8 +571,10 @@ only the starting culture.
 
 A Blazor Hybrid application renders its components to a web view in each of its native windows, each
 `BlazorWebView` with a scope and a document of its own, all in one process, as the
-[WebView design](webview-design.md) sets out. The application holds one culture pair across its web views,
-which this contract makes deliberate: a web view is one view of the application, not a user of its own.
+[WebView design](webview-design.md) sets out. By default the application holds one culture pair across its web
+views, which this contract makes deliberate: a web view is one view of the application, not a user of its own.
+An application whose native windows each show a culture of their own chooses
+[a culture per web view](#a-culture-per-web-view) instead.
 
 ### One culture for the application
 
@@ -663,9 +665,35 @@ under Blazor Hybrid the application's culture decides, and each web view's addre
   since a web view reloads only by restarting its session, which loses the work an in-place switch keeps,
   and the culture-route cookie is never written.
 
-A culture per web view is outside the contract: Forma's components could follow a web view's own state,
-while the host's code and native user interface read the ambient culture, which no web view owns, so a web
-view would show two cultures at once.
+### A culture per web view
+
+An application can give each web view a culture of its own, as a WebAssembly client can hold one apart from
+its page's, by declaring the independent arrangement on `AddFormaUIWebView`. Each web view is then a page of
+its own, as a standalone app's is:
+
+- **A state and a switch per web view.** Each web view's scope resolves a culture state and a switch of its
+  own; a host's own state is registered scoped, and one two web views share is rejected as the second
+  starts.
+- **The web view's document orders its switches.** As the web view's first Forma component initializes, its
+  state registers with its own document's coordinator and starts it from the state's pair under the
+  switch's policy, as a standalone app's page starts; the document accepts the web view's switches and
+  landings in its own sequence, delivers each to the web view's state, and takes its language and
+  direction. A switch in one web view changes nothing in another.
+- **The address decides, as on a Web App's page.** Under culture routing, a web view's first landing, at its
+  `StartPath`, a navigation to another culture's address and a traversal each switch the web view to the
+  pair their address carries, so a native window opens a web view in a culture by its start path. No
+  request reaches a server, so the route last chosen is named in no cookie.
+- **The ambient cultures stay the host's.** The process's defaults and the UI threads are shared by every web
+  view, and WPF runs every web view's events on one thread, so Forma applies no web view's pair to them.
+  Forma's components read the web view's state, as [output](#output-takes-its-culture-from-the-state) sets
+  out; a host's component does the same, formatting through `ICultureState` and reading its strings through
+  a locale bound to it, while what reads the ambient culture, `IStringLocale<T>`, a `@bind` on a plain
+  element or the host's native user interface, reads the culture the host set.
+- **Native code switches a web view through its own services**, which the platform's `BlazorWebView` reaches
+  through `TryDispatchAsync`, since the application holds no switch of its own.
+
+What holds for every web view holds here: the switch persists the pair in the state alone, and culture
+routing switches in place.
 
 ## Assemblies and registration
 
@@ -716,7 +744,7 @@ makes one call on each side and can still override any single service.
 | C20 | How does the browser learn the switch's policy? | From configuration `FormaPageHead` publishes, or a standalone app's startup supplies, apart from any pair: the cookie's every setting and its one serialization, or the culture-route mapping, as [the policies](#switch-policies) set out |
 | C21 | What does a switch wait for while its runtime registers? | An attempt already started, which its failure, its disposal or a disconnection settles with an error; never a registration nobody started, as [awaiting a switch](#what-awaiting-a-switch-guarantees) sets out |
 | C22 | What does a switch to a pair without a route do? | Under the address policy it throws `InvalidOperationException` before anything changes, naming the pair |
-| C23 | How many cultures does a Blazor Hybrid application hold? | One, across its web views: one state and one switch for the application, the application's coordinator ordering every switch and every web view following it; a culture per web view is outside the contract, as [Blazor Hybrid](#blazor-hybrid) sets out |
+| C23 | How many cultures does a Blazor Hybrid application hold? | One, across its web views, by default: one state and one switch for the application, the application's coordinator ordering every switch and every web view following it; or, where the application declares the independent arrangement, one per web view, each web view's document ordering its own, with the ambient cultures left to the host, as [a culture per web view](#a-culture-per-web-view) sets out |
 | C24 | What runs in a switched culture under Blazor Hybrid? | Every event any web view dispatches after the switch and every render: the coordinator applies the pair to the process's defaults and to each web view's UI thread, and work begun before the switch finishes in the culture it captured |
 | C25 | What does Forma refresh under Blazor Hybrid, and what the host? | Forma: the state and its subscribers, its components, each document and each address; the host: its own components that don't follow the state and its native user interface, through the state's notification |
 | C26 | How does a Blazor Hybrid application persist its choice? | In its own settings, saved as the state notifies and applied at startup; the switch's policy is the state alone, and a cookie policy is rejected at startup |

@@ -33,6 +33,19 @@ public sealed class CulturePublicationTests
         }
 
         [Fact]
+        public void Should_mark_a_web_view_s_page_and_a_document_that_follows_an_application()
+        {
+            // Act
+            var own = CulturePublication.GetPolicyAttributes(CultureSwitchPolicy.Default, map: null, isWebView: true);
+            var following = CulturePublication.GetPolicyAttributes(CultureSwitchPolicy.Default, map: null, follows: true, isWebView: true);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["content", "data-web-view"], own.Keys.Order(StringComparer.Ordinal)),
+                () => Assert.Equal(["content", "data-follows", "data-web-view"], following.Keys.Order(StringComparer.Ordinal)));
+        }
+
+        [Fact]
         public void Should_publish_every_setting_writing_the_cookie_takes()
         {
             // Arrange

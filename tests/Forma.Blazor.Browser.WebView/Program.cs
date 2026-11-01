@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Windows;
 
 using Forma.Blazor.Browser.Components.Checks;
+using Forma.Framework.Culture;
 using Forma.Framework.Culture.Router;
 using Forma.Framework.Localization.Json;
 
@@ -43,13 +44,13 @@ internal static class Program
         {
             AddRouting(services);
             services.AddJsonLocalization();
-            services.AddFormaUIWebView(options => options.InputRouting = CheckServices.InputRouting);
+            services.AddFormaUIWebView(ConfigureForma);
             services.AddWpfBlazorWebView();
         }
         else
         {
             services.AddWpfBlazorWebView();
-            services.AddFormaUIWebView(options => options.InputRouting = CheckServices.InputRouting);
+            services.AddFormaUIWebView(ConfigureForma);
             AddRouting(services);
             services.AddJsonLocalization();
         }
@@ -64,6 +65,17 @@ internal static class Program
         application.DispatcherUnhandledException += (_, args) => Console.Error.WriteLine(args.Exception);
         application.Startup += (_, _) => shell.Open("/en/probe");
         application.Run();
+    }
+
+    // The checks' input policy, and a culture for each web view where the check asks for one.
+    private static void ConfigureForma(UIWebViewOptions options)
+    {
+        options.InputRouting = CheckServices.InputRouting;
+
+        if (Environment.GetEnvironmentVariable("FORMA_WEBVIEW_CULTURE") == "per-web-view")
+        {
+            options.CultureArrangement = CultureArrangement.Independent;
+        }
     }
 
     private static void AddRouting(IServiceCollection services)

@@ -309,6 +309,69 @@ public sealed class WebViewCultureTests
         await Assertions.Expect(first.Locator("html")).ToHaveAttributeAsync("lang", "es-ES");
     }
 
+    [Fact]
+    public async Task Should_switch_one_web_view_alone_under_a_culture_per_web_view_leaving_the_ambient_culture_to_the_host()
+    {
+        // Arrange
+        await using var application = await StartWithACulturePerWebViewAsync();
+        var (first, second) = await OpenTwoWebViewsAsync(application);
+
+        // Act
+        await first.Locator("#switch").ClickAsync();
+
+        // Assert
+        await Assertions.Expect(first.Locator("#switched")).ToHaveTextAsync("switched");
+        await Assertions.Expect(first.Locator("#state")).ToHaveTextAsync(Switched);
+        await Assertions.Expect(first.Locator("#segment")).ToHaveTextAsync("es");
+        await Assertions.Expect(first.Locator("html")).ToHaveAttributeAsync("lang", "es-ES");
+        await Assertions.Expect(first.Locator("#welcome")).ToHaveTextAsync("Bienvenido");
+        await first.GetByRole(AriaRole.Button, new() { Name = "Event" }).ClickAsync();
+        await Assertions.Expect(first.Locator("#event")).ToHaveTextAsync($"{Assigned}|1,234.5|Hello");
+        await Assertions.Expect(second.Locator("#state")).ToHaveTextAsync(Assigned);
+        await Assertions.Expect(second.Locator("#segment")).ToHaveTextAsync("en");
+        await Assertions.Expect(second.Locator("html")).ToHaveAttributeAsync("lang", "en-US");
+        await Assertions.Expect(second.Locator("#welcome")).ToHaveTextAsync("Welcome");
+    }
+
+    [Fact]
+    public async Task Should_switch_a_web_view_alone_as_it_lands_at_another_culture_s_address_under_a_culture_per_web_view()
+    {
+        // Arrange
+        await using var application = await StartWithACulturePerWebViewAsync();
+        var (first, second) = await OpenTwoWebViewsAsync(application);
+
+        // Act
+        await second.Locator("#to-he").ClickAsync();
+
+        // Assert
+        await Assertions.Expect(second.Locator("#state")).ToHaveTextAsync("he|he");
+        await Assertions.Expect(second.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
+        await Assertions.Expect(first.Locator("#state")).ToHaveTextAsync(Assigned);
+        await Assertions.Expect(first.Locator("html")).ToHaveAttributeAsync("dir", "ltr");
+    }
+
+    [Fact]
+    public async Task Should_open_a_web_view_in_the_culture_its_start_path_names_under_a_culture_per_web_view()
+    {
+        // Arrange
+        await using var application = await StartWithACulturePerWebViewAsync();
+        var first = await application.GetWebViewAsync("A");
+        await first.Locator("#start-path").FillAsync("/es/probe");
+        await first.Locator("#start-path").BlurAsync();
+
+        // Act
+        await first.Locator("#open").ClickAsync();
+
+        // Assert
+        var second = await application.GetWebViewAsync("B");
+        await Assertions.Expect(second.Locator("#state")).ToHaveTextAsync(Switched);
+        await Assertions.Expect(second.Locator("html")).ToHaveAttributeAsync("lang", "es-ES");
+        await Assertions.Expect(first.Locator("#state")).ToHaveTextAsync(Assigned);
+    }
+
+    private static Task<WebViewApplication> StartWithACulturePerWebViewAsync()
+        => WebViewApplication.StartAsync(new Dictionary<string, string> { ["FORMA_WEBVIEW_CULTURE"] = "per-web-view" });
+
     private static async Task<(IPage First, IPage Second)> OpenTwoWebViewsAsync(WebViewApplication application)
     {
         var first = await application.GetWebViewAsync("A");

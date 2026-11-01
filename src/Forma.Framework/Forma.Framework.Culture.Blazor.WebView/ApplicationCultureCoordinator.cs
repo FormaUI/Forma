@@ -30,11 +30,7 @@ internal sealed class ApplicationCultureCoordinator : ICultureStateIntegration
         ArgumentNullException.ThrowIfNull(policy);
 
         RequireStatePersistence(policy);
-
-        if (addressing?.GetMap("/") is { SwitchesInPlace: false })
-        {
-            throw new InvalidOperationException("Culture routing under Blazor Hybrid switches in place, since a web view reloads only by restarting its session, which loses the user's work: set CultureRouterOptions.Switch to CultureSwitchMode.InPlace.");
-        }
+        RequireInPlaceSwitch(addressing);
 
         CultureState = cultureState;
         _integration = cultureState as ICultureStateIntegration
@@ -58,6 +54,17 @@ internal sealed class ApplicationCultureCoordinator : ICultureStateIntegration
         if (policy.Persistence is not CultureSwitchPersistence.State)
         {
             throw new InvalidOperationException("Under Blazor Hybrid no request carries a culture cookie to a server, so a switch persists the pair in the culture state alone and the application keeps the user's choice in its own settings: set CultureSwitchPolicy.Persistence to CultureSwitchPersistence.State.");
+        }
+    }
+
+    /// <summary>Rejects culture routing that switches by a full load, which restarts a web view's session.</summary>
+    /// <param name="addressing">The culture addresses a web view's culture follows, where culture routing is registered.</param>
+    /// <exception cref="InvalidOperationException">Culture routing switches by a full load.</exception>
+    internal static void RequireInPlaceSwitch(ICultureAddressing? addressing)
+    {
+        if (addressing?.GetMap("/") is { SwitchesInPlace: false })
+        {
+            throw new InvalidOperationException("Culture routing under Blazor Hybrid switches in place, since a web view reloads only by restarting its session, which loses the user's work: set CultureRouterOptions.Switch to CultureSwitchMode.InPlace.");
         }
     }
 

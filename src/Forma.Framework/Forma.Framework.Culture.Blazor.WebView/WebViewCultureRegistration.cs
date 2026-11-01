@@ -62,7 +62,7 @@ internal sealed class WebViewCultureRegistration(
         _ = RegisterDocumentAsync(new CultureCoordinatorStart
         {
             Marker = CulturePublication.GetMarkerAttributes(culture, uiCulture),
-            Policy = CulturePublication.GetPolicyAttributes(policy, addressing?.GetMap(new Uri(navigation.BaseUri).AbsolutePath), follows: true),
+            Policy = CulturePublication.GetPolicyAttributes(policy, addressing?.GetMap(new Uri(navigation.BaseUri).AbsolutePath), follows: true, isWebView: true),
             Direction = uiCulture.TextInfo.IsRightToLeft ? "rtl" : "ltr",
         });
     }

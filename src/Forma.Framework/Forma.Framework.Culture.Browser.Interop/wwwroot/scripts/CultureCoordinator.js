@@ -221,8 +221,12 @@ class CultureCoordinatorRegistration {
             return;
         }
 
-        // No request carries an interactive landing to the server, so the browser names the route last chosen.
-        writeRouteCookie(policy, route.token);
+        // No request carries an interactive landing to the server, so the browser names the route last chosen; a web view's
+        // document has no server to name it to.
+        if (!policy.isWebView) {
+            writeRouteCookie(policy, route.token);
+        }
+
         await acceptLanding(toPair(route), this);
     }
 
@@ -307,9 +311,10 @@ function getInitialization(start = null) {
 }
 
 // A page no server published a marker in publishes the marker and policy its runtime supplies, as a server publishes them,
-// and takes the marker's pair; its coordinator then starts from them as any page's does.
+// and takes the marker's pair; its coordinator then starts from them as any page's does. A web view's page carries culture
+// addresses as a server's does, since its application gives each culture its base.
 function startPage(start, head = document.head) {
-    if (start.policy.content === 'address' && !('data-follows' in start.policy)) {
+    if (start.policy.content === 'address' && !('data-web-view' in start.policy)) {
         initialization = {
             error: new Error('A page without a server has no base for each culture its addresses carry, so a standalone app switches its culture state alone or through a cookie rather than through culture addresses.'),
         };
@@ -408,7 +413,7 @@ function navigate(policy, route, requester) {
     return new Promise((resolve, reject) => {
         cancelPendingSwitch();
         pendingSwitch = { route, requester, resolve, reject };
-        blazorApi.navigateTo(destination);
+        (blazorApi ?? window.Blazor).navigateTo(destination);
     });
 }
 
@@ -599,11 +604,13 @@ export function readPolicy(head) {
     const policy = head?.querySelector('meta[name="forma-culture-policy"]');
     const kind = policy?.getAttribute('content') ?? 'state';
     const follows = policy?.hasAttribute('data-follows') ?? false;
+    const isWebView = policy?.hasAttribute('data-web-view') ?? false;
 
     if (kind === 'address') {
         return {
             kind,
             follows,
+            isWebView,
             routes: JSON.parse(policy.getAttribute('data-routes') ?? '[]'),
             defaultToken: policy.getAttribute('data-default'),
             prefixesDefault: policy.getAttribute('data-prefix') === 'always',
@@ -615,7 +622,7 @@ export function readPolicy(head) {
     }
 
     if (kind !== 'cookie') {
-        return { kind, follows };
+        return { kind, follows, isWebView };
     }
 
     const maxAge = policy.getAttribute('data-max-age');
@@ -623,6 +630,7 @@ export function readPolicy(head) {
     return {
         kind,
         follows,
+        isWebView,
         name: policy.getAttribute('data-name'),
         path: policy.getAttribute('data-path') ?? '/',
         domain: policy.getAttribute('data-domain'),

@@ -63,6 +63,27 @@ public sealed class WebViewServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public async Task Should_give_each_web_view_a_culture_state_and_a_switch_of_its_own_under_a_culture_per_web_view()
+    {
+        // Arrange
+        using var fixture = new CultureFixture("en-US");
+        await using var provider = AddPlatform(new ServiceCollection())
+            .AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent)
+            .BuildServiceProvider();
+        await using var first = provider.CreateAsyncScope();
+        await using var second = provider.CreateAsyncScope();
+
+        // Act
+        first.ServiceProvider.GetRequiredService<ICultureScopeStart>().Start();
+        second.ServiceProvider.GetRequiredService<ICultureScopeStart>().Start();
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.NotSame(first.ServiceProvider.GetRequiredService<ICultureState>(), second.ServiceProvider.GetRequiredService<ICultureState>()),
+            () => Assert.NotSame(first.ServiceProvider.GetRequiredService<ICultureSwitch>(), second.ServiceProvider.GetRequiredService<ICultureSwitch>()));
+    }
+
+    [Fact]
     public void Should_register_the_default_input_policy()
     {
         // Act

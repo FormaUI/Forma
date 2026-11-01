@@ -337,6 +337,21 @@ cultureState.Subscribe(() =>
 A MAUI application keeps it in `Preferences` instead. The switch persists nothing itself, and a cookie policy is
 rejected, since no request reaches a server to read one.
 
+**A culture per web view.** An application whose native windows each show a culture of their own declares it as
+it registers:
+
+```csharp
+services.AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent);
+```
+
+Each web view then holds a culture state and a switch of its own: a switch in one web view, or under culture
+routing a navigation to another culture's address, changes that web view's components, its document and its
+address alone, and a native window opens a web view in a culture by its `StartPath`, `/he/orders`. The process's
+and the threads' cultures are shared by every web view, so they stay the application's to set: a component of
+the application's own formats through its web view's `ICultureState` and reads its strings through a locale bound
+to it, `factory.Create(typeof(Orders), cultureState)`, and native code switches one web view through that web
+view's services, `webView.TryDispatchAsync(services => ...)`.
+
 The application's own locale files stay in its `.locales` folder, which the build embeds in the application's
 assembly, so an application MAUI packages reads them with no folder beside it.
 

@@ -19,7 +19,7 @@ public static class WebViewServiceCollectionExtensions
         configure?.Invoke(options);
 
         // Ahead of the neutral registration, so the culture state and the switch are the application's.
-        services.AddFormaCultureWebView();
+        services.AddFormaCultureWebView(options.CultureArrangement);
 
         return services.AddFormaUI(options.InputRouting);
     }

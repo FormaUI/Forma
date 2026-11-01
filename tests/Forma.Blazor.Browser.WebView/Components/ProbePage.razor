@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject ICultureState CultureState
 @inject ICultureSwitch CultureSwitch
-@inject IStringLocale<ProbePage> L
+@inject IStringLocaleFactory LocaleFactory
 
 @* One web view's page, a culture route page: the culture it renders in, a string of the host's own, a select reaching its script,
    an event, a binding, work begun before a switch, the ways a culture is applied, the application's switch from a component and from
@@ -17,7 +17,7 @@
 <output id="context">@_context</output>
 <output id="render-culture">@Ambient()</output>
 <output id="state">@CultureState.Culture.Name|@CultureState.UICulture.Name</output>
-<output id="welcome">@L["Welcome"]</output>
+<output id="welcome">@_locale["Welcome"]</output>
 
 <EditForm Model="_entry">
     <FormaSelect TValue="int" @bind-Value="_entry.Status" Options="_statuses" Label="Status" />
@@ -66,6 +66,7 @@
 @code {
     private readonly string _instance = Guid.NewGuid().ToString("N")[..8];
     private readonly Entry _entry = new();
+    private IStringLocale _locale = default!;
     private readonly IReadOnlyList<SelectOption<int>> _statuses = [new(1, "Open"), new(2, "Closed")];
     private readonly List<string> _navigations = [];
     private IDisposable? _locationChanging;
@@ -88,6 +89,8 @@
 
     protected override void OnInitialized()
     {
+        // A string of the host's own, looked up in the web view's culture state, which a culture per web view switches alone.
+        _locale = LocaleFactory.Create(typeof(ProbePage), CultureState);
         Scope.WebView = WebView;
         _context = SynchronizationContext.Current?.GetType().Name;
         Shell.Attach(new ProbeAttachment(WebView, SynchronizationContext.Current!, action => InvokeAsync(action)));
