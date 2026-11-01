@@ -122,6 +122,14 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Subscript and Superscript"]</h2>
+    <p class="description">@L["The basic formatting plugin offers subscript and superscript where its options include them, as a chemical formula or a footnote mark needs; the default formatting leaves them out. Ctrl+, and Ctrl+. apply them too."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_scriptsDoc" Plugins="ScriptPlugins" />
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Images and Stored Pictures"]</h2>
     <p class="description">@L["Insert Image takes an address and nothing else. Browse Files opens the stored library beside it, limited here to pictures, and renders whichever one is chosen where the caret sits."]</p>
     <div class="demo-box">
@@ -160,6 +168,7 @@
         + "<p>Final score: two to nil.</p>");
     private ComposerDocument _viewDoc = new(ComposerDocumentFormat.Html, "<p>Press <strong>Preview</strong> to read this as rendered output, or <strong>Maximize</strong> to fill the viewport.</p>");
     private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every default plugin is registered here.</p>");
+    private ComposerDocument _scriptsDoc = new(ComposerDocumentFormat.Html, "<p>Water is H<sub>2</sub>O, and the room measures 12 m<sup>2</sup>.</p>");
     private ComposerDocument _imagesOnlyDoc = new(ComposerDocumentFormat.Html, "<p>Insert an image by address, or browse the pictures already stored.</p>");
     private ComposerDocument _anyFileDoc = new(ComposerDocumentFormat.Html, "<p>Browse any stored file, or attach one from this device.</p>");
     private readonly ComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
@@ -187,6 +196,10 @@
     private static readonly ComposerDefinition EveryPlugin = ComposerDefinition.Create(composer => composer
         .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
         .TryAddDefaultPlugins());
+
+    private static readonly ComposerDefinition ScriptPlugins = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor
+            .AddFeaturePlugin<BasicFormattingPlugin, BasicFormattingPluginOptions>(options => options.IncludeSubscriptAndSuperscript = true)));
 
     private static readonly ComposerDefinition ImagesOnlyPlugins = ComposerDefinition.Create(composer => composer
         .AddRichTextEditor(editor => editor

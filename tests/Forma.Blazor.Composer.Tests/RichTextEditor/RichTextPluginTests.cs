@@ -54,7 +54,7 @@ public sealed class RichTextPluginTests
         public void Should_bind_every_effect_but_code()
         {
             // Arrange
-            var plugin = new BasicFormattingPlugin(new RichTextEditorPlugin());
+            var plugin = new BasicFormattingPlugin(new RichTextEditorPlugin(), new BasicFormattingPluginOptions { IncludeSubscriptAndSuperscript = true });
 
             // Act
             var bindings = plugin.KeyBindings.ToDictionary(binding => binding.Command, binding => binding.Display);
@@ -66,6 +66,45 @@ public sealed class RichTextPluginTests
                 () => Assert.Equal("Ctrl+.", bindings[BasicFormattingPlugin.SuperscriptCommand]),
                 () => Assert.Equal("Ctrl+\\", bindings[BasicFormattingPlugin.RemoveFormatCommand]),
                 () => Assert.DoesNotContain(BasicFormattingPlugin.CodeCommand, bindings.Keys));
+        }
+
+        [Fact]
+        public async Task Should_offer_no_subscript_or_superscript_by_default()
+        {
+            // Arrange
+            var editor = new RichTextEditorPlugin();
+            var plugin = new BasicFormattingPlugin(editor);
+            string? requestedCommand = null;
+            editor.CommandRequested += (command, _) => requestedCommand = command;
+
+            // Act
+            await plugin.ExecuteAsync(BasicFormattingPlugin.SubscriptCommand, CreateState(), new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.DoesNotContain(plugin.Items.SelectMany(entry => entry.Items).SelectMany(Flatten), item => item.Id is "subscript" or "superscript"),
+                () => Assert.DoesNotContain(plugin.KeyBindings, binding => binding.Command is BasicFormattingPlugin.SubscriptCommand or BasicFormattingPlugin.SuperscriptCommand),
+                () => Assert.Null(requestedCommand));
+        }
+
+        [Fact]
+        public async Task Should_offer_subscript_and_superscript_where_its_options_include_them()
+        {
+            // Arrange
+            var editor = new RichTextEditorPlugin();
+            var plugin = new BasicFormattingPlugin(editor, new BasicFormattingPluginOptions { IncludeSubscriptAndSuperscript = true });
+            string? requestedCommand = null;
+            editor.CommandRequested += (command, _) => requestedCommand = command;
+
+            // Act
+            await plugin.ExecuteAsync(BasicFormattingPlugin.SuperscriptCommand, CreateState(), new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(
+                    ["code", "subscript", "superscript", "remove-format"],
+                    plugin.Items[0].Items.OfType<ToolbarGroup>().Single(group => group.Id == "text-effects").Items.Select(item => item.Id)),
+                () => Assert.Equal("superscript", requestedCommand));
         }
     }
 

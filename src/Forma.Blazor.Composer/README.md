@@ -129,7 +129,7 @@ editor.
 
 | Plugin | Contributes | Options |
 | --- | --- | --- |
-| `BasicFormattingPlugin` | Bold, italic, underline, strikethrough, inline code, subscript, superscript, clear formatting | |
+| `BasicFormattingPlugin` | Bold, italic, underline, strikethrough, inline code, clear formatting, and subscript and superscript where its options include them | `BasicFormattingPluginOptions`: `IncludeSubscriptAndSuperscript` |
 | `ParagraphFormatPlugin` | Paragraph, headings 1 to 6, blockquote, lead paragraph | |
 | `TypographyPlugin` | Font family, font size, line height, text color, highlight color | `TypographyPluginOptions`: the choices offered, and `FontSizeUnit`, `Rem` or `Points` |
 | `ListPlugin` | Bulleted and numbered lists, indent, outdent | |

@@ -438,7 +438,7 @@ The selection bar itself sits beneath the selection, moving above it only when t
 
 ### 4.4 Plugin options
 
-Options are a `sealed record` per plugin, named for it, with settable properties a configure delegate writes and a `Default` answering a fresh value: `TypographyPluginOptions` chooses which sizes and families are offered, `TablePluginOptions` caps dimensions, `ExplorerPluginOptions` gates upload and chooses how a chosen file is inserted. A plugin with a single flag keeps a plain property instead.
+Options are a `sealed record` per plugin, named for it, with settable properties a configure delegate writes and a `Default` answering a fresh value: `BasicFormattingPluginOptions` brings in subscript and superscript, which the default preset leaves out, `TypographyPluginOptions` chooses which sizes and families are offered, `TablePluginOptions` caps dimensions, `ExplorerPluginOptions` gates upload and chooses how a chosen file is inserted. A plugin with a single flag keeps a plain property instead.
 
 ### 4.5 Presets are components, not subclasses
 
