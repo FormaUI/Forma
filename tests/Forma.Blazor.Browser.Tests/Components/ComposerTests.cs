@@ -401,6 +401,36 @@ public sealed class ComposerTests
         }
     }
 
+    public sealed class ComposerPresets(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_bind_the_text_each_preset_makes_bold_and_offer_its_own_plugins(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "composer-presets");
+            await using var _ = context;
+
+            foreach (var preset in new[] { "standard", "compact" })
+            {
+                var canvas = page.Locator($"#{preset} .forma-composer-rich-text-canvas");
+                await WaitForInputScopeAsync(page, $"#{preset} .forma-composer-rich-text-canvas");
+
+                // Act — the whole text selected before Bold is pressed
+                await canvas.PressSequentiallyAsync("Hello");
+                await canvas.PressAsync("ControlOrMeta+A");
+                await page.WaitForFunctionAsync("() => getSelection().toString() === 'Hello'");
+                await page.Locator($"#{preset} .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Bold", Exact = true }).ClickAsync();
+
+                // Assert
+                await Assertions.Expect(page.Locator($"#{preset}-result")).ToContainTextAsync("<b>Hello</b>");
+            }
+
+            await Assertions.Expect(page.Locator("#standard .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Table", Exact = true })).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator("#compact .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Table", Exact = true })).ToHaveCountAsync(0);
+        }
+    }
+
     public sealed class ComposerPlain(BrowserHost host)
     {
         [Theory]

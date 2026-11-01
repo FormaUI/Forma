@@ -2,11 +2,11 @@
 
 ## Current state
 
-**Forma has 65 implemented components and 8 in progress. It runs statically, under Interactive Server, WebAssembly and Auto, and in Blazor Hybrid on WPF, Windows Forms and MAUI on Windows, every component checked in each, every call it makes to a script and every call back among it, and an inventory holds every component to every render mode.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
+**Forma has 66 implemented components and 8 in progress. It runs statically, under Interactive Server, WebAssembly and Auto, and in Blazor Hybrid on WPF, Windows Forms and MAUI on Windows, every component checked in each, every call it makes to a script and every call back among it, and an inventory holds every component to every render mode.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
 
 | Measure | Now |
 | --- | --- |
-| Components | 65 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
+| Components | 66 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview`, packed locally and unpublished |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
@@ -164,7 +164,6 @@ Each needs the maintainer's decision; each is given with a proposal.
 
 - **The bases of host-placed components.** The component foundations design gives each placement one base, a component a host places being an element, while an element is a component with a root its host addresses. `FormaConfirmDialog`, `FormaToastContainer`, `FormaPageHead` and `FormaVirtualize` are placed by a host on the base of a part, though `FormaPageHead` and `FormaVirtualize` draw no root of their own, and `FormaColumnBase` derives from `ComponentBase` directly. `FormaCurrencyInput` and `FormaSearchBox` stand on the element base as the authoring rules set out: the first composes `FormaNumberInput` and forwards its value, expression and validation to it, and the second is a search field no form binds. *Proposal:* the design chooses a base by responsibility and composition rather than by placement, the element base for a component drawing a root its host addresses, and each case is then reviewed on its own against that rule rather than moved mechanically.
 - **Stepping a number from its draft.** A number input steps from its value, and a step replaces an edit in progress. *Proposal:* a step starts from the number the edit's text writes where it reads as one in the culture it was typed in, and from the value where it doesn't, as a native number field steps from what it shows.
-- **What the catalog lists.** `FormaCalendar` is listed though only pickers place it, while the date and time boxes the pickers place are not, and the composer's presets, `FormaStandardRichTextEditor` and `FormaCompactRichTextEditor`, are not. *Proposal:* list what a host places, the presets among them, and fold the calendar into the pickers' entries.
 
 <a id="deferred"></a>
 

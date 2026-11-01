@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**65 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**66 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -37,8 +37,7 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaFileUploader
 │   ├── ✅ FormaFileViewer
 │   └── ✅ FormaImagePicker
-├── (17 / 17) Inputs/
-│   ├── ✅ FormaCalendar
+├── (16 / 16) Inputs/
 │   ├── ✅ FormaCheckBox
 │   ├── ✅ FormaColorPicker
 │   ├── ✅ FormaCurrencyInput
@@ -91,6 +90,9 @@ Forma.Blazor/Components/
 src/
 ├── (1 / 1) Forma.Blazor.Composer/
 │   └── ✅ FormaComposer
+├── (2 / 2) Forma.Blazor.Composer/RichTextEditor/
+│   ├── ✅ FormaCompactRichTextEditor
+│   └── ✅ FormaStandardRichTextEditor
 ├── (0 / 7) Forma.Blazor.DataView/
 │   ├── ◐ FormaDataCards
 │   ├── ◐ FormaDataGrid
@@ -133,15 +135,6 @@ The library's button: one scale of variants and sizes, a busy state, and the hov
 |---|---|
 | **Old pattern** | `.btn`, `.btn-primary`, `.btn-sec`, `.btn-thrd`, `.btn-mini`, `.btn-load` (fa-3.6.5.css) — the shared button vocabulary every admin page's action bar, modal footer, and grid row built on top of |
 | **Used in** | Single source of truth for buttons across the library — `FormaDataGrid` row/inline-edit actions, and the button `FormaDialog`, `FormaConfirmDialog`, `FormaPagination` and `FormaDatePicker` compose |
-
-### `FormaCalendar`
-
-One or two months of days with month and year selectors.
-
-| | |
-|---|---|
-| **Old pattern** | The month panels inside `FormaDatePicker` |
-| **Used in** | `FormaDatePicker` and `FormaDateTimePicker` with one month, `FormaDateRangePicker` with two |
 
 ### `FormaCapacityIndicator`
 
@@ -197,6 +190,15 @@ The area is the surface that stacks command bars; each bar is a track of command
 | **Old pattern** | Each page's strip of actions above its content, drawn per page |
 | **Used in** | The region above any page's content: `FormaExplorer`'s header, a list page's action strip, an editor's publish bar |
 
+### `FormaCompactRichTextEditor`
+
+`FormaComposer` with typography, basic formatting, alignment and direction, and links, for a blurb or a summary. Its design is [composer-design.md](composer-design.md#45-presets-are-components-not-subclasses).
+
+| | |
+|---|---|
+| **Old pattern** | CKEditor 4's `Mini` preset |
+| **Used in** | A blurb or a summary a form takes beside its other fields |
+
 ### `FormaComposer`
 
 An authoring surface for rich text, Markdown, code and page composition, every capability and every editing surface arriving as a plugin. Its design is [composer-design.md](composer-design.md).
@@ -226,7 +228,7 @@ A form input for an amount of money in a currency the application names, typed a
 
 ### `FormaDatePicker`
 
-A form input for one date: a trigger opening an anchored calendar.
+A form input for one date: a trigger opening an anchored calendar of one month, with month and year selectors.
 
 | | |
 |---|---|
@@ -235,7 +237,7 @@ A form input for one date: a trigger opening an anchored calendar.
 
 ### `FormaDateRangePicker`
 
-A form input for a span of days: a trigger opening a two-month calendar with presets.
+A form input for a span of days: a trigger opening a calendar of two months side by side, with month and year selectors and presets.
 
 | | |
 |---|---|
@@ -565,6 +567,15 @@ Backdrops along one axis, a seam apart, vertical or horizontal.
 |---|---|
 | **Old pattern** | A flex row or column written into each host with its own gap |
 | **Used in** | `FormaExplorer` for its vertical stack of header and body and its horizontal stack of folder tree and content, the Showcase's backdrop and layout pages, and any host stacking backdrops along one axis |
+
+### `FormaStandardRichTextEditor`
+
+`FormaComposer` with paragraph formats, typography, basic formatting, lists, alignment and direction, links, images, tables and horizontal rules. Its design is [composer-design.md](composer-design.md#45-presets-are-components-not-subclasses).
+
+| | |
+|---|---|
+| **Old pattern** | CKEditor 4's `Basic` preset |
+| **Used in** | A rich text a form takes beside its other fields, where the composer's whole plugin set is more than the text needs |
 
 ### `FormaStatusBadge`
 

@@ -1,0 +1,16 @@
+@page "/{Runtime}/composer-presets"
+@using Forma.Blazor.Components.Composer.RichTextEditor
+@using Forma.Framework.Composer.Documents
+
+@* The composer's two presets, each bound to an empty HTML document whose content is written where the check reads it. *@
+<FormaStandardRichTextEditor Id="standard" @bind-Value="_standard" />
+<output id="standard-result">@(_standard?.Content)</output>
+<FormaCompactRichTextEditor Id="compact" @bind-Value="_compact" />
+<output id="compact-result">@(_compact?.Content)</output>
+
+@code {
+    private ComposerDocument? _standard = new(ComposerDocumentFormat.Html, string.Empty);
+    private ComposerDocument? _compact = new(ComposerDocumentFormat.Html, string.Empty);
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}
