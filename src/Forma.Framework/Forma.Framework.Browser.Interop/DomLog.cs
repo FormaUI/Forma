@@ -2,11 +2,14 @@ namespace Forma.Framework.Browser.Interop;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>The browser interop's log messages: an entry that could not be reached, a call that failed, and a handler that threw.</summary>
+/// <summary>The browser interop's log messages: an entry that could not be reached, a call that failed or was canceled, and a handler that threw.</summary>
 internal static partial class DomLog
 {
     [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while {Operation} reached {Root} for {RuntimeId}.")]
     public static partial void CircuitDropped(ILogger logger, string operation, string root, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "{Operation} was canceled in {Root} for {RuntimeId}.")]
+    public static partial void CallCanceled(ILogger logger, string operation, string root, Guid runtimeId);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "{Root} was released before {Operation} reached it for {RuntimeId}.")]
     public static partial void BridgeReleased(ILogger logger, string operation, string root, Guid runtimeId);

@@ -181,6 +181,27 @@ public sealed class DomWatcherTests
         }
 
         [Fact]
+        public async Task Should_log_a_release_the_runtime_canceled_at_debug_and_end_its_use_all_the_same()
+        {
+            // Arrange — as the runtime cancels the calls of a circuit that ends while its components are disposed
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser(() => throw new TaskCanceledException());
+            var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            var observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(_ => Task.CompletedTask, new ScrollWatchOptions());
+
+            // Act
+            await watcher.DisposeAsync();
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.Equal(LogLevel.Debug, entry.Level),
+                () => Assert.Contains("was canceled", entry.Message, StringComparison.Ordinal),
+                () => Assert.True(observation.IsDisposed),
+                () => Assert.Equal(1, browser.Watcher.Releases));
+        }
+
+        [Fact]
         public async Task Should_make_nothing_once_disposed()
         {
             // Arrange

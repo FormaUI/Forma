@@ -55,7 +55,7 @@ public sealed class InputScope(IJSObjectReference handle, IJSEnvironment environ
             await handle.InvokeVoidAsync("dispose");
             await handle.DisposeAsync();
         }
-        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
         {
             LogFailure("dispose", ex);
         }
@@ -73,7 +73,7 @@ public sealed class InputScope(IJSObjectReference handle, IJSEnvironment environ
             await _handle.InvokeVoidAsync(identifier, args);
             return true;
         }
-        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
         {
             LogFailure(identifier, ex);
             return false;
@@ -85,6 +85,10 @@ public sealed class InputScope(IJSObjectReference handle, IJSEnvironment environ
         if (ex is JSDisconnectedException)
         {
             InputInteropLog.CircuitDroppedWhileCalling(environment.Logger, identifier, environment.RuntimeId);
+        }
+        else if (ex is OperationCanceledException)
+        {
+            InputInteropLog.CallCanceled(environment.Logger, identifier, environment.RuntimeId);
         }
         else
         {

@@ -125,6 +125,50 @@ public sealed class JSModuleTests
         }
 
         [Fact]
+        public async Task Should_log_a_call_the_runtime_canceled()
+        {
+            // Arrange — as the runtime cancels a call when its circuit ends or the call runs out of time
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var moduleReference = new FakeJSObjectReference((_, _) => throw new TaskCanceledException());
+            await using var module = new JSModule(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory), Path);
+
+            // Act
+            var ran = await module.TryInvokeVoidAsync("measure");
+
+            // Assert
+            Assert.False(ran);
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(LogLevel.Debug, entry.Level);
+                Assert.Contains("call to measure", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("was canceled", entry.Message, StringComparison.Ordinal);
+                Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public async Task Should_log_an_import_the_runtime_canceled()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var module = new JSModule(CreateEnvironment(FakeJSRuntime.Throwing(new TaskCanceledException()), loggerFactory), Path);
+
+            // Act
+            var value = await module.TryInvokeAsync<int>("measure");
+
+            // Assert
+            Assert.Equal(0, value);
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(LogLevel.Debug, entry.Level);
+                Assert.Contains("Importing", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("was canceled", entry.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
         public async Task Should_log_the_export_that_threw()
         {
             // Arrange
@@ -202,6 +246,28 @@ public sealed class JSModuleTests
             // Assert
             var entry = Assert.Single(loggerFactory.Entries);
             Assert.Contains("could not be imported", entry.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task Should_log_a_release_the_runtime_canceled()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var moduleReference = new FakeJSObjectReference((_, _) => null, releaseException: new TaskCanceledException());
+            var module = new JSModule(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory), Path);
+            await module.TryInvokeVoidAsync("measure");
+
+            // Act
+            await module.DisposeAsync();
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(LogLevel.Debug, entry.Level);
+                Assert.Contains("Releasing", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("was canceled", entry.Message, StringComparison.Ordinal);
+            });
         }
 
         [Fact]

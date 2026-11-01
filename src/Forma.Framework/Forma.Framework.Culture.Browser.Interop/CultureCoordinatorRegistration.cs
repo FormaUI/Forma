@@ -206,6 +206,10 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         {
             CultureBrowserInteropLog.CircuitDroppedWhileCalling(_environment.Logger, identifier, _environment.RuntimeId);
         }
+        catch (OperationCanceledException)
+        {
+            CultureBrowserInteropLog.CallCanceled(_environment.Logger, identifier, _environment.RuntimeId);
+        }
         catch (JSException ex)
         {
             CultureBrowserInteropLog.ScriptThrewWhileCalling(_environment.Logger, ex, identifier, _environment.RuntimeId);
@@ -221,6 +225,10 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         catch (JSDisconnectedException)
         {
             CultureBrowserInteropLog.CircuitDroppedWhileCalling(_environment.Logger, "release", _environment.RuntimeId);
+        }
+        catch (OperationCanceledException)
+        {
+            CultureBrowserInteropLog.CallCanceled(_environment.Logger, "release", _environment.RuntimeId);
         }
         catch (JSException ex)
         {

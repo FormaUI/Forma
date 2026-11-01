@@ -233,6 +233,26 @@ public sealed class CultureCoordinatorRegistrationTests
         }
 
         [Fact]
+        public async Task Should_release_once_disposed_where_the_runtime_canceled_the_release()
+        {
+            // Arrange — as the runtime cancels the calls of a circuit that ends while its scope is disposed
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var registration = GetRegistration(scope);
+            await registration.RegisterAsync();
+            browser.FailNext("dispose", new TaskCanceledException());
+
+            // Act
+            var disposal = registration.DisposeAsync().AsTask();
+            await disposal;
+
+            // Assert
+            Assert.True(disposal.IsCompletedSuccessfully);
+        }
+
+        [Fact]
         public async Task Should_apply_nothing_once_disposed()
         {
             // Arrange

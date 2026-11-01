@@ -198,6 +198,10 @@ internal sealed class DomSession
         {
             DomLog.CircuitDropped(_js.Logger, operation, root.Name, _js.RuntimeId);
         }
+        catch (OperationCanceledException)
+        {
+            DomLog.CallCanceled(_js.Logger, operation, root.Name, _js.RuntimeId);
+        }
         catch (JSException ex)
         {
             DomLog.ImportFailed(_js.Logger, ex, root.Name, operation, _js.RuntimeId);
@@ -219,6 +223,10 @@ internal sealed class DomSession
         catch (JSDisconnectedException)
         {
             DomLog.CircuitDropped(_js.Logger, operation, root.Name, _js.RuntimeId);
+        }
+        catch (OperationCanceledException)
+        {
+            DomLog.CallCanceled(_js.Logger, operation, root.Name, _js.RuntimeId);
         }
         catch (JSException ex)
         {

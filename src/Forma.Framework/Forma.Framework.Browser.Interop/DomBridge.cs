@@ -116,7 +116,11 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
         {
             DomLog.CircuitDropped(_environment.Logger, Operation, DomRoot.Watcher.Name, _environment.RuntimeId);
         }
-        catch (Exception ex) when (ex is JSException or OperationCanceledException)
+        catch (OperationCanceledException)
+        {
+            DomLog.CallCanceled(_environment.Logger, Operation, DomRoot.Watcher.Name, _environment.RuntimeId);
+        }
+        catch (JSException ex)
         {
             DomLog.CallFailed(_environment.Logger, ex, Operation, DomRoot.Watcher.Name, _environment.RuntimeId);
         }

@@ -104,6 +104,10 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         {
             InteropLog.CircuitDroppedWhileReleasing(js.Logger, path, js.RuntimeId);
         }
+        catch (OperationCanceledException)
+        {
+            InteropLog.ReleaseCanceled(js.Logger, path, js.RuntimeId);
+        }
         catch (JSException ex)
         {
             InteropLog.ScriptThrewWhileReleasing(js.Logger, ex, path, js.RuntimeId);
@@ -137,6 +141,11 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
             InteropLog.CircuitDroppedWhileImporting(js.Logger, path, js.RuntimeId);
             return null;
         }
+        catch (OperationCanceledException)
+        {
+            InteropLog.ImportCanceled(js.Logger, path, js.RuntimeId);
+            return null;
+        }
         catch (JSException ex)
         {
             InteropLog.ImportFailed(js.Logger, ex, path, js.RuntimeId);
@@ -144,15 +153,20 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
-    // JSDisconnectedException derives from Exception, so it is named beside JSException.
+    // JSDisconnectedException derives from Exception, so it is named beside JSException; a call the runtime canceled, as its
+    // circuit ended or the call ran out of time, didn't run either.
     private static bool IsInteropFailure(Exception ex)
-        => ex is JSDisconnectedException or JSException;
+        => ex is JSDisconnectedException or JSException or OperationCanceledException;
 
     private void LogCallFailure(string identifier, Exception ex)
     {
         if (ex is JSDisconnectedException)
         {
             InteropLog.CircuitDroppedWhileCalling(js.Logger, identifier, path, js.RuntimeId);
+        }
+        else if (ex is OperationCanceledException)
+        {
+            InteropLog.CallCanceled(js.Logger, identifier, path, js.RuntimeId);
         }
         else
         {

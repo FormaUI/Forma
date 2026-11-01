@@ -55,6 +55,29 @@ public sealed class InputScopeTests
     }
 
     [Fact]
+    public async Task Should_log_a_call_the_runtime_canceled_at_debug_and_leave_the_scope_inactive()
+    {
+        // Arrange
+        using var loggerFactory = new FakeLoggerFactory();
+        await using var handle = new FakeJSObjectReference((_, _) => throw new TaskCanceledException());
+        await using var scope = new InputScope(handle, CreateEnvironment(loggerFactory));
+
+        // Act
+        var ran = await scope.ActivateAsync();
+
+        // Assert
+        Assert.False(ran);
+        Assert.False(scope.IsActive);
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(LogLevel.Debug, entry.Level);
+            Assert.Contains("activate", entry.Message, StringComparison.Ordinal);
+            Assert.Contains("was canceled", entry.Message, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
     public async Task Should_log_a_dispose_the_script_threw_under_at_debug()
     {
         // Arrange

@@ -63,7 +63,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
             await _handle.InvokeVoidAsync(identifier, args);
             return true;
         }
-        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
         {
             LogCallFailure(identifier, ex);
             return false;
@@ -82,7 +82,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         {
             return await _handle.InvokeAsync<TValue>(identifier, args);
         }
-        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
         {
             LogCallFailure(identifier, ex);
             return default;
@@ -117,7 +117,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
             await handle.InvokeVoidAsync("dispose");
             await handle.DisposeAsync();
         }
-        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
         {
             LogCallFailure("dispose", ex);
         }
@@ -128,6 +128,10 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         if (ex is JSDisconnectedException)
         {
             InteropLog.CircuitDroppedWhileCalling(js.Logger, identifier, path, js.RuntimeId);
+        }
+        else if (ex is OperationCanceledException)
+        {
+            InteropLog.CallCanceled(js.Logger, identifier, path, js.RuntimeId);
         }
         else
         {

@@ -183,7 +183,7 @@ export function resolve(event) { … }
 
 ### The silent-failure contract
 
-`JSInterop.InvokeAsync` returns `false` when nothing is attached and when the circuit has dropped — by design, so a dead circuit cannot throw into a render. That silence cuts both ways: a call made before `AttachAsync` has answered is indistinguishable from one that ran. What the wrapper absorbs it writes at `Debug` under the owning component's category, naming the stage it failed at, import, call or release, the export where a call reached one, the module and the owner's `RuntimeId`, so turning the category on shows what a `false` hid; a call made before attaching is not a failure and is not logged.
+`JSInterop.InvokeAsync` returns `false` when nothing is attached, when the circuit has dropped, and when the runtime canceled the call, as it does for every call of a circuit that ends — by design, so a dead circuit cannot throw into a render or out of a disposal. That silence cuts both ways: a call made before `AttachAsync` has answered is indistinguishable from one that ran. What the wrapper absorbs it writes at `Debug` under the owning component's category, naming the stage it failed at, import, call or release, the export where a call reached one, the module and the owner's `RuntimeId`, so turning the category on shows what a `false` hid; a call made before attaching is not a failure and is not logged.
 
 - Do treat that returned `bool` as the record of whether the call happened, and drive state from it rather than assuming success.
 - Do remember that `OnAfterRenderAsync` runs after *every* render, so a second pass can overtake a first one that is still awaiting its attach round-trip.

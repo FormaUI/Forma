@@ -199,6 +199,30 @@ public sealed class JSInteropTests
     public sealed class Detachment
     {
         [Fact]
+        public async Task Should_log_a_dispose_the_runtime_canceled_at_debug()
+        {
+            // Arrange — as the runtime cancels the calls of a circuit that ends while its components are disposed
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var handle = new FakeJSObjectReference((identifier, _) => identifier == "dispose" ? throw new TaskCanceledException() : null);
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? handle : null);
+            await using var probe = new Probe(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory));
+            await probe.AttachAsync(default);
+
+            // Act
+            await probe.DetachAsync();
+
+            // Assert
+            Assert.False(probe.IsAttached);
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(LogLevel.Debug, entry.Level);
+                Assert.Contains("call to dispose", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("was canceled", entry.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
         public async Task Should_log_a_dispose_the_circuit_dropped_under_at_debug()
         {
             // Arrange
