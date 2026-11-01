@@ -591,17 +591,20 @@ which this contract makes deliberate: a window is one view of the application, n
 - **A window takes part as its first Forma component initializes,** registering its web view with the
   coordinator, which hands it the accepted pair with its version; its document coordinator starts from it,
   as on a standalone app's page. A window opened after a switch starts in the pair that switch accepted.
-- **Closing a window** releases its registration and every subscription its components made. The state, the
-  coordinator and the accepted pair stay the application's, so the last window's closing changes no
-  culture.
+- **A window's web view, disposed as its window closes,** releases its registration and every subscription
+  its components made, and one the host never disposed is dropped at the first delivery that fails. The
+  state, the coordinator and the accepted pair stay the application's, so the last window's closing changes
+  no culture.
 
 ### The ambient culture
 
 After a switch is accepted, every event any window dispatches and every render runs in the accepted pair.
 The coordinator applies the pair to the process's default cultures, which a flow with no culture of its own
-reads, and to the cultures each window's UI thread runs its events in, through that window's dispatcher, so
-a culture the platform or the host assigned to a thread doesn't hide a switch. Windows needn't share a
-thread: WPF can run a window on a UI thread of its own, and each window's thread receives the pair. Work
+reads, and to the cultures each window's UI thread runs its events in, posted to that thread outside any
+flow a caller captured, so a culture the platform or the host assigned to a thread doesn't hide a switch and
+the pair outlives the flow that applied it. Windows needn't share a thread: Windows Forms dispatches each web
+view's components on its own control's thread, while WPF dispatches every web view's on the application's,
+and each window's thread receives the pair. Work
 begun before a switch finishes in the culture it captured, which is the platform's rule, while the render it
 asks for reads the state, as [output](#output-takes-its-culture-from-the-state) sets out.
 

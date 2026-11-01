@@ -54,9 +54,12 @@ The culture is the application's, and everything that reaches a document is its 
 | Each web view | Its JS runtime, its navigation, its document's culture coordinator and its registration with the application's, the input router's scopes, every component's subscriptions, and every other scoped service |
 
 A window takes part once the first Forma component in its web view initializes, which registers the web
-view with the application's coordinator. Closing a window disposes its web view's scope, which releases its
+view with the application's coordinator. A web view releases its scope as it is disposed, which releases its
 registration and every subscription its components made, and leaves the culture state and the coordinator
-to the application; a window opened later starts from the state as it then stands.
+to the application; a window opened later starts from the state as it then stands. Windows Forms disposes a
+web view with its form, while WPF disposes no control on its own, so a WPF host disposes a window's web view
+as the window closes. A window whose web view went without being disposed is dropped from the coordinator at
+the first delivery to it that fails.
 
 ## The page
 

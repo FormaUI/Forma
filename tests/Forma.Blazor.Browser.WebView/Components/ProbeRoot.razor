@@ -1,0 +1,13 @@
+@* The root every window renders: the interactive router over the check host's pages, with the window's name cascaded to them. *@
+<CascadingValue Value="Window" Name="Window">
+    <Router AppAssembly="typeof(ProbeRoot).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="routeData" />
+        </Found>
+    </Router>
+</CascadingValue>
+
+@code {
+    /// <summary>The window's name.</summary>
+    [Parameter, EditorRequired] public string Window { get; set; } = default!;
+}

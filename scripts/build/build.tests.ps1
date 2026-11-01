@@ -48,6 +48,12 @@ $cases = @(
     @{ Name = 'tasks builds the task programs and does no more'; Script = 'tasks.ps1'; Arguments = @(); Expect = @('-- tasks'); Reject = @('-- build', '-- test') }
     @{ Name = 'browser drives the browser check and does no more'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser'); Reject = @('-- build', '-- test', 'in a visible window') }
     @{ Name = 'a visible browser check says so'; Script = 'browser.ps1'; Arguments = @('-Visible'); Expect = @('-- browser', 'in a visible window') }
+    if ($IsWindows) {
+        @{ Name = 'the browser check publishes the WebView check host on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('and the WebView check host') }
+    }
+    else {
+        @{ Name = 'the browser check leaves the WebView check host out where WebView2 cannot run'; Script = 'browser.ps1'; Arguments = @(); Reject = @('WebView check host') }
+    }
     @{ Name = 'clean deletes build output and does no more'; Script = 'clean.ps1'; Arguments = @(); Expect = @('-- clean'); Reject = @('-- build') }
     @{ Name = 'a clean says when it reaches past the repository'; Script = 'clean.ps1'; Arguments = @('-All'); Expect = @('-- clean', 'the SDK left in the temp directory') }
     @{ Name = 'an ordinary clean says it does not'; Script = 'clean.ps1'; Arguments = @(); Reject = @('the SDK left in the temp directory') }

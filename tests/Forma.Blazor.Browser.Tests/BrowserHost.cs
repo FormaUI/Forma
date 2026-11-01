@@ -237,7 +237,9 @@ public sealed class BrowserHost : IAsyncLifetime
         throw new TimeoutException($"The host at {ready} did not answer within a minute.");
     }
 
-    private static int GetFreePort()
+    /// <summary>A port nothing on this machine listens on now.</summary>
+    /// <returns>The port.</returns>
+    internal static int GetFreePort()
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
@@ -245,7 +247,9 @@ public sealed class BrowserHost : IAsyncLifetime
         return ((IPEndPoint)listener.LocalEndpoint).Port;
     }
 
-    private static string FindRepositoryRoot()
+    /// <summary>The repository the checks run in, found above the checks' own folder.</summary>
+    /// <returns>The repository's folder.</returns>
+    internal static string FindRepositoryRoot()
     {
         for (var folder = new DirectoryInfo(AppContext.BaseDirectory); folder is not null; folder = folder.Parent)
         {

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The WebView check host: a WPF application whose windows each render Forma's components to a web view, which the browser check drives through WebView2. -->
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <!-- Builds on every platform the gate runs on, though WebView2 runs on Windows alone. -->
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
+    </ItemGroup>
+
+</Project>

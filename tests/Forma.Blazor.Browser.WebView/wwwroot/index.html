@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forma WebView Check</title>
+    <base href="/" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-tokens.css" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-reset.css" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-base.css" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-input.css" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-prose.css" />
+    <script>
+        // What the document saw of its history, for the check to tell a traversal from a navigation the window makes.
+        window.formaProbe = { history: [] };
+        addEventListener('popstate', () => formaProbe.history.push('popstate'));
+        if (window.navigation) {
+            navigation.addEventListener('navigate', event => formaProbe.history.push(`navigate ${event.navigationType}`));
+        }
+    </script>
+</head>
+<body>
+    <div id="app"></div>
+    <script src="_framework/blazor.webview.js"></script>
+</body>
+</html>

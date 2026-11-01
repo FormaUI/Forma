@@ -20,6 +20,10 @@ Until the first release, a month may break what the one before it allowed, and e
 - [The JavaScript interop](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md) absorbs a call the runtime canceled, as it cancels every call of a circuit that ends, and logs it at `Debug` as it logs a dropped circuit, where the cancellation escaped a component's disposal as an unhandled exception in its circuit.
 
 
+**Build and verification**
+
+- [The WebView check host](docs/repository-structure.md#tests): a WPF application whose windows each render the components to a web view, driven by the browser check through WebView2, checking what Blazor Hybrid guarantees of its renderer, a window's registration, the culture each window's events run in, a window's address replaced and refused, a traversal, and a window's release.
+
 <a id="2026-10"></a>
 
 ## October 2026

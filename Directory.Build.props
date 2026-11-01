@@ -6,7 +6,7 @@
         Shared properties for all Forma projects.
     -->
 
-    <!-- Every project targets the same framework and language settings; a project overrides one by declaring it after this import, which none currently need to. -->
+    <!-- Every project targets the same framework and language settings; a project overrides one by declaring it after this import, as the WebView check host targets Windows. -->
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>

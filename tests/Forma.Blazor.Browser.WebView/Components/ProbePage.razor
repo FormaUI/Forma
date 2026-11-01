@@ -1,0 +1,209 @@
+@page "/{Segment}/probe"
+@implements IDisposable
+@inject ProbeShell Shell
+@inject ProbeScope Scope
+@inject NavigationManager Navigation
+@inject CultureCoordinatorRegistration Registration
+@inject ICultureState CultureState
+@inject IServiceProvider Services
+
+@* One window's page: what renders it and in which culture, a select reaching its script, an event, a binding, work begun
+   before a switch, the ways a culture is applied, the windows it opens and closes, another window's address replaced
+   under a mark, and what the window's navigation saw. *@
+<output id="window">@Window</output>
+<output id="renderer">@RendererInfo.Name @RendererInfo.IsInteractive</output>
+<output id="segment">@Segment</output>
+<output id="instance">@_instance</output>
+<output id="context">@_context</output>
+<output id="render-culture">@Ambient()</output>
+<output id="registered">@_registered</output>
+<output id="state">@CultureState.Culture.Name|@CultureState.UICulture.Name</output>
+
+<EditForm Model="_entry">
+    <FormaSelect TValue="int" @bind-Value="_entry.Status" Options="_statuses" Label="Status" />
+</EditForm>
+<output id="status">@_entry.Status</output>
+
+<FormaButton OnClick="RecordEvent">Event</FormaButton>
+<output id="event">@_event</output>
+
+<label>Amount <input id="amount" @bind="_amount" /></label>
+<output id="amount-value">@_amount.ToString(CultureInfo.InvariantCulture)</output>
+<label>Draft <input id="draft" @bind="_draft" /></label>
+
+<button id="begin-work" @onclick="BeginWorkAsync">Begin work</button>
+<button id="end-work" @onclick="EndWork">End work</button>
+<output id="work">@_work</output>
+
+<label>Culture <input id="culture" @bind="_culture" /></label>
+<button id="apply-defaults" @onclick="ApplyToDefaults">Apply to defaults</button>
+<button id="apply-threads" @onclick="ApplyToThreads">Apply to threads</button>
+<button id="apply-captured" @onclick="ApplyInCapturedFlowAsync">Apply in captured flow</button>
+<button id="switch" @onclick="SwitchAsync">Switch</button>
+<output id="switched">@_switched</output>
+
+<label>Start path <input id="start-path" @bind="_startPath" /></label>
+<button id="open" @onclick="Open">Open</button>
+<output id="opened">@_opened</output>
+<button id="close" @onclick="() => Shell.Close(Window, isDisposing: false)">Close</button>
+<button id="close-disposing" @onclick="() => Shell.Close(Window, isDisposing: true)">Close and dispose</button>
+<output id="released">@_released</output>
+
+<label>Target <input id="target" @bind="_target" /></label>
+<label>Target segment <input id="target-segment" @bind="_targetSegment" /></label>
+<button id="replace-address" @onclick="ReplaceAddressAsync">Replace address</button>
+<label><input id="guard" type="checkbox" @bind="_isGuarding" /> Guard</label>
+<a id="to-es" href="es/probe">es</a>
+<a id="to-he" href="he/probe">he</a>
+<ol id="navigations">
+    @foreach (var navigation in _navigations)
+    {
+        <li>@navigation</li>
+    }
+</ol>
+
+@code {
+    private readonly string _instance = Guid.NewGuid().ToString("N")[..8];
+    private readonly Entry _entry = new();
+    private readonly IReadOnlyList<SelectOption<int>> _statuses = [new(1, "Open"), new(2, "Closed")];
+    private readonly List<string> _navigations = [];
+    private IDisposable? _locationChanging;
+    private TaskCompletionSource? _workGate;
+    private string? _context;
+    private string? _registered;
+    private string? _event;
+    private decimal _amount;
+    private string? _draft;
+    private string? _work;
+    private string _culture = "es-ES";
+    private string? _switched;
+    private string _startPath = "/en/probe";
+    private string? _opened;
+    private int _released;
+    private string _target = "B";
+    private string _targetSegment = "es";
+    private bool _isGuarding;
+
+    [CascadingParameter(Name = "Window")] public string Window { get; set; } = default!;
+
+    [Parameter] public string Segment { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Scope.Window = Window;
+        _context = SynchronizationContext.Current?.GetType().Name;
+        Shell.Attach(new ProbeAttachment(Window, SynchronizationContext.Current!, Navigation, action => InvokeAsync(action)));
+        _locationChanging = Navigation.RegisterLocationChangingHandler(OnLocationChangingAsync);
+        Navigation.LocationChanged += OnLocationChanged;
+        Shell.ScopeReleased += OnScopeReleased;
+
+        try
+        {
+            await Registration.RegisterAsync(new CultureCoordinatorStart
+            {
+                Marker = CulturePublication.GetMarkerAttributes(CultureState.Culture, CultureState.UICulture),
+                Policy = CulturePublication.GetPolicyAttributes(CultureSwitchPolicy.Default, null),
+                Direction = CultureState.IsRightToLeft ? "rtl" : "ltr",
+            });
+            _registered = "registered";
+        }
+        catch (JSException exception)
+        {
+            _registered = $"{nameof(JSException)}: {exception.Message}";
+        }
+        catch (InvalidOperationException exception)
+        {
+            _registered = $"{nameof(InvalidOperationException)}: {exception.Message}";
+        }
+    }
+
+    public void Dispose()
+    {
+        _locationChanging?.Dispose();
+        Navigation.LocationChanged -= OnLocationChanged;
+        Shell.ScopeReleased -= OnScopeReleased;
+    }
+
+    private static string Ambient()
+        => $"{CultureInfo.CurrentCulture.Name}|{CultureInfo.CurrentUICulture.Name}";
+
+    private void RecordEvent()
+        => _event = $"{Ambient()}|{1234.5.ToString("N1", CultureInfo.CurrentCulture)}|{ProbeStrings.Greeting}";
+
+    private async Task BeginWorkAsync()
+    {
+        var gate = new TaskCompletionSource();
+        _workGate = gate;
+        var begun = Ambient();
+        _work = $"begun {begun}";
+
+        await gate.Task;
+
+        _work = $"begun {begun}, ended {Ambient()}";
+    }
+
+    private void EndWork()
+        => _workGate?.TrySetResult();
+
+    private void ApplyToDefaults()
+        => ProbeShell.ApplyToDefaults(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+
+    private void ApplyToThreads()
+        => Shell.ApplyToThreads(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+
+    private Task ApplyInCapturedFlowAsync()
+        => Shell.ApplyInCapturedFlowAsync(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+
+    // The application's switch, which the WebView half registers; a host without it has none to switch through.
+    private async Task SwitchAsync()
+    {
+        if (Services.GetService(typeof(ICultureSwitch)) is not ICultureSwitch cultureSwitch)
+        {
+            _switched = "no switch";
+
+            return;
+        }
+
+        await cultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo(_culture));
+        _switched = "switched";
+    }
+
+    private void Open()
+        => _opened = Shell.Open(_startPath);
+
+    private void OnScopeReleased()
+        => _ = InvokeAsync(() =>
+        {
+            _released = Shell.Released;
+            StateHasChanged();
+        });
+
+    private Task ReplaceAddressAsync()
+        => Shell.ReplaceAddressAsync(_target, _targetSegment);
+
+    private ValueTask OnLocationChangingAsync(LocationChangingContext context)
+    {
+        _navigations.Add($"changing {Navigation.ToAbsoluteUri(context.TargetLocation).AbsolutePath} state={context.HistoryEntryState ?? "none"} intercepted={context.IsNavigationIntercepted}");
+
+        if (_isGuarding)
+        {
+            context.PreventNavigation();
+            _navigations.Add("prevented");
+        }
+
+        _ = InvokeAsync(StateHasChanged);
+
+        return ValueTask.CompletedTask;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _navigations.Add($"changed {new Uri(args.Location).AbsolutePath} state={args.HistoryEntryState ?? "none"} intercepted={args.IsNavigationIntercepted}");
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private sealed class Entry
+    {
+        public int Status { get; set; } = 1;
+    }
+}
