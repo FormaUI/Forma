@@ -1,11 +1,12 @@
 namespace Forma.Blazor.Components.Feedback;
 
+using Forma.Framework.Css;
 using Forma.Framework.Feedback;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The host that renders confirmation requests raised through <see cref="IConfirmDialogService"/>.</summary>
-public sealed partial class FormaConfirmDialog : FormaComponentBase
+public sealed partial class FormaConfirmDialog : FormaElementBase
 {
     private static readonly DialogOptions DialogOptions =
         new() { CloseOnScrimClick = false, ShowCancelAction = false, ShowConfirmAction = false };
@@ -14,6 +15,12 @@ public sealed partial class FormaConfirmDialog : FormaComponentBase
     private bool _isOpen;
 
     [Inject] private IConfirmDialogService ConfirmService { get; set; } = default!;
+
+    private FormaDialog Dialog { get; set; } = default!;
+
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => Dialog is null ? default : Dialog.RootElement;
 
     /// <inheritdoc />
     protected override void OnInitialized() => ConfirmService.Subscribe(HandleShowRequestedAsync);
@@ -45,6 +52,10 @@ public sealed partial class FormaConfirmDialog : FormaComponentBase
         _isOpen = false;
         _request = null;
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-confirm-dialog");
 
     /// <inheritdoc />
     protected override ValueTask DisposeAsyncCore()

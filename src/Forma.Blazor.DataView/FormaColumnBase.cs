@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 /// <summary>A column of a grid: what its header says, how its cells align and sort, and what they draw for an item.</summary>
 /// <typeparam name="TItem">The item a row shows.</typeparam>
-public abstract class FormaColumnBase<TItem> : ComponentBase
+public abstract class FormaColumnBase<TItem> : FormaComponentBase
     where TItem : notnull
 {
     // What a column is given that only its header or its sort reads, which no cell is drawn by.
@@ -22,9 +22,6 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
     private ParameterRevision? _parameterRevision;
 
     [CascadingParameter] private FormaDataGrid<TItem> Grid { get; set; } = default!;
-
-    /// <summary>The cultures the column writes its title and its cells in.</summary>
-    [Inject] protected ICultureState CultureState { get; set; } = default!;
 
     /// <summary>The title shown in the header cell and read as the column's name.</summary>
     [Parameter] public string? Title { get; set; }
@@ -85,7 +82,7 @@ public abstract class FormaColumnBase<TItem> : ComponentBase
 
     /// <summary>The title the column shows and is named by, from <see cref="Title"/> or the column's own default.</summary>
     public string? EffectiveTitle
-        => Title ?? CultureState.Run(GetDefaultTitle);
+        => Title ?? Context.CultureState.Run(GetDefaultTitle);
 
     /// <summary>The content of the header cell: the template where the caller gave one, else the title.</summary>
     protected internal virtual RenderFragment HeaderContent

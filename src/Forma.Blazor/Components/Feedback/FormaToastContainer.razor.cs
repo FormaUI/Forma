@@ -1,12 +1,13 @@
 namespace Forma.Blazor.Components.Feedback;
 
+using Forma.Framework.Css;
 using Forma.Framework.Feedback;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The live region that renders and auto-dismisses toasts raised through <see cref="IToastService"/>.</summary>
-public sealed partial class FormaToastContainer : FormaComponentBase
+public sealed partial class FormaToastContainer : FormaElementBase
 {
     private readonly Dictionary<string, Timer> _timers = [];
 
@@ -75,6 +76,10 @@ public sealed partial class FormaToastContainer : FormaComponentBase
             timer.Dispose();
         }
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-toast-container");
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

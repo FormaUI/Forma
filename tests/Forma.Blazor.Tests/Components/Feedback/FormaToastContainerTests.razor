@@ -19,6 +19,24 @@
         }
 
         [Fact]
+        public void Should_carry_its_host_s_id_class_style_and_attributes()
+        {
+            // Arrange
+            using var ctx = new FormaToastContainerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaToastContainer Id="toasts" Class="corner" Style="inset-block-end: 0;" data-area="orders" />);
+            var container = cut.Find(".forma-toast-container");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("toasts", container.Id),
+                () => Assert.Contains("corner", container.ClassList),
+                () => Assert.Equal("inset-block-end: 0;", container.GetAttribute("style")),
+                () => Assert.Equal("orders", container.GetAttribute("data-area")));
+        }
+
+        [Fact]
         public void Should_announce_toasts_through_a_live_region()
         {
             // Arrange

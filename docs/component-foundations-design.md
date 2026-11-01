@@ -27,10 +27,12 @@ that fails to load, reaches a host through the log the host already configures.
   same reach, strings, log, host surface and disposal as any other Forma component. The
   `Base` suffix is the .NET shape for an abstract root, as `ComponentBase` and
   `InputBase` are.
-- **One tier per placement.** A component a host places is an element; a form input is
-  an input; a part that only lives inside its owner and takes nothing from a host, an
-  explorer's toolbar or a composer's dialog, is plain. Nothing derives from
-  `ComponentBase` or `InputBase<TValue>` directly.
+- **One tier per responsibility.** A component that draws a root its host addresses is an
+  element, whether that root is its own element or another component's it forwards the host
+  surface to, as a confirm dialog forwards it to its dialog; a form input is an input; every
+  other component is plain, a part that only lives inside its owner, an explorer's toolbar or
+  a composer's dialog, and a component that draws no root of its own, a page's head or a
+  grid's column. Nothing derives from `ComponentBase` or `InputBase<TValue>` directly.
 - **The root is the element the host addresses.** On an input that is the control inside
   its `FormaField` (the `<textarea>`, or the trigger `<button>` of a select), never the
   field wrapper; on a composite it is the control the host names and styles (a drop-down

@@ -101,7 +101,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             return;
         }
 
-        builder.AddContent(4, _displayTextSelector(item, CultureState));
+        builder.AddContent(4, _displayTextSelector(item, Context.CultureState));
     }
 
     /// <inheritdoc />
@@ -131,7 +131,7 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
         }
 
         // A read-only column still reads from the draft, so a value derived from an edited one keeps up while the row is open.
-        builder.AddContent(1, _displayTextSelector(draft, CultureState));
+        builder.AddContent(1, _displayTextSelector(draft, Context.CultureState));
     }
 
     // The library's input for the value's type.

@@ -16,6 +16,25 @@
         }
 
         [Fact]
+        public void Should_carry_its_host_s_id_class_style_and_attributes_on_its_dialog()
+        {
+            // Arrange
+            using var ctx = new FormaConfirmDialogTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaConfirmDialog Id="confirm" Class="wide" Style="color: red;" data-area="orders" />);
+            var dialog = cut.Find("dialog");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("confirm", dialog.Id),
+                () => Assert.Contains("forma-confirm-dialog", dialog.ClassList),
+                () => Assert.Contains("wide", dialog.ClassList),
+                () => Assert.Contains("color: red;", dialog.GetAttribute("style"), StringComparison.Ordinal),
+                () => Assert.Equal("orders", dialog.GetAttribute("data-area")));
+        }
+
+        [Fact]
         public void Should_not_be_visible_initially()
         {
             // Arrange

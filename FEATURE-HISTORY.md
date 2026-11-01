@@ -19,6 +19,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - A pressed [`FormaToggleButton`](docs/component-catalog.md#formatogglebutton) keeps its fill while disabled, so whether it is on still shows.
 - [`FormaComposer`](docs/component-catalog.md#formacomposer) offers subscript and superscript where `BasicFormattingPluginOptions` includes them, and leaves them out of its default formatting, as [its design](docs/composer-design.md#12-full-parity-nothing-dropped) keeps them out of the default preset.
 - [`FormaField`](docs/component-catalog.md#formafield) keeps one message line's room beneath an input whose form's messages it shows, so a message arriving or leaving never moves what follows, and a press on a submit button that takes the focus from the input submits the first time.
+- [`FormaConfirmDialog`](docs/component-catalog.md#formaconfirmdialog) and [`FormaToastContainer`](docs/component-catalog.md#formatoastcontainer) take a host's id, class, style and attributes, the confirm dialog's onto its dialog.
 - [`FormaTextArea`](docs/component-catalog.md#formatextarea) takes its value as each character is typed or, with `UpdateOn` set to `TextUpdate.Change`, as its edit commits, its character count still following each keystroke in the browser, so a long text never travels with every keystroke; [`FormaTextBox`](docs/component-catalog.md#formatextbox) takes the same choice in its options, and [`FormaComposer`](docs/component-catalog.md#formacomposer)'s plain text editor in the composer's `PlainTextUpdateOn`.
 
 **Foundations**
@@ -57,6 +58,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - `AddFormaCultureRouting` registers no culture state or coordination: a host registers them through a product's registrar, as every host already does.
 - `StateNotifier.NotifyAsync` faults with an `AggregateException` holding every subscriber's failure, where it faulted with the first one's.
 - `BasicFormattingPlugin` offers no subscript or superscript, their toolbar toggles, shortcuts or commands, unless `BasicFormattingPluginOptions.IncludeSubscriptAndSuperscript` is set.
+- `FormaColumnBase` derives from `FormaComponentBase` and carries no `CultureState` of its own; a column reads its cultures through `Context.CultureState`.
 
 <a id="2026-10"></a>
 

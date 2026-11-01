@@ -1,6 +1,14 @@
-@inherits FormaComponentBase
+@inherits FormaElementBase
 
-<div class="forma-toast-container" role="status" aria-live="polite" aria-atomic="false">
+<div id="@Id"
+     data-rid="@Context.RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     role="status"
+     aria-live="polite"
+     aria-atomic="false">
     @foreach (var toast in ToastService.Toasts)
     {
         <div class="forma-toast forma-toast-@toast.Type.ToString().ToLowerInvariant()"

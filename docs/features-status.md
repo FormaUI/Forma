@@ -162,7 +162,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 Each needs the maintainer's decision; each is given with a proposal.
 
-- **The bases of host-placed components.** The component foundations design gives each placement one base, a component a host places being an element, while an element is a component with a root its host addresses. `FormaConfirmDialog`, `FormaToastContainer`, `FormaPageHead` and `FormaVirtualize` are placed by a host on the base of a part, though `FormaPageHead` and `FormaVirtualize` draw no root of their own, and `FormaColumnBase` derives from `ComponentBase` directly. `FormaCurrencyInput` and `FormaSearchBox` stand on the element base as the authoring rules set out: the first composes `FormaNumberInput` and forwards its value, expression and validation to it, and the second is a search field no form binds. *Proposal:* the design chooses a base by responsibility and composition rather than by placement, the element base for a component drawing a root its host addresses, and each case is then reviewed on its own against that rule rather than moved mechanically.
 - **Stepping a number from its draft.** A number input steps from its value, and a step replaces an edit in progress. *Proposal:* a step starts from the number the edit's text writes where it reads as one in the culture it was typed in, and from the value where it doesn't, as a native number field steps from what it shows.
 
 <a id="deferred"></a>
