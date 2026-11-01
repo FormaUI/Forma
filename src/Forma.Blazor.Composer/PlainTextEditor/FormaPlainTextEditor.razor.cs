@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Composer.PlainTextEditor;
 
+using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Input;
@@ -20,6 +21,9 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
     /// <summary>The interaction the canvas invokes on the composer.</summary>
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
+
+    /// <summary>The options of the composer the canvas belongs to.</summary>
+    [CascadingParameter] public ComposerOptions? ComposerOptions { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
@@ -45,6 +49,9 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
     private bool IsReadOnly
         => Composer?.IsReadOnly ?? false;
+
+    private bool UpdatesOnChange
+        => ComposerOptions?.PlainTextUpdateOn is TextUpdate.Change;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -117,6 +124,14 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
             await _commitCancellation.CancelAsync();
         }
 
+        await CommitAsync();
+        await ReportSelectionAsync();
+    }
+
+    // Updating on change, the text and the selection arrive together as the edit commits, since no keystroke reports either.
+    private async Task HandleCommitAsync(string? text)
+    {
+        _typedContent = text ?? string.Empty;
         await CommitAsync();
         await ReportSelectionAsync();
     }

@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer;
 
+using Forma.Blazor.Components.Inputs;
+
 /// <summary>The options of a <see cref="FormaComposer"/>.</summary>
 public sealed record ComposerOptions
 {
@@ -20,4 +22,7 @@ public sealed record ComposerOptions
 
     /// <summary>The capacity of the undo/redo history stack.</summary>
     public int HistoryCapacity { get; init; } = 100;
+
+    /// <summary>When text typed into the plain text editor reaches the composer, as each character is typed or as the editor commits its edit.</summary>
+    public TextUpdate PlainTextUpdateOn { get; init; }
 }

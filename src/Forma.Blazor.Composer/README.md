@@ -74,7 +74,9 @@ application's, `ActiveEditorId` with `ActiveEditorIdChanged` to bind the active 
 
 `ComposerOptions` sets `ShowToolbar`, `ShowEditorSwitcher`, `DefaultEditorId` for the editor that
 opens when the document's format alone does not decide it, `IsResizable` for the grip that drags
-the composer taller, and `HistoryCapacity` for the undo stack.
+the composer taller, `HistoryCapacity` for the undo stack, and `PlainTextUpdateOn` for when text
+typed into the plain text editor reaches the composer: as each character is typed, or, set to
+`TextUpdate.Change`, as the editor commits its edit, as it loses the focus or before a shortcut runs.
 
 ## Choosing the plugins
 

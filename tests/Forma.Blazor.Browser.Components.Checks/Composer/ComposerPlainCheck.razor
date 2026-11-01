@@ -3,9 +3,12 @@
 @using Forma.Framework.Composer.Documents
 @using Forma.Framework.Composer.Plugins
 
-@* A composer on plain text with a plugin of the host's own showing the selection, its document written where the check reads it. *@
+@* A composer on plain text with a plugin of the host's own showing the selection, its document written where the check reads it;
+   and a second, taking its text as its edit commits, its document written there too. *@
 <FormaComposer Id="check" @bind-Value="_document" Plugins="Definition" />
 <output id="result">@(_document?.Content)</output>
+<FormaComposer Id="committed" @bind-Value="_committedDocument" Plugins="Definition" Options="CommittingOptions" />
+<output id="committed-result">@(_committedDocument?.Content)</output>
 
 @code {
     private static readonly ComposerDefinition Definition = ComposerDefinition.Create(composer => composer
@@ -13,7 +16,10 @@
         .TryAddDefaultPlugins()
         .AddFeaturePlugin<CheckSelectionPlugin>());
 
+    private static readonly ComposerOptions CommittingOptions = new() { PlainTextUpdateOn = TextUpdate.Change };
+
     private ComposerDocument? _document = new(ComposerDocumentFormat.PlainText, string.Empty);
+    private ComposerDocument? _committedDocument = new(ComposerDocumentFormat.PlainText, string.Empty);
 
     [Parameter] public string Runtime { get; set; } = default!;
 }

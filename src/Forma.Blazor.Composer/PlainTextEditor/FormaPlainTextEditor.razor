@@ -2,17 +2,34 @@
 @inherits FormaComponentBase
 
 <div class="forma-composer-plain-text-editor">
-    <textarea @ref="_textareaElement"
-              class="forma-composer-plain-text-textarea"
-              @bind:get="Content"
-              @bind:set="HandleInputAsync"
-              @bind:event="oninput"
-              @onchange="HandleChangeAsync"
-              @onclick="HandleClickAsync"
-              @onkeyup="HandleKeyUpAsync"
-              placeholder="@L["Edit Content"]"
-              aria-label="@L["Plain Text"]"
-              disabled="@IsDisabled"
-              readonly="@IsReadOnly"
-              spellcheck="false"></textarea>
+    @* Every event handled on the text area carries its whole text, so updating on change it handles the commit alone. *@
+    @if (UpdatesOnChange)
+    {
+        <textarea @ref="_textareaElement"
+                  class="forma-composer-plain-text-textarea"
+                  @bind:get="Content"
+                  @bind:set="HandleCommitAsync"
+                  @bind:event="onchange"
+                  placeholder="@L["Edit Content"]"
+                  aria-label="@L["Plain Text"]"
+                  disabled="@IsDisabled"
+                  readonly="@IsReadOnly"
+                  spellcheck="false"></textarea>
+    }
+    else
+    {
+        <textarea @ref="_textareaElement"
+                  class="forma-composer-plain-text-textarea"
+                  @bind:get="Content"
+                  @bind:set="HandleInputAsync"
+                  @bind:event="oninput"
+                  @onchange="HandleChangeAsync"
+                  @onclick="HandleClickAsync"
+                  @onkeyup="HandleKeyUpAsync"
+                  placeholder="@L["Edit Content"]"
+                  aria-label="@L["Plain Text"]"
+                  disabled="@IsDisabled"
+                  readonly="@IsReadOnly"
+                  spellcheck="false"></textarea>
+    }
 </div>

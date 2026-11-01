@@ -953,6 +953,44 @@
         }
 
         [Fact]
+        public void Should_send_nothing_as_plain_text_is_typed_when_it_updates_on_change()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Options="@(new ComposerOptions { PlainTextUpdateOn = TextUpdate.Change })" />);
+            var textarea = cut.Find("textarea");
+
+            // Act
+            var typing = () => textarea.Input("typed");
+            var pressing = () => textarea.Click();
+            var releasing = () => textarea.KeyUp("a");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Throws<MissingEventHandlerException>(typing),
+                () => Assert.Throws<MissingEventHandlerException>(pressing),
+                () => Assert.Throws<MissingEventHandlerException>(releasing));
+        }
+
+        [Fact]
+        public async Task Should_take_plain_text_as_its_edit_commits_when_it_updates_on_change()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Options="@(new ComposerOptions { PlainTextUpdateOn = TextUpdate.Change })" />);
+
+            // Act
+            await cut.Find("textarea").ChangeAsync(new ChangeEventArgs { Value = "committed" });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("committed", model.Body.Content),
+                () => Assert.False(cut.Find("button[aria-label=Undo]").HasAttribute("disabled")));
+        }
+
+        [Fact]
         public void Should_coalesce_rapid_keystrokes_into_one_undo_step()
         {
             // Arrange

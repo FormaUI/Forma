@@ -4,6 +4,7 @@
 @inherits FormaInputBase<ComposerDocument>
 
 <CascadingValue Value="Composer">
+<CascadingValue Value="Options">
 <CascadingValue Value="(IComposerInteraction)this" IsFixed="true">
     <div id="@ElementId"
          data-rid="@Context.RuntimeId"
@@ -100,5 +101,6 @@
             @RenderDialogBody(dialog)
         </FormaComposerDialog>
     }
+</CascadingValue>
 </CascadingValue>
 </CascadingValue>

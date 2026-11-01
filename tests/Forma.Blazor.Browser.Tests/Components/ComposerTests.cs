@@ -425,6 +425,48 @@ public sealed class ComposerTests
 
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_take_plain_text_only_as_its_edit_commits_when_it_updates_on_change(string runtime)
+        {
+            // Arrange — text typed and not yet taken
+            var (context, page) = await OpenAsync(host, runtime, "composer-plain");
+            await using var _ = context;
+            var editor = page.Locator("#committed textarea");
+            await editor.PressSequentiallyAsync("abc");
+            await Assertions.Expect(page.Locator("#committed-result")).ToHaveTextAsync(string.Empty);
+
+            // Act
+            await editor.PressAsync("Tab");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#committed-result")).ToHaveTextAsync("abc");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_commit_the_plain_text_typed_before_a_shortcut_runs_when_it_updates_on_change(string runtime)
+        {
+            // Arrange — one edit committed, then more typed and not yet taken
+            var (context, page) = await OpenAsync(host, runtime, "composer-plain");
+            await using var _ = context;
+            var editor = page.Locator("#committed textarea");
+            await WaitForInputRouteAsync(page, "#committed textarea", "composer.undo");
+            await editor.PressSequentiallyAsync("abc");
+            await editor.PressAsync("Tab");
+            await Assertions.Expect(page.Locator("#committed-result")).ToHaveTextAsync("abc");
+            await editor.FocusAsync();
+            await editor.PressAsync("End");
+            await editor.PressSequentiallyAsync("xyz");
+
+            // Act — the undo commits what was typed and then undoes it
+            await editor.PressAsync("ControlOrMeta+Z");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#committed-result")).ToHaveTextAsync("abc");
+            await Assertions.Expect(editor).ToHaveValueAsync("abc");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_report_the_selection_made_in_its_text(string runtime)
         {
             // Arrange — the first word selected by the keys
