@@ -106,6 +106,11 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     {
         ArgumentNullException.ThrowIfNull(Options);
 
+        if (!Enum.IsDefined(Options.UpdateOn))
+        {
+            throw new ArgumentOutOfRangeException(nameof(Options), Options.UpdateOn, null);
+        }
+
         if (Options.MinLength is { } minLength)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(minLength, nameof(Options));

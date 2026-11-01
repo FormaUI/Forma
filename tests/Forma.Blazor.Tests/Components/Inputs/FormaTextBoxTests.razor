@@ -750,5 +750,60 @@
                 Assert.Contains("valid", classes);
             });
         }
+
+        [Fact]
+        public void Should_send_nothing_as_each_character_is_typed_when_it_updates_on_change()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { UpdateOn = TextUpdate.Change })" />
+            </FakeFormHost>);
+
+            // Act
+            var typing = () => cut.Find("input").Input("typed");
+
+            // Assert
+            Assert.Throws<MissingEventHandlerException>(typing);
+        }
+
+        [Fact]
+        public void Should_take_its_value_and_tell_the_form_as_its_edit_commits_when_it_updates_on_change()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var changedFields = new List<string>();
+            editContext.OnFieldChanged += (_, args) => changedFields.Add(args.FieldIdentifier.FieldName);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { UpdateOn = TextUpdate.Change })" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("typed");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("typed", model.Text),
+                () => Assert.Equal([nameof(FakeModel.Text)], changedFields));
+        }
+
+        [Fact]
+        public void Should_refuse_an_update_it_does_not_know()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { UpdateOn = (TextUpdate)7 })" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
     }
 }

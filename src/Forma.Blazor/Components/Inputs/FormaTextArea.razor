@@ -3,24 +3,44 @@
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@Required" Multiline="true">
     <ChildContent>
-        <textarea id="@ElementId"
-                  data-rid="@Context.RuntimeId"
-                  class="@RootClass"
-                  style="@RootStyle"
-                  @attributes="AdditionalAttributes"
-                  @ref="RootElement"
-                  placeholder=" "
-                  rows="@Rows"
-                  maxlength="@MaxLength"
-                  @bind="CurrentValueAsString"
-                  @bind:event="oninput"
-                  aria-required="@(Required ? "true" : null)"
-                  aria-describedby="@DescribedBy"></textarea>
+        @* The binding names the event literally, and it tells the renderer which attribute the event updates, so typing outpacing a render is never reverted. *@
+        @if (UpdateOn is TextUpdate.Change)
+        {
+            <textarea id="@ElementId"
+                      data-rid="@Context.RuntimeId"
+                      class="@RootClass"
+                      style="@RootStyle"
+                      @attributes="AdditionalAttributes"
+                      @ref="RootElement"
+                      placeholder=" "
+                      rows="@Rows"
+                      maxlength="@MaxLength"
+                      @bind="CurrentValueAsString"
+                      @bind:event="onchange"
+                      aria-required="@(Required ? "true" : null)"
+                      aria-describedby="@DescribedBy"></textarea>
+        }
+        else
+        {
+            <textarea id="@ElementId"
+                      data-rid="@Context.RuntimeId"
+                      class="@RootClass"
+                      style="@RootStyle"
+                      @attributes="AdditionalAttributes"
+                      @ref="RootElement"
+                      placeholder=" "
+                      rows="@Rows"
+                      maxlength="@MaxLength"
+                      @bind="CurrentValueAsString"
+                      @bind:event="oninput"
+                      aria-required="@(Required ? "true" : null)"
+                      aria-describedby="@DescribedBy"></textarea>
+        }
         @if (ShowCharacterCount)
         {
             <div class="forma-textarea-count">
                 @* Isolated and pinned: an RTL line otherwise renders "5 / 280" as "280 / 5". *@
-                <bdi dir="ltr" aria-hidden="true">@CountText</bdi>
+                <bdi id="@CountValueId" dir="ltr" aria-hidden="true">@CountText</bdi>
                 <span id="@CountId" class="forma-textarea-count-label">@CountLabel</span>
             </div>
         }

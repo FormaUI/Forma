@@ -44,6 +44,18 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["Updating on Change"]</h2>
+        <p class="description">@L["A long text reaches the component as its edit commits: as the field loses the focus, or before a shortcut or a button press runs. The count still follows every keystroke, kept in the browser, so the whole text never travels with each one."]</p>
+        <div class="demo-box">
+            <FormaTextArea @bind-Value="_model.Terms" Label="@L["Terms of Service"]" Rows="8" MaxLength="50000" ShowCharacterCount="true" UpdateOn="TextUpdate.Change" />
+            <div class="demo-row">
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="@(() => _savedTerms = _model.Terms)">@L["Save"]</FormaButton>
+            </div>
+            <p class="demo-note">@L["Saved"]: <code>@_savedTerms</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <p class="description">@L["A disabled field is dimmed, refuses the caret and shows a not-allowed cursor."]</p>
         <div class="demo-box">
@@ -63,6 +75,7 @@
 
 @code {
     private readonly DemoModel _model = new() { Locked = "Signed off by the editor." };
+    private string? _savedTerms;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messages = default!;
 
@@ -95,5 +108,6 @@
         public string? Title { get; set; }
         public string? Body { get; set; }
         public string? Locked { get; set; }
+        public string? Terms { get; set; }
     }
 }

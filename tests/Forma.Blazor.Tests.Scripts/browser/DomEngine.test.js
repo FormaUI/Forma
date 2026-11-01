@@ -62,6 +62,18 @@ describe('DomEngine', () => {
         expect(describeScope(pane).routes.map(route => route.action)).toEqual(['focus.next', 'focus.previous', 'focus.first', 'focus.last']);
     });
 
+    it('attaches a character count the request names', async () => {
+        pane.insertAdjacentHTML('beforeend', '<textarea id="field"></textarea><bdi id="count">0</bdi>');
+        const field = pane.querySelector('#field');
+
+        const isAttached = await attach(runtimeKey, { token: '3', generation: 1, capability: 'text', target: field, options: { output: 'count', maxLength: 10 } });
+        field.value = 'abc';
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+
+        expect(isAttached).toBe(true);
+        expect(pane.querySelector('#count').textContent).toBe('3 / 10');
+    });
+
     it('steps the target from its button with no call to its owner', async () => {
         await attach(runtimeKey, request());
 

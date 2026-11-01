@@ -278,7 +278,12 @@
     "The count floats inside the field's end corner, clear of the resize grip, and reads out as a sentence rather than as glyphs. Without a maximum it simply counts up.": "המונה צף בתוך פינת הסיום של השדה, מרוחק מידית שינוי הגודל, ומוקרא כמשפט ולא כסימנים. ללא מקסימום הוא פשוט סופר כלפי מעלה.",
     "Social post": "פוסט לרשת חברתית",
     "Comment": "תגובה",
-    "Validate": "אמת"
+    "Validate": "אמת",
+    "Updating on Change": "עדכון בשינוי",
+    "A long text reaches the component as its edit commits: as the field loses the focus, or before a shortcut or a button press runs. The count still follows every keystroke, kept in the browser, so the whole text never travels with each one.": "טקסט ארוך מגיע לרכיב כשהעריכה שלו מתאשרת: כשהשדה מאבד את המיקוד, או לפני שקיצור מקלדת או לחיצה על כפתור מופעלים. הספירה ממשיכה לעקוב אחר כל הקשה, בדפדפן, כך שהטקסט המלא לעולם אינו נשלח עם כל הקשה.",
+    "Terms of Service": "תנאי השירות",
+    "Save": "שמור",
+    "Saved": "נשמר"
   },
   "FormaTextBoxPage": {
     "A plain single-line text field: the box every Forma input draws, without the floating label and validation chrome FormaField adds. It needs no surrounding form, which is what makes it the one to reach for in a toolbar, a filter row or a grid cell.": "שדה טקסט פשוט בשורה אחת: המסגרת שכל שדה קלט של Forma מצייר, ללא התווית הצפה ומעטפת האימות ש-FormaField מוסיף. הוא אינו זקוק לטופס עוטף, ובדיוק בשל כך הוא המתאים לסרגל כלים, לשורת סינון או לתא בטבלה.",

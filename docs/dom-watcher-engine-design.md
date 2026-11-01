@@ -425,7 +425,7 @@ Browser.Interop's shared code keeps its foundation at the root and gives each ca
 | Pointer | Pointer capture and release |
 | Files | File previews and the temporary resources they own |
 | Forms | The native state of form controls, such as a checkbox's indeterminate state |
-| Text | Text entry: its selection, reading and clearing it, and autofill |
+| Text | Text entry: its selection, reading and clearing it, autofill, and a running count of its characters kept in the browser |
 | Events | Native and custom event dispatch |
 | Media | Playback |
 | Assets | Modules, scripts, stylesheets and sprites, each loaded once per page |

@@ -70,6 +70,7 @@ it started moving.
 | `Focus` | `WatchAsync`: whether the reader is within the element | `AttachAsync`: where the focus goes inside the element, from Tab wrapping, regions Tab visits first, one roving Tab stop and the element taking the focus when the one holding it goes away, each selectable alone |
 | `Intersection` | `WatchAsync`: whether the element is in view of its root, or of the viewport, grown by a margin | |
 | `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
+| `Text` | | `AttachAsync`: a text field's running count of its characters, shown in an element's text as the reader types, with the most the field accepts after it |
 
 A host registers the bridge the watchers and engines of one circuit share their imports through with
 `AddFormaBrowserServices`, which `AddFormaUI` calls. On Interactive Server, `AddFormaUIServer` also

@@ -276,7 +276,12 @@
     "The count floats inside the field's end corner, clear of the resize grip, and reads out as a sentence rather than as glyphs. Without a maximum it simply counts up.": "El contador flota dentro de la esquina final del campo, sin estorbar al tirador de tamaño, y se anuncia como una frase en lugar de como signos. Sin un máximo, simplemente cuenta hacia arriba.",
     "Social post": "Publicación social",
     "Comment": "Comentario",
-    "Validate": "Validar"
+    "Validate": "Validar",
+    "Updating on Change": "Actualización al Cambiar",
+    "A long text reaches the component as its edit commits: as the field loses the focus, or before a shortcut or a button press runs. The count still follows every keystroke, kept in the browser, so the whole text never travels with each one.": "Un texto largo llega al componente cuando se confirma su edición: cuando el campo pierde el foco, o antes de que se ejecute un atajo o una pulsación de botón. El recuento sigue cada pulsación de tecla, llevado en el navegador, de modo que el texto completo nunca viaja con cada una.",
+    "Terms of Service": "Términos del Servicio",
+    "Save": "Guardar",
+    "Saved": "Guardado"
   },
   "FormaTextBoxPage": {
     "A plain single-line text field: the box every Forma input draws, without the floating label and validation chrome FormaField adds. It needs no surrounding form, which is what makes it the one to reach for in a toolbar, a filter row or a grid cell.": "Un campo de texto sencillo de una sola línea: el recuadro que dibuja todo campo de Forma, sin la etiqueta flotante ni el marco de validación que añade FormaField. No necesita un formulario que lo envuelva, y eso es justo lo que lo hace idóneo para una barra de herramientas, una fila de filtros o una celda de tabla.",

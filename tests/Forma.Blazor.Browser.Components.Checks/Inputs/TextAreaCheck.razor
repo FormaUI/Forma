@@ -1,18 +1,40 @@
 @page "/{Runtime}/text-area"
+@using Forma.Blazor.Components.Interaction
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
 
-@* A text area bound in a form, counting its characters against a limit of 100, its text shown where the check reads it. *@
+@* A text area bound in a form, counting its characters against a limit of 100, its text shown where the check reads it; and a
+   second, taking its text as its edit commits, inside a scope whose shortcut saves beside a button that saves, its text and the
+   text each save read shown where the check reads them. *@
 <EditForm Model="_model">
     <FormaTextArea Id="check" Label="Notes" MaxLength="100" ShowCharacterCount="true" @bind-Value="_model.Notes" />
+    <FormaInputScope Id="scope" Profile="SaveProfile" OnAction="@(_ => Save())">
+        <FormaTextArea Id="committed" Label="Body" MaxLength="100" ShowCharacterCount="true" UpdateOn="TextUpdate.Change" @bind-Value="_model.Body" />
+    </FormaInputScope>
+    <FormaButton Id="save" OnClick="Save">Save</FormaButton>
 </EditForm>
 <output id="result">@_model.Notes</output>
+<output id="body">@_model.Body</output>
+<output id="saved">@_saved</output>
 
 @code {
+    private static readonly InputProfile SaveProfile = new()
+    {
+        InputRoutes = [new InputRoute("check.save", new KeyBinding("s") { Modifiers = new() { Primary = true } })],
+    };
+
     private readonly Entry _model = new();
+    private string? _saved;
 
     [Parameter] public string Runtime { get; set; } = default!;
+
+    private void Save()
+        => _saved = _model.Body;
 
     private sealed class Entry
     {
         public string? Notes { get; set; }
+
+        public string? Body { get; set; }
     }
 }

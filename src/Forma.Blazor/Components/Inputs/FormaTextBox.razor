@@ -2,30 +2,64 @@
 @inherits FormaInputBase<string?>
 
 @{
-    RenderFragment box =
-        @<input id="@ElementId"
-                data-rid="@Context.RuntimeId"
-                class="@RootClass"
-                style="@RootStyle"
-                @attributes="AdditionalAttributes"
-                @ref="RootElement"
-                aria-describedby="@DescribedBy"
-                type="@TypeValue"
-                placeholder="@EffectivePlaceholder"
-                @bind:get="CurrentValueAsString"
-                @bind:set="HandleInput"
-                @bind:event="oninput"
-                disabled="@Disabled"
-                readonly="@ReadOnly"
-                minlength="@Options.MinLength"
-                maxlength="@Options.MaxLength"
-                pattern="@Options.Pattern"
-                inputmode="@InputModeValue"
-                enterkeyhint="@EnterKeyHintValue"
-                autocapitalize="@AutoCapitalizeValue"
-                spellcheck="@SpellCheckValue"
-                autocomplete="@Options.AutoComplete"
-                aria-required="@(Required ? "true" : null)" />;
+    RenderFragment box;
+
+    // The binding names the event literally, and it tells the renderer which attribute the event updates, so typing outpacing a
+    // render is never reverted.
+    if (Options.UpdateOn is TextUpdate.Change)
+    {
+        box =
+            @<input id="@ElementId"
+                    data-rid="@Context.RuntimeId"
+                    class="@RootClass"
+                    style="@RootStyle"
+                    @attributes="AdditionalAttributes"
+                    @ref="RootElement"
+                    aria-describedby="@DescribedBy"
+                    type="@TypeValue"
+                    placeholder="@EffectivePlaceholder"
+                    @bind:get="CurrentValueAsString"
+                    @bind:set="HandleInput"
+                    @bind:event="onchange"
+                    disabled="@Disabled"
+                    readonly="@ReadOnly"
+                    minlength="@Options.MinLength"
+                    maxlength="@Options.MaxLength"
+                    pattern="@Options.Pattern"
+                    inputmode="@InputModeValue"
+                    enterkeyhint="@EnterKeyHintValue"
+                    autocapitalize="@AutoCapitalizeValue"
+                    spellcheck="@SpellCheckValue"
+                    autocomplete="@Options.AutoComplete"
+                    aria-required="@(Required ? "true" : null)" />;
+    }
+    else
+    {
+        box =
+            @<input id="@ElementId"
+                    data-rid="@Context.RuntimeId"
+                    class="@RootClass"
+                    style="@RootStyle"
+                    @attributes="AdditionalAttributes"
+                    @ref="RootElement"
+                    aria-describedby="@DescribedBy"
+                    type="@TypeValue"
+                    placeholder="@EffectivePlaceholder"
+                    @bind:get="CurrentValueAsString"
+                    @bind:set="HandleInput"
+                    @bind:event="oninput"
+                    disabled="@Disabled"
+                    readonly="@ReadOnly"
+                    minlength="@Options.MinLength"
+                    maxlength="@Options.MaxLength"
+                    pattern="@Options.Pattern"
+                    inputmode="@InputModeValue"
+                    enterkeyhint="@EnterKeyHintValue"
+                    autocapitalize="@AutoCapitalizeValue"
+                    spellcheck="@SpellCheckValue"
+                    autocomplete="@Options.AutoComplete"
+                    aria-required="@(Required ? "true" : null)" />;
+    }
 }
 
 @if (HasLabel)

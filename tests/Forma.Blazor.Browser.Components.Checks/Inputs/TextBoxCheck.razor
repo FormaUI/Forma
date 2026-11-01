@@ -1,18 +1,28 @@
 @page "/{Runtime}/text-box"
 
-@* A text box bound in a form, its text shown where the check reads it. *@
+@* A text box bound in a form, its text shown where the check reads it; and a second, taking its text as its edit commits, beside
+   a button that saves, its text and the text the save read shown where the check reads them. *@
 <EditForm Model="_model">
     <FormaTextBox Id="check" Label="Name" @bind-Value="_model.Name" />
+    <FormaTextBox Id="committed" Label="Title" Options="CommittingOptions" @bind-Value="_model.Title" />
+    <FormaButton Id="save" OnClick="@(() => _saved = _model.Title)">Save</FormaButton>
 </EditForm>
 <output id="result">@_model.Name</output>
+<output id="title">@_model.Title</output>
+<output id="saved">@_saved</output>
 
 @code {
+    private static readonly TextBoxOptions CommittingOptions = new() { UpdateOn = TextUpdate.Change };
+
     private readonly Entry _model = new();
+    private string? _saved;
 
     [Parameter] public string Runtime { get; set; } = default!;
 
     private sealed class Entry
     {
         public string? Name { get; set; }
+
+        public string? Title { get; set; }
     }
 }

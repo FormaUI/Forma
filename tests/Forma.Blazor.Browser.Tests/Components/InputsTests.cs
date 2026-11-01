@@ -93,6 +93,24 @@ public sealed partial class InputsTests
 
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_take_the_text_only_as_its_edit_commits_and_save_it_from_a_button_pressed_straight_from_the_box_when_it_updates_on_change(string runtime)
+        {
+            // Arrange — text typed and not yet taken
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-box");
+            await using var _ = context;
+            await page.Locator("#committed").PressSequentiallyAsync("Quarterly");
+            await Assertions.Expect(page.Locator("#title")).ToHaveTextAsync(string.Empty);
+
+            // Act
+            await page.Locator("#save").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#saved")).ToHaveTextAsync("Quarterly");
+            await Assertions.Expect(page.Locator("#title")).ToHaveTextAsync("Quarterly");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_hold_its_label_above_a_value_the_browser_fills_until_the_browser_clears_it(string runtime)
         {
             // Arrange
@@ -124,6 +142,61 @@ public sealed partial class InputsTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("First line\nSecond line");
             await Assertions.Expect(textArea).ToHaveValueAsync("First line\nSecond line");
             await Assertions.Expect(page.Locator("#check-count")).ToHaveTextAsync("22 of 100 characters");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_count_the_text_as_it_is_typed_and_take_it_only_as_its_edit_commits_when_it_updates_on_change(string runtime)
+        {
+            // Arrange — text typed, counted in the browser and not yet taken
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
+            await using var _ = context;
+            var textArea = page.Locator("#committed");
+            await textArea.PressSequentiallyAsync("Draft");
+            await Assertions.Expect(page.Locator("#committed-count-value")).ToHaveTextAsync("5 / 100");
+            await Assertions.Expect(page.Locator("#body")).ToHaveTextAsync(string.Empty);
+
+            // Act
+            await textArea.PressAsync("Tab");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#body")).ToHaveTextAsync("Draft");
+            await Assertions.Expect(page.Locator("#committed-count")).ToHaveTextAsync("5 of 100 characters");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_save_the_text_as_typed_from_a_button_pressed_straight_from_the_area_when_it_updates_on_change(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
+            await using var _ = context;
+            await page.Locator("#committed").PressSequentiallyAsync("Pressed");
+
+            // Act
+            await page.Locator("#save").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#saved")).ToHaveTextAsync("Pressed");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_save_the_text_as_typed_from_a_shortcut_pressed_in_the_area_when_it_updates_on_change(string runtime)
+        {
+            // Arrange — the area holding the focus and the text typed, the scope's shortcut routed
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
+            await using var _ = context;
+            await ComponentChecks.WaitForInputScopeAsync(page, "#scope");
+            var textArea = page.Locator("#committed");
+            await textArea.PressSequentiallyAsync("Shortcut");
+
+            // Act
+            await textArea.PressAsync("Control+s");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#saved")).ToHaveTextAsync("Shortcut");
+            await Assertions.Expect(textArea).ToBeFocusedAsync();
         }
     }
 

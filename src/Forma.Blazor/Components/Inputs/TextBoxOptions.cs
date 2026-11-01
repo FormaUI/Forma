@@ -30,6 +30,9 @@ public sealed record TextBoxOptions
     /// <summary>The autofill hint given to the browser, such as <c>email</c> or <c>new-password</c>.</summary>
     public string? AutoComplete { get; init; }
 
+    /// <summary>When the value reaches the box, as each character is typed or as the box commits its edit.</summary>
+    public TextUpdate UpdateOn { get; init; }
+
     /// <summary>Plain text with no bounds or typing hints.</summary>
     public static TextBoxOptions Default { get; } = new();
 

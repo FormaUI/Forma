@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Browser.Interop.Focus
 @code {
     public sealed class Component
     {
@@ -401,6 +402,119 @@
             // Act
             var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTextArea @bind-Value="model.Text" Label="Notes" Rows="0" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
+
+        [Fact]
+        public void Should_take_its_value_as_each_character_is_typed_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Input("typed");
+
+            // Assert
+            Assert.Equal("typed", model.Text);
+        }
+
+        [Fact]
+        public void Should_send_nothing_as_each_character_is_typed_when_it_updates_on_change()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" UpdateOn="TextUpdate.Change" />
+            </FakeFormHost>);
+
+            // Act
+            var typing = () => cut.Find("textarea").Input("typed");
+
+            // Assert
+            Assert.Throws<MissingEventHandlerException>(typing);
+        }
+
+        [Fact]
+        public void Should_take_its_value_and_tell_the_form_as_its_edit_commits_when_it_updates_on_change()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var changedFields = new List<string>();
+            editContext.OnFieldChanged += (_, args) => changedFields.Add(args.FieldIdentifier.FieldName);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" UpdateOn="TextUpdate.Change" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Change("typed");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("typed", model.Text),
+                () => Assert.Equal([nameof(FakeModel.Text)], changedFields));
+        }
+
+        [Fact]
+        public void Should_count_in_the_browser_as_the_reader_types_when_it_updates_on_change()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea Id="notes" @bind-Value="model.Text" Label="Notes" UpdateOn="TextUpdate.Change" ShowCharacterCount="true" MaxLength="280" />
+            </FakeFormHost>);
+
+            // Assert
+            var attach = Assert.Single(probe.Interactions, attach => DomProbe<FocusState>.GetRequestField(attach, "capability") is "text");
+            Assert.Multiple(
+                () => Assert.Equal("notes-count-value", DomProbe<FocusState>.GetOption(attach, "output")),
+                () => Assert.Equal(280, DomProbe<FocusState>.GetOption(attach, "maxLength")),
+                () => Assert.Equal("notes-count-value", cut.Find(".forma-textarea-count bdi").Id));
+        }
+
+        [Fact]
+        public void Should_count_on_the_server_when_it_updates_as_each_character_is_typed()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" ShowCharacterCount="true" MaxLength="280" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Input("Hello");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.DoesNotContain(probe.Interactions, attach => DomProbe<FocusState>.GetRequestField(attach, "capability") is "text"),
+                () => Assert.Equal("5 / 280", cut.Find(".forma-textarea-count bdi").TextContent));
+        }
+
+        [Fact]
+        public void Should_refuse_an_update_it_does_not_know()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" UpdateOn="(TextUpdate)7" />
             </FakeFormHost>);
 
             // Assert
