@@ -169,11 +169,13 @@ jobs:
         with:
           global-json-file: global.json
 
-      # Apple's workloads build with the newest Xcode the image carries, which a pinned SDK's workload asks for.
+      # Apple's workloads build with the Xcode their release asks for, which for a preview of .NET is a preview of Xcode,
+      # so the newest the image carries is chosen, a beta included, and the run names every one it had to choose from.
       - name: Select the newest Xcode
         if: steps.filter.outputs.code == 'true' && runner.os == 'macOS'
         run: |
-          xcode=$(ls -d /Applications/Xcode_*.app | grep -v -i beta | sort -V | tail -1)
+          ls -d /Applications/Xcode*.app
+          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$xcode"
           xcodebuild -version
 
