@@ -40,6 +40,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - Every component's checks run in Blazor Hybrid's web view too, as the `webview` runtime, each check page in a native window of the WebView check host, from [the check pages' own library](docs/repository-structure.md#tests) the components host shares.
 
+- The static check: every check page renders statically too, as the `static` runtime, and is held to show its state, raise no error, show nothing waiting on a script and offer no enabled control whose action needs interactivity.
+
 **Breaking:**
 
 - `AddFormaUI` registers no `IJSRuntime`, `IStringLocaleFactory`, `IIconProvider` or `IEmojiProvider` of its own: a host that resolves one from the container registers it, as `AddJsonLocalization`, `AddFormaGlyphServices` and `AddFormaEmojiServices` do, and its logging is the platform's `LoggerFactory`, with the host's providers, where it was a null factory.

@@ -2,13 +2,13 @@
 
 ## Current state
 
-**Forma has 65 implemented components and 8 in progress. It runs under Interactive Server, WebAssembly and Auto, every call a component makes to a script and every call back checked in each and in Blazor Hybrid's web view, and the rest of Blazor Hybrid and every component's static rendering are in progress.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
+**Forma has 65 implemented components and 8 in progress. It runs under Interactive Server, WebAssembly and Auto, every call a component makes to a script and every call back checked in each and in Blazor Hybrid's web view, and every component rendering its state statically; the rest of Blazor Hybrid is in progress.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
 
 | Measure | Now |
 | --- | --- |
 | Components | 65 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview`, packed locally and unpublished |
-| Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; Blazor Hybrid and every component's static rendering in progress, as [the WebView plan](webview-implementation-plan.md) sets out |
+| Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid in progress, as [the WebView plan](webview-implementation-plan.md) sets out |
 
 The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto. It passes locally on Windows and in CI on Linux and Windows.
 
@@ -121,7 +121,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Blazor Hybrid and every render mode
 
-[Its plan](webview-implementation-plan.md) carries out [the WebView design](webview-design.md) and the culture design's [Blazor Hybrid](culture-design.md#blazor-hybrid) section, on WebView2 in WPF, Windows Forms and MAUI on Windows, with one culture for the application across its web views, and makes every render mode a gate every component passes, static rendering among them. The design landed with step 1, and the probe of two web views with step 2, establishing the hooks the rest rests on, registration in either order with step 3, the WebView halves with step 4, one culture across an application's web views checked in WPF, a host's strings with step 5, and every component checked in a web view with step 6; static rendering comes next, then each host's integration, render modes in the gate and the host's setup.
+[Its plan](webview-implementation-plan.md) carries out [the WebView design](webview-design.md) and the culture design's [Blazor Hybrid](culture-design.md#blazor-hybrid) section, on WebView2 in WPF, Windows Forms and MAUI on Windows, with one culture for the application across its web views, and makes every render mode a gate every component passes, static rendering among them. The design landed with step 1, and the probe of two web views with step 2, establishing the hooks the rest rests on, registration in either order with step 3, the WebView halves with step 4, one culture across an application's web views checked in WPF, a host's strings with step 5, every component checked in a web view with step 6, and every component's static rendering with step 7; each host's integration comes next, then render modes in the gate and the host's setup.
 
 <a id="the-dom-watcher-and-engine"></a>
 

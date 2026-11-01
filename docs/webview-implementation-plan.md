@@ -122,9 +122,34 @@ gated as it says.
      service disposed cleanly. The check host reports it and closes the native window regardless; step 8's
      WPF example host and step 10's README close it the same way.
    - The check host's page linked no scoped stylesheet of its own, which a host's page does; it does now.
-7. **Static rendering.** Every check page renders statically, as the `static` runtime, under a check that
+7. **Static rendering.** ✅ Every check page renders statically, as the `static` runtime, under a check that
    it shows its state, raises no error and offers no enabled control whose action needs interactivity;
-   each component it finds failing is fixed. Gate: the static check over every check page.
+   each component it finds failing is fixed. Gate: the static check over every check page. Findings:
+   - The check reads a page's controls as the foundations' [render modes](component-foundations-design.md#render-modes)
+     rule does: an enabled button other than a form's submit, and an element of a widget's role a reader can
+     reach that isn't marked disabled, need interactivity; a native form control keeps what the browser
+     gives it, and what the page doesn't show, or marks as its own scaffolding, is no component's. It also
+     holds that a page shows nothing waiting on a script that never runs, a spinner or a symbol reference
+     nothing in the document resolves.
+   - Twelve components left such a control enabled, each of which now renders it disabled until the page is
+     interactive, as the button does: the calendar's days, the tabs, the pagination's current step, the
+     triggers of the date box, the date range picker, the select and the multi-select, the emoji picker's
+     tabs and emojis, the sortable list's handles, the video player's play control, the explorer's folders,
+     items, selection marks and group headings in each of its views, the data tree's nodes, and the
+     checkbox where it carries a click action. A Server or Auto page's prerender is a static render, so
+     these controls show disabled until its runtime starts, as the button already did.
+   - A disabled control keeps the look that carries its state and loses its pointer and its hover: the
+     calendar's fade had marked a day outside the range by its being disabled, and now marks it by a class
+     of its own; the pagination's current step and a pressed toggle keep their fill.
+   - Three waited on a script that never runs: the data tree asked for its roots after it rendered, and asks
+     while it renders under a static render; the emoji picker drew a category's cells once a script had
+     loaded their sheets, and draws them all; and an emoji's artwork named a symbol only a script adopts
+     into the document, and names its sheet's address, which the browser resolves within the page's origin,
+     an emoji whose sheet another origin serves drawing the reader's font.
+   - The components host named no icon, so every page asked its server for one it lacks, and the video
+     player's check played a file no host served; the host names an icon of its own, and the file is one of
+     the check pages' library's. The command area's check page held buttons with no command, which a host's
+     page never does; they carry one now.
 8. **Each host's integration.** Example hosts for WPF, Windows Forms and MAUI on Windows, set up from the
    packed packages as the README sets them up, published and started, each checked for its registration in
    either order, its startup, its published assets, a host string from its embedded locale files in the

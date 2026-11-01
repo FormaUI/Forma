@@ -4,7 +4,7 @@
 <EditForm Model="_model">
     <FormaDateTimePicker TValue="DateTime" Id="check" @bind-Value="_model.Start" Label="Start" />
 </EditForm>
-<FormaButton Id="outside">Outside</FormaButton>
+<button id="outside" type="button" data-check-scaffold>Outside</button>
 <output id="result">@(_model.Start.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture))</output>
 
 @code {

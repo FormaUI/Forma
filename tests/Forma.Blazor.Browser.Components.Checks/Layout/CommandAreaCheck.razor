@@ -1,22 +1,24 @@
 @page "/{Runtime}/command-area"
 
-@* A command area stacking one command bar, to which a button adds a second. *@
+@* A command area stacking one command bar, to which a button adds a second, the last command run shown where the check reads it. *@
 <FormaCommandArea Id="command-area">
     <FormaCommandBar role="toolbar" aria-label="Clipboard">
-        <FormaButton>Copy</FormaButton>
+        <FormaButton OnClick="@(() => _command = "Copy")">Copy</FormaButton>
     </FormaCommandBar>
     @if (_hasFormatting)
     {
         <FormaCommandBar role="toolbar" aria-label="Formatting">
-            <FormaButton>Bold</FormaButton>
+            <FormaButton OnClick="@(() => _command = "Bold")">Bold</FormaButton>
         </FormaCommandBar>
     }
 </FormaCommandArea>
 <FormaButton Id="add" OnClick="@(() => _hasFormatting = true)">Add Formatting</FormaButton>
 <output id="result">@_hasFormatting</output>
+<output id="command">@_command</output>
 
 @code {
     private bool _hasFormatting;
+    private string? _command;
 
     [Parameter] public string Runtime { get; set; } = default!;
 }
