@@ -92,6 +92,11 @@ jobs:
               }
           }
 
+      # The MAUI example host builds against the maui-windows workload, which the SDK set up above comes without.
+      - name: Install the MAUI workload
+        if: steps.filter.outputs.code == 'true' && runner.os == 'Windows'
+        run: dotnet workload install maui-windows
+
       - name: Run the gate
         if: steps.filter.outputs.code == 'true'
         env:

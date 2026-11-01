@@ -4,8 +4,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 
-/// <summary>The WebView check host, started as an application of its own with WebView2's DevTools port open, and the browser connection the check drives its web views through.</summary>
-/// <remarks>The gate publishes the check host on Windows, the one platform WebView2 runs on, and names its folder in <c>FORMA_BROWSER_WEBVIEW</c>; each check starts an application of its own, so no check sees another's culture, and every web view shares one browser process and one data folder of the check's.</remarks>
+/// <summary>A Blazor Hybrid application, the WebView check host or an example host, started with WebView2's DevTools port open, and the browser connection the check drives its web views through.</summary>
+/// <remarks>The gate publishes the check host and the example hosts on Windows, the one platform WebView2 runs on, and names their folders in <c>FORMA_BROWSER_WEBVIEW</c> and <c>FORMA_BROWSER_EXAMPLES</c>; each check starts an application of its own, so no check sees another's culture, and every web view shares one browser process and one data folder of the check's.</remarks>
 public sealed class WebViewApplication : IAsyncDisposable
 {
     private readonly Process _process;
@@ -23,7 +23,15 @@ public sealed class WebViewApplication : IAsyncDisposable
         Folder = folder;
     }
 
-    /// <summary>The last of what the check host wrote, its log among it, a line apiece.</summary>
+    /// <summary>The application's process.</summary>
+    public int ProcessId
+        => _process.Id;
+
+    /// <summary>Whether the application's process has exited.</summary>
+    public bool HasExited
+        => _process.HasExited;
+
+    /// <summary>The last of what the application wrote, its log among it, a line apiece.</summary>
     /// <param name="count">How many lines to give at most.</param>
     /// <returns>The lines, the newest last.</returns>
     public string GetOutput(int count)
@@ -32,17 +40,25 @@ public sealed class WebViewApplication : IAsyncDisposable
     /// <summary>The browser every web view is a page of.</summary>
     public IBrowser Browser { get; }
 
-    /// <summary>The folder the check host was published to.</summary>
+    /// <summary>The folder the application was published to.</summary>
     public string Folder { get; }
 
     /// <summary>Starts the check host, skipping the check where WebView2 can't run.</summary>
     /// <param name="environment">The environment variables the check host starts with beside its own, by name.</param>
     /// <returns>The application, its first web view <c>A</c> opening.</returns>
-    public static async Task<WebViewApplication> StartAsync(IReadOnlyDictionary<string, string>? environment = null)
+    public static Task<WebViewApplication> StartAsync(IReadOnlyDictionary<string, string>? environment = null)
+        => StartAsync(Environment.GetEnvironmentVariable("FORMA_BROWSER_WEBVIEW") ?? Path.Combine(BrowserHost.FindRepositoryRoot(), "artifacts", "browser", "webview"), "Forma.Blazor.Browser.WebView", environment);
+
+    /// <summary>Starts the application <paramref name="name"/> names from its publish in <paramref name="folder"/>, skipping the check where WebView2 can't run.</summary>
+    /// <param name="folder">The folder the application was published to.</param>
+    /// <param name="name">The application's name, its executable's without the extension.</param>
+    /// <param name="environment">The environment variables the application starts with beside its own, by name.</param>
+    /// <returns>The application, its first web view opening.</returns>
+    public static async Task<WebViewApplication> StartAsync(string folder, string name, IReadOnlyDictionary<string, string>? environment = null)
     {
         Assert.SkipUnless(OperatingSystem.IsWindows(), "WebView2 runs on Windows alone, so the web view's checks run in the Windows gate.");
 
-        var folder = Path.GetFullPath(Environment.GetEnvironmentVariable("FORMA_BROWSER_WEBVIEW") ?? Path.Combine(BrowserHost.FindRepositoryRoot(), "artifacts", "browser", "webview"));
+        folder = Path.GetFullPath(folder);
 
         if (!Directory.Exists(folder))
         {
@@ -51,7 +67,7 @@ public sealed class WebViewApplication : IAsyncDisposable
 
         var port = BrowserHost.GetFreePort();
         var dataFolder = Directory.CreateTempSubdirectory("forma-webview-").FullName;
-        var start = new ProcessStartInfo(Path.Combine(folder, "Forma.Blazor.Browser.WebView.exe"))
+        var start = new ProcessStartInfo(Path.Combine(folder, $"{name}.exe"))
         {
             WorkingDirectory = folder,
             UseShellExecute = false,
@@ -61,9 +77,9 @@ public sealed class WebViewApplication : IAsyncDisposable
         start.Environment["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = $"--remote-debugging-port={port}";
         start.Environment["WEBVIEW2_USER_DATA_FOLDER"] = dataFolder;
 
-        foreach (var (name, value) in environment ?? new Dictionary<string, string>())
+        foreach (var (variable, value) in environment ?? new Dictionary<string, string>())
         {
-            start.Environment[name] = value;
+            start.Environment[variable] = value;
         }
 
         // What the host writes, its WebView2 runtime and each web view's initialization among it, read as it writes.
@@ -76,7 +92,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         {
             process.Dispose();
 
-            throw new InvalidOperationException("The WebView check host did not start.");
+            throw new InvalidOperationException($"{name} did not start.");
         }
 
         process.BeginOutputReadLine();
@@ -86,7 +102,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         try
         {
             var endpoint = new Uri($"http://127.0.0.1:{port}/");
-            await WaitForDevToolsAsync(process, endpoint, output, dataFolder).ConfigureAwait(false);
+            await WaitForDevToolsAsync(name, process, endpoint, output, dataFolder).ConfigureAwait(false);
             var browser = await playwright.Chromium.ConnectOverCDPAsync(endpoint.ToString()).ConfigureAwait(false);
 
             return new WebViewApplication(process, playwright, browser, dataFolder, folder, output);
@@ -134,10 +150,53 @@ public sealed class WebViewApplication : IAsyncDisposable
         throw new TimeoutException($"No web view named {name} rendered within 30 seconds.");
     }
 
+    /// <summary>Finds the page of a web view other than <paramref name="known"/>, once <paramref name="runtime"/> on it reads that it renders interactively.</summary>
+    /// <param name="known">The web views' pages already found.</param>
+    /// <param name="runtime">The selector of the element the page shows its runtime in.</param>
+    /// <returns>The web view's page.</returns>
+    public async Task<IPage> GetOtherWebViewAsync(IReadOnlyCollection<IPage> known, string runtime)
+    {
+        ArgumentNullException.ThrowIfNull(known);
+
+        var deadline = DateTime.UtcNow.AddMinutes(1);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            // A snapshot, since a web view opening meanwhile adds its page to these lists.
+            foreach (var page in Browser.Contexts.ToArray().SelectMany(context => context.Pages.ToArray()).Where(page => !known.Contains(page)))
+            {
+                try
+                {
+                    if (await page.EvaluateAsync<string?>("selector => document.querySelector(selector)?.textContent ?? null", runtime).ConfigureAwait(false) == "WebView True")
+                    {
+                        return page;
+                    }
+                }
+                catch (PlaywrightException)
+                {
+                    // A page still loading, or one that closed meanwhile; the next pass asks again.
+                }
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100)).ConfigureAwait(false);
+        }
+
+        throw new TimeoutException($"No other web view rendered interactively within a minute.{Describe(_output)}");
+    }
+
+    /// <summary>Waits a minute at most for the application's process to exit.</summary>
+    /// <returns>A task that completes once it exited.</returns>
+    public Task WaitForExitAsync()
+        => _process.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(1));
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await Browser.CloseAsync().ConfigureAwait(false);
+        if (Browser.IsConnected)
+        {
+            await Browser.CloseAsync().ConfigureAwait(false);
+        }
+
         _playwright.Dispose();
 
         if (!_process.HasExited)
@@ -191,7 +250,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         return commandLine.Length == 0 ? " WebView2 started no browser process for its data folder." : $" WebView2's browser process started as:{Environment.NewLine}{commandLine.Trim()}";
     }
 
-    private static async Task WaitForDevToolsAsync(Process process, Uri endpoint, ConcurrentQueue<string> output, string dataFolder)
+    private static async Task WaitForDevToolsAsync(string name, Process process, Uri endpoint, ConcurrentQueue<string> output, string dataFolder)
     {
         using var client = new HttpClient();
         var deadline = DateTime.UtcNow.AddMinutes(1);
@@ -200,7 +259,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         {
             if (process.HasExited)
             {
-                throw new InvalidOperationException($"The WebView check host exited with code {process.ExitCode} before its web view opened.{Describe(output)}");
+                throw new InvalidOperationException($"{name} exited with code {process.ExitCode} before its web view opened.{Describe(output)}");
             }
 
             try
@@ -220,6 +279,6 @@ public sealed class WebViewApplication : IAsyncDisposable
             await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
         }
 
-        throw new TimeoutException($"The WebView check host's DevTools at {endpoint} did not answer within a minute.{Describe(output)}{await DescribeBrowserAsync(dataFolder).ConfigureAwait(false)}");
+        throw new TimeoutException($"{name}'s DevTools at {endpoint} did not answer within a minute.{Describe(output)}{await DescribeBrowserAsync(dataFolder).ConfigureAwait(false)}");
     }
 }

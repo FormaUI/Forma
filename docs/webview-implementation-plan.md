@@ -150,11 +150,26 @@ gated as it says.
      player's check played a file no host served; the host names an icon of its own, and the file is one of
      the check pages' library's. The command area's check page held buttons with no command, which a host's
      page never does; they carry one now.
-8. **Each host's integration.** Example hosts for WPF, Windows Forms and MAUI on Windows, set up from the
+8. **Each host's integration.** ✅ Example hosts for WPF, Windows Forms and MAUI on Windows, set up from the
    packed packages as the README sets them up, published and started, each checked for its registration in
    either order, its startup, its published assets, a host string from its embedded locale files in the
    switched culture, a switch across two web views and the web view of a closed native window's
-   release. Gate: the example hosts' checks.
+   release. Gate: the example hosts' checks. The WPF and MAUI examples register the platform's web view first
+   and the Windows Forms one Forma first; a check closes a native window as its close button does, and also
+   holds each native window's title, which the host refreshes as the culture state notifies, and the culture
+   the application's settings keep from one run to the next. Findings:
+   - WebView2's controls load the Windows SDK projection, so an application targets Windows 10.0.19041 or
+     later: a WPF application on a plain `net11.0-windows` failed to start its web view, and a Windows Forms
+     one never started it.
+   - A Windows Forms application's `Main` has to run on a single-threaded apartment, which top-level
+     statements don't give it: WebView2 failed with `RPC_E_CHANGED_MODE`, and the web view never opened.
+   - MAUI's native window on Windows isn't a Unicode window, so its caption, which the taskbar shows, keeps
+     a title in the system's ANSI code page, a Hebrew one as question marks, while the title bar MAUI draws
+     shows it whole; the check holds each caption to what its window can keep.
+   - WebView2 references its WPF assembly into a Windows Forms application too, whose publish then warns of
+     two versions of `WindowsBase`; the warning is the package's.
+   - The MAUI example needs the `maui-windows` workload, which a machine's elevated shell installs once and
+     CI's Windows run installs itself; the browser step stops at once where it is missing.
 9. **Render modes in the gate.** An inventory check that every component a host places has a check page,
    and that every check page runs in every interactive runtime and statically; the Windows run of CI
    installs what the WebView checks need, the WebView2 runtime where its image lacks one, and the check

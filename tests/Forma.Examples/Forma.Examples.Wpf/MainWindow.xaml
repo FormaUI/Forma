@@ -1,0 +1,13 @@
+<Window x:Class="Forma.Examples.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
+        xmlns:components="clr-namespace:Forma.Examples.Wpf.Components"
+        Width="960" Height="640"
+        Closed="OnClosed">
+    <blazor:BlazorWebView x:Name="WebView" HostPage="wwwroot\index.html">
+        <blazor:BlazorWebView.RootComponents>
+            <blazor:RootComponent Selector="#app" ComponentType="{x:Type components:Home}" />
+        </blazor:BlazorWebView.RootComponents>
+    </blazor:BlazorWebView>
+</Window>

@@ -85,8 +85,9 @@ everywhere.
   check page, every interaction, and every call to a script and back.
 - **Each host's integration.** An example host for WPF, Windows Forms and MAUI on Windows, each set up from
   Forma's packages as the README sets it up, is published and started, and checked for its registration in
-  either order, its startup, its published assets, a switch across two web views, and the release of a web
-  view whose native window closed.
+  either order, its startup, its published assets, a switch across two web views and the native windows'
+  titles the host refreshes, the release of a web view whose native window closed, and the culture the
+  application keeps from one run to the next.
 - **The culture.** Two web views check what the culture design states: a switch in one and an event in the
   other; binding, formatting and a resource looked up in the host's own code; an asynchronous continuation; a
   web view opened after a switch; each document's language and direction; each web view's address following

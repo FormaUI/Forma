@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
+        <UseWindowsForms>true</UseWindowsForms>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
+        <PackageReference Include="formaui-net.Blazor.WebView" />
+        <PackageReference Include="formaui-net.Blazor.Locales.Hebrew" />
+        <PackageReference Include="formaui-net.Framework.Localization.Json" />
+    </ItemGroup>
+
+</Project>

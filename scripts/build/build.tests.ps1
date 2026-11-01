@@ -50,9 +50,11 @@ $cases = @(
     @{ Name = 'a visible browser check says so'; Script = 'browser.ps1'; Arguments = @('-Visible'); Expect = @('-- browser', 'in a visible browser window') }
     if ($IsWindows) {
         @{ Name = 'the browser check publishes the WebView check host on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('and the WebView check host') }
+        @{ Name = 'the browser check publishes the Blazor Hybrid example hosts on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('the Blazor Hybrid ones among them') }
     }
     else {
         @{ Name = 'the browser check leaves the WebView check host out where WebView2 cannot run'; Script = 'browser.ps1'; Arguments = @(); Reject = @('WebView check host') }
+        @{ Name = 'the browser check leaves the Blazor Hybrid example hosts out where WebView2 cannot run'; Script = 'browser.ps1'; Arguments = @(); Reject = @('Blazor Hybrid') }
     }
     @{ Name = 'clean deletes build output and does no more'; Script = 'clean.ps1'; Arguments = @(); Expect = @('-- clean'); Reject = @('-- build') }
     @{ Name = 'a clean says when it reaches past the repository'; Script = 'clean.ps1'; Arguments = @('-All'); Expect = @('-- clean', 'the SDK left in the temp directory') }

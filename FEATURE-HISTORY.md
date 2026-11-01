@@ -42,6 +42,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - The static check: every check page renders statically too, as the `static` runtime, and is held to show its state, raise no error, show nothing waiting on a script and offer no enabled control whose action needs interactivity.
 
+- [The Blazor Hybrid example hosts](tests/Forma.Examples/README.md): a WPF, a Windows Forms and a MAUI application on Windows, built from Forma's packages and driven through WebView2, each checked for its published assets, a switch across two web views and its native windows' titles, a closed native window's release and the culture it keeps from one run to the next.
+
 **Breaking:**
 
 - `AddFormaUI` registers no `IJSRuntime`, `IStringLocaleFactory`, `IIconProvider` or `IEmojiProvider` of its own: a host that resolves one from the container registers it, as `AddJsonLocalization`, `AddFormaGlyphServices` and `AddFormaEmojiServices` do, and its logging is the platform's `LoggerFactory`, with the host's providers, where it was a null factory.

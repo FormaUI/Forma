@@ -4,6 +4,8 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <IsTestProject>false</IsTestProject>
+        <!-- The interop the source generator writes for the Win32 calls that close an application's native window. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>

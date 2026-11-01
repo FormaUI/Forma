@@ -1110,7 +1110,7 @@ function Test-BrowserScript {
 
 <#
 .SYNOPSIS
-Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, and drives them in a browser.
+Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, and drives them.
 
 .DESCRIPTION
 The components are checked in each runtime a Web App renders them in, a published client's download is held to
@@ -1120,8 +1120,9 @@ the budgets were measured in, into folders emptied first, since a publish names 
 an earlier publish's files would be counted beside the new ones. The example hosts are built from the solution's
 packages rather than its projects, as a host outside the repository builds: the solution is packed at a version
 only the examples use, and that version is cleared from the machine's package cache first, so a package an
-earlier run cached never stands in for the one just packed. The WebView check host is published on Windows alone,
-the one platform WebView2 runs on, and its checks report themselves skipped elsewhere. The browser is headless
+earlier run cached never stands in for the one just packed. The WebView check host and the Blazor Hybrid example
+hosts are published on Windows alone, the one platform WebView2 runs on, and their checks report themselves skipped
+elsewhere; the MAUI example needs the maui-windows workload, which a Windows machine installs once. The browser is headless
 unless -Visible asks for a browser window to watch, which also brings the WebView check host's native windows into sight.
 
 .PARAMETER Context
@@ -1162,13 +1163,24 @@ function Test-BrowserCheck {
         $description += ', and the WebView check host'
     }
 
-    $description += ', dotnet pack the solution and publish the example hosts from it, then drive them in a browser'
+    $description += ', dotnet pack the solution and publish the example hosts from it'
+
+    if ($isWebViewPublished) {
+        $description += ', the Blazor Hybrid ones among them'
+    }
+
+    $description += ', then drive them in a browser'
 
     if ($isVisible) {
         $description += ', in a visible browser window'
     }
 
     Invoke-BuildStep -Name 'browser' -Target $checks -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+        # Asked first, since the step publishes for minutes before it reaches the MAUI example host.
+        if ($isWebViewPublished -and -not (dotnet workload list | Select-String -Pattern '^\s*maui-windows\s' -Quiet)) {
+            throw 'The MAUI example host needs the maui-windows workload: dotnet workload install maui-windows'
+        }
+
         $publishes = @(@($hostProject, $hostOutput), @($fullProject, $fullOutput), @($componentsProject, $componentsOutput))
 
         if ($isWebViewPublished) {
@@ -1206,7 +1218,13 @@ function Test-BrowserCheck {
             Where-Object { Test-Path -LiteralPath $_ } |
             ForEach-Object { Remove-Item -LiteralPath $_ -Recurse -Force }
 
-        foreach ($example in @('Coordinated', 'Independent')) {
+        $exampleNames = @('Coordinated', 'Independent')
+
+        if ($isWebViewPublished) {
+            $exampleNames += @('Wpf', 'WindowsForms', 'Maui')
+        }
+
+        foreach ($example in $exampleNames) {
             dotnet publish (Join-Path $examples "Forma.Examples.$example") -c Release -o (Join-Path $examplesOutput $example) "-p:FormaVersion=$version" --nologo -v:q
 
             if ($LASTEXITCODE -ne 0) {
