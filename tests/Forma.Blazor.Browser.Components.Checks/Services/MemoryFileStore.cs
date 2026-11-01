@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Browser.Components.Client.Services;
+namespace Forma.Blazor.Browser.Components.Checks.Services;
 
 using Forma.Framework.Resources;
 

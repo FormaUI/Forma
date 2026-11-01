@@ -3,10 +3,12 @@ namespace Forma.Blazor.Browser.WebView;
 using System.Globalization;
 using System.Windows;
 
+using Forma.Blazor.Browser.Components.Checks;
 using Forma.Framework.Culture.Router;
 using Forma.Framework.Localization.Json;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 
 /// <summary>Starts the WebView check host: its services, shared by every web view, and its first web view.</summary>
@@ -33,22 +35,27 @@ internal static class Program
         var shell = new ProbeShell();
         var services = new ServiceCollection();
 
-        // Forma's registrations resolve the same before the platform's as after them, culture routing's among them.
+        // Forma's registrations resolve the same before the platform's as after them, culture routing's among them; what the checked
+        // components need goes ahead of Forma's, so it takes the place of Forma's defaults.
+        services.AddCheckedComponents();
+
         if (Environment.GetEnvironmentVariable("FORMA_WEBVIEW_ORDER") == "forma-first")
         {
             AddRouting(services);
             services.AddJsonLocalization();
-            services.AddFormaUIWebView();
+            services.AddFormaUIWebView(options => options.InputRouting = CheckServices.InputRouting);
             services.AddWpfBlazorWebView();
         }
         else
         {
             services.AddWpfBlazorWebView();
-            services.AddFormaUIWebView();
+            services.AddFormaUIWebView(options => options.InputRouting = CheckServices.InputRouting);
             AddRouting(services);
             services.AddJsonLocalization();
         }
 
+        // What Forma and the web view log, written for the browser check to report where a web view never opens or never closes.
+        services.AddLogging(logging => logging.AddSimpleConsole(console => console.SingleLine = true).SetMinimumLevel(LogLevel.Debug));
         services.AddSingleton(shell);
         services.AddScoped(provider => new ProbeScope(provider.GetRequiredService<ProbeShell>()));
         shell.Services = services.BuildServiceProvider();

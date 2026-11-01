@@ -1,5 +1,5 @@
 using Forma.Blazor;
-using Forma.Blazor.Browser.Components.Client;
+using Forma.Blazor.Browser.Components.Checks;
 
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

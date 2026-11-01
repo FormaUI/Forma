@@ -8,11 +8,10 @@
 @inject ICultureSwitch CultureSwitch
 @inject IStringLocale<ProbePage> L
 
-@* One web view's page, a culture route page: what renders it and in which culture, a string of the host's own, a select
-   reaching its script, an event, a binding, work begun before a switch, the ways a culture is applied, the application's switch from a component and from
-   native code, the web views it opens and closes, the guards a navigation handler keeps, and what its navigation saw. *@
-<output id="web-view">@WebView</output>
-<output id="renderer">@RendererInfo.Name @RendererInfo.IsInteractive</output>
+@* One web view's page, a culture route page: the culture it renders in, a string of the host's own, a select reaching its script,
+   an event, a binding, work begun before a switch, the ways a culture is applied, the application's switch from a component and from
+   native code, the web views it opens and closes, its own or another by name, the guards a navigation handler keeps, and what its
+   navigation saw. *@
 <output id="segment">@Culture</output>
 <output id="instance">@_instance</output>
 <output id="context">@_context</output>
@@ -49,6 +48,8 @@
 <output id="opened">@_opened</output>
 <button id="close" @onclick="() => Shell.Close(WebView, isDisposing: false)">Close</button>
 <button id="close-disposing" @onclick="() => Shell.Close(WebView, isDisposing: true)">Close and dispose</button>
+<label>Web view <input id="other" @bind="_other" /></label>
+<button id="close-other" @onclick="() => Shell.Close(_other, isDisposing: true)">Close and dispose the web view named</button>
 <output id="released">@_released</output>
 
 <label><input id="guard-work" type="checkbox" @bind="_isGuardingWork" /> Guard work</label>
@@ -78,6 +79,7 @@
     private string? _switched;
     private string _startPath = "/en/probe";
     private string? _opened;
+    private string _other = string.Empty;
     private int _released;
     private bool _isGuardingWork;
     private bool _isRefusing;

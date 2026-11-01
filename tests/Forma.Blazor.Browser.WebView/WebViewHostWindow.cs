@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.WebView.Wpf;
 internal sealed class WebViewHostWindow : Window
 {
     private readonly BlazorWebView _webView;
+    private readonly string _name;
 
     /// <summary>Creates the native window of the web view <paramref name="name"/> names, starting at <paramref name="startPath"/>.</summary>
     /// <param name="shell">The check host's native side, whose services the web view resolves from.</param>
@@ -17,9 +18,12 @@ internal sealed class WebViewHostWindow : Window
     /// <param name="startPath">The address its web view starts at.</param>
     public WebViewHostWindow(ProbeShell shell, string name, string startPath)
     {
+        _name = name;
         Title = $"Forma WebView check {name}";
-        Width = 1000;
-        Height = 700;
+
+        // The web view is the size a check's page has in a browser, so a page lays itself out there as it does in one.
+        SizeToContent = SizeToContent.WidthAndHeight;
+        ResizeMode = ResizeMode.NoResize;
 
         // Out of sight unless the check runs visibly; the web view lays its page out wherever its native window stands.
         if (Environment.GetEnvironmentVariable("FORMA_BROWSER_VISIBLE") is null)
@@ -30,7 +34,7 @@ internal sealed class WebViewHostWindow : Window
             ShowInTaskbar = false;
         }
 
-        _webView = new BlazorWebView { HostPage = "wwwroot/index.html", Services = shell.Services, StartPath = startPath };
+        _webView = new BlazorWebView { HostPage = "wwwroot/index.html", Services = shell.Services, StartPath = startPath, Width = 1280, Height = 720 };
         _webView.BlazorWebViewInitializing += (_, _) => Console.WriteLine($"Web view {name} initializing");
         _webView.BlazorWebViewInitialized += (_, _) => Console.WriteLine($"Web view {name} initialized");
         _webView.RootComponents.Add(new RootComponent
@@ -47,11 +51,30 @@ internal sealed class WebViewHostWindow : Window
     /// <returns>A task that completes once the native window closed.</returns>
     public async Task CloseAsync(bool isDisposing)
     {
-        if (isDisposing)
+        try
         {
-            await _webView.DisposeAsync().ConfigureAwait(true);
+            if (isDisposing)
+            {
+                Console.WriteLine($"Web view {_name} disposing");
+                await _webView.DisposeAsync().ConfigureAwait(true);
+                Console.WriteLine($"Web view {_name} disposed");
+            }
         }
+        catch (Exception exception) when (Report(exception))
+        {
+            // Reported; the native window closes all the same.
+        }
+        finally
+        {
+            Close();
+        }
+    }
 
-        Close();
+    // A disposal that fails is written for the browser check, since the dispatcher the close runs on keeps its task unobserved.
+    private bool Report(Exception exception)
+    {
+        Console.Error.WriteLine($"Web view {_name} failed to dispose: {exception}");
+
+        return true;
     }
 }

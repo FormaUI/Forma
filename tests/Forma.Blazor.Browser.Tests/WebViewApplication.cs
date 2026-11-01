@@ -11,15 +11,23 @@ public sealed class WebViewApplication : IAsyncDisposable
     private readonly Process _process;
     private readonly IPlaywright _playwright;
     private readonly string _dataFolder;
+    private readonly ConcurrentQueue<string> _output;
 
-    private WebViewApplication(Process process, IPlaywright playwright, IBrowser browser, string dataFolder, string folder)
+    private WebViewApplication(Process process, IPlaywright playwright, IBrowser browser, string dataFolder, string folder, ConcurrentQueue<string> output)
     {
         _process = process;
         _playwright = playwright;
         _dataFolder = dataFolder;
+        _output = output;
         Browser = browser;
         Folder = folder;
     }
+
+    /// <summary>The last of what the check host wrote, its log among it, a line apiece.</summary>
+    /// <param name="count">How many lines to give at most.</param>
+    /// <returns>The lines, the newest last.</returns>
+    public string GetOutput(int count)
+        => string.Join(Environment.NewLine, _output.TakeLast(count));
 
     /// <summary>The browser every web view is a page of.</summary>
     public IBrowser Browser { get; }
@@ -81,7 +89,7 @@ public sealed class WebViewApplication : IAsyncDisposable
             await WaitForDevToolsAsync(process, endpoint, output).ConfigureAwait(false);
             var browser = await playwright.Chromium.ConnectOverCDPAsync(endpoint.ToString()).ConfigureAwait(false);
 
-            return new WebViewApplication(process, playwright, browser, dataFolder, folder);
+            return new WebViewApplication(process, playwright, browser, dataFolder, folder, output);
         }
         catch
         {
@@ -109,7 +117,7 @@ public sealed class WebViewApplication : IAsyncDisposable
                 {
                     if (await page.EvaluateAsync<string?>("() => document.querySelector('#web-view')?.textContent ?? null").ConfigureAwait(false) == name)
                     {
-                        await Assertions.Expect(page.Locator("#renderer")).ToHaveTextAsync("WebView True").ConfigureAwait(false);
+                        await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync("WebView True").ConfigureAwait(false);
 
                         return page;
                     }

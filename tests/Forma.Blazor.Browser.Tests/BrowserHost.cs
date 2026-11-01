@@ -14,6 +14,8 @@ public sealed class BrowserHost : IAsyncLifetime
 {
     private readonly List<Process> _processes = [];
     private readonly HttpClient _client = new();
+    private readonly Lock _webViewLock = new();
+    private Task<WebViewApplication>? _webView;
     private IPlaywright? _playwright;
     private WebApplication? _standalone;
 
@@ -68,6 +70,9 @@ public sealed class BrowserHost : IAsyncLifetime
     /// <summary>The address of the host rendering the recording router under WebAssembly.</summary>
     public Uri NavigationWebAssemblyAddress { get; private set; } = default!;
 
+    /// <summary>One component check's turn in a web view of <see cref="GetWebViewApplicationAsync"/>, which runs one check at a time, since every web view of a WPF application dispatches on its UI thread.</summary>
+    public SemaphoreSlim WebViewTurn { get; } = new(1, 1);
+
     /// <summary>The browser the checks open their pages in.</summary>
     public IBrowser Browser { get; private set; } = default!;
 
@@ -118,9 +123,26 @@ public sealed class BrowserHost : IAsyncLifetime
     public async Task<int> GetDelayedSwitchFailuresAsync(Uri address)
         => int.Parse(await _client.GetStringAsync(new Uri(address, "_check/delayed-failures")).ConfigureAwait(false), System.Globalization.CultureInfo.InvariantCulture);
 
+    /// <summary>The WebView check host the component checks open their pages in under the WebView runtime, started as the first of them asks for it.</summary>
+    /// <returns>The application.</returns>
+    public Task<WebViewApplication> GetWebViewApplicationAsync()
+    {
+        lock (_webViewLock)
+        {
+            return _webView ??= WebViewApplication.StartAsync();
+        }
+    }
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        if (_webView is { IsCompletedSuccessfully: true } webView)
+        {
+            await (await webView.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
+        }
+
+        WebViewTurn.Dispose();
+
         if (Browser is not null)
         {
             await Browser.DisposeAsync().ConfigureAwait(false);

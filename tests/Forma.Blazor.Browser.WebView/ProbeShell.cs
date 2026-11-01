@@ -27,12 +27,12 @@ internal sealed class ProbeShell
     public int Released
         => Volatile.Read(ref _released);
 
-    /// <summary>Opens a native window whose web view starts at <paramref name="startPath"/>, the web view named by the order web views open in, <c>A</c> first.</summary>
+    /// <summary>Opens a native window whose web view starts at <paramref name="startPath"/>, the web view named by the order web views open in, <c>A</c> to <c>Z</c>, then <c>AA</c> on.</summary>
     /// <param name="startPath">The address the web view starts at.</param>
     /// <returns>The web view's name.</returns>
     public string Open(string startPath)
     {
-        var name = ((char)('A' + Interlocked.Increment(ref _webViewCount) - 1)).ToString();
+        var name = GetName(Interlocked.Increment(ref _webViewCount));
         Application.Current.Dispatcher.Invoke(() => Show(name, startPath));
 
         return name;
@@ -122,6 +122,19 @@ internal sealed class ProbeShell
     /// <returns>A task that completes once the switch completed.</returns>
     public Task SwitchFromNativeCodeAsync(CultureInfo culture)
         => Task.Run(() => Services.GetRequiredService<ICultureSwitch>().SwitchAsync(culture));
+
+    // The letters a spreadsheet names its columns by: 1 is A, 26 is Z and 27 is AA.
+    private static string GetName(int number)
+    {
+        var name = string.Empty;
+
+        for (; number > 0; number = (number - 1) / 26)
+        {
+            name = (char)('A' + ((number - 1) % 26)) + name;
+        }
+
+        return name;
+    }
 
     private void Show(string name, string startPath)
     {

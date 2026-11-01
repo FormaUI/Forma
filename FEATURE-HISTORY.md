@@ -35,6 +35,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [The WebView check host](docs/repository-structure.md#tests): a WPF application whose native windows each render the components to a web view, driven by the browser check through WebView2, checking what Blazor Hybrid guarantees of its renderer, a web view's registration, the culture each web view's events run in, a web view's address replaced and refused, a traversal, and a web view's release.
 
+- Every component's checks run in Blazor Hybrid's web view too, as the `webview` runtime, each check page in a native window of the WebView check host, from [the check pages' own library](docs/repository-structure.md#tests) the components host shares.
+
 **Breaking:**
 
 - `AddFormaUI` registers no `IJSRuntime`, `IStringLocaleFactory`, `IIconProvider` or `IEmojiProvider` of its own: a host that resolves one from the container registers it, as `AddJsonLocalization`, `AddFormaGlyphServices` and `AddFormaEmojiServices` do, and its logging is the platform's `LoggerFactory`, with the host's providers, where it was a null factory.

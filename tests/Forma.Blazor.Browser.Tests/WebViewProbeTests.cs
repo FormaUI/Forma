@@ -18,7 +18,7 @@ public sealed class WebViewProbeTests
         var webView = await application.GetWebViewAsync("A");
 
         // Assert
-        await Assertions.Expect(webView.Locator("#renderer")).ToHaveTextAsync("WebView True");
+        await Assertions.Expect(webView.Locator("#runtime")).ToHaveTextAsync("WebView True");
         await Assertions.Expect(webView.Locator("#context")).ToHaveTextAsync("DispatcherSynchronizationContext");
     }
 

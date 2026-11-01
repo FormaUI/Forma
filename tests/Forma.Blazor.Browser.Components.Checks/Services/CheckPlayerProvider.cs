@@ -1,14 +1,14 @@
-namespace Forma.Blazor.Browser.Components.Client.Services;
+namespace Forma.Blazor.Browser.Components.Checks.Services;
 
 using Forma.Framework.Media;
 
-/// <summary>A player provider resolving the checks' own <c>check:</c> addresses, standing in for a hosting service: its markup and the script that renders it for <c>check:markup</c>, and a page of the host's own for every other.</summary>
+/// <summary>A player provider resolving the checks' own <c>check:</c> addresses, standing in for a hosting service: its markup and the script that renders it for <c>check:markup</c>, and a page the check pages ship for every other.</summary>
 public sealed class CheckPlayerProvider : IPlayerProvider
 {
     private const string Scheme = "check:";
-    private const string PlayerPage = "_check/ready";
+    private const string PlayerPage = "_content/Forma.Blazor.Browser.Components.Checks/ready.html";
     private const string MarkupSource = "check:markup";
-    private const string MarkupScript = "_check/embed.js";
+    private const string MarkupScript = "_content/Forma.Blazor.Browser.Components.Checks/embed.js";
 
     /// <inheritdoc />
     public ValueTask<PlayerFrame?> GetPlayerFrameAsync(string source, PlayerOptions options, CancellationToken cancellationToken)

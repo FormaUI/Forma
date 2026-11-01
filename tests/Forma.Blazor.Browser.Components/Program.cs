@@ -1,5 +1,5 @@
 using Forma.Blazor;
-using Forma.Blazor.Browser.Components.Client;
+using Forma.Blazor.Browser.Components.Checks;
 using Forma.Blazor.Browser.Components.Components;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-    <!-- The WebView check host: a WPF application whose windows each render Forma's components to a web view, which the browser check drives through WebView2. -->
+    <!-- The WebView check host: a WPF application whose windows each render Forma's components to a web view, its own pages and every component's check page, which the browser check drives through WebView2. -->
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
@@ -12,9 +12,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
         <PackageReference Include="Microsoft.Web.WebView2" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor.Browser.Components.Checks\Forma.Blazor.Browser.Components.Checks.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor.WebView\Forma.Blazor.WebView.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />

@@ -102,9 +102,26 @@ gated as it says.
    of locale files and whose web views show its own string in the switched culture, through the same
    targets file a package imports; an application built from the packed packages shows it with step 8's
    example hosts, which are built from them already.
-6. **The components in a web view.** The check pages move into a Razor class library the components host's
+6. **The components in a web view.** ✅ The check pages move into a Razor class library the components host's
    client and the WebView check host share, and the WPF check host runs every check page as the `webview`
-   runtime, beside the Web App's four. Gate: every component check passes in the web view.
+   runtime, beside the Web App's four. Gate: every component check passes in the web view. A check in the web
+   view opens a native window of its own at its page, through the application's first web view, at the size
+   a check's page has in a browser, and closes it as it ends, one check at a time, since every WPF web view
+   dispatches on the application's UI thread; the web views share one browser context, so a check's end
+   takes back what it routed and granted. Departures and findings:
+   - A web view hands a link opening another site in a new window to the system's browser, and WPF's never
+     raises `UrlLoading` for one, so the check host's page stands in for the system's browser, recording the
+     address once the page handled the click, and the share menu's check reads it there.
+   - The video player's embedded page and its service's script came from the components host's server, which
+     a web view's page has none of; they're files of the check pages' library, which every host serves alike.
+   - Disposing the module wrapper, the input registration and the culture registration waited for a call
+     into script they had started, which a web view whose document is gone never answers; each now leaves
+     the call to finish and releases what it produced then, and the scripting standard says so.
+   - The WPF WebView2 control's own disposal throws, a COM `E_NOINTERFACE` on its controller, when a web view
+     is disposed moments after a keyboard shortcut, on the UI thread, after every component and scoped
+     service disposed cleanly. The check host reports it and closes the native window regardless; step 8's
+     WPF example host and step 10's README close it the same way.
+   - The check host's page linked no scoped stylesheet of its own, which a host's page does; it does now.
 7. **Static rendering.** Every check page renders statically, as the `static` runtime, under a check that
    it shows its state, raises no error and offers no enabled control whose action needs interactivity;
    each component it finds failing is fixed. Gate: the static check over every check page.

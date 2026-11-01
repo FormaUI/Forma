@@ -48,7 +48,6 @@ public sealed class MediaTests
             // Arrange — the service's script, served by the check, counting the times it loads
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "video-player");
             await using var _ = context;
-            await context.RouteAsync("**/_check/embed.js", route => route.FulfillAsync(new() { ContentType = "text/javascript", Body = "window.formaEmbedLoads = (window.formaEmbedLoads ?? 0) + 1;" }));
             var play = page.GetByRole(AriaRole.Button, new() { Name = "Play Post", Exact = true });
 
             // Act

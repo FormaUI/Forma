@@ -63,6 +63,7 @@
     <Project Path="tests\Forma.Blazor.Browser.Host.Client\Forma.Blazor.Browser.Host.Client.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Full\Forma.Blazor.Browser.Full.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Components\Forma.Blazor.Browser.Components.csproj" />
+    <Project Path="tests\Forma.Blazor.Browser.Components.Checks\Forma.Blazor.Browser.Components.Checks.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Components.Client\Forma.Blazor.Browser.Components.Client.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Tests\Forma.Blazor.Browser.Tests.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.WebView\Forma.Blazor.Browser.WebView.csproj" />

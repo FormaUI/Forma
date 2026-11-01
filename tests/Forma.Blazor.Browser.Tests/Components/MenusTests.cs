@@ -133,12 +133,22 @@ public sealed class MenusTests
             await page.Locator("#share").ClickAsync();
             await Assertions.Expect(menu.Locator(".forma-share-menu-primary [role=menuitem][href]")).ToHaveTextAsync(Networks);
 
-            // Act
-            var composer = await page.RunAndWaitForPopupAsync(() => menu.GetByRole(AriaRole.Menuitem, new() { Name = "X", Exact = true }).ClickAsync());
+            var network = menu.GetByRole(AriaRole.Menuitem, new() { Name = "X", Exact = true });
+            const string Composer = "https://x.com/intent/post?url=https%3A%2F%2Fexample.com%2Freports%2Fquarterly&text=Quarterly%20Report";
 
-            // Assert
-            await composer.WaitForLoadStateAsync();
-            Assert.Equal("https://x.com/intent/post?url=https%3A%2F%2Fexample.com%2Freports%2Fquarterly&text=Quarterly%20Report", composer.Url);
+            // Act and Assert — a web view hands another site's address to the system's browser, which the check host records in its place
+            if (runtime == "webview")
+            {
+                await network.ClickAsync();
+                await page.WaitForFunctionAsync("composer => window.formaOpenedExternally.includes(composer)", Composer);
+            }
+            else
+            {
+                var composer = await page.RunAndWaitForPopupAsync(() => network.ClickAsync());
+                await composer.WaitForLoadStateAsync();
+                Assert.Equal(Composer, composer.Url);
+            }
+
             await Assertions.Expect(menu).ToBeHiddenAsync();
         }
 

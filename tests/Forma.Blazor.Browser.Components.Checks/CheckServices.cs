@@ -1,6 +1,6 @@
-namespace Forma.Blazor.Browser.Components.Client;
+namespace Forma.Blazor.Browser.Components.Checks;
 
-using Forma.Blazor.Browser.Components.Client.Services;
+using Forma.Blazor.Browser.Components.Checks.Services;
 using Forma.Blazor.Components.Composer;
 using Forma.Blazor.Components.DataView;
 using Forma.Framework.Emojis.Twemoji;

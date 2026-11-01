@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Browser.Components.Client.Checks.Composer;
+namespace Forma.Blazor.Browser.Components.Checks.Composer;
 
 using System.Globalization;
 
