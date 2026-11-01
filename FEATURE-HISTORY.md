@@ -13,6 +13,7 @@ Until the first release, a month may break what the one before it allowed, and e
 **Components**
 
 - [`FormaPopover`](docs/component-catalog.md#formapopover) opens on its next render where its script failed to open it, rather than staying hidden while it reads as open.
+- [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) focuses an item only while it is open, so a click that closes it as it opens no longer ends a Server circuit.
 
 
 <a id="2026-10"></a>

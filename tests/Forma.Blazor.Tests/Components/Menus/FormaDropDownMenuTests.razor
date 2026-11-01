@@ -449,6 +449,30 @@
         }
 
 
+        [Fact]
+        public async Task Should_focus_no_item_once_a_click_closed_it_while_its_items_were_ordered()
+        {
+            // Arrange — the browser's answer of where the items stand held while an item is clicked, which closes the menu
+            using var ctx = new FormaDropDownMenuTests();
+            var sort = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/DocumentOrder.js").Setup<int[]>("sort", _ => true);
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem>Rename</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem>Delete</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+            cut.FindAll(".forma-dropdown-menu-item")[1].Click();
+
+            // Act
+            await cut.ReleaseAsync(() => sort.SetResult([0, 1]));
+
+            // Assert
+            Assert.Empty(GetFocused(ctx.JSInterop));
+        }
+
         private static List<string> GetFocused(BunitJSInterop js)
             => [.. js.Invocations
                 .Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus")

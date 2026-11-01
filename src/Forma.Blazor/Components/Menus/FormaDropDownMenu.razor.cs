@@ -181,9 +181,11 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         return null;
     }
 
+    // A click can close the menu while the focus waits on the browser, taking its items out of the page, so only an item of
+    // the open menu takes it.
     private async Task FocusAsync(FormaDropDownMenuItem? item)
     {
-        if (item is null)
+        if (item is null || !IsOpen || !_items.Contains(item))
         {
             return;
         }
