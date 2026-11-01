@@ -8,9 +8,9 @@
 | --- | --- |
 | Components | 65 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview`, packed locally and unpublished |
-| Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode, as [the WebView plan](webview-implementation-plan.md) sets out |
+| Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
-The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto. It passes locally on Windows and in CI on Linux and Windows.
+The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto, renders them statically, and drives them in Blazor Hybrid's web view on Windows. It passes locally on Windows and in CI on Linux and Windows.
 
 [The catalog](component-catalog.md) lists the components that exist and [the roadmap](component-roadmap.md) those to build. Each area's design under `docs/` is its contract, and an implementation plan beside a design carries the steps still to build it. [The feature history](../FEATURE-HISTORY.md) records what each month added and what it broke. This file tracks where each feature stands and the work that remains. "Implemented" means built and passing the gate; a feature waiting for the maintainer's approval stays in progress.
 
@@ -21,7 +21,6 @@ The gate is the build with warnings as errors, every test project, the format ch
 | Work | State |
 | --- | --- |
 | [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
-| [Blazor Hybrid and every render mode](#blazor-hybrid-and-every-render-mode) | Steps 7 to 10 open |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
@@ -100,7 +99,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | The server half, `AddFormaUIServer` and `FormaPageHead` | [`Forma.Blazor.Server`](../src/Forma.Blazor.Server/README.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented: every call a component makes to a script and every call back checked under WebAssembly and Auto, each runtime following the page's culture coordinator, an independent client culture and a standalone app's page included, a client reading its host's own strings, and the README's setup an example host for each arrangement | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, Forma's analyzer keeping each type crossing the interop serializable and its generator keeping those types' members with their library | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| Blazor Hybrid, the WebView half | [WebView design](webview-design.md) | In progress: `AddFormaUIWebView`, one culture across an application's web views and a host's own strings embedded in its application implemented, checked in WPF, and every component checked in a web view; [its plan](webview-implementation-plan.md)'s steps 7 to 10 open | — |
+| Blazor Hybrid, the WebView half | [WebView design](webview-design.md) | Implemented on WPF, Windows Forms and MAUI on Windows: `AddFormaUIWebView`, one culture across an application's web views, a host's own strings embedded in its application, every component checked in a web view, and the README's setup an example host for each | [November 2026](../FEATURE-HISTORY.md#2026-11) |
 
 ### Build and verification
 
@@ -116,12 +115,6 @@ Each feature, the document that states it, its state, and the month it first lan
 ## Components to build
 
 `FormaVirtualize` is built and awaits approval, after which it moves into the catalog. The data view, with its views and controls, is finished once two steps of [its plan](data-view-implementation-plan.md) land: the explorer's content moving onto it, and a tree's tab stop returning to the node last focused. Its third open step, the gallery's browsing on it, is built with the gallery and stays open until the gallery starts. [The roadmap](component-roadmap.md) orders what follows: the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
-
-<a id="blazor-hybrid-and-every-render-mode"></a>
-
-## Blazor Hybrid and every render mode
-
-[Its plan](webview-implementation-plan.md) carries out [the WebView design](webview-design.md) and the culture design's [Blazor Hybrid](culture-design.md#blazor-hybrid) section, on WebView2 in WPF, Windows Forms and MAUI on Windows, with one culture for the application across its web views, and makes every render mode a gate every component passes, static rendering among them. The design landed with step 1, and the probe of two web views with step 2, establishing the hooks the rest rests on, registration in either order with step 3, the WebView halves with step 4, one culture across an application's web views checked in WPF, a host's strings with step 5, every component checked in a web view with step 6, every component's static rendering with step 7, each host's integration with step 8, render modes in the gate with step 9, and the host's setup with step 10. Whether a field keeps the room its message takes is [open](#open-decisions).
 
 <a id="the-dom-watcher-and-engine"></a>
 
