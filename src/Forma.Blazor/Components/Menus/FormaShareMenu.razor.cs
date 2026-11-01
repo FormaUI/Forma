@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>A menu of the ways to share one item: the social networks on a scrolling row, the built-in commands below them, and the consumer's own actions behind More.</summary>
 /// <param name="connections">The accounts the user has connected for the targets that share through one.</param>
-public sealed partial class FormaShareMenu(IShareConnections? connections = null) : FormaElementBase
+/// <param name="nativeOperations">The host's native operations, which share and print where its web view can't.</param>
+public sealed partial class FormaShareMenu(IShareConnections? connections = null, INativeOperations? nativeOperations = null) : FormaElementBase
 {
     /// <summary>The item the menu shares.</summary>
     [Parameter] public ShareItem? Item { get; set; }
@@ -73,9 +74,9 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _share = new Share(Context.JS);
+        _share = new Share(Context.JS, nativeOperations);
         _clipboard = new Clipboard(Context.JS);
-        _print = new Print(Context.JS);
+        _print = new Print(Context.JS, nativeOperations);
 
         if (connections is not null)
         {
@@ -120,7 +121,7 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
         => await _clipboard.WriteAsync(Item?.Address ?? string.Empty);
 
     private async Task PrintAsync()
-        => await _print.PrintPageAsync();
+        => await _print.PrintPageAsync(Item?.Name ?? string.Empty);
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

@@ -43,6 +43,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="11.0.0-rc.2.26505.5" />
+        <PackageVersion Include="Microsoft.Maui.Essentials" Version="11.0.0-rc.2.26505.5" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
         <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.6.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />

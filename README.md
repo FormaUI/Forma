@@ -185,8 +185,9 @@ sets out.
 
 ## Blazor Hybrid
 
-A WPF, Windows Forms or MAUI application on Windows renders the components in a `BlazorWebView` in each of its
-native windows, and every web view shows the one culture the application holds. Each host below is an
+A WPF, Windows Forms or MAUI application on Windows, or a MAUI application on Android, iOS or Mac Catalyst, renders
+the components in a `BlazorWebView` in each of its native windows, and every web view shows the one culture the
+application holds. Each host below is an
 [example host](https://github.com/FormaUI/Forma/blob/main/tests/Forma.Examples/README.md) the gate builds from
 Forma's packages and drives through WebView2, with `MyApp` standing for the example's name.
 
@@ -233,14 +234,22 @@ services.AddJsonLocalization();
 services.AddWindowsFormsBlazorWebView();
 ```
 
-A MAUI application registers on its builder, whose one provider every native window already shares:
+A MAUI application registers on its builder, whose one provider every native window already shares, and adds
+[`formaui-net.AddOns.Operations.Maui`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Operations.Maui/README.md),
+through which the platform's share sheet saves a file, takes a document to print and shares an address on
+Android, iOS and Mac Catalyst, whose web views do none of the three:
 
 <!-- example: tests/Forma.Examples/Forma.Examples.Maui/MauiProgram.cs -->
 ```csharp
 builder.Services.AddMauiBlazorWebView();
 builder.Services.AddFormaUIWebView();
+builder.Services.AddFormaMauiOperations();
 builder.Services.AddJsonLocalization();
 ```
+
+The same project builds for each platform, from one `TargetFramework` per build, `net11.0-android`,
+`net11.0-ios`, `net11.0-maccatalyst` or `net11.0-windows10.0.19041.0`, each needing its MAUI workload; Apple's
+platforms build on a Mac.
 
 `AddFormaUIWebView()` registers what `AddFormaUI()` does and the culture's half for an application's web views:
 one culture state, one switch and one coordinator for the application, which applies a switch to the state, to
@@ -615,6 +624,7 @@ Each package's README covers installing, registering and using it.
 | [`formaui-net.Blazor.Composer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Composer/README.md) | `FormaComposer`, a rich text editor assembled from plugins |
 | [`formaui-net.AddOns.Composer.Plugins.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md) | Inserting a stored file into `FormaComposer` through `FormaExplorer` |
 | [`formaui-net.AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md) | Twemoji artwork and catalog for `FormaEmoji` and `FormaEmojiPicker` |
+| [`formaui-net.AddOns.Operations.Maui`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Operations.Maui/README.md) | Saving, printing and sharing through the platform's share sheet in a MAUI application on Android, iOS and Mac Catalyst |
 | [`formaui-net.AddOns.Resources.Markdown`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Markdown/README.md) | Markdown documents rendered as pages in `FormaFileViewer` |
 | [`formaui-net.AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md) | Word, Excel and PowerPoint documents rendered as pages in `FormaFileViewer` |
 | [`formaui-net.AddOns.Share.Targets`](https://github.com/FormaUI/Forma/blob/main/src/Forma.AddOns/Forma.AddOns.Share.Targets/README.md) | Social networks, messengers and cloud drives for `FormaShareMenu` |

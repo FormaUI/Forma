@@ -11,10 +11,10 @@ checked. The one culture an application holds across its web views is the
 
 A component behaves under Blazor Hybrid as it does in a Web App's interactive render modes: it renders,
 binds, reaches its web view through its interop, shows its strings and follows the culture. Forma supports
-Blazor Hybrid on WebView2, in WPF, Windows Forms and MAUI on Windows; each of those hosts is checked for
-its own integration, and every component is checked in a web view. Android, iOS and Mac Catalyst, whose web
-views are Android's WebView and WebKit's `WKWebView`, are outside the scope this design chooses for the
-implementation and its checks.
+Blazor Hybrid on WebView2, in WPF, Windows Forms and MAUI on Windows, and in MAUI on Android, iOS and Mac
+Catalyst, whose web views are Android's WebView and WebKit's `WKWebView`. Those two lack what WebView2 does by
+itself, saving a file, printing and sharing, which the application does natively in their place, as
+[native operations](#native-operations) set out.
 
 ## What an application loads
 
@@ -76,6 +76,26 @@ stylesheets, its own scoped styles and `_framework/blazor.webview.js`, as a stan
 `index.html` does. `FormaPageHead` renders a server's document head and has no place there; each web view's
 document coordinator starts from its registration, as on a standalone app's page.
 
+## Native operations
+
+A component saves a file, prints a document and shares an address through the browser's own paths: a link
+naming a file to download, the browser's printing and its share surface. Android's WebView and `WKWebView`
+take none of them without native help, so the host does each natively where its web view can't:
+
+- **One contract, `INativeOperations`,** in the browser interop assembly beside the operations it stands in
+  for, saves a file and shares an address, answering whether the host took each; a component that saves,
+  prints or shares takes it where the host registers one and goes to the browser's path where none is
+  registered or the host declines.
+- **Printing hands the reader the document as a file.** No mobile web view prints a document from script, so
+  where the host takes files, the document to print, or the page as it stands, is written as a document of
+  its own carrying the page's styles and handed to the host as an HTML file, from which the reader prints it
+  through the platform's own surface.
+- **MAUI's implementation is an add-on,** `Forma.AddOns.Operations.Maui`, an application's opt-in, which hands
+  each file and address to the platform's share sheet through MAUI's own share and file system services on
+  Android, iOS and Mac Catalyst, and declines on Windows, whose web view does all three itself. It builds
+  against MAUI's platform-neutral services, which each platform's build of the application replaces with its
+  own, so the add-on carries no code of a platform's own.
+
 ## Strings in the application
 
 A string is looked up synchronously, and an application packaged for MAUI has no folder beside it to read
@@ -93,6 +113,9 @@ everywhere.
   either order, its startup, its published assets, a switch across two web views and the native windows'
   titles the host refreshes, the release of a web view whose native window closed, and the culture the
   application keeps from one run to the next.
+- **Android, iOS and Mac Catalyst.** The MAUI example host builds from Forma's packages for each, in Release,
+  trimmed as the platform's own build trims it, on the platform's own machine, and the native operations are
+  checked against MAUI's share and file system contracts.
 - **The culture.** Two web views check what the culture design states: a switch in one and an event in the
   other; binding, formatting and a resource looked up in the host's own code; an asynchronous continuation; a
   web view opened after a switch; each document's language and direction; each web view's address following

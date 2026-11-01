@@ -4,18 +4,21 @@ using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.JSInterop;
 
-/// <summary>Hands a subject to the platform's own share surface.</summary>
-public sealed class Share(IJSEnvironment js) : IAsyncDisposable
+/// <summary>Hands a subject to the platform's own share surface, the host's native one where it shares.</summary>
+/// <param name="js">The component's JS environment.</param>
+/// <param name="native">The host's native operations.</param>
+public sealed class Share(IJSEnvironment js, INativeOperations? native = null) : IAsyncDisposable
 {
     private readonly JSModule _module = new(js, "./_content/forma/browser/scripts/operations/Share.js");
 
-    /// <summary>Whether the browser offers a native share surface.</summary>
+    /// <summary>Whether the host or the browser offers a native share surface.</summary>
     public async ValueTask<bool> IsAvailableAsync()
-        => await _module.TryInvokeAsync<bool>("isAvailable");
+        => native is { CanShare: true } || await _module.TryInvokeAsync<bool>("isAvailable");
 
     /// <summary>Offers the subject to the platform's share surface.</summary>
-    public ValueTask<bool> ShareAsync(string title, string url)
-        => _module.TryInvokeVoidAsync("share", title, url);
+    public async ValueTask<bool> ShareAsync(string title, string url)
+        => (native is { CanShare: true } && await native.TryShareAsync(title, url))
+            || await _module.TryInvokeVoidAsync("share", title, url);
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()

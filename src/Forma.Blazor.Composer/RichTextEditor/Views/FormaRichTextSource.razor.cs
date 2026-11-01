@@ -8,7 +8,8 @@ using Forma.Framework.Composer.Plugins;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The rich text document's HTML laid out one block per line, numbered, for reading.</summary>
-public sealed partial class FormaRichTextSource : FormaComponentBase
+/// <param name="nativeOperations">The host's native operations, which save where its web view can't.</param>
+public sealed partial class FormaRichTextSource(INativeOperations? nativeOperations = null) : FormaComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
@@ -37,7 +38,7 @@ public sealed partial class FormaRichTextSource : FormaComponentBase
     protected override void OnInitialized()
     {
         _clipboard = new Clipboard(Context.JS);
-        _download = new Download(Context.JS);
+        _download = new Download(Context.JS, nativeOperations);
 
         _sourcePlugin = ViewPlugin as RichTextSourceViewPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextSource)} requires a cascaded {nameof(RichTextSourceViewPlugin)}.");

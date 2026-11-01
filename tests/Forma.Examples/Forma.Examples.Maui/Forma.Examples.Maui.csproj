@@ -40,6 +40,7 @@
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <PackageReference Include="formaui-net.Blazor.WebView" />
+        <PackageReference Include="formaui-net.AddOns.Operations.Maui" />
         <PackageReference Include="formaui-net.Blazor.Locales.Hebrew" />
         <PackageReference Include="formaui-net.Framework.Localization.Json" />
     </ItemGroup>

@@ -33,6 +33,7 @@
         <PackageReference Include="OfficeIMO.Excel" />
         <PackageReference Include="OfficeIMO.PowerPoint" />
         <PackageReference Include="OfficeIMO.Word" />
+        <PackageReference Include="Microsoft.Maui.Essentials" />
     </ItemGroup>
 
 </Project>

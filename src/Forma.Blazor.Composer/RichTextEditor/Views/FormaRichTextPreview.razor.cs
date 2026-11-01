@@ -9,7 +9,8 @@ using Forma.Framework.Composer.Plugins;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The rich text document laid out as a reader will see it, at the page size and zoom its view plugin holds.</summary>
-public sealed partial class FormaRichTextPreview : FormaComponentBase
+/// <param name="nativeOperations">The host's native operations, which print and save where its web view can't.</param>
+public sealed partial class FormaRichTextPreview(INativeOperations? nativeOperations = null) : FormaComponentBase
 {
     /// <summary>The class the document's container carries, on screen and on paper alike.</summary>
     private const string ProseClass = "forma-prose";
@@ -61,8 +62,8 @@ public sealed partial class FormaRichTextPreview : FormaComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _print = new Print(Context.JS);
-        _download = new Download(Context.JS);
+        _print = new Print(Context.JS, nativeOperations);
+        _download = new Download(Context.JS, nativeOperations);
 
         _previewPlugin = ViewPlugin as RichTextPreviewViewPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextPreview)} requires a cascaded {nameof(RichTextPreviewViewPlugin)}.");

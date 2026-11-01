@@ -21,6 +21,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 | Work | State |
 | --- | --- |
 | [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
+| [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | Driving the components on Android, iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
@@ -100,6 +101,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented: every call a component makes to a script and every call back checked under WebAssembly and Auto, each runtime following the page's culture coordinator, an independent client culture and a standalone app's page included, a client reading its host's own strings, and the README's setup an example host for each arrangement | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, Forma's analyzer keeping each type crossing the interop serializable and its generator keeping those types' members with their library | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Blazor Hybrid, the WebView half | [WebView design](webview-design.md) | Implemented on WPF, Windows Forms and MAUI on Windows: `AddFormaUIWebView`, one culture across an application's web views or [a culture per web view](culture-design.md#a-culture-per-web-view), a host's own strings embedded in its application, every component checked in a web view, and the README's setup an example host for each | [November 2026](../FEATURE-HISTORY.md#2026-11) |
+| Blazor Hybrid on Android, iOS and Mac Catalyst | [WebView design](webview-design.md#native-operations) | In progress: the MAUI example host builds for each from the packages in CI, saving, printing and sharing through the platform's share sheet with `Forma.AddOns.Operations.Maui`; the components are not yet driven there | — |
 
 ### Build and verification
 
@@ -115,6 +117,18 @@ Each feature, the document that states it, its state, and the month it first lan
 ## Components to build
 
 `FormaVirtualize` is built and awaits approval, after which it moves into the catalog. The data view, with its views and controls, is finished once two steps of [its plan](data-view-implementation-plan.md) land: the explorer's content moving onto it, and a tree's tab stop returning to the node last focused. Its third open step, the gallery's browsing on it, is built with the gallery and stays open until the gallery starts. [The roadmap](component-roadmap.md) orders what follows: the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
+
+<a id="blazor-hybrid-on-phones-and-macs"></a>
+
+## Blazor Hybrid on phones and Macs
+
+A MAUI application on Android, iOS and Mac Catalyst builds from Forma's packages, in Release and trimmed, on each
+platform's machine in CI, and saves, prints and shares through the platform's share sheet with
+[`Forma.AddOns.Operations.Maui`](../src/Forma.AddOns/Forma.AddOns.Operations.Maui/README.md), as the WebView design's
+[native operations](webview-design.md#native-operations) set out. What remains is running the components there:
+the component checks driven in a web view on Android's emulator, whose WebView a check reaches through
+Chrome's DevTools protocol, and on iOS's simulator and a Mac, whose `WKWebView` a check reaches through Safari's
+remote inspector, each as a runtime of its own beside the Web App's and WebView2's.
 
 <a id="the-dom-watcher-and-engine"></a>
 
@@ -170,7 +184,6 @@ Each waits for the trigger named beside it before its design or its implementati
 
 | Work | Why it waits | Reopened by |
 | --- | --- | --- |
-| Blazor Hybrid on Android, iOS and Mac Catalyst | Outside the scope chosen for the WebView half's implementation and checks, which start on WebView2; those platforms' web views, Android's WebView and WebKit's `WKWebView`, need checks of their own, a driver reaching them among them, and native support for Forma's download, print and share operations where the web view lacks them | Supporting a mobile host |
 | An `IStringLocalizerFactory` over Forma's localization | Nothing needs one. It is adopted only once it proves its contract: both factory overloads map to Forma's resources; missing resources, fallback, enumeration and `ResourceNotFound` behave consistently; resource selection reads the UI culture and argument formatting the formatting culture; its lifetime captures no one user's state; and it coexists with a host's own factory in both registration orders, since `TryAdd` keeps only a factory registered before it | A host asking for one |
 | Observing the document's child list | No consumer needs it, and its cost is unmeasured | A consumer with a measured cost |
 | Growing the DOM watcher and engine's design beyond its plan | Its plan's steps come first | Those steps landed |

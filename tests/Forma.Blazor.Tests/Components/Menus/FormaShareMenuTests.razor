@@ -1,8 +1,10 @@
 @using AngleSharp.Dom
 @using Bunit.Rendering
+@using Forma.Framework.Browser.Interop.Operations
 @using Forma.Framework.Resources
 @using Forma.Framework.Share
 @using Forma.Framework.Share.Targets
+@using Forma.Tests.Browser
 @using Forma.Tests.Share
 @inherits FormaBunitContext
 @code {
@@ -272,6 +274,44 @@
 
         private static IElement FindPrimaryButton(IRenderedComponent<ContainerFragment> cut, string text)
             => cut.FindAll(".forma-share-menu-primary button").First(button => button.TextContent.Contains(text, StringComparison.Ordinal));
+
+        private static IElement FindMenuItem(IRenderedComponent<ContainerFragment> cut, string text)
+            => cut.FindAll("[role=menuitem]").First(item => item.TextContent.Trim() == text);
+
+        [Fact]
+        public void Should_offer_and_share_through_the_host_s_native_share_surface()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var native = new FakeNativeOperations();
+            ctx.Services.AddSingleton<INativeOperations>(native);
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Act
+            FindMenuItem(cut, "Share").Click();
+
+            // Assert
+            Assert.Equal([(Article.Name, Article.Address!)], native.Shared);
+        }
+
+        [Fact]
+        public void Should_hand_the_host_the_page_to_print_as_a_file_named_for_the_item()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var native = new FakeNativeOperations();
+            ctx.Services.AddSingleton<INativeOperations>(native);
+            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/Print.js").Setup<string>("composePage", _ => true).SetResult("<!DOCTYPE html><html></html>");
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Act
+            FindMenuItem(cut, "Print").Click();
+
+            // Assert
+            Assert.Equal([("Stage 12.html", "<!DOCTYPE html><html></html>", "text/html")], native.Saved);
+        }
 
         [Fact]
         public void Should_offer_to_connect_an_account_target_the_host_reports_unconnected()

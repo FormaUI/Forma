@@ -28,6 +28,7 @@
         <PackageVersion Include="formaui-net.Blazor.Server" Version="$(FormaVersion)" />
         <PackageVersion Include="formaui-net.Blazor.WebAssembly" Version="$(FormaVersion)" />
         <PackageVersion Include="formaui-net.Blazor.WebView" Version="$(FormaVersion)" />
+        <PackageVersion Include="formaui-net.AddOns.Operations.Maui" Version="$(FormaVersion)" />
         <PackageVersion Include="formaui-net.Blazor.Locales.Hebrew" Version="$(FormaVersion)" />
         <PackageVersion Include="formaui-net.Framework.Localization.Json" Version="$(FormaVersion)" />
     </ItemGroup>
