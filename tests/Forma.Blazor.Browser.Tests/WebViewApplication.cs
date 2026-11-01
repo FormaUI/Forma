@@ -3,8 +3,8 @@ namespace Forma.Blazor.Browser.Tests;
 using System.Diagnostics;
 using System.Net;
 
-/// <summary>The WebView check host, started as an application of its own with WebView2's DevTools port open, and the browser connection the check drives its windows through.</summary>
-/// <remarks>The gate publishes the check host on Windows, the one platform WebView2 runs on, and names its folder in <c>FORMA_BROWSER_WEBVIEW</c>; each check starts an application of its own, so no check sees another's culture, and every window's web view shares one browser process and one data folder of the check's.</remarks>
+/// <summary>The WebView check host, started as an application of its own with WebView2's DevTools port open, and the browser connection the check drives its web views through.</summary>
+/// <remarks>The gate publishes the check host on Windows, the one platform WebView2 runs on, and names its folder in <c>FORMA_BROWSER_WEBVIEW</c>; each check starts an application of its own, so no check sees another's culture, and every web view shares one browser process and one data folder of the check's.</remarks>
 public sealed class WebViewApplication : IAsyncDisposable
 {
     private readonly Process _process;
@@ -19,11 +19,11 @@ public sealed class WebViewApplication : IAsyncDisposable
         Browser = browser;
     }
 
-    /// <summary>The browser every window's web view is a page of.</summary>
+    /// <summary>The browser every web view is a page of.</summary>
     public IBrowser Browser { get; }
 
     /// <summary>Starts the check host, skipping the check where WebView2 can't run.</summary>
-    /// <returns>The application, its first window <c>A</c> opening.</returns>
+    /// <returns>The application, its first web view <c>A</c> opening.</returns>
     public static async Task<WebViewApplication> StartAsync()
     {
         Assert.SkipUnless(OperatingSystem.IsWindows(), "WebView2 runs on Windows alone, so the web view's checks run in the Windows gate.");
@@ -66,21 +66,21 @@ public sealed class WebViewApplication : IAsyncDisposable
         }
     }
 
-    /// <summary>Finds the page of the window <paramref name="name"/> names, once its web view renders it interactively.</summary>
-    /// <param name="name">The window's name, <c>A</c> for the first.</param>
-    /// <returns>The window's page.</returns>
-    public async Task<IPage> GetWindowAsync(string name)
+    /// <summary>Finds the page of the web view <paramref name="name"/> names, once it renders interactively.</summary>
+    /// <param name="name">The web view's name, <c>A</c> for the first.</param>
+    /// <returns>The web view's page.</returns>
+    public async Task<IPage> GetWebViewAsync(string name)
     {
         var deadline = DateTime.UtcNow.AddSeconds(30);
 
         while (DateTime.UtcNow < deadline)
         {
-            // A snapshot, since a window opening meanwhile adds its page to these lists.
+            // A snapshot, since a web view opening meanwhile adds its page to these lists.
             foreach (var page in Browser.Contexts.ToArray().SelectMany(context => context.Pages.ToArray()))
             {
                 try
                 {
-                    if (await page.EvaluateAsync<string?>("() => document.querySelector('#window')?.textContent ?? null").ConfigureAwait(false) == name)
+                    if (await page.EvaluateAsync<string?>("() => document.querySelector('#web-view')?.textContent ?? null").ConfigureAwait(false) == name)
                     {
                         await Assertions.Expect(page.Locator("#renderer")).ToHaveTextAsync("WebView True").ConfigureAwait(false);
 
@@ -96,7 +96,7 @@ public sealed class WebViewApplication : IAsyncDisposable
             await Task.Delay(TimeSpan.FromMilliseconds(100)).ConfigureAwait(false);
         }
 
-        throw new TimeoutException($"No window named {name} rendered within 30 seconds.");
+        throw new TimeoutException($"No web view named {name} rendered within 30 seconds.");
     }
 
     /// <inheritdoc />

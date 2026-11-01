@@ -10,45 +10,45 @@ gated as it says.
 
 1. **The design.** ✅ The WebView design and this plan; the culture design's Blazor Hybrid section, with one
    culture for the application, the ambient culture, what Forma updates and what the host refreshes,
-   persistence, and addresses across windows; the component foundations' registrations, which no longer
+   persistence, and addresses across web views; the component foundations' registrations, which no longer
    stand in for a platform's service, and their render modes; and every render mode as a gate in the
    working rules. Gate: the documents agree with one another and with the code they describe.
-2. **The probe.** ✅ `tests/Forma.Blazor.Browser.WebView`, a WPF check host whose windows each render Forma's
+2. **The probe.** ✅ `tests/Forma.Blazor.Browser.WebView`, a WPF check host whose native windows each render Forma's
    components to a `BlazorWebView`, which the browser check starts per check and drives through WebView2's
    DevTools. What it established, each a check of its own:
-   - **The renderer** is `WebView`, interactive, and a WPF window's components run under WPF's
+   - **The renderer** is `WebView`, interactive, and a WPF web view's components run under WPF's
      `DispatcherSynchronizationContext`. A component's script and Forma's stylesheets load from the web view's
      static assets.
-   - **A window's registration.** The coordinator's script initializer is a Web App's `beforeWebStart`, which
-     a web view never runs, so a window's document coordinator starts from the registration its first
+   - **A web view's registration.** The coordinator's script initializer is a Web App's `beforeWebStart`, which
+     a web view never runs, so a web view's document coordinator starts from the registration its first
      component makes as it initializes, interop being available there, as a standalone app's page starts;
      the document takes the registration's language and direction. That start path refuses the address
      policy, which step 4 opens for a web view's in-place routing.
    - **The ambient culture.** The process's default cultures alone never reach a UI thread the platform
      assigned a culture to, as MAUI assigns the device's; cultures set in the dispatcher's captured flow are
-     gone once that flow ends; cultures posted to each window's UI thread through its synchronization
+     gone once that flow ends; cultures posted to each web view's UI thread through its synchronization
      context, with the flow suppressed, reach every later event: its formatting, its binding and the
-     platform's resources. Work begun before such a switch finishes in the culture it captured, and a window
-     opened after it starts in it. Step 4 applies an accepted pair this way.
+     platform's resources. Work begun before such a switch finishes in the culture it captured, and a web
+     view opened after it starts in it. Step 4 applies an accepted pair this way.
    - **Threads.** WPF's web view dispatches its components on the application's dispatcher whatever thread
-     its window runs on, so WPF's web views share the application's UI thread, and one on a window of another
-     thread never renders; Windows Forms dispatches each on its own control's thread, which step 8 checks.
+     its native window runs on, so WPF's web views share the application's UI thread, and one in a native
+     window of another thread never renders; Windows Forms dispatches each on its own control's thread, which step 8 checks.
      The culture design now says so.
-   - **A window's address replaced.** Replacing it through the window's navigation, with
-     `ReplaceHistoryEntry` and the mark as `HistoryEntryState`, runs the window's location-changing handlers,
+   - **A web view's address replaced.** Replacing it through the web view's navigation, with
+     `ReplaceHistoryEntry` and the mark as `HistoryEntryState`, runs the web view's location-changing handlers,
      which read the mark and can prevent it; otherwise the router keeps the page's instance and the user's
      work, and the history gains no entry. A handler receives a target as it was asked for, relative where
      .NET asked relatively.
    - **A traversal and a first landing.** Blazor's location-changed event reports a traversal as
      intercepted, though its location-changing event doesn't, so a traversal is told apart by the document's
-     own history events, `popstate` and the Navigation API's `traverse`; a window's first landing raises no
+     own history events, `popstate` and the Navigation API's `traverse`; a web view's first landing raises no
      location change at all.
-   - **A closed window.** WPF's web view releases its scope only when its host disposes it, never as its
-     window closes, since WPF disposes no control on its own; Windows Forms disposes it with its form. The
-     WebView design now says a WPF host disposes the web view, and that a window never disposed is dropped
+   - **A closed native window.** WPF's web view releases its scope only when its host disposes it, never as its
+     native window closes, since WPF disposes no control on its own; Windows Forms disposes it with its form. The
+     WebView design now says a WPF host disposes the web view, and that a web view never disposed is dropped
      at its first failed delivery.
    - **Known failures,** which step 4 meets: a switch through the application's switch reaching every
-     window's state, and every window's document following it.
+     web view's state, and every web view's document following it.
 3. **Registration in either order.** ✅ The bases resolve the JS runtime and the locale factory where they
    are registered and fall back to their null objects, as `DomBridge`, `InputRouter`, the culture's
    registration and the sprite loader resolve the runtime, through `GetJSRuntime`; every registrar whose
@@ -63,8 +63,8 @@ gated as it says.
 4. **The WebView halves.** `Forma.Framework.Culture.Blazor.WebView` and `Forma.Blazor.WebView`, each with
    the test project named after it: the application's state, coordinator and switch; each web view's
    registration, started by its first component, and its release; the ambient cultures applied to the
-   process and each window's UI thread; the document coordinator following the application's
-   coordinator, replacing a window's address under Forma's mark, and adopting on a traversal and a first
+   process and each web view's UI thread; the document coordinator following the application's
+   coordinator, replacing a web view's address under Forma's mark, and adopting on a traversal and a first
    landing; the mark's reading for a navigation handler; and the startup checks rejecting a cookie policy
    and a full-load switch. Gate: the halves' tests, the coordinator's script tests in its following mode,
    and step 2's checks, each as the design states it.
@@ -79,7 +79,7 @@ gated as it says.
    each component it finds failing is fixed. Gate: the static check over every check page.
 8. **Each host's integration.** Example hosts for WPF, Windows Forms and MAUI on Windows, set up from the
    packed packages as the README sets them up, published and started, each checked for its registration in
-   either order, its startup, its published assets, a switch across two windows and a closed window's
+   either order, its startup, its published assets, a switch across two web views and the web view of a closed native window's
    release. Gate: the example hosts' checks.
 9. **Render modes in the gate.** An inventory check that every component a host places has a check page,
    and that every check page runs in every interactive runtime and statically; the Windows run of CI
@@ -90,5 +90,5 @@ gated as it says.
     features status and the feature history describe the WebView half. Gate: the example hosts match their
     README blocks.
 
-The scope chosen leaves Android, iOS and Mac Catalyst, and a culture per window, outside these steps, as
+The scope chosen leaves Android, iOS and Mac Catalyst, and a culture per web view, outside these steps, as
 the features status records.

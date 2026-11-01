@@ -4,13 +4,13 @@ namespace Forma.Blazor.Browser.WebView;
 /// <param name="shell">The check host's native side.</param>
 internal sealed class ProbeScope(ProbeShell shell) : IAsyncDisposable
 {
-    /// <summary>The window whose web view resolved it.</summary>
-    public string? Window { get; set; }
+    /// <summary>The name of the web view that resolved it.</summary>
+    public string? WebView { get; set; }
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
-        shell.Release(Window);
+        shell.Release(WebView);
 
         return ValueTask.CompletedTask;
     }

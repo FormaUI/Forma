@@ -23,7 +23,7 @@ Until the first release, a month may break what the one before it allowed, and e
 
 **Build and verification**
 
-- [The WebView check host](docs/repository-structure.md#tests): a WPF application whose windows each render the components to a web view, driven by the browser check through WebView2, checking what Blazor Hybrid guarantees of its renderer, a window's registration, the culture each window's events run in, a window's address replaced and refused, a traversal, and a window's release.
+- [The WebView check host](docs/repository-structure.md#tests): a WPF application whose native windows each render the components to a web view, driven by the browser check through WebView2, checking what Blazor Hybrid guarantees of its renderer, a web view's registration, the culture each web view's events run in, a web view's address replaced and refused, a traversal, and a web view's release.
 
 **Breaking:**
 

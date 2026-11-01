@@ -5,7 +5,7 @@ using System.Windows;
 
 using Microsoft.Extensions.DependencyInjection;
 
-/// <summary>Starts the WebView check host: its services, shared by every window's web view, and its first window.</summary>
+/// <summary>Starts the WebView check host: its services, shared by every web view, and its first web view.</summary>
 internal static class Program
 {
     [STAThread]

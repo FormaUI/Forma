@@ -1122,7 +1122,7 @@ packages rather than its projects, as a host outside the repository builds: the 
 only the examples use, and that version is cleared from the machine's package cache first, so a package an
 earlier run cached never stands in for the one just packed. The WebView check host is published on Windows alone,
 the one platform WebView2 runs on, and its checks report themselves skipped elsewhere. The browser is headless
-unless -Visible asks for a window to watch, which also brings the WebView check host's windows into sight.
+unless -Visible asks for a browser window to watch, which also brings the WebView check host's native windows into sight.
 
 .PARAMETER Context
 The build context.
@@ -1165,7 +1165,7 @@ function Test-BrowserCheck {
     $description += ', dotnet pack the solution and publish the example hosts from it, then drive them in a browser'
 
     if ($isVisible) {
-        $description += ', in a visible window'
+        $description += ', in a visible browser window'
     }
 
     Invoke-BuildStep -Name 'browser' -Target $checks -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {

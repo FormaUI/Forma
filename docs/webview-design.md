@@ -1,10 +1,10 @@
 # Forma WebView Design
 
 Blazor Hybrid hosts Blazor components in a native application, which renders them in its own process to a
-web view in each window, and Forma's components run there as they do in a Web App. This design states what
+web view in each of its native windows, and Forma's components run there as they do in a Web App. This design states what
 Forma supports under Blazor Hybrid, what an application loads, how a host registers Forma, how long what it
 registers lives, what the application's page carries, how its strings reach it, and how each host is
-checked. The one culture an application holds across its windows is the
+checked. The one culture an application holds across its web views is the
 [culture design](culture-design.md#blazor-hybrid)'s.
 
 ## The contract
@@ -53,20 +53,20 @@ The culture is the application's, and everything that reaches a document is its 
 | The application | The culture state, the application's culture coordinator and the switch |
 | Each web view | Its JS runtime, its navigation, its document's culture coordinator and its registration with the application's, the input router's scopes, every component's subscriptions, and every other scoped service |
 
-A window takes part once the first Forma component in its web view initializes, which registers the web
-view with the application's coordinator. A web view releases its scope as it is disposed, which releases its
+A web view takes part once the first Forma component in it initializes, which registers the web view with
+the application's coordinator. A web view releases its scope as it is disposed, which releases its
 registration and every subscription its components made, and leaves the culture state and the coordinator
-to the application; a window opened later starts from the state as it then stands. Windows Forms disposes a
-web view with its form, while WPF disposes no control on its own, so a WPF host disposes a window's web view
-as the window closes. A window whose web view went without being disposed is dropped from the coordinator at
-the first delivery to it that fails.
+to the application; a web view opened later starts from the state as it then stands. Windows Forms disposes a
+web view with its form, while WPF disposes no control on its own, so a WPF host disposes a web view as its
+native window closes. A web view that went without being disposed is dropped from the coordinator at the
+first delivery to it that fails.
 
 ## The page
 
 An application's page is its `wwwroot/index.html`, which the web view serves itself: the host links Forma's
 stylesheets, its own scoped styles and `_framework/blazor.webview.js`, as a standalone WebAssembly app's
-`index.html` does. `FormaPageHead` renders a server's document head and has no place there; each window's
-document coordinator starts from its web view's registration, as on a standalone app's page.
+`index.html` does. `FormaPageHead` renders a server's document head and has no place there; each web view's
+document coordinator starts from its registration, as on a standalone app's page.
 
 ## Strings in the application
 
@@ -78,17 +78,17 @@ everywhere.
 ## The checks
 
 - **The components.** The browser check's component suite runs under Blazor Hybrid as a runtime of its own,
-  `webview`, beside the Web App's, in a WPF check host whose windows the check drives through WebView2: every
+  `webview`, beside the Web App's, in a WPF check host whose web views the check drives through WebView2: every
   check page, every interaction, and every call to a script and back.
 - **Each host's integration.** An example host for WPF, Windows Forms and MAUI on Windows, each set up from
   Forma's packages as the README sets it up, is published and started, and checked for its registration in
-  either order, its startup, its published assets, a switch across two windows, and the release of a window
-  closed.
-- **The culture.** Two windows check what the culture design states: a switch in one window and an event in
-  the other; binding, formatting and a resource looked up in the host's own code; an asynchronous
-  continuation; a window opened after a switch; each document's language and direction; each window's
-  address following a switch; Back and Forward; a window's handler refusing to follow; and windows on UI
-  threads of their own.
+  either order, its startup, its published assets, a switch across two web views, and the release of a web
+  view whose native window closed.
+- **The culture.** Two web views check what the culture design states: a switch in one and an event in the
+  other; binding, formatting and a resource looked up in the host's own code; an asynchronous continuation; a
+  web view opened after a switch; each document's language and direction; each web view's address following
+  a switch; Back and Forward; a web view's handler refusing to follow; and native windows on UI threads of
+  their own.
 - **Where they run.** WebView2 runs on Windows, so the WebView checks run in the Windows gate and report
   themselves skipped on another platform.
 
@@ -98,8 +98,8 @@ everywhere.
 | --- | --- | --- |
 | V1 | Which hosts does Forma support under Blazor Hybrid? | WPF, Windows Forms and MAUI on Windows, on WebView2, each checked for its integration; Android, iOS and Mac Catalyst are outside the chosen scope |
 | V2 | What is the half called? | `Forma.Blazor.WebView` with `AddFormaUIWebView`, and the culture's `Forma.Framework.Culture.Blazor.WebView`, after Microsoft's `Microsoft.AspNetCore.Components.WebView` and the renderer's name, as each half takes its render mode's name |
-| V3 | What lives for the application, and what for a web view? | The culture state, the application's coordinator and the switch for the application; the JS runtime, navigation, the document's coordinator, the input router's scopes and every subscription for its web view, released as its window closes |
-| V4 | When does a window take part? | As the first Forma component in its web view initializes |
+| V3 | What lives for the application, and what for a web view? | The culture state, the application's coordinator and the switch for the application; the JS runtime, navigation, the document's coordinator, the input router's scopes and every subscription for its web view, released as the web view is disposed |
+| V4 | When does a web view take part? | As the first Forma component in it initializes |
 | V5 | In which order does a host register? | Either; no Forma registration stands in for a platform's service |
-| V6 | What does a Blazor Hybrid page carry? | The host's `index.html` with Forma's stylesheets; no `FormaPageHead`, each window's coordinator starting from its registration |
+| V6 | What does a Blazor Hybrid page carry? | The host's `index.html` with Forma's stylesheets; no `FormaPageHead`, each web view's coordinator starting from its registration |
 | V7 | How are the hosts checked? | The component suite in a WPF check host as the `webview` runtime, and an example host per supported host, set up from the packages as the README says, on the Windows gate |

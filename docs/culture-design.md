@@ -33,7 +33,7 @@ that switches with a new load needs no additional setup.
 
 The contract covers the render modes Forma supports: static server rendering, Interactive Server,
 Interactive WebAssembly and Interactive Auto, in a Web App and in a standalone WebAssembly app, and Blazor
-Hybrid, whose application holds one culture across its windows, as [its section](#blazor-hybrid) sets out.
+Hybrid, whose application holds one culture across its web views, as [its section](#blazor-hybrid) sets out.
 
 Two kinds of text are exceptions, stated as such: text an event produced, an announcement or a
 validation message, stays in the language it was produced in until the next such event produces it
@@ -42,7 +42,7 @@ sets out.
 
 ## One culture state per user scope
 
-A user scope is a circuit, a WebAssembly runtime, or a Blazor Hybrid application, whose windows share
+A user scope is a circuit, a WebAssembly runtime, or a Blazor Hybrid application, whose web views share
 it, and each holds one culture state: the culture, which formats dates, numbers and collation, and the UI
 culture, which chooses strings and direction, kept apart as the platform keeps them so that a host can
 show English text with German formats. The state starts from the culture in force when the scope is
@@ -569,10 +569,10 @@ only the starting culture.
 
 ## Blazor Hybrid
 
-A Blazor Hybrid application renders its components to a web view in each window, each window's
+A Blazor Hybrid application renders its components to a web view in each of its native windows, each
 `BlazorWebView` with a scope and a document of its own, all in one process, as the
-[WebView design](webview-design.md) sets out. The application holds one culture pair across its windows,
-which this contract makes deliberate: a window is one view of the application, not a user of its own.
+[WebView design](webview-design.md) sets out. The application holds one culture pair across its web views,
+which this contract makes deliberate: a web view is one view of the application, not a user of its own.
 
 ### One culture for the application
 
@@ -582,79 +582,81 @@ which this contract makes deliberate: a window is one view of the application, n
 - **The application's coordinator orders every switch.** It is a service of the application, and takes the
   place the document's coordinator holds in a Web App: it accepts requests one at a time, in the order they
   reach it, numbers each accepted pair in the application's sequence, whose identity is the application's
-  run, applies the pair to the state, and delivers it to every window. Each window's document coordinator
-  follows what it delivers, keeping the document's language and direction, the window's landings and its
-  address, and accepts no pair of its own.
-- **A switch is accepted at once.** Its task completes once the state has applied the pair; every window's
-  document and address follow it as the coordinator delivers it, and one window that is slow or refuses
+  run, applies the pair to the state, and delivers it to every web view. Each web view's document
+  coordinator follows what it delivers, keeping the document's language and direction, the web view's
+  landings and its address, and accepts no pair of its own.
+- **A switch is accepted at once.** Its task completes once the state has applied the pair; every web view's
+  document and address follow it as the coordinator delivers it, and one web view that is slow or refuses
   doesn't hold the switch back.
-- **A window takes part as its first Forma component initializes,** registering its web view with the
-  coordinator, which hands it the accepted pair with its version; its document coordinator starts from it,
-  as on a standalone app's page. A window opened after a switch starts in the pair that switch accepted.
-- **A window's web view, disposed as its window closes,** releases its registration and every subscription
+- **A web view takes part as its first Forma component initializes,** registering with the coordinator,
+  which hands it the accepted pair with its version; its document coordinator starts from it, as on a
+  standalone app's page. A web view opened after a switch starts in the pair that switch accepted.
+- **A web view, disposed as its native window closes,** releases its registration and every subscription
   its components made, and one the host never disposed is dropped at the first delivery that fails. The
-  state, the coordinator and the accepted pair stay the application's, so the last window's closing changes
-  no culture.
+  state, the coordinator and the accepted pair stay the application's, so the last web view's release
+  changes no culture.
 
 ### The ambient culture
 
-After a switch is accepted, every event any window dispatches and every render runs in the accepted pair.
+After a switch is accepted, every event any web view dispatches and every render runs in the accepted pair.
 The coordinator applies the pair to the process's default cultures, which a flow with no culture of its own
-reads, and to the cultures each window's UI thread runs its events in, posted to that thread outside any
+reads, and to the cultures each web view's UI thread runs its events in, posted to that thread outside any
 flow a caller captured, so a culture the platform or the host assigned to a thread doesn't hide a switch and
-the pair outlives the flow that applied it. Windows needn't share a thread: Windows Forms dispatches each web
-view's components on its own control's thread, while WPF dispatches every web view's on the application's,
-and each window's thread receives the pair. Work
-begun before a switch finishes in the culture it captured, which is the platform's rule, while the render it
-asks for reads the state, as [output](#output-takes-its-culture-from-the-state) sets out.
+the pair outlives the flow that applied it. Web views needn't share a thread: Windows Forms dispatches each
+web view's components on its own control's thread, while WPF dispatches every web view's on the
+application's, and each web view's thread receives the pair. Work begun before a switch finishes in the
+culture it captured, which is the platform's rule, while the render it asks for reads the state, as
+[output](#output-takes-its-culture-from-the-state) sets out.
 
 ### What Forma updates and what the host refreshes
 
 Selecting the culture and refreshing what already shows it are separate responsibilities. Forma updates the
-culture state, which notifies its subscribers; every Forma component in every window; each window's
-document's language and direction; each window's address, under culture routing; and the ambient cultures
+culture state, which notifies its subscribers; every Forma component in every web view; each web view's
+document's language and direction; each web view's address, under culture routing; and the ambient cultures
 above. The host refreshes what it rendered without the state: a component of its own that doesn't follow
-the state, and its native user interface, its controls, window titles and native resources, which Forma
-never touches. The state's notification is what the host listens to, from a component or from native code.
+the state, and its native user interface, its controls, native window titles and native resources, which
+Forma never touches. The state's notification is what the host listens to, from a component or from native
+code.
 
 ### Persistence
 
 A native application keeps the user's choice in its own settings: it saves the pair as the state notifies
-it, and applies the saved pair at startup, before its first window opens, since the state starts from the
+it, and applies the saved pair at startup, before its first web view opens, since the state starts from the
 culture in force as the application first resolves it. The switch persists nothing itself: its policy is
 the state alone, and a cookie policy is rejected at startup, since no request reaches a server to read the
 cookie.
 
-### Culture addresses across windows
+### Culture addresses across web views
 
-A Blazor Hybrid application has addresses and navigation, though no address bar: each window starts at its
+A Blazor Hybrid application has addresses and navigation, though no address bar: each web view starts at its
 `StartPath`, and every page renders at an address. Culture routing serves a host whose pages a Web App
 shares, as Microsoft's template for a MAUI application beside a Web App shares them, so one culture route
 page renders in both. A native application has no address a reader shares, bookmarks or finds indexed, so
-under Blazor Hybrid the application's culture decides, and each window's address follows it:
+under Blazor Hybrid the application's culture decides, and each web view's address follows it:
 
-- **A navigation a window makes,** a link or `NavigateTo`, landing at an address in another culture,
-  requests a switch to that address's pair; once the coordinator accepts it, every window follows it.
-- **Every window follows an accepted switch** by replacing its address with the same page, query and
+- **A navigation a web view makes,** a link or `NavigateTo`, landing at an address in another culture,
+  requests a switch to that address's pair; once the coordinator accepts it, every web view follows it.
+- **Every web view follows an accepted switch** by replacing its address with the same page, query and
   fragment in the route carrying the pair, in place of the current history entry. The replacement carries
-  Forma's mark, and its landing requests nothing. Blazor runs the window's navigation handlers for it as for
-  any navigation, and a handler that guards the user's work tells it from a navigation away by that mark,
-  since the page and the work stay.
-- **A window whose handler refuses to follow** keeps its address, and shows the accepted pair meanwhile,
-  since its components and its document follow the state. The switch stands: a switch is the application's,
-  and a landing the requesting window shows is resolved by its address, as every landing is.
+  Forma's mark, and its landing requests nothing. Blazor runs the web view's navigation handlers for it as
+  for any navigation, and a handler that guards the user's work tells it from a navigation away by that
+  mark, since the page and the work stay.
+- **A web view whose handler refuses to follow** keeps its address, and shows the accepted pair meanwhile,
+  since its components and its document follow the state. The switch stands: a switch is the
+  application's, and a landing the requesting web view shows is resolved by its address, as every landing
+  is.
 - **Back and Forward** return to their entry's page in the application's culture, since the language is the
   application's setting rather than the page's: a traversal requests no switch, and one that lands at an
   entry in another culture is replaced by that page's address in the application's culture.
-- **A window's first landing,** at its `StartPath`, adopts the application's culture the same way, so a
-  window opened at a stale address never switches the application.
+- **A web view's first landing,** at its `StartPath`, adopts the application's culture the same way, so a
+  web view opened at a stale address never switches the application.
 - **A switch navigates in place.** Culture routing's `CultureSwitchMode.FullLoad` is rejected at startup,
-  since a web view reloads only by restarting its session, which loses the work an in-place switch keeps, and
-  the culture-route cookie is never written.
+  since a web view reloads only by restarting its session, which loses the work an in-place switch keeps,
+  and the culture-route cookie is never written.
 
-A culture per window is outside the contract: Forma's components could follow a window's own state, while
-the host's code and native user interface read the ambient culture, which no window owns, so a window would
-show two cultures at once.
+A culture per web view is outside the contract: Forma's components could follow a web view's own state,
+while the host's code and native user interface read the ambient culture, which no web view owns, so a web
+view would show two cultures at once.
 
 ## Assemblies and registration
 
@@ -668,7 +670,7 @@ as an integration with ASP.NET Core does across .NET:
 | `Forma.Framework.Culture.Browser.Interop` | The document's culture coordinator: its script, which holds every policy, building an address switch's destination and resolving an interactive landing from the published mapping; the initializer that reads the marker and the published policy and releases a closed circuit's registration; the registration that keeps a culture state on the accepted pair and reports a page's landing; the switch that requests through the coordinator; and the culture addressing a page's culture follows, the contract culture routing gives, through which the head publishes the document's base and the mapping and the switch refuses a pair no route carries |
 | `Forma.Framework.Culture.Blazor.Server` | The circuit handler that applies the culture before every inbound activity and registers the circuit's state with the coordinator |
 | `Forma.Framework.Culture.Blazor.WebAssembly` | The startup that registers the runtime's state with the coordinator, and the application that sets the runtime's current and the process's default cultures on every application of a pair, the local switch's included |
-| `Forma.Framework.Culture.Blazor.WebView` | The application's culture state and its coordinator, which orders every switch across the windows and applies each accepted pair to the state, the process's default cultures and each window's UI thread; the application's switch; each web view's registration with the coordinator, which its first component starts and its document's coordinator follows; and the startup checks that reject a cookie policy and a full-load switch |
+| `Forma.Framework.Culture.Blazor.WebView` | The application's culture state and its coordinator, which orders every switch across the web views and applies each accepted pair to the state, the process's default cultures and each web view's UI thread; the application's switch; each web view's registration with the coordinator, which its first component starts and its document's coordinator follows; and the startup checks that reject a cookie policy and a full-load switch |
 | `Forma.Framework.Culture.Router` | The culture routes, their tokens and the mapping between addresses and pairs, `CultureRouter`, which gives the page its culture addressing, the switcher, the page base and the culture route scope, with no dependency on ASP.NET Core, so the server, a WebAssembly runtime and the published mapping share one set of rules |
 | `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware and the cookie's server side |
 
@@ -705,8 +707,8 @@ makes one call on each side and can still override any single service.
 | C20 | How does the browser learn the switch's policy? | From configuration `FormaPageHead` publishes, or a standalone app's startup supplies, apart from any pair: the cookie's every setting and its one serialization, or the culture-route mapping, as [the policies](#switch-policies) set out |
 | C21 | What does a switch wait for while its runtime registers? | An attempt already started, which its failure, its disposal or a disconnection settles with an error; never a registration nobody started, as [awaiting a switch](#what-awaiting-a-switch-guarantees) sets out |
 | C22 | What does a switch to a pair without a route do? | Under the address policy it throws `InvalidOperationException` before anything changes, naming the pair |
-| C23 | How many cultures does a Blazor Hybrid application hold? | One, across its windows: one state and one switch for the application, the application's coordinator ordering every switch and every window following it; a culture per window is outside the contract, as [Blazor Hybrid](#blazor-hybrid) sets out |
-| C24 | What runs in a switched culture under Blazor Hybrid? | Every event any window dispatches after the switch and every render: the coordinator applies the pair to the process's defaults and to each window's UI thread through its dispatcher, and work begun before the switch finishes in the culture it captured |
+| C23 | How many cultures does a Blazor Hybrid application hold? | One, across its web views: one state and one switch for the application, the application's coordinator ordering every switch and every web view following it; a culture per web view is outside the contract, as [Blazor Hybrid](#blazor-hybrid) sets out |
+| C24 | What runs in a switched culture under Blazor Hybrid? | Every event any web view dispatches after the switch and every render: the coordinator applies the pair to the process's defaults and to each web view's UI thread, and work begun before the switch finishes in the culture it captured |
 | C25 | What does Forma refresh under Blazor Hybrid, and what the host? | Forma: the state and its subscribers, its components, each document and each address; the host: its own components that don't follow the state and its native user interface, through the state's notification |
 | C26 | How does a Blazor Hybrid application persist its choice? | In its own settings, saved as the state notifies and applied at startup; the switch's policy is the state alone, and a cookie policy is rejected at startup |
-| C27 | How do addresses follow under Blazor Hybrid? | The application's culture decides: a navigation a window makes to an address in another culture requests a switch, every window replaces its address in the accepted culture under Forma's mark, which requests nothing, a window refusing it keeps its address while showing the pair, Back, Forward and a window's first landing adopt the application's culture, and only an in-place switch is accepted, as [culture addresses across windows](#culture-addresses-across-windows) sets out |
+| C27 | How do addresses follow under Blazor Hybrid? | The application's culture decides: a navigation a web view makes to an address in another culture requests a switch, every web view replaces its address in the accepted culture under Forma's mark, which requests nothing, a web view refusing it keeps its address while showing the pair, Back, Forward and a web view's first landing adopt the application's culture, and only an in-place switch is accepted, as [culture addresses across web views](#culture-addresses-across-web-views) sets out |

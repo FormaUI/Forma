@@ -6,16 +6,16 @@ using System.Windows;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The check host's native side: its windows, what each window's web view attached, and the ways a culture can be applied to them.</summary>
-/// <remarks>WPF's web view dispatches its components on the application's dispatcher whatever thread its window runs on, so every window here runs on the application's UI thread.</remarks>
+/// <summary>The check host's native side: its native windows, what each one's web view attached, and the ways a culture can be applied to them.</summary>
+/// <remarks>WPF's web view dispatches its components on the application's dispatcher whatever thread its native window runs on, so every native window here runs on the application's UI thread.</remarks>
 internal sealed class ProbeShell
 {
-    private readonly ConcurrentDictionary<string, ProbeWindow> _windows = new();
+    private readonly ConcurrentDictionary<string, WebViewHostWindow> _hostWindows = new();
     private readonly ConcurrentDictionary<string, ProbeAttachment> _attachments = new();
-    private int _windowCount;
+    private int _webViewCount;
     private int _released;
 
-    /// <summary>The services every window's web view resolves from.</summary>
+    /// <summary>The services every web view resolves from.</summary>
     public IServiceProvider Services { get; set; } = default!;
 
     /// <summary>Raised after a web view's scope is released.</summary>
@@ -25,44 +25,44 @@ internal sealed class ProbeShell
     public int Released
         => Volatile.Read(ref _released);
 
-    /// <summary>Opens a window at <paramref name="startPath"/>, named by the order windows open in, <c>A</c> first.</summary>
-    /// <param name="startPath">The address its web view starts at.</param>
-    /// <returns>The window's name.</returns>
+    /// <summary>Opens a native window whose web view starts at <paramref name="startPath"/>, the web view named by the order web views open in, <c>A</c> first.</summary>
+    /// <param name="startPath">The address the web view starts at.</param>
+    /// <returns>The web view's name.</returns>
     public string Open(string startPath)
     {
-        var name = ((char)('A' + Interlocked.Increment(ref _windowCount) - 1)).ToString();
+        var name = ((char)('A' + Interlocked.Increment(ref _webViewCount) - 1)).ToString();
         Application.Current.Dispatcher.Invoke(() => Show(name, startPath));
 
         return name;
     }
 
-    /// <summary>Closes the window <paramref name="name"/> names, disposing its web view first where <paramref name="isDisposing"/> says so.</summary>
-    /// <param name="name">The window's name.</param>
-    /// <param name="isDisposing">Whether the web view is disposed before the window closes.</param>
+    /// <summary>Closes the native window of the web view <paramref name="name"/> names, disposing the web view first where <paramref name="isDisposing"/> says so.</summary>
+    /// <param name="name">The web view's name.</param>
+    /// <param name="isDisposing">Whether the web view is disposed before its native window closes.</param>
     public void Close(string name, bool isDisposing)
     {
-        if (_windows.TryRemove(name, out var window))
+        if (_hostWindows.TryRemove(name, out var hostWindow))
         {
-            window.Dispatcher.InvokeAsync(() => window.CloseAsync(isDisposing));
+            hostWindow.Dispatcher.InvokeAsync(() => hostWindow.CloseAsync(isDisposing));
         }
     }
 
-    /// <summary>Records what a window's web view attached as its page initialized.</summary>
+    /// <summary>Records what a web view attached as its page initialized.</summary>
     /// <param name="attachment">What the web view attached.</param>
     public void Attach(ProbeAttachment attachment)
     {
         ArgumentNullException.ThrowIfNull(attachment);
 
-        _attachments[attachment.Window] = attachment;
+        _attachments[attachment.WebView] = attachment;
     }
 
-    /// <summary>Records that the web view of <paramref name="window"/> released its scope.</summary>
-    /// <param name="window">The window whose web view released it.</param>
-    public void Release(string? window)
+    /// <summary>Records that the web view <paramref name="webView"/> names released its scope.</summary>
+    /// <param name="webView">The web view's name.</param>
+    public void Release(string? webView)
     {
-        if (window is not null)
+        if (webView is not null)
         {
-            _attachments.TryRemove(window, out _);
+            _attachments.TryRemove(webView, out _);
         }
 
         Interlocked.Increment(ref _released);
@@ -78,7 +78,7 @@ internal sealed class ProbeShell
         CultureInfo.DefaultThreadCurrentUICulture = uiCulture;
     }
 
-    /// <summary>Sets the process's default cultures and, outside any flow a caller captured, the cultures each window's UI thread runs its events in.</summary>
+    /// <summary>Sets the process's default cultures and, outside any flow a caller captured, the cultures each web view's UI thread runs its events in.</summary>
     /// <param name="culture">The formatting culture.</param>
     /// <param name="uiCulture">The UI culture.</param>
     public void ApplyToThreads(CultureInfo culture, CultureInfo uiCulture)
@@ -100,10 +100,10 @@ internal sealed class ProbeShell
         }
     }
 
-    /// <summary>Sets the process's default cultures and the cultures of each window's renderer, through its dispatcher, in the flow the caller captured.</summary>
+    /// <summary>Sets the process's default cultures and the cultures of each web view's renderer, through its dispatcher, in the flow the caller captured.</summary>
     /// <param name="culture">The formatting culture.</param>
     /// <param name="uiCulture">The UI culture.</param>
-    /// <returns>A task that completes once every window's renderer ran the change.</returns>
+    /// <returns>A task that completes once every web view's renderer ran the change.</returns>
     public Task ApplyInCapturedFlowAsync(CultureInfo culture, CultureInfo uiCulture)
     {
         ApplyToDefaults(culture, uiCulture);
@@ -115,10 +115,10 @@ internal sealed class ProbeShell
         })));
     }
 
-    /// <summary>Replaces the address of the window <paramref name="name"/> names with its page under <paramref name="segment"/>, under the mark a handler reads.</summary>
-    /// <param name="name">The window's name.</param>
+    /// <summary>Replaces the address of the web view <paramref name="name"/> names with its page under <paramref name="segment"/>, under the mark a handler reads.</summary>
+    /// <param name="name">The web view's name.</param>
     /// <param name="segment">The address's first segment.</param>
-    /// <returns>A task that completes once the window's renderer asked its navigation to replace the address.</returns>
+    /// <returns>A task that completes once the web view's renderer asked its navigation to replace the address.</returns>
     public Task ReplaceAddressAsync(string name, string segment)
     {
         var attachment = _attachments[name];
@@ -133,8 +133,8 @@ internal sealed class ProbeShell
 
     private void Show(string name, string startPath)
     {
-        var window = new ProbeWindow(this, name, startPath);
-        _windows[name] = window;
-        window.Show();
+        var hostWindow = new WebViewHostWindow(this, name, startPath);
+        _hostWindows[name] = hostWindow;
+        hostWindow.Show();
     }
 }

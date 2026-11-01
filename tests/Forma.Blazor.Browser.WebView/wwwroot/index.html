@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="_content/Forma.Blazor/forma-input.css" />
     <link rel="stylesheet" href="_content/Forma.Blazor/forma-prose.css" />
     <script>
-        // What the document saw of its history, for the check to tell a traversal from a navigation the window makes.
+        // What the document saw of its history, for the check to tell a traversal from a navigation the web view makes.
         window.formaProbe = { history: [] };
         addEventListener('popstate', () => formaProbe.history.push('popstate'));
         if (window.navigation) {

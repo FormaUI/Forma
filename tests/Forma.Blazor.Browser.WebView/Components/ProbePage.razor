@@ -7,10 +7,10 @@
 @inject ICultureState CultureState
 @inject IServiceProvider Services
 
-@* One window's page: what renders it and in which culture, a select reaching its script, an event, a binding, work begun
-   before a switch, the ways a culture is applied, the windows it opens and closes, another window's address replaced
-   under a mark, and what the window's navigation saw. *@
-<output id="window">@Window</output>
+@* One web view's page: what renders it and in which culture, a select reaching its script, an event, a binding, work begun
+   before a switch, the ways a culture is applied, the web views it opens and closes, another web view's address replaced
+   under a mark, and what its navigation saw. *@
+<output id="web-view">@WebView</output>
 <output id="renderer">@RendererInfo.Name @RendererInfo.IsInteractive</output>
 <output id="segment">@Segment</output>
 <output id="instance">@_instance</output>
@@ -45,8 +45,8 @@
 <label>Start path <input id="start-path" @bind="_startPath" /></label>
 <button id="open" @onclick="Open">Open</button>
 <output id="opened">@_opened</output>
-<button id="close" @onclick="() => Shell.Close(Window, isDisposing: false)">Close</button>
-<button id="close-disposing" @onclick="() => Shell.Close(Window, isDisposing: true)">Close and dispose</button>
+<button id="close" @onclick="() => Shell.Close(WebView, isDisposing: false)">Close</button>
+<button id="close-disposing" @onclick="() => Shell.Close(WebView, isDisposing: true)">Close and dispose</button>
 <output id="released">@_released</output>
 
 <label>Target <input id="target" @bind="_target" /></label>
@@ -84,15 +84,15 @@
     private string _targetSegment = "es";
     private bool _isGuarding;
 
-    [CascadingParameter(Name = "Window")] public string Window { get; set; } = default!;
+    [CascadingParameter(Name = "WebView")] public string WebView { get; set; } = default!;
 
     [Parameter] public string Segment { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        Scope.Window = Window;
+        Scope.WebView = WebView;
         _context = SynchronizationContext.Current?.GetType().Name;
-        Shell.Attach(new ProbeAttachment(Window, SynchronizationContext.Current!, Navigation, action => InvokeAsync(action)));
+        Shell.Attach(new ProbeAttachment(WebView, SynchronizationContext.Current!, Navigation, action => InvokeAsync(action)));
         _locationChanging = Navigation.RegisterLocationChangingHandler(OnLocationChangingAsync);
         Navigation.LocationChanged += OnLocationChanged;
         Shell.ScopeReleased += OnScopeReleased;

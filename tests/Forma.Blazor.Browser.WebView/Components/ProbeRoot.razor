@@ -1,5 +1,5 @@
-@* The root every window renders: the interactive router over the check host's pages, with the window's name cascaded to them. *@
-<CascadingValue Value="Window" Name="Window">
+@* The root every web view renders: the interactive router over the check host's pages, with the web view's name cascaded to them. *@
+<CascadingValue Value="WebView" Name="WebView">
     <Router AppAssembly="typeof(ProbeRoot).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="routeData" />
@@ -8,6 +8,6 @@
 </CascadingValue>
 
 @code {
-    /// <summary>The window's name.</summary>
-    [Parameter, EditorRequired] public string Window { get; set; } = default!;
+    /// <summary>The web view's name.</summary>
+    [Parameter, EditorRequired] public string WebView { get; set; } = default!;
 }
