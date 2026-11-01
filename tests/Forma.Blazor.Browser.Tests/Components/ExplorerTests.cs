@@ -84,7 +84,14 @@ public sealed class ExplorerTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-scroll");
             await using var _ = context;
             var status = page.Locator("#check .forma-explorer-scroll-status");
-            await Assertions.Expect(status).ToHaveTextAsync("Showing 4 of 12");
+
+            // The explorer loads its next page while its end lies within 200px of the list's, and how many pages that takes
+            // depends on when its tiles reach their height, so the list is read once its end lies beyond that, no page loading.
+            await page.WaitForFunctionAsync(
+                "() => { const scroll = document.querySelector('#check .forma-explorer-scroll'); const sentinel = scroll?.querySelector('.forma-explorer-scroll-sentinel'); return sentinel !== null && sentinel !== undefined && sentinel.querySelector('[role=status], .forma-spinner') === null && sentinel.getBoundingClientRect().top - scroll.getBoundingClientRect().bottom > 200; }",
+                null,
+                new() { PollingInterval = 100 });
+            await Assertions.Expect(status).Not.ToHaveTextAsync("Showing 12 of 12");
 
             // Act — the list scrolled to its end each time a page arrives, until the last has
             await page.WaitForFunctionAsync(
