@@ -97,6 +97,20 @@ jobs:
         if: steps.filter.outputs.code == 'true' && runner.os == 'Windows'
         run: dotnet workload install maui-windows
 
+      # WebView2 on the runner ignores the environment variables the check opens an application's DevTools through; its policy for each
+      # example host's executable names the port instead, and the check reads the ports back.
+      - name: Open the example hosts' DevTools through WebView2's policy
+        if: steps.filter.outputs.code == 'true' && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $key = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
+          New-Item -Path $key -Force | Out-Null
+          $ports = [ordered]@{ 'Forma.Examples.Wpf' = 9311; 'Forma.Examples.WindowsForms' = 9312; 'Forma.Examples.Maui' = 9313 }
+          foreach ($example in $ports.Keys) {
+              Set-ItemProperty -Path $key -Name "$example.exe" -Value "--remote-debugging-port=$($ports[$example])"
+          }
+          "FORMA_WEBVIEW_POLICY_PORTS=$(($ports.Keys | ForEach-Object { "$_=$($ports[$_])" }) -join ';')" >> $env:GITHUB_ENV
+
       - name: Run the gate
         if: steps.filter.outputs.code == 'true'
         env:

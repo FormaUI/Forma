@@ -2,6 +2,7 @@ namespace Forma.Blazor.Browser.Tests;
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 
 /// <summary>A Blazor Hybrid application, the WebView check host or an example host, started with WebView2's DevTools port open, and the browser connection the check drives its web views through.</summary>
@@ -65,7 +66,6 @@ public sealed class WebViewApplication : IAsyncDisposable
             throw new InvalidOperationException($"{folder} holds no publish; the gate's browser step publishes it first.");
         }
 
-        var port = BrowserHost.GetFreePort();
         var dataFolder = Directory.CreateTempSubdirectory("forma-webview-").FullName;
         var start = new ProcessStartInfo(Path.Combine(folder, $"{name}.exe"))
         {
@@ -74,8 +74,17 @@ public sealed class WebViewApplication : IAsyncDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
-        start.Environment["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = $"--remote-debugging-port={port}";
-        start.Environment["WEBVIEW2_USER_DATA_FOLDER"] = dataFolder;
+
+        // Where the machine's WebView2 policy names the application's DevTools port, the variables stay unset, since WebView2 reads the
+        // policy only where none is set.
+        var policyPort = GetPolicyPort(name);
+        var port = policyPort ?? BrowserHost.GetFreePort();
+
+        if (policyPort is null)
+        {
+            start.Environment["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = $"--remote-debugging-port={port}";
+            start.Environment["WEBVIEW2_USER_DATA_FOLDER"] = dataFolder;
+        }
 
         foreach (var (variable, value) in environment ?? new Dictionary<string, string>())
         {
@@ -217,6 +226,15 @@ public sealed class WebViewApplication : IAsyncDisposable
         }
     }
 
+    // The DevTools port a WebView2 policy names for the application, from FORMA_WEBVIEW_POLICY_PORTS, as name=port pairs separated by ';'.
+    private static int? GetPolicyPort(string name)
+        => (Environment.GetEnvironmentVariable("FORMA_WEBVIEW_POLICY_PORTS") ?? string.Empty)
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(pair => pair.Split('=', 2))
+            .Where(pair => pair.Length == 2 && pair[0] == name && int.TryParse(pair[1], NumberStyles.None, CultureInfo.InvariantCulture, out _))
+            .Select(pair => (int?)int.Parse(pair[1], CultureInfo.InvariantCulture))
+            .FirstOrDefault();
+
     private static void Record(ConcurrentQueue<string> output, string? line)
     {
         if (line is not null)
@@ -228,10 +246,11 @@ public sealed class WebViewApplication : IAsyncDisposable
     private static string Describe(ConcurrentQueue<string> output)
         => output.IsEmpty ? " It wrote nothing." : $" It wrote:{Environment.NewLine}{string.Join(Environment.NewLine, output)}";
 
-    // The command line of the browser process WebView2 started for the data folder, which names the arguments it took.
+    // The command line of the browser process WebView2 started for the data folder, which names the arguments it took, or of every
+    // WebView2 browser process where none is the data folder's.
     private static async Task<string> DescribeBrowserAsync(string dataFolder)
     {
-        var query = new ProcessStartInfo("pwsh", ["-NoProfile", "-Command", $"Get-CimInstance Win32_Process -Filter \"Name='msedgewebview2.exe'\" | Where-Object {{ $_.CommandLine -like '*{dataFolder}*' -and $_.CommandLine -notlike '*--type=*' }} | ForEach-Object CommandLine"])
+        var query = new ProcessStartInfo("pwsh", ["-NoProfile", "-Command", $"$browsers = Get-CimInstance Win32_Process -Filter \"Name='msedgewebview2.exe'\" | Where-Object {{ $_.CommandLine -notlike '*--type=*' }}; $own = $browsers | Where-Object {{ $_.CommandLine -like '*{dataFolder}*' }}; if ($own) {{ $own.CommandLine }} elseif ($browsers) {{ 'None for its data folder; every WebView2 browser process:'; $browsers.CommandLine }}"])
         {
             RedirectStandardOutput = true,
             UseShellExecute = false,
@@ -247,7 +266,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         var commandLine = await describing.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
         await describing.WaitForExitAsync().ConfigureAwait(false);
 
-        return commandLine.Length == 0 ? " WebView2 started no browser process for its data folder." : $" WebView2's browser process started as:{Environment.NewLine}{commandLine.Trim()}";
+        return commandLine.Length == 0 ? " WebView2 runs no browser process at all." : $" WebView2's browser process started as:{Environment.NewLine}{commandLine.Trim()}";
     }
 
     private static async Task WaitForDevToolsAsync(string name, Process process, Uri endpoint, ConcurrentQueue<string> output, string dataFolder)
