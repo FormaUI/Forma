@@ -20,9 +20,11 @@ public sealed class WindowsTests
             var result = page.Locator("#result");
             await page.Locator("#open-alpha").ClickAsync();
             await Assertions.Expect(alpha).ToBeVisibleAsync();
+            await ComponentChecks.WaitForInputScopeAsync(page, "#alpha");
             await Assertions.Expect(result).ToHaveTextAsync("Alpha");
             await page.Locator("#open-beta").ClickAsync();
             await Assertions.Expect(beta).ToBeVisibleAsync();
+            await ComponentChecks.WaitForInputScopeAsync(page, "#beta");
             await Assertions.Expect(result).ToHaveTextAsync("Beta");
             await page.WaitForFunctionAsync(IsInFrontAtOverlap, "beta");
 

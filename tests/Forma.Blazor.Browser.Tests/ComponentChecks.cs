@@ -82,8 +82,9 @@ public static partial class ComponentChecks
     /// <summary>Waits until the input router has placed <paramref name="scope"/> among the page's layers, which it does as an open surface registers.</summary>
     /// <param name="scope">The surface's element.</param>
     /// <returns>A task that completes once the surface carries its layer.</returns>
+    /// <remarks>It waits as long as a page's own waits, as every wait on a script's answer here does, since a busy machine can hold a script's first call past an assertion's.</remarks>
     public static Task WaitForLayerAsync(ILocator scope)
-        => Assertions.Expect(scope).ToHaveAttributeAsync("data-forma-layer", LayerPattern());
+        => Assertions.Expect(scope).ToHaveAttributeAsync("data-forma-layer", LayerPattern(), new() { Timeout = 30000 });
 
     /// <summary>Waits until Blazor's file input listens on the element <paramref name="selector"/> names.</summary>
     /// <param name="page">The page read.</param>

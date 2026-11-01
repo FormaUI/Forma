@@ -131,6 +131,7 @@ public sealed class MenusTests
             await context.RouteAsync("https://x.com/**", route => route.FulfillAsync(new() { ContentType = "text/html", Body = "<title>X</title>" }));
             var menu = page.GetByRole(AriaRole.Menu);
             await page.Locator("#share").ClickAsync();
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
             await Assertions.Expect(menu.Locator(".forma-share-menu-primary [role=menuitem][href]")).ToHaveTextAsync(Networks);
 
             var network = menu.GetByRole(AriaRole.Menuitem, new() { Name = "X", Exact = true });
