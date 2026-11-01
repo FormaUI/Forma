@@ -48,6 +48,9 @@ public sealed class WindowsTests
             var alpha = page.Locator("#alpha");
             await page.Locator("#open-alpha").ClickAsync();
             await page.WaitForFunctionAsync("() => document.getElementById('alpha')?.contains(document.activeElement) === true");
+
+            // The frame takes hold of a drag as its own script attaches, apart from the window's, which can hand the focus first.
+            await ComponentChecks.WaitForInputScopeAsync(page, "#alpha .forma-frame");
             var title = (await alpha.Locator(".forma-frame-drag-region").BoundingBoxAsync())!;
             var x = title.X + (title.Width / 2);
             var y = title.Y + (title.Height / 2);
