@@ -69,6 +69,22 @@ jobs:
           cache: npm
           cache-dependency-path: tests/Forma.Blazor.Tests.Scripts/package-lock.json
 
+      # The WebView checks drive Blazor Hybrid's web views through WebView2, whose runtime an image may lack; the
+      # evergreen bootstrapper installs the current one, and the run names the version it checked against.
+      - name: Install the WebView2 runtime
+        if: steps.filter.outputs.code == 'true' && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $key = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+          $version = if (Test-Path $key) { (Get-ItemProperty $key).pv } else { $null }
+          if ([string]::IsNullOrEmpty($version) -or $version -eq '0.0.0.0') {
+              $setup = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebview2Setup.exe'
+              Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $setup
+              Start-Process -FilePath $setup -ArgumentList '/silent', '/install' -Wait
+              $version = (Get-ItemProperty $key).pv
+          }
+          "WebView2 runtime $version"
+
       - name: Run the gate
         if: steps.filter.outputs.code == 'true'
         env:
