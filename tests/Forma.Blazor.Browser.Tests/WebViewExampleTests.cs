@@ -2,7 +2,7 @@ namespace Forma.Blazor.Browser.Tests;
 
 using static Forma.Blazor.Browser.Tests.CulturePages;
 
-/// <summary>The Blazor Hybrid example hosts, built from Forma's packages: each starting from its publish, switching every web view and every native window's title, releasing a closed native window's web view and keeping its culture from one run to the next.</summary>
+/// <summary>The Blazor Hybrid example hosts, built from Forma's packages as the library's README sets an application up: each starting from its publish, switching every web view and every native window's title, releasing a closed native window's web view and keeping its culture from one run to the next.</summary>
 /// <remarks>The WPF and MAUI examples register the platform's web view first and Forma second, the Windows Forms one Forma first, so the examples hold both orders.</remarks>
 [Collection(WebViewChecks.Name)]
 public sealed class WebViewExampleTests(BrowserHost host)

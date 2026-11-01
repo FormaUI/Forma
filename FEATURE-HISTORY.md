@@ -24,7 +24,7 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [Registration in either order](docs/component-foundations-design.md#the-null-objects): Forma registers no stand-in for what the platform or a package supplies, so a host registers Forma beside its platform's services, its logging, its localization and an artwork pack in any order, and the components fall back to the source text, the reader's font, the bundled glyphs and a runtime that throws at its first call where none is registered.
 
-- [The WebView half](src/Forma.Blazor.WebView/README.md), `AddFormaUIWebView`, and [the culture under Blazor Hybrid](docs/culture-design.md#blazor-hybrid): one culture across an application's web views, switched from any web view or from native code, applied to the state, the process's defaults and every web view's UI thread, each web view's document taking its language and direction and, under culture routing, its address moving into the switched culture's route, which a navigation handler tells by `IsCultureFollowing`.
+- [The WebView half](src/Forma.Blazor.WebView/README.md), `AddFormaUIWebView`, and [the culture under Blazor Hybrid](docs/culture-design.md#blazor-hybrid): one culture across an application's web views, switched from any web view or from native code, applied to the state, the process's defaults and every web view's UI thread, each web view's document taking its language and direction and, under culture routing, its address moving into the switched culture's route, which a navigation handler tells by `IsCultureFollowing`; [the README](README.md#blazor-hybrid) sets up a WPF, a Windows Forms or a MAUI application on Windows, refreshing its native user interface and keeping its culture from one run to the next.
 
 - [Culture routing](src/Forma.Framework/Forma.Framework.Culture.Router/README.md) registers only its own services, so `AddFormaCultureRouting` goes before or after a product's registrar; registered first, it had left a WebAssembly runtime's culture state scoped.
 
@@ -44,7 +44,7 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - The render mode inventory: every component the catalog lists has a check page, and every check page is opened by a check that runs in every interactive runtime and rendered by the static check; [`FormaField`](docs/component-catalog.md#formafield), [`FormaVisibility`](docs/component-catalog.md#formavisibility) and `FormaDataSortMenu` gained check pages.
 
-- [The Blazor Hybrid example hosts](tests/Forma.Examples/README.md): a WPF, a Windows Forms and a MAUI application on Windows, built from Forma's packages and driven through WebView2, each checked for its published assets, a switch across two web views and its native windows' titles, a closed native window's release and the culture it keeps from one run to the next.
+- [The Blazor Hybrid example hosts](tests/Forma.Examples/README.md): a WPF, a Windows Forms and a MAUI application on Windows, built from Forma's packages as [the README](README.md#blazor-hybrid) sets an application up and driven through WebView2, each checked for its published assets, a switch across two web views and its native windows' titles, a closed native window's release and the culture it keeps from one run to the next; the README's setup is held to them.
 
 **Breaking:**
 

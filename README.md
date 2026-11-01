@@ -183,6 +183,163 @@ starts in, as
 [`Forma.Blazor.WebAssembly`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.WebAssembly/README.md)
 sets out.
 
+## Blazor Hybrid
+
+A WPF, Windows Forms or MAUI application on Windows renders the components in a `BlazorWebView` in each of its
+native windows, and every web view shows the one culture the application holds. Each host below is an
+[example host](https://github.com/FormaUI/Forma/blob/main/tests/Forma.Examples/README.md) the gate builds from
+Forma's packages and drives through WebView2, with `MyApp` standing for the example's name.
+
+```pwsh
+dotnet add package formaui-net.Blazor.WebView
+dotnet add package formaui-net.Framework.Localization.Json
+```
+
+The application targets Windows 10.0.19041 or later, whose SDK projection WebView2's controls load:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/Forma.Examples.Wpf.csproj -->
+```xml
+<TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
+```
+
+**1. Register the services once, for the application,** beside the platform's registrar and in either order,
+and hand that one provider to every web view, so they all read one culture state and switch it through one
+switch. A WPF application builds it as it starts:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/App.xaml.cs -->
+```csharp
+var services = new ServiceCollection();
+services.AddWpfBlazorWebView();
+services.AddFormaUIWebView();
+services.AddJsonLocalization();
+```
+
+A Windows Forms application builds it in its `Main`, which runs on the single-threaded apartment WebView2 needs, so
+it is a method marked `[STAThread]` rather than top-level statements:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.WindowsForms/Program.cs -->
+```csharp
+[STAThread]
+private static void Main()
+{
+    ApplicationConfiguration.Initialize();
+```
+
+<!-- example: tests/Forma.Examples/Forma.Examples.WindowsForms/Program.cs -->
+```csharp
+var services = new ServiceCollection();
+services.AddFormaUIWebView();
+services.AddJsonLocalization();
+services.AddWindowsFormsBlazorWebView();
+```
+
+A MAUI application registers on its builder, whose one provider every native window already shares:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Maui/MauiProgram.cs -->
+```csharp
+builder.Services.AddMauiBlazorWebView();
+builder.Services.AddFormaUIWebView();
+builder.Services.AddJsonLocalization();
+```
+
+`AddFormaUIWebView()` registers what `AddFormaUI()` does and the culture's half for an application's web views:
+one culture state, one switch and one coordinator for the application, which applies a switch to the state, to
+the process's default cultures and to the thread each web view runs its events on, and delivers it to every web
+view's document. A component, or the application's own code, switches through `ICultureSwitch`. Application-wide
+shortcuts are passed as `AddFormaUIWebView(options => options.InputRouting = new InputRouterOptions { ... })`.
+Culture routing registers as in a Web App, before or after, under `CultureSwitchMode.InPlace`, as
+[the culture design](https://github.com/FormaUI/Forma/blob/main/docs/culture-design.md#blazor-hybrid) sets out.
+
+**2. The page** is the application's `wwwroot/index.html`, which the web view serves itself; it links Forma's
+stylesheets and the application's scoped styles, and loads the web view's script:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/wwwroot/index.html -->
+```html
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-tokens.css" />
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-reset.css" />
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-base.css" />
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-input.css" />
+<link rel="stylesheet" href="MyApp.styles.css" />
+```
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/wwwroot/index.html -->
+```html
+<div id="app"></div>
+<script src="_framework/blazor.webview.js"></script>
+```
+
+**3. Dispose a WPF web view as its native window closes.** WPF disposes no control on its own, and disposing the
+web view releases its scope and every subscription its components made. The WebView2 control's own disposal can
+throw an `InvalidCastException` moments after a keyboard shortcut, once that scope was released:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
+```csharp
+private async void OnClosed(object? sender, EventArgs e)
+{
+    _cultureState.Unsubscribe(OnCultureChangedAsync);
+
+    try
+    {
+        await WebView.DisposeAsync();
+    }
+    catch (InvalidCastException)
+    {
+    }
+}
+```
+
+Windows Forms disposes a web view with its form, and MAUI with its native window.
+
+**4. Refresh what the application draws natively.** Forma updates every component, every web view's document and
+the threads the web views run on; the application refreshes its native user interface, a native window's title
+among it, as the culture state notifies, on the thread that owns it:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
+```csharp
+_cultureState = services.GetRequiredService<ICultureState>();
+_locale = services.GetRequiredService<IStringLocale<MainWindow>>();
+ShowTitle();
+_cultureState.Subscribe(OnCultureChangedAsync);
+```
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
+```csharp
+private Task OnCultureChangedAsync()
+    => Dispatcher.InvokeAsync(ShowTitle).Task;
+
+private void ShowTitle()
+    => Title = _locale.WithCulture(_cultureState.Culture, _cultureState.UICulture)["Forma Example"];
+```
+
+A MAUI application on Windows keeps a native window's caption, which the taskbar shows, in the system's ANSI code
+page, so a character the code page lacks shows there as a question mark, while the title bar MAUI draws shows the
+title whole.
+
+**5. Keep the reader's culture** in the application's settings: apply it before the first web view opens, since
+the culture state starts from the culture in force as it is first resolved, and save it each time the state
+notifies:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/CultureSettings.cs -->
+```csharp
+CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo(culture);
+CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo(uiCulture);
+```
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Wpf/CultureSettings.cs -->
+```csharp
+var cultureState = services.GetRequiredService<ICultureState>();
+cultureState.Subscribe(() =>
+{
+    Directory.CreateDirectory(Path.GetDirectoryName(SettingsFile)!);
+    File.WriteAllLines(SettingsFile, [cultureState.Culture.Name, cultureState.UICulture.Name]);
+```
+
+A MAUI application keeps it in `Preferences` instead. The switch persists nothing itself, and a cookie policy is
+rejected, since no request reaches a server to read one.
+
+The application's own locale files stay in its `.locales` folder, which the build embeds in the application's
+assembly, so an application MAUI packages reads them with no folder beside it.
+
 ## Use the components
 
 Components live in `Forma.Blazor.Components.{Category}` namespaces, such as

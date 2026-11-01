@@ -1,9 +1,9 @@
 # Forma.Examples
 
 Two Web Apps set up as the [library's README](../../README.md#webassembly-components) sets a host up, one for
-each culture arrangement, each a server and its WebAssembly client, and three Blazor Hybrid applications, one for
-each host on Windows. They reference Forma's packages, never its projects, so they build as a host outside the
-repository builds, from what the packages ship.
+each culture arrangement, each a server and its WebAssembly client, and three Blazor Hybrid applications set up as
+it sets an [application](../../README.md#blazor-hybrid) up, one for each host on Windows. They reference Forma's
+packages, never its projects, so they build as a host outside the repository builds, from what the packages ship.
 
 | Example | What it shows |
 | --- | --- |

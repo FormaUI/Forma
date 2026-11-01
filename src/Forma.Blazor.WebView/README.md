@@ -51,6 +51,13 @@ its own scoped styles and `_framework/blazor.webview.js`, as a standalone WebAss
 Each web view's document takes the application's culture from its first Forma component, so the page
 carries no culture marker of its own.
 
+## The application
+
+Every web view resolves from the application's one service provider, so they share its culture, and a WPF
+application disposes a web view as its native window closes, since WPF disposes no control on its own. The
+[library's README](https://github.com/FormaUI/Forma/blob/main/README.md#blazor-hybrid) sets each host up in full,
+its native user interface and the culture it keeps from one run to the next among it.
+
 ## License
 
 Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

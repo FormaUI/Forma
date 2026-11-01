@@ -60,12 +60,12 @@ public sealed partial class ExampleHostTests(BrowserHost host)
         // Act
         var blocks = ExampleBlock().Matches(readme);
 
-        // Assert — each block's lines appear in its file, in order, MyApp standing for the example's name
+        // Assert — each block's lines appear in its file, in order, MyApp standing for the name of the example whose folder holds the file
         Assert.NotEmpty(blocks);
         Assert.All(blocks, block =>
         {
             var path = block.Groups["path"].Value;
-            var name = Path.GetFileName(Path.GetDirectoryName(path))!.Replace(".Client", string.Empty, StringComparison.Ordinal);
+            var name = path.Split('/')[2].Replace(".Client", string.Empty, StringComparison.Ordinal);
             var lines = GetLines(block.Groups["code"].Value.Replace("MyApp", name, StringComparison.Ordinal));
             var file = GetLines(File.ReadAllText(Path.Combine(host.RepositoryRoot, path)));
             var next = 0;

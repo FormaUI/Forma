@@ -189,7 +189,7 @@ gated as it says.
    - The window's and the share menu's checks read a state that follows a script's first answer within an
      assertion's five seconds, which the full suite's load overran; each now waits for the script's own
      signal, with the patience every such wait has, before reading it.
-10. **The host's setup.** The README sets out each host, its registration, its page, its persistence and its
+10. **The host's setup.** ✅ The README sets out each host, its registration, its page, its persistence and its
     locale files, each block held to its example host; the repository structure, the vocabulary, the
     features status and the feature history describe the WebView half. Gate: the example hosts match their
     README blocks.
