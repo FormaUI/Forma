@@ -21,6 +21,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [Registration in either order](docs/component-foundations-design.md#the-null-objects): Forma registers no stand-in for what the platform or a package supplies, so a host registers Forma beside its platform's services, its logging, its localization and an artwork pack in any order, and the components fall back to the source text, the reader's font, the bundled glyphs and a runtime that throws at its first call where none is registered.
 
+- [Culture routing](src/Forma.Framework/Forma.Framework.Culture.Router/README.md) registers only its own services, so `AddFormaCultureRouting` goes before or after a product's registrar; registered first, it had left a WebAssembly runtime's culture state scoped.
+
 **Build and verification**
 
 - [The WebView check host](docs/repository-structure.md#tests): a WPF application whose native windows each render the components to a web view, driven by the browser check through WebView2, checking what Blazor Hybrid guarantees of its renderer, a web view's registration, the culture each web view's events run in, a web view's address replaced and refused, a traversal, and a web view's release.
@@ -28,6 +30,7 @@ Until the first release, a month may break what the one before it allowed, and e
 **Breaking:**
 
 - `AddFormaUI` registers no `IJSRuntime`, `IStringLocaleFactory`, `IIconProvider` or `IEmojiProvider` of its own: a host that resolves one from the container registers it, as `AddJsonLocalization`, `AddFormaGlyphServices` and `AddFormaEmojiServices` do, and its logging is the platform's `LoggerFactory`, with the host's providers, where it was a null factory.
+- `AddFormaCultureRouting` registers no culture state or coordination: a host registers them through a product's registrar, as every host already does.
 
 <a id="2026-10"></a>
 

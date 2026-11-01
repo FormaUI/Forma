@@ -72,6 +72,7 @@ public sealed class CultureRouteMapTests
             .AddSingleton<IJSRuntime>(new FakeCultureCoordinatorBrowser().Runtime)
             .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureRouting(CreateOptions(prefix))
+            .AddFormaCultureCoordination()
             .BuildServiceProvider();
         await using var scope = provider.CreateAsyncScope();
         var switcher = scope.ServiceProvider.GetRequiredService<CultureSwitcher>();

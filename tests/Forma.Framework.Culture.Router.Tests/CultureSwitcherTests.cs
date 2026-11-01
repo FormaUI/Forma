@@ -2,6 +2,7 @@ namespace Forma.Framework.Culture.Router.Tests;
 
 using System.Globalization;
 
+using Forma.Framework.Culture.Browser.Interop;
 using Forma.Tests.Culture;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
@@ -30,6 +31,7 @@ public sealed class CultureSwitcherTests
                     new() { Token = "he", UICulture = new("he") }
                 ]
             })
+            .AddFormaCultureCoordination()
             .BuildServiceProvider();
 
     private static CultureRoute GetRoute(IServiceProvider services, string token)

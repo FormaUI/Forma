@@ -43,6 +43,7 @@ public sealed class CultureRoutePageTests
                     new() { Token = "he", UICulture = new("he"), Aliases = ["iw"] }
                 ]
             })
+            .AddFormaCultureCoordination()
             .BuildServiceProvider();
     }
 

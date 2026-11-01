@@ -200,6 +200,23 @@ public sealed class ServiceCollectionExtensionsTests
         }
     }
 
+    public sealed class Registration
+    {
+        [Fact]
+        public void Should_hold_one_culture_state_and_registration_for_the_runtime_with_culture_routing_registered_first()
+        {
+            // Act
+            var services = new ServiceCollection()
+                .AddFormaCultureRouting(new CultureRouterOptions { DefaultCulture = "en", Routes = [new() { Token = "en", UICulture = new("en") }] })
+                .AddFormaCultureWebAssembly();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime),
+                () => Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(CultureCoordinatorRegistration)).Lifetime));
+        }
+    }
+
     public sealed class Arrangement
     {
         [Fact]

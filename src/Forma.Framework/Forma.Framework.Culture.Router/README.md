@@ -39,7 +39,8 @@ app.UseRouting();
 ```
 
 `AddFormaCultureRouting` validates the options and registers `CultureRouter` as a singleton, the page's
-culture addressing it gives, and the `CultureSwitcher` each user scope switches through. Culture
+culture addressing it gives, and the `CultureSwitcher` each user scope switches through, over the culture
+services the product's registrar registers, so it goes before or after that registrar. Culture
 addresses then decide the page's culture: the switch that
 [`formaui-net.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Forma.Blazor.Server/README.md)'s
 `AddFormaUIServer()` registers navigates to the address of the pair it is asked for, and the page's
