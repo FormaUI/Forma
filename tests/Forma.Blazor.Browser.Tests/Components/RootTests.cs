@@ -41,6 +41,27 @@ public sealed class RootTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Ada");
             await Assertions.Expect(message).ToHaveCountAsync(0);
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_submit_on_the_first_press_as_its_message_leaves(string runtime)
+        {
+            // Arrange — a submit with the input empty, then the name typed and the input still focused
+            var (context, page) = await OpenAsync(host, runtime, "field");
+            await using var _ = context;
+            var submit = page.Locator("#submit");
+            await submit.ClickAsync();
+            await Assertions.Expect(page.Locator("#check .forma-field-message")).ToHaveTextAsync("The Name field is required.");
+            await page.Locator("#name").FillAsync("Ada");
+            var before = await submit.BoundingBoxAsync();
+
+            // Act — the press takes the focus from the input, whose message leaves as it validates
+            await submit.ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Ada");
+            Assert.Equal(before?.Y, (await submit.BoundingBoxAsync())?.Y);
+        }
     }
 
     public sealed class Visibility(BrowserHost host)

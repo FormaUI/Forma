@@ -62,6 +62,9 @@ public sealed partial class FormaField : FormaElementBase
             _ => null,
         };
 
+    private bool ShowsMessages
+        => Field is not null && EditContext is not null;
+
     private IReadOnlyList<string> ValidationMessages
         => Field is { } identifier && EditContext is { } editContext ? [.. editContext.GetValidationMessages(identifier)] : [];
 

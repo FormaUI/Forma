@@ -22,10 +22,10 @@
             @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
         </label>
     }
-    @if (ValidationMessages is { Count: > 0 } messages)
+    @if (ShowsMessages)
     {
         <div id="@EffectiveElementIds.MessageContainerId" class="forma-field-messages">
-            @foreach (var message in messages)
+            @foreach (var message in ValidationMessages)
             {
                 <div class="forma-field-message">@message</div>
             }

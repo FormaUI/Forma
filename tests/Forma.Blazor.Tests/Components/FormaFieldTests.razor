@@ -323,6 +323,43 @@
         }
 
         [Fact]
+        public void Should_keep_its_messages_room_while_its_input_is_valid()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+
+            // Act
+            var cut = ctx.Render(
+                @<FakeFormHost EditContext="editContext">
+                    <FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)">
+                        <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                    </FormaField>
+                </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.Find(".forma-field-messages").Children);
+        }
+
+        [Fact]
+        public void Should_keep_no_messages_room_outside_a_form()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-field-messages"));
+        }
+
+        [Fact]
         public void Should_add_the_inline_class_when_asked()
         {
             // Arrange

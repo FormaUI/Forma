@@ -2,7 +2,8 @@
    FormaField — CSS isolation
    The label, required marker and validation messages around an input
    element the wrapping component renders, reached with ::deep, spaced from
-   its neighbors by the layout that holds it.
+   its neighbors by the layout that holds it, with one message line's room
+   beneath the element wherever it shows a form's messages.
    ============================================================ */
 
 /* ---------- wrapper ---------- */
@@ -136,10 +137,19 @@
     color: var(--forma-required-color, var(--danger-color));
 }
 
-/* ---------- validation message ---------- */
+/* ---------- validation messages ---------- */
+/* One message line's room while none shows, so a message arriving or leaving never moves what follows the field. */
+.forma-field-messages {
+    min-block-size: calc(var(--space-1) + 1lh);
+    padding-block-start: var(--space-1);
+    font-size: var(--font-size-sm);
+}
+
 .forma-field-message {
     display: block;
-    margin-block-start: var(--space-1);
-    font-size: var(--font-size-sm);
     color: var(--forma-invalid-color, var(--danger-color));
+}
+
+.forma-field-message + .forma-field-message {
+    margin-block-start: var(--space-1);
 }
