@@ -63,7 +63,7 @@
                         var dayClasses = GetDayClasses(date);
                         <button type="button"
                                 class="forma-calendar-day@(dayClasses)"
-                                disabled="@IsDayDisabled(date)"
+                                disabled="@(IsDayDisabled(date) || !RendererInfo.IsInteractive)"
                                 aria-label="@_calendarMonthRange.GetDayLabel(date)"
                                 aria-current="@(IsToday(dayClasses) ? "date" : null)"
                                 aria-pressed="@(IsSelected(dayClasses) ? "true" : null)"

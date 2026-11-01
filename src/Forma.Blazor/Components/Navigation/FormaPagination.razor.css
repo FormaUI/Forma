@@ -83,6 +83,13 @@
     cursor: default;
 }
 
+/* A static render disables every step, and the current one keeps its look, so the page it marks still stands out. */
+::deep .forma-pagination-navigation-step-current.forma-pagination-navigation-step-current:disabled {
+    background-color: var(--button-primary-color);
+    color: var(--button-primary-text-color);
+    cursor: default;
+}
+
 .forma-pagination-navigation-gap {
     color: var(--text-secondary-color);
 }

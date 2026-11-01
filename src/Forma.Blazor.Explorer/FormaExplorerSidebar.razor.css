@@ -119,6 +119,10 @@
     transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-select:disabled {
+    cursor: default;
+}
+
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-select.is-checked {
     background: var(--primary-color);
     border-color: var(--primary-color);
@@ -145,12 +149,13 @@
     transition: color 0.15s ease;
 }
 
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty.is-empty {
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty.is-empty,
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty:disabled {
     cursor: default;
 }
 
 @media (hover: hover) {
-    .forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty:not(.is-empty):hover {
+    .forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty:not(.is-empty, :disabled):hover {
         color: var(--primary-color);
     }
 }

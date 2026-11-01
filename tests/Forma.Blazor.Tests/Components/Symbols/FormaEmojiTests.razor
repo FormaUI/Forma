@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Emojis
+@using Forma.Tests.Blazor.Emojis
 @code {
     public sealed class Component
     {
@@ -103,6 +105,55 @@
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => ctx.Render(@<FormaEmoji Emoji="default" />));
+        }
+
+        [Fact]
+        public void Should_name_its_sheet_in_its_sprite_reference_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var provider = new FakeEmojiProvider(new EmojiSprite("grinning", "_content/Art/faces.svg"));
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" Provider="provider" />);
+
+            // Assert
+            Assert.Equal("_content/Art/faces.svg#grinning", cut.Find("svg use").GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_draw_an_emoji_whose_sheet_another_origin_serves_as_its_own_character_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var provider = new FakeEmojiProvider(new EmojiSprite("grinning", "https://cdn.example.com/faces.svg"));
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" Provider="provider" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("svg")),
+                () => Assert.Equal("😀", cut.Find("span").TextContent));
+        }
+
+        [Fact]
+        public void Should_reference_its_symbol_in_the_document_once_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            var provider = new FakeEmojiProvider(new EmojiSprite("grinning", "https://cdn.example.com/faces.svg"));
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" Provider="provider" />);
+
+            // Assert
+            Assert.Equal("#grinning", cut.Find("svg use").GetAttribute("href"));
         }
     }
 }

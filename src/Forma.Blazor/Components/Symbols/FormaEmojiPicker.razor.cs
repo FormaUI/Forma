@@ -124,9 +124,9 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
     private IReadOnlyList<string> RequiredSheets
         => _requiredSheets ??= [.. MatchingEmojis.Select(GetSheet).OfType<string>().Distinct(StringComparer.Ordinal)];
 
-    // Cells stop at the first emoji whose sheet has not completed.
+    // Cells stop at the first emoji whose sheet has not completed; a static render loads no sheet, and each cell names its own.
     private IReadOnlyList<EmojiInfo> RenderedEmojis
-        => _renderedEmojis ??= [.. MatchingEmojis.TakeWhile(info => GetSheet(info) is not { } sheet || IsCompleted(sheet))];
+        => _renderedEmojis ??= RendererInfo.IsInteractive ? [.. MatchingEmojis.TakeWhile(info => GetSheet(info) is not { } sheet || IsCompleted(sheet))] : MatchingEmojis;
 
     /// <summary>Forgets the derived view, which the next read rebuilds.</summary>
     private void InvalidateView()

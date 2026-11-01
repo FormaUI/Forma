@@ -69,7 +69,7 @@
                     class="forma-explorer-folder-select @(selected ? "is-checked" : "")"
                     aria-label="@(selected ? L["Deselect Folder \"{Name}\"", Item.Name] : L["Select Folder \"{Name}\"", Item.Name])"
                     aria-pressed="@(selected ? "true" : "false")"
-                    disabled="@Item.IsDisabled"
+                    disabled="@(Item.IsDisabled || !RendererInfo.IsInteractive)"
                     @onclick="() => Interaction.ToggleFolderSelectAsync(Item)">
                 <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
             </button>
@@ -80,6 +80,7 @@
             <button type="button"
                     class="forma-explorer-folder-twisty"
                     aria-label="@(expanded ? L["Collapse {Name}", Item.Name] : L["Expand {Name}", Item.Name])"
+                    disabled="@(!RendererInfo.IsInteractive)"
                     @onclick="() => Interaction.ToggleExpanded(Item.Key)">
                 <FormaIcon Icon="@(expanded ? Glyph.ChevronDown : Glyph.ChevronRight)" Size="IconSize.Small" />
             </button>
@@ -91,7 +92,7 @@
 
         <button type="button"
                 class="forma-explorer-folder-target"
-                disabled="@(!opens)"
+                disabled="@(!opens || !RendererInfo.IsInteractive)"
                 @onclick="() => Interaction.SelectFolderAsync(Item)">
             <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaIcon Icon="@(isCurrent ? Glyph.FolderOpen : Glyph.Folder)" Size="IconSize.Small" /></span>
             <span class="forma-explorer-folder-name" title="@Item.Name">@Item.Name</span>

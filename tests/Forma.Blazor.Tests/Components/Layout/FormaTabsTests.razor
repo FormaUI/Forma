@@ -628,5 +628,27 @@
                 () => Assert.Equal("second", reported),
                 () => Assert.Equal("true", cut.FindAll(".forma-tab-button")[0].GetAttribute("aria-selected")));
         }
+
+        [Fact]
+        public void Should_render_its_tabs_disabled_and_the_active_one_selected_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab 1">Content 1</FormaTab>
+                    <FormaTab Title="Tab 2">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var tabs = cut.FindAll(".forma-tab-button");
+            Assert.Multiple(
+                () => Assert.All(tabs, tab => Assert.True(tab.HasAttribute("disabled"))),
+                () => Assert.Equal(["true", "false"], tabs.Select(tab => tab.GetAttribute("aria-selected"))),
+                () => Assert.Contains("Content 1", cut.Markup, StringComparison.Ordinal));
+        }
     }
 }

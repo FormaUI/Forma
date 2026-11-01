@@ -20,6 +20,10 @@
     touch-action: manipulation;
 }
 
+.forma-explorer-group-heading:disabled {
+    cursor: default;
+}
+
 .forma-explorer-group-chevron {
     display: inline-flex;
     color: var(--quiet-text-color);

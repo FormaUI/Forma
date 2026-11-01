@@ -19,6 +19,7 @@
      aria-posinset="@SiblingPosition"
      aria-expanded="@(canOpen ? isOpen ? "true" : "false" : null)"
      aria-selected="@Tree.GetAriaSelected(Item)"
+     aria-disabled="@(RendererInfo.IsInteractive ? null : "true")"
      aria-labelledby="@nameId"
      aria-owns="@OwnsId"
      tabindex="@Tree.GetNodeTabIndex(key)"

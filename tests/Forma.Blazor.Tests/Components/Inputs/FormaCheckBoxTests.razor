@@ -299,5 +299,39 @@
                 Assert.False(model.Toggle);
             });
         }
+
+        [Fact]
+        public void Should_be_disabled_before_the_renderer_is_interactive_when_it_has_a_click_handler()
+        {
+            // Arrange
+            using var ctx = new FormaCheckBoxTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" OnClick="() => { }" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find(".forma-checkbox").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_stay_enabled_before_the_renderer_is_interactive_without_a_click_handler()
+        {
+            // Arrange
+            using var ctx = new FormaCheckBoxTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.False(cut.Find(".forma-checkbox").HasAttribute("disabled"));
+        }
     }
 }

@@ -370,5 +370,24 @@
             // Assert
             Assert.Equal(PopoverAlignment.Start, cut.FindComponent<FormaPopover>().Instance.Alignment);
         }
+
+        [Fact]
+        public void Should_render_its_trigger_disabled_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Status = 2 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(cut.Find(".forma-select-trigger").HasAttribute("disabled")),
+                () => Assert.Equal("Running", cut.Find(".forma-select-trigger-text").TextContent));
+        }
     }
 }

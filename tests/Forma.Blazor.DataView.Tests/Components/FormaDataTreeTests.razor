@@ -49,6 +49,27 @@
         }
 
         [Fact]
+        public void Should_draw_the_roots_disabled_as_it_renders_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+
+            // Assert
+            var nodes = cut.FindAll("[role=treeitem]");
+            Assert.Multiple(
+                () => Assert.Equal(["Documents", "Pictures"], nodes.Select(node => node.QuerySelector(".forma-data-tree-node-name")!.TextContent).ToList()),
+                () => Assert.All(nodes, node => Assert.Equal("true", node.GetAttribute("aria-disabled"))),
+                () => Assert.Empty(cut.FindAll(".forma-spinner")));
+        }
+
+        [Fact]
         public void Should_carry_the_caller_s_name_on_the_tree_rather_than_the_root()
         {
             // Arrange

@@ -131,7 +131,8 @@ Every component must work in every render mode the library supports: static serv
 
 - Do write a component once for every render mode; what differs between modes belongs in a render mode's half and its registrar, never in a branch inside the component.
 - Do read the render a component is in from the framework's `RendererInfo`, never from the type of a service, the operating system, or a setting.
-- Do render a component's state under a static render as markup a reader can read, with its accessible names, roles and states, and render a control whose action needs interactivity disabled, as the button does with a click handler; a link, a native form control and a form's submit keep what the browser gives them.
+- Do render a component's state under a static render as markup a reader can read, with its accessible names, roles and states, and render a control whose action needs interactivity disabled, as the button does with a click handler, `aria-disabled` where it is an element of a widget's role; a link, a native form control and a form's submit keep what the browser gives them.
+- Do keep the look that carries a disabled control's state, a pressed toggle, a selected tab, the current page, a day outside the range, so the state still shows where a static render disables the control; a control with no disabled look of its own loses only its pointer and its hover, and a look that marks a day or an item unavailable stays with the state it marks rather than spreading to every control a static render disables.
 - Don't start anything during a static render that waits on the browser, and don't throw from one because a script, an interop call or a subscription is unavailable.
 - Don't register a service that stands in for one another registrar supplies, the platform's or a package's; resolve it where it is registered and fall back in the consumer, so every host's registration order works.
 

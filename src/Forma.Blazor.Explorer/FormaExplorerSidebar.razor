@@ -44,6 +44,7 @@
                 <span class="forma-explorer-folder-twisty is-empty" aria-hidden="true"></span>
                 <button type="button"
                         class="forma-explorer-folder-target"
+                        disabled="@(!RendererInfo.IsInteractive)"
                         @onclick="() => SelectFolderAsync(null)">
                     <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaIcon Icon="@(CurrentFolder is null ? Glyph.FolderOpen : Glyph.Folder)" Size="IconSize.Small" /></span>
                     <span class="forma-explorer-folder-name">@L["All Media"]</span>

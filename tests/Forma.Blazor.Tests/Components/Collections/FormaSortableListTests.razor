@@ -445,6 +445,27 @@
             Assert.DoesNotContain("forma-sortable-list-row-drag", cut.Find("ul").ClassName);
         }
 
+        [Fact]
+        public void Should_render_its_handles_disabled_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var items = CreateItems(3);
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+
+            // Assert
+            var handles = cut.FindAll(".forma-sortable-list-handle");
+            Assert.Multiple(
+                () => Assert.Equal(3, handles.Count),
+                () => Assert.All(handles, handle => Assert.True(handle.HasAttribute("disabled"))));
+        }
+
         private sealed record SortableItem(int Id, string Title);
     }
 }

@@ -817,5 +817,21 @@
                     cut.Find("iframe").GetAttribute("src"));
             });
         }
+
+        [Fact]
+        public void Should_render_its_play_control_disabled_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(cut.Find("button.forma-video-player-facade").HasAttribute("disabled")),
+                () => Assert.Equal("Play A video", cut.Find(".forma-video-player-facade-label").TextContent));
+        }
     }
 }

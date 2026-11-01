@@ -47,6 +47,9 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     private bool IsOpen
         => Popover is { IsOpen: true };
 
+    private bool IsTriggerDisabled
+        => Disabled || !RendererInfo.IsInteractive;
+
     private SearchBoxOptions SearchOptions
         => new() { Placeholder = L["Search"].Value };
 

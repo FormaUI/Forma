@@ -18,6 +18,7 @@
                         id="@tabElementId"
                         aria-selected="@isActive.ToString().ToLowerInvariant()"
                         aria-controls="@panelElementId"
+                        disabled="@(!RendererInfo.IsInteractive)"
                         tabindex="@(tab == FocusableTab ? "0" : "-1")"
                         @ref="_tabButtons[tab]"
                         @onclick="() => SelectTabAsync(tab)">

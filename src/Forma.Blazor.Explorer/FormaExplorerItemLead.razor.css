@@ -21,6 +21,10 @@
     touch-action: manipulation;
 }
 
+.forma-explorer-table-select:disabled {
+    cursor: default;
+}
+
 .forma-explorer-table-select.is-checked {
     background: var(--primary-color);
     border-color: var(--primary-color);

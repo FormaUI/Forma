@@ -30,7 +30,7 @@
                         class="forma-explorer-item-open"
                         aria-label="@labels.ActivationLabel"
                         aria-pressed="@(View.Selection.IsSelectionModeActive ? (selected ? "true" : "false") : null)"
-                        disabled="@item.IsDisabled"
+                        disabled="@(item.IsDisabled || !RendererInfo.IsInteractive)"
                         @onclick="() => ItemInteraction.ActivateAsync(item)"></button>
 
                 <span class="forma-explorer-item-lead">

@@ -149,7 +149,7 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-details-row:not(.is-disabled):hover {
+    .forma-explorer-details-row:not(.is-disabled):has(.forma-explorer-name-wrapper:enabled):hover {
         --forma-explorer-row-tint: var(--hover-bg-color);
     }
 }
@@ -198,6 +198,10 @@
     text-align: start;
     cursor: pointer;
     touch-action: manipulation;
+}
+
+.forma-explorer-name-wrapper:disabled {
+    cursor: default;
 }
 
 /* Isolated in the reading direction: a direction derived from the name would align a Latin one against it. */

@@ -27,7 +27,7 @@
             <button type="button"
                     class="forma-explorer-list-item-open"
                     aria-label="@labels.ActivationLabel"
-                    disabled="@item.IsDisabled"
+                    disabled="@(item.IsDisabled || !RendererInfo.IsInteractive)"
                     @onclick="() => ItemInteraction.ActivateAsync(item)">
                 @if (item.Resource is { } resource)
                 {

@@ -108,6 +108,7 @@
     border: none;
     background: transparent;
     border-radius: var(--radius-sm);
+    color: var(--text-primary-color);
     font: inherit;
     font-size: var(--font-size-sm);
     cursor: pointer;
@@ -122,8 +123,13 @@
 }
 
 .forma-calendar-day:focus-visible,
-.forma-calendar-day:disabled {
+.forma-calendar-day.unavailable {
     opacity: 0.35;
+    cursor: default;
+}
+
+/* A day a static render leaves inert keeps its look, so the days outside the range still stand apart. */
+.forma-calendar-day:disabled {
     cursor: default;
 }
 

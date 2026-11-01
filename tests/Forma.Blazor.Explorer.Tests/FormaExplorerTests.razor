@@ -2594,5 +2594,30 @@
             // Assert
             Assert.Empty(reports);
         }
+
+        [Theory]
+        [InlineData(ExplorerViewMode.Thumbnails)]
+        [InlineData(ExplorerViewMode.Details)]
+        [InlineData(ExplorerViewMode.List)]
+        public void Should_render_every_control_disabled_before_the_renderer_is_interactive(ExplorerViewMode viewMode)
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var parent = new CatalogFolderItem { Key = "covers", Name = "Covers", Capabilities = CatalogItemCapabilities.Open };
+            var child = new CatalogFolderItem { Key = "races", Name = "Races", Capabilities = CatalogItemCapabilities.Open, ParentKey = parent.Key };
+            IReadOnlyList<ICatalogItem> folders = [parent, child];
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg"), new VideoResourceInfo("https://example.com/clip.mp4")];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
+                                                Folders="folders"
+                                                ViewMode="viewMode"
+                                                GroupField="ExplorerGroupField.Kind"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true })" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("button").Where(button => !button.HasAttribute("disabled")).Select(button => button.ClassName));
+        }
     }
 }

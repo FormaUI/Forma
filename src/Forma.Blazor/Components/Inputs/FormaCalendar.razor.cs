@@ -221,6 +221,11 @@ public sealed partial class FormaCalendar : FormaComponentBase
             classes += " today";
         }
 
+        if (IsDayDisabled(date))
+        {
+            classes += " unavailable";
+        }
+
         if (Highlight is not { } highlight)
         {
             return classes;

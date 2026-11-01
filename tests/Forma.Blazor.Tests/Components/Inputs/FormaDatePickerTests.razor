@@ -449,6 +449,23 @@
             Assert.Throws<InvalidOperationException>(render);
         }
 
+        [Fact]
+        public void Should_render_its_trigger_disabled_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Date = new DateOnly(2025, 3, 15) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find(".forma-date-picker-trigger").HasAttribute("disabled"));
+        }
+
         private sealed class Deadline
         {
             public DateOnly Due { get; set; }

@@ -32,6 +32,9 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
     // Starts at the element's own default, so a checkbox never made indeterminate never calls the script.
     private bool _isIndeterminateApplied;
 
+    private bool IsDisabled
+        => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
+
     /// <inheritdoc />
     protected override void OnInitialized()
         => _checkBox = new CheckBox(Context.JS);

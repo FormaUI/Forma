@@ -567,5 +567,25 @@
             // Assert
             Assert.NotNull(cut.Find("[role='status']"));
         }
+
+        [Fact]
+        public void Should_render_its_tabs_and_the_whole_category_s_emojis_disabled_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            var tabs = cut.FindAll(".forma-emoji-picker-tab");
+            var emojis = cut.FindAll(".forma-emoji-picker-emoji");
+            Assert.Multiple(
+                () => Assert.Equal(GroupCount, tabs.Count),
+                () => Assert.NotEmpty(emojis),
+                () => Assert.All(tabs.Concat(emojis), button => Assert.True(button.HasAttribute("disabled"))),
+                () => Assert.Empty(cut.FindAll(".forma-spinner")));
+        }
     }
 }

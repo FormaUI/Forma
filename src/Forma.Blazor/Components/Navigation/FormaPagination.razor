@@ -30,7 +30,8 @@
                                 <FormaButton Variant="ButtonVariant.Primary"
                                              class="forma-pagination-navigation-step forma-pagination-navigation-step-current"
                                              aria-label="@L["Page {PageNumber}", step.Number]"
-                                             aria-current="page">
+                                             aria-current="page"
+                                             Disabled="!RendererInfo.IsInteractive">
                                     @step.Number
                                 </FormaButton>
                                 break;

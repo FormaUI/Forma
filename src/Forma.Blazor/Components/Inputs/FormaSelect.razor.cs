@@ -68,6 +68,9 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private bool IsOpen
         => Popover is { IsOpen: true };
 
+    private bool IsTriggerDisabled
+        => Disabled || !RendererInfo.IsInteractive;
+
     private string TriggerText
         => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an Option"];
 

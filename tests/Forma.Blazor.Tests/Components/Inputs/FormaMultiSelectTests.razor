@@ -366,5 +366,22 @@
             // Assert
             Assert.Equal(PopoverAlignment.Start, cut.FindComponent<FormaPopover>().Instance.Alignment);
         }
+
+        [Fact]
+        public void Should_render_its_trigger_disabled_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaMultiSelectTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find(".forma-multi-select-trigger").HasAttribute("disabled"));
+        }
     }
 }

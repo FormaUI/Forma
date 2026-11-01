@@ -57,7 +57,7 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-item:not(.is-disabled):hover {
+    .forma-explorer-item:not(.is-disabled):has(.forma-explorer-item-open:enabled):hover {
         border-color: var(--border-emphasis-color);
         background: var(--hover-bg-color);
         box-shadow: var(--shadow-small);
@@ -121,6 +121,10 @@
     background: transparent;
     cursor: pointer;
     touch-action: manipulation;
+}
+
+.forma-explorer-item-open:disabled {
+    cursor: default;
 }
 
 /* The tile's button rings inward. */

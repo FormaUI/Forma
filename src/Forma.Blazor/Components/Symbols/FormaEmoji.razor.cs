@@ -26,6 +26,8 @@ public sealed partial class FormaEmoji(IEmojiProvider? emojiProvider = null) : F
 
     [Inject] private IEmojiSpriteLoader SpriteLoader { get; set; } = default!;
 
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
     [CascadingParameter] private IEmojiProvider? CascadingProvider { get; set; }
 
     private string? Role
@@ -44,6 +46,13 @@ public sealed partial class FormaEmoji(IEmojiProvider? emojiProvider = null) : F
             ?? UnicodeEmojiProvider.Instance;
 
         _artwork = provider.GetArtwork(Emoji);
+
+        // A static render runs no script to adopt a sheet's symbols, and the browser resolves a reference into a sheet of the page's own
+        // origin alone; a sheet of another origin draws the reader's font.
+        if (!RendererInfo.IsInteractive && _artwork is EmojiSprite sprite && !IsPageOrigin(sprite.Sheet))
+        {
+            _artwork = EmojiArtwork.Unicode;
+        }
     }
 
     /// <inheritdoc />
@@ -63,8 +72,16 @@ public sealed partial class FormaEmoji(IEmojiProvider? emojiProvider = null) : F
         }
     }
 
-    private static string GetSpriteHref(EmojiSprite sprite)
-        => $"#{sprite.Symbol}";
+    private string GetSpriteHref(EmojiSprite sprite)
+        => RendererInfo.IsInteractive ? $"#{sprite.Symbol}" : $"{sprite.Sheet}#{sprite.Symbol}";
+
+    private bool IsPageOrigin(string sheet)
+    {
+        var page = new Uri(Navigation.BaseUri);
+
+        return Uri.TryCreate(page, sheet, out var address)
+            && Uri.Compare(address, page, UriComponents.SchemeAndServer, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) == 0;
+    }
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

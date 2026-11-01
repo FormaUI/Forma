@@ -35,7 +35,7 @@
                     aria-required="@(Required ? "true" : null)"
                     aria-labelledby="@LabelledBy"
                     aria-describedby="@TriggerDescribedBy"
-                    disabled="@Disabled"
+                    disabled="@IsTriggerDisabled"
                     @onclick="ToggleAsync">
                 <span class="forma-date-box-arrow" aria-hidden="true">&#9662;</span>
                 <span id="@ValueId" class="forma-date-box-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Date"])</span>

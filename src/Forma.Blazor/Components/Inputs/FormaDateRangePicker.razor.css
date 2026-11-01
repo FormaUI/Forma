@@ -29,8 +29,12 @@
     touch-action: manipulation;
 }
 
+.forma-date-range-picker-trigger:disabled {
+    cursor: default;
+}
+
 @media (hover: hover) {
-    .forma-date-range-picker-trigger:hover {
+    .forma-date-range-picker-trigger:not(:disabled):hover {
         border-color: var(--forma-date-range-picker-primary-color);
     }
 }

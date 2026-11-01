@@ -15,6 +15,11 @@
     --forma-button-ghost-hover-color: var(--primary-color);
 }
 
+/* Disabled, a pressed toggle keeps its fill, so whether it is on still shows. */
+::deep .forma-toggle-button-pressed.forma-toggle-button-pressed:disabled {
+    background-color: var(--button-quiet-hover-color);
+}
+
 @media (forced-colors: active) {
     ::deep .forma-toggle-button-pressed {
         border-color: Highlight;

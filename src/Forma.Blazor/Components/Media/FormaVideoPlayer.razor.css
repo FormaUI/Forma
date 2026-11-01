@@ -111,8 +111,12 @@
     box-shadow: var(--focus-ring-inset);
 }
 
+.forma-video-player-facade:disabled {
+    cursor: default;
+}
+
 @media (hover: hover) {
-    .forma-video-player-facade:hover .forma-video-player-facade-label {
+    .forma-video-player-facade:not(:disabled):hover .forma-video-player-facade-label {
         text-decoration: underline;
     }
 }

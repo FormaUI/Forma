@@ -25,6 +25,7 @@
                         aria-label="@FormatGroupTitle(tab)"
                         aria-selected="@isActive.ToString().ToLowerInvariant()"
                         aria-controls="@PanelElementId"
+                        disabled="@(!RendererInfo.IsInteractive)"
                         tabindex="@(isActive ? "0" : "-1")"
                         @ref="_tabButtons[tab.Id]"
                         @onclick="() => SelectGroupAsync(tab.Id)">
@@ -69,6 +70,7 @@
                             class="forma-emoji-picker-emoji"
                             title="@info.Name"
                             aria-label="@info.Name"
+                            disabled="@(!RendererInfo.IsInteractive)"
                             @onclick="() => SelectAsync(info)">
                             <FormaEmoji Emoji="info.Emoji" />
                     </button>

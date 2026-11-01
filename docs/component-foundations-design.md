@@ -281,8 +281,8 @@ web view. The interactive ones run the same component the same way, as the
 A static render runs no event and no script, so under it a component renders its state as
 markup a reader can read, its accessible names, roles and states included, and offers no control
 whose action needs interactivity: such a control renders disabled, as the button does with a
-click handler, while a link, a native form control and a form's submit keep what the browser
-gives them. A component reads the render it is in from the framework's `RendererInfo`, and
+click handler, keeping the look that carries its state, while a link, a native form control and
+a form's submit keep what the browser gives them. A component reads the render it is in from the framework's `RendererInfo`, and
 nothing it starts in a static render waits on the browser.
 
 ## What the bases do not carry

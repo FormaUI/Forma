@@ -133,12 +133,17 @@
     white-space: nowrap;
 }
 
+.forma-emoji-picker-tab:disabled,
+.forma-emoji-picker-emoji:disabled {
+    cursor: default;
+}
+
 @media (hover: hover) {
-    .forma-emoji-picker-tab:hover {
+    .forma-emoji-picker-tab:not(:disabled):hover {
         background: var(--forma-emoji-picker-hover-bg-color, var(--hover-bg-color));
     }
 
-    .forma-emoji-picker-emoji:hover {
+    .forma-emoji-picker-emoji:not(:disabled):hover {
         background: var(--forma-emoji-picker-hover-bg-color, var(--hover-bg-color));
     }
 }

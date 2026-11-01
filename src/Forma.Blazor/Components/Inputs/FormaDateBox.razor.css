@@ -31,13 +31,14 @@
 }
 
 @media (hover: hover) {
-    .forma-date-box-trigger:not([readonly]):hover {
+    .forma-date-box-trigger:not([readonly], :disabled):hover {
         border-color: var(--forma-date-box-primary-color);
     }
 }
 
 /* A read-only date is text, with nothing to press. */
-.forma-date-box-trigger[readonly] {
+.forma-date-box-trigger[readonly],
+.forma-date-box-trigger:disabled {
     cursor: default;
 }
 

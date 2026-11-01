@@ -758,6 +758,22 @@
             Assert.Equal([4], received);
         }
 
+        [Fact]
+        public void Should_render_every_step_disabled_and_the_current_one_marked_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaPagination TotalItems="100" PageSize="10" CurrentPage="3" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.All(cut.FindAll("button"), button => Assert.True(button.HasAttribute("disabled"))),
+                () => Assert.Equal("page", cut.Find(Current).GetAttribute("aria-current")));
+        }
+
         private static List<string> StepLabels(IRenderedComponent<IComponent> cut)
         {
             var items = cut.FindAll($"{Steps} > li").ToList();

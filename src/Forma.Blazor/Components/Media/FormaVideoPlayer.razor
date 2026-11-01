@@ -13,6 +13,7 @@
                 class="forma-video-player-facade"
                 aria-labelledby="@LabelId"
                 aria-describedby="@NoteId"
+                disabled="@(!RendererInfo.IsInteractive)"
                 @onclick="Activate">
             @if (!string.IsNullOrWhiteSpace(Placeholder))
             {

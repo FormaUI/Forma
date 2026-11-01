@@ -21,7 +21,7 @@
                              Size="ButtonSize.Mini"
                              IconOnly="true"
                              class="forma-sortable-list-handle"
-                             Disabled="@Disabled"
+                             Disabled="@(Disabled || !RendererInfo.IsInteractive)"
                              aria-label="@HandleLabel(index)">
                     <FormaIcon Icon="Glyph.DragHandle" />
                 </FormaButton>

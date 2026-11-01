@@ -33,8 +33,12 @@
     margin-inline-start: auto;
 }
 
+.forma-tab-button:disabled {
+    cursor: default;
+}
+
 @media (hover: hover) {
-    .forma-tab-button:hover {
+    .forma-tab-button:not(:disabled):hover {
         color: var(--text-primary-color);
         border-block-end-color: var(--border-color);
     }

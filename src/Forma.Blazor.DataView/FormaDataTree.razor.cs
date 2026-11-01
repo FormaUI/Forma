@@ -174,6 +174,10 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
+    /// <inheritdoc />
+    protected override Task OnParametersSetAsync()
+        => RendererInfo.IsInteractive ? Task.CompletedTask : LoadRootsAsync();
+
     // The profile is made again for a focus mode or a reading direction other than the one it was made for.
     private InputProfile GetInputProfile()
     {
@@ -246,7 +250,13 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             }
         }
 
-        // The roots are asked for once the tree shows, and again after the source or the sort left the data view with none.
+        await LoadRootsAsync();
+    }
+
+    // The roots are asked for once the tree shows, and again after the source or the sort left the data view with none; a static render
+    // runs no step after it renders, so there they are asked for as the tree's parameters are set.
+    private async Task LoadRootsAsync()
+    {
         if (IsActive && View.HasHierarchy && !View.AreRootsLoaded && !View.IsLoadingRoots && !_areRootsRequested)
         {
             _areRootsRequested = true;

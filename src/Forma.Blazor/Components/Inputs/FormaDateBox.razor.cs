@@ -69,6 +69,9 @@ public sealed partial class FormaDateBox : FormaComponentBase
     private bool IsOpen
         => Popover is { IsOpen: true };
 
+    private bool IsTriggerDisabled
+        => Disabled || !RendererInfo.IsInteractive;
+
     private bool HasValue
         => Date is not null;
 

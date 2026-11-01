@@ -275,6 +275,25 @@
             Assert.Equal(GetDrawnDays(fresh), GetDrawnDays(cut));
         }
 
+        [Fact]
+        public void Should_render_its_days_disabled_and_those_outside_its_range_apart_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var highlight = new DateRange(new DateOnly(2025, 3, 15), new DateOnly(2025, 3, 15));
+
+            // Act
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" MinDate="@(new DateOnly(2025, 3, 10))" />);
+
+            // Assert
+            var days = cut.FindAll("button.forma-calendar-day");
+            Assert.Multiple(
+                () => Assert.Equal(31, days.Count),
+                () => Assert.All(days, day => Assert.True(day.HasAttribute("disabled"))),
+                () => Assert.Equal(["1", "2", "3", "4", "5", "6", "7", "8", "9"], days.Where(day => day.ClassList.Contains("unavailable")).Select(day => day.TextContent.Trim())));
+        }
+
         private static string[] GetDrawnDays(IRenderedComponent<FormaCalendar> cut)
             => [.. cut.FindAll(".forma-calendar-day").Where(day => !day.ClassList.Contains("empty")).Select(day => day.TextContent.Trim())];
     }
