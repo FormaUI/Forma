@@ -15,6 +15,10 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor.WebView\Forma.Blazor.WebView.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Blazor.WebView\Forma.Framework.Culture.Blazor.WebView.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
     </ItemGroup>
 
 </Project>

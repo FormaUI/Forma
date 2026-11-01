@@ -32,7 +32,10 @@ cookie, which the coordinator writes in its `c=…|uic=…` serialization and re
 the switch. `AddFormaCultureSwitchPolicy(policy)` registers it, refusing a cookie a browser can't keep, and
 `CulturePublication` gives the marker's and the policy's attributes as the page publishes them. A
 standalone app's page has no server, so its runtime registers with a `CultureCoordinatorStart` carrying
-both, which the coordinator starts from on a page whose load initialized nothing.
+both, which the coordinator starts from on a page whose load initialized nothing. A web view's page starts
+the same way under a policy whose attributes `GetPolicyAttributes(policy, map, follows: true)` gives: its
+document then follows the pair an application's coordinator accepts, which
+`CultureCoordinatorRegistration.FollowAsync` hands it, rather than accepting one of its own.
 
 A switch completes once its own runtime's state has applied the pair it accepted. An enhanced
 navigation's landing changes the page's pair to the one its response was rendered in, and a switch

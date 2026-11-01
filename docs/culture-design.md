@@ -588,11 +588,20 @@ which this contract makes deliberate: a web view is one view of the application,
 - **A switch is accepted at once.** Its task completes once the state has applied the pair; every web view's
   document and address follow it as the coordinator delivers it, and one web view that is slow or refuses
   doesn't hold the switch back.
-- **A web view takes part as its first Forma component initializes,** registering with the coordinator,
+- **The coordinator is the integration.** The `ICultureStateIntegration` a web view's scope resolves is the
+  application's coordinator, which applies through the state's own, so a pair applied through it enters the
+  application's sequence as a switch does and every web view follows it. A pair a web view's document
+  accepts, a landing at another culture's address, names its cultures alone, so the coordinator takes it as
+  a switch only where it names another pair than the state's, and a pair the state holds with formats of
+  its own stays.
+- **A web view takes part as its first Forma component initializes,** or as a culture route page in it
+  lands, whichever comes first, registering with the coordinator,
   which hands it the accepted pair with its version; its document coordinator starts from it, as on a
   standalone app's page. A web view opened after a switch starts in the pair that switch accepted.
 - **A web view, disposed as its native window closes,** releases its registration and every subscription
-  its components made, and one the host never disposed is dropped at the first delivery that fails. The
+  its components made, and one the host never disposed is dropped at the first delivery that fails or goes
+  a minute unanswered, the time Blazor Server gives a call into script by default, as a WPF web view's does
+  once its native window closed. The
   state, the coordinator and the accepted pair stay the application's, so the last web view's release
   changes no culture.
 

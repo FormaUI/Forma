@@ -60,14 +60,40 @@ gated as it says.
    another registrar supplies with `TryAdd`, the platform's or a package's; a contract only a host
    replaces, such as the sanitizer or the time provider, keeps its default, since a host's own
    registration replaces it in either order with `Add` and, made first, with `TryAdd`.
-4. **The WebView halves.** `Forma.Framework.Culture.Blazor.WebView` and `Forma.Blazor.WebView`, each with
+4. **The WebView halves.** ✅ `Forma.Framework.Culture.Blazor.WebView` and `Forma.Blazor.WebView`, each with
    the test project named after it: the application's state, coordinator and switch; each web view's
    registration, started by its first component, and its release; the ambient cultures applied to the
    process and each web view's UI thread; the document coordinator following the application's
    coordinator, replacing a web view's address under Forma's mark, and adopting on a traversal and a first
-   landing; the mark's reading for a navigation handler; and the startup checks rejecting a cookie policy
-   and a full-load switch. Gate: the halves' tests, the coordinator's script tests in its following mode,
-   and step 2's checks, each as the design states it.
+   landing; the mark's reading for a navigation handler, `IsCultureFollowing`; and the startup checks
+   rejecting a cookie policy and a full-load switch. Gate: the halves' tests, the coordinator's script tests
+   in its following mode, and step 2's checks, each as the design states it. The check host registers
+   through `AddFormaUIWebView` with culture routes, before the platform's registrar and after it, and the
+   browser check splits what the platform guarantees from what Forma does across web views: a switch from a
+   component and from native code reaching every web view's state, events, binding and document; every
+   address following under the mark, a guard on the user's work letting it pass and holding a navigation
+   away; a refusing handler keeping its address; a navigation to another culture's address switching the
+   application; a traversal and a web view opened at a stale address taking the application's culture; and
+   switching on past a closed native window. Step 2's two known failures are plain checks. Departures:
+   - Culture routing registered the culture coordination itself, so a render mode's half registered after
+     it found the state scoped, under WebAssembly as under a web view; it now registers only what it owns,
+     so it goes before or after any half.
+   - The state's notifier takes subscriptions from any thread and notifies every subscriber where one
+     fails, faulting with all of them, since the application's state is subscribed from every web view's
+     thread and one web view's failure mustn't leave the others showing the old pair.
+   - A culture route page starts its web view's part before it reports its landing, since a page lands
+     before any Forma component in it initializes; the design now says a web view takes part at whichever
+     comes first.
+   - A web view whose follow goes a minute unanswered is dropped, the time Blazor Server gives a call into
+     script by default: the check host showed a WPF web view whose native window closed without being
+     disposed answering nothing, so its first delivery never fails. The design now says so.
+   - The integration a web view resolves is the application's coordinator, so a pair applied through it
+     enters the application's sequence; a pair a document accepts names its cultures alone, and the
+     coordinator takes it only where the names differ from the state's, keeping formats a host pinned. The
+     design now says so.
+   - The startup checks run as the application first resolves its coordinator, at its first web view or its
+     first switch, since a native application starts no host to check from, and `AddFormaCultureWebView`
+     takes no policy, the state alone being the one a web view accepts.
 5. **A host's strings in the application.** The package's targets embed a host's locale files in a Blazor
    Hybrid application's assembly. Gate: an application built from the packed packages showing a host
    string in the switched culture.
@@ -83,8 +109,7 @@ gated as it says.
    release. Gate: the example hosts' checks.
 9. **Render modes in the gate.** An inventory check that every component a host places has a check page,
    and that every check page runs in every interactive runtime and statically; the Windows run of CI
-   installs what the WebView checks need; on another platform they report themselves skipped. Gate: CI on
-   both platforms with the WebView checks counted on Windows.
+   installs what the WebView checks need; on another platform they report themselves skipped. Gate: CI on both platforms with the WebView checks counted on Windows.
 10. **The host's setup.** The README sets out each host, its registration, its page, its persistence and its
     locale files, each block held to its example host; the repository structure, the vocabulary, the
     features status and the feature history describe the WebView half. Gate: the example hosts match their

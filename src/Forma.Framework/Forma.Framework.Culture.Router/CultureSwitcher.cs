@@ -22,9 +22,10 @@ public sealed class CultureSwitcher
     private readonly NavigationManager _navigationManager;
     private readonly CultureCoordinatorRegistration _registration;
     private readonly ILogger<CultureSwitcher> _logger;
+    private readonly ICultureScopeStart? _scopeStart;
 
-    /// <summary>Creates the switcher over the application's routes and the user scope's culture state, culture switch, navigation and registration with the page's culture coordinator.</summary>
-    public CultureSwitcher(CultureRouter cultureRouter, ICultureState cultureState, ICultureSwitch cultureSwitch, NavigationManager navigationManager, CultureCoordinatorRegistration registration, ILogger<CultureSwitcher> logger)
+    /// <summary>Creates the switcher over the application's routes and the user scope's culture state, culture switch, navigation, registration with the page's culture coordinator and, where its render mode starts nothing of its own, its part in the culture.</summary>
+    public CultureSwitcher(CultureRouter cultureRouter, ICultureState cultureState, ICultureSwitch cultureSwitch, NavigationManager navigationManager, CultureCoordinatorRegistration registration, ILogger<CultureSwitcher> logger, ICultureScopeStart? scopeStart = null)
     {
         ArgumentNullException.ThrowIfNull(cultureRouter);
         ArgumentNullException.ThrowIfNull(cultureState);
@@ -39,6 +40,7 @@ public sealed class CultureSwitcher
         _navigationManager = navigationManager;
         _registration = registration;
         _logger = logger;
+        _scopeStart = scopeStart;
     }
 
     /// <summary>The route of the culture state's pair, or the default route where none carries it.</summary>
@@ -83,7 +85,8 @@ public sealed class CultureSwitcher
     /// A segment that isn't a culture's token is not found wherever the page renders. A page an interactive router rendered
     /// within <see cref="CultureRouteScope"/> under <see cref="CultureSwitchMode.InPlace"/> follows its route: an address that isn't
     /// its route's canonical one is replaced by the canonical one, and otherwise the page reports its landing to the page's
-    /// coordinator and goes on once its culture state has applied the route's pair.
+    /// coordinator and goes on once its culture state has applied the route's pair, starting the user scope's part in the
+    /// culture first where its render mode starts nothing of its own.
     /// </remarks>
     /// <param name="token">The culture segment the page was routed with, <see langword="null"/> for its plain route.</param>
     /// <param name="isRoutedInPlace">Whether an interactive router rendered the page within <see cref="CultureRouteScope"/>.</param>
@@ -109,6 +112,8 @@ public sealed class CultureSwitcher
 
             return false;
         }
+
+        _scopeStart?.Start();
 
         try
         {

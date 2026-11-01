@@ -86,12 +86,17 @@ function readDocument() {
 function fakeBlazor() {
     const listeners = new Map();
     const navigations = [];
+    const navigationOptions = [];
 
     return {
         navigations,
+        navigationOptions,
         addEventListener: (name, callback) => listeners.set(name, [...(listeners.get(name) ?? []), callback]),
         raise: name => (listeners.get(name) ?? []).forEach(callback => callback({})),
-        navigateTo: address => navigations.push(address),
+        navigateTo: (address, options) => {
+            navigations.push(address);
+            navigationOptions.push(options);
+        },
     };
 }
 
@@ -311,6 +316,134 @@ describe('CultureCoordinator', () => {
 
             // Assert
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['en-US/en-US #0']);
+        });
+    });
+
+    describe("following an application's coordinator", () => {
+        // A web view's page: its start names the application's pair and a policy that follows the application's coordinator.
+        function followingStart({ culture = 'en', uiCulture = culture, direction = 'ltr', policy = addressPolicy() } = {}) {
+            return startOf({ culture, uiCulture, direction, policy: { ...policy, 'data-follows': '' } });
+        }
+
+        beforeEach(() => {
+            window.happyDOM.setURL('http://localhost/about#part');
+            window.Blazor = fakeBlazor();
+        });
+
+        afterEach(() => {
+            delete window.Blazor;
+        });
+
+        it('starts from the pair its registration supplies, culture addresses included', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+
+            // Act
+            await coordinator.register('a', receiver, 'webview', followingStart({ culture: 'he', direction: 'rtl' }));
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['he/he #0']);
+            expect(readDocument()).toBe('he/rtl');
+        });
+
+        it('follows a pair its application accepted, replacing the address in its route under the mark', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', followingStart());
+
+            // Act
+            registration.follow('he', 'he', 'rtl');
+
+            // Assert
+            expect(readDocument()).toBe('he/rtl');
+            expect(window.Blazor.navigations).toEqual(['http://localhost/he/about#part']);
+            expect(window.Blazor.navigationOptions).toEqual([{ replaceHistoryEntry: true, historyEntryState: coordinator.FollowMark }]);
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+        });
+
+        it('follows a pair under the state alone without navigating', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const registration = await coordinator.register('a', fakeReceiver(), 'webview', followingStart({ policy: { content: 'state' } }));
+
+            // Act
+            registration.follow('he', 'he', 'rtl');
+
+            // Assert
+            expect(readDocument()).toBe('he/rtl');
+            expect(window.Blazor.navigations).toEqual([]);
+        });
+
+        it('requests nothing for the landing its own replacement made', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', followingStart());
+            registration.follow('he', 'he', 'rtl');
+            window.happyDOM.setURL('http://localhost/he/about#part');
+
+            // Act
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+            expect(window.Blazor.navigations).toHaveLength(1);
+        });
+
+        it("takes the application's culture on its first landing, replacing a stale address", async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', followingStart({ culture: 'he', direction: 'rtl' }));
+
+            // Act
+            await registration.reportLanding(null, 1);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['he/he #0']);
+            expect(window.Blazor.navigations).toEqual(['http://localhost/he/about#part']);
+            expect(readDocument()).toBe('he/rtl');
+        });
+
+        it("takes the application's culture on a traversal, replacing the address it returned to", async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', followingStart());
+            await registration.reportLanding(null, 1);
+            registration.follow('he', 'he', 'rtl');
+            window.happyDOM.setURL('http://localhost/he/about#part');
+            await registration.reportLanding('he', 2);
+
+            // Act
+            window.happyDOM.setURL('http://localhost/about#part');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await registration.reportLanding(null, 3);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+            expect(window.Blazor.navigations).toEqual(['http://localhost/he/about#part', 'http://localhost/he/about#part']);
+            expect(readDocument()).toBe('he/rtl');
+        });
+
+        it("delivers a navigation the page made to another culture's address, writing no cookie", async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', followingStart());
+            await registration.reportLanding(null, 1);
+
+            // Act
+            window.happyDOM.setURL('http://localhost/he/about');
+            await registration.reportLanding('he', 2);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            expect(window.Blazor.navigations).toEqual([]);
+            expect(readDocument()).toBe('he/rtl');
+            expect(readRouteCookie()).toBeNull();
         });
     });
 

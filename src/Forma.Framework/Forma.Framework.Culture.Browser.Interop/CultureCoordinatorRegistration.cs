@@ -126,6 +126,50 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         }
     }
 
+    /// <summary>Has the page's document follow the pair of <paramref name="culture"/> and <paramref name="uiCulture"/> an application's coordinator accepted, on a page whose document follows one, as a web view's does.</summary>
+    /// <remarks>The document takes the pair's language and direction, and under the address policy the page's address moves into the pair's route, in place of the current history entry and under the mark a navigation handler reads.</remarks>
+    /// <param name="culture">The culture that formats dates, numbers and collation.</param>
+    /// <param name="uiCulture">The culture that chooses strings and direction.</param>
+    /// <param name="cancellationToken">Gives up on a document that doesn't answer.</param>
+    /// <returns>Whether the document took the pair; it can't once the registration ended, its connection to the browser went down, or the token gave up on it.</returns>
+    public async Task<bool> FollowAsync(CultureInfo culture, CultureInfo uiCulture, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(culture);
+        ArgumentNullException.ThrowIfNull(uiCulture);
+
+        IJSObjectReference registration;
+
+        try
+        {
+            registration = await GetRegistrationAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or JSException or JSDisconnectedException or OperationCanceledException)
+        {
+            return false;
+        }
+
+        try
+        {
+            await registration.InvokeVoidAsync("follow", cancellationToken, culture.Name, uiCulture.Name, uiCulture.TextInfo.IsRightToLeft ? "rtl" : "ltr").ConfigureAwait(false);
+
+            return true;
+        }
+        catch (JSDisconnectedException)
+        {
+            CultureBrowserInteropLog.CircuitDroppedWhileCalling(_environment.Logger, "follow", _environment.RuntimeId);
+        }
+        catch (OperationCanceledException)
+        {
+            CultureBrowserInteropLog.CallCanceled(_environment.Logger, "follow", _environment.RuntimeId);
+        }
+        catch (JSException ex)
+        {
+            CultureBrowserInteropLog.ScriptThrewWhileCalling(_environment.Logger, ex, "follow", _environment.RuntimeId);
+        }
+
+        return false;
+    }
+
     /// <summary>Reports the interactive landing at the culture route <paramref name="token"/> names, or at a plain address where it is <see langword="null"/>, completing once the coordinator accepted it and this registration's state applied the page's pair.</summary>
     /// <remarks>Each report carries its place among this registration's reports, so a report reaching the coordinator after a later one accepts nothing.</remarks>
     public async Task ReportLandingAsync(string? token)

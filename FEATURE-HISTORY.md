@@ -21,6 +21,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [Registration in either order](docs/component-foundations-design.md#the-null-objects): Forma registers no stand-in for what the platform or a package supplies, so a host registers Forma beside its platform's services, its logging, its localization and an artwork pack in any order, and the components fall back to the source text, the reader's font, the bundled glyphs and a runtime that throws at its first call where none is registered.
 
+- [The WebView half](src/Forma.Blazor.WebView/README.md), `AddFormaUIWebView`, and [the culture under Blazor Hybrid](docs/culture-design.md#blazor-hybrid): one culture across an application's web views, switched from any web view or from native code, applied to the state, the process's defaults and every web view's UI thread, each web view's document taking its language and direction and, under culture routing, its address moving into the switched culture's route, which a navigation handler tells by `IsCultureFollowing`.
+
 - [Culture routing](src/Forma.Framework/Forma.Framework.Culture.Router/README.md) registers only its own services, so `AddFormaCultureRouting` goes before or after a product's registrar; registered first, it had left a WebAssembly runtime's culture state scoped.
 
 - The state notifier takes subscriptions from any thread and notifies every subscriber where one fails, where it had stopped at the first failure.

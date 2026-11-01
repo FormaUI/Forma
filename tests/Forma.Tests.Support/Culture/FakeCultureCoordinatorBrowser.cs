@@ -5,7 +5,7 @@ using Forma.Tests.Interop;
 
 using Microsoft.JSInterop;
 
-/// <summary>A stand-in for the page's culture coordinator: a runtime importing its module, which accepts each request and each interactive landing in the document's sequence and delivers each accepted pair to every registration as the script does, recording every call and failing the calls a test names.</summary>
+/// <summary>A stand-in for the page's culture coordinator: a runtime importing its module, which accepts each request, each interactive landing and each pair an application's coordinator has it follow in the document's sequence and delivers each accepted pair to every registration as the script does, recording every call and failing the calls a test names.</summary>
 public sealed class FakeCultureCoordinatorBrowser
 {
     /// <summary>The culture coordinator's module.</summary>
@@ -15,6 +15,7 @@ public sealed class FakeCultureCoordinatorBrowser
     private readonly Dictionary<string, Registration> _registrations = new(StringComparer.Ordinal);
     private readonly Queue<string> _requestOutcomes = [];
     private readonly List<string> _routeCookies = [];
+    private readonly List<(string Culture, string UICulture)> _followed = [];
     private (string Token, string Culture, string UICulture)[] _routes = [];
     private string? _defaultToken;
 
@@ -47,6 +48,10 @@ public sealed class FakeCultureCoordinatorBrowser
     /// <summary>The tokens the coordinator wrote to the culture-route cookie, one per interactive landing it accepted, in order.</summary>
     public IReadOnlyList<string> RouteCookies
         => _routeCookies;
+
+    /// <summary>The pairs an application's coordinator had the document follow, in order.</summary>
+    public IReadOnlyList<(string Culture, string UICulture)> Followed
+        => _followed;
 
     /// <summary>Publishes the culture routes the page's address policy maps, each token to its pair, the address naming none taking <paramref name="defaultToken"/>.</summary>
     public void UseRoutes(string defaultToken, params (string Token, string Culture, string UICulture)[] routes)
@@ -121,6 +126,7 @@ public sealed class FakeCultureCoordinatorBrowser
         {
             "request" => Run(identifier, () => Request(registration, (string)args[0]!, (string)args[1]!)),
             "reportLanding" => Run(identifier, () => ReportLanding(registration, (string?)args[0], (int)args[1]!)),
+            "follow" => Run(identifier, () => Follow(registration, (string)args[0]!, (string)args[1]!)),
             "dispose" => Run(identifier, () => Dispose(registration)),
             _ => throw new JSException($"A registration has no '{identifier}'."),
         };
@@ -167,6 +173,22 @@ public sealed class FakeCultureCoordinatorBrowser
         if (route.Culture != Accepted.Culture || route.UICulture != Accepted.UICulture)
         {
             foreach (var live in Accept(route.Culture, route.UICulture))
+            {
+                _ = DeliverAsync(live);
+            }
+        }
+
+        return null;
+    }
+
+    // The document takes the pair it follows, delivering it to every registration but the one that has it follow.
+    private object? Follow(Registration registration, string culture, string uiCulture)
+    {
+        _followed.Add((culture, uiCulture));
+
+        if (culture != Accepted.Culture || uiCulture != Accepted.UICulture)
+        {
+            foreach (var live in Accept(culture, uiCulture).Where(other => other != registration))
             {
                 _ = DeliverAsync(live);
             }

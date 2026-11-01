@@ -1,22 +1,21 @@
-@page "/{Segment}/probe"
+@page "/{culture}/probe"
+@inherits CultureRoutePage
 @implements IDisposable
 @inject ProbeShell Shell
 @inject ProbeScope Scope
 @inject NavigationManager Navigation
-@inject CultureCoordinatorRegistration Registration
 @inject ICultureState CultureState
-@inject IServiceProvider Services
+@inject ICultureSwitch CultureSwitch
 
-@* One web view's page: what renders it and in which culture, a select reaching its script, an event, a binding, work begun
-   before a switch, the ways a culture is applied, the web views it opens and closes, another web view's address replaced
-   under a mark, and what its navigation saw. *@
+@* One web view's page, a culture route page: what renders it and in which culture, a select reaching its script, an event,
+   a binding, work begun before a switch, the ways a culture is applied, the application's switch from a component and from
+   native code, the web views it opens and closes, the guards a navigation handler keeps, and what its navigation saw. *@
 <output id="web-view">@WebView</output>
 <output id="renderer">@RendererInfo.Name @RendererInfo.IsInteractive</output>
-<output id="segment">@Segment</output>
+<output id="segment">@Culture</output>
 <output id="instance">@_instance</output>
 <output id="context">@_context</output>
 <output id="render-culture">@Ambient()</output>
-<output id="registered">@_registered</output>
 <output id="state">@CultureState.Culture.Name|@CultureState.UICulture.Name</output>
 
 <EditForm Model="_entry">
@@ -40,6 +39,7 @@
 <button id="apply-threads" @onclick="ApplyToThreads">Apply to threads</button>
 <button id="apply-captured" @onclick="ApplyInCapturedFlowAsync">Apply in captured flow</button>
 <button id="switch" @onclick="SwitchAsync">Switch</button>
+<button id="switch-native" @onclick="SwitchFromNativeCodeAsync">Switch from native code</button>
 <output id="switched">@_switched</output>
 
 <label>Start path <input id="start-path" @bind="_startPath" /></label>
@@ -49,10 +49,8 @@
 <button id="close-disposing" @onclick="() => Shell.Close(WebView, isDisposing: true)">Close and dispose</button>
 <output id="released">@_released</output>
 
-<label>Target <input id="target" @bind="_target" /></label>
-<label>Target segment <input id="target-segment" @bind="_targetSegment" /></label>
-<button id="replace-address" @onclick="ReplaceAddressAsync">Replace address</button>
-<label><input id="guard" type="checkbox" @bind="_isGuarding" /> Guard</label>
+<label><input id="guard-work" type="checkbox" @bind="_isGuardingWork" /> Guard work</label>
+<label><input id="refuse" type="checkbox" @bind="_isRefusing" /> Refuse every navigation</label>
 <a id="to-es" href="es/probe">es</a>
 <a id="to-he" href="he/probe">he</a>
 <ol id="navigations">
@@ -70,7 +68,6 @@
     private IDisposable? _locationChanging;
     private TaskCompletionSource? _workGate;
     private string? _context;
-    private string? _registered;
     private string? _event;
     private decimal _amount;
     private string? _draft;
@@ -80,41 +77,19 @@
     private string _startPath = "/en/probe";
     private string? _opened;
     private int _released;
-    private string _target = "B";
-    private string _targetSegment = "es";
-    private bool _isGuarding;
+    private bool _isGuardingWork;
+    private bool _isRefusing;
 
     [CascadingParameter(Name = "WebView")] public string WebView { get; set; } = default!;
 
-    [Parameter] public string Segment { get; set; } = default!;
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         Scope.WebView = WebView;
         _context = SynchronizationContext.Current?.GetType().Name;
-        Shell.Attach(new ProbeAttachment(WebView, SynchronizationContext.Current!, Navigation, action => InvokeAsync(action)));
+        Shell.Attach(new ProbeAttachment(WebView, SynchronizationContext.Current!, action => InvokeAsync(action)));
         _locationChanging = Navigation.RegisterLocationChangingHandler(OnLocationChangingAsync);
         Navigation.LocationChanged += OnLocationChanged;
         Shell.ScopeReleased += OnScopeReleased;
-
-        try
-        {
-            await Registration.RegisterAsync(new CultureCoordinatorStart
-            {
-                Marker = CulturePublication.GetMarkerAttributes(CultureState.Culture, CultureState.UICulture),
-                Policy = CulturePublication.GetPolicyAttributes(CultureSwitchPolicy.Default, null),
-                Direction = CultureState.IsRightToLeft ? "rtl" : "ltr",
-            });
-            _registered = "registered";
-        }
-        catch (JSException exception)
-        {
-            _registered = $"{nameof(JSException)}: {exception.Message}";
-        }
-        catch (InvalidOperationException exception)
-        {
-            _registered = $"{nameof(InvalidOperationException)}: {exception.Message}";
-        }
     }
 
     public void Dispose()
@@ -154,18 +129,16 @@
     private Task ApplyInCapturedFlowAsync()
         => Shell.ApplyInCapturedFlowAsync(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
 
-    // The application's switch, which the WebView half registers; a host without it has none to switch through.
     private async Task SwitchAsync()
     {
-        if (Services.GetService(typeof(ICultureSwitch)) is not ICultureSwitch cultureSwitch)
-        {
-            _switched = "no switch";
-
-            return;
-        }
-
-        await cultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo(_culture));
+        await CultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo(_culture));
         _switched = "switched";
+    }
+
+    private async Task SwitchFromNativeCodeAsync()
+    {
+        await Shell.SwitchFromNativeCodeAsync(CultureInfo.GetCultureInfo(_culture));
+        _switched = "switched from native code";
     }
 
     private void Open()
@@ -178,14 +151,12 @@
             StateHasChanged();
         });
 
-    private Task ReplaceAddressAsync()
-        => Shell.ReplaceAddressAsync(_target, _targetSegment);
-
+    // A guard on the user's work lets the web view's address follow the application's culture, which keeps the page and the work.
     private ValueTask OnLocationChangingAsync(LocationChangingContext context)
     {
         _navigations.Add($"changing {Navigation.ToAbsoluteUri(context.TargetLocation).AbsolutePath} state={context.HistoryEntryState ?? "none"} intercepted={context.IsNavigationIntercepted}");
 
-        if (_isGuarding)
+        if (_isRefusing || (_isGuardingWork && !context.IsCultureFollowing()))
         {
             context.PreventNavigation();
             _navigations.Add("prevented");

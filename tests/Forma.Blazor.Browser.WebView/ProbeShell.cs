@@ -4,9 +4,11 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Windows;
 
-using Microsoft.AspNetCore.Components;
+using Forma.Framework.Culture;
 
-/// <summary>The check host's native side: its native windows, what each one's web view attached, and the ways a culture can be applied to them.</summary>
+using Microsoft.Extensions.DependencyInjection;
+
+/// <summary>The check host's native side: its native windows, what each one's web view attached, the ways a culture can be applied to them, and a switch made from native code.</summary>
 /// <remarks>WPF's web view dispatches its components on the application's dispatcher whatever thread its native window runs on, so every native window here runs on the application's UI thread.</remarks>
 internal sealed class ProbeShell
 {
@@ -115,21 +117,11 @@ internal sealed class ProbeShell
         })));
     }
 
-    /// <summary>Replaces the address of the web view <paramref name="name"/> names with its page under <paramref name="segment"/>, under the mark a handler reads.</summary>
-    /// <param name="name">The web view's name.</param>
-    /// <param name="segment">The address's first segment.</param>
-    /// <returns>A task that completes once the web view's renderer asked its navigation to replace the address.</returns>
-    public Task ReplaceAddressAsync(string name, string segment)
-    {
-        var attachment = _attachments[name];
-
-        return attachment.InvokeAsync(() =>
-        {
-            var current = new Uri(attachment.Navigation.Uri);
-            var rest = current.AbsolutePath.Split('/', 3, StringSplitOptions.RemoveEmptyEntries) is [_, var path, ..] ? path : "probe";
-            attachment.Navigation.NavigateTo($"{segment}/{rest}{current.Query}{current.Fragment}", new NavigationOptions { ReplaceHistoryEntry = true, HistoryEntryState = ProbeAttachment.Mark });
-        });
-    }
+    /// <summary>Switches the application's culture from the application's native code, on a thread of the thread pool rather than any web view's.</summary>
+    /// <param name="culture">The culture switched to, both formatting and UI.</param>
+    /// <returns>A task that completes once the switch completed.</returns>
+    public Task SwitchFromNativeCodeAsync(CultureInfo culture)
+        => Task.Run(() => Services.GetRequiredService<ICultureSwitch>().SwitchAsync(culture));
 
     private void Show(string name, string startPath)
     {

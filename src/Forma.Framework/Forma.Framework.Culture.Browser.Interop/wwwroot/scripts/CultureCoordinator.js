@@ -31,6 +31,16 @@ let blazorApi = null;
 // The switch by address waiting for its navigation's landing.
 let pendingSwitch = null;
 
+// The history entry state of an address a following document replaces to follow its application's culture, which tells
+// a navigation handler that the page and the user's work stay.
+export const FollowMark = 'forma-culture';
+
+// What a following document knows of its own landings: the address its last replacement went to, whether a traversal
+// came before the next landing, and whether it has landed at all.
+let following = null;
+let isTraversing = false;
+let hasLanded = false;
+
 /** Reads the page's culture marker and the switch's policy from the document's head, once, as the document loads. */
 export function initialize(head = document.head) {
     if (initialization !== null) {
@@ -50,6 +60,11 @@ export function initialize(head = document.head) {
 
     initialization = { documentKey: crypto.randomUUID(), policy: readPolicy(head) };
     accepted = { ...marker, direction: servedPair.direction, number: 0 };
+
+    // A traversal is told by the document's own history, since the location's change reports one as any other.
+    if (initialization.policy.follows) {
+        addEventListener('popstate', () => isTraversing = true);
+    }
 }
 
 /**
@@ -200,9 +215,56 @@ class CultureCoordinatorRegistration {
             return;
         }
 
+        if (policy.follows) {
+            await this.#landFollowing(policy, toPair(route));
+
+            return;
+        }
+
         // No request carries an interactive landing to the server, so the browser names the route last chosen.
         writeRouteCookie(policy, route.token);
         await acceptLanding(toPair(route), this);
+    }
+
+    // A following document's landing: the one its own replacement made requests nothing; a traversal and its first landing
+    // take the application's culture, replacing their address where it is another culture's; a navigation the page made
+    // to another culture's address is accepted, and its delivery requests the switch from the application's coordinator.
+    async #landFollowing(policy, pair) {
+        const isFollowing = following !== null && isSameAddress(following, location.href);
+        const isAdopting = isTraversing || !hasLanded;
+        following = null;
+        isTraversing = false;
+        hasLanded = true;
+
+        if (isFollowing || isSamePair(accepted, pair)) {
+            return;
+        }
+
+        if (isAdopting) {
+            readdress(policy, accepted);
+
+            return;
+        }
+
+        await acceptLanding(pair, this);
+    }
+
+    /**
+     * Follows the pair `culture` and `uiCulture`, written `direction`, the application's coordinator accepted, on a page
+     * whose document follows an application's coordinator: the document takes its language and direction, and under the
+     * address policy the page's address moves into the pair's route.
+     */
+    follow(culture, uiCulture, direction) {
+        const policy = getInitialization().policy;
+        const pair = { culture, uiCulture, direction };
+
+        if (!isSamePair(accepted, pair)) {
+            accept(pair, [this]);
+        }
+
+        if (policy?.kind === 'address') {
+            readdress(policy, pair);
+        }
     }
 
     /** Delivers an accepted pair to this registration's state, completing once the state has applied it. */
@@ -247,7 +309,7 @@ function getInitialization(start = null) {
 // A page no server published a marker in publishes the marker and policy its runtime supplies, as a server publishes them,
 // and takes the marker's pair; its coordinator then starts from them as any page's does.
 function startPage(start, head = document.head) {
-    if (start.policy.content === 'address') {
+    if (start.policy.content === 'address' && !('data-follows' in start.policy)) {
         initialization = {
             error: new Error('A page without a server has no base for each culture its addresses carry, so a standalone app switches its culture state alone or through a cookie rather than through culture addresses.'),
         };
@@ -348,6 +410,25 @@ function navigate(policy, route, requester) {
         pendingSwitch = { route, requester, resolve, reject };
         blazorApi.navigateTo(destination);
     });
+}
+
+// A following document moves its page into the route carrying `pair`, keeping its page, query and fragment, in place of the
+// current history entry and under the mark a navigation handler reads.
+function readdress(policy, pair) {
+    const route = findRouteByPair(policy, pair.culture, pair.uiCulture);
+
+    if (route === null) {
+        return;
+    }
+
+    const destination = buildDestination(policy, route, location.href);
+
+    if (isSameAddress(destination, location.href)) {
+        return;
+    }
+
+    following = destination;
+    (blazorApi ?? window.Blazor).navigateTo(`${destination}${location.hash}`, { replaceHistoryEntry: true, historyEntryState: FollowMark });
 }
 
 function cancelPendingSwitch() {
@@ -517,10 +598,12 @@ function readMarker(head) {
 export function readPolicy(head) {
     const policy = head?.querySelector('meta[name="forma-culture-policy"]');
     const kind = policy?.getAttribute('content') ?? 'state';
+    const follows = policy?.hasAttribute('data-follows') ?? false;
 
     if (kind === 'address') {
         return {
             kind,
+            follows,
             routes: JSON.parse(policy.getAttribute('data-routes') ?? '[]'),
             defaultToken: policy.getAttribute('data-default'),
             prefixesDefault: policy.getAttribute('data-prefix') === 'always',
@@ -532,13 +615,14 @@ export function readPolicy(head) {
     }
 
     if (kind !== 'cookie') {
-        return { kind };
+        return { kind, follows };
     }
 
     const maxAge = policy.getAttribute('data-max-age');
 
     return {
         kind,
+        follows,
         name: policy.getAttribute('data-name'),
         path: policy.getAttribute('data-path') ?? '/',
         domain: policy.getAttribute('data-domain'),

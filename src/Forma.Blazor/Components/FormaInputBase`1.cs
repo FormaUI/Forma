@@ -117,12 +117,13 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     }
 
     /// <inheritdoc />
-    /// <remarks>The first call subscribes the component to its culture state, so each change of the state renders it again.</remarks>
+    /// <remarks>The first call starts the user scope's part in the culture where its render mode starts nothing of its own, and subscribes the component to its culture state, so each change of the state renders it again.</remarks>
     public override Task SetParametersAsync(ParameterView parameters)
     {
         if (!_isSubscribedToCultureState)
         {
             _isSubscribedToCultureState = true;
+            Services.GetService<ICultureScopeStart>()?.Start();
             CultureState.Subscribe(HandleCultureChangedAsync);
         }
 

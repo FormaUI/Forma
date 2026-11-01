@@ -23,8 +23,9 @@ public sealed class WebViewApplication : IAsyncDisposable
     public IBrowser Browser { get; }
 
     /// <summary>Starts the check host, skipping the check where WebView2 can't run.</summary>
+    /// <param name="environment">The environment variables the check host starts with beside its own, by name.</param>
     /// <returns>The application, its first web view <c>A</c> opening.</returns>
-    public static async Task<WebViewApplication> StartAsync()
+    public static async Task<WebViewApplication> StartAsync(IReadOnlyDictionary<string, string>? environment = null)
     {
         Assert.SkipUnless(OperatingSystem.IsWindows(), "WebView2 runs on Windows alone, so the web view's checks run in the Windows gate.");
 
@@ -44,6 +45,11 @@ public sealed class WebViewApplication : IAsyncDisposable
         };
         start.Environment["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = $"--remote-debugging-port={port}";
         start.Environment["WEBVIEW2_USER_DATA_FOLDER"] = dataFolder;
+
+        foreach (var (name, value) in environment ?? new Dictionary<string, string>())
+        {
+            start.Environment[name] = value;
+        }
 
         var process = Process.Start(start) ?? throw new InvalidOperationException("The WebView check host did not start.");
         var playwright = await Playwright.CreateAsync().ConfigureAwait(false);

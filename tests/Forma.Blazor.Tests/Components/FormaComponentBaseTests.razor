@@ -2,6 +2,7 @@
 @using System.Globalization
 @using Forma.Framework.Culture
 @using Forma.Framework.JavaScript.Interop
+@using Forma.Tests.Culture
 @using Forma.Tests.Localization
 @using Microsoft.Extensions.Logging
 
@@ -110,6 +111,22 @@
             // Assert
             Assert.Equal(2, cut.RenderCount);
             Assert.Equal(before, cut.Instance.OwnContext.RuntimeId);
+        }
+
+        [Fact]
+        public void Should_start_the_scope_s_part_in_the_culture_as_it_first_sets_its_parameters()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            var start = new FakeCultureScopeStart();
+            ctx.Services.AddSingleton<ICultureScopeStart>(start);
+            var cut = ctx.Render<Announcer>();
+
+            // Act
+            cut.Render();
+
+            // Assert
+            Assert.Equal(1, start.Starts);
         }
 
         [Fact]

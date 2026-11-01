@@ -17,7 +17,7 @@ public sealed class CultureRoutePageTests
     private static readonly RendererInfo InteractiveServer = new("Server", isInteractive: true);
     private static readonly RendererInfo Static = new("Static", isInteractive: false);
 
-    private static ServiceProvider CreateServices(FakeNavigationManager navigationManager, FakeCultureCoordinatorBrowser browser, CultureSwitchMode cultureSwitchMode = CultureSwitchMode.InPlace, CulturePrefix prefix = CulturePrefix.ExceptDefault, ILoggerFactory? loggerFactory = null)
+    private static ServiceProvider CreateServices(FakeNavigationManager navigationManager, FakeCultureCoordinatorBrowser browser, CultureSwitchMode cultureSwitchMode = CultureSwitchMode.InPlace, CulturePrefix prefix = CulturePrefix.ExceptDefault, ILoggerFactory? loggerFactory = null, bool registersOnStart = false)
     {
         browser.UseRoutes("en", ("en", "en", "en"), ("he", "he", "he"));
 
@@ -29,6 +29,12 @@ public sealed class CultureRoutePageTests
         if (loggerFactory is not null)
         {
             services.AddSingleton(loggerFactory).AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+        }
+
+        // A render mode that starts nothing of its own, as a web view's, registers the scope as its part in the culture starts.
+        if (registersOnStart)
+        {
+            services.AddScoped<ICultureScopeStart>(scoped => new FakeCultureScopeStart { OnStart = () => _ = scoped.GetRequiredService<CultureCoordinatorRegistration>().RegisterAsync() });
         }
 
         return services
@@ -122,6 +128,25 @@ public sealed class CultureRoutePageTests
                 () => Assert.Equal(1, scope.ServiceProvider.GetRequiredService<ICultureState>().Revision),
                 () => Assert.Equal(["he"], browser.RouteCookies),
                 () => Assert.Empty(renderer.Exceptions));
+        }
+
+        [Fact]
+        public async Task Should_start_its_scope_s_part_in_the_culture_before_it_reports_its_landing()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            var browser = new FakeCultureCoordinatorBrowser("en");
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/he/about")), browser, registersOnStart: true);
+            await using var scope = provider.CreateAsyncScope();
+            await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
+
+            // Act
+            await renderer.RenderAsync(CreatePage("he", []));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["he"], GetLandings(browser).Select(landing => (string?)landing.Arguments[0])),
+                () => Assert.Equal("he", scope.ServiceProvider.GetRequiredService<ICultureState>().UICulture.Name));
         }
 
         [Fact]

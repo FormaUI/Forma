@@ -17,6 +17,7 @@
     <Project Path="src\Forma.Framework\Forma.Framework.Culture.Browser.Interop\Forma.Framework.Culture.Browser.Interop.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Culture.Blazor.Server\Forma.Framework.Culture.Blazor.Server.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Culture.Blazor.WebAssembly\Forma.Framework.Culture.Blazor.WebAssembly.csproj" />
+    <Project Path="src\Forma.Framework\Forma.Framework.Culture.Blazor.WebView\Forma.Framework.Culture.Blazor.WebView.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
@@ -44,6 +45,7 @@
     <Project Path="src\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
     <Project Path="src\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
     <Project Path="src\Forma.Blazor.WebAssembly\Forma.Blazor.WebAssembly.csproj" />
+    <Project Path="src\Forma.Blazor.WebView\Forma.Blazor.WebView.csproj" />
     <Project Path="src\Forma.Locales\Forma.Blazor.Locales.Hebrew\Forma.Blazor.Locales.Hebrew.csproj" />
     <Project Path="src\Forma.Locales\Forma.Blazor.Locales.Spanish\Forma.Blazor.Locales.Spanish.csproj" />
 
@@ -56,6 +58,7 @@
     <Project Path="tests\Forma.Blazor.Composer.Tests\Forma.Blazor.Composer.Tests.csproj" />
     <Project Path="tests\Forma.Blazor.Server.Tests\Forma.Blazor.Server.Tests.csproj" />
     <Project Path="tests\Forma.Blazor.WebAssembly.Tests\Forma.Blazor.WebAssembly.Tests.csproj" />
+    <Project Path="tests\Forma.Blazor.WebView.Tests\Forma.Blazor.WebView.Tests.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Host\Forma.Blazor.Browser.Host.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Host.Client\Forma.Blazor.Browser.Host.Client.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Full\Forma.Blazor.Browser.Full.csproj" />
@@ -80,6 +83,7 @@
     <Project Path="tests\Forma.Framework.Culture.Router.AspNetCore.Tests\Forma.Framework.Culture.Router.AspNetCore.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Culture.Router.Tests\Forma.Framework.Culture.Router.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Culture.Blazor.WebAssembly.Tests\Forma.Framework.Culture.Blazor.WebAssembly.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Culture.Blazor.WebView.Tests\Forma.Framework.Culture.Blazor.WebView.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Culture.Browser.Interop.Tests\Forma.Framework.Culture.Browser.Interop.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Culture.Blazor.Server.Tests\Forma.Framework.Culture.Blazor.Server.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />

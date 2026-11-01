@@ -6,6 +6,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="Forma.Framework.Culture.Blazor.WebAssembly" />
+        <InternalsVisibleTo Include="Forma.Framework.Culture.Blazor.WebView" />
     </ItemGroup>
 
     <ItemGroup>

@@ -22,14 +22,27 @@ public static class CulturePublication
         };
     }
 
-    /// <summary>The switch policy's attributes: the address policy publishing <paramref name="map"/> where there is one, otherwise <paramref name="policy"/>.</summary>
+    /// <summary>The switch policy's attributes: the address policy publishing <paramref name="map"/> where there is one, otherwise <paramref name="policy"/>, and whether the page's document follows an application's coordinator.</summary>
     /// <param name="policy">How a switch persists the pair the page accepts.</param>
     /// <param name="map">The mapping between culture addresses and pairs the page publishes.</param>
+    /// <param name="follows">Whether the page's document follows the pair an application's coordinator accepts, as a web view's does, rather than accepting one of its own.</param>
     /// <returns>The policy's attributes by name, a present attribute that has no value holding the empty string.</returns>
-    public static IReadOnlyDictionary<string, string> GetPolicyAttributes(CultureSwitchPolicy policy, CultureRouteMap? map)
+    public static IReadOnlyDictionary<string, string> GetPolicyAttributes(CultureSwitchPolicy policy, CultureRouteMap? map, bool follows = false)
     {
         ArgumentNullException.ThrowIfNull(policy);
 
+        var attributes = CreatePolicyAttributes(policy, map);
+
+        if (follows)
+        {
+            attributes["data-follows"] = string.Empty;
+        }
+
+        return attributes;
+    }
+
+    private static Dictionary<string, string> CreatePolicyAttributes(CultureSwitchPolicy policy, CultureRouteMap? map)
+    {
         if (map is not null)
         {
             return new Dictionary<string, string>

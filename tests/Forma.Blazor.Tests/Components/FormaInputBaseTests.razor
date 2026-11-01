@@ -3,6 +3,7 @@
 @using System.Globalization
 @using Forma.Framework.Css
 @using Forma.Framework.Culture
+@using Forma.Tests.Culture
 @using Microsoft.AspNetCore.Components.Rendering
 
 @code {
@@ -18,6 +19,22 @@
                 .Add(field => field.Class, hostClass)
                 .Add(field => field.FailsOnDispose, failsOnDispose)
                 .Add(field => field.FrameworkFailsOnDispose, frameworkFailsOnDispose));
+        }
+
+        [Fact]
+        public void Should_start_the_scope_s_part_in_the_culture_as_it_first_sets_its_parameters()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var start = new FakeCultureScopeStart();
+            ctx.Services.AddSingleton<ICultureScopeStart>(start);
+            var cut = RenderField(ctx, new FakeModel());
+
+            // Act
+            cut.Render();
+
+            // Assert
+            Assert.Equal(1, start.Starts);
         }
 
         [Fact]

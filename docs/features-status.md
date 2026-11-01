@@ -21,7 +21,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 | Work | State |
 | --- | --- |
 | [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
-| [Blazor Hybrid and every render mode](#blazor-hybrid-and-every-render-mode) | Steps 4 to 10 open |
+| [Blazor Hybrid and every render mode](#blazor-hybrid-and-every-render-mode) | Steps 5 to 10 open |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
@@ -100,7 +100,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | The server half, `AddFormaUIServer` and `FormaPageHead` | [`Forma.Blazor.Server`](../src/Forma.Blazor.Server/README.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented: every call a component makes to a script and every call back checked under WebAssembly and Auto, each runtime following the page's culture coordinator, an independent client culture and a standalone app's page included, a client reading its host's own strings, and the README's setup an example host for each arrangement | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, Forma's analyzer keeping each type crossing the interop serializable and its generator keeping those types' members with their library | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| Blazor Hybrid, the WebView half | [WebView design](webview-design.md) | In progress: [its plan](webview-implementation-plan.md)'s steps 4 to 10 | — |
+| Blazor Hybrid, the WebView half | [WebView design](webview-design.md) | In progress: `AddFormaUIWebView` and one culture across an application's web views implemented, checked in WPF; [its plan](webview-implementation-plan.md)'s steps 5 to 10 open | — |
 
 ### Build and verification
 
@@ -121,7 +121,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Blazor Hybrid and every render mode
 
-[Its plan](webview-implementation-plan.md) carries out [the WebView design](webview-design.md) and the culture design's [Blazor Hybrid](culture-design.md#blazor-hybrid) section, on WebView2 in WPF, Windows Forms and MAUI on Windows, with one culture for the application across its web views, and makes every render mode a gate every component passes, static rendering among them. The design landed with step 1, and the probe of two web views with step 2, establishing the hooks the rest rests on, and registration in either order with step 3; the WebView halves come next, then a host's strings, the components in a web view, static rendering, each host's integration, render modes in the gate and the host's setup.
+[Its plan](webview-implementation-plan.md) carries out [the WebView design](webview-design.md) and the culture design's [Blazor Hybrid](culture-design.md#blazor-hybrid) section, on WebView2 in WPF, Windows Forms and MAUI on Windows, with one culture for the application across its web views, and makes every render mode a gate every component passes, static rendering among them. The design landed with step 1, and the probe of two web views with step 2, establishing the hooks the rest rests on, registration in either order with step 3, and the WebView halves with step 4, one culture across an application's web views checked in WPF; a host's strings come next, then the components in a web view, static rendering, each host's integration, render modes in the gate and the host's setup.
 
 <a id="the-dom-watcher-and-engine"></a>
 

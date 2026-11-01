@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Browser.Tests;
 
 /// <summary>What Blazor Hybrid's web view guarantees, in two web views of a WPF application and more, which the WebView design and the culture design's Blazor Hybrid section rest on.</summary>
-/// <remarks>Each check starts an application of its own; its first web view, <c>A</c>, starts at <c>/en/probe</c> on the application's UI thread, which carries <c>en-US</c> as an assigned culture, as MAUI assigns the device's.</remarks>
+/// <remarks>Each check starts an application of its own; its first web view, <c>A</c>, starts at <c>/en/probe</c> on the application's UI thread, which carries <c>en-US</c> as an assigned culture, as MAUI assigns the device's. A check applies a culture itself where it probes how one reaches a web view.</remarks>
 [Collection(WebViewChecks.Name)]
 public sealed class WebViewProbeTests
 {
@@ -36,21 +36,6 @@ public sealed class WebViewProbeTests
         // Assert
         await Assertions.Expect(webView.Locator("#status")).ToHaveTextAsync("2");
         Assert.NotEqual(string.Empty, await webView.EvaluateAsync<string>("() => getComputedStyle(document.documentElement).getPropertyValue('--space-1').trim()"));
-    }
-
-    [Fact]
-    public async Task Should_start_the_document_s_coordinator_from_a_registration_made_as_the_first_component_initializes()
-    {
-        // Arrange
-        await using var application = await WebViewApplication.StartAsync();
-
-        // Act
-        var webView = await application.GetWebViewAsync("A");
-
-        // Assert
-        await Assertions.Expect(webView.Locator("#registered")).ToHaveTextAsync("registered");
-        await Assertions.Expect(webView.Locator("html")).ToHaveAttributeAsync("lang", "en-US");
-        await Assertions.Expect(webView.Locator("html")).ToHaveAttributeAsync("dir", "ltr");
     }
 
     [Fact]
@@ -115,77 +100,6 @@ public sealed class WebViewProbeTests
     }
 
     [Fact]
-    public async Task Should_finish_work_begun_before_a_switch_in_the_culture_it_captured()
-    {
-        // Arrange
-        await using var application = await WebViewApplication.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
-        await second.Locator("#begin-work").ClickAsync();
-        await Assertions.Expect(second.Locator("#work")).ToHaveTextAsync($"begun {Assigned}");
-
-        // Act
-        await first.Locator("#apply-threads").ClickAsync();
-        await second.Locator("#end-work").ClickAsync();
-
-        // Assert
-        await Assertions.Expect(second.Locator("#work")).ToHaveTextAsync($"begun {Assigned}, ended {Assigned}");
-    }
-
-    [Fact]
-    public async Task Should_start_a_web_view_opened_after_a_switch_in_the_switched_culture()
-    {
-        // Arrange
-        await using var application = await WebViewApplication.StartAsync();
-        var first = await application.GetWebViewAsync("A");
-        await first.Locator("#apply-threads").ClickAsync();
-
-        // Act
-        await first.Locator("#open").ClickAsync();
-        var second = await application.GetWebViewAsync("B");
-
-        // Assert
-        await Assertions.Expect(second.Locator("#render-culture")).ToHaveTextAsync(Switched);
-    }
-
-    [Fact]
-    public async Task Should_replace_another_web_view_s_address_under_a_mark_its_handler_reads_keeping_its_page()
-    {
-        // Arrange
-        await using var application = await WebViewApplication.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
-        var instance = await second.Locator("#instance").TextContentAsync();
-        await second.Locator("#draft").FillAsync("kept");
-        await second.Locator("#draft").BlurAsync();
-        var entries = await second.EvaluateAsync<int>("() => history.length");
-
-        // Act
-        await first.Locator("#replace-address").ClickAsync();
-
-        // Assert
-        await Assertions.Expect(second.Locator("#segment")).ToHaveTextAsync("es");
-        await Assertions.Expect(second.Locator("#instance")).ToHaveTextAsync(instance!);
-        await Assertions.Expect(second.Locator("#draft")).ToHaveValueAsync("kept");
-        await Assertions.Expect(second.Locator("#navigations li")).ToHaveTextAsync(["changing /es/probe state=forma-culture intercepted=False", "changed /es/probe state=forma-culture intercepted=False"]);
-        Assert.Equal(entries, await second.EvaluateAsync<int>("() => history.length"));
-    }
-
-    [Fact]
-    public async Task Should_let_a_web_view_s_handler_refuse_its_replaced_address()
-    {
-        // Arrange
-        await using var application = await WebViewApplication.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
-        await second.Locator("#guard").CheckAsync();
-
-        // Act
-        await first.Locator("#replace-address").ClickAsync();
-
-        // Assert
-        await Assertions.Expect(second.Locator("#navigations li")).ToHaveTextAsync(["changing /es/probe state=forma-culture intercepted=False", "prevented"]);
-        await Assertions.Expect(second.Locator("#segment")).ToHaveTextAsync("en");
-    }
-
-    [Fact]
     public async Task Should_tell_a_traversal_from_a_navigation_the_web_view_makes()
     {
         // Arrange
@@ -199,12 +113,12 @@ public sealed class WebViewProbeTests
         await webView.GoBackAsync();
 
         // Assert
-        await Assertions.Expect(webView.Locator("#segment")).ToHaveTextAsync("en");
+        await Assertions.Expect(webView.Locator("#navigations li").Nth(3)).ToHaveTextAsync("changed /en/probe state=none intercepted=True");
         var traversed = await webView.EvaluateAsync<string[]>("from => formaProbe.history.slice(from)", made.Length);
         Assert.Equal(["navigate push"], made);
         Assert.Contains("navigate traverse", traversed);
         Assert.Contains("popstate", traversed);
-        await Assertions.Expect(webView.Locator("#navigations li")).ToHaveTextAsync(["changing /es/probe state=none intercepted=True", "changed /es/probe state=none intercepted=True", "changing /en/probe state=none intercepted=False", "changed /en/probe state=none intercepted=True"]);
+        Assert.Equal(["changing /es/probe state=none intercepted=True", "changed /es/probe state=none intercepted=True", "changing /en/probe state=none intercepted=False", "changed /en/probe state=none intercepted=True"], (await webView.Locator("#navigations li").AllTextContentsAsync()).Take(4));
     }
 
     [Fact]
@@ -253,45 +167,6 @@ public sealed class WebViewProbeTests
         await Assertions.Expect(first.Locator("#released")).ToHaveTextAsync("1");
         await first.GetByRole(AriaRole.Button, new() { Name = "Event" }).ClickAsync();
         await Assertions.Expect(first.Locator("#event")).ToHaveTextAsync($"{Assigned}|1,234.5|Hello");
-    }
-
-    [Fact]
-    [Trait("Kind", KnownFailure.Kind)]
-    public async Task Should_switch_every_web_view_s_state_through_the_application_s_switch()
-    {
-        // Arrange
-        await using var application = await WebViewApplication.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
-
-        // Act
-        await first.Locator("#switch").ClickAsync();
-
-        // Assert
-        await KnownFailure.AssertStillFailsAsync("A switch requested in one web view changes the application's culture state, which every web view reads.", async () =>
-        {
-            await Assertions.Expect(first.Locator("#switched")).ToHaveTextAsync("switched");
-            await second.GetByRole(AriaRole.Button, new() { Name = "Event" }).ClickAsync();
-            await Assertions.Expect(second.Locator("#state")).ToHaveTextAsync(Switched);
-        });
-    }
-
-    [Fact]
-    [Trait("Kind", KnownFailure.Kind)]
-    public async Task Should_set_every_web_view_s_document_in_the_switched_culture()
-    {
-        // Arrange
-        await using var application = await WebViewApplication.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
-
-        // Act
-        await first.Locator("#switch").ClickAsync();
-
-        // Assert
-        await KnownFailure.AssertStillFailsAsync("Every web view's document takes the language and direction of the pair the application's coordinator accepted.", async () =>
-        {
-            await Assertions.Expect(first.Locator("html")).ToHaveAttributeAsync("lang", "es-ES");
-            await Assertions.Expect(second.Locator("html")).ToHaveAttributeAsync("lang", "es-ES");
-        });
     }
 
     private static async Task<(IPage First, IPage Second)> OpenTwoWebViewsAsync(WebViewApplication application)

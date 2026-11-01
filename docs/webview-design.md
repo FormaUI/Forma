@@ -39,10 +39,12 @@ Every registration resolves the same in either order, since no service Forma reg
 platform supplies, as the [component foundations](component-foundations-design.md#the-services) set out; a
 host's own registration made first still wins.
 
-Culture routing registers as it does in a Web App, `AddFormaCultureRouting`, under
-`CultureSwitchMode.InPlace`; `CultureSwitchMode.FullLoad`, a cookie policy and a culture cookie are rejected
-at startup with `InvalidOperationException` naming the setting, since nothing reloads a web view's session
-on purpose and no request reaches a server to read a cookie.
+Culture routing registers as it does in a Web App, `AddFormaCultureRouting`, before or after
+`AddFormaUIWebView`, since it registers only its own services, under `CultureSwitchMode.InPlace`;
+`CultureSwitchMode.FullLoad` and a cookie policy are rejected with `InvalidOperationException` naming the
+setting as the application first resolves its culture coordinator, at its first web view or its first
+switch, since nothing reloads a web view's session on purpose and no request reaches a server to read a
+cookie, and the culture-route cookie is never written.
 
 ## Lifetimes
 
@@ -53,13 +55,14 @@ The culture is the application's, and everything that reaches a document is its 
 | The application | The culture state, the application's culture coordinator and the switch |
 | Each web view | Its JS runtime, its navigation, its document's culture coordinator and its registration with the application's, the input router's scopes, every component's subscriptions, and every other scoped service |
 
-A web view takes part once the first Forma component in it initializes, which registers the web view with
-the application's coordinator. A web view releases its scope as it is disposed, which releases its
+A web view takes part once the first Forma component in it initializes, or a culture route page in it
+lands, whichever comes first, which registers the web view with the application's coordinator. A web view releases its scope as it is disposed, which releases its
 registration and every subscription its components made, and leaves the culture state and the coordinator
 to the application; a web view opened later starts from the state as it then stands. Windows Forms disposes a
 web view with its form, while WPF disposes no control on its own, so a WPF host disposes a web view as its
 native window closes. A web view that went without being disposed is dropped from the coordinator at the
-first delivery to it that fails.
+first delivery to it that fails or goes a minute unanswered, the time Blazor Server gives a call into script
+by default, since a WPF web view whose native window closed answers nothing.
 
 ## The page
 
@@ -99,7 +102,7 @@ everywhere.
 | V1 | Which hosts does Forma support under Blazor Hybrid? | WPF, Windows Forms and MAUI on Windows, on WebView2, each checked for its integration; Android, iOS and Mac Catalyst are outside the chosen scope |
 | V2 | What is the half called? | `Forma.Blazor.WebView` with `AddFormaUIWebView`, and the culture's `Forma.Framework.Culture.Blazor.WebView`, after Microsoft's `Microsoft.AspNetCore.Components.WebView` and the renderer's name, as each half takes its render mode's name |
 | V3 | What lives for the application, and what for a web view? | The culture state, the application's coordinator and the switch for the application; the JS runtime, navigation, the document's coordinator, the input router's scopes and every subscription for its web view, released as the web view is disposed |
-| V4 | When does a web view take part? | As the first Forma component in it initializes |
+| V4 | When does a web view take part? | As the first Forma component in it initializes, or a culture route page in it lands, whichever comes first |
 | V5 | In which order does a host register? | Either; no Forma registration stands in for a platform's service |
 | V6 | What does a Blazor Hybrid page carry? | The host's `index.html` with Forma's stylesheets; no `FormaPageHead`, each web view's coordinator starting from its registration |
 | V7 | How are the hosts checked? | The component suite in a WPF check host as the `webview` runtime, and an example host per supported host, set up from the packages as the README says, on the Windows gate |
