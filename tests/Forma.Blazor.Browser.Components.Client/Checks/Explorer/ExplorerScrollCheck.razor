@@ -5,9 +5,9 @@
 @using Forma.Framework.Explorer.Content.Queries
 @using Forma.Framework.Resources
 
-@* Twelve files four to a page, each further page appended as the explorer scrolls to its end. *@
-<div style="block-size: 480px">
-    <FormaExplorer Id="check" Items="Items" PageSize="4" Options="ScrollOptions" />
+@* Twelve files four to a page, the explorer held to its shortest and two tiles wide, so a page overflows it and each further page is appended only as it scrolls to its end. *@
+<div style="inline-size: 200px">
+    <FormaExplorer Id="check" Items="Items" PageSize="4" Options="ScrollOptions" Style="--forma-explorer-block-size: 18rem" />
 </div>
 
 @code {
