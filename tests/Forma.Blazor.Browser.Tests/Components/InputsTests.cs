@@ -286,6 +286,25 @@ public sealed partial class InputsTests
             await Assertions.Expect(numberInput).ToHaveValueAsync("42");
             await Assertions.Expect(numberInput).ToHaveAttributeAsync("aria-valuenow", "42");
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_step_from_the_number_typed_even_past_its_limit(string runtime)
+        {
+            // Arrange — a number above the limit typed and not yet committed
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "number-input");
+            await using var _ = context;
+            var numberInput = page.Locator("#check");
+            await ComponentChecks.WaitForInputRouteAsync(page, "#check", "number-input.decrease");
+            await numberInput.FillAsync("150");
+
+            // Act
+            await numberInput.PressAsync("ArrowDown");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("100");
+            await Assertions.Expect(numberInput).ToHaveValueAsync("100");
+        }
     }
 
     public sealed class CurrencyInput(BrowserHost host)

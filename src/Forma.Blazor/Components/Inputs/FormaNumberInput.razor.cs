@@ -233,7 +233,8 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         _draft.Edit(text, Context.CultureState.Culture);
     }
 
-    // A step starts from the number shown, or from the limit it moves away from, or from zero, and stops at the limits.
+    // A step starts from the number shown, an edit in progress's where its text reads as one in the culture it was typed in, or from the
+    // limit it moves away from, or from zero, and stops at the limits.
     private Task HandleActionAsync(string action, InputInfo input)
     {
         var direction = action switch
@@ -248,11 +249,12 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             return Task.CompletedTask;
         }
 
+        var start = _draft.IsInProgress && TryParseNumber(_draft.Text, _draft.Culture, out var drafted) ? drafted : CurrentValue;
         decimal next;
 
         try
         {
-            next = CurrentValue is { } value
+            next = start is { } value
                 ? Convert.ToDecimal(value, CultureInfo.InvariantCulture) + (direction * Step)
                 : (direction > 0 ? Min : Max) ?? 0;
         }

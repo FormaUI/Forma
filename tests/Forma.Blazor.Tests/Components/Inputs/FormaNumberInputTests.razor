@@ -925,7 +925,7 @@
         }
 
         [Fact]
-        public async Task Should_replace_an_edit_with_the_number_a_step_reaches()
+        public async Task Should_step_an_edit_from_the_number_it_writes_in_the_culture_it_was_typed_in()
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
@@ -943,8 +943,30 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(5.5m, model.Price),
-                () => Assert.Equal("5,5", cut.Find("input").GetAttribute("value")));
+                () => Assert.Equal(1234.5m, model.Price),
+                () => Assert.Equal("1234,5", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_step_a_number_past_its_limit_back_within_it()
+        {
+            // Arrange — a number above the limit typed and refused
+            using var ctx = new FormaNumberInputTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Count = 50 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Max="100" />
+            </FakeFormHost>);
+            cut.Find("input").Change("150");
+
+            // Act
+            await router.RouteAsync("number-input.decrease", "ArrowDown");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(100, model.Count),
+                () => Assert.Equal("100", cut.Find("input").GetAttribute("value")),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
         }
 
         [Theory]

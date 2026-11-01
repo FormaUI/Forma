@@ -160,9 +160,7 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 ## Open decisions
 
-Each needs the maintainer's decision; each is given with a proposal.
-
-- **Stepping a number from its draft.** A number input steps from its value, and a step replaces an edit in progress. *Proposal:* a step starts from the number the edit's text writes where it reads as one in the culture it was typed in, and from the value where it doesn't, as a native number field steps from what it shows.
+Every decision raised so far is decided and carried out.
 
 <a id="deferred"></a>
 

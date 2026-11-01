@@ -1,8 +1,8 @@
 @page "/{Runtime}/number-input"
 
-@* A number input bound to a whole number in a form, its number shown where the check reads it. *@
+@* A number input bound to a whole number up to 100 in a form, its number shown where the check reads it. *@
 <EditForm Model="_model">
-    <FormaNumberInput TValue="int" Id="check" Label="Quantity" @bind-Value="_model.Quantity" />
+    <FormaNumberInput TValue="int" Id="check" Label="Quantity" Max="100" @bind-Value="_model.Quantity" />
 </EditForm>
 <output id="result">@_model.Quantity.ToString(CultureInfo.InvariantCulture)</output>
 
