@@ -70,7 +70,8 @@ jobs:
           cache-dependency-path: tests/Forma.Blazor.Tests.Scripts/package-lock.json
 
       # The WebView checks drive Blazor Hybrid's web views through WebView2, whose runtime an image may lack; the
-      # evergreen bootstrapper installs the current one, and the run names the version it checked against.
+      # evergreen bootstrapper installs the current one, and the run names the version it checked against and the
+      # policies the image sets on Edge and WebView2, which decide which of the checks' browser arguments it takes.
       - name: Install the WebView2 runtime
         if: steps.filter.outputs.code == 'true' && runner.os == 'Windows'
         shell: pwsh
@@ -84,6 +85,12 @@ jobs:
               $version = (Get-ItemProperty $key).pv
           }
           "WebView2 runtime $version"
+          foreach ($policy in 'HKLM:\SOFTWARE\Policies\Microsoft\Edge', 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2', 'HKCU:\SOFTWARE\Policies\Microsoft\Edge') {
+              if (Test-Path $policy) {
+                  "Policies under $policy"
+                  Get-ItemProperty $policy | Format-List | Out-String
+              }
+          }
 
       - name: Run the gate
         if: steps.filter.outputs.code == 'true'
