@@ -147,14 +147,16 @@ public sealed class AndroidApplication : IAsyncDisposable
         throw new TimeoutException($"The application's web view opened no DevTools socket within {StartTimeout.TotalMinutes} minutes.");
     }
 
-    // What the web view shows, what holds the device's focus and what the device last reported as an error, for a start that didn't render.
+    // What the web view shows, what holds the device's focus, and what the application and its web view's console last wrote, for a start
+    // that didn't render.
     private static async Task<string> DescribeAsync(IPage page)
     {
         var content = await page.ContentAsync().ConfigureAwait(false);
-        var errors = await RunAdbAsync("logcat", "-d", "-t", "40", "*:E").ConfigureAwait(false);
+        var process = (await RunAdbAsync("shell", "pidof", PackageName).ConfigureAwait(false)).Trim();
+        var written = process.Length > 0 ? await RunAdbAsync("logcat", "-d", "-t", "60", $"--pid={process}").ConfigureAwait(false) : "nothing, the application isn't running";
         var newLine = Environment.NewLine;
 
-        return $"{newLine}The page at {page.Url} holds:{newLine}{content[..Math.Min(content.Length, 1500)]}{newLine}The focus is on {await GetFocusedWindowAsync().ConfigureAwait(false)}.{newLine}The device's last errors:{newLine}{errors}";
+        return $"{newLine}The page at {page.Url} holds:{newLine}{content[..Math.Min(content.Length, 1500)]}{newLine}The focus is on {await GetFocusedWindowAsync().ConfigureAwait(false)}.{newLine}The application and its web view's console last wrote:{newLine}{written}";
     }
 
     private static async Task<IPage> WaitForPageAsync(IBrowser browser)
