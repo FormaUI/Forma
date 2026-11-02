@@ -26,7 +26,8 @@
         the prefix HostLocalesAttribute names, which no resource name the build forms starts with; the
         attribute tells the runtime the assembly carries them, and where it reads them. A Blazor Hybrid
         application embeds them the same way, known as an application referencing its platform's web view
-        package.
+        package, its output an executable, or, on Android, whose build compiles an application's code as a
+        library, the project the Android SDK marks as an application.
     -->
     <PropertyGroup Condition="'$(LocalesPath)' == ''">
         <LocalesPath>.locales</LocalesPath>
@@ -36,7 +37,7 @@
         <_BlazorWebViewPlatformPackage Include="@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.Wpf'));@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.WindowsForms'));@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.Maui'))" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or ('@(_BlazorWebViewPlatformPackage)' != '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'))">
+    <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or ('@(_BlazorWebViewPlatformPackage)' != '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true'))">
         <_HostLocaleFile Include="$(LocalesPath)/**/*.json" />
         <EmbeddedResource Include="$(LocalesPath)/**/*.json" WithCulture="false" LogicalName=".locales.$([System.String]::Copy('%(RecursiveDir)%(Filename)%(Extension)').Replace('\', '.').Replace('/', '.'))" />
     </ItemGroup>

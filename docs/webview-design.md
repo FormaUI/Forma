@@ -101,7 +101,10 @@ take none of them without native help, so the host does each natively where its 
 A string is looked up synchronously, and an application packaged for MAUI has no folder beside it to read
 locale files from, so a host's own locale files are embedded in its application assembly by the package's
 targets, as a WebAssembly client's are, and the library's packs are embedded in their assemblies as
-everywhere.
+everywhere. The application's assembly is the one its runtime started it from, or, where the runtime names
+none, as .NET for Android and for iOS don't, each loaded assembly whose build recorded a pack or embedded the
+host's files; and Android, whose build compiles an application's code as a library, embeds them in the project
+it marks as an application.
 
 ## The checks
 

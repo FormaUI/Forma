@@ -33,6 +33,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [Native operations](docs/webview-design.md#native-operations): a host whose web view can't save a file, print or share does each natively through `INativeOperations`, which `FormaShareMenu` and `FormaComposer`'s preview and source views take where it is registered; printing hands the reader the document, written with the page's styles, as a file; and [`Forma.AddOns.Operations.Maui`](src/Forma.AddOns/Forma.AddOns.Operations.Maui/README.md) does it through the platform's share sheet in a MAUI application on Android, iOS and Mac Catalyst, which the MAUI example host now builds for.
 
+- [Strings in a Blazor Hybrid application](docs/webview-design.md#strings-in-the-application) on Android: the library's locale packs and the application's own strings are found where the runtime names no entry assembly, as .NET for Android's doesn't, and the application's own locale files are embedded in an Android build, which compiles the application's code as a library; both had left an Android application's strings in English.
+
 - [A culture per web view](docs/culture-design.md#a-culture-per-web-view): a Blazor Hybrid application declaring `CultureArrangement.Independent` gives each web view a culture state and a switch of its own, its document and its address following it alone, and a web view opening in the culture its start path names.
 
 - [Culture routing](src/Forma.Framework/Forma.Framework.Culture.Router/README.md) registers only its own services, so `AddFormaCultureRouting` goes before or after a product's registrar; registered first, it had left a WebAssembly runtime's culture state scoped.

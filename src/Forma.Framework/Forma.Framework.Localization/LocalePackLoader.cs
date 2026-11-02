@@ -20,6 +20,18 @@ public static class LocalePackLoader
             .Distinct(StringComparer.Ordinal)];
     }
 
+    /// <summary>The assemblies an application's build recorded its locales in: the entry assembly, or, where the runtime names none, as .NET for Android and for iOS don't, each loaded assembly whose build recorded a pack or embedded the host's own files.</summary>
+    /// <param name="entry">The assembly the runtime started the application from.</param>
+    /// <param name="loaded">The assemblies loaded into the application.</param>
+    public static IReadOnlyList<Assembly> GetApplicationAssemblies(Assembly? entry, IEnumerable<Assembly> loaded)
+    {
+        ArgumentNullException.ThrowIfNull(loaded);
+
+        return entry is not null
+            ? [entry]
+            : [.. loaded.Where(assembly => assembly.IsDefined(typeof(HostLocalesAttribute), inherit: false) || assembly.IsDefined(typeof(LocalePackAttribute), inherit: false))];
+    }
+
     /// <summary>The packs the assembly was built against, loaded by name.</summary>
     /// <param name="assembly">The assembly whose build stamped the names.</param>
     /// <param name="logger">Where a pack that cannot be loaded is reported.</param>

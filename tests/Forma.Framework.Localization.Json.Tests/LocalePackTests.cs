@@ -133,6 +133,35 @@ public sealed class LocalePackTests
     public sealed class Loading
     {
         [Fact]
+        public void Should_read_the_application_s_locales_from_the_entry_assembly()
+        {
+            // Arrange
+            var entry = new FakeAssembly("Contoso.App");
+            var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Hebrew") } };
+
+            // Act
+            var applications = LocalePackLoader.GetApplicationAssemblies(entry, [entry, library]);
+
+            // Assert
+            Assert.Equal([entry], applications);
+        }
+
+        [Fact]
+        public void Should_read_them_from_every_assembly_the_build_marked_where_the_runtime_names_no_entry()
+        {
+            // Arrange — an application on a runtime naming no entry assembly, as .NET for Android's, beside a library and the framework.
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new HostLocalesAttribute() } };
+            var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Hebrew") } };
+            var framework = new FakeAssembly("System.Runtime");
+
+            // Act
+            var applications = LocalePackLoader.GetApplicationAssemblies(null, [framework, application, library]);
+
+            // Assert
+            Assert.Equal([application, library], applications);
+        }
+
+        [Fact]
         public void Should_name_each_pack_the_assembly_was_built_against_once_in_order()
         {
             // Arrange
