@@ -180,9 +180,13 @@ jobs:
           tools="$ANDROID_HOME/cmdline-tools/latest/bin"
           adb="$ANDROID_HOME/platform-tools/adb"
           image='system-images;android-37.0;google_apis;x86_64'
+          # The SDK's tools write a virtual device where the emulator doesn't look unless both are told one folder.
+          export ANDROID_AVD_HOME="$HOME/.android/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
           yes | "$tools/sdkmanager" --licenses > /dev/null || true
           "$tools/sdkmanager" --install emulator platform-tools "$image" | tail -n 5
           echo no | "$tools/avdmanager" create avd --force --name forma --package "$image" --device pixel_7
+          "$ANDROID_HOME/emulator/emulator" -list-avds | grep -x forma
           "$ANDROID_HOME/emulator/emulator" -accel-check
           nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot > "$RUNNER_TEMP/emulator.log" 2>&1 &
           booted() { [ "$("$adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
