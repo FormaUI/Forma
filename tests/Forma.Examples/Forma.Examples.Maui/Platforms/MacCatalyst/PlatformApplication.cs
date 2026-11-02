@@ -2,9 +2,9 @@ namespace Forma.Examples.Maui;
 
 using Foundation;
 
-/// <summary>The application's iOS side, which starts it.</summary>
+/// <summary>The application's Mac Catalyst side, which starts it.</summary>
 [Register("AppDelegate")]
-public class AppDelegate : MauiUIApplicationDelegate
+public class PlatformApplication : MauiUIApplicationDelegate
 {
     /// <inheritdoc />
     protected override MauiApp CreateMauiApp()

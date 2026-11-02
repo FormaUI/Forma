@@ -32,8 +32,12 @@
         <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(FormaExamplePlatform)' == 'ios' Or '$(FormaExamplePlatform)' == 'maccatalyst'">
+    <PropertyGroup Condition="'$(FormaExamplePlatform)' == 'ios'">
         <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(FormaExamplePlatform)' == 'maccatalyst'">
+        <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
     </PropertyGroup>
 
     <ItemGroup>
