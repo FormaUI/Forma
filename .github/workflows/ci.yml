@@ -180,15 +180,19 @@ jobs:
           tools="$ANDROID_HOME/cmdline-tools/latest/bin"
           adb="$ANDROID_HOME/platform-tools/adb"
           image='system-images;android-37.0;google_apis;x86_64'
-          # The SDK's tools write a virtual device where the emulator doesn't look unless both are told one folder.
-          export ANDROID_AVD_HOME="$HOME/.android/avd"
-          mkdir -p "$ANDROID_AVD_HOME"
+          # The SDK's tools write a virtual device where the emulator doesn't look unless both are told one folder, kept on the
+          # runner's larger disk, since the home disk leaves too little for a device's data partition.
+          export ANDROID_AVD_HOME=/mnt/avd
+          sudo mkdir -p "$ANDROID_AVD_HOME"
+          sudo chown "$USER" "$ANDROID_AVD_HOME"
           yes | "$tools/sdkmanager" --licenses > /dev/null || true
           "$tools/sdkmanager" --install emulator platform-tools "$image" | tail -n 5
           echo no | "$tools/avdmanager" create avd --force --name forma --package "$image" --device pixel_7
+          echo 'disk.dataPartition.size=4G' >> "$ANDROID_AVD_HOME/forma.avd/config.ini"
           "$ANDROID_HOME/emulator/emulator" -list-avds | grep -x forma
           "$ANDROID_HOME/emulator/emulator" -accel-check
-          nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot > "$RUNNER_TEMP/emulator.log" 2>&1 &
+          df -h "$ANDROID_AVD_HOME"
+          nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -no-metrics -gpu swiftshader_indirect -no-snapshot > "$RUNNER_TEMP/emulator.log" 2>&1 &
           booted() { [ "$("$adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
           timeout 300 "$adb" wait-for-device || true
           for attempt in $(seq 1 120); do booted && break; sleep 5; done
