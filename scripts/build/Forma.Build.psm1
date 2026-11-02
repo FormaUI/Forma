@@ -75,6 +75,7 @@ function Initialize-BuildContext {
         BrowserComponents = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Components' 'Forma.Blazor.Browser.Components.csproj'
         BrowserWebView = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.WebView' 'Forma.Blazor.Browser.WebView.csproj'
         BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
+        AndroidChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Android.Tests' 'Forma.Blazor.Browser.Android.Tests.csproj'
         BrowserExamples = Join-Path $RepositoryRoot 'tests' 'Forma.Examples'
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
@@ -1257,7 +1258,7 @@ function Test-BrowserCheck {
 
 <#
 .SYNOPSIS
-Builds the MAUI example host from the solution's packages for Android, iOS or Mac Catalyst.
+Builds the MAUI example host from the solution's packages for Android, iOS or Mac Catalyst, and drives it on an attached Android device.
 
 .DESCRIPTION
 A Blazor Hybrid application on a phone, a tablet or a Mac takes Forma's packages as a host outside the repository
@@ -1265,7 +1266,9 @@ takes them, so the solution is packed at a version only the examples use, that v
 machine's package cache first, and the MAUI example host is built from the packages for the platform named, in
 Release, which trims it as the platform's own build does, so a package that doesn't load or a trim warning there
 fails here. Each platform needs its workload, maui-android, maui-ios or maui-maccatalyst; iOS and Mac Catalyst
-build on a Mac alone, and iOS builds for the simulator, which needs no signing.
+build on a Mac alone, and iOS builds for the simulator, which needs no signing. Where adb reaches an Android device
+or emulator, the Android build is installed on it and the Android browser check drives its web view; where none is
+attached, the step says so and builds alone.
 
 .PARAMETER Context
 The build context.
@@ -1286,12 +1289,19 @@ function Test-MobileExample {
 
     $solution = $Context.Solution
     $example = Join-Path $Context.BrowserExamples 'Forma.Examples.Maui'
+    $checks = $Context.AndroidChecks
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
     $platformName = $Platform.ToLowerInvariant()
     $workload = "maui-$platformName"
     $isSimulator = $Platform -eq 'iOS'
 
-    Invoke-BuildStep -Name 'mobile' -Target $example -Description "dotnet pack the solution and build the MAUI example host from it for $Platform" -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+    $description = "dotnet pack the solution and build the MAUI example host from it for $Platform"
+
+    if ($Platform -eq 'Android') {
+        $description += ', then drive it on the attached Android device where one is'
+    }
+
+    Invoke-BuildStep -Name 'mobile' -Target $example -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         if (-not (dotnet workload list | Select-String -Pattern "^\s*$workload\s" -Quiet)) {
             throw "The MAUI example host for $Platform needs the $workload workload: dotnet workload install $workload"
         }
@@ -1320,6 +1330,36 @@ function Test-MobileExample {
         }
 
         dotnet build @arguments
+
+        if ($LASTEXITCODE -ne 0 -or $platformName -ne 'android') {
+            return
+        }
+
+        # adb from the Android SDK the environment names, or the one on the path.
+        $adb = if ($env:ANDROID_HOME -and (Test-Path -LiteralPath (Join-Path $env:ANDROID_HOME 'platform-tools'))) {
+            (Get-ChildItem -LiteralPath (Join-Path $env:ANDROID_HOME 'platform-tools') -Filter 'adb*' | Where-Object { $_.BaseName -eq 'adb' } | Select-Object -First 1).FullName
+        }
+        else {
+            (Get-Command adb -ErrorAction SilentlyContinue).Source
+        }
+
+        if (-not $adb -or ((& $adb get-state 2>$null) -join '').Trim() -ne 'device') {
+            # adb answers that no device is attached with a failing code, which isn't the step's.
+            Write-Host '   No Android device or emulator is attached, so the Android build is built and not driven.'
+            $global:LASTEXITCODE = 0
+            return
+        }
+
+        $build = Get-ChildItem -LiteralPath (Join-Path $example 'bin' 'Release') -Recurse -Filter '*-Signed.apk' | Sort-Object LastWriteTime | Select-Object -Last 1
+        $previous = $env:FORMA_BROWSER_ANDROID
+
+        try {
+            $env:FORMA_BROWSER_ANDROID = $build.FullName
+            dotnet run --project $checks -c Release
+        }
+        finally {
+            $env:FORMA_BROWSER_ANDROID = $previous
+        }
     }.GetNewClosure()
 }
 

@@ -57,7 +57,8 @@ $cases = @(
         @{ Name = 'the browser check leaves the Blazor Hybrid example hosts out where WebView2 cannot run'; Script = 'browser.ps1'; Arguments = @(); Reject = @('Blazor Hybrid') }
     }
     @{ Name = 'mobile builds the MAUI example host for the platform named and does no more'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Android'); Expect = @('-- mobile', 'for Android'); Reject = @('-- build', '-- test', '-- browser') }
-    @{ Name = 'mobile builds for iOS when asked'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'iOS'); Expect = @('-- mobile', 'for iOS') }
+    @{ Name = 'mobile drives the Android build on an attached device'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Android'); Expect = @('drive it on the attached Android device') }
+    @{ Name = 'mobile builds for iOS when asked, which nothing drives'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'iOS'); Expect = @('-- mobile', 'for iOS'); Reject = @('drive it') }
     @{ Name = 'a platform mobile does not build for is refused'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Tizen'); Fails = $true }
     @{ Name = 'clean deletes build output and does no more'; Script = 'clean.ps1'; Arguments = @(); Expect = @('-- clean'); Reject = @('-- build') }
     @{ Name = 'a clean says when it reaches past the repository'; Script = 'clean.ps1'; Arguments = @('-All'); Expect = @('-- clean', 'the SDK left in the temp directory') }

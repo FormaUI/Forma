@@ -67,6 +67,7 @@
     <Project Path="tests\Forma.Blazor.Browser.Components.Checks\Forma.Blazor.Browser.Components.Checks.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Components.Client\Forma.Blazor.Browser.Components.Client.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.Tests\Forma.Blazor.Browser.Tests.csproj" />
+    <Project Path="tests\Forma.Blazor.Browser.Android.Tests\Forma.Blazor.Browser.Android.Tests.csproj" />
     <Project Path="tests\Forma.Blazor.Browser.WebView\Forma.Blazor.Browser.WebView.csproj" />
     <Project Path="tests\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Windows.Tests\Forma.Framework.Windows.Tests.csproj" />

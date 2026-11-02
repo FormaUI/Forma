@@ -21,7 +21,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 | Work | State |
 | --- | --- |
 | [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
-| [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | Driving the components on Android, iOS and Mac Catalyst |
+| [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on Android, iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
@@ -101,7 +101,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | The WebAssembly half, `AddFormaUIWebAssembly` | [WebAssembly design](webassembly-design.md) | Implemented: every call a component makes to a script and every call back checked under WebAssembly and Auto, each runtime following the page's culture coordinator, an independent client culture and a standalone app's page included, a client reading its host's own strings, and the README's setup an example host for each arrangement | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Trimming | [The client's build](webassembly-design.md#the-clients-build) | Implemented: every client library trimmed, Forma's analyzer keeping each type crossing the interop serializable and its generator keeping those types' members with their library | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Blazor Hybrid, the WebView half | [WebView design](webview-design.md) | Implemented on WPF, Windows Forms and MAUI on Windows: `AddFormaUIWebView`, one culture across an application's web views or [a culture per web view](culture-design.md#a-culture-per-web-view), a host's own strings embedded in its application, every component checked in a web view, and the README's setup an example host for each | [November 2026](../FEATURE-HISTORY.md#2026-11) |
-| Blazor Hybrid on Android, iOS and Mac Catalyst | [WebView design](webview-design.md#native-operations) | In progress: the MAUI example host builds for Android from the packages in CI, and for iOS and Mac Catalyst once a Mac carries Xcode 27, saving, printing and sharing through the platform's share sheet with `Forma.AddOns.Operations.Maui`; the components are not yet driven there | — |
+| Blazor Hybrid on Android, iOS and Mac Catalyst | [WebView design](webview-design.md#native-operations) | In progress: the MAUI example host builds for Android from the packages and runs on an emulator in CI, its web view driven by the Android browser check, and builds for iOS and Mac Catalyst once a Mac carries Xcode 27, saving, printing and sharing through the platform's share sheet with `Forma.AddOns.Operations.Maui`; the components are not yet driven there | — |
 
 ### Build and verification
 
@@ -122,14 +122,16 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Blazor Hybrid on phones and Macs
 
-A MAUI application on Android builds from Forma's packages, in Release and trimmed, in CI; on iOS and Mac Catalyst
-the .NET 11 release candidate's workloads need Xcode 27, which no hosted Mac carries yet, so those two build on a
-Mac by hand. Each saves, prints and shares through the platform's share sheet with
+A MAUI application on Android builds from Forma's packages, in Release and trimmed, and runs on an emulator in CI,
+where the Android browser check drives its web view: its strings switching with the culture, its stylesheets and
+its share menu reaching the share sheet. On iOS and Mac Catalyst the .NET 11 release candidate's workloads need
+Xcode 27, which no hosted Mac carries yet, so those two build on a Mac by hand. Each saves, prints and shares
+through the platform's share sheet with
 [`Forma.AddOns.Operations.Maui`](../src/Forma.AddOns/Forma.AddOns.Operations.Maui/README.md), as the WebView design's
-[native operations](webview-design.md#native-operations) set out. What remains is running the components there:
-the component checks driven in a web view on Android's emulator, whose WebView a check reaches through
-Chrome's DevTools protocol, and on iOS's simulator and a Mac, whose `WKWebView` a check reaches through Safari's
-remote inspector, each as a runtime of its own beside the Web App's and WebView2's.
+[native operations](webview-design.md#native-operations) set out. What remains is the component suite on those
+platforms, every check page as a runtime of its own beside the Web App's and WebView2's: on Android through the
+same DevTools socket, in a check host of its own, and on iOS's simulator and a Mac, whose `WKWebView` a check
+reaches through Safari's remote inspector, once a Mac carries Xcode 27.
 
 <a id="the-dom-watcher-and-engine"></a>
 

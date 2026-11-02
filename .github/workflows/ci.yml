@@ -167,6 +167,24 @@ jobs:
         if: steps.filter.outputs.code == 'true'
         run: dotnet workload install ${{ matrix.workload }}
 
+      # The mobile step drives the Android build on the device adb reaches: an emulator of the API level the workload
+      # targets, accelerated by the runner's KVM, booted before the step starts.
+      - name: Start an Android emulator
+        if: steps.filter.outputs.code == 'true' && matrix.platform == 'Android'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          tools="$ANDROID_HOME/cmdline-tools/latest/bin"
+          image='system-images;android-37.0;google_apis;x86_64'
+          yes | "$tools/sdkmanager" --licenses > /dev/null
+          "$tools/sdkmanager" --install emulator platform-tools "$image" > /dev/null
+          echo no | "$tools/avdmanager" create avd --force --name forma --package "$image" --device pixel_7
+          nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot > "$RUNNER_TEMP/emulator.log" 2>&1 &
+          "$ANDROID_HOME/platform-tools/adb" wait-for-device
+          timeout 600 bash -c 'until [ "$("$ANDROID_HOME/platform-tools/adb" shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 5; done'
+          "$ANDROID_HOME/platform-tools/adb" shell getprop ro.build.version.release
+
       - name: Build the MAUI example host for the platform
         if: steps.filter.outputs.code == 'true'
         env:
