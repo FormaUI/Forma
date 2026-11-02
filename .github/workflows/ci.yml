@@ -133,6 +133,7 @@ jobs:
   mobile:
     name: mobile (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
 
     strategy:
       fail-fast: false
@@ -175,15 +176,21 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
           tools="$ANDROID_HOME/cmdline-tools/latest/bin"
+          adb="$ANDROID_HOME/platform-tools/adb"
           image='system-images;android-37.0;google_apis;x86_64'
-          yes | "$tools/sdkmanager" --licenses > /dev/null
-          "$tools/sdkmanager" --install emulator platform-tools "$image" > /dev/null
+          yes | "$tools/sdkmanager" --licenses > /dev/null || true
+          "$tools/sdkmanager" --install emulator platform-tools "$image" | tail -n 5
           echo no | "$tools/avdmanager" create avd --force --name forma --package "$image" --device pixel_7
+          "$ANDROID_HOME/emulator/emulator" -accel-check
           nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot > "$RUNNER_TEMP/emulator.log" 2>&1 &
-          "$ANDROID_HOME/platform-tools/adb" wait-for-device
-          timeout 600 bash -c 'until [ "$("$ANDROID_HOME/platform-tools/adb" shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 5; done'
-          "$ANDROID_HOME/platform-tools/adb" shell getprop ro.build.version.release
+          if ! timeout 300 "$adb" wait-for-device || ! timeout 600 bash -c "until [ \"\$('$adb' shell getprop sys.boot_completed 2>/dev/null | tr -d '')\" = 1 ]; do sleep 5; done"; then
+            echo 'The emulator never finished booting; its log:'
+            tail -n 80 "$RUNNER_TEMP/emulator.log"
+            exit 1
+          fi
+          "$adb" shell getprop ro.build.version.release
 
       - name: Build the MAUI example host for the platform
         if: steps.filter.outputs.code == 'true'
