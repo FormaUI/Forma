@@ -127,9 +127,9 @@ jobs:
         if: steps.filter.outputs.code != 'true'
         run: echo 'Only prose changed, so the gate did not need to run.'
 
-  # A Blazor Hybrid application on a phone, a tablet or a Mac builds from Forma's packages on the platform's own
-  # machine, Android's on Linux and Apple's on a Mac, each with the MAUI workload for its platform, which the gate's
-  # machines have no use for.
+  # A Blazor Hybrid application on a phone or a tablet builds from Forma's packages on the platform's own machine, with
+  # the MAUI workload for its platform, which the gate's machines have no use for. Android's builds on Linux; Apple's
+  # need the Xcode their workloads name, which no hosted Mac carries yet, so `mobile.ps1` builds them on a Mac by hand.
   mobile:
     name: mobile (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
@@ -141,12 +141,6 @@ jobs:
           - platform: Android
             os: ubuntu-latest
             workload: maui-android
-          - platform: iOS
-            os: macos-latest
-            workload: maui-ios
-          - platform: MacCatalyst
-            os: macos-latest
-            workload: maui-maccatalyst
 
     steps:
       - uses: actions/checkout@v7
@@ -169,27 +163,14 @@ jobs:
         with:
           global-json-file: global.json
 
-      # Apple's workloads build with the Xcode their release asks for, which for a preview of .NET is a preview of Xcode,
-      # so the newest the image carries is chosen, a beta included, and the run names every one it had to choose from.
-      - name: Select the newest Xcode
-        if: steps.filter.outputs.code == 'true' && runner.os == 'macOS'
-        run: |
-          ls -d /Applications/Xcode*.app
-          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
-          sudo xcode-select -s "$xcode"
-          xcodebuild -version
-
       - name: Install the platform's MAUI workload
         if: steps.filter.outputs.code == 'true'
         run: dotnet workload install ${{ matrix.workload }}
 
-      # The newest image carries Xcode 26.6 while the release candidate's Apple workloads ask for Xcode 27, so their
-      # check of the Xcode version is skipped, as MSBuild reads the environment, and the newest Xcode builds them.
       - name: Build the MAUI example host for the platform
         if: steps.filter.outputs.code == 'true'
         env:
           NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
-          ValidateXcodeVersion: ${{ runner.os == 'macOS' && 'false' || '' }}
         run: pwsh ./scripts/build/mobile.ps1 -Platform ${{ matrix.platform }}
 
       - name: Report the build was not needed

@@ -114,7 +114,7 @@ everywhere.
   titles the host refreshes, the release of a web view whose native window closed, and the culture the
   application keeps from one run to the next.
 - **Android, iOS and Mac Catalyst.** The MAUI example host builds from Forma's packages for each, in Release,
-  trimmed as the platform's own build trims it, on the platform's own machine, and the native operations are
+  trimmed as the platform's own build trims it, on the platform's own machine, Android's in CI, and the native operations are
   checked against MAUI's share and file system contracts.
 - **The culture.** Two web views check what the culture design states: a switch in one and an event in the
   other; binding, formatting and a resource looked up in the host's own code; an asynchronous continuation; a
