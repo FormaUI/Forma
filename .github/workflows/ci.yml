@@ -193,7 +193,7 @@ jobs:
           "$ANDROID_HOME/emulator/emulator" -list-avds | grep -x forma
           "$ANDROID_HOME/emulator/emulator" -accel-check
           df -h "$ANDROID_AVD_HOME"
-          nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -no-metrics -gpu swiftshader_indirect -no-snapshot -partition-size 4096 > "$RUNNER_TEMP/emulator.log" 2>&1 &
+          nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -no-metrics -gpu swiftshader_indirect -no-snapshot -partition-size 4096 -cores 2 -memory 4096 > "$RUNNER_TEMP/emulator.log" 2>&1 &
           booted() { [ "$("$adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
           timeout 300 "$adb" wait-for-device || true
           for attempt in $(seq 1 120); do booted && break; sleep 5; done
@@ -202,6 +202,12 @@ jobs:
             tail -n 80 "$RUNNER_TEMP/emulator.log"
             exit 1
           fi
+          # A device on two cores without a GPU reports its own services not responding, in dialogs that take the focus, and
+          # spends its time animating; neither is the application's.
+          "$adb" shell settings put global hide_error_dialogs 1
+          "$adb" shell settings put global window_animation_scale 0
+          "$adb" shell settings put global transition_animation_scale 0
+          "$adb" shell settings put global animator_duration_scale 0
           "$adb" shell getprop ro.build.version.release
 
       - name: Build the MAUI example host for the platform

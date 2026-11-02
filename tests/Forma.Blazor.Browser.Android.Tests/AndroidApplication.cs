@@ -60,7 +60,15 @@ public sealed class AndroidApplication : IAsyncDisposable
         {
             var browser = await playwright.Chromium.ConnectOverCDPAsync($"http://127.0.0.1:{port}/").ConfigureAwait(false);
             var page = await WaitForPageAsync(browser).ConfigureAwait(false);
-            await Assertions.Expect(page.Locator(".runtime")).ToHaveTextAsync("WebView True", new() { Timeout = (float)StartTimeout.TotalMilliseconds }).ConfigureAwait(false);
+
+            try
+            {
+                await Assertions.Expect(page.Locator(".runtime")).ToHaveTextAsync("WebView True", new() { Timeout = (float)StartTimeout.TotalMilliseconds }).ConfigureAwait(false);
+            }
+            catch (PlaywrightException exception)
+            {
+                throw new TimeoutException($"The application's web view never rendered interactively.{await DescribeAsync(page).ConfigureAwait(false)}", exception);
+            }
 
             return new AndroidApplication(playwright, port, page);
         }
@@ -137,6 +145,16 @@ public sealed class AndroidApplication : IAsyncDisposable
         }
 
         throw new TimeoutException($"The application's web view opened no DevTools socket within {StartTimeout.TotalMinutes} minutes.");
+    }
+
+    // What the web view shows, what holds the device's focus and what the device last reported as an error, for a start that didn't render.
+    private static async Task<string> DescribeAsync(IPage page)
+    {
+        var content = await page.ContentAsync().ConfigureAwait(false);
+        var errors = await RunAdbAsync("logcat", "-d", "-t", "40", "*:E").ConfigureAwait(false);
+        var newLine = Environment.NewLine;
+
+        return $"{newLine}The page at {page.Url} holds:{newLine}{content[..Math.Min(content.Length, 1500)]}{newLine}The focus is on {await GetFocusedWindowAsync().ConfigureAwait(false)}.{newLine}The device's last errors:{newLine}{errors}";
     }
 
     private static async Task<IPage> WaitForPageAsync(IBrowser browser)
