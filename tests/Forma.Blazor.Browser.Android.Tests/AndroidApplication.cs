@@ -16,6 +16,9 @@ public sealed class AndroidApplication : IAsyncDisposable
     private const string ShareSheetPackage = "com.android.intentresolver";
 
     private static readonly TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
+
+    // An emulator without a GPU, as a hosted runner's, renders and answers an order slower than a desktop browser.
+    private static readonly TimeSpan ExpectTimeout = TimeSpan.FromSeconds(30);
     private static readonly SemaphoreSlim Installing = new(1, 1);
     private static bool _isInstalled;
 
@@ -39,6 +42,7 @@ public sealed class AndroidApplication : IAsyncDisposable
         var build = Environment.GetEnvironmentVariable("FORMA_BROWSER_ANDROID");
         Assert.SkipWhen(string.IsNullOrEmpty(build) || !File.Exists(build), "No Android build of the MAUI example host is named; the mobile step builds one and names it in FORMA_BROWSER_ANDROID.");
         Assert.SkipUnless((await RunAdbAsync("get-state").ConfigureAwait(false)).Trim() == "device", "No Android device or emulator is attached.");
+        Assertions.SetDefaultExpectTimeout((float)ExpectTimeout.TotalMilliseconds);
 
         await InstallAsync(build).ConfigureAwait(false);
 
@@ -56,7 +60,7 @@ public sealed class AndroidApplication : IAsyncDisposable
         {
             var browser = await playwright.Chromium.ConnectOverCDPAsync($"http://127.0.0.1:{port}/").ConfigureAwait(false);
             var page = await WaitForPageAsync(browser).ConfigureAwait(false);
-            await Assertions.Expect(page.Locator(".runtime")).ToHaveTextAsync("WebView True", new() { Timeout = 60000 }).ConfigureAwait(false);
+            await Assertions.Expect(page.Locator(".runtime")).ToHaveTextAsync("WebView True", new() { Timeout = (float)StartTimeout.TotalMilliseconds }).ConfigureAwait(false);
 
             return new AndroidApplication(playwright, port, page);
         }
