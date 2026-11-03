@@ -59,9 +59,19 @@ Each step lands buildable and passes its gate before the next starts.
    on each `preview` promotion; and the release on an annotated tag. Once a full `preview` run passes and the
    candidate is approved, `main` fast-forwards to that exact SHA and the annotated `vX.Y.Z` tag goes on it; the
    tag's workflow verifies the version and the approved SHA, then publishes the packages of that revision.
-   Android's E2E is confirmed in both full workflows before the weekly Android workflow retires. Gate:
-   publication exercised end to end against a dry run or a test feed, and a later commit without a passing
-   `preview` run refused.
+   Android's E2E is confirmed in both full workflows before the weekly Android workflow retires. A required check
+   on `main` holds the promotion rule whatever base a pull request was opened against or later moved to, and the
+   contributing guide links feature and fix pull requests to `dev`; nothing moves a pull request's base for its
+   author. Gate: publication exercised end to end against a dry run or a test feed, a later commit without a
+   passing `preview` run refused, and each pull request below behaving as its row says.
+
+   | Pull request | Expected behavior |
+   | --- | --- |
+   | Feature branch → `dev` | Run the normal fast gate. |
+   | Feature branch → `main` | Block the merge and tell the author to change the base to `dev`. |
+   | Forma's `preview` → `main` | Allow the promotion to proceed through the release checks and approval. |
+   | A fork's branch named `preview` → `main` | Block the merge. Check both the source repository ID and the branch name. |
+   | Forma's `dev` → `main` | Block the merge and explain that the candidate must go through `preview`. |
 
 ## Ledger
 

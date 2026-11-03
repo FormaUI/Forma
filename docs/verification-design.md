@@ -111,6 +111,12 @@ failed, so a fix to a host's startup reaches both.
 Three permanent branches carry the work: `dev` holds the latest integrated features, `preview` the candidate
 deliberately selected, and `main` the commit approved for release.
 
+`main` is the repository's default branch and shows the commit approved for release. Contributors open feature and
+fix pull requests against `dev`. Only a pull request from this repository's `preview` branch may merge into `main`,
+subject to the release checks and approval. A pull request opened or later redirected to `main` from any other
+source is blocked with an explanation of the correct route. The nightly run, which GitHub schedules from the
+default branch's workflow, checks out `dev`.
+
 | Event | What happens |
 | --- | --- |
 | Feature development | `feature/*` branches from `dev`; an ordinary push runs the fast gate. |
