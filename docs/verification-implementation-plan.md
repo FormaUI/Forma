@@ -206,7 +206,7 @@ counted apart.
 ### Paths that follow the moves
 
 - `Forma.slnx`, and the build module's context: the browser check's projects, the examples, the script tests.
-- CI: `ci.yml`'s and `canary.yml`'s npm cache path and path filters.
+- CI: `ci.yml`'s, now `fast.yml` and `full.yml`, and `canary.yml`'s npm cache path and path filters.
 - The README's example markers and the examples' README.
 - Test code naming paths: `ComponentChecks.ReadPagePaths` and `RenderModeInventoryTests`, `DownloadTests`,
   `CultureRouteMapTests`' fixture shared with the JavaScript tests, and `scripts/cs/GlyphParser.cs`'s comment

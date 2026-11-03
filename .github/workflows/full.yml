@@ -1,28 +1,25 @@
-# Runs the same gates a person runs: the full gate on both the platform the library is developed on and the one a
-# contributor is most likely to use, and the fast gate on Linux. The gates themselves live in the repository, not
-# here, so the two cannot drift: this file installs a toolchain and invokes one script.
-name: CI
+# Runs the full gate a person runs before a commit, on every platform a release is held to: Linux's and Windows' gates,
+# WebView2 among Windows', and Android's checks on an emulator, the components in its web view and the MAUI example.
+# A push to preview runs it on the candidate, whose run a promotion to main and a release require to have passed for
+# the exact commit, and the nightly run on dev surfaces an integration regression before a candidate is selected. The
+# gates themselves live in the repository, not here: this file installs a toolchain and invokes the scripts.
+name: Full
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: [preview]
+  schedule:
+    # Every night, UTC.
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  # A run superseded before it finished is answering about a tree that no longer exists, whichever branch
-  # it was on. Pushes arrive in bursts here, so cancelling is what keeps the gate reporting on the commit
-  # anyone is actually waiting for. The cost is that a commit passed over mid-burst is never judged on its
-  # own, which matters only to a bisect that reaches for it later.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  # A candidate superseded on preview before its run finished is no longer the one to approve.
   cancel-in-progress: true
 
 permissions:
   contents: read
-  # On a pull request the change detection below reads the changed files through the API rather than
-  # from git, which this scope is what allows.
-  pull-requests: read
   # The locale lint is a tool the organization publishes to its own private feed.
   packages: read
 
@@ -38,31 +35,18 @@ jobs:
         os: [ubuntu-latest, windows-latest]
 
     steps:
+      # The nightly run checks dev, which GitHub schedules from the default branch's workflow.
       - uses: actions/checkout@v7
-
-      # A commit touching only prose still reports a passing check, so a branch protected on this job
-      # stays satisfied without a toolchain being installed to read a paragraph.
-      - name: Detect changes
-        id: filter
-        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
         with:
-          filters: |
-            code:
-              - '**/*'
-              - '!**/*.md'
-              - '!docs/**'
-              - '!assets/**'
-              - '!.github/ISSUE_TEMPLATE/**'
+          ref: ${{ github.event_name == 'schedule' && 'dev' || '' }}
 
       # The pinned SDK, read from the pin itself rather than restated here where it could fall behind it.
       - name: Set up .NET
-        if: steps.filter.outputs.code == 'true'
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
       - name: Set up Node
-        if: steps.filter.outputs.code == 'true'
         uses: actions/setup-node@v7
         with:
           node-version: '22'
@@ -73,7 +57,7 @@ jobs:
       # evergreen bootstrapper installs the current one, and the run names the version it checked against and the
       # policies the image sets on Edge and WebView2, which decide which of the checks' browser arguments it takes.
       - name: Install the WebView2 runtime
-        if: steps.filter.outputs.code == 'true' && runner.os == 'Windows'
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $key = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
@@ -94,13 +78,13 @@ jobs:
 
       # The MAUI example host builds against the maui-windows workload, which the SDK set up above comes without.
       - name: Install the MAUI workload
-        if: steps.filter.outputs.code == 'true' && runner.os == 'Windows'
+        if: runner.os == 'Windows'
         run: dotnet workload install maui-windows
 
       # WebView2 on the runner ignores the environment variables the check opens an application's DevTools through; its policy for each
       # example host's executable names the port instead, and the check reads the ports back.
       - name: Open the example hosts' DevTools through WebView2's policy
-        if: steps.filter.outputs.code == 'true' && runner.os == 'Windows'
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $key = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
@@ -112,69 +96,9 @@ jobs:
           "FORMA_WEBVIEW_POLICY_PORTS=$(($ports.Keys | ForEach-Object { "$_=$($ports[$_])" }) -join ';')" >> $env:GITHUB_ENV
 
       - name: Run the gate
-        if: steps.filter.outputs.code == 'true'
         env:
           NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
         run: pwsh ./build.ps1
-
-      - name: Report the gate was not needed
-        if: steps.filter.outputs.code != 'true'
-        run: echo 'Only prose changed, so the gate did not need to run.'
-
-  # The unit and bUnit suites built once and run, the script tests and the task programs' tests: the feedback a routine
-  # push waits for, measured here from the job's start, setup and restore included.
-  fast:
-    name: fast (ubuntu-latest)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Detect changes
-        id: filter
-        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
-        with:
-          filters: |
-            code:
-              - '**/*'
-              - '!**/*.md'
-              - '!docs/**'
-              - '!assets/**'
-              - '!.github/ISSUE_TEMPLATE/**'
-
-      - name: Set up .NET
-        if: steps.filter.outputs.code == 'true'
-        uses: actions/setup-dotnet@v6
-        with:
-          global-json-file: global.json
-
-      # The packages the suites restore, kept between runs under the files that name their versions, so a run restores
-      # only what changed.
-      - name: Cache the NuGet packages
-        if: steps.filter.outputs.code == 'true'
-        uses: actions/cache@v6
-        with:
-          path: ~/.nuget/packages
-          key: nuget-fast-${{ runner.os }}-${{ hashFiles('global.json', '**/Directory.Packages.props', '**/*.csproj') }}
-          restore-keys: nuget-fast-${{ runner.os }}-
-
-      - name: Set up Node
-        if: steps.filter.outputs.code == 'true'
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: tests/scripts/package-lock.json
-
-      - name: Run the fast gate
-        if: steps.filter.outputs.code == 'true'
-        env:
-          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
-        run: pwsh ./build.ps1 Fast
-
-      - name: Report the gate was not needed
-        if: steps.filter.outputs.code != 'true'
-        run: echo 'Only prose changed, so the gate did not need to run.'
 
   # A Blazor Hybrid application on a phone or a tablet builds from Forma's packages on the platform's own machine, with
   # the MAUI workload for its platform, which the gate's machines have no use for. Android's builds on Linux; Apple's
@@ -193,41 +117,55 @@ jobs:
             workload: maui-android
 
     steps:
+      # The nightly run checks dev, which GitHub schedules from the default branch's workflow.
       - uses: actions/checkout@v7
-
-      - name: Detect changes
-        id: filter
-        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
         with:
-          filters: |
-            code:
-              - '**/*'
-              - '!**/*.md'
-              - '!docs/**'
-              - '!assets/**'
-              - '!.github/ISSUE_TEMPLATE/**'
+          ref: ${{ github.event_name == 'schedule' && 'dev' || '' }}
 
       - name: Set up .NET
-        if: steps.filter.outputs.code == 'true'
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
       - name: Install the platform's MAUI workload
-        if: steps.filter.outputs.code == 'true'
         run: dotnet workload install ${{ matrix.workload }}
 
       # The mobile step drives the Android build on the device adb reaches, booted before the step starts.
       - name: Start an Android emulator
-        if: steps.filter.outputs.code == 'true' && matrix.platform == 'Android'
+        if: matrix.platform == 'Android'
         uses: ./.github/actions/android-emulator
 
       - name: Build the MAUI example host for the platform
-        if: steps.filter.outputs.code == 'true'
         env:
           NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
         run: pwsh ./scripts/build/mobile.ps1 -Platform ${{ matrix.platform }}
 
-      - name: Report the build was not needed
-        if: steps.filter.outputs.code != 'true'
-        run: echo 'Only prose changed, so the mobile build did not need to run.'
+  # Every component in an Android web view, the Android check host's on an emulator, beside the browser check's
+  # browsers and WebView2.
+  android:
+    name: components on Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+
+    steps:
+      # The nightly run checks dev, which GitHub schedules from the default branch's workflow.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'dev' || '' }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      # The Android check host builds against the maui-android workload, which the SDK set up above comes without.
+      - name: Install the MAUI workload
+        run: dotnet workload install maui-android
+
+      - name: Start an Android emulator
+        uses: ./.github/actions/android-emulator
+
+      - name: Check the components on Android
+        env:
+          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
+        run: pwsh ./scripts/build/browser.ps1 -Android
