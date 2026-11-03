@@ -4,21 +4,24 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Net.Sockets;
 
 /// <summary>A Blazor Hybrid application, the WebView check host or an example host, started with WebView2's DevTools port open, and the browser connection the check drives its web views through.</summary>
-/// <remarks>The gate publishes the check host and the example hosts on Windows, the one platform WebView2 runs on, and names their folders in <c>FORMA_BROWSER_WEBVIEW</c> and <c>FORMA_BROWSER_EXAMPLES</c>; each check starts an application of its own, so no check sees another's culture, and every web view shares one browser process and one data folder of the check's.</remarks>
+/// <remarks>The gate publishes the check host and the example hosts on Windows, the one platform WebView2 runs on, and names their folders in <c>FORMA_BROWSER_WEBVIEW</c> and <c>FORMA_BROWSER_EXAMPLES</c>; each check starts an application of its own, so no check sees another's culture, and every web view shares one browser process and one data folder of the check's. An application stops once its browser has let go of its DevTools port, which a policy can fix for every start of the application, so the next start finds the port and the data folder free.</remarks>
 public sealed class WebViewApplication : IAsyncDisposable
 {
     private readonly Process _process;
     private readonly IPlaywright _playwright;
     private readonly string _dataFolder;
+    private readonly int _port;
     private readonly ConcurrentQueue<string> _output;
 
-    private WebViewApplication(Process process, IPlaywright playwright, IBrowser browser, string dataFolder, string folder, ConcurrentQueue<string> output)
+    private WebViewApplication(Process process, IPlaywright playwright, IBrowser browser, string dataFolder, int port, string folder, ConcurrentQueue<string> output)
     {
         _process = process;
         _playwright = playwright;
         _dataFolder = dataFolder;
+        _port = port;
         _output = output;
         Browser = browser;
         Folder = folder;
@@ -114,7 +117,7 @@ public sealed class WebViewApplication : IAsyncDisposable
             await WaitForDevToolsAsync(name, process, endpoint, output, dataFolder).ConfigureAwait(false);
             var browser = await playwright.Chromium.ConnectOverCDPAsync(endpoint.ToString()).ConfigureAwait(false);
 
-            return new WebViewApplication(process, playwright, browser, dataFolder, folder, output);
+            return new WebViewApplication(process, playwright, browser, dataFolder, port, folder, output);
         }
         catch
         {
@@ -215,6 +218,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         }
 
         _process.Dispose();
+        await WaitForPortReleaseAsync(_port).ConfigureAwait(false);
 
         try
         {
@@ -234,6 +238,29 @@ public sealed class WebViewApplication : IAsyncDisposable
             .Where(pair => pair.Length == 2 && pair[0] == name && int.TryParse(pair[1], NumberStyles.None, CultureInfo.InvariantCulture, out _))
             .Select(pair => (int?)int.Parse(pair[1], CultureInfo.InvariantCulture))
             .FirstOrDefault();
+
+    // The browser process holds its DevTools port until it has ended, which a stopped application's browser can take a while to.
+    private static async Task WaitForPortReleaseAsync(int port)
+    {
+        var deadline = DateTime.UtcNow.AddMinutes(1);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                using var listener = new TcpListener(IPAddress.Loopback, port);
+                listener.Start();
+
+                return;
+            }
+            catch (SocketException)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
+            }
+        }
+
+        throw new TimeoutException($"The web view's browser still held its DevTools port {port} a minute after its application stopped.");
+    }
 
     private static void Record(ConcurrentQueue<string> output, string? line)
     {
