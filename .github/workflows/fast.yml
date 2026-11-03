@@ -7,7 +7,10 @@ name: Fast
 on:
   push:
     branches-ignore: [main, preview]
+  # A pull request moved to dev is edited, so it is checked against dev as it moves; a title's edit runs the gate again
+  # rather than skipping it, since a skipped run would satisfy the required check over a failed one.
   pull_request:
+    types: [opened, synchronize, reopened, edited]
     branches: [dev]
   workflow_dispatch:
 
