@@ -295,7 +295,7 @@ public sealed class ComposerTests
             // Assert
             await page.WaitForFunctionAsync("() => window.formaPrinted?.html.includes('<b>Hello</b>') === true && window.formaPrinted.title === 'Document Preview'");
             Assert.Equal("document.html", download.SuggestedFilename);
-            Assert.Contains("<b>Hello</b>", await ReadAsync(download), StringComparison.Ordinal);
+            Assert.Contains("<b>Hello</b>", await ReadAsync(page, download), StringComparison.Ordinal);
         }
 
         [Theory]
@@ -318,7 +318,7 @@ public sealed class ComposerTests
             // Assert
             await page.WaitForFunctionAsync("async () => (await navigator.clipboard.readText()).includes('<b>Hello</b>')");
             Assert.Equal("document.html", download.SuggestedFilename);
-            Assert.Contains("<b>Hello</b>", await ReadAsync(download), StringComparison.Ordinal);
+            Assert.Contains("<b>Hello</b>", await ReadAsync(page, download), StringComparison.Ordinal);
         }
 
         [Theory]
@@ -437,12 +437,12 @@ public sealed class ComposerTests
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_bind_text_typed_and_take_it_back_on_undo(string runtime)
         {
-            // Arrange
+            // Arrange — the text entered in one input, which commits as one history state
             var (context, page) = await OpenAsync(host, runtime, "composer-plain");
             await using var _ = context;
             var editor = page.Locator("#check textarea");
             await WaitForInputRouteAsync(page, "#check textarea", "composer.undo");
-            await editor.PressSequentiallyAsync("abc");
+            await editor.FillAsync("abc");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("abc");
 
             // Act
@@ -546,10 +546,7 @@ public sealed class ComposerTests
     private static ILocator GetOption(IPage page, string name)
         => page.Locator("[role=menuitem], [role=menuitemradio], [role=menuitemcheckbox]").Filter(new() { HasText = name });
 
-    private static async Task<string> ReadAsync(IDownload download)
-    {
-        using var reader = new StreamReader(await download.CreateReadStreamAsync());
-
-        return await reader.ReadToEndAsync();
-    }
+    // The text a page offered for download, read in the page from the address it offered it at.
+    private static Task<string> ReadAsync(IPage page, IDownload download)
+        => page.EvaluateAsync<string>("address => fetch(address).then(response => response.text())", download.Url);
 }
