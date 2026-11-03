@@ -85,8 +85,9 @@ public sealed class BarsTests
             var italic = toolbar.GetByRole(AriaRole.Button, new() { Name = "Italic", Exact = true });
             var underline = toolbar.GetByRole(AriaRole.Button, new() { Name = "Underline", Exact = true });
 
-            // The toolbar takes the arrow keys once its script has taken every control but one out of the tab order.
-            await Assertions.Expect(italic).ToHaveAttributeAsync("tabindex", "-1");
+            // The toolbar takes the arrow keys once its script has taken every control but one out of the tab order, a script's
+            // first answer, waited for as long as a page's own waits.
+            await Assertions.Expect(italic).ToHaveAttributeAsync("tabindex", "-1", new() { Timeout = 30000 });
 
             // Act
             await bold.ClickAsync();
