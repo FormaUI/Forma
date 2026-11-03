@@ -1,6 +1,6 @@
 namespace Forma.Framework.Windows.Tests;
 
-using Forma.Tests.Windows;
+using Forma.Framework.Windows.Tests.Support;
 
 using Xunit;
 

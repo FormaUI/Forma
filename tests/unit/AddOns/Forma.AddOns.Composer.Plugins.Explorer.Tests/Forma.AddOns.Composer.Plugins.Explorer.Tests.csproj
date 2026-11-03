@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Composer.Plugins.Explorer\Forma.AddOns.Composer.Plugins.Explorer.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
+        <ProjectReference Include="..\..\..\..\tests\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+    </ItemGroup>
+
+</Project>

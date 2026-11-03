@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <PackageReference Include="OfficeIMO.Excel" />
+        <PackageReference Include="OfficeIMO.PowerPoint" />
+        <PackageReference Include="OfficeIMO.Word" />
         <PackageReference Include="xunit.v3" />
         <PackageReference Include="xunit.runner.visualstudio" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />

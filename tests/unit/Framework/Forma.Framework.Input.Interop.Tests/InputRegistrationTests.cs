@@ -2,6 +2,7 @@ namespace Forma.Framework.Input.Interop.Tests;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Input.Interop.Tests.Support;
 using Forma.Framework.Input.Keyboard;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;

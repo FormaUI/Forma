@@ -21,26 +21,6 @@ public sealed class MauiOperationsTests : IDisposable
         => new(share, new FakeFileSystem(_cache), new FakeDeviceInfo(platform));
 
     [Fact]
-    public async Task Should_hand_the_share_sheet_a_file_written_to_the_cache()
-    {
-        // Arrange
-        var share = new FakeShare();
-        var operations = CreateOperations(share, DevicePlatform.Android);
-
-        // Act
-        var isTaken = await operations.TrySaveAsync("Report.html", "<p>Report</p>", "text/html");
-
-        // Assert
-        var request = Assert.IsType<ShareFileRequest>(Assert.Single(share.Requests));
-        Assert.Multiple(
-            () => Assert.True(isTaken),
-            () => Assert.Equal("Report.html", request.Title),
-            () => Assert.Equal("text/html", request.File!.ContentType),
-            () => Assert.StartsWith(_cache, request.File!.FullPath, StringComparison.Ordinal),
-            () => Assert.Equal("<p>Report</p>", File.ReadAllText(request.File!.FullPath)));
-    }
-
-    [Fact]
     public async Task Should_hand_the_share_sheet_an_address_under_its_title()
     {
         // Arrange

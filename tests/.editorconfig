@@ -11,7 +11,7 @@ dotnet_diagnostic.IDE0028.severity = none
 [*Fixture.cs]
 dotnet_diagnostic.CA1822.severity = none
 
-[support/Forma.Tests.Support/Shared/FakeRenderer.cs]
+[unit/Framework/Forma.Framework.Culture.Router.Tests/Support/FakeRenderer.cs]
 # Disable BL0006 - a renderer fake derives from Renderer and takes its RenderBatch, both in the RenderTree namespace,
 # since a Framework test reaches an interactive renderer no other way.
 dotnet_diagnostic.BL0006.severity = none

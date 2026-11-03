@@ -31,7 +31,14 @@ Each step lands buildable and passes its gate before the next starts.
    starts it, performs one Forma interaction and verifies its visible effect, discovered and run on its
    platform, and recorded apart from the moved cases so new coverage can't hide a lost one. The testing guide
    and the repository's working rules take the naming and support rules as they land. Gate: the full gate,
-   discovery matching the baselines, and every new smoke check run on its platform.
+   discovery matching the baselines, and every new smoke check run on its platform. The splits and the support
+   landed first, every destination's cases matching its expected list. Departures: the sprite loader's tests
+   take the support's recording runtime, which counts their calls and holds one open, and the registrar's take
+   `FakeJSRuntime`. `RootedWidget` and `RootedToolbar` stay in the shared support project with one consumer,
+   since the JSON localization suite reads their strings from an assembly whose own locale config declares a
+   root, which the suite's assembly, whose config its other fixtures read, can't be. Each split suite dropped
+   the references no remaining test names, the support projects those only the moved types used, and the
+   Office packages moved to the Office suite with `OfficeFixture`.
 4. **The gates.** `./build.ps1 Fast`, its selection verified to run on Linux and timed from a job's start to its
    result, setup and restore included; the step timings decide any further work, such as running the
    JavaScript and .NET tests side by side. `./build.ps1` stays the full local gate, and names each platform

@@ -53,11 +53,15 @@
     <!-- Tests -->
     <Project Path="tests\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     <Project Path="tests\support\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
-    <Project Path="tests\bunit\Blazor\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
-    <Project Path="tests\bunit\Blazor\Forma.Blazor.Explorer.Tests\Forma.Blazor.Explorer.Tests.csproj" />
-    <Project Path="tests\bunit\Blazor\Forma.Blazor.DataView.Tests\Forma.Blazor.DataView.Tests.csproj" />
-    <Project Path="tests\bunit\Blazor\Forma.Blazor.Composer.Tests\Forma.Blazor.Composer.Tests.csproj" />
-    <Project Path="tests\bunit\Blazor\Forma.Blazor.Server.Tests\Forma.Blazor.Server.Tests.csproj" />
+    <Project Path="tests\bunit\Blazor\Forma.Blazor.BUnit.Tests\Forma.Blazor.BUnit.Tests.csproj" />
+    <Project Path="tests\unit\Blazor\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
+    <Project Path="tests\bunit\Blazor\Forma.Blazor.Explorer.BUnit.Tests\Forma.Blazor.Explorer.BUnit.Tests.csproj" />
+    <Project Path="tests\bunit\Blazor\Forma.Blazor.DataView.BUnit.Tests\Forma.Blazor.DataView.BUnit.Tests.csproj" />
+    <Project Path="tests\unit\Blazor\Forma.Blazor.DataView.Tests\Forma.Blazor.DataView.Tests.csproj" />
+    <Project Path="tests\bunit\Blazor\Forma.Blazor.Composer.BUnit.Tests\Forma.Blazor.Composer.BUnit.Tests.csproj" />
+    <Project Path="tests\unit\Blazor\Forma.Blazor.Composer.Tests\Forma.Blazor.Composer.Tests.csproj" />
+    <Project Path="tests\bunit\Blazor\Forma.Blazor.Server.BUnit.Tests\Forma.Blazor.Server.BUnit.Tests.csproj" />
+    <Project Path="tests\unit\Blazor\Forma.Blazor.Server.Tests\Forma.Blazor.Server.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.WebAssembly.Tests\Forma.Blazor.WebAssembly.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.WebView.Tests\Forma.Blazor.WebView.Tests.csproj" />
     <Project Path="tests\e2e\Clients\Forma.Blazor.Browser.Host\Forma.Blazor.Browser.Host.csproj" />
@@ -96,13 +100,15 @@
     <Project Path="tests\unit\Framework\Forma.Framework.Sanitization.Tests\Forma.Framework.Sanitization.Tests.csproj" />
     <Project Path="eng\Forma.Analyzers\Forma.Analyzers.csproj" />
     <Project Path="eng\Forma.Analyzers.Tests\Forma.Analyzers.Tests.csproj" />
-    <Project Path="tests\bunit\AddOns\Forma.AddOns.Composer.Plugins.Explorer.Tests\Forma.AddOns.Composer.Plugins.Explorer.Tests.csproj" />
+    <Project Path="tests\bunit\AddOns\Forma.AddOns.Composer.Plugins.Explorer.BUnit.Tests\Forma.AddOns.Composer.Plugins.Explorer.BUnit.Tests.csproj" />
+    <Project Path="tests\unit\AddOns\Forma.AddOns.Composer.Plugins.Explorer.Tests\Forma.AddOns.Composer.Plugins.Explorer.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Share.Targets.Tests\Forma.AddOns.Share.Targets.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Explorer.Tests\Forma.Framework.Explorer.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Catalog.Tests\Forma.Framework.Catalog.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Files.Tests\Forma.Framework.Files.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Emojis.Twemoji.Tests\Forma.AddOns.Emojis.Twemoji.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Operations.Maui.Tests\Forma.AddOns.Operations.Maui.Tests.csproj" />
+    <Project Path="tests\integration\AddOns\Forma.AddOns.Operations.Maui.Integration.Tests\Forma.AddOns.Operations.Maui.Integration.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Resources.Office.Tests\Forma.AddOns.Resources.Office.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Resources.Markdown.Tests\Forma.AddOns.Resources.Markdown.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Localization.Tests\Forma.Framework.Localization.Tests.csproj" />

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+        <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\..\..\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+    </ItemGroup>
+
+    <!-- The languages the library ships, each a locale pack, so the build records them in this assembly as it would in an application's. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\Locales\Forma.Blazor.Locales.Hebrew\Forma.Blazor.Locales.Hebrew.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Locales\Forma.Blazor.Locales.Spanish\Forma.Blazor.Locales.Spanish.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,713 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Feedback
+@using Forma.Framework.Input
+@using System.Globalization
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public async Task Should_write_the_time_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Shift { Start = new TimeOnly(9, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Start" Label="Starts" />
+            </FakeFormHost>);
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Equal("09:30", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_render_an_editable_combobox_in_a_field_showing_the_time_as_the_culture_writes_it()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Shift { Start = new TimeOnly(9, 30) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Start" Label="Starts" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            Assert.Multiple(
+                () => Assert.Equal("combobox", input.GetAttribute("role")),
+                () => Assert.Equal("false", input.GetAttribute("aria-expanded")),
+                () => Assert.Equal("none", input.GetAttribute("aria-autocomplete")),
+                () => Assert.Null(input.GetAttribute("aria-controls")),
+                () => Assert.Equal(FormatInEnglish("9:30 AM"), input.GetAttribute("value")),
+                () => Assert.Equal("Starts", cut.Find("label.forma-field-label").FirstChild!.TextContent.Trim()),
+                () => Assert.Equal("Choose a Time", cut.Find("button").GetAttribute("aria-label")),
+                () => Assert.Equal("-1", cut.Find("button").GetAttribute("tabindex")));
+        }
+
+        [Theory]
+        [InlineData("en-US", "2:15 PM")]
+        [InlineData("he-IL", "14:15")]
+        public void Should_read_a_time_typed_as_the_formatting_culture_writes_it(string name, string typed)
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture(name);
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Equal(new TimeOnly(14, 15), model.End);
+        }
+
+        [Fact]
+        public void Should_show_seconds_where_the_time_has_them()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Shift { Start = new TimeOnly(9, 30, 45) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Start" Label="Starts" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(FormatInEnglish("9:30:45 AM"), cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_mark_a_time_required_where_it_cannot_be_empty_or_the_host_asks()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift();
+
+            // Act
+            var optional = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            var asked = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Required="true" />
+            </FakeFormHost>);
+            var inherent = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Start" Label="Starts" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(optional.FindAll(".forma-field-required")),
+                () => Assert.Null(optional.Find("input").GetAttribute("aria-required")),
+                () => Assert.Single(asked.FindAll(".forma-field-required")),
+                () => Assert.Equal("true", asked.Find("input").GetAttribute("aria-required")),
+                () => Assert.Single(inherent.FindAll(".forma-field-required")),
+                () => Assert.Equal("true", inherent.Find("input").GetAttribute("aria-required")));
+        }
+
+        [Fact]
+        public void Should_empty_a_time_that_can_be_empty_and_report_one_that_cannot_when_cleared()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift { Start = new TimeOnly(9, 0), End = new TimeOnly(17, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Start" Label="Starts" />
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            cut.FindAll("input")[0].Change(string.Empty);
+            cut.FindAll("input")[1].Change(string.Empty);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new TimeOnly(9, 0), model.Start),
+                () => Assert.Null(model.End),
+                () => Assert.Equal(["The Starts field is required."], cut.FindAll(".forma-field-message").Select(message => message.TextContent)));
+        }
+
+        [Fact]
+        public void Should_keep_text_that_is_not_a_time_in_the_field_and_report_it()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift { End = new TimeOnly(17, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("teatime");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new TimeOnly(17, 0), model.End),
+                () => Assert.Equal("teatime", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("The Ends field must be a time.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_describe_the_time_by_the_message_it_reports()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift { End = new TimeOnly(17, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("teatime");
+
+            // Assert
+            Assert.Equal(cut.Find(".forma-field-messages").Id, cut.Find("input").GetAttribute("aria-describedby"));
+        }
+
+        [Theory]
+        [InlineData("09:00", "17:00", "18:00", "The Ends field must be between 9:00 AM and 5:00 PM.")]
+        [InlineData("09:00", null, "08:00", "The Ends field must be 9:00 AM or later.")]
+        [InlineData(null, "17:00", "18:00", "The Ends field must be 5:00 PM or earlier.")]
+        [InlineData("22:00", "02:00", "12:00", "The Ends field must be between 10:00 PM and 2:00 AM.")]
+        public void Should_report_a_time_outside_the_range(string? earliest, string? latest, string typed, string message)
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Shift();
+            var min = earliest is null ? (TimeOnly?)null : TimeOnly.Parse(earliest, CultureInfo.InvariantCulture);
+            var max = latest is null ? (TimeOnly?)null : TimeOnly.Parse(latest, CultureInfo.InvariantCulture);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Min="min" Max="max" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(model.End),
+                () => Assert.Equal(FormatInEnglish(message), cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Theory]
+        [InlineData("23:30")]
+        [InlineData("01:00")]
+        [InlineData("22:00")]
+        [InlineData("02:00")]
+        public void Should_take_a_time_inside_a_range_across_midnight(string typed)
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Min="new TimeOnly(22, 0)" Max="new TimeOnly(2, 0)" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(TimeOnly.Parse(typed, CultureInfo.InvariantCulture), model.End),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public void Should_report_a_time_off_the_step_with_the_times_either_side_and_never_round_it()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Step="TimeSpan.FromMinutes(15)" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("9:10 AM");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(model.End),
+                () => Assert.Equal(FormatInEnglish("The Ends field must be 9:00 AM or 9:15 AM."), cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_count_the_step_from_the_earliest_time()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Min="new TimeOnly(9, 5)" Step="TimeSpan.FromMinutes(15)" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("09:20");
+
+            // Assert
+            Assert.Equal(new TimeOnly(9, 20), model.End);
+        }
+
+        [Fact]
+        public void Should_take_a_typed_time_the_list_does_not_suggest()
+        {
+            // Arrange — a list of half hours and no step
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Change("09:15");
+
+            // Assert
+            Assert.Equal(new TimeOnly(9, 15), model.End);
+        }
+
+        [Fact]
+        public void Should_refuse_a_list_whose_times_the_step_would_not_take()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Step="TimeSpan.FromMinutes(15)" ListInterval="TimeSpan.FromMinutes(20)" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentException>(render);
+        }
+
+        [Fact]
+        public void Should_refuse_a_value_that_is_not_a_time()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var model = new Shift();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Note" Label="Note" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(render);
+        }
+    }
+
+    public sealed class List
+    {
+        private static IReadOnlyList<string> GetOptions(IRenderedComponent<IComponent> cut)
+            => [.. cut.FindAll("[role=option]").Select(option => option.TextContent.Trim())];
+
+        [Fact]
+        public void Should_claim_the_arrows_alone_while_the_list_is_closed_leaving_enter_to_the_form()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift();
+
+            // Act
+            ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(["time-box.next:ArrowDown", "time-box.previous:ArrowUp"], InputRouterProbe.GetRoutes(router.Registrations.Last(registration => InputRouterProbe.GetRoutes(registration).Any(route => route.StartsWith("time-box.", StringComparison.Ordinal)))));
+        }
+
+        [Fact]
+        public async Task Should_open_on_the_suggestion_nearest_the_time_held_and_name_it_from_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift { End = new TimeOnly(9, 40) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Assert — 9:30 is the nearest half hour to 9:40
+            var input = cut.Find("input");
+            var active = cut.Find(".forma-time-box-option-active");
+            Assert.Multiple(
+                () => Assert.Equal("true", input.GetAttribute("aria-expanded")),
+                () => Assert.Equal(cut.Find("[role=listbox]").Id, input.GetAttribute("aria-controls")),
+                () => Assert.Equal(active.Id, input.GetAttribute("aria-activedescendant")),
+                () => Assert.Equal(FormatInEnglish("9:30 AM"), active.TextContent.Trim()),
+                () => Assert.Equal("true", active.GetAttribute("aria-selected")));
+        }
+
+        [Fact]
+        public async Task Should_place_each_suggestion_drawn_among_every_suggestion_the_list_holds()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift { End = new TimeOnly(9, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Assert — a day of half hours holds 48 suggestions, and 9:30 AM is the 20th
+            var active = cut.Find(".forma-time-box-option-active");
+            Assert.Multiple(
+                () => Assert.All(cut.FindAll("[role=option]"), option => Assert.Equal("48", option.GetAttribute("aria-setsize"))),
+                () => Assert.Equal("20", active.GetAttribute("aria-posinset")));
+        }
+
+        [Fact]
+        public async Task Should_move_through_the_list_with_the_arrows_and_take_the_highlighted_time_on_enter()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift { End = new TimeOnly(9, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Act — down twice and back once, from 9:30 to 10:00
+            await router.RouteAsync("time-box.next", "ArrowDown");
+            await router.RouteAsync("time-box.next", "ArrowDown");
+            await router.RouteAsync("time-box.previous", "ArrowUp");
+            var held = model.End;
+            await router.RouteAsync(cut.FindComponent<FormaTimeBox>().Instance.InputElement, "time-box.choose", "Enter");
+
+            // Assert — the arrows move the list alone, and Enter writes the time and closes it
+            Assert.Multiple(
+                () => Assert.Equal(new TimeOnly(9, 30), held),
+                () => Assert.Equal(new TimeOnly(10, 0), model.End),
+                () => Assert.Equal(FormatInEnglish("10:00 AM"), cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
+        public async Task Should_close_on_escape_without_taking_the_highlighted_time()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift { End = new TimeOnly(9, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            await router.RouteAsync("time-box.next", "ArrowDown");
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Act
+            await router.DismissAsync(cut.FindComponent<FormaPopover>().Instance.RootElement, DismissBehavior.Dismiss, DismissReason.Escape);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new TimeOnly(9, 30), model.End),
+                () => Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
+        public async Task Should_write_a_pressed_suggestion_at_once()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Act — the second suggestion from midnight
+            cut.FindAll("[role=option]")[1].Click();
+
+            // Assert
+            Assert.Equal(new TimeOnly(0, 30), model.End);
+        }
+
+        [Fact]
+        public async Task Should_suggest_the_times_of_a_range_across_midnight_in_order()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Min="new TimeOnly(22, 0)" Max="new TimeOnly(2, 0)" ListInterval="TimeSpan.FromHours(1)" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Assert
+            Assert.Equal([FormatInEnglish("10:00 PM"), FormatInEnglish("11:00 PM"), FormatInEnglish("12:00 AM"), FormatInEnglish("1:00 AM"), FormatInEnglish("2:00 AM")], GetOptions(cut));
+        }
+
+        [Fact]
+        public async Task Should_suggest_each_step_where_the_step_is_set_and_the_list_is_not()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Min="new TimeOnly(9, 0)" Max="new TimeOnly(10, 0)" Step="TimeSpan.FromMinutes(20)" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Assert
+            Assert.Equal([FormatInEnglish("9:00 AM"), FormatInEnglish("9:20 AM"), FormatInEnglish("9:40 AM"), FormatInEnglish("10:00 AM")], GetOptions(cut));
+        }
+
+        [Fact]
+        public async Task Should_mark_the_time_held_among_the_suggestions_with_a_check()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift { End = new TimeOnly(0, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Assert
+            var current = cut.Find(".forma-time-box-option-current");
+            Assert.Multiple(
+                () => Assert.NotNull(current.QuerySelector(".forma-time-box-option-check")),
+                () => Assert.Equal("true", current.QuerySelector(".forma-time-box-option-check")!.GetAttribute("aria-hidden")));
+        }
+
+        [Fact]
+        public async Task Should_leave_a_read_only_time_s_list_closed()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift { End = new TimeOnly(9, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" ReadOnly="true" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Assert
+            Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded"));
+        }
+    }
+
+    public sealed class EditInProgress
+    {
+        [Theory]
+        [InlineData("he", "1:30 אחה״צ")]
+        [InlineData("fi-FI", "13.30")]
+        public async Task Should_commit_an_edit_in_the_culture_it_was_typed_in_after_the_culture_changes(string typingCulture, string typed)
+        {
+            // Arrange — the typing culture reads the text as half past one in the afternoon, and English refuses it
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.GetCulture(typingCulture));
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            cut.Find("input").Input(typed);
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = cut.Find("input").GetAttribute("value");
+            var valueAfterChange = model.End;
+
+            // Act
+            cut.Find("input").Change(typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(typed, textAfterChange),
+                () => Assert.Null(valueAfterChange),
+                () => Assert.Equal(new TimeOnly(13, 30), model.End),
+                () => Assert.Equal(FormatInEnglish("1:30 PM"), cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_culture_an_edit_was_typed_in_through_a_second_change()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Act
+            cut.Find("input").Change("1:30 אחה״צ");
+
+            // Assert
+            Assert.Equal(new TimeOnly(13, 30), model.End);
+        }
+
+        [Fact]
+        public async Task Should_keep_a_rejected_edit_and_the_culture_it_was_typed_in()
+        {
+            // Arrange — English would refuse the text as no time at all
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var model = new Shift();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" Max="new TimeOnly(12, 0)" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1:30 אחה״צ");
+            cut.Find("input").Change("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = cut.Find("input").GetAttribute("value");
+
+            // Act
+            cut.Find("input").Change("1:30 אחה״צ");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1:30 אחה״צ", textAfterChange),
+                () => Assert.Null(model.End),
+                () => Assert.Equal(FormatInEnglish("The Ends field must be 12:00 PM or earlier."), cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_end_an_edit_that_commits_the_time_already_held_and_write_it_in_the_current_culture()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var model = new Shift { End = new TimeOnly(13, 30) };
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            cut.Find("input").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+
+            // Act
+            cut.Find("input").Change("1:30 אחה״צ");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new TimeOnly(13, 30), model.End),
+                () => Assert.Equal(FormatInEnglish("1:30 PM"), cut.Find("input").GetAttribute("value")),
+                () => Assert.False(editContext.IsModified()));
+        }
+
+        [Fact]
+        public async Task Should_keep_an_edit_through_a_render_binding_the_same_time()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var model = new Shift { End = new TimeOnly(9, 0) };
+            var cut = ctx.Render<FormaTimePicker<TimeOnly?>>(parameters => parameters
+                .Add(p => p.Label, "Ends")
+                .Add(p => p.Value, model.End)
+                .Add(p => p.ValueExpression, () => model.End));
+            cut.Find("input").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, new TimeOnly(9, 0)));
+
+            // Assert
+            Assert.Equal("1:30 אחה״צ", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public async Task Should_replace_an_edit_with_a_different_time_bound_to_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var model = new Shift { End = new TimeOnly(9, 0) };
+            var cut = ctx.Render<FormaTimePicker<TimeOnly?>>(parameters => parameters
+                .Add(p => p.Label, "Ends")
+                .Add(p => p.Value, model.End)
+                .Add(p => p.ValueExpression, () => model.End));
+            cut.Find("input").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, new TimeOnly(14, 0)));
+
+            // Assert
+            Assert.Equal(FormatInEnglish("2:00 PM"), cut.Find("input").GetAttribute("value"));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Should_keep_the_modified_state_of_a_time_written_again_in_another_culture(bool isModified)
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Shift { End = new TimeOnly(13, 30) };
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            if (isModified)
+            {
+                cut.Find("input").Change("2:15 PM");
+            }
+
+            // Act
+            await ctx.ChangeCultureAsync("de-DE");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(isModified ? "14:15" : "13:30", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(isModified, editContext.IsModified()));
+        }
+    }
+
+    private sealed class Shift
+    {
+        public TimeOnly Start { get; set; }
+
+        public TimeOnly? End { get; set; }
+
+        public string? Note { get; set; }
+    }
+
+    private static string FormatInEnglish(string text)
+        => CultureText.FormatTimes(text, CultureInfo.GetCultureInfo("en-US"));
+}

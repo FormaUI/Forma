@@ -74,7 +74,7 @@ $cases = @(
     @{ Name = 'a repeated run says how many times'; Script = 'test.ps1'; Arguments = @('DotNet', '-Times', '3'); Expect = @('3 times') }
     @{ Name = 'a project that matches nothing is refused'; Script = 'test.ps1'; Arguments = @('DotNet', '-Project', 'NoSuchProject'); Fails = $true; Expect = @('No test project matches') }
     @{ Name = 'a .NET argument given to the script tests is refused'; Script = 'test.ps1'; Arguments = @('Scripts', '-Times', '5'); Fails = $true; Expect = @('nothing to say about') }
-    @{ Name = 'a run under load names the projects loading it'; Script = 'test.ps1'; Arguments = @('DotNet', '-NoBuild', '-Times', '3', '-LoadWith', 'Blazor.Explorer'); Expect = @('under load from Forma.Blazor.Explorer.Tests') }
+    @{ Name = 'a run under load names the projects loading it'; Script = 'test.ps1'; Arguments = @('DotNet', '-NoBuild', '-Times', '3', '-LoadWith', 'Blazor.Explorer'); Expect = @('under load from Forma.Blazor.Explorer.BUnit.Tests') }
     @{ Name = 'a run under load that would build first is refused'; Script = 'test.ps1'; Arguments = @('DotNet', '-LoadWith', 'Blazor.Explorer'); Fails = $true; Expect = @('takes -NoBuild') }
     @{ Name = 'a run recording its waits says where'; Script = 'test.ps1'; Arguments = @('DotNet', '-WaitLog', 'wait-log'); Expect = @('recording its waits in') }
     @{ Name = 'a wait log given to the script tests is refused'; Script = 'test.ps1'; Arguments = @('Scripts', '-WaitLog', 'wait-log'); Fails = $true; Expect = @('nothing to say about') }

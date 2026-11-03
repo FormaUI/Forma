@@ -1,0 +1,639 @@
+@inherits FormaBunitContext
+@using System.Globalization
+@using AngleSharp.Dom
+@using Forma.Framework.Browser.Interop.Focus
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_name_a_group_by_its_label_and_each_control_by_a_name_of_its_own()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 30, 0) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+
+            // Assert
+            var group = cut.Find("[role=group]");
+            var trigger = GetTrigger(cut);
+            var names = trigger.GetAttribute("aria-labelledby")!.Split(' ').Select(id => cut.Find($"[id='{id}']").TextContent.Trim());
+            var time = GetTime(cut);
+            Assert.Multiple(
+                () => Assert.Equal("Starts", cut.Find($"[id='{group.GetAttribute("aria-labelledby")}']").FirstChild!.TextContent.Trim()),
+                () => Assert.Empty(cut.FindAll("label[for]")),
+                () => Assert.Single(cut.FindAll(".forma-field")),
+                () => Assert.Equal(["Date", "3/15/2026"], names),
+                () => Assert.Equal("Time", time.GetAttribute("aria-label")),
+                () => Assert.Equal(FormatInEnglish("9:30 AM"), time.GetAttribute("value")));
+        }
+
+        [Fact]
+        public void Should_refuse_a_value_that_is_not_a_date_with_a_time()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var model = new Booking();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Note" Label="Note" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(render);
+        }
+
+        [Fact]
+        public void Should_mark_both_controls_required_where_the_value_cannot_be_empty()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var model = new Booking();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Reminder" Label="Reminder" />
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+
+            // Assert
+            var triggers = cut.FindAll(".forma-date-box-trigger");
+            var times = cut.FindAll("input[role=combobox]");
+            Assert.Multiple(
+                () => Assert.Equal("true", triggers[0].GetAttribute("aria-required")),
+                () => Assert.Equal("true", times[0].GetAttribute("aria-required")),
+                () => Assert.Single(cut.FindAll(".forma-field")[0].QuerySelectorAll(".forma-field-required")),
+                () => Assert.Null(triggers[1].GetAttribute("aria-required")),
+                () => Assert.Empty(cut.FindAll(".forma-field")[1].QuerySelectorAll(".forma-field-required")));
+        }
+
+        [Fact]
+        public void Should_show_a_read_only_value_as_text_with_nothing_to_open_or_clear()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 30, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" ReadOnly="true" />
+            </FakeFormHost>);
+
+            // Act
+            var date = cut.Find("input.forma-date-box-trigger");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Throws<MissingEventHandlerException>(() => date.Click()),
+                () => Assert.True(date.HasAttribute("readonly")),
+                () => Assert.Equal("3/15/2026", date.GetAttribute("value")),
+                () => Assert.Equal("Date", cut.Find($"[id='{date.GetAttribute("aria-labelledby")}']").TextContent.Trim()),
+                () => Assert.True(GetTime(cut).HasAttribute("readonly")),
+                () => Assert.Empty(cut.FindAll(".forma-date-box-clear")),
+                () => Assert.Empty(cut.FindAll(".forma-date-box-popover")),
+                () => Assert.Equal(new DateTime(2026, 3, 15, 9, 30, 0), model.Starts));
+        }
+
+        [Fact]
+        public void Should_pass_the_dates_of_its_bounds_to_the_calendar()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var model = new Booking { Starts = new DateTime(2026, 3, 16, 9, 0, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" Min="new DateTime(2026, 3, 15, 14, 0, 0)" Max="new DateTime(2026, 3, 17, 11, 0, 0)" />
+            </FakeFormHost>);
+
+            // Act
+            GetTrigger(cut).Click();
+
+            // Assert
+            var calendar = cut.FindComponent<FormaCalendar>().Instance;
+            Assert.Multiple(
+                () => Assert.Equal(new DateOnly(2026, 3, 15), calendar.MinDate),
+                () => Assert.Equal(new DateOnly(2026, 3, 17), calendar.MaxDate));
+        }
+    }
+
+    public sealed class Entry
+    {
+        [Fact]
+        public void Should_write_a_date_and_a_time_once_both_are_entered()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+
+            // Act
+            GetTime(cut).Change("2:30 PM");
+            var afterTime = model.Starts;
+            PickDay(cut, "15");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(afterTime),
+                () => Assert.Equal(15, model.Starts!.Value.Day),
+                () => Assert.Equal(new TimeSpan(14, 30, 0), model.Starts!.Value.TimeOfDay),
+                () => Assert.Equal(DateTimeKind.Unspecified, model.Starts!.Value.Kind),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public void Should_keep_the_kind_of_the_date_with_a_time_it_edits()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 30, 0, DateTimeKind.Utc) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+
+            // Act
+            GetTime(cut).Change("10:00 AM");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new DateTime(2026, 3, 15, 10, 0, 0), model.Starts),
+                () => Assert.Equal(DateTimeKind.Utc, model.Starts!.Value.Kind));
+        }
+
+        [Fact]
+        public void Should_keep_the_offset_of_the_value_it_edits_and_give_a_new_one_the_hosts()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking { Departure = new DateTimeOffset(2026, 3, 15, 9, 30, 0, TimeSpan.FromHours(5.5)) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Departure" Label="Departure" Offset="TimeSpan.FromHours(3)" />
+                <FormaDateTimePicker @bind-Value="model.Arrival" Label="Arrival" Offset="TimeSpan.FromHours(3)" />
+            </FakeFormHost>);
+
+            // Act
+            cut.FindAll("input[role=combobox]")[0].Change("10:00 AM");
+            cut.FindAll("input[role=combobox]")[1].Change("6:00 PM");
+            cut.FindAll(".forma-date-box-trigger")[1].Click();
+            cut.FindAll(".forma-calendar-day").First(day => day.TextContent.Trim() == "15" && !day.ClassList.Contains("empty")).Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new DateTimeOffset(2026, 3, 15, 10, 0, 0, TimeSpan.FromHours(5.5)), model.Departure),
+                () => Assert.Equal(TimeSpan.FromHours(5.5), model.Departure!.Value.Offset),
+                () => Assert.Equal(TimeSpan.FromHours(3), model.Arrival!.Value.Offset),
+                () => Assert.Equal(new TimeSpan(18, 0, 0), model.Arrival!.Value.TimeOfDay));
+        }
+
+        [Fact]
+        public async Task Should_hold_one_half_until_the_focus_leaves_and_then_report_the_other()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var probe = new DomProbe<FocusState>(ctx);
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+            GetTime(cut).Change("2:30 PM");
+            var whileBetween = cut.FindAll(".forma-field-message").Count;
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, whileBetween),
+                () => Assert.Null(model.Starts),
+                () => Assert.Equal("2:30 PM", GetTime(cut).GetAttribute("value")),
+                () => Assert.Equal("The Starts field needs a date.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_clear_the_report_of_a_missing_half_once_it_is_entered()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@editContext">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Change("2:30 PM");
+            await cut.InvokeAsync(() => editContext.ValidateAsync());
+
+            // Act
+            PickDay(cut, "15");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(model.Starts),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public async Task Should_report_a_missing_half_when_the_form_validates()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@editContext">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            PickDay(cut, "15");
+
+            // Act
+            var isValid = await cut.InvokeAsync(() => editContext.ValidateAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(isValid),
+                () => Assert.Null(model.Starts),
+                () => Assert.Equal("The Starts field needs a time.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_take_a_first_state_outside_the_field_as_no_leave()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var probe = new DomProbe<FocusState>(ctx);
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Change("2:30 PM");
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-field-message"));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_value_bound_while_a_cleared_half_is_reported()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var probe = new DomProbe<FocusState>(ctx);
+            var bound = new DateTime(2026, 3, 15, 9, 30, 0);
+            var model = new Booking { Starts = bound };
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@editContext">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+
+            // Act
+            GetTime(cut).Change(string.Empty);
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+            var isValid = await cut.InvokeAsync(() => editContext.ValidateAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(bound, model.Starts),
+                () => Assert.False(isValid),
+                () => Assert.Equal(string.Empty, GetTime(cut).GetAttribute("value") ?? string.Empty),
+                () => Assert.Equal("3/15/2026", cut.Find(".forma-date-box-value").TextContent.Trim()),
+                () => Assert.Equal("The Starts field needs a time.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_empty_a_value_that_can_be_empty_when_both_halves_are_cleared()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 30, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+
+            // Act
+            GetTime(cut).Change(string.Empty);
+            cut.Find(".forma-date-box-clear").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(model.Starts),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public void Should_report_a_value_that_cannot_be_empty_when_both_halves_are_cleared_and_keep_it()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var bound = new DateTime(2026, 3, 15, 8, 0, 0);
+            var model = new Booking { Reminder = bound };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Reminder" Label="Reminder" />
+            </FakeFormHost>);
+
+            // Act
+            GetTime(cut).Change(string.Empty);
+            cut.Find(".forma-date-box-clear").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(bound, model.Reminder),
+                () => Assert.Equal("The Reminder field is required.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_keep_text_that_is_not_a_time_and_report_it()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var bound = new DateTime(2026, 3, 15, 9, 30, 0);
+            var model = new Booking { Starts = bound };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+
+            // Act
+            GetTime(cut).Change("teatime");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(bound, model.Starts),
+                () => Assert.Equal("teatime", GetTime(cut).GetAttribute("value")),
+                () => Assert.Equal("The Starts field must be a time.", cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_describe_both_controls_by_the_message_the_field_shows()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 30, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+
+            // Act
+            GetTime(cut).Change("teatime");
+
+            // Assert
+            var messages = cut.Find(".forma-field-messages").Id;
+            Assert.Multiple(
+                () => Assert.Equal(messages, GetTrigger(cut).GetAttribute("aria-describedby")),
+                () => Assert.Equal(messages, GetTime(cut).GetAttribute("aria-describedby")),
+                () => Assert.Equal("true", GetTrigger(cut).GetAttribute("aria-invalid")),
+                () => Assert.Equal("true", GetTime(cut).GetAttribute("aria-invalid")));
+        }
+    }
+
+    public sealed class Bounds
+    {
+        [Fact]
+        public void Should_report_a_date_changed_under_a_time_it_does_not_allow_rather_than_move_the_time()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var bound = new DateTime(2026, 3, 16, 10, 0, 0);
+            var model = new Booking { Starts = bound };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" Min="new DateTime(2026, 3, 15, 14, 0, 0)" />
+            </FakeFormHost>);
+
+            // Act
+            PickDay(cut, "15");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(bound, model.Starts),
+                () => Assert.Equal(FormatInEnglish("10:00 AM"), GetTime(cut).GetAttribute("value")),
+                () => Assert.Equal(FormatInEnglish("The Starts field must be 3/15/2026 2:00 PM or later."), cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_report_a_value_after_the_latest_with_both_bounds()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking { Starts = new DateTime(2026, 3, 17, 9, 0, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" Min="new DateTime(2026, 3, 15, 14, 0, 0)" Max="new DateTime(2026, 3, 17, 11, 0, 0)" />
+            </FakeFormHost>);
+
+            // Act
+            GetTime(cut).Change("11:30 AM");
+
+            // Assert
+            Assert.Equal(FormatInEnglish("The Starts field must be between 3/15/2026 2:00 PM and 3/17/2026 11:00 AM."), cut.Find(".forma-field-message").TextContent);
+        }
+
+        [Theory]
+        [InlineData(15, 14, 20, "2:00 PM")]
+        [InlineData(16, 0, 48, "12:00 AM")]
+        [InlineData(17, 0, 23, "12:00 AM")]
+        public async Task Should_suggest_only_the_times_the_date_allows(int day, int hour, int count, string first)
+        {
+            // Arrange — the value at the date's first time, which the list opens on
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var router = new InputRouterProbe(ctx);
+            var model = new Booking { Starts = new DateTime(2026, 3, day, hour, 0, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" Min="new DateTime(2026, 3, 15, 14, 0, 0)" Max="new DateTime(2026, 3, 17, 11, 0, 0)" />
+            </FakeFormHost>);
+
+            // Act
+            await router.RouteAsync("time-box.next", "ArrowDown");
+
+            // Assert
+            var options = cut.FindAll("[role=option]");
+            Assert.Multiple(
+                () => Assert.All(options, option => Assert.Equal(count.ToString(CultureInfo.InvariantCulture), option.GetAttribute("aria-setsize"))),
+                () => Assert.Equal(FormatInEnglish(first), options.Single(option => option.GetAttribute("aria-posinset") == "1").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_report_a_time_off_the_step_with_the_times_either_side()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var bound = new DateTime(2026, 3, 15, 9, 0, 0);
+            var model = new Booking { Starts = bound };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" Step="TimeSpan.FromMinutes(15)" />
+            </FakeFormHost>);
+
+            // Act
+            GetTime(cut).Change("9:10 AM");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(bound, model.Starts),
+                () => Assert.Equal(FormatInEnglish("The Starts field must be 9:00 AM or 9:15 AM."), cut.Find(".forma-field-message").TextContent));
+        }
+    }
+
+    public sealed class EditInProgress
+    {
+        [Fact]
+        public async Task Should_commit_a_time_in_the_culture_it_was_typed_in_after_the_culture_changes()
+        {
+            // Arrange — Hebrew reads the text as half past one in the afternoon, and English refuses it
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 0, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = GetTime(cut).GetAttribute("value");
+
+            // Act
+            GetTime(cut).Change("1:30 אחה״צ");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1:30 אחה״צ", textAfterChange),
+                () => Assert.Equal(new DateTime(2026, 3, 15, 13, 30, 0), model.Starts),
+                () => Assert.Equal(FormatInEnglish("1:30 PM"), GetTime(cut).GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_keep_a_time_it_read_as_typed_while_the_field_waits_for_its_date()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Input("1:30 אחה״צ");
+            GetTime(cut).Change("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = GetTime(cut).GetAttribute("value");
+
+            // Act
+            PickDay(cut, "15");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1:30 אחה״צ", textAfterChange),
+                () => Assert.Equal(15, model.Starts!.Value.Day),
+                () => Assert.Equal(new TimeSpan(13, 30, 0), model.Starts!.Value.TimeOfDay),
+                () => Assert.Equal(FormatInEnglish("1:30 PM"), GetTime(cut).GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_keep_a_time_the_field_rejected_and_the_culture_it_was_typed_in()
+        {
+            // Arrange — English would refuse the text as no time at all
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var bound = new DateTime(2026, 3, 15, 9, 0, 0);
+            var model = new Booking { Starts = bound };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" Step="TimeSpan.FromMinutes(15)" />
+            </FakeFormHost>);
+            GetTime(cut).Input("1:10 אחה״צ");
+            GetTime(cut).Change("1:10 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+            var textAfterChange = GetTime(cut).GetAttribute("value");
+
+            // Act
+            GetTime(cut).Change("1:10 אחה״צ");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("1:10 אחה״צ", textAfterChange),
+                () => Assert.Equal(bound, model.Starts),
+                () => Assert.Equal(FormatInEnglish("The Starts field must be 1:00 PM or 1:15 PM."), cut.Find(".forma-field-message").TextContent));
+        }
+
+        [Fact]
+        public void Should_take_blank_time_text_as_a_missing_time()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            GetTime(cut).Input("  ");
+
+            // Act
+            PickDay(cut, "15");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(model.Starts),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")));
+        }
+
+        [Fact]
+        public async Task Should_replace_the_time_s_edit_with_a_different_value_bound_to_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            using var culture = new CultureFixture(PinnedCultures.Hebrew);
+            var model = new Booking { Starts = new DateTime(2026, 3, 15, 9, 0, 0) };
+            var cut = ctx.Render<FormaDateTimePicker<DateTime?>>(parameters => parameters
+                .Add(p => p.Label, "Starts")
+                .Add(p => p.Value, model.Starts)
+                .Add(p => p.ValueExpression, () => model.Starts));
+            cut.Find("input[role=combobox]").Input("1:30 אחה״צ");
+            await ctx.ChangeCultureAsync("en-US");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, new DateTime(2026, 3, 15, 14, 0, 0)));
+
+            // Assert
+            Assert.Equal(FormatInEnglish("2:00 PM"), cut.Find("input[role=combobox]").GetAttribute("value"));
+        }
+    }
+
+    private static IElement GetTrigger(IRenderedComponent<IComponent> cut)
+        => cut.Find(".forma-date-box-trigger");
+
+    private static IElement GetTime(IRenderedComponent<IComponent> cut)
+        => cut.Find("input[role=combobox]");
+
+    private static void PickDay(IRenderedComponent<IComponent> cut, string day)
+    {
+        GetTrigger(cut).Click();
+        cut.FindAll(".forma-calendar-day").First(element => element.TextContent.Trim() == day && !element.ClassList.Contains("empty")).Click();
+    }
+
+    private sealed class Booking
+    {
+        public DateTime? Starts { get; set; }
+
+        public DateTime Reminder { get; set; }
+
+        public DateTimeOffset? Departure { get; set; }
+
+        public DateTimeOffset? Arrival { get; set; }
+
+        public string? Note { get; set; }
+    }
+
+    private static string FormatInEnglish(string text)
+        => CultureText.FormatTimes(text, CultureInfo.GetCultureInfo("en-US"));
+}

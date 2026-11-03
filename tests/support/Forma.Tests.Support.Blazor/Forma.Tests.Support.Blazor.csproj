@@ -16,7 +16,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
-        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Browser.Blazor.Server\Forma.Framework.Browser.Blazor.Server.csproj" />
         <ProjectReference Include="..\..\..\src\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />

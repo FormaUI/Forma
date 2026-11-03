@@ -10,11 +10,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
-        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
-        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
-        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
-        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Events\Forma.Framework.Events.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Culture.Browser.Interop\Forma.Framework.Culture.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
@@ -30,9 +26,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="OfficeIMO.Excel" />
-        <PackageReference Include="OfficeIMO.PowerPoint" />
-        <PackageReference Include="OfficeIMO.Word" />
         <PackageReference Include="Microsoft.Maui.Essentials" />
     </ItemGroup>
 

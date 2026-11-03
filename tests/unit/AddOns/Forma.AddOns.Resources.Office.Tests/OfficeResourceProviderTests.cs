@@ -3,7 +3,6 @@ namespace Forma.AddOns.Resources.Office.Tests;
 using Forma.Framework.Localization.Json;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Office;
-using Forma.Tests.Office;
 using Forma.Tests.Resources;
 using Forma.Tests.Shared;
 

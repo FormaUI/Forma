@@ -33,6 +33,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 ## Structure
 
 - Do put a thing where its owner is: a contract stays with the feature that owns it however many projects reference it, a supporting type a host names lives in the feature assembly, and a type no caller names stays beside the component.
+- Do give an assembly one test project for each kind of test it has, named after it and the kind, and keep a test helper in the suite that uses it until a second suite does.
 - Do keep a folder and its namespace in step, and give every assembly one root namespace, its project name, unless it borrows the namespace of what it extends or splits from, as the repository document sets out.
 - Do let dependencies point one way, from the product to the framework it builds on, never upward, and let an optional package extend the library from outside it rather than be referenced from within.
 - Do file a project by what it is: what the library builds on is Framework, whether or not the product uses it; a project that is optional and extends a Framework assembly is an AddOn, a host opt-in the host references and registers itself. Optional alone makes nothing an AddOn.

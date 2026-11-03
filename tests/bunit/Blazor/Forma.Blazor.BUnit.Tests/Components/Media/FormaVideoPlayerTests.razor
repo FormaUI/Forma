@@ -1,0 +1,836 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Media
+@using Microsoft.Extensions.DependencyInjection
+
+@code {
+    public sealed class Component
+    {
+        [Theory]
+        [InlineData("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
+        [InlineData("https://youtube.com/watch?v=dQw4w9WgXcQ")]
+        [InlineData("https://m.youtube.com/watch?v=dQw4w9WgXcQ")]
+        [InlineData("https://www.youtube.com/watch?list=PL123&v=dQw4w9WgXcQ")]
+        [InlineData("https://youtu.be/dQw4w9WgXcQ")]
+        [InlineData("https://www.youtube.com/embed/dQw4w9WgXcQ")]
+        [InlineData("https://www.youtube.com/shorts/dQw4w9WgXcQ")]
+        [InlineData("https://www.youtube.com/live/dQw4w9WgXcQ")]
+        public void Should_embed_a_youtube_address_whatever_its_shape(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A video" DeferLoading="false" />);
+
+            // Assert
+            Assert.Equal(
+                "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
+                cut.Find("iframe").GetAttribute("src"));
+        }
+
+        [Theory]
+        [InlineData("https://vimeo.com/123456789")]
+        [InlineData("https://www.vimeo.com/123456789")]
+        [InlineData("https://vimeo.com/video/123456789")]
+        [InlineData("https://player.vimeo.com/video/123456789")]
+        [InlineData("https://vimeo.com/channels/staffpicks/123456789")]
+        public void Should_embed_a_vimeo_address_whatever_its_shape(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A video" DeferLoading="false" />);
+
+            // Assert
+            Assert.Equal(
+                "https://player.vimeo.com/video/123456789?dnt=1",
+                cut.Find("iframe").GetAttribute("src"));
+        }
+
+        [Theory]
+        [InlineData("https://evil.example.com/embed/dQw4w9WgXcQ")]
+        [InlineData("https://notyoutube.com/watch?v=dQw4w9WgXcQ")]
+        [InlineData("https://youtube.com.evil.example/watch?v=dQw4w9WgXcQ")]
+        public void Should_reject_a_youtube_shaped_path_on_another_host(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A video" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("iframe"));
+        }
+
+        [Fact]
+        public void Should_play_a_file_through_the_native_player()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" />);
+            var video = cut.Find("video");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("/media/stage-1.mp4", video.GetAttribute("src"));
+                Assert.NotNull(video.GetAttribute("controls"));
+                Assert.Empty(cut.FindAll("iframe"));
+            });
+        }
+
+        [Theory]
+        [InlineData("/media/stage-1.mp4")]
+        [InlineData("media/stage-1.mp4")]
+        [InlineData("https://cdn.example.com/stage-1.mp4")]
+        [InlineData("http://cdn.example.com/stage-1.mp4")]
+        [InlineData("blob:https://example.com/8f4b0c2e-1a3d")]
+        [InlineData("data:video/mp4;base64,AAAA")]
+        public void Should_play_a_file_from_an_address_a_page_can_fetch(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="Stage 1" />);
+
+            // Assert
+            Assert.Equal(source, cut.Find("video").GetAttribute("src"));
+        }
+
+        [Theory]
+        [InlineData("file:///C:/videos/stage-1.mp4")]
+        [InlineData("ftp://example.com/stage-1.mp4")]
+        [InlineData("javascript:alert(1)")]
+        public void Should_refuse_a_file_address_a_page_cannot_fetch(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="Stage 1" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(cut.FindAll("video"));
+                Assert.Equal("This video is unavailable.", cut.Find(".forma-video-player-unavailable").TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_name_the_player_for_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="Stage 4 highlights" DeferLoading="false" />);
+
+            // Assert
+            Assert.Equal("Stage 4 highlights", cut.Find("iframe").GetAttribute("title"));
+        }
+
+        [Fact]
+        public void Should_mute_an_autoplaying_embed()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" Autoplay="true" />);
+
+            // Assert
+            Assert.Equal(
+                "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0&autoplay=1&mute=1",
+                cut.Find("iframe").GetAttribute("src"));
+        }
+
+        [Fact]
+        public void Should_mute_an_autoplaying_vimeo_embed()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://vimeo.com/123456789" Title="A video" Autoplay="true" />);
+
+            // Assert
+            Assert.Equal(
+                "https://player.vimeo.com/video/123456789?autoplay=1&muted=1&dnt=1",
+                cut.Find("iframe").GetAttribute("src"));
+        }
+
+        [Fact]
+        public void Should_mute_an_autoplaying_file()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" Autoplay="true" />);
+            var video = cut.Find("video");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(video.GetAttribute("autoplay"));
+                Assert.NotNull(video.GetAttribute("muted"));
+            });
+        }
+
+        [Fact]
+        public void Should_not_autoplay_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" />);
+
+            // Assert
+            Assert.Null(cut.Find("video").GetAttribute("autoplay"));
+        }
+
+        [Theory]
+        [InlineData("https://www.twitch.tv/videos/40464143", "https://player.twitch.tv/?video=v40464143")]
+        [InlineData("https://twitch.tv/videos/40464143", "https://player.twitch.tv/?video=v40464143")]
+        [InlineData("https://www.twitch.tv/dallas", "https://player.twitch.tv/?channel=dallas")]
+        [InlineData("https://clips.twitch.tv/IncredulousAbstemiousFennel", "https://clips.twitch.tv/embed?clip=IncredulousAbstemiousFennel")]
+        [InlineData("https://www.twitch.tv/dallas/clip/IncredulousAbstemiousFennel", "https://clips.twitch.tv/embed?clip=IncredulousAbstemiousFennel")]
+        public void Should_embed_a_twitch_address_with_the_embedding_host(string source, string expectedPrefix)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A stream" DeferLoading="false" />);
+            var src = cut.Find("iframe").GetAttribute("src");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.StartsWith(expectedPrefix, src, StringComparison.Ordinal);
+                Assert.Contains("parent=", src, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public void Should_ask_twitch_not_to_autoplay_since_it_otherwise_would()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://www.twitch.tv/videos/40464143" Title="A stream" DeferLoading="false" />);
+
+            // Assert
+            Assert.Contains("autoplay=false", cut.Find("iframe").GetAttribute("src"), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_mute_an_autoplaying_twitch_embed()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://www.twitch.tv/videos/40464143" Title="A stream" Autoplay="true" />);
+            var src = cut.Find("iframe").GetAttribute("src");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("autoplay=true", src, StringComparison.Ordinal);
+                Assert.Contains("muted=true", src, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public void Should_embed_a_tiktok_address_as_its_own_markup()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" DeferLoading="false" />);
+            var quote = cut.Find("blockquote.tiktok-embed");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("6718335390845095173", quote.GetAttribute("data-video-id"));
+                Assert.Empty(cut.FindAll("iframe"));
+                Assert.Empty(cut.FindAll("video"));
+            });
+        }
+
+        [Theory]
+        [InlineData("https://www.instagram.com/p/fA9uwTtkSN/")]
+        [InlineData("https://www.instagram.com/reel/fA9uwTtkSN/")]
+        [InlineData("https://instagram.com/tv/fA9uwTtkSN/")]
+        public void Should_embed_an_instagram_address_as_its_own_markup(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A reel" DeferLoading="false" />);
+
+            // Assert
+            Assert.Contains("fA9uwTtkSN", cut.Find("blockquote.instagram-media").GetAttribute("data-instgrm-permalink"), StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("https://www.facebook.com/FacebookDevelopers/videos/10152454700553553/")]
+        [InlineData("https://www.facebook.com/watch/?v=10153231379946729")]
+        [InlineData("https://fb.watch/abc123XYZ")]
+        public void Should_embed_a_facebook_address_as_its_own_markup(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A video" DeferLoading="false" />);
+
+            // Assert
+            Assert.NotNull(cut.Find("div.fb-video").GetAttribute("data-href"));
+        }
+
+        [Theory]
+        [InlineData("https://twitter.com/TwitterDev/status/1354143047324299264")]
+        [InlineData("https://x.com/TwitterDev/status/1354143047324299264")]
+        [InlineData("https://mobile.twitter.com/i/status/1354143047324299264")]
+        public void Should_embed_an_x_address_as_its_own_markup(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A post" DeferLoading="false" />);
+            var quote = cut.Find("blockquote.twitter-tweet");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(source, quote.QuerySelector("a")!.GetAttribute("href"));
+                Assert.Equal("true", quote.GetAttribute("data-dnt"));
+            });
+        }
+
+        [Fact]
+        public void Should_scan_again_when_a_new_address_uses_the_same_service_script()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var first = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+            var second = "https://www.tiktok.com/@scout2015/video/6718335390845095174";
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@first" Title="A clip" DeferLoading="false" />);
+
+            // Act
+            cut.FindComponent<FormaVideoPlayer>().Render(parameters => parameters.Add(player => player.Source, second));
+
+            // Assert
+            Assert.Equal(2, ctx.JSInterop.Invocations["activate"].Count);
+        }
+
+        [Fact]
+        public void Should_scan_once_while_the_address_stays_the_same()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            ctx.JSInterop
+                .SetupModule("./_content/forma/browser/scripts/operations/Embedding.js")
+                .Setup<bool>("activate", _ => true)
+                .SetResult(true);
+            var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" DeferLoading="false" />);
+
+            // Act
+            cut.FindComponent<FormaVideoPlayer>().Render(parameters => parameters.Add(player => player.Title, "The same clip"));
+
+            // Assert
+            Assert.Single(ctx.JSInterop.Invocations["activate"]);
+        }
+
+        [Fact]
+        public void Should_let_a_service_size_its_own_player()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" DeferLoading="false" />);
+
+            // Assert
+            Assert.Contains("forma-video-player-flow", cut.Find("div.forma-video-player").ClassList);
+        }
+
+        [Fact]
+        public void Should_name_a_service_player_from_the_title()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" DeferLoading="false" />);
+
+            // Assert
+            Assert.Equal("A clip", cut.Find("div[role=group]").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_keep_the_address_reachable_when_a_service_script_never_renders()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" DeferLoading="false" />);
+            var fallback = cut.Find("a.forma-video-player-fallback");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(source, fallback.GetAttribute("href"));
+                Assert.Equal("noopener noreferrer", fallback.GetAttribute("rel"));
+            });
+        }
+
+        [Fact]
+        public void Should_offer_no_fallback_link_for_a_player_the_browser_renders()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("a.forma-video-player-fallback"));
+        }
+
+        [Fact]
+        public void Should_encode_an_address_before_it_reaches_service_markup()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var hostile = "https://www.tiktok.com/@scout2015/video/6718335390845095173\"><script>alert(1)</script>";
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@hostile" Title="A clip" DeferLoading="false" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("script"));
+        }
+
+        [Fact]
+        public void Should_fall_back_to_the_file_player_for_an_address_no_service_claims()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" />);
+
+            // Assert
+            Assert.Equal("/media/stage-1.mp4", cut.Find("video").GetAttribute("src"));
+        }
+
+        [Fact]
+        public void Should_show_the_unavailable_notice_when_no_player_can_reach_the_address()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="ftp://example.com/stage-1.mp4" Title="Stage 1" />);
+
+            // Assert
+            Assert.Equal("This video is unavailable.", cut.Find(".forma-video-player-unavailable").TextContent);
+        }
+
+        [Fact]
+        public void Should_merge_a_host_class_onto_the_wrapper()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" class="host-class" DeferLoading="false" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-video-player", cut.Find("div").ClassList);
+                Assert.Contains("host-class", cut.Find("div").ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_render_a_track_for_each_caption()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var captions = new List<VideoCaptionTrack>
+            {
+                new("/media/en.vtt", "en", "English") { IsDefault = true },
+                new("/media/es.vtt", "es", "Español"),
+            };
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" Captions="captions" />);
+            var tracks = cut.FindAll("track");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(2, tracks.Count);
+                Assert.Equal("captions", tracks[0].GetAttribute("kind"));
+                Assert.Equal("/media/en.vtt", tracks[0].GetAttribute("src"));
+                Assert.Equal("en", tracks[0].GetAttribute("srclang"));
+                Assert.Equal("English", tracks[0].GetAttribute("label"));
+            });
+        }
+
+        [Fact]
+        public void Should_mark_only_the_default_caption_track()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var captions = new List<VideoCaptionTrack>
+            {
+                new("/media/en.vtt", "en", "English") { IsDefault = true },
+                new("/media/es.vtt", "es", "Español"),
+            };
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" Captions="captions" />);
+            var tracks = cut.FindAll("track");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(tracks[0].GetAttribute("default"));
+                Assert.Null(tracks[1].GetAttribute("default"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_no_track_when_no_captions_are_supplied()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("track"));
+        }
+
+        [Fact]
+        public void Should_reject_captions_an_embedded_provider_would_drop()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var captions = new List<VideoCaptionTrack> { new("/media/en.vtt", "en", "English") };
+
+            // Act
+            var act = () => ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" Captions="captions" />);
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_captions_a_service_player_would_drop()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var captions = new List<VideoCaptionTrack> { new("/media/en.vtt", "en", "English") };
+            var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+
+            // Act
+            var act = () => ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" Captions="captions" />);
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(act);
+        }
+
+        [Theory]
+        [InlineData("https://youtu.be/dQw4w9WgXcQ")]
+        [InlineData("https://vimeo.com/123456789")]
+        public void Should_hold_an_embedded_player_behind_a_play_control(string source)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A video" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Play A video", cut.Find(".forma-video-player-facade-label").TextContent);
+                Assert.Empty(cut.FindAll("iframe"));
+            });
+        }
+
+        [Fact]
+        public void Should_hold_a_service_player_behind_a_play_control()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Play A clip", cut.Find(".forma-video-player-facade-label").TextContent);
+                Assert.Empty(cut.FindAll("blockquote"));
+            });
+        }
+
+        [Fact]
+        public void Should_load_the_service_player_once_the_control_is_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" />);
+
+            // Act
+            cut.Find("button.forma-video-player-facade").Click();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(cut.FindAll("button.forma-video-player-facade"));
+                Assert.Equal(
+                    "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
+                    cut.Find("iframe").GetAttribute("src"));
+            });
+        }
+
+        [Fact]
+        public void Should_run_no_service_script_while_the_player_is_held_back()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
+
+            // Act
+            ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" />);
+
+            // Assert
+            Assert.Empty(ctx.JSInterop.Invocations["activate"]);
+        }
+
+        [Fact]
+        public void Should_play_a_file_without_holding_it_back()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(cut.FindAll("button.forma-video-player-facade"));
+                Assert.NotNull(cut.Find("video"));
+            });
+        }
+
+        [Fact]
+        public void Should_skip_the_play_control_when_autoplay_asks_to_start()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" Autoplay="true" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(cut.FindAll("button.forma-video-player-facade"));
+                Assert.NotNull(cut.Find("iframe"));
+            });
+        }
+
+        [Fact]
+        public void Should_hold_a_new_address_back_again_after_one_was_loaded()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" />);
+            cut.Find("button.forma-video-player-facade").Click();
+
+            // Act
+            cut.FindComponent<FormaVideoPlayer>().Render(parameters => parameters.Add(player => player.Source, "https://vimeo.com/123456789"));
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(cut.Find("button.forma-video-player-facade"));
+                Assert.Empty(cut.FindAll("iframe"));
+            });
+        }
+
+        [Fact]
+        public void Should_name_the_play_control_by_its_action_and_describe_what_it_costs()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" />);
+            var control = cut.Find("button.forma-video-player-facade");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(cut.Find(".forma-video-player-facade-label").Id, control.GetAttribute("aria-labelledby"));
+                Assert.Equal(cut.Find(".forma-video-player-facade-note").Id, control.GetAttribute("aria-describedby"));
+            });
+        }
+
+        [Fact]
+        public void Should_show_a_placeholder_on_the_play_control()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" Placeholder="/media/still.jpg" />);
+            var placeholder = cut.Find("img.forma-video-player-facade-placeholder");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("/media/still.jpg", placeholder.GetAttribute("src"));
+                Assert.Equal(string.Empty, placeholder.GetAttribute("alt"));
+            });
+        }
+
+        [Fact]
+        public void Should_show_a_placeholder_on_a_file_the_browser_plays()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" Placeholder="/media/still.jpg" />);
+
+            // Assert
+            Assert.Equal("/media/still.jpg", cut.Find("video").GetAttribute("poster"));
+        }
+
+        [Fact]
+        public void Should_show_no_placeholder_when_none_is_supplied()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("img.forma-video-player-facade-placeholder"));
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_source()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaVideoPlayer Source=" " Title="A video" />);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_title()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title=" " />);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_let_a_registered_provider_claim_an_address_a_service_would_take()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            ctx.Services.AddScoped<IPlayerProvider>(_ => new FakePlayerProvider(
+                "https://www.youtube.com/",
+                source => new EmbeddedPlayerFrame("https://videos.example.com/mirror")));
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ" Title="A video" DeferLoading="false" />);
+
+            // Assert
+            Assert.Equal("https://videos.example.com/mirror", cut.Find("iframe").GetAttribute("src"));
+        }
+
+        [Fact]
+        public void Should_fall_through_to_the_services_when_a_registered_provider_declines()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var provider = new FakePlayerProvider(
+                "https://videos.example.com/",
+                source => new EmbeddedPlayerFrame(source));
+            ctx.Services.AddScoped<IPlayerProvider>(_ => provider);
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" DeferLoading="false" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(1, provider.Calls);
+                Assert.Equal(
+                    "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
+                    cut.Find("iframe").GetAttribute("src"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_its_play_control_disabled_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(cut.Find("button.forma-video-player-facade").HasAttribute("disabled")),
+                () => Assert.Equal("Play A video", cut.Find(".forma-video-player-facade-label").TextContent));
+        }
+    }
+}

@@ -1,11 +1,11 @@
 ---
 name: forma-testing
-description: The test standard — the one-test-project-per-assembly rule and where a contracts assembly is tested, the bUnit + xUnit v3 file shape with a nested class per subject, naming and Arrange/Act/Assert conventions, rendering form inputs in a fake form host, the shared support project every fake lives in, driving interop wrappers through the fake runtime, and the separate Vitest runner for script modules. Use when writing or changing any test, adding a test fake, or testing a JS behavior, operation, component or service module.
+description: The test standard — one test project per assembly and kind, the kind a test belongs to, and where a contracts assembly is tested, the bUnit + xUnit v3 file shape with a nested class per subject, naming and Arrange/Act/Assert conventions, rendering form inputs in a fake form host, where a fake lives, with its suite until a second suite needs it, driving interop wrappers through the fake runtime, and the separate Vitest runner for script modules. Use when writing or changing any test, adding a test fake, or testing a JS behavior, operation, component or service module.
 ---
 
 # Tests (bUnit + xUnit v3)
 
-Every production assembly has exactly one test project named after it, and is never tested from another project. A contracts assembly whose behavior only shows through what extends it is the exception: it is exercised through the test project of what extends it. Mirror source paths within a test project, so a component's tests live in the category folder matching the component's, as `FormaXTests.razor` with `FormaXTests.razor.cs`.
+Every production assembly has one test project for each kind of test it has, named after it and the kind: `X.Tests` holds its unit tests, `X.BUnit.Tests` its bUnit tests and `X.Integration.Tests` its integration tests, and it is never tested from a project named after another assembly. A suite that runs a whole host or spans several assemblies is named for the scenario it verifies, and every test assembly's name is unique, so a failure names its kind as well as its subject. A contracts assembly whose behavior only shows through what extends it is the exception: it is exercised through the test project of what extends it. Mirror source paths within a test project, so a component's tests live in the category folder matching the component's, as `FormaXTests.razor` with `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits` naming the shared bUnit context and place `[Fact]` methods in a nested `public sealed class Component`; the context registers localization, the bundled artwork and the aggregate registrar, so a test class registers nothing of its own for those.
@@ -20,14 +20,16 @@ Every production assembly has exactly one test project named after it, and is ne
 - Do assert rendered markup, attributes, and callback invocations rather than private state.
 - Do assert exact text when a component can render more than one message through the same element or class, such as an empty-list notice versus a no-search-matches notice; finding the element only confirms *a* message rendered, not which one.
 - Do put a service's tests beside the category that owns it, because the test path mirrors where the production type lives.
-- Do put every test fake, fixture, and utility in the shared support project, in a folder mirroring the production area it serves, and put what no single area owns in `Shared/`.
-- Do put what needs bUnit or the components assembly, such as the shared bUnit context, in the bUnit support project beside it, which only the component test projects reference, so a Framework test never restores bUnit or the product.
+- Do file a test by what must work for its assertion to pass: a decision checked through fakes is a unit test, a rendered component a bUnit test, and a result that several parts produce together through real things, such as a file read back from disk, an integration test, even beside unit tests of the same type.
+- Do put a test fake, fixture or utility one suite uses in that suite's `Support/` folder, under the suite's `Support` namespace, and move it to the shared support project once a second suite uses it, into a folder mirroring the production area it serves, with what no single area owns in `Shared/`; the rule applies per type, so two suites importing one support namespace share only the types both use.
+- Do keep a fixture in the shared support project, whatever its consumers, where its assembly is part of what a test exercises, such as a type whose strings that assembly's own locale config roots elsewhere.
+- Do put what needs bUnit or the components assembly, such as the shared bUnit context, in the bUnit support project beside it, which only bUnit suites reference, so a Framework test never restores bUnit or the product.
 - Do drive an interop wrapper in a test through `FakeJSRuntime` and `FakeJSObjectReference` from the support project's interop folder, wrapped in a `JSEnvironment` over a `FakeLoggerFactory` logger, so the test reads what the wrapper returned and what it logged.
 - Do let the namespace follow the support folder, and reference the support project from each test project that uses one.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
 - Don't test a type from a project other than the one named after its assembly, or — for an assembly holding only a feature's contracts, as the composer's extensibility package does — the one named after the engine that implements them.
 - Don't couple tests to implementation details or private fields.
-- Don't give a test project its own `Support/` folder or its own copy of a support type.
+- Don't keep a support type in two places, or move one to the shared support project before a second suite uses it.
 
 ## What bUnit cannot see
 

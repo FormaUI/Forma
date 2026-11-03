@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Tests.Files;
 
-using static Forma.Tests.Localization.LocaleSections;
+using static Forma.Framework.Localization.Tests.Support.LocaleSections;
 
 public sealed class EmbeddedLocaleSourceTests
 {
