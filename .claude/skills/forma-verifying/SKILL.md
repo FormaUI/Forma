@@ -30,9 +30,11 @@ No project generates a documentation file, so nothing reports an undocumented pu
 The build is entered through `build.ps1` at the repository root. Its module and the wrapper scripts for
 the narrower loops live under `scripts/build/`.
 
-- Do run `./build.ps1` for the gate, and a wrapper beside the module for one part of it: `compile.ps1`,
-  `test.ps1`, `format.ps1`, `tasks.ps1`, `browser.ps1`, `mobile.ps1`, `clean.ps1`. The format check is the longest step of
-  the gate, so a narrow loop is worth reaching for.
+- Do run `./build.ps1 Fast` for feedback while working, the unit and bUnit suites built once and run, the
+  script tests and the task programs' tests, and `./build.ps1` for the full gate before a commit, which runs
+  every platform check the machine can and names each one it couldn't; a wrapper beside the module runs one
+  part of it: `compile.ps1`, `test.ps1`, `format.ps1`, `tasks.ps1`, `browser.ps1`, `mobile.ps1`,
+  `clean.ps1`.
 - Do narrow a test run with `test.ps1 -Project`, `-Filter` and `-NoBuild`, and hunt a test that fails
   sometimes with `-Times`, which continues past a failure so the failure shows as a rate; add `-LoadWith`
   to run other test projects beside it, so a race a busy machine exposes shows here too, and `-WaitLog`
@@ -48,7 +50,8 @@ the narrower loops live under `scripts/build/`.
 - Do give every action `SupportsShouldProcess`, so `-WhatIf` describes the run rather than making it.
 - Do add a case to `scripts/build/build.tests.ps1` for a build script or an argument you add, and to
   `scripts/Test-TaskScript.ps1` for a task script; a step that quietly ran nothing looks exactly like a
-  step that passed, and the gate reads every script in `scripts/`, so one nothing covers fails there.
+  step that passed, and the gate's tooling step runs both and reads every script in `scripts/`, so one
+  nothing covers fails there.
 - Do run a step for real against a tree made for the purpose where its body can be wrong, rather than
   only describing it: `-WhatIf` shows which steps run, never what they do, so a bug inside a step's body
   passes every described run.

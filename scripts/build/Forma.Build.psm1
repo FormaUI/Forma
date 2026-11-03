@@ -80,6 +80,7 @@ function Initialize-BuildContext {
         ExampleChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Examples.Smoke.Tests' 'Forma.Examples.Smoke.Tests.csproj'
         BrowserExamples = Join-Path $RepositoryRoot 'examples'
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
+        FastSelection  = Join-Path $RepositoryRoot 'artifacts' 'fast' 'Forma.Fast.slnf'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
     }
 }
@@ -289,7 +290,9 @@ Prints what every step did and says whether the run as a whole passed.
 .DESCRIPTION
 The summary is the part a person reads, so it names every step and its time rather than reporting only
 the failure. A run with no steps at all is a failure: it was asked for work and did none, which is the
-one outcome a summary must not dress up as success.
+one outcome a summary must not dress up as success. A platform check the machine couldn't run is named
+with the reason, apart from the steps that ran, so a run that passed here never reads as one that ran
+everything.
 
 .PARAMETER Result
 The step results to report, in the order they ran.
@@ -307,27 +310,35 @@ function Write-BuildSummary {
     Write-Host ''
     Write-Host ''.PadRight(78, '-')
 
-    foreach ($step in $Result) {
+    $ran = @($Result | Where-Object { -not $_.PSObject.Properties['NotRun'] })
+    $notRun = @($Result | Where-Object { $_.PSObject.Properties['NotRun'] })
+
+    foreach ($step in $ran) {
         $outcome = if ($step.Passed) { 'passed' } else { 'FAILED' }
         Write-Host ("{0,-10} {1,-7} {2,7:N1}s" -f $step.Name, $outcome, $step.Elapsed.TotalSeconds)
     }
 
+    foreach ($check in $notRun) {
+        Write-Host ("{0,-10} not run  {1}" -f $check.Name, $check.NotRun)
+    }
+
     Write-Host ''
 
-    if ($Result.Count -eq 0) {
+    if ($ran.Count -eq 0) {
         Write-Host 'Nothing ran, which is not the same as nothing being wrong.'
         return 1
     }
 
-    $failed = @($Result | Where-Object { -not $_.Passed })
+    $failed = @($ran | Where-Object { -not $_.Passed })
+    $unrun = if ($notRun.Count -eq 0) { '' } elseif ($notRun.Count -eq 1) { '; 1 platform check could not run here' } else { "; $($notRun.Count) platform checks could not run here" }
 
     if ($failed.Count -gt 0) {
-        Write-Host ("The build failed: {0} of {1} steps did not pass." -f $failed.Count, $Result.Count)
+        Write-Host ("The build failed: {0} of {1} steps did not pass{2}." -f $failed.Count, $ran.Count, $unrun)
         return 1
     }
 
-    $plural = if ($Result.Count -eq 1) { 'step' } else { 'steps' }
-    Write-Host ("The build passed: {0} {1}." -f $Result.Count, $plural)
+    $plural = if ($ran.Count -eq 1) { 'step' } else { 'steps' }
+    Write-Host ("The build passed: {0} {1}{2}." -f $ran.Count, $plural, $unrun)
 
     return 0
 }
@@ -419,6 +430,34 @@ function Get-TestProjectCount {
 
 <#
 .SYNOPSIS
+Finds the suites the fast gate runs.
+
+.DESCRIPTION
+Every unit and bUnit suite: the test projects under the unit and bUnit folders, and the analyzers' beside the
+analyzers. A test project is one dotnet test runs, which its reference to the test SDK marks.
+
+.PARAMETER Context
+The build context.
+
+.OUTPUTS
+One project file per suite.
+#>
+function Get-FastTestProject {
+    [CmdletBinding()]
+    [OutputType([System.IO.FileInfo])]
+    param(
+        [Parameter(Mandatory)] [psobject] $Context
+    )
+
+    @((Join-Path $Context.RepositoryRoot 'tests' 'unit'), (Join-Path $Context.RepositoryRoot 'tests' 'bunit'), (Join-Path $Context.RepositoryRoot 'eng')) |
+        Where-Object { Test-Path -LiteralPath $_ } |
+        ForEach-Object { Get-ChildItem -LiteralPath $_ -Filter '*.csproj' -File -Recurse -Depth 3 } |
+        Where-Object { Select-String -LiteralPath $_.FullName -Pattern 'Microsoft.NET.Test.Sdk' -SimpleMatch -Quiet } |
+        Sort-Object FullName
+}
+
+<#
+.SYNOPSIS
 Finds the task programs written in C#.
 
 .DESCRIPTION
@@ -488,13 +527,20 @@ function Get-RunFileArtifact {
 
 <#
 .SYNOPSIS
-Builds the solution.
+Builds the solution, or the fast gate's selection of it.
 
 .DESCRIPTION
 Warnings are errors across the solution, so a diagnostic firing and the build breaking are one event.
 
+-Fast builds the unit and bUnit suites and the projects they reference, analyzers on, through a solution
+filter written over the solution, so the example hosts, the browser hosts and the projects no suite reaches
+stay out and the tests then run from that one build.
+
 .PARAMETER Context
 The build context.
+
+.PARAMETER Fast
+Builds the fast gate's selection rather than the whole solution.
 
 .OUTPUTS
 The step's result.
@@ -503,13 +549,41 @@ function Build-Solution {
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([psobject])]
     param(
-        [Parameter(Mandatory)] [psobject] $Context
+        [Parameter(Mandatory)] [psobject] $Context,
+        [switch] $Fast
     )
 
     $solution = $Context.Solution
 
-    Invoke-BuildStep -Name 'build' -Target $solution -Description 'dotnet build' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
-        dotnet build $solution --nologo -v:q
+    if (-not $Fast) {
+        Invoke-BuildStep -Name 'build' -Target $solution -Description 'dotnet build' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+            dotnet build $solution --nologo -v:q
+        }.GetNewClosure()
+
+        return
+    }
+
+    # A solution filter names its solution from where the filter sits, and its projects from where the solution
+    # sits, each with forward slashes, which the SDK reads on every platform.
+    $selection = $Context.FastSelection
+    $selectionFolder = Split-Path -Parent $selection
+    $solutionFolder = Split-Path -Parent $solution
+    $projects = @(Get-FastTestProject -Context $Context | ForEach-Object { [System.IO.Path]::GetRelativePath($solutionFolder, $_.FullName) -replace '\\', '/' })
+    $filter = [ordered]@{
+        solution = [ordered]@{
+            path     = [System.IO.Path]::GetRelativePath($selectionFolder, $solution) -replace '\\', '/'
+            projects = $projects
+        }
+    } | ConvertTo-Json -Depth 3
+
+    Invoke-BuildStep -Name 'build' -Target $selection -Description "dotnet build, the $($projects.Count) unit and bUnit suites and what they reference" -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+        if ($projects.Count -eq 0) {
+            throw 'No unit or bUnit suite was found to build.'
+        }
+
+        $null = New-Item -ItemType Directory -Path $selectionFolder -Force
+        Set-Content -LiteralPath $selection -Value $filter -Encoding utf8NoBOM
+        dotnet build $selection --nologo -v:q
     }.GetNewClosure()
 }
 
@@ -530,6 +604,9 @@ The build context.
 
 .PARAMETER Project
 One test project to run instead of the whole solution, named rather than spelled out as a path.
+
+.PARAMETER Fast
+Runs the fast gate's selection, the unit and bUnit suites, which Build-Solution -Fast writes and builds.
 
 .PARAMETER Filter
 An expression narrowing which tests run, as dotnet test takes it.
@@ -557,6 +634,7 @@ function Test-Solution {
     param(
         [Parameter(Mandatory)] [psobject] $Context,
         [string] $Project,
+        [switch] $Fast,
         [string] $Filter,
         [switch] $NoBuild,
         [ValidateRange(1, 10000)] [int] $Times = 1,
@@ -569,13 +647,17 @@ function Test-Solution {
         throw '-LoadWith runs its projects from the output already on disk, which a build would be writing to, so it takes -NoBuild after a build.'
     }
 
-    $target = if ($Project) { Resolve-TestProject -Context $Context -Name $Project } else { $Context.Solution }
+    if ($Project -and $Fast) {
+        throw '-Project names one test project and -Fast the fast selection, so a run takes one or the other.'
+    }
+
+    $target = if ($Project) { Resolve-TestProject -Context $Context -Name $Project } elseif ($Fast) { $Context.FastSelection } else { $Context.Solution }
     $load = @(foreach ($name in $LoadWith) { Resolve-TestProject -Context $Context -Name $name })
     $waitLogPath = if ($WaitLog) { $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($WaitLog) } else { $null }
     $clearWaitLog = ${function:Clear-WaitLog}
     $summarizeWaitLog = ${function:Get-WaitLogSummary}
     $writeTestProgress = ${function:Write-TestProgress}
-    $projectCount = Get-TestProjectCount -Target $target
+    $projectCount = if ($Fast) { @(Get-FastTestProject -Context $Context).Count } else { Get-TestProjectCount -Target $target }
 
     # Minimal verbosity prints each failed test with its message and stack as it fails.
     $arguments = @($target, '--nologo', '-v:q', '--logger', 'console;verbosity=minimal')
@@ -590,6 +672,10 @@ function Test-Solution {
 
     $runs = $Times
     $description = if ($runs -gt 1) { "dotnet test, $runs times" } else { 'dotnet test' }
+
+    if ($Fast) {
+        $description += ', the unit and bUnit suites'
+    }
 
     if ($NoBuild) {
         $description += ', on the build already on disk'
@@ -1044,10 +1130,13 @@ An entry point is the one marked by a shebang; a file included into another is c
 includes it. Finding no entry point at all fails the step, since a check that checked nothing and reported
 success would be the same silence the step exists to break, and these programs have moved folder before.
 Once every entry point has built, each test program, named for what it tests with Tests after it, runs, and
-a failing test fails the step.
+a failing test fails the step. -TestsOnly runs the test programs alone, which build what they include.
 
 .PARAMETER Context
 The build context.
+
+.PARAMETER TestsOnly
+Runs the test programs without building the other entry points.
 
 .OUTPUTS
 The step's result.
@@ -1056,7 +1145,8 @@ function Build-TaskProgram {
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([psobject])]
     param(
-        [Parameter(Mandatory)] [psobject] $Context
+        [Parameter(Mandatory)] [psobject] $Context,
+        [switch] $TestsOnly
     )
 
     $folder = $Context.TaskPrograms
@@ -1065,13 +1155,15 @@ function Build-TaskProgram {
     # this module's own functions, so anything it needs from the module has to be a value by the time it
     # runs. Listing a folder makes nothing happen, so doing it under -WhatIf costs nothing.
     $programs = Get-TaskProgram -Context $Context
+    $isBuilt = -not $TestsOnly
+    $description = if ($TestsOnly) { 'dotnet run, each test program' } else { 'dotnet build, each entry point, then dotnet run, each test program' }
 
-    Invoke-BuildStep -Name 'tasks' -Target $folder -Description 'dotnet build, each entry point, then dotnet run, each test program' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+    Invoke-BuildStep -Name 'tasks' -Target $folder -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         if ($programs.Count -eq 0) {
             throw "No task program was found to build: nothing under $folder opens with a shebang."
         }
 
-        foreach ($program in $programs) {
+        foreach ($program in @($programs | Where-Object { $isBuilt })) {
             dotnet build $program.FullName --nologo -v:q
 
             if ($LASTEXITCODE -ne 0) {
@@ -1437,6 +1529,46 @@ function Test-MobileExample {
 
 <#
 .SYNOPSIS
+Tells which platform checks this machine can run, and why it can't run the others.
+
+.DESCRIPTION
+WebView2 runs on Windows alone, so its checks and the Blazor Hybrid examples run there. Android's checks, the
+components in its web view and the MAUI example's smoke check, need a device or emulator adb reaches and the
+maui-android workload to build for it; the workload is asked about only where a device is attached, since
+listing the workloads takes a while.
+
+.OUTPUTS
+One object per platform, carrying its Name, whether it CanRun here and, where it can't, the Reason.
+#>
+function Get-PlatformCheck {
+    [CmdletBinding()]
+    [OutputType([psobject])]
+    param()
+
+    [pscustomobject]@{
+        Name   = 'webview'
+        CanRun = [bool]$IsWindows
+        Reason = if ($IsWindows) { $null } else { "WebView2's checks and the Blazor Hybrid examples: WebView2 runs on Windows alone" }
+    }
+
+    $androidReason = if (-not (Test-AndroidDevice)) {
+        "Android's checks and the MAUI example's smoke check on Android: no Android device or emulator is attached"
+    }
+    elseif (-not (dotnet workload list | Select-String -Pattern '^\s*maui-android\s' -Quiet)) {
+        "Android's checks and the MAUI example's smoke check on Android: the maui-android workload isn't installed"
+    }
+
+    $global:LASTEXITCODE = 0
+
+    [pscustomobject]@{
+        Name   = 'android'
+        CanRun = -not $androidReason
+        Reason = $androidReason
+    }
+}
+
+<#
+.SYNOPSIS
 Tells whether adb reaches an Android device or emulator.
 
 .DESCRIPTION
@@ -1577,7 +1709,15 @@ and a machine run the same checks and neither can drift from the other.
 A build that fails skips the tests and the format check, since neither reads output that was never
 produced. The task programs are built whatever the solution did, because nothing they contain depends on
 it. The locale lint restores the linter the tool manifest pins before it runs, so a machine without it
-fetches the pinned version rather than skipping the step.
+fetches the pinned version rather than skipping the step. The tooling step runs every task script's contract
+and the build's own cases.
+
+The browser check runs every platform check the machine can: the components in Android's web view and the
+MAUI example's smoke check on Android where a device is attached and the maui-android workload installed, and
+WebView2's on Windows. Each one it can't run is named in the summary with the reason.
+
+Fast runs the unit and bUnit suites from one build of them and what they reference, the browser script tests
+and the task programs' tests, and nothing else, for feedback within minutes.
 
 The showcase is not a step. It is a foreground server that never exits, so it cannot belong to a run that
 completes; it stays a check made by hand.
@@ -1586,7 +1726,7 @@ completes; it stays a check made by hand.
 The build context.
 
 .PARAMETER Target
-Narrows the run to the .NET half or the script half.
+Narrows the run to the .NET half, the script half or the browser, or runs the fast gate.
 
 .OUTPUTS
 Every step's result, in the order they ran.
@@ -1596,10 +1736,28 @@ function Invoke-Gate {
     [OutputType([psobject])]
     param(
         [Parameter(Mandatory)] [psobject] $Context,
-        [ValidateSet('DotNet', 'Scripts', 'Browser', 'All')] [string] $Target = 'All'
+        [ValidateSet('DotNet', 'Scripts', 'Browser', 'All', 'Fast')] [string] $Target = 'All'
     )
 
     $results = [System.Collections.Generic.List[psobject]]::new()
+
+    if ($Target -eq 'Fast') {
+        $build = Build-Solution -Context $Context -Fast -WhatIf:$WhatIfPreference
+        $results.Add($build)
+
+        if ($build.Passed) {
+            $results.Add((Test-Solution -Context $Context -Fast -NoBuild -WhatIf:$WhatIfPreference))
+        }
+        else {
+            Write-Host ''
+            Write-Host 'Skipped the tests: they read a build that did not produce one.'
+        }
+
+        $results.AddRange([psobject[]]@(Test-BrowserScript -Context $Context -WhatIf:$WhatIfPreference))
+        $results.Add((Build-TaskProgram -Context $Context -TestsOnly -WhatIf:$WhatIfPreference))
+
+        return $results
+    }
 
     if ($Target -in 'DotNet', 'All') {
         $build = Build-Solution -Context $Context -WhatIf:$WhatIfPreference
@@ -1620,8 +1778,15 @@ function Invoke-Gate {
         # for the shape a script here keeps and exercises the ones that can be run without a side effect,
         # so a script added and covered by nothing fails rather than accumulating quietly.
         $contract = Join-Path $Context.Scripts 'Test-TaskScript.ps1'
-        $results.Add((Invoke-BuildStep -Name 'tooling' -Target $contract -Description 'check every script keeps its contract' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+        $cases = Join-Path $Context.Scripts 'build' 'build.tests.ps1'
+        $results.Add((Invoke-BuildStep -Name 'tooling' -Target $contract -Description "check every script keeps its contract, then run the build's own cases" -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
                     pwsh -NoProfile -File $contract
+                    $exitCode = $LASTEXITCODE
+                    pwsh -NoProfile -File $cases
+
+                    if ($exitCode -ne 0) {
+                        $global:LASTEXITCODE = $exitCode
+                    }
                 }.GetNewClosure()))
 
         $results.Add((Test-SolutionLocale -Context $Context -WhatIf:$WhatIfPreference))
@@ -1632,7 +1797,17 @@ function Invoke-Gate {
     }
 
     if ($Target -in 'Browser', 'All') {
-        $results.Add((Test-BrowserCheck -Context $Context -WhatIf:$WhatIfPreference))
+        $platforms = @(Get-PlatformCheck)
+        $isAndroid = [bool]($platforms | Where-Object { $_.Name -eq 'android' -and $_.CanRun })
+        $results.Add((Test-BrowserCheck -Context $Context -Android:$isAndroid -WhatIf:$WhatIfPreference))
+
+        if ($isAndroid) {
+            $results.Add((Test-MobileExample -Context $Context -Platform Android -WhatIf:$WhatIfPreference))
+        }
+
+        foreach ($platform in @($platforms | Where-Object { -not $_.CanRun })) {
+            $results.Add([pscustomobject]@{ Name = $platform.Name; Passed = $true; Elapsed = [timespan]::Zero; NotRun = $platform.Reason })
+        }
     }
 
     $results

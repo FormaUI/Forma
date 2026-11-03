@@ -32,6 +32,13 @@ $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
+# What this machine can run decides what a full run does, so the cases ask the build's own probe rather than
+# deciding it for themselves.
+Import-Module (Join-Path $PSScriptRoot 'Forma.Build.psd1') -Force
+$platforms = @(Get-PlatformCheck)
+$webView = $platforms | Where-Object { $_.Name -eq 'webview' }
+$android = $platforms | Where-Object { $_.Name -eq 'android' }
+
 # Each case names the script it runs, the arguments it runs it with, whether the run should succeed, and
 # what its output must and must not mention. Adding a case is adding a row.
 $cases = @(
@@ -42,6 +49,20 @@ $cases = @(
     @{ Name = 'a clean on its own does not run the gate'; Script = 'build.ps1'; Arguments = @('-Clean'); Expect = @('-- clean'); Reject = @('-- build', '-- test') }
     @{ Name = 'a clean with a target cleans and then gates'; Script = 'build.ps1'; Arguments = @('All', '-Clean'); Expect = @('-- clean', '-- build', '-- scripts') }
     @{ Name = 'a target that does not exist is refused'; Script = 'build.ps1'; Arguments = @('Everything'); Fails = $true }
+    @{ Name = 'the fast gate builds the unit and bUnit suites once and runs them, the script tests and the task programs tests, and does no more'; Script = 'build.ps1'; Arguments = @('Fast'); Expect = @('-- build', 'unit and bUnit suites and what they reference', '-- test', 'the unit and bUnit suites, on the build already on disk', '-- scripts', '-- tasks', 'dotnet run, each test program'); Reject = @('-- format', '-- tooling', '-- locales', '-- browser', 'each entry point', 'not run') }
+    @{ Name = 'the gate runs the build cases with the scripts contracts'; Script = 'build.ps1'; Arguments = @(); Expect = @('-- tooling', "then run the build's own cases") }
+    if ($android.CanRun) {
+        @{ Name = 'the gate drives Android where a device is attached'; Script = 'build.ps1'; Arguments = @(); Expect = @('then the components on the attached Android device', '-- mobile'); Reject = @('android    not run') }
+    }
+    else {
+        @{ Name = 'the gate names the Android checks it could not run'; Script = 'build.ps1'; Arguments = @(); Expect = @('android    not run', $android.Reason, 'platform check'); Reject = @('-- mobile') }
+    }
+    if ($webView.CanRun) {
+        @{ Name = 'the gate runs the WebView2 checks on Windows'; Script = 'build.ps1'; Arguments = @(); Reject = @('webview    not run') }
+    }
+    else {
+        @{ Name = 'the gate names the WebView2 checks it could not run away from Windows'; Script = 'build.ps1'; Arguments = @(); Expect = @('webview    not run', $webView.Reason) }
+    }
 
     @{ Name = 'compile builds and does no more'; Script = 'compile.ps1'; Arguments = @(); Expect = @('-- build'); Reject = @('-- test', '-- format') }
     @{ Name = 'format checks formatting and does no more'; Script = 'format.ps1'; Arguments = @(); Expect = @('-- format'); Reject = @('-- build', '-- test') }

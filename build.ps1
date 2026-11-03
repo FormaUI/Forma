@@ -27,7 +27,8 @@ Narrows the gate:
   DotNet   the solution, its tests, the format check and the task programs
   Scripts  the browser script tests
   Browser  the browser check, against a published host and its full client
-  All      all three (default)
+  All      all three (default), naming each platform check the machine can't run
+  Fast     the unit and bUnit suites, built once and run, the browser script tests and the task programs' tests
 
 .PARAMETER Clean
 Delete build output. Used alone it only cleans; combined with a target, including 'All', it cleans first
@@ -38,6 +39,9 @@ and then runs the gate.
 
 .EXAMPLE
 ./build.ps1 DotNet          # the .NET half
+
+.EXAMPLE
+./build.ps1 Fast            # the fast gate, for feedback within minutes
 
 .EXAMPLE
 ./build.ps1 -Clean          # delete build output and stop
@@ -52,7 +56,7 @@ and then runs the gate.
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('All', 'DotNet', 'Scripts', 'Browser')]
+    [ValidateSet('All', 'DotNet', 'Scripts', 'Browser', 'Fast')]
     [string] $Target,
 
     [switch] $Clean

@@ -1,6 +1,6 @@
-# Runs the same gate a person runs, on both the platform the library is developed on and the one a
-# contributor is most likely to use. The gate itself lives in the repository, not here, so the two
-# cannot drift: this file installs a toolchain and invokes one script.
+# Runs the same gates a person runs: the full gate on both the platform the library is developed on and the one a
+# contributor is most likely to use, and the fast gate on Linux. The gates themselves live in the repository, not
+# here, so the two cannot drift: this file installs a toolchain and invokes one script.
 name: CI
 
 on:
@@ -117,11 +117,50 @@ jobs:
           NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
         run: pwsh ./build.ps1
 
-      # The build decides what runs, and only this checks that decision. A step that quietly ran nothing
-      # would look exactly like one that passed, which is how the task programs went unbuilt for weeks.
-      - name: Check the build entry point
+      - name: Report the gate was not needed
+        if: steps.filter.outputs.code != 'true'
+        run: echo 'Only prose changed, so the gate did not need to run.'
+
+  # The unit and bUnit suites built once and run, the script tests and the task programs' tests: the feedback a routine
+  # push waits for, measured here from the job's start, setup and restore included.
+  fast:
+    name: fast (ubuntu-latest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect changes
+        id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
+        with:
+          filters: |
+            code:
+              - '**/*'
+              - '!**/*.md'
+              - '!docs/**'
+              - '!assets/**'
+              - '!.github/ISSUE_TEMPLATE/**'
+
+      - name: Set up .NET
         if: steps.filter.outputs.code == 'true'
-        run: pwsh ./scripts/build/build.tests.ps1
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node
+        if: steps.filter.outputs.code == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/scripts/package-lock.json
+
+      - name: Run the fast gate
+        if: steps.filter.outputs.code == 'true'
+        env:
+          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
+        run: pwsh ./build.ps1 Fast
 
       - name: Report the gate was not needed
         if: steps.filter.outputs.code != 'true'
