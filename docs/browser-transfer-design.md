@@ -56,8 +56,9 @@ it registers Forma, with a default the registrar documents. A stream's own defau
 value larger than the receiver accepts is refused, and a stream that breaks, stalls or ends short is a failure;
 either is reported to the receiver, which applies nothing of it.
 
-Under WebAssembly and in a web view no hub stands between the browser and .NET, so a value always fits; the
-transfer passes it on as it is, and its order with the calls around it is the same.
+Under WebAssembly and in a web view no hub stands between the browser and .NET, and the transfer works there as
+it does on the Server, so a value is carried one way in every runtime and keeps its order with the calls
+around it.
 
 ## Edits
 
@@ -69,6 +70,13 @@ text through the transfer.
 
 A field updating as each character is typed sends an edit on each input; a field updating on change sends the
 edits since its last commit as it commits, so in either mode a message's size follows the edit, not the text.
+
+Edits are sent in the order they happen, each as it happens: never held back until .NET acknowledges the one
+before it, which would let an action overtake an edit still waiting, and never coalesced to the latest, since
+each revision builds on the one before. .NET applies them in revision order: an edit arriving ahead of its
+predecessor, as one streaming past the budget can be overtaken by a smaller one after it, waits for it, and an
+edit whose revision the copy has already passed is dropped, so an edit completing late never puts older text
+back.
 The character count follows every keystroke in the browser, whichever mode the field updates in. An editor
 whose content is a document sends the edits of its serialized content in the same way, at its own pace.
 
@@ -85,7 +93,8 @@ saves stale data.
 
 - **The boundary is captured in the browser.** At the click or the submit, the browser identifies the latest
   edit revision in the relevant form or interaction scope, flushes any debounced edits through that revision,
-  and the action waits until those edits are reflected in the bound model. Later typing, or an upload in another
+  and the action waits until those edits are reflected in the bound model: applied, not merely received, since a
+  handler that awaits before it applies lets the action run in between. Later typing, or an upload in another
   form, never keeps the action waiting.
 - **The wait comes before validation.** A form's submit path waits before it validates, so clicking Save and
   pressing Enter behave the same; a wait inside the handler a valid submit calls would come after validation had
