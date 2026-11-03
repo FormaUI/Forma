@@ -12,7 +12,7 @@ public sealed class WebViewCultureTests
     public async Task Should_start_each_web_view_s_document_in_the_application_s_culture()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
 
         // Act
         var webView = await application.GetWebViewAsync("A");
@@ -27,7 +27,7 @@ public sealed class WebViewCultureTests
     public async Task Should_switch_the_state_every_web_view_reads_and_run_their_later_events_in_the_switched_culture()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
 
         // Act
@@ -44,7 +44,7 @@ public sealed class WebViewCultureTests
     public async Task Should_show_a_string_of_the_host_s_own_from_files_its_application_embeds_in_the_switched_culture()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await Assertions.Expect(first.Locator("#welcome")).ToHaveTextAsync("Welcome");
 
@@ -63,7 +63,7 @@ public sealed class WebViewCultureTests
     public async Task Should_bind_in_another_web_view_in_the_switched_culture()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await first.Locator("#switch").ClickAsync();
         await Assertions.Expect(second.Locator("#state")).ToHaveTextAsync(Switched);
@@ -80,7 +80,7 @@ public sealed class WebViewCultureTests
     public async Task Should_set_every_web_view_s_document_in_the_switched_culture_s_language_and_direction()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await first.Locator("#culture").FillAsync("he");
         await first.Locator("#culture").BlurAsync();
@@ -100,7 +100,7 @@ public sealed class WebViewCultureTests
     public async Task Should_move_every_web_view_s_address_into_the_switched_culture_s_route_keeping_a_guarded_page_and_its_work()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await second.Locator("#guard-work").CheckAsync();
         var instance = await second.Locator("#instance").TextContentAsync();
@@ -124,7 +124,7 @@ public sealed class WebViewCultureTests
     public async Task Should_hold_a_navigation_away_from_a_guarded_page()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var webView = await application.GetWebViewAsync("A");
         await webView.Locator("#guard-work").CheckAsync();
 
@@ -141,7 +141,7 @@ public sealed class WebViewCultureTests
     public async Task Should_keep_the_address_of_a_web_view_whose_handler_refuses_to_follow_while_it_shows_the_switched_culture()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await second.Locator("#refuse").CheckAsync();
 
@@ -160,7 +160,7 @@ public sealed class WebViewCultureTests
     public async Task Should_switch_the_application_as_a_web_view_navigates_to_another_culture_s_address()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
 
         // Act
@@ -178,7 +178,7 @@ public sealed class WebViewCultureTests
     public async Task Should_return_to_an_entry_s_page_in_the_application_s_culture_on_a_traversal()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var webView = await application.GetWebViewAsync("A");
         await webView.Locator("#to-es").ClickAsync();
         await Assertions.Expect(webView.Locator("#state")).ToHaveTextAsync(Switched);
@@ -204,7 +204,7 @@ public sealed class WebViewCultureTests
     public async Task Should_start_a_web_view_opened_at_another_culture_s_address_in_the_application_s_culture()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var first = await application.GetWebViewAsync("A");
         await first.Locator("#switch").ClickAsync();
         await Assertions.Expect(first.Locator("#segment")).ToHaveTextAsync("es");
@@ -224,7 +224,7 @@ public sealed class WebViewCultureTests
     public async Task Should_finish_work_begun_before_a_switch_in_the_culture_it_captured()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await second.Locator("#begin-work").ClickAsync();
         await Assertions.Expect(second.Locator("#work")).ToHaveTextAsync($"begun {Assigned}");
@@ -242,7 +242,7 @@ public sealed class WebViewCultureTests
     public async Task Should_switch_every_web_view_from_the_application_s_native_code()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
 
         // Act
@@ -261,7 +261,7 @@ public sealed class WebViewCultureTests
     public async Task Should_switch_every_web_view_whichever_registers_first_Forma_or_the_platform(string order)
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync(new Dictionary<string, string> { ["FORMA_WEBVIEW_ORDER"] = order });
+        await using var application = await WebViewCheckHost.StartAsync(new Dictionary<string, string> { ["FORMA_WEBVIEW_ORDER"] = order });
         var (first, second) = await OpenTwoWebViewsAsync(application);
 
         // Act
@@ -276,7 +276,7 @@ public sealed class WebViewCultureTests
     public async Task Should_keep_switching_once_a_web_view_s_native_window_closed_without_its_web_view_disposed()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await second.Locator("#close").ClickAsync();
         await first.Locator("#switch").ClickAsync();
@@ -296,7 +296,7 @@ public sealed class WebViewCultureTests
     public async Task Should_keep_switching_once_a_web_view_was_disposed()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await second.Locator("#close-disposing").ClickAsync();
         await Assertions.Expect(first.Locator("#released")).ToHaveTextAsync("1");
@@ -370,7 +370,7 @@ public sealed class WebViewCultureTests
     }
 
     private static Task<WebViewApplication> StartWithACulturePerWebViewAsync()
-        => WebViewApplication.StartAsync(new Dictionary<string, string> { ["FORMA_WEBVIEW_CULTURE"] = "per-web-view" });
+        => WebViewCheckHost.StartAsync(new Dictionary<string, string> { ["FORMA_WEBVIEW_CULTURE"] = "per-web-view" });
 
     private static async Task<(IPage First, IPage Second)> OpenTwoWebViewsAsync(WebViewApplication application)
     {

@@ -2,8 +2,6 @@ namespace Forma.Blazor.Browser.Tests;
 
 using System.Diagnostics;
 
-using Forma.Tests.Android;
-
 /// <summary>The Android check host, installed on the device adb reaches and started once for the run, whose one web view each component check on Android reaches through a connection of its own.</summary>
 /// <remarks>A check's connection carries what the check adds to its page, a script run before the page or a route its requests take, so closing it at the check's end takes them back, as closing a web view does under WebView2.</remarks>
 public sealed class AndroidCheckApplication : IAsyncDisposable

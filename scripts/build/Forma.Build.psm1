@@ -76,7 +76,8 @@ function Initialize-BuildContext {
         BrowserWebView = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.WebView' 'Forma.Blazor.Browser.WebView.csproj'
         BrowserAndroid = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.Android' 'Forma.Blazor.Browser.Android.csproj'
         BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'e2e' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
-        AndroidChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Blazor.Browser.Android.Tests' 'Forma.Blazor.Browser.Android.Tests.csproj'
+        AndroidChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Examples.Maui.Smoke.Tests' 'Forma.Examples.Maui.Smoke.Tests.csproj'
+        ExampleChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Examples.Smoke.Tests' 'Forma.Examples.Smoke.Tests.csproj'
         BrowserExamples = Join-Path $RepositoryRoot 'examples'
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
@@ -1121,7 +1122,7 @@ function Test-BrowserScript {
 
 <#
 .SYNOPSIS
-Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, and drives them.
+Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, runs the examples' smoke checks and drives them.
 
 .DESCRIPTION
 The components are checked in each runtime a Web App renders them in, a published client's download is held to
@@ -1131,8 +1132,9 @@ the budgets were measured in, into folders emptied first, since a publish names 
 an earlier publish's files would be counted beside the new ones. The example hosts are built from the solution's
 packages rather than its projects, as a host outside the repository builds: the solution is packed at a version
 only the examples use, and that version is cleared from the machine's package cache first, so a package an
-earlier run cached never stands in for the one just packed. The WebView check host and the Blazor Hybrid example
-hosts are published on Windows alone, the one platform WebView2 runs on, and their checks report themselves skipped
+earlier run cached never stands in for the one just packed. The examples' smoke checks run first, each starting
+an example afresh and turning a page of the library's pagination, and the browser check after them, each run
+reporting. The WebView check host and the Blazor Hybrid example hosts are published on Windows alone, the one platform WebView2 runs on, and their checks report themselves skipped
 elsewhere; the MAUI example needs the maui-windows workload, which a Windows machine installs once. -Android also
 builds the Android check host, which needs the maui-android workload, and checks every component in its web view on
 the device or emulator adb reaches, which must be attached, after the rest of the browser check and in a run of
@@ -1163,6 +1165,7 @@ function Test-BrowserCheck {
     $hostProject = $Context.BrowserHost
     $fullProject = $Context.BrowserFull
     $checks = $Context.BrowserChecks
+    $exampleChecks = $Context.ExampleChecks
     $hostOutput = Join-Path $Context.BrowserOutput 'host'
     $fullOutput = Join-Path $Context.BrowserOutput 'full'
     $componentsProject = $Context.BrowserComponents
@@ -1194,7 +1197,7 @@ function Test-BrowserCheck {
         $description += ', the Blazor Hybrid ones among them'
     }
 
-    $description += ', then drive them in a browser'
+    $description += ', then run the examples'' smoke checks and drive them in a browser'
 
     if ($isVisible) {
         $description += ', in a visible browser window'
@@ -1294,17 +1297,26 @@ function Test-BrowserCheck {
             $env:FORMA_BROWSER_EXAMPLES = $examplesOutput
             $env:FORMA_BROWSER_VISIBLE = if ($isVisible) { '1' } else { $null }
 
+            # The examples' smoke checks run first, since a host that doesn't start fails every check after it; every
+            # run reports, and any one failing fails the step.
+            dotnet run --project $exampleChecks -c Release
+            $exitCode = $LASTEXITCODE
+
             if (-not $isAndroid) {
                 dotnet run --project $checks -c Release
-                return
             }
+            else {
+                # The Android checks run after the rest, in a run of their own, since an emulator sharing the machine
+                # with the other checks falls behind the waits of its own.
+                dotnet run --project $checks -c Release -- -preEnumerateTheories -trait- 'Runtime=android'
 
-            # The Android checks run after the rest, in a run of their own, since an emulator sharing the machine with
-            # the other checks falls behind the waits of its own; both runs report, and either one failing fails the step.
-            dotnet run --project $checks -c Release -- -preEnumerateTheories -trait- 'Runtime=android'
-            $exitCode = $LASTEXITCODE
-            $env:FORMA_BROWSER_ANDROID_CHECKS = $androidBuild
-            dotnet run --project $checks -c Release --no-build -- -preEnumerateTheories -trait 'Runtime=android'
+                if ($exitCode -eq 0) {
+                    $exitCode = $LASTEXITCODE
+                }
+
+                $env:FORMA_BROWSER_ANDROID_CHECKS = $androidBuild
+                dotnet run --project $checks -c Release --no-build -- -preEnumerateTheories -trait 'Runtime=android'
+            }
 
             if ($exitCode -ne 0) {
                 $global:LASTEXITCODE = $exitCode
@@ -1333,8 +1345,8 @@ machine's package cache first, and the MAUI example host is built from the packa
 Release, which trims it as the platform's own build does, so a package that doesn't load or a trim warning there
 fails here. Each platform needs its workload, maui-android, maui-ios or maui-maccatalyst; iOS and Mac Catalyst
 build on a Mac alone, and iOS builds for the simulator, which needs no signing. Where adb reaches an Android device
-or emulator, the Android build is installed on it and the Android browser check drives its web view; where none is
-attached, the step says so and builds alone.
+or emulator, the Android build is installed on it and the MAUI example's smoke check on Android drives its web
+view; where none is attached, the step says so and builds alone.
 
 .PARAMETER Context
 The build context.

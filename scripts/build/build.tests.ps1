@@ -49,6 +49,7 @@ $cases = @(
     @{ Name = 'tasks runs each test program once every entry point has built'; Script = 'tasks.ps1'; Arguments = @(); Expect = @('then dotnet run, each test program') }
     @{ Name = 'browser drives the browser check and does no more'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser'); Reject = @('-- build', '-- test', 'in a visible browser window', 'Android') }
     @{ Name = 'a visible browser check says so'; Script = 'browser.ps1'; Arguments = @('-Visible'); Expect = @('-- browser', 'in a visible browser window') }
+    @{ Name = 'browser runs the examples smoke checks ahead of the browser check'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser', "then run the examples' smoke checks and drive them in a browser") }
     @{ Name = 'a browser check on Android builds the Android check host and drives the components on the device'; Script = 'browser.ps1'; Arguments = @('-Android'); Expect = @('-- browser', 'dotnet build the Android check host', 'then the components on the attached Android device in a run of their own') }
     if ($IsWindows) {
         @{ Name = 'the browser check publishes the WebView check host on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('and the WebView check host') }

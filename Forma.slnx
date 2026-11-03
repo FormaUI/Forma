@@ -53,6 +53,7 @@
     <!-- Tests -->
     <Project Path="tests\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     <Project Path="tests\support\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
+    <Project Path="tests\support\Forma.Tests.Support.Hosts\Forma.Tests.Support.Hosts.csproj" />
     <Project Path="tests\bunit\Blazor\Forma.Blazor.BUnit.Tests\Forma.Blazor.BUnit.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
     <Project Path="tests\bunit\Blazor\Forma.Blazor.Explorer.BUnit.Tests\Forma.Blazor.Explorer.BUnit.Tests.csproj" />
@@ -71,7 +72,9 @@
     <Project Path="tests\e2e\Components\Forma.Blazor.Browser.Components.Checks\Forma.Blazor.Browser.Components.Checks.csproj" />
     <Project Path="tests\e2e\Components\Forma.Blazor.Browser.Components.Client\Forma.Blazor.Browser.Components.Client.csproj" />
     <Project Path="tests\e2e\Forma.Blazor.Browser.Tests\Forma.Blazor.Browser.Tests.csproj" />
-    <Project Path="tests\smoke\Forma.Blazor.Browser.Android.Tests\Forma.Blazor.Browser.Android.Tests.csproj" />
+    <Project Path="tests\smoke\Forma.Examples.Smoke.Tests\Forma.Examples.Smoke.Tests.csproj" />
+    <Project Path="tests\smoke\Forma.Examples.Maui.Smoke.Tests\Forma.Examples.Maui.Smoke.Tests.csproj" />
+    <Project Path="tests\unit\Examples\Forma.Examples.Tests\Forma.Examples.Tests.csproj" />
     <Project Path="tests\e2e\Components\Forma.Blazor.Browser.WebView\Forma.Blazor.Browser.WebView.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Windows.Tests\Forma.Framework.Windows.Tests.csproj" />

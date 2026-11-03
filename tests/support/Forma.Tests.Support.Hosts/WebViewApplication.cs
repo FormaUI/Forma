@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Browser.Tests;
+namespace Forma.Tests.Hosts;
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -6,8 +6,12 @@ using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 
-/// <summary>A Blazor Hybrid application, the WebView check host or an example host, started with WebView2's DevTools port open, and the browser connection the check drives its web views through.</summary>
-/// <remarks>The gate publishes the check host and the example hosts on Windows, the one platform WebView2 runs on, and names their folders in <c>FORMA_BROWSER_WEBVIEW</c> and <c>FORMA_BROWSER_EXAMPLES</c>; each check starts an application of its own, so no check sees another's culture, and every web view shares one browser process and one data folder of the check's. An application stops once its browser has let go of its DevTools port, which a policy can fix for every start of the application, so the next start finds the port and the data folder free.</remarks>
+using Microsoft.Playwright;
+
+using Xunit;
+
+/// <summary>A Blazor Hybrid application started from its publish with WebView2's DevTools port open, and the browser connection a check drives its web views through.</summary>
+/// <remarks>An application is published on Windows, the one platform WebView2 runs on; each check starts an application of its own, so no check sees another's culture, and every web view shares one browser process and one data folder of the check's. An application stops once its browser has let go of its DevTools port, which a policy can fix for every start of the application, so the next start finds the port and the data folder free.</remarks>
 public sealed class WebViewApplication : IAsyncDisposable
 {
     private readonly Process _process;
@@ -47,12 +51,6 @@ public sealed class WebViewApplication : IAsyncDisposable
     /// <summary>The folder the application was published to.</summary>
     public string Folder { get; }
 
-    /// <summary>Starts the check host, skipping the check where WebView2 can't run.</summary>
-    /// <param name="environment">The environment variables the check host starts with beside its own, by name.</param>
-    /// <returns>The application, its first web view <c>A</c> opening.</returns>
-    public static Task<WebViewApplication> StartAsync(IReadOnlyDictionary<string, string>? environment = null)
-        => StartAsync(Environment.GetEnvironmentVariable("FORMA_BROWSER_WEBVIEW") ?? Path.Combine(BrowserHost.FindRepositoryRoot(), "artifacts", "browser", "webview"), "Forma.Blazor.Browser.WebView", environment);
-
     /// <summary>Starts the application <paramref name="name"/> names from its publish in <paramref name="folder"/>, skipping the check where WebView2 can't run.</summary>
     /// <param name="folder">The folder the application was published to.</param>
     /// <param name="name">The application's name, its executable's without the extension.</param>
@@ -81,7 +79,7 @@ public sealed class WebViewApplication : IAsyncDisposable
         // Where the machine's WebView2 policy names the application's DevTools port, the variables stay unset, since WebView2 reads the
         // policy only where none is set.
         var policyPort = GetPolicyPort(name);
-        var port = policyPort ?? BrowserHost.GetFreePort();
+        var port = policyPort ?? LocalPorts.GetFree();
 
         if (policyPort is null)
         {
@@ -127,39 +125,6 @@ public sealed class WebViewApplication : IAsyncDisposable
 
             throw;
         }
-    }
-
-    /// <summary>Finds the page of the web view <paramref name="name"/> names, once it renders interactively.</summary>
-    /// <param name="name">The web view's name, <c>A</c> for the first.</param>
-    /// <returns>The web view's page.</returns>
-    public async Task<IPage> GetWebViewAsync(string name)
-    {
-        var deadline = DateTime.UtcNow.AddSeconds(30);
-
-        while (DateTime.UtcNow < deadline)
-        {
-            // A snapshot, since a web view opening meanwhile adds its page to these lists.
-            foreach (var page in Browser.Contexts.ToArray().SelectMany(context => context.Pages.ToArray()))
-            {
-                try
-                {
-                    if (await page.EvaluateAsync<string?>("() => document.querySelector('#web-view')?.textContent ?? null").ConfigureAwait(false) == name)
-                    {
-                        await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync("WebView True").ConfigureAwait(false);
-
-                        return page;
-                    }
-                }
-                catch (PlaywrightException)
-                {
-                    // A page still loading, or one that closed meanwhile; the next pass asks again.
-                }
-            }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(100)).ConfigureAwait(false);
-        }
-
-        throw new TimeoutException($"No web view named {name} rendered within 30 seconds.");
     }
 
     /// <summary>Finds the page of a web view other than <paramref name="known"/>, once <paramref name="runtime"/> on it reads that it renders interactively.</summary>

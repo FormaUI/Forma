@@ -1,10 +1,11 @@
 @inherits FormaComponentBase
 
-@* What a web view shows of the application's culture: the runtime, a string of the host's own, a library component's label, a switch to
-   each culture, and another native window to open; and a share menu, which shares and prints natively where the web view can't. *@
+@* What a web view shows of the application's culture: the runtime, a string of the host's own, a library component's label and its pages
+   turning, a switch to each culture, and another native window to open; and a share menu, which shares and prints natively where the web
+   view can't. *@
 <output class="runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
 <output class="welcome">@L["Welcome"]</output>
-<FormaPagination TotalItems="20" PageSize="10" CurrentPage="1" />
+<FormaPagination TotalItems="20" PageSize="10" CurrentPage="_currentPage" OnPageChanged="@(page => _currentPage = page)" />
 <button class="english" @onclick="@(() => SwitchAsync("en-US"))">English</button>
 <button class="hebrew" @onclick="@(() => SwitchAsync("he"))">עברית</button>
 <button class="open" @onclick="NativeWindows.Open">@L["New Window"]</button>
@@ -16,6 +17,8 @@
     [Inject] private ICultureSwitch CultureSwitch { get; set; } = default!;
 
     [Inject] private NativeWindows NativeWindows { get; set; } = default!;
+
+    private int _currentPage = 1;
 
     private Task SwitchAsync(string name)
         => CultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo(name));

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <!-- The browser check on Android: run by the mobile step against the MAUI example host it built, never by dotnet test. -->
+    <!-- The MAUI example's smoke check on Android: run by the mobile step against the example it built, never by dotnet test. -->
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <IsTestProject>false</IsTestProject>
@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+        <ProjectReference Include="..\..\support\Forma.Tests.Support.Hosts\Forma.Tests.Support.Hosts.csproj" />
     </ItemGroup>
 
 </Project>

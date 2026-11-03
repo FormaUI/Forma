@@ -2,6 +2,8 @@ namespace Forma.Blazor.Browser.Tests.Components;
 
 using System.Text.RegularExpressions;
 
+using Forma.Tests.Shared;
+
 /// <summary>Every render mode held to every component: each component the catalog lists has a check page, which the static check renders statically, and each check page is opened by a check that runs in every interactive runtime.</summary>
 public sealed partial class RenderModeInventoryTests
 {
@@ -9,7 +11,7 @@ public sealed partial class RenderModeInventoryTests
     public void Should_give_every_component_the_catalog_lists_a_check_page()
     {
         // Arrange
-        var root = BrowserHost.FindRepositoryRoot();
+        var root = RepositoryFolder.Find();
         var catalog = File.ReadAllText(Path.Combine(root, "docs", "component-catalog.md"));
         var placed = Directory.EnumerateFiles(Path.Combine(root, "tests", "e2e", "Components", "Forma.Blazor.Browser.Components.Checks"), "*.razor", SearchOption.AllDirectories)
             .Append(Path.Combine(root, "tests", "e2e", "Components", "Forma.Blazor.Browser.Components", "Components", "App.razor"))
@@ -32,7 +34,7 @@ public sealed partial class RenderModeInventoryTests
     public void Should_open_every_check_page_in_a_check_that_runs_in_every_interactive_runtime()
     {
         // Arrange — the text of each check that runs in every interactive runtime, from its runtimes to the next check
-        var root = BrowserHost.FindRepositoryRoot();
+        var root = RepositoryFolder.Find();
         var opened = Directory.EnumerateFiles(Path.Combine(root, "tests", "e2e", "Forma.Blazor.Browser.Tests", "Components"), "*.cs")
             .SelectMany(file => RuntimeCheck().Split(File.ReadAllText(file)).Skip(1))
             .Select(check => NextCheck().Split(check)[0])

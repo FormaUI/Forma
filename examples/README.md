@@ -14,20 +14,21 @@ packages, never its projects, so they build as a host outside the repository bui
 | `Forma.Examples.Maui` | A MAUI application on Windows, Android, iOS and Mac Catalyst, registering on its builder, keeping the culture in its preferences |
 
 Each Web App's page shows the islands' runtime, a string of the host's own from the server's `.locales` folder,
-which the client names as its `LocalesPath`, a library component's label from the Hebrew pack, and a switch to
-Hebrew. Each application's native window shows its web view's runtime, a string of the host's own from the
-`.locales` folder its build embeds, the library component's label, a switch to English and to Hebrew, and another
-native window to open, its own title in the application's culture, and the application keeps the culture from
-one run to the next.
+which the client names as its `LocalesPath`, a library component's label from the Hebrew pack and its pages
+turning, and a switch to Hebrew. Each application's native window shows its web view's runtime, a string of the
+host's own from the `.locales` folder its build embeds, the library component's label and its pages turning, a
+switch to English and to Hebrew, and another native window to open, its own title in the application's culture,
+and the application keeps the culture from one run to the next.
 
 ## Build
 
 The gate's browser step packs the solution into `artifacts/browser/packages` at version `1.0.0-examples`, clears
 that version from the machine's package cache, publishes each example and drives it, the applications on Windows
-alone and through WebView2, and holds the README's setup to the examples' own files. The MAUI example builds against
-the `maui-windows` workload. `scripts/build/mobile.ps1 -Platform` builds it for Android, iOS or Mac Catalyst instead,
-setting `FormaExamplePlatform` to `android`, `ios` or `maccatalyst`, against that platform's MAUI workload; Apple's
-platforms build on a Mac alone. By hand:
+alone and through WebView2: its smoke checks start each example and turn a page of the library's pagination, and
+the browser check drives each one's culture. The gate's unit tests hold the README's setup to the examples' own
+files. The MAUI example builds against the `maui-windows` workload. `scripts/build/mobile.ps1 -Platform` builds it
+for Android, iOS or Mac Catalyst instead, setting `FormaExamplePlatform` to `android`, `ios` or `maccatalyst`,
+against that platform's MAUI workload; Apple's platforms build on a Mac alone. By hand:
 
 ```pwsh
 dotnet pack Forma.slnx -c Release -o artifacts/browser/packages -p:PackageVersion=1.0.0-examples

@@ -12,7 +12,7 @@ public sealed class WebViewProbeTests
     public async Task Should_render_in_the_web_view_s_own_renderer()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
 
         // Act
         var webView = await application.GetWebViewAsync("A");
@@ -26,7 +26,7 @@ public sealed class WebViewProbeTests
     public async Task Should_reach_a_component_s_script_and_the_library_s_stylesheets()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var webView = await application.GetWebViewAsync("A");
 
         // Act
@@ -42,7 +42,7 @@ public sealed class WebViewProbeTests
     public async Task Should_run_another_web_view_s_events_in_a_culture_applied_to_each_web_view_s_thread()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
 
         // Act
@@ -57,7 +57,7 @@ public sealed class WebViewProbeTests
     public async Task Should_leave_a_thread_s_assigned_culture_in_place_of_new_process_defaults()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
 
         // Act
@@ -72,7 +72,7 @@ public sealed class WebViewProbeTests
     public async Task Should_lose_a_culture_applied_in_a_captured_flow_once_that_flow_ends()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
 
         // Act
@@ -87,7 +87,7 @@ public sealed class WebViewProbeTests
     public async Task Should_bind_in_the_culture_applied_to_the_web_view_s_thread()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await first.Locator("#apply-threads").ClickAsync();
 
@@ -103,7 +103,7 @@ public sealed class WebViewProbeTests
     public async Task Should_tell_a_traversal_from_a_navigation_the_web_view_makes()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var webView = await application.GetWebViewAsync("A");
         await webView.Locator("#to-es").ClickAsync();
         await Assertions.Expect(webView.Locator("#segment")).ToHaveTextAsync("es");
@@ -125,7 +125,7 @@ public sealed class WebViewProbeTests
     public async Task Should_render_a_web_view_s_first_landing_with_no_location_change()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
 
         // Act
         var webView = await application.GetWebViewAsync("A");
@@ -140,7 +140,7 @@ public sealed class WebViewProbeTests
     public async Task Should_keep_a_web_view_s_scope_once_its_native_window_closed_until_it_is_disposed()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
         await second.Locator("#close").ClickAsync();
         await first.Locator("#open").ClickAsync();
@@ -157,7 +157,7 @@ public sealed class WebViewProbeTests
     public async Task Should_release_a_web_view_s_scope_as_it_is_disposed()
     {
         // Arrange
-        await using var application = await WebViewApplication.StartAsync();
+        await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await OpenTwoWebViewsAsync(application);
 
         // Act

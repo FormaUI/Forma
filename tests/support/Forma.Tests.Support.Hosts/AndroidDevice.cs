@@ -1,4 +1,4 @@
-namespace Forma.Tests.Android;
+namespace Forma.Tests.Hosts;
 
 using System.Diagnostics;
 using System.Net;

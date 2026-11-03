@@ -1,6 +1,6 @@
-namespace Forma.Blazor.Browser.Android.Tests;
+namespace Forma.Examples.Maui.Smoke.Tests;
 
-using Forma.Tests.Android;
+using Forma.Tests.Hosts;
 
 /// <summary>The MAUI example host on Android, built from Forma's packages as the library's README sets an application up: its strings switching with the culture, its stylesheets loading from the application's package, and its sharing and printing reaching the platform's share sheet.</summary>
 public sealed class AndroidExampleTests

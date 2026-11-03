@@ -50,17 +50,7 @@ public sealed class CultureRouteMapTests
         };
 
     private static string GetFixturePath()
-    {
-        for (var folder = new DirectoryInfo(AppContext.BaseDirectory); folder is not null; folder = folder.Parent)
-        {
-            if (folder.GetFiles("*.slnx").Length > 0)
-            {
-                return Path.Combine(folder.FullName, "tests", "scripts", "culture", "culture-routes.json");
-            }
-        }
-
-        throw new InvalidOperationException("The tests run from outside the repository.");
-    }
+        => Path.Combine(RepositoryFolder.Find(), "tests", "scripts", "culture", "culture-routes.json");
 
     // The destination the switcher builds for the address relative to the root.
     private static async Task<string> GetDestinationAsync(CulturePrefix prefix, string root, string address, string token)

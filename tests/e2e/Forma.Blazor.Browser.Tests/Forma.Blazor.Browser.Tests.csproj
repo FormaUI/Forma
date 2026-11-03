@@ -19,6 +19,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+        <ProjectReference Include="..\..\support\Forma.Tests.Support.Hosts\Forma.Tests.Support.Hosts.csproj" />
     </ItemGroup>
 
     <ItemGroup>

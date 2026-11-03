@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Browser.Tests;
 
-using Forma.Tests.Android;
+using Forma.Tests.Shared;
 
 /// <summary>What a component's check does in each runtime: opens the component's check page on the components host, waits until the page's runtime is interactive, and waits for the signals a component gives once its script answers input.</summary>
 public static partial class ComponentChecks
@@ -12,7 +12,7 @@ public static partial class ComponentChecks
     /// <summary>Every check page's address after its runtime segment, read from the pages' own routes.</summary>
     /// <returns>The addresses, in order.</returns>
     public static IReadOnlyList<string> ReadPagePaths()
-        => [.. Directory.EnumerateFiles(Path.Combine(BrowserHost.FindRepositoryRoot(), "tests", "e2e", "Components", "Forma.Blazor.Browser.Components.Checks"), "*.razor", SearchOption.AllDirectories)
+        => [.. Directory.EnumerateFiles(Path.Combine(RepositoryFolder.Find(), "tests", "e2e", "Components", "Forma.Blazor.Browser.Components.Checks"), "*.razor", SearchOption.AllDirectories)
             .SelectMany(file => PageRoute().Matches(File.ReadAllText(file)).Select(match => match.Groups["path"].Value))
             .Order(StringComparer.Ordinal)];
 

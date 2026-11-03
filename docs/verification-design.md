@@ -44,6 +44,7 @@ tests/
   unit/
     AddOns/
     Blazor/
+    Examples/
     Framework/
 ```
 
@@ -52,7 +53,8 @@ tests/
 - `src/` groups the product by what it is. `Forma.Blazor.Showcase`, Forma's maintained component gallery,
   stays in `Blazor/`.
 - `tests/unit/`, `tests/bunit/` and `tests/integration/` repeat `src/`'s grouping wherever there are suites to
-  put in it, so the bUnit tests of a Framework component live in `tests/bunit/Framework/`.
+  put in it, so the bUnit tests of a Framework component live in `tests/bunit/Framework/`, and the unit tests
+  of the examples sit in `Examples/`.
 - `tests/e2e/` groups by scenario: a component's check pages and the hosts that render them sit together, as
   do the minimal and full clients a download budget measures, so whoever investigates a failure finds what it
   ran on beside it.

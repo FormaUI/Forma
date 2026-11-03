@@ -1,8 +1,8 @@
-namespace Forma.Blazor.Browser.Android.Tests;
+namespace Forma.Examples.Maui.Smoke.Tests;
 
 using System.Diagnostics;
 
-using Forma.Tests.Android;
+using Forma.Tests.Hosts;
 
 /// <summary>The MAUI example host built for Android, installed on the device adb reaches and started afresh, and the browser connection a check drives its web view through.</summary>
 /// <remarks>

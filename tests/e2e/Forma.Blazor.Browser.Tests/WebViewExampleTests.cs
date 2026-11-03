@@ -39,24 +39,6 @@ public sealed class WebViewExampleTests(BrowserHost host)
 
     [Theory]
     [MemberData(nameof(Examples))]
-    public async Task Should_load_the_library_s_stylesheets_from_its_published_assets(string example)
-    {
-        // Arrange
-        await using var application = await StartAsync(example);
-        var page = await application.GetOtherWebViewAsync([], Runtime);
-
-        // Act
-        var empty = await page.EvaluateAsync<string[]>("() => [...document.styleSheets].filter(sheet => sheet.cssRules.length === 0).map(sheet => sheet.href)");
-        var primary = await page.EvaluateAsync<string>("() => getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()");
-
-        // Assert
-        Assert.Multiple(
-            () => Assert.True(empty.Length == 0, $"The page linked stylesheets that loaded no rules:{Environment.NewLine}{string.Join(Environment.NewLine, empty)}"),
-            () => Assert.NotEmpty(primary));
-    }
-
-    [Theory]
-    [MemberData(nameof(Examples))]
     public async Task Should_release_a_closed_native_window_s_web_view_and_keep_switching_the_others(string example)
     {
         // Arrange

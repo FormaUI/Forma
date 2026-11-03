@@ -1,8 +1,6 @@
 namespace Forma.Blazor.Browser.Tests;
 
-using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
+using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +10,7 @@ using Microsoft.Extensions.Logging;
 /// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, with islands persisting a switch in the culture cookie, with islands and culture addresses beside an independent client culture, and with the recording router in each runtime. The gate publishes the host, the full client, the components host and the example hosts and names their folders in <c>FORMA_BROWSER_HOST</c>, <c>FORMA_BROWSER_FULL</c>, <c>FORMA_BROWSER_COMPONENTS</c> and <c>FORMA_BROWSER_EXAMPLES</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
 public sealed class BrowserHost : IAsyncLifetime
 {
-    private readonly List<Process> _processes = [];
+    private readonly List<WebHostProcess> _hosts = [];
     private readonly HttpClient _client = new();
     private readonly Lock _webViewLock = new();
     private readonly Lock _androidLock = new();
@@ -22,7 +20,7 @@ public sealed class BrowserHost : IAsyncLifetime
     private WebApplication? _standalone;
 
     /// <summary>The repository the checks run in.</summary>
-    public string RepositoryRoot { get; } = FindRepositoryRoot();
+    public string RepositoryRoot { get; } = RepositoryFolder.Find();
 
     /// <summary>The folder the host was published to.</summary>
     public string HostFolder { get; } = GetFolder("FORMA_BROWSER_HOST", Path.Combine("artifacts", "browser", "host"));
@@ -134,7 +132,7 @@ public sealed class BrowserHost : IAsyncLifetime
     {
         lock (_webViewLock)
         {
-            return _webView ??= WebViewApplication.StartAsync();
+            return _webView ??= WebViewCheckHost.StartAsync();
         }
     }
 
@@ -181,15 +179,9 @@ public sealed class BrowserHost : IAsyncLifetime
                 await _standalone.DisposeAsync().ConfigureAwait(false);
             }
 
-            foreach (var process in _processes)
+            foreach (var host in _hosts)
             {
-                if (!process.HasExited)
-                {
-                    process.Kill(entireProcessTree: true);
-                    await process.WaitForExitAsync().ConfigureAwait(false);
-                }
-
-                process.Dispose();
+                await host.DisposeAsync().ConfigureAwait(false);
             }
 
             _client.Dispose();
@@ -211,37 +203,17 @@ public sealed class BrowserHost : IAsyncLifetime
 
     private async Task<Uri> StartProcessAsync(string folder, string assembly, string readyPath, Dictionary<string, string?> environment)
     {
-        var address = new Uri($"http://127.0.0.1:{GetFreePort()}/");
-        var start = new ProcessStartInfo("dotnet", assembly)
-        {
-            WorkingDirectory = folder,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
-        start.Environment["ASPNETCORE_URLS"] = address.ToString().TrimEnd('/');
-        start.Environment["ASPNETCORE_ENVIRONMENT"] = "Production";
+        var host = await WebHostProcess.StartAsync(folder, assembly, readyPath, environment).ConfigureAwait(false);
+        _hosts.Add(host);
 
-        foreach (var (name, value) in environment)
-        {
-            start.Environment[name] = value;
-        }
-
-        var process = Process.Start(start) ?? throw new InvalidOperationException($"{assembly} did not start.");
-        _processes.Add(process);
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
-        await WaitForHostAsync(process, new Uri(address, readyPath)).ConfigureAwait(false);
-
-        return address;
+        return host.Address;
     }
 
     // The full client's published files, served as a static host serves a standalone app: each file as it is, and the page for
     // every address that names none.
     private async Task<Uri> StartStandaloneAsync()
     {
-        var address = new Uri($"http://127.0.0.1:{GetFreePort()}/");
+        var address = new Uri($"http://127.0.0.1:{LocalPorts.GetFree()}/");
         var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = Path.Combine(FullClientFolder, "wwwroot") });
         builder.Logging.ClearProviders();
         builder.WebHost.UseUrls(address.ToString());
@@ -255,65 +227,9 @@ public sealed class BrowserHost : IAsyncLifetime
         return address;
     }
 
-    private async Task WaitForHostAsync(Process process, Uri ready)
-    {
-        var deadline = DateTime.UtcNow.AddMinutes(1);
-
-        while (DateTime.UtcNow < deadline)
-        {
-            if (process.HasExited)
-            {
-                throw new InvalidOperationException($"The host exited with code {process.ExitCode} before it answered.");
-            }
-
-            try
-            {
-                using var response = await _client.GetAsync(ready).ConfigureAwait(false);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return;
-                }
-            }
-            catch (HttpRequestException)
-            {
-                // Not listening yet; the next attempt asks again.
-            }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
-        }
-
-        throw new TimeoutException($"The host at {ready} did not answer within a minute.");
-    }
-
-    /// <summary>A port nothing on this machine listens on now.</summary>
-    /// <returns>The port.</returns>
-    internal static int GetFreePort()
-    {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-
-        return ((IPEndPoint)listener.LocalEndpoint).Port;
-    }
-
-    /// <summary>The repository the checks run in, found above the checks' own folder.</summary>
-    /// <returns>The repository's folder.</returns>
-    internal static string FindRepositoryRoot()
-    {
-        for (var folder = new DirectoryInfo(AppContext.BaseDirectory); folder is not null; folder = folder.Parent)
-        {
-            if (folder.GetFiles("*.slnx").Length > 0)
-            {
-                return folder.FullName;
-            }
-        }
-
-        throw new InvalidOperationException("The checks run from outside the repository.");
-    }
-
     private static string GetFolder(string variable, string fallback)
     {
-        var folder = Path.GetFullPath(Environment.GetEnvironmentVariable(variable) ?? Path.Combine(FindRepositoryRoot(), fallback));
+        var folder = Path.GetFullPath(Environment.GetEnvironmentVariable(variable) ?? Path.Combine(RepositoryFolder.Find(), fallback));
 
         return Directory.Exists(folder)
             ? folder

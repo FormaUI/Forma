@@ -50,6 +50,7 @@
         <PackageVersion Include="Microsoft.Playwright" Version="1.64.1" />
         <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
         <PackageVersion Include="xunit.v3" Version="3.0.1" />
+        <PackageVersion Include="xunit.v3.assert" Version="3.0.1" />
     </ItemGroup>
 
     <!-- MAUI and its web view at the version of the workload that builds a MAUI project. -->

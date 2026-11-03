@@ -24,21 +24,31 @@ Each step lands buildable and passes its gate before the next starts.
    and 8, the glyph rules' tests became a single-file program beside the rules, which the task step runs, and
    the JavaScript tests moved to `tests/scripts/`. Every suite's 5,163 .NET cases and the 958 JavaScript cases
    were discovered at their new places name for name.
-3. **The splits, the support and smoke.** Mixed suites split by kind and helpers move by the support rule. After
-   each split the cases discovered in every destination are compared with the baseline case by case, so an
+3. **The splits, the support and smoke.** ✅ Mixed suites split by kind and helpers move by the support rule.
+   After each split the cases discovered in every destination are compared with the baseline case by case, so an
    omitted case and a duplicate can't cancel out in a total. Smoke coverage is a deliverable of this step, not a
    by-product of the moves: a new check for each runnable example, which builds it from the packed packages,
-   starts it, performs one Forma interaction and verifies its visible effect, discovered and run on its
-   platform, and recorded apart from the moved cases so new coverage can't hide a lost one. The testing guide
-   and the repository's working rules take the naming and support rules as they land. Gate: the full gate,
-   discovery matching the baselines, and every new smoke check run on its platform. The splits and the support
-   landed first, every destination's cases matching its expected list. Departures: the sprite loader's tests
-   take the support's recording runtime, which counts their calls and holds one open, and the registrar's take
+   starts it, performs one Forma interaction and verifies its visible effect, discovered and run on its platform,
+   and recorded apart from the moved cases so new coverage can't hide a lost one. The testing guide and the
+   repository's working rules take the naming and support rules as they land. Gate: the full gate, discovery
+   matching the baselines, and every new smoke check run on its platform. The splits and the support landed
+   first, every destination's cases matching its expected list. Departures: the sprite loader's tests take the
+   support's recording runtime, which counts their calls and holds one open, and the registrar's take
    `FakeJSRuntime`. `RootedWidget` and `RootedToolbar` stay in the shared support project with one consumer,
    since the JSON localization suite reads their strings from an assembly whose own locale config declares a
-   root, which the suite's assembly, whose config its other fixtures read, can't be. Each split suite dropped
-   the references no remaining test names, the support projects those only the moved types used, and the
-   Office packages moved to the Office suite with `OfficeFixture`.
+   root, which the suite's assembly, whose config its other fixtures read, can't be. Each split suite dropped the
+   references no remaining test names, the support projects those only the moved types used, and the Office
+   packages moved to the Office suite with `OfficeFixture`. Smoke landed next: each example's page binds its
+   pagination's current page, which it showed pinned to the first, so a smoke check's action has a visible
+   result, the step to the next page closing once the second of two pages shows, in both islands of a Web App.
+   The browser step runs the examples' smoke checks ahead of the browser check, each run reporting. The hosts'
+   support takes `WebViewApplication` without the WebView check host's start and its named web views, which stay
+   with the browser check, and `xunit.v3.assert` for the skip where WebView2 can't run; finding the repository
+   moved to the shared support, in place of the route map tests' own copy. The first full run found both Web
+   App examples linking no styles bundle, which the README tells a host to link inside `FormaPageHead`, so their
+   components rendered without their isolated CSS, the pagination showing its steps and its input row at once;
+   each links its bundle now. The MAUI example's Android driver ran as `Forma.Examples.Maui.Smoke.Tests` on the
+   emulator, its 4 cases passing, and every new smoke check ran on Windows, where the Blazor Hybrid examples run.
 4. **The gates.** `./build.ps1 Fast`, its selection verified to run on Linux and timed from a job's start to its
    result, setup and restore included; the step timings decide any further work, such as running the
    JavaScript and .NET tests side by side. `./build.ps1` stays the full local gate, and names each platform
