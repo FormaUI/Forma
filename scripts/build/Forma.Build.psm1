@@ -360,7 +360,10 @@ function Resolve-TestProject {
         [Parameter(Mandatory)] [string] $Name
     )
 
-    $projects = @('tests', 'eng' | ForEach-Object { Get-ChildItem -LiteralPath (Join-Path $Context.RepositoryRoot $_) -Filter '*.csproj' -File -Recurse -Depth 3 })
+    # A test project is one dotnet test runs, which its reference to the test SDK marks, as the test step counts them.
+    $projects = @('tests', 'eng' |
+            ForEach-Object { Get-ChildItem -LiteralPath (Join-Path $Context.RepositoryRoot $_) -Filter '*.csproj' -File -Recurse -Depth 3 } |
+            Where-Object { Select-String -LiteralPath $_.FullName -Pattern 'Microsoft.NET.Test.Sdk' -SimpleMatch -Quiet })
 
     $exact = @($projects | Where-Object { $_.BaseName -eq $Name })
     if ($exact.Count -eq 1) {
