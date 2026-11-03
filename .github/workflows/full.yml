@@ -127,7 +127,10 @@ jobs:
         with:
           global-json-file: global.json
 
+      # The workload unpacks its packs into the temp directory, which on a hosted Linux machine is too small for Android's.
       - name: Install the platform's MAUI workload
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: dotnet workload install ${{ matrix.workload }}
 
       # The mobile step drives the Android build on the device adb reaches, booted before the step starts.
@@ -160,6 +163,8 @@ jobs:
 
       # The Android check host builds against the maui-android workload, which the SDK set up above comes without.
       - name: Install the MAUI workload
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: dotnet workload install maui-android
 
       - name: Start an Android emulator
