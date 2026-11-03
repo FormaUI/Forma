@@ -1552,7 +1552,7 @@ function Get-PlatformCheck {
     }
 
     $androidReason = if (-not (Test-AndroidDevice)) {
-        "Android's checks and the MAUI example's smoke check on Android: no Android device or emulator is attached"
+        "Android's checks and the MAUI example's smoke check on Android: no Android device or emulator is attached to a running adb server"
     }
     elseif (-not (dotnet workload list | Select-String -Pattern '^\s*maui-android\s' -Quiet)) {
         "Android's checks and the MAUI example's smoke check on Android: the maui-android workload isn't installed"
@@ -1573,8 +1573,10 @@ Tells whether adb reaches an Android device or emulator.
 
 .DESCRIPTION
 adb is the one in the Android SDK ANDROID_HOME names, or the one on the path, and the device the one it reaches by
-default or ANDROID_SERIAL names. adb answers that no device is attached with a failing code, which isn't the
-caller's, so the code is cleared.
+default or ANDROID_SERIAL names. adb reaches a device through its server, on the port ANDROID_ADB_SERVER_PORT names
+or 5037, and is asked only where that server is listening: a call finding none starts one, which outlives the call
+and holds the output it inherited open, so whatever reads that output waits on it for good. adb answers that no
+device is attached with a failing code, which isn't the caller's, so the code is cleared.
 
 .OUTPUTS
 Whether one is attached.
@@ -1592,7 +1594,28 @@ function Test-AndroidDevice {
         Get-Command adb -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source
     }
 
-    $isAttached = [bool]$adb -and ((& $adb get-state 2>$null) -join '').Trim() -eq 'device'
+    if (-not $adb) {
+        return $false
+    }
+
+    $port = if ($env:ANDROID_ADB_SERVER_PORT) { [int]$env:ANDROID_ADB_SERVER_PORT } else { 5037 }
+    $client = [System.Net.Sockets.TcpClient]::new()
+
+    try {
+        $isServing = $client.ConnectAsync([System.Net.IPAddress]::Loopback, $port).Wait(2000) -and $client.Connected
+    }
+    catch [System.AggregateException] {
+        $isServing = $false
+    }
+    finally {
+        $client.Dispose()
+    }
+
+    if (-not $isServing) {
+        return $false
+    }
+
+    $isAttached = ((& $adb get-state 2>$null) -join '').Trim() -eq 'device'
     $global:LASTEXITCODE = 0
 
     return $isAttached
