@@ -21,8 +21,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$rulesPath = Join-Path $repositoryRoot 'src' 'Forma.Framework' 'Forma.Framework.Localization' 'Language' 'CommonPluralRuleSet.Generated.cs'
-$samplesPath = Join-Path $repositoryRoot 'tests' 'Forma.Framework.Localization.Tests' 'Language' 'PluralRuleSamples.Generated.cs'
+$rulesPath = Join-Path $repositoryRoot 'src' 'Framework' 'Forma.Framework.Localization' 'Language' 'CommonPluralRuleSet.Generated.cs'
+$samplesPath = Join-Path $repositoryRoot 'tests' 'unit' 'Framework' 'Forma.Framework.Localization.Tests' 'Language' 'PluralRuleSamples.Generated.cs'
 
 $reference = if ($CldrVersion -eq 'latest') { 'main' } else { $CldrVersion }
 $sourceUrl = "https://raw.githubusercontent.com/unicode-org/cldr-json/$reference/cldr-json/cldr-core/supplemental/plurals.json"

@@ -3,53 +3,53 @@
   "localeSources": {
     "**": ["pack", "host"],
     // An add-on embeds its own translations, since it ships as one package with no pack beside it.
-    "src/Forma.AddOns/**": ["embedded"],
+    "src/AddOns/**": ["embedded"],
     // The pages embed their own translations, and the folder beside the application holds the host's.
-    "src/Forma.Blazor.Showcase/**": ["embedded", "host"],
+    "src/Blazor/Forma.Blazor.Showcase/**": ["embedded", "host"],
     // The tests read a host's folder; every other arrangement they cover is a fixture, left unread on purpose.
-    "tests/Forma.Framework.Localization.Json.Tests/**": ["host"],
+    "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/**": ["host"],
     // The full client is a WebAssembly client, whose build embeds the host's folder for the browser to read.
-    "tests/Forma.Blazor.Browser.Full/**": ["embedded", "host"],
+    "tests/e2e/Clients/Forma.Blazor.Browser.Full/**": ["embedded", "host"],
     // The WebView check host is a Blazor Hybrid application, whose build embeds the host's folder in its assembly.
-    "tests/Forma.Blazor.Browser.WebView/**": ["embedded", "host"],
+    "tests/e2e/Components/Forma.Blazor.Browser.WebView/**": ["embedded", "host"],
     // The support strings cover a file embedded in the assembly and one the build moves into a satellite.
-    "tests/Forma.Tests.Support/**": ["embedded", "satellite"]
+    "tests/support/Forma.Tests.Support/**": ["embedded", "satellite"]
   },
   "ignoreDiagnostics": {
     // The page shows a hit and a miss side by side, so its miss is a sentence no file translates; it demonstrates a plural that omits 'other' on purpose; and its tables read each key from the row that lists it.
-    "src/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0204", "LOC0207", "LOC0208"],
+    "src/Blazor/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0204", "LOC0207", "LOC0208"],
     // The emoji picker reads a group's title from the group, whose title is its localization key.
-    "src/Forma.Blazor/Components/Symbols/FormaEmojiPicker.razor.cs": ["LOC0208"],
+    "src/Blazor/Forma.Blazor/Components/Symbols/FormaEmojiPicker.razor.cs": ["LOC0208"],
     // The galleries read a group's or a section's title from the catalog that lists it.
-    "src/Forma.Blazor.Showcase/Components/Pages/Symbols/EmojiCatalogGallery.razor": ["LOC0208"],
-    "src/Forma.Blazor.Showcase/Components/Pages/Symbols/FormaIconPage.razor": ["LOC0208"],
+    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Symbols/EmojiCatalogGallery.razor": ["LOC0208"],
+    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Symbols/FormaIconPage.razor": ["LOC0208"],
     // The localizer forwards a plugin's title to the plugin's own locale and then the composer's; the title is the plugin's key, not one written here.
-    "src/Forma.Blazor.Composer/ComposerPluginLocalizer.cs": ["LOC0208"],
+    "src/Blazor/Forma.Blazor.Composer/ComposerPluginLocalizer.cs": ["LOC0208"],
     // A history command's title arrives from the line that builds it, where it is written as text.
-    "src/Forma.Blazor.Composer/FormaComposerCommandBar.razor.cs": ["LOC0208"],
+    "src/Blazor/Forma.Blazor.Composer/FormaComposerCommandBar.razor.cs": ["LOC0208"],
     // A format's name comes from the table that lists the formats, where each is written as text.
-    "src/Forma.Blazor.Composer/RichTextEditor/FormaRichTextEditor.razor.cs": ["LOC0208"],
+    "src/Blazor/Forma.Blazor.Composer/RichTextEditor/FormaRichTextEditor.razor.cs": ["LOC0208"],
     // The full client embeds its host's folder for the browser, which the linter reads as the client's own files, holding the folder to types it names in other assemblies.
-    "tests/Forma.Blazor.Browser.Full/.locales/**": ["LOC0112"],
+    "tests/e2e/Clients/Forma.Blazor.Browser.Full/.locales/**": ["LOC0112"],
     // The WebView check host embeds its host's folder too, which the linter reads as the application's own files, laid out as a host's folder rather than beside the types they translate.
-    "tests/Forma.Blazor.Browser.WebView/.locales/**": ["LOC0112"],
+    "tests/e2e/Components/Forma.Blazor.Browser.WebView/.locales/**": ["LOC0112"],
     // The tests look a key up by variable to prove what the locale does with an empty one and with the key under test.
-    "tests/Forma.Framework.Localization.Json.Tests/JsonStringLocaleTests.cs": ["LOC0208"],
-    "tests/Forma.Framework.Localization.Tests/NullStringLocaleFactoryTests.cs": ["LOC0208"],
+    "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/JsonStringLocaleTests.cs": ["LOC0208"],
+    "tests/unit/Framework/Forma.Framework.Localization.Tests/NullStringLocaleFactoryTests.cs": ["LOC0208"],
     // The test proves the metadata entry is never served, which takes looking it up by its reserved name.
-    "tests/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0212"],
+    "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0212"],
     // A page's sections word one key differently on purpose, where the same English fits two sentences.
-    "src/Forma.Blazor.Showcase/Components/Pages/Collections/.locales/he.json": ["LOC0113"],
-    "src/Forma.Blazor.Showcase/Components/Pages/Feedback/.locales/he.json": ["LOC0113"],
-    "src/Forma.Blazor.Showcase/Components/Pages/Inputs/.locales/es.json": ["LOC0113"],
-    "src/Forma.Blazor.Showcase/Components/Pages/Layout/.locales/*.json": ["LOC0113"],
-    "src/Forma.Blazor.Showcase/Components/Pages/Menus/.locales/es.json": ["LOC0113"],
-    "src/Forma.Blazor.Showcase/Components/Pages/Symbols/.locales/es.json": ["LOC0113"],
+    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Collections/.locales/he.json": ["LOC0113"],
+    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Feedback/.locales/he.json": ["LOC0113"],
+    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Inputs/.locales/es.json": ["LOC0113"],
+    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Layout/.locales/*.json": ["LOC0113"],
+    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Menus/.locales/es.json": ["LOC0113"],
+    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Symbols/.locales/es.json": ["LOC0113"],
     // The fixtures prove two files standing for one anchor are both read: a host's root file in both forms, and a root's file beside one named for the assembly.
-    "tests/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/es.json": ["LOC0117"],
-    "tests/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/.locales/es.json": ["LOC0117"],
-    "tests/Forma.Tests.Support/Localization/Rooted/Strings/.locales/he.json": ["LOC0117"],
-    "tests/Forma.Tests.Support/Localization/Rooted/Strings/Forma.Tests.Support.he.json": ["LOC0117"]
+    "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/es.json": ["LOC0117"],
+    "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/.locales/es.json": ["LOC0117"],
+    "tests/support/Forma.Tests.Support/Localization/Rooted/Strings/.locales/he.json": ["LOC0117"],
+    "tests/support/Forma.Tests.Support/Localization/Rooted/Strings/Forma.Tests.Support.he.json": ["LOC0117"]
   },
   // The fixtures are malformed on purpose, each proving what its test asserts.
   "excludeFiles": ["*/Fixtures/*"]

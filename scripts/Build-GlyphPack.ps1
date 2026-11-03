@@ -24,9 +24,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$enumPath = Join-Path $repositoryRoot 'src' 'Forma.Framework' 'Forma.Framework.Icons' 'Glyph.cs'
+$enumPath = Join-Path $repositoryRoot 'src' 'Framework' 'Forma.Framework.Icons' 'Glyph.cs'
 $glyphsFolder = Join-Path $repositoryRoot 'assets' 'Glyphs'
-$target = Join-Path $repositoryRoot 'src' 'Forma.Framework' 'Forma.Framework.Icons.Glyphs' '_assets' 'glyphs.json'
+$target = Join-Path $repositoryRoot 'src' 'Framework' 'Forma.Framework.Icons.Glyphs' '_assets' 'glyphs.json'
 $program = Join-Path $PSScriptRoot 'cs' 'BuildGlyphPack.cs'
 
 $arguments = @($enumPath, $glyphsFolder, $target)

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <RootNamespace>Forma.Framework.Emojis.Twemoji</RootNamespace>
+        <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+    </ItemGroup>
+
+    <!-- Embedded in the assembly, so packing it again as content only duplicates it. -->
+    <ItemGroup>
+        <EmbeddedResource Include="_assets\**\*.json" />
+        <Content Remove="_assets\**\*.json" />
+    </ItemGroup>
+
+</Project>

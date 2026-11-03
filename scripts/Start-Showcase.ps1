@@ -48,7 +48,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$project = Join-Path $repositoryRoot 'src' 'Forma.Blazor.Showcase' 'Forma.Blazor.Showcase.csproj'
+$project = Join-Path $repositoryRoot 'src' 'Blazor' 'Forma.Blazor.Showcase' 'Forma.Blazor.Showcase.csproj'
 
 if (-not (Test-Path -LiteralPath $project)) {
     throw "No Showcase project at $project."
@@ -78,7 +78,7 @@ function Test-PortListening {
 # and looking only for that name misses it. Compared without regard to case, since a path is not
 # case-sensitive here and the drive letter is written both ways by different tools.
 function Get-RunningShowcase {
-    $output = Join-Path $repositoryRoot 'src' 'Forma.Blazor.Showcase'
+    $output = Join-Path $repositoryRoot 'src' 'Blazor' 'Forma.Blazor.Showcase'
 
     @(Get-Process -ErrorAction SilentlyContinue | Where-Object {
             try {

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The component checks' pages: every component in a check page, its router and the services the checked components need, which the components host's client and the WebView check host both render. -->
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Forms" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+        <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
+        <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Catalog\Forma.Framework.Catalog.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+    </ItemGroup>
+
+</Project>

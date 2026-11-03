@@ -67,7 +67,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: tests/Forma.Blazor.Tests.Scripts/package-lock.json
+          cache-dependency-path: tests/scripts/package-lock.json
 
       # The WebView checks drive Blazor Hybrid's web views through WebView2, whose runtime an image may lack; the
       # evergreen bootstrapper installs the current one, and the run names the version it checked against and the

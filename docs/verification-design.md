@@ -38,13 +38,13 @@ tests/
   bunit/
   e2e/
   integration/
+  scripts/
   smoke/
   support/
   unit/
     AddOns/
     Blazor/
     Framework/
-    JavaScript/
 ```
 
 - `examples/` holds the consumer examples, built from Forma's packed packages under build and package
@@ -56,10 +56,12 @@ tests/
 - `tests/e2e/` groups by scenario: a component's check pages and the hosts that render them sit together, as
   do the minimal and full clients a download budget measures, so whoever investigates a failure finds what it
   ran on beside it.
-- `tests/unit/JavaScript/` holds the unit tests of the JavaScript Forma ships, its test files grouped by the
-  production modules they cover.
+- `tests/scripts/` holds the unit tests of the JavaScript Forma ships, its test files grouped by the assembly
+  whose modules they cover.
 - `tests/support/` holds the shared support projects.
-- `eng/` holds the analyzers' tests beside the analyzers.
+- `eng/` holds the analyzers' tests beside the analyzers, and `scripts/` the task programs' tests beside the
+  programs: a single-file test program that names its packages in its own header and includes the code it
+  tests.
 
 ## Names
 
@@ -89,7 +91,8 @@ failed, so a fix to a host's startup reaches both.
 
 ## Gates
 
-- **Fast,** `./build.ps1 Fast`: every unit and bUnit test and the JavaScript unit tests. It restores and builds
+- **Fast,** `./build.ps1 Fast`: every unit and bUnit test, the JavaScript unit tests and the task programs'
+  tests. It restores and builds
   the selected projects and their dependencies once, analyzers on, then runs the tests without rebuilding,
   leaving out the example hosts, the browser hosts, packaging and the solution's unrelated projects. It runs on
   ordinary feature pushes, on pull requests into `dev` and on integrated `dev` commits, and returns feedback in

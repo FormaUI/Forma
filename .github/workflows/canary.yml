@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: tests/Forma.Blazor.Tests.Scripts/package-lock.json
+          cache-dependency-path: tests/scripts/package-lock.json
 
       - name: Report the compiler this run used
         run: dotnet --version

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <!-- The Web App the browser check drives: Server, WebAssembly and Auto pages over the same panel. -->
+    <PropertyGroup>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <IsPackable>false</IsPackable>
+        <!-- The gate packs the whole solution, and the Web SDK alone warns for a project that is not packable. -->
+        <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor.Browser.Host.Client\Forma.Blazor.Browser.Host.Client.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Culture.Router.AspNetCore\Forma.Framework.Culture.Router.AspNetCore.csproj" />
+    </ItemGroup>
+
+</Project>

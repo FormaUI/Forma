@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- The browser check: run by the gate's browser step against the published host, never by dotnet test. -->
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <IsTestProject>false</IsTestProject>
+        <!-- The interop the source generator writes for the Win32 calls that close an application's native window. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="Microsoft.Playwright" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="budgets.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

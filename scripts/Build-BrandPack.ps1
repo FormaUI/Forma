@@ -21,9 +21,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$enumPath = Join-Path $repositoryRoot 'src' 'Forma.Framework' 'Forma.Framework.Icons' 'Brand.cs'
+$enumPath = Join-Path $repositoryRoot 'src' 'Framework' 'Forma.Framework.Icons' 'Brand.cs'
 $brandsFolder = Join-Path $repositoryRoot 'assets' 'Brands'
-$target = Join-Path $repositoryRoot 'src' 'Forma.Framework' 'Forma.Framework.Icons.Glyphs' '_assets' 'brands.json'
+$target = Join-Path $repositoryRoot 'src' 'Framework' 'Forma.Framework.Icons.Glyphs' '_assets' 'brands.json'
 
 $members = @([regex]::Matches((Get-Content -LiteralPath $enumPath -Raw), '^\s+(?<name>[A-Z]\w*)(?:\s*=\s*\d+)?,\s*$', 'Multiline') |
         ForEach-Object { $_.Groups['name'].Value } |

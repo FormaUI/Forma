@@ -510,4 +510,30 @@ dotnet_diagnostic.IDE0301.severity = error              # Use collection express
 dotnet_diagnostic.IDE0302.severity = error              # Use collection expression for stackalloc
 dotnet_diagnostic.IDE0305.severity = warning            # Use collection expression for fluent
 
+[{*Tests.cs,*Tests.*.cs}]
+# ------------------------------------------------------------
+# Test sources, wherever their suite lives: under tests/, beside the analyzers in eng/, or beside a task
+# program in scripts/
+# ------------------------------------------------------------
+
+# Disable IDE0017 and IDE0028 - Arrange builds the subject and Act mutates it, so folding the
+# two together is not an improvement.
+dotnet_diagnostic.IDE0017.severity = none
+dotnet_diagnostic.IDE0028.severity = none
+
+# Disable CA2007 - xUnit1030 conflicts with ConfigureAwait(false)
+dotnet_diagnostic.CA2007.severity = none
+
+# Disable CA1707 - Identifiers should not contain underscores (test method names)
+dotnet_diagnostic.CA1707.severity = none
+
+# Disable IDE0022 - Use expression body for methods (test readability)
+dotnet_diagnostic.IDE0022.severity = none
+
+# Disable CA1062 - Validate arguments of public methods (test methods don't need null checks)
+dotnet_diagnostic.CA1062.severity = none
+
+# Disable "Class is never instantiated" warning in test projects
+resharper_class_never_instantiated_global_highlighting = none
+
 # End of .editorconfig

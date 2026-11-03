@@ -46,6 +46,7 @@ $cases = @(
     @{ Name = 'compile builds and does no more'; Script = 'compile.ps1'; Arguments = @(); Expect = @('-- build'); Reject = @('-- test', '-- format') }
     @{ Name = 'format checks formatting and does no more'; Script = 'format.ps1'; Arguments = @(); Expect = @('-- format'); Reject = @('-- build', '-- test') }
     @{ Name = 'tasks builds the task programs and does no more'; Script = 'tasks.ps1'; Arguments = @(); Expect = @('-- tasks'); Reject = @('-- build', '-- test') }
+    @{ Name = 'tasks runs each test program once every entry point has built'; Script = 'tasks.ps1'; Arguments = @(); Expect = @('then dotnet run, each test program') }
     @{ Name = 'browser drives the browser check and does no more'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser'); Reject = @('-- build', '-- test', 'in a visible browser window', 'Android') }
     @{ Name = 'a visible browser check says so'; Script = 'browser.ps1'; Arguments = @('-Visible'); Expect = @('-- browser', 'in a visible browser window') }
     @{ Name = 'a browser check on Android builds the Android check host and drives the components on the device'; Script = 'browser.ps1'; Arguments = @('-Android'); Expect = @('-- browser', 'dotnet build the Android check host', 'then the components on the attached Android device in a run of their own') }
@@ -68,7 +69,8 @@ $cases = @(
     @{ Name = 'test runs both suites by default'; Script = 'test.ps1'; Arguments = @(); Expect = @('-- test', '-- scripts'); Reject = @('-- build', '-- format') }
     @{ Name = 'test narrowed to .NET leaves the script tests out'; Script = 'test.ps1'; Arguments = @('DotNet'); Expect = @('-- test'); Reject = @('-- scripts') }
     @{ Name = 'test narrowed to scripts leaves the solution out'; Script = 'test.ps1'; Arguments = @('Scripts'); Expect = @('-- scripts'); Reject = @('-- test') }
-    @{ Name = 'a named project is what the tests run against'; Script = 'test.ps1'; Arguments = @('DotNet', '-Project', 'Scripts'); Expect = @('Forma.Scripts.Tests.csproj') }
+    @{ Name = 'a named project is what the tests run against'; Script = 'test.ps1'; Arguments = @('DotNet', '-Project', 'Sanitization'); Expect = @('Forma.Framework.Sanitization.Tests.csproj') }
+    @{ Name = 'a named project beside what it tests in eng is found too'; Script = 'test.ps1'; Arguments = @('DotNet', '-Project', 'Analyzers'); Expect = @('Forma.Analyzers.Tests.csproj') }
     @{ Name = 'a repeated run says how many times'; Script = 'test.ps1'; Arguments = @('DotNet', '-Times', '3'); Expect = @('3 times') }
     @{ Name = 'a project that matches nothing is refused'; Script = 'test.ps1'; Arguments = @('DotNet', '-Project', 'NoSuchProject'); Fails = $true; Expect = @('No test project matches') }
     @{ Name = 'a .NET argument given to the script tests is refused'; Script = 'test.ps1'; Arguments = @('Scripts', '-Times', '5'); Fails = $true; Expect = @('nothing to say about') }

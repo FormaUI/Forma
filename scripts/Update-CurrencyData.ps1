@@ -37,7 +37,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$snapshotPath = Join-Path $repositoryRoot 'src' 'Forma.Framework' 'Forma.Framework.Currencies' '_assets' 'currencies.json'
+$snapshotPath = Join-Path $repositoryRoot 'src' 'Framework' 'Forma.Framework.Currencies' '_assets' 'currencies.json'
 
 # CLDR publishes its JSON as one package per area; the registry serves each release as one archive.
 $registry = 'https://registry.npmjs.org'

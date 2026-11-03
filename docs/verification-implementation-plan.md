@@ -12,10 +12,18 @@ Each step lands buildable and passes its gate before the next starts.
    JavaScript unit tests, which have no project file, and the Android example driver, apart from the 149
    Android component rows, are each accounted for. Gate: the maintainer's review of the ledger, whose decisions
    it records.
-2. **The moves.** Projects move to their places with every reference to their paths: `Forma.slnx`, the build
+2. **The moves.** ✅ Projects move to their places with every reference to their paths: `Forma.slnx`, the build
    and mobile scripts, CI's path filters, the README's example markers, the repository's guides and the
    examples' build and NuGet configuration. Production assembly names and static asset paths stay as they are.
-   Gate: the full gate, and each suite's discovered cases matching its baseline.
+   Gate: the full gate, and each suite's discovered cases matching its baseline. Departures: the files moved one
+   at a time, since the editor's language servers hold every project folder open and Windows renames no folder
+   with a handle inside it, and git records each as a rename. The analyzers' tests take the tests' build
+   settings through a `Directory.Build.props` of their own, and the test sources' rules moved from
+   `tests/.editorconfig` to the root's severity table, keyed on the file name, so a suite takes them wherever it
+   lives. `test.ps1 -Project` looks a level deeper and in `eng/`. By the maintainer's revisions of decisions 4
+   and 8, the glyph rules' tests became a single-file program beside the rules, which the task step runs, and
+   the JavaScript tests moved to `tests/scripts/`. Every suite's 5,163 .NET cases and the 958 JavaScript cases
+   were discovered at their new places name for name.
 3. **The splits, the support and smoke.** Mixed suites split by kind and helpers move by the support rule. After
    each split the cases discovered in every destination are compared with the baseline case by case, so an
    omitted case and a duplicate can't cancel out in a total. Smoke coverage is a deliverable of this step, not a
@@ -47,11 +55,11 @@ Each step lands buildable and passes its gate before the next starts.
 | 1 | The MAUI operations tests' temporary folder | Classified per test by what must work for its assertion to pass. The one test that reads back the file Forma's operation wrote is integration; the four that check a decision (the share request's address, Windows declining, the file's name kept inside its folder, the registration) are unit. |
 | 2 | `CultureFixtureTests` | Stays in `Forma.Blazor.Tests`. Its subject is the shared support's `CultureFixture`, not `Forma.Blazor`. |
 | 3 | The README's setup check | Unit, in `Forma.Examples.Tests`, in the fast gate: reading the README and the examples supplies the comparison's inputs. |
-| 4 | `Forma.Scripts.Tests` | `tests/unit/Scripts/`. All 25 cases parse a drawing's text in process; none launches PowerShell or crosses a process boundary. |
+| 4 | `Forma.Scripts.Tests` | Unit: all 25 cases parse a drawing's text in process, and none launches PowerShell or crosses a process boundary. Revised by the maintainer: the tests move beside the rules they test, as `scripts/cs/GlyphParserTests.cs`, a single-file test program that names its packages in its own header and includes `GlyphParser.cs`, and the project goes; the gate's `tasks` step runs each task program named `*Tests.cs` once it has built it. |
 | 5 | E2E's groups | `Components/` and `Clients/`; the browser check keeps its name, `Forma.Blazor.Browser.Tests`. |
 | 6 | Host lifecycle | `Forma.Tests.Support.Hosts`: publishing, launching, waiting until ready, stopping and cleaning up after a failed start. Smoke and E2E each own their fixture's lifetime and their assertions. |
 | 7 | Smoke checks | One for each runnable example: Coordinated and its client as one Web App, Independent and its client as another, Wpf, WindowsForms, and Maui on Windows; MAUI on Android has a smoke suite of its own. Both web culture-transition checks stay in E2E. |
-| 8 | The JavaScript tests | One Vitest project, `tests/unit/JavaScript/`, its tests grouped by the assembly whose modules they exercise, in the fast gate. |
+| 8 | The JavaScript tests | One Vitest project, its tests grouped by the assembly whose modules they exercise, in the fast gate. Revised by the maintainer: at `tests/scripts/`. |
 
 Six suites split, five into unit and bUnit and one into unit and integration; one loses a reference it never
 used; one is only renamed.
@@ -93,9 +101,9 @@ included.
 | `Forma.Blazor.WebAssembly.Tests`, `Forma.Blazor.WebView.Tests` | `tests/unit/Blazor/` | same | unit | 3, 6 |
 | `Forma.Framework.Emojis.Unicode.Tests` | `tests/unit/Framework/` | same | unit | 3 |
 | The other 29 `Forma.Framework.*.Tests` | `tests/unit/Framework/` | same | unit | 1,788 together |
-| `Forma.Scripts.Tests` | `tests/unit/Scripts/` | same | unit | 25 |
+| `Forma.Scripts.Tests` | `scripts/cs/GlyphParserTests.cs` | (single-file program) | unit | 25 |
 | `ExampleHostTests.Should_set_up_each_example_as_the_readme_says`, from the browser check | `tests/unit/Examples/` | `Forma.Examples.Tests` | unit | 1 |
-| `Forma.Blazor.Tests.Scripts` (Vitest, no project file) | `tests/unit/JavaScript/` | (npm) | unit | 958 |
+| `Forma.Blazor.Tests.Scripts` (Vitest, no project file) | `tests/scripts/` | (npm) | unit | 958 |
 
 `Forma.Blazor.Tests`' unit cases are `LocalePackTests`, `ServiceCollectionExtensionsTests`,
 `ComponentContextTests`, `BreadcrumbItemTests`, `EmojiSpriteLoaderTests`, `CultureFixtureTests`,

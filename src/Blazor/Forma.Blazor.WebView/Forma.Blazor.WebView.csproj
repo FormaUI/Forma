@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- The WebView half borrows the product's namespace, so an application reaches its registrar with the using it already writes. -->
+        <RootNamespace>Forma.Blazor</RootNamespace>
+    </PropertyGroup>
+
+    <!-- The product it serves, a package this one depends on. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Blazor.WebView\Forma.Framework.Culture.Blazor.WebView.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,4 @@
+<Project>
+  <!-- The analyzers' tests live beside the analyzers and take the build settings every test project takes. -->
+  <Import Project="..\..\tests\Directory.Build.props" />
+</Project>

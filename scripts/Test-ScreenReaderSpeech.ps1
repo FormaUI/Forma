@@ -380,7 +380,7 @@ try {
         }
 
         if ($PSCmdlet.ShouldProcess("the Showcase at $BaseUrl", 'start, and stop again when the run ends')) {
-            $project = Join-Path $repositoryRoot 'src' 'Forma.Blazor.Showcase' 'Forma.Blazor.Showcase.csproj'
+            $project = Join-Path $repositoryRoot 'src' 'Blazor' 'Forma.Blazor.Showcase' 'Forma.Blazor.Showcase.csproj'
             $previousEnvironment = $env:ASPNETCORE_ENVIRONMENT
             $env:ASPNETCORE_ENVIRONMENT = 'Development'
             $showcase = Start-Process -FilePath $dotnet -ArgumentList 'run', '--project', $project, '--urls', "$($showcaseAddress.Scheme)://localhost:$($showcaseAddress.Port)" -WorkingDirectory $repositoryRoot -PassThru -WindowStyle Hidden

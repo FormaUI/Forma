@@ -69,15 +69,15 @@ function Initialize-BuildContext {
         Solution       = $solution.FullName
         Scripts        = Join-Path $RepositoryRoot 'scripts'
         TaskPrograms   = Join-Path $RepositoryRoot 'scripts'
-        ScriptTests    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Tests.Scripts'
-        BrowserHost    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Host' 'Forma.Blazor.Browser.Host.csproj'
-        BrowserFull    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Full' 'Forma.Blazor.Browser.Full.csproj'
-        BrowserComponents = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Components' 'Forma.Blazor.Browser.Components.csproj'
-        BrowserWebView = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.WebView' 'Forma.Blazor.Browser.WebView.csproj'
-        BrowserAndroid = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Android' 'Forma.Blazor.Browser.Android.csproj'
-        BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
-        AndroidChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Android.Tests' 'Forma.Blazor.Browser.Android.Tests.csproj'
-        BrowserExamples = Join-Path $RepositoryRoot 'tests' 'Forma.Examples'
+        ScriptTests    = Join-Path $RepositoryRoot 'tests' 'scripts'
+        BrowserHost    = Join-Path $RepositoryRoot 'tests' 'e2e' 'Clients' 'Forma.Blazor.Browser.Host' 'Forma.Blazor.Browser.Host.csproj'
+        BrowserFull    = Join-Path $RepositoryRoot 'tests' 'e2e' 'Clients' 'Forma.Blazor.Browser.Full' 'Forma.Blazor.Browser.Full.csproj'
+        BrowserComponents = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.Components' 'Forma.Blazor.Browser.Components.csproj'
+        BrowserWebView = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.WebView' 'Forma.Blazor.Browser.WebView.csproj'
+        BrowserAndroid = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.Android' 'Forma.Blazor.Browser.Android.csproj'
+        BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'e2e' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
+        AndroidChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Blazor.Browser.Android.Tests' 'Forma.Blazor.Browser.Android.Tests.csproj'
+        BrowserExamples = Join-Path $RepositoryRoot 'examples'
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
     }
@@ -359,8 +359,7 @@ function Resolve-TestProject {
         [Parameter(Mandatory)] [string] $Name
     )
 
-    $tests = Join-Path $Context.RepositoryRoot 'tests'
-    $projects = @(Get-ChildItem -LiteralPath $tests -Filter '*.csproj' -File -Recurse -Depth 2)
+    $projects = @('tests', 'eng' | ForEach-Object { Get-ChildItem -LiteralPath (Join-Path $Context.RepositoryRoot $_) -Filter '*.csproj' -File -Recurse -Depth 3 })
 
     $exact = @($projects | Where-Object { $_.BaseName -eq $Name })
     if ($exact.Count -eq 1) {
@@ -1030,7 +1029,7 @@ function Test-SolutionLocale {
 
 <#
 .SYNOPSIS
-Builds the task programs written in C#.
+Builds the task programs written in C#, and runs those that test the others.
 
 .DESCRIPTION
 They are file-based programs outside the solution, so the solution build never reaches them. Nothing did,
@@ -1040,6 +1039,8 @@ pinned compiler added rules they had never been held to.
 An entry point is the one marked by a shebang; a file included into another is compiled with whatever
 includes it. Finding no entry point at all fails the step, since a check that checked nothing and reported
 success would be the same silence the step exists to break, and these programs have moved folder before.
+Once every entry point has built, each test program, named for what it tests with Tests after it, runs, and
+a failing test fails the step.
 
 .PARAMETER Context
 The build context.
@@ -1061,7 +1062,7 @@ function Build-TaskProgram {
     # runs. Listing a folder makes nothing happen, so doing it under -WhatIf costs nothing.
     $programs = Get-TaskProgram -Context $Context
 
-    Invoke-BuildStep -Name 'tasks' -Target $folder -Description 'dotnet build, each entry point' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+    Invoke-BuildStep -Name 'tasks' -Target $folder -Description 'dotnet build, each entry point, then dotnet run, each test program' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         if ($programs.Count -eq 0) {
             throw "No task program was found to build: nothing under $folder opens with a shebang."
         }
@@ -1070,7 +1071,15 @@ function Build-TaskProgram {
             dotnet build $program.FullName --nologo -v:q
 
             if ($LASTEXITCODE -ne 0) {
-                break
+                return
+            }
+        }
+
+        foreach ($program in @($programs | Where-Object { $_.BaseName -like '*Tests' })) {
+            dotnet run $program.FullName
+
+            if ($LASTEXITCODE -ne 0) {
+                return
             }
         }
     }.GetNewClosure()

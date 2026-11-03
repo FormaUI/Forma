@@ -25,27 +25,27 @@ Until the first release, a month may break what the one before it allowed, and e
 
 **Foundations**
 
-- [The JavaScript interop](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md) absorbs a call the runtime canceled, as it cancels every call of a circuit that ends, and logs it at `Debug` as it logs a dropped circuit, where the cancellation escaped a component's disposal as an unhandled exception in its circuit.
+- [The JavaScript interop](src/Framework/Forma.Framework.JavaScript.Interop/README.md) absorbs a call the runtime canceled, as it cancels every call of a circuit that ends, and logs it at `Debug` as it logs a dropped circuit, where the cancellation escaped a component's disposal as an unhandled exception in its circuit.
 
 - [Registration in either order](docs/component-foundations-design.md#the-null-objects): Forma registers no stand-in for what the platform or a package supplies, so a host registers Forma beside its platform's services, its logging, its localization and an artwork pack in any order, and the components fall back to the source text, the reader's font, the bundled glyphs and a runtime that throws at its first call where none is registered.
 
-- [The WebView half](src/Forma.Blazor.WebView/README.md), `AddFormaUIWebView`, and [the culture under Blazor Hybrid](docs/culture-design.md#blazor-hybrid): one culture across an application's web views, switched from any web view or from native code, applied to the state, the process's defaults and every web view's UI thread, each web view's document taking its language and direction and, under culture routing, its address moving into the switched culture's route, which a navigation handler tells by `IsCultureFollowing`; [the README](README.md#blazor-hybrid) sets up a WPF, a Windows Forms or a MAUI application on Windows, refreshing its native user interface and keeping its culture from one run to the next.
+- [The WebView half](src/Blazor/Forma.Blazor.WebView/README.md), `AddFormaUIWebView`, and [the culture under Blazor Hybrid](docs/culture-design.md#blazor-hybrid): one culture across an application's web views, switched from any web view or from native code, applied to the state, the process's defaults and every web view's UI thread, each web view's document taking its language and direction and, under culture routing, its address moving into the switched culture's route, which a navigation handler tells by `IsCultureFollowing`; [the README](README.md#blazor-hybrid) sets up a WPF, a Windows Forms or a MAUI application on Windows, refreshing its native user interface and keeping its culture from one run to the next.
 
-- [Native operations](docs/webview-design.md#native-operations): a host whose web view can't save a file, print or share does each natively through `INativeOperations`, which `FormaShareMenu` and `FormaComposer`'s preview and source views take where it is registered; printing hands the reader the document, written with the page's styles, as a file; and [`Forma.AddOns.Operations.Maui`](src/Forma.AddOns/Forma.AddOns.Operations.Maui/README.md) does it through the platform's share sheet in a MAUI application on Android, iOS and Mac Catalyst, which the MAUI example host now builds for.
+- [Native operations](docs/webview-design.md#native-operations): a host whose web view can't save a file, print or share does each natively through `INativeOperations`, which `FormaShareMenu` and `FormaComposer`'s preview and source views take where it is registered; printing hands the reader the document, written with the page's styles, as a file; and [`Forma.AddOns.Operations.Maui`](src/AddOns/Forma.AddOns.Operations.Maui/README.md) does it through the platform's share sheet in a MAUI application on Android, iOS and Mac Catalyst, which the MAUI example host now builds for.
 
 - [Strings in a Blazor Hybrid application](docs/webview-design.md#strings-in-the-application) on Android: the library's locale packs and the application's own strings are found where the runtime names no entry assembly, as .NET for Android's doesn't, and the application's own locale files are embedded in an Android build, which compiles the application's code as a library; both had left an Android application's strings in English.
 
 - [A culture per web view](docs/culture-design.md#a-culture-per-web-view): a Blazor Hybrid application declaring `CultureArrangement.Independent` gives each web view a culture state and a switch of its own, its document and its address following it alone, and a web view opening in the culture its start path names.
 
-- [Culture routing](src/Forma.Framework/Forma.Framework.Culture.Router/README.md) registers only its own services, so `AddFormaCultureRouting` goes before or after a product's registrar; registered first, it had left a WebAssembly runtime's culture state scoped.
+- [Culture routing](src/Framework/Forma.Framework.Culture.Router/README.md) registers only its own services, so `AddFormaCultureRouting` goes before or after a product's registrar; registered first, it had left a WebAssembly runtime's culture state scoped.
 
 - The state notifier takes subscriptions from any thread and notifies every subscriber where one fails, where it had stopped at the first failure.
 
-- [The input router](docs/input-router-design.md#a-fields-pending-edit) commits the focused text field's pending edit before it routes an action or a dismissal, so a shortcut pressed in a field that updates on change reads the text as it stands; [the DOM engine](src/Forma.Framework/Forma.Framework.Browser.Interop/README.md) keeps a text field's running count of its characters in the browser, as `Text.AttachAsync`.
+- [The input router](docs/input-router-design.md#a-fields-pending-edit) commits the focused text field's pending edit before it routes an action or a dismissal, so a shortcut pressed in a field that updates on change reads the text as it stands; [the DOM engine](src/Framework/Forma.Framework.Browser.Interop/README.md) keeps a text field's running count of its characters in the browser, as `Text.AttachAsync`.
 
-- [A host's locale files](src/Forma.Framework/Forma.Framework.Localization/README.md) are embedded in a Blazor Hybrid application's assembly, as in a WebAssembly client's, so an application MAUI packages reads them with no folder beside it.
+- [A host's locale files](src/Framework/Forma.Framework.Localization/README.md) are embedded in a Blazor Hybrid application's assembly, as in a WebAssembly client's, so an application MAUI packages reads them with no folder beside it.
 
-- [The JavaScript interop](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md), the input registration and the culture registration leave a call into script still under way to finish as they're disposed, releasing what it produced then, where they had waited for it, so a component disposed where its runtime will never answer, as a web view whose document is gone, completes its disposal.
+- [The JavaScript interop](src/Framework/Forma.Framework.JavaScript.Interop/README.md), the input registration and the culture registration leave a call into script still under way to finish as they're disposed, releasing what it produced then, where they had waited for it, so a component disposed where its runtime will never answer, as a web view whose document is gone, completes its disposal.
 
 **Build and verification**
 
@@ -61,7 +61,7 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - The render mode inventory: every component the catalog lists has a check page, and every check page is opened by a check that runs in every interactive runtime and rendered by the static check; [`FormaField`](docs/component-catalog.md#formafield), [`FormaVisibility`](docs/component-catalog.md#formavisibility) and `FormaDataSortMenu` gained check pages.
 
-- [The Blazor Hybrid example hosts](tests/Forma.Examples/README.md): a WPF, a Windows Forms and a MAUI application on Windows, built from Forma's packages as [the README](README.md#blazor-hybrid) sets an application up and driven through WebView2, each checked for its published assets, a switch across two web views and its native windows' titles, a closed native window's release and the culture it keeps from one run to the next; the README's setup is held to them.
+- [The Blazor Hybrid example hosts](examples/README.md): a WPF, a Windows Forms and a MAUI application on Windows, built from Forma's packages as [the README](README.md#blazor-hybrid) sets an application up and driven through WebView2, each checked for its published assets, a switch across two web views and its native windows' titles, a closed native window's release and the culture it keeps from one run to the next; the README's setup is held to them.
 
 **Breaking:**
 
@@ -117,27 +117,27 @@ Until the first release, a month may break what the one before it allowed, and e
 - [The culture state](docs/culture-design.md#one-culture-state-per-user-scope): one per user scope, a circuit or a WebAssembly runtime, holding the culture that formats and the culture that chooses strings apart, and announcing each change.
 - [One switch for the page](docs/culture-design.md#one-switch-for-the-page): a host switches through `ICultureSwitch`, and on an Interactive Server page [the coordinator](docs/culture-design.md#the-coordinator) accepts each switch for every circuit registered with it, persists it in the culture cookie where the host chose that, and keeps the [document's language and direction](docs/culture-design.md#the-document-follows-the-state) on the pair it accepted.
 - [The culture under WebAssembly](docs/webassembly-design.md#registration): each WebAssembly runtime on a page registers with its culture coordinator as it starts, starting in the pair the server rendered and following every switch on the page, its events and timers in the new pair; a host chooses the culture arrangement on both registrars, coordinated or the client's own, and a server that renders WebAssembly components under coordinated pages hands its culture over and refuses to start with that handoff turned off; a standalone app's runtime starts its page's coordinator itself.
-- [Culture addresses](docs/culture-design.md#culture-addresses): a culture pair in the address, switched with a new load or in place, the state following the address a navigation lands at, and [routing in coordination](src/Forma.Framework/Forma.Framework.Culture.Router/README.md): a switch is a navigation to its pair's address that the page's coordinator accepts once it lands, an interactive landing included, and `FormaPageHead` takes the document's base from routing.
-- [Locales bound to cultures](src/Forma.Framework/Forma.Framework.Localization/README.md#cultures), so a component's strings follow the state rather than the ambient culture.
+- [Culture addresses](docs/culture-design.md#culture-addresses): a culture pair in the address, switched with a new load or in place, the state following the address a navigation lands at, and [routing in coordination](src/Framework/Forma.Framework.Culture.Router/README.md): a switch is a navigation to its pair's address that the page's coordinator accepts once it lands, an interactive landing included, and `FormaPageHead` takes the document's base from routing.
+- [Locales bound to cultures](src/Framework/Forma.Framework.Localization/README.md#cultures), so a component's strings follow the state rather than the ambient culture.
 - [A host's strings in the browser](docs/localization-design.md#host-files): a WebAssembly client's build embeds the host's folder of locale files, its own or its server's, and the client reads them where a host's folder stands.
-- [Measurements](src/Forma.Framework/Forma.Framework.Resources/README.md#formatting-measurements), sizes, durations and rates, written in a culture.
+- [Measurements](src/Framework/Forma.Framework.Resources/README.md#formatting-measurements), sizes, durations and rates, written in a culture.
 - [The DOM watcher and engine](docs/dom-watcher-engine-design.md): what a component observes in the browser and acts on there goes through one watcher and one engine, its focus and its scrolling among it.
-- [Currencies](src/Forma.Framework/Forma.Framework.Currencies/README.md): the ISO 4217 catalog, with each currency's decimals and each culture's symbol, from CLDR.
-- [Debouncing](src/Forma.Framework/Forma.Framework.Events/README.md) joins the events assembly.
-- [An interop wrapper](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md) releases what an attach gets once a later attach, a detach or the disposal overtook it, and imports a module again after its import failed.
-- [The markup policy](src/Forma.Framework/Forma.Framework.Sanitization/README.md) keeps an address relative to the document, as a catalog writes its files, where it names no scheme.
+- [Currencies](src/Framework/Forma.Framework.Currencies/README.md): the ISO 4217 catalog, with each currency's decimals and each culture's symbol, from CLDR.
+- [Debouncing](src/Framework/Forma.Framework.Events/README.md) joins the events assembly.
+- [An interop wrapper](src/Framework/Forma.Framework.JavaScript.Interop/README.md) releases what an attach gets once a later attach, a detach or the disposal overtook it, and imports a module again after its import failed.
+- [The markup policy](src/Framework/Forma.Framework.Sanitization/README.md) keeps an address relative to the document, as a catalog writes its files, where it names no scheme.
 - A circuit that reconnects is back at once: its culture state registers with the page's coordinator again past the reconnection, which waited a minute for it.
 
 **Hosting**
 
-- [The product's render-mode halves](docs/webassembly-design.md#registration): [`Forma.Blazor.Server`](src/Forma.Blazor.Server/README.md), with `AddFormaUIServer` and [`FormaPageHead`](docs/component-catalog.md#formapagehead), and [`Forma.Blazor.WebAssembly`](src/Forma.Blazor.WebAssembly/README.md), with `AddFormaUIWebAssembly`, beside `AddFormaUI`, which registers what every render mode needs.
+- [The product's render-mode halves](docs/webassembly-design.md#registration): [`Forma.Blazor.Server`](src/Blazor/Forma.Blazor.Server/README.md), with `AddFormaUIServer` and [`FormaPageHead`](docs/component-catalog.md#formapagehead), and [`Forma.Blazor.WebAssembly`](src/Blazor/Forma.Blazor.WebAssembly/README.md), with `AddFormaUIWebAssembly`, beside `AddFormaUI`, which registers what every render mode needs.
 - [Every client library](docs/webassembly-design.md#what-a-client-loads) references the packages it compiles against rather than the shared framework, and [is trimmed](docs/webassembly-design.md#the-clients-build) with a WebAssembly client's publish, [Forma's analyzers](eng/Forma.Analyzers/README.md) keeping each type that crosses the interop serializable once trimmed and its generator keeping those types' members with their library.
 
 **Build and verification**
 
 - [The browser check](docs/repository-structure.md#tests): the components driven headless in a real browser under Server, WebAssembly and Auto, the culture's behavior and each router's navigation checked, and each client's download held to a budget.
 - [The component checks](docs/repository-structure.md#tests): every call a component makes to a script, and every call a script makes back, driven and asserted in the browser check under Server, WebAssembly and Auto, Auto both on a first visit, on the Server, and once WebAssembly has downloaded.
-- [The example hosts](tests/Forma.Examples/README.md): a Web App for each culture arrangement, built from Forma's packages as the README sets a host up and driven by the browser check, which holds the README's setup to them.
+- [The example hosts](examples/README.md): a Web App for each culture arrangement, built from Forma's packages as the README sets a host up and driven by the browser check, which holds the README's setup to them.
 - [The screen reader check](docs/screen-reader-checks-design.md): NVDA driven through the Showcase, recording what it speaks.
 - The gate shows each test project as it finishes, can load the machine while a test repeats and list the waits that needed time, and fails a component that reads the ambient culture.
 - Every Framework assembly is a package of its own.
@@ -191,17 +191,17 @@ Until the first release, a month may break what the one before it allowed, and e
 **Products**
 
 - [The data view](docs/data-view-design.md), a product of its own, `Forma.Blazor.DataView`: one engine managing a set's selection, sort, paging, grouping, address and states, presented as a grid, a list, cards or a tree, virtualized over a set or a provider's slices, with a sort menu, a view switch, inline editing, columns fitting the width and its loads announced. Its grid replaces the one built on QuickGrid.
-- [`FormaExplorer`](docs/explorer-design.md): one item model where every item can be disabled or hidden, a details view whose leading columns are frozen and whose columns the reader chooses, grouping, a header that collapses at a phone's width, and surfaces composed of backdrops; it ships as a package of its own, its items model becoming [`Forma.Framework.Catalog`](src/Forma.Framework/Forma.Framework.Catalog/README.md).
-- [`FormaComposer`](docs/composer-design.md): a host describes a composer once, plugins are scoped to it and bring their own strings and dialogs, its contracts ship as `Forma.Framework.Composer.Extensibility`, browsing stored files becomes the add-on [`Forma.AddOns.Composer.Plugins.Explorer`](src/Forma.AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md), and it gains a shortcuts reference, gutter markers and sanitized bound content.
+- [`FormaExplorer`](docs/explorer-design.md): one item model where every item can be disabled or hidden, a details view whose leading columns are frozen and whose columns the reader chooses, grouping, a header that collapses at a phone's width, and surfaces composed of backdrops; it ships as a package of its own, its items model becoming [`Forma.Framework.Catalog`](src/Framework/Forma.Framework.Catalog/README.md).
+- [`FormaComposer`](docs/composer-design.md): a host describes a composer once, plugins are scoped to it and bring their own strings and dialogs, its contracts ship as `Forma.Framework.Composer.Extensibility`, browsing stored files becomes the add-on [`Forma.AddOns.Composer.Plugins.Explorer`](src/AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md), and it gains a shortcuts reference, gutter markers and sanitized bound content.
 
 **Foundations**
 
 - [The input router](docs/input-router-design.md): every key, press, click, wheel turn and drop a component acts on is a route on one router, so which of two nested components owns an input is decided in one place, and every component's input moved onto it.
 - [The window manager](docs/window-design.md#the-manager): the workspace one manager coordinates.
-- [The JavaScript interop](src/Forma.Framework/Forma.Framework.JavaScript.Interop/README.md): an assembly of its own, and a JS environment that carries the calling component's log and identity, naming the stage a failure stopped at.
+- [The JavaScript interop](src/Framework/Forma.Framework.JavaScript.Interop/README.md): an assembly of its own, and a JS environment that carries the calling component's log and identity, naming the stage a failure stopped at.
 - [Localization](docs/localization-design.md): a host adds or rewords the library's strings, one file per category with a shared section, files read by path from `.locales` folders, and the library's languages in [locale packs](docs/localization-design.md#locale-packs).
-- [Plugins](src/Forma.Framework/Forma.Framework.Plugins/README.md): one registry, which the composer's plugins are built from.
-- [Sanitization](src/Forma.Framework/Forma.Framework.Sanitization/README.md) and the emoji, icon, feedback, files and media contracts each become a Framework assembly.
+- [Plugins](src/Framework/Forma.Framework.Plugins/README.md): one registry, which the composer's plugins are built from.
+- [Sanitization](src/Framework/Forma.Framework.Sanitization/README.md) and the emoji, icon, feedback, files and media contracts each become a Framework assembly.
 
 **Build and verification**
 
@@ -252,11 +252,11 @@ Until the first release, a month may break what the one before it allowed, and e
 
 **Foundations**
 
-- [Localization](docs/localization-design.md): JSON in place of resx, behind Forma's own contract, with [CLDR plural rules](src/Forma.Framework/Forma.Framework.Localization/README.md#plural-forms) in a bracket syntax and a schema on every file, the JSON backend a package of its own.
-- [Resources](src/Forma.Framework/Forma.Framework.Resources/README.md): a chain of providers resolving a source into what a viewer shows, with [Office](src/Forma.AddOns/Forma.AddOns.Resources.Office/README.md) and [Markdown](src/Forma.AddOns/Forma.AddOns.Resources.Markdown/README.md) conversion as add-ons.
-- [Icons](src/Forma.Framework/Forma.Framework.Icons/README.md): `IIconProvider`, Forma's own glyph set on two grids, as the [glyph artwork specification](docs/glyph-artwork-specification.md) states, and brand marks.
-- [Emojis](src/Forma.Framework/Forma.Framework.Emojis/README.md): contracts and a swappable provider and catalog, with Twemoji's artwork the add-on [`Forma.AddOns.Emojis.Twemoji`](src/Forma.AddOns/Forma.AddOns.Emojis.Twemoji/README.md).
-- [Typed CSS lengths](src/Forma.Framework/Forma.Framework.Css/README.md), and [behaviors and operations](src/Forma.Framework/Forma.Framework.Browser.Interop/README.md) shared by the components' scripts.
+- [Localization](docs/localization-design.md): JSON in place of resx, behind Forma's own contract, with [CLDR plural rules](src/Framework/Forma.Framework.Localization/README.md#plural-forms) in a bracket syntax and a schema on every file, the JSON backend a package of its own.
+- [Resources](src/Framework/Forma.Framework.Resources/README.md): a chain of providers resolving a source into what a viewer shows, with [Office](src/AddOns/Forma.AddOns.Resources.Office/README.md) and [Markdown](src/AddOns/Forma.AddOns.Resources.Markdown/README.md) conversion as add-ons.
+- [Icons](src/Framework/Forma.Framework.Icons/README.md): `IIconProvider`, Forma's own glyph set on two grids, as the [glyph artwork specification](docs/glyph-artwork-specification.md) states, and brand marks.
+- [Emojis](src/Framework/Forma.Framework.Emojis/README.md): contracts and a swappable provider and catalog, with Twemoji's artwork the add-on [`Forma.AddOns.Emojis.Twemoji`](src/AddOns/Forma.AddOns.Emojis.Twemoji/README.md).
+- [Typed CSS lengths](src/Framework/Forma.Framework.Css/README.md), and [behaviors and operations](src/Framework/Forma.Framework.Browser.Interop/README.md) shared by the components' scripts.
 - One registration call for a host, and the solution in its [three families](docs/repository-structure.md#solution-structure), Framework, AddOns and the product.
 
 **Build and verification**
@@ -288,7 +288,7 @@ Forma becomes a project of its own, named Forma.
 
 **Foundations**
 
-- [Typed CSS colors](src/Forma.Framework/Forma.Framework.Css/README.md), and the [feedback services](src/Forma.Framework/Forma.Framework.Feedback/README.md)' contracts apart from their implementations.
+- [Typed CSS colors](src/Framework/Forma.Framework.Css/README.md), and the [feedback services](src/Framework/Forma.Framework.Feedback/README.md)' contracts apart from their implementations.
 - Spanish strings beside English and Hebrew.
 
 **Build and verification**

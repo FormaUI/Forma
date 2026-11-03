@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <!-- A release packs the whole solution, and the Web SDK alone warns for a project that is not packable. -->
+        <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Browser.Blazor.Server\Forma.Framework.Browser.Blazor.Server.csproj" />
+        <ProjectReference Include="..\..\AddOns\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
+        <ProjectReference Include="..\..\AddOns\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Files\Forma.Framework.Files.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Router.AspNetCore\Forma.Framework.Culture.Router.AspNetCore.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\..\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\..\AddOns\Forma.AddOns.Composer.Plugins.Explorer\Forma.AddOns.Composer.Plugins.Explorer.csproj" />
+        <ProjectReference Include="..\..\AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
+    </ItemGroup>
+
+    <!-- The languages the Showcase ships in, each a locale pack; an application names its packs, and a library never does. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Locales\Forma.Blazor.Locales.Hebrew\Forma.Blazor.Locales.Hebrew.csproj" />
+        <ProjectReference Include="..\..\Locales\Forma.Blazor.Locales.Spanish\Forma.Blazor.Locales.Spanish.csproj" />
+    </ItemGroup>
+
+    <!-- The translations embed in the assembly itself rather than in satellite assemblies. -->
+    <ItemGroup>
+        <EmbeddedResource Include="Components\**\*.json" WithCulture="false" />
+    </ItemGroup>
+
+    <!-- The host's own files, copied beside the application where the default folder is looked for; the SDK's own globs pass over a folder whose name starts with a dot. -->
+    <ItemGroup>
+        <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

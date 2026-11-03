@@ -1,7 +1,7 @@
 // What a glyph drawing is and what makes one valid, apart from the pack that compiles them.
 //
-// BuildGlyphPack.cs includes this file so the rules live in one place, and tests/Forma.Scripts.Tests
-// compiles it so they can be exercised without a folder of drawings or a run of the pack.
+// BuildGlyphPack.cs includes this file so the rules live in one place, and GlyphParserTests.cs includes it so they
+// can be exercised without a folder of drawings or a run of the pack.
 
 using System.Globalization;
 using System.Text.RegularExpressions;

@@ -1,0 +1,39 @@
+# Forma.Examples
+
+Two Web Apps set up as the [library's README](../../README.md#webassembly-components) sets a host up, one for
+each culture arrangement, each a server and its WebAssembly client, and three Blazor Hybrid applications set up as
+it sets an [application](../../README.md#blazor-hybrid) up, one for each host on Windows. They reference Forma's
+packages, never its projects, so they build as a host outside the repository builds, from what the packages ship.
+
+| Example | What it shows |
+| --- | --- |
+| `Forma.Examples.Coordinated` | A Server island and a WebAssembly island following one culture, the client starting in the server's |
+| `Forma.Examples.Independent` | The same islands, the client's culture its own, switched alone, with culture capture off |
+| `Forma.Examples.Wpf` | A WPF application, registering the platform's web view before Forma, each native window disposing its web view as it closes |
+| `Forma.Examples.WindowsForms` | A Windows Forms application, registering Forma before the platform's web view |
+| `Forma.Examples.Maui` | A MAUI application on Windows, Android, iOS and Mac Catalyst, registering on its builder, keeping the culture in its preferences |
+
+Each Web App's page shows the islands' runtime, a string of the host's own from the server's `.locales` folder,
+which the client names as its `LocalesPath`, a library component's label from the Hebrew pack, and a switch to
+Hebrew. Each application's native window shows its web view's runtime, a string of the host's own from the
+`.locales` folder its build embeds, the library component's label, a switch to English and to Hebrew, and another
+native window to open, its own title in the application's culture, and the application keeps the culture from
+one run to the next.
+
+## Build
+
+The gate's browser step packs the solution into `artifacts/browser/packages` at version `1.0.0-examples`, clears
+that version from the machine's package cache, publishes each example and drives it, the applications on Windows
+alone and through WebView2, and holds the README's setup to the examples' own files. The MAUI example builds against
+the `maui-windows` workload. `scripts/build/mobile.ps1 -Platform` builds it for Android, iOS or Mac Catalyst instead,
+setting `FormaExamplePlatform` to `android`, `ios` or `maccatalyst`, against that platform's MAUI workload; Apple's
+platforms build on a Mac alone. By hand:
+
+```pwsh
+dotnet pack Forma.slnx -c Release -o artifacts/browser/packages -p:PackageVersion=1.0.0-examples
+dotnet publish examples/Forma.Examples.Coordinated -c Release -o artifacts/browser/examples/Coordinated
+```
+
+## License
+
+Apache License 2.0, under the repository's [`LICENSE`](../../LICENSE).

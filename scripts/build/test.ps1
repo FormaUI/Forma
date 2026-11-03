@@ -45,7 +45,7 @@ is cleared first, and the waits that needed time are listed once the runs are ov
 ./scripts/build/test.ps1
 
 .EXAMPLE
-./scripts/build/test.ps1 -Project Forma.Scripts.Tests
+./scripts/build/test.ps1 -Project Forma.Framework.Sanitization.Tests
 
 .EXAMPLE
 ./scripts/build/test.ps1 -Filter 'FullyQualifiedName~Glyph' -NoBuild -Times 40

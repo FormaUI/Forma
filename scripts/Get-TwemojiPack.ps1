@@ -171,7 +171,7 @@ if ($missing.Count -gt 0) {
 # rather than the ones this machine happens to use.
 $utf8 = [System.Text.UTF8Encoding]::new($false)
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$twemojiRoot = Join-Path $repositoryRoot 'src' 'Forma.AddOns' 'Forma.AddOns.Emojis.Twemoji'
+$twemojiRoot = Join-Path $repositoryRoot 'src' 'AddOns' 'Forma.AddOns.Emojis.Twemoji'
 $catalogFolder = Join-Path $twemojiRoot '_assets'
 $spriteFolder = Join-Path $twemojiRoot 'wwwroot' 'assets'
 
