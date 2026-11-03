@@ -52,4 +52,10 @@
         <PackageVersion Include="xunit.v3" Version="3.0.1" />
     </ItemGroup>
 
+    <!-- MAUI and its web view at the version of the workload that builds a MAUI project. -->
+    <ItemGroup Condition="'$(UseMaui)' == 'true'">
+        <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
+    </ItemGroup>
+
 </Project>

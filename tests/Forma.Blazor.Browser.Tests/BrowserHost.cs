@@ -15,7 +15,9 @@ public sealed class BrowserHost : IAsyncLifetime
     private readonly List<Process> _processes = [];
     private readonly HttpClient _client = new();
     private readonly Lock _webViewLock = new();
+    private readonly Lock _androidLock = new();
     private Task<WebViewApplication>? _webView;
+    private Task<AndroidCheckApplication>? _android;
     private IPlaywright? _playwright;
     private WebApplication? _standalone;
 
@@ -72,6 +74,9 @@ public sealed class BrowserHost : IAsyncLifetime
 
     /// <summary>One component check's turn in a web view of <see cref="GetWebViewApplicationAsync"/>, which runs one check at a time, since every web view of a WPF application dispatches on its UI thread.</summary>
     public SemaphoreSlim WebViewTurn { get; } = new(1, 1);
+
+    /// <summary>One component check's turn in the web view of <see cref="GetAndroidApplicationAsync"/>, which shows one page at a time.</summary>
+    public SemaphoreSlim AndroidTurn { get; } = new(1, 1);
 
     /// <summary>The browser the checks open their pages in.</summary>
     public IBrowser Browser { get; private set; } = default!;
@@ -133,6 +138,17 @@ public sealed class BrowserHost : IAsyncLifetime
         }
     }
 
+    /// <summary>The Android check host the component checks open their pages in under the android runtime, started as the first of them asks for it.</summary>
+    /// <param name="build">The check host's signed package.</param>
+    /// <returns>The application.</returns>
+    public Task<AndroidCheckApplication> GetAndroidApplicationAsync(string build)
+    {
+        lock (_androidLock)
+        {
+            return _android ??= AndroidCheckApplication.StartAsync(build);
+        }
+    }
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
@@ -141,32 +157,43 @@ public sealed class BrowserHost : IAsyncLifetime
             await (await webView.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
         }
 
-        WebViewTurn.Dispose();
-
-        if (Browser is not null)
+        try
         {
-            await Browser.DisposeAsync().ConfigureAwait(false);
-        }
-
-        _playwright?.Dispose();
-
-        if (_standalone is not null)
-        {
-            await _standalone.DisposeAsync().ConfigureAwait(false);
-        }
-
-        foreach (var process in _processes)
-        {
-            if (!process.HasExited)
+            if (_android is { IsCompletedSuccessfully: true } android)
             {
-                process.Kill(entireProcessTree: true);
-                await process.WaitForExitAsync().ConfigureAwait(false);
+                await (await android.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            WebViewTurn.Dispose();
+            AndroidTurn.Dispose();
+
+            if (Browser is not null)
+            {
+                await Browser.DisposeAsync().ConfigureAwait(false);
             }
 
-            process.Dispose();
-        }
+            _playwright?.Dispose();
 
-        _client.Dispose();
+            if (_standalone is not null)
+            {
+                await _standalone.DisposeAsync().ConfigureAwait(false);
+            }
+
+            foreach (var process in _processes)
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                    await process.WaitForExitAsync().ConfigureAwait(false);
+                }
+
+                process.Dispose();
+            }
+
+            _client.Dispose();
+        }
     }
 
     private Task<Uri> StartAsync(string? routes, string? culture, string? requestCulture = null, string? arrangement = null)

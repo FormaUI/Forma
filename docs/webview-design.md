@@ -111,8 +111,10 @@ it marks as an application.
 ## The checks
 
 - **The components.** The browser check's component suite runs under Blazor Hybrid as a runtime of its own,
-  `webview`, beside the Web App's, in a WPF check host whose web views the check drives through WebView2: every
-  check page, every interaction, and every call to a script and back.
+  `webview`, beside the Web App's, in a WPF check host whose web views the check drives through WebView2, and as
+  `android` in a MAUI check host on an Android emulator whose screen holds a check's page whole, whose one web
+  view the check drives through its DevTools socket, loading each check page afresh: every check page, every
+  interaction, and every call to a script and back.
 - **Each host's integration.** An example host for WPF, Windows Forms and MAUI on Windows, each set up from
   Forma's packages as the README sets it up, is published and started, and checked for its registration in
   either order, its startup, its published assets, a switch across two web views and the native windows'
@@ -130,16 +132,18 @@ it marks as an application.
   a switch; Back and Forward; a web view's handler refusing to follow; and native windows on UI threads of
   their own.
 - **Where they run.** WebView2 runs on Windows, so the WebView checks run in the Windows gate and report
-  themselves skipped on another platform.
+  themselves skipped on another platform. The Android checks run on an emulator, the example host's on every
+  change and the component suite's every week and on demand, after the rest of the browser check and in a run of
+  their own, and report themselves skipped where no device is attached.
 
 ## Decisions
 
 | | Question | Decision |
 | --- | --- | --- |
-| V1 | Which hosts does Forma support under Blazor Hybrid? | WPF, Windows Forms and MAUI on Windows, on WebView2, each checked for its integration; Android, iOS and Mac Catalyst are outside the chosen scope |
+| V1 | Which hosts does Forma support under Blazor Hybrid? | WPF, Windows Forms and MAUI on Windows, on WebView2, and MAUI on Android, iOS and Mac Catalyst, on Android's WebView and `WKWebView`, each checked for its integration |
 | V2 | What is the half called? | `Forma.Blazor.WebView` with `AddFormaUIWebView`, and the culture's `Forma.Framework.Culture.Blazor.WebView`, after Microsoft's `Microsoft.AspNetCore.Components.WebView` and the renderer's name, as each half takes its render mode's name |
 | V3 | What lives for the application, and what for a web view? | The culture state, the application's coordinator and the switch for the application; the JS runtime, navigation, the document's coordinator, the input router's scopes and every subscription for its web view, released as the web view is disposed |
 | V4 | When does a web view take part? | As the first Forma component in it initializes, or a culture route page in it lands, whichever comes first |
 | V5 | In which order does a host register? | Either; no Forma registration stands in for a platform's service |
 | V6 | What does a Blazor Hybrid page carry? | The host's `index.html` with Forma's stylesheets; no `FormaPageHead`, each web view's coordinator starting from its registration |
-| V7 | How are the hosts checked? | The component suite in a WPF check host as the `webview` runtime, and an example host per supported host, set up from the packages as the README says, on the Windows gate |
+| V7 | How are the hosts checked? | The component suite in a WPF check host as the `webview` runtime and in a MAUI check host on Android as the `android` runtime, and an example host per supported host, set up from the packages as the README says, on the Windows gate and, for Android, on an emulator |

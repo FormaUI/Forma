@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forma Android Check</title>
+    <base href="/" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-tokens.css" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-reset.css" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-base.css" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-input.css" />
+    <link rel="stylesheet" href="_content/Forma.Blazor/forma-prose.css" />
+    <link rel="stylesheet" href="Forma.Blazor.Browser.Android.styles.css" />
+    <script>
+        // What the document saw of its history, for the check to tell a traversal from a navigation the web view makes.
+        window.formaProbe = { history: [] };
+        addEventListener('popstate', () => formaProbe.history.push('popstate'));
+        if (window.navigation) {
+            navigation.addEventListener('navigate', event => formaProbe.history.push(`navigate ${event.navigationType}`));
+        }
+
+        // A web view hands a link to another site to the system's browser; the check host records its address in the browser's place,
+        // once the page handled the click, so a check reads it and never opens the system's browser.
+        window.formaOpenedExternally = [];
+        addEventListener('click', event => {
+            const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+
+            if (link !== null && !event.defaultPrevented && new URL(link.href, location.href).origin !== location.origin) {
+                event.preventDefault();
+                formaOpenedExternally.push(link.href);
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="app"></div>
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+</body>
+</html>

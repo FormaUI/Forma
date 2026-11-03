@@ -138,7 +138,7 @@ public sealed class MenusTests
             const string Composer = "https://x.com/intent/post?url=https%3A%2F%2Fexample.com%2Freports%2Fquarterly&text=Quarterly%20Report";
 
             // Act and Assert — a web view hands another site's address to the system's browser, which the check host records in its place
-            if (runtime == "webview")
+            if (runtime is "webview" or "android")
             {
                 await network.ClickAsync();
                 await page.WaitForFunctionAsync("composer => window.formaOpenedExternally.includes(composer)", Composer);

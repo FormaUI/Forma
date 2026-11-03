@@ -18,12 +18,6 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="11.0.0-rc.2.26505.5" />
     </ItemGroup>
 
-    <!-- MAUI and its web view at the version of the workload that builds the MAUI example. -->
-    <ItemGroup Condition="'$(UseMaui)' == 'true'">
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
-    </ItemGroup>
-
     <ItemGroup>
         <PackageVersion Include="formaui-net.Blazor.Server" Version="$(FormaVersion)" />
         <PackageVersion Include="formaui-net.Blazor.WebAssembly" Version="$(FormaVersion)" />

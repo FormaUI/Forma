@@ -46,8 +46,9 @@ $cases = @(
     @{ Name = 'compile builds and does no more'; Script = 'compile.ps1'; Arguments = @(); Expect = @('-- build'); Reject = @('-- test', '-- format') }
     @{ Name = 'format checks formatting and does no more'; Script = 'format.ps1'; Arguments = @(); Expect = @('-- format'); Reject = @('-- build', '-- test') }
     @{ Name = 'tasks builds the task programs and does no more'; Script = 'tasks.ps1'; Arguments = @(); Expect = @('-- tasks'); Reject = @('-- build', '-- test') }
-    @{ Name = 'browser drives the browser check and does no more'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser'); Reject = @('-- build', '-- test', 'in a visible browser window') }
+    @{ Name = 'browser drives the browser check and does no more'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser'); Reject = @('-- build', '-- test', 'in a visible browser window', 'Android') }
     @{ Name = 'a visible browser check says so'; Script = 'browser.ps1'; Arguments = @('-Visible'); Expect = @('-- browser', 'in a visible browser window') }
+    @{ Name = 'a browser check on Android builds the Android check host and drives the components on the device'; Script = 'browser.ps1'; Arguments = @('-Android'); Expect = @('-- browser', 'dotnet build the Android check host', 'then the components on the attached Android device in a run of their own') }
     if ($IsWindows) {
         @{ Name = 'the browser check publishes the WebView check host on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('and the WebView check host') }
         @{ Name = 'the browser check publishes the Blazor Hybrid example hosts on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('the Blazor Hybrid ones among them') }

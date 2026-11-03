@@ -74,6 +74,7 @@ function Initialize-BuildContext {
         BrowserFull    = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Full' 'Forma.Blazor.Browser.Full.csproj'
         BrowserComponents = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Components' 'Forma.Blazor.Browser.Components.csproj'
         BrowserWebView = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.WebView' 'Forma.Blazor.Browser.WebView.csproj'
+        BrowserAndroid = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Android' 'Forma.Blazor.Browser.Android.csproj'
         BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
         AndroidChecks  = Join-Path $RepositoryRoot 'tests' 'Forma.Blazor.Browser.Android.Tests' 'Forma.Blazor.Browser.Android.Tests.csproj'
         BrowserExamples = Join-Path $RepositoryRoot 'tests' 'Forma.Examples'
@@ -1123,11 +1124,17 @@ packages rather than its projects, as a host outside the repository builds: the 
 only the examples use, and that version is cleared from the machine's package cache first, so a package an
 earlier run cached never stands in for the one just packed. The WebView check host and the Blazor Hybrid example
 hosts are published on Windows alone, the one platform WebView2 runs on, and their checks report themselves skipped
-elsewhere; the MAUI example needs the maui-windows workload, which a Windows machine installs once. The browser is headless
-unless -Visible asks for a browser window to watch, which also brings the WebView check host's native windows into sight.
+elsewhere; the MAUI example needs the maui-windows workload, which a Windows machine installs once. -Android also
+builds the Android check host, which needs the maui-android workload, and checks every component in its web view on
+the device or emulator adb reaches, which must be attached, after the rest of the browser check and in a run of
+their own. The browser is headless unless -Visible asks for a
+browser window to watch, which also brings the WebView check host's native windows into sight.
 
 .PARAMETER Context
 The build context.
+
+.PARAMETER Android
+Also checks every component in the Android check host's web view, on the attached Android device or emulator.
 
 .PARAMETER Visible
 Opens a visible browser window rather than a headless one.
@@ -1140,6 +1147,7 @@ function Test-BrowserCheck {
     [OutputType([psobject])]
     param(
         [Parameter(Mandatory)] [psobject] $Context,
+        [switch] $Android,
         [switch] $Visible
     )
 
@@ -1153,6 +1161,9 @@ function Test-BrowserCheck {
     $webViewProject = $Context.BrowserWebView
     $webViewOutput = Join-Path $Context.BrowserOutput 'webview'
     $isWebViewPublished = $IsWindows
+    $androidProject = $Context.BrowserAndroid
+    $isAndroid = $Android.IsPresent
+    $testAndroidDevice = ${function:Test-AndroidDevice}
     $examples = $Context.BrowserExamples
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
     $examplesOutput = Join-Path $Context.BrowserOutput 'examples'
@@ -1162,6 +1173,10 @@ function Test-BrowserCheck {
 
     if ($isWebViewPublished) {
         $description += ', and the WebView check host'
+    }
+
+    if ($isAndroid) {
+        $description += ', dotnet build the Android check host'
     }
 
     $description += ', dotnet pack the solution and publish the example hosts from it'
@@ -1176,10 +1191,24 @@ function Test-BrowserCheck {
         $description += ', in a visible browser window'
     }
 
+    if ($isAndroid) {
+        $description += ', and then the components on the attached Android device in a run of their own'
+    }
+
     Invoke-BuildStep -Name 'browser' -Target $checks -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         # Asked first, since the step publishes for minutes before it reaches the MAUI example host.
         if ($isWebViewPublished -and -not (dotnet workload list | Select-String -Pattern '^\s*maui-windows\s' -Quiet)) {
             throw 'The MAUI example host needs the maui-windows workload: dotnet workload install maui-windows'
+        }
+
+        if ($isAndroid) {
+            if (-not (dotnet workload list | Select-String -Pattern '^\s*maui-android\s' -Quiet)) {
+                throw 'The Android check host needs the maui-android workload: dotnet workload install maui-android'
+            }
+
+            if (-not (& $testAndroidDevice)) {
+                throw 'No Android device or emulator is attached for -Android to check the components on.'
+            }
         }
 
         $publishes = @(@($hostProject, $hostOutput), @($fullProject, $fullOutput), @($componentsProject, $componentsOutput))
@@ -1198,6 +1227,18 @@ function Test-BrowserCheck {
             if ($LASTEXITCODE -ne 0) {
                 return
             }
+        }
+
+        $androidBuild = $null
+
+        if ($isAndroid) {
+            dotnet build $androidProject -c Release --nologo -v:q
+
+            if ($LASTEXITCODE -ne 0) {
+                return
+            }
+
+            $androidBuild = (Get-ChildItem -LiteralPath (Join-Path (Split-Path -Parent $androidProject) 'bin' 'Release') -Recurse -Filter '*-Signed.apk' | Sort-Object LastWriteTime | Select-Object -Last 1).FullName
         }
 
         foreach ($folder in @($packagesOutput, $examplesOutput)) {
@@ -1233,23 +1274,39 @@ function Test-BrowserCheck {
             }
         }
 
-        $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Components = $env:FORMA_BROWSER_COMPONENTS; WebView = $env:FORMA_BROWSER_WEBVIEW; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
+        $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Components = $env:FORMA_BROWSER_COMPONENTS; WebView = $env:FORMA_BROWSER_WEBVIEW; Android = $env:FORMA_BROWSER_ANDROID_CHECKS; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
 
         try {
             $env:FORMA_BROWSER_HOST = $hostOutput
             $env:FORMA_BROWSER_FULL = $fullOutput
             $env:FORMA_BROWSER_COMPONENTS = $componentsOutput
             $env:FORMA_BROWSER_WEBVIEW = if ($isWebViewPublished) { $webViewOutput } else { $null }
+            $env:FORMA_BROWSER_ANDROID_CHECKS = $null
             $env:FORMA_BROWSER_EXAMPLES = $examplesOutput
             $env:FORMA_BROWSER_VISIBLE = if ($isVisible) { '1' } else { $null }
 
-            dotnet run --project $checks -c Release
+            if (-not $isAndroid) {
+                dotnet run --project $checks -c Release
+                return
+            }
+
+            # The Android checks run after the rest, in a run of their own, since an emulator sharing the machine with
+            # the other checks falls behind the waits of its own; both runs report, and either one failing fails the step.
+            dotnet run --project $checks -c Release -- -preEnumerateTheories -trait- 'Runtime=android'
+            $exitCode = $LASTEXITCODE
+            $env:FORMA_BROWSER_ANDROID_CHECKS = $androidBuild
+            dotnet run --project $checks -c Release --no-build -- -preEnumerateTheories -trait 'Runtime=android'
+
+            if ($exitCode -ne 0) {
+                $global:LASTEXITCODE = $exitCode
+            }
         }
         finally {
             $env:FORMA_BROWSER_HOST = $previous.Host
             $env:FORMA_BROWSER_FULL = $previous.Full
             $env:FORMA_BROWSER_COMPONENTS = $previous.Components
             $env:FORMA_BROWSER_WEBVIEW = $previous.WebView
+            $env:FORMA_BROWSER_ANDROID_CHECKS = $previous.Android
             $env:FORMA_BROWSER_EXAMPLES = $previous.Examples
             $env:FORMA_BROWSER_VISIBLE = $previous.Visible
         }
@@ -1294,6 +1351,7 @@ function Test-MobileExample {
     $platformName = $Platform.ToLowerInvariant()
     $workload = "maui-$platformName"
     $isSimulator = $Platform -eq 'iOS'
+    $testAndroidDevice = ${function:Test-AndroidDevice}
 
     $description = "dotnet pack the solution and build the MAUI example host from it for $Platform"
 
@@ -1335,18 +1393,8 @@ function Test-MobileExample {
             return
         }
 
-        # adb from the Android SDK the environment names, or the one on the path.
-        $adb = if ($env:ANDROID_HOME -and (Test-Path -LiteralPath (Join-Path $env:ANDROID_HOME 'platform-tools'))) {
-            (Get-ChildItem -LiteralPath (Join-Path $env:ANDROID_HOME 'platform-tools') -Filter 'adb*' | Where-Object { $_.BaseName -eq 'adb' } | Select-Object -First 1).FullName
-        }
-        else {
-            (Get-Command adb -ErrorAction SilentlyContinue).Source
-        }
-
-        if (-not $adb -or ((& $adb get-state 2>$null) -join '').Trim() -ne 'device') {
-            # adb answers that no device is attached with a failing code, which isn't the step's.
+        if (-not (& $testAndroidDevice)) {
             Write-Host '   No Android device or emulator is attached, so the Android build is built and not driven.'
-            $global:LASTEXITCODE = 0
             return
         }
 
@@ -1361,6 +1409,37 @@ function Test-MobileExample {
             $env:FORMA_BROWSER_ANDROID = $previous
         }
     }.GetNewClosure()
+}
+
+<#
+.SYNOPSIS
+Tells whether adb reaches an Android device or emulator.
+
+.DESCRIPTION
+adb is the one in the Android SDK ANDROID_HOME names, or the one on the path, and the device the one it reaches by
+default or ANDROID_SERIAL names. adb answers that no device is attached with a failing code, which isn't the
+caller's, so the code is cleared.
+
+.OUTPUTS
+Whether one is attached.
+#>
+function Test-AndroidDevice {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    $tools = if ($env:ANDROID_HOME) { Join-Path $env:ANDROID_HOME 'platform-tools' } else { $null }
+    $adb = if ($tools -and (Test-Path -LiteralPath $tools)) {
+        (Get-ChildItem -LiteralPath $tools -Filter 'adb*' | Where-Object { $_.BaseName -eq 'adb' } | Select-Object -First 1).FullName
+    }
+    else {
+        (Get-Command adb -ErrorAction SilentlyContinue).Source
+    }
+
+    $isAttached = [bool]$adb -and ((& $adb get-state 2>$null) -join '').Trim() -eq 'device'
+    $global:LASTEXITCODE = 0
+
+    return $isAttached
 }
 
 <#

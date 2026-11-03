@@ -1,10 +1,13 @@
 namespace Forma.Blazor.Browser.Tests;
 
+using Forma.Tests.Android;
+
 /// <summary>What a component's check does in each runtime: opens the component's check page on the components host, waits until the page's runtime is interactive, and waits for the signals a component gives once its script answers input.</summary>
 public static partial class ComponentChecks
 {
-    /// <summary>The runtimes every component is checked in: the Server, WebAssembly, Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there, and Blazor Hybrid's web view.</summary>
-    public static TheoryData<string> Runtimes { get; } = ["server", "webassembly", "auto-server", "auto-webassembly", "webview"];
+    /// <summary>The runtimes every component is checked in: the Server, WebAssembly, Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there, and Blazor Hybrid's web view, WebView2's and Android's.</summary>
+    /// <remarks>Each row carries its runtime as the <c>Runtime</c> trait, which a run that enumerates theories selects or leaves out by the runner's trait filters.</remarks>
+    public static TheoryData<string> Runtimes { get; } = [.. ((string[])["server", "webassembly", "auto-server", "auto-webassembly", "webview", "android"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];
 
     /// <summary>Every check page's address after its runtime segment, read from the pages' own routes.</summary>
     /// <returns>The addresses, in order.</returns>
@@ -15,7 +18,7 @@ public static partial class ComponentChecks
 
     /// <summary>Opens the check page at <paramref name="path"/> in <paramref name="runtime"/> and waits until it is interactive in the runtime the case names.</summary>
     /// <param name="host">The published hosts.</param>
-    /// <param name="runtime">The runtime, <c>server</c>, <c>webassembly</c>, <c>auto-server</c>, <c>auto-webassembly</c> or <c>webview</c>.</param>
+    /// <param name="runtime">The runtime, <c>server</c>, <c>webassembly</c>, <c>auto-server</c>, <c>auto-webassembly</c>, <c>webview</c> or <c>android</c>.</param>
     /// <param name="path">The component's check page, after the runtime.</param>
     /// <param name="prepare">Prepares the page before it opens the check: a script standing in for what a headless browser lacks, or a route its connections pass through.</param>
     /// <returns>The page and the context that owns it.</returns>
@@ -28,13 +31,18 @@ public static partial class ComponentChecks
             return await OpenInWebViewAsync(host, path, prepare).ConfigureAwait(false);
         }
 
+        if (runtime == "android")
+        {
+            return await OpenOnAndroidAsync(host, path, prepare).ConfigureAwait(false);
+        }
+
         var (mode, renderer) = runtime switch
         {
             "server" => ("server", "Server"),
             "webassembly" => ("webassembly", "WebAssembly"),
             "auto-server" => ("auto", "Server"),
             "auto-webassembly" => ("auto", "WebAssembly"),
-            _ => throw new ArgumentOutOfRangeException(nameof(runtime), runtime, "The runtime is server, webassembly, auto-server, auto-webassembly or webview."),
+            _ => throw new ArgumentOutOfRangeException(nameof(runtime), runtime, "The runtime is server, webassembly, auto-server, auto-webassembly, webview or android."),
         };
 
         var (context, page) = await host.OpenPageAsync(host.ComponentsAddress).ConfigureAwait(false);
@@ -178,6 +186,66 @@ public static partial class ComponentChecks
         }
 
         return (WebViewCheckContext.Create(page.Context, () => EndAsync(control, page, name)), page);
+    }
+
+    // A check on Android opens its page in the check host's one web view, through a connection of its own, at the size a check's page has in
+    // a browser, loading the page afresh at its address, which starts the web view's scope anew as a new web view's does; checks take the
+    // web view in turn, and closing the connection at the check's end takes back what the check added. An emulator answers a press in
+    // seconds, so what a check expects is waited for as long as a script's first answer is, for every check the run holds, which the
+    // browser step keeps to Android's.
+    private static async Task<(IBrowserContext Context, IPage Page)> OpenOnAndroidAsync(BrowserHost host, string path, Func<IPage, Task>? prepare)
+    {
+        var build = Environment.GetEnvironmentVariable("FORMA_BROWSER_ANDROID_CHECKS");
+        Assert.SkipWhen(string.IsNullOrEmpty(build) || !File.Exists(build), "No Android build of the check host is named; the browser step builds one where -Android asks for it and names it in FORMA_BROWSER_ANDROID_CHECKS.");
+        Assert.SkipUnless(await AndroidDevice.IsAttachedAsync().ConfigureAwait(false), "No Android device or emulator is attached.");
+
+        Assertions.SetDefaultExpectTimeout(30000);
+        var application = await host.GetAndroidApplicationAsync(build).ConfigureAwait(false);
+        await host.AndroidTurn.WaitAsync().ConfigureAwait(false);
+        IBrowser? browser = null;
+        var hasEnded = 0;
+
+        async Task EndAsync()
+        {
+            if (Interlocked.Exchange(ref hasEnded, 1) == 1)
+            {
+                return;
+            }
+
+            try
+            {
+                if (browser is not null)
+                {
+                    await browser.CloseAsync().ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                host.AndroidTurn.Release();
+            }
+        }
+
+        try
+        {
+            (browser, var page) = await application.ConnectAsync().ConfigureAwait(false);
+            await page.SetViewportSizeAsync(1280, 720).ConfigureAwait(false);
+
+            if (prepare is not null)
+            {
+                await prepare(page).ConfigureAwait(false);
+            }
+
+            await page.GotoAsync(new Uri(new Uri(page.Url), $"/android/{path}").ToString()).ConfigureAwait(false);
+            await WaitForRendererAsync(page, "WebView").ConfigureAwait(false);
+
+            return (WebViewCheckContext.Create(page.Context, EndAsync), page);
+        }
+        catch
+        {
+            await EndAsync().ConfigureAwait(false);
+
+            throw;
+        }
     }
 
     private static Task WaitForRendererAsync(IPage page, string renderer)

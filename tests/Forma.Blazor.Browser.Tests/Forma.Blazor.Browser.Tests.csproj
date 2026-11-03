@@ -18,6 +18,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Update="budgets.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 

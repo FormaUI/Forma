@@ -55,6 +55,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - The MAUI example host builds for Android from Forma's packages in CI and runs on an emulator, where its web view is driven: its strings switching with the culture, its stylesheets loading from the application's package and its share menu's Share and Print reaching the share sheet.
 
+- Every component's checks run in Android's web view too, as the `android` runtime, each check page loaded in the one web view of [the Android check host](docs/repository-structure.md#tests) on an emulator, every week and on demand in CI.
+
 - The static check: every check page renders statically too, as the `static` runtime, and is held to show its state, raise no error, show nothing waiting on a script and offer no enabled control whose action needs interactivity.
 
 - The render mode inventory: every component the catalog lists has a check page, and every check page is opened by a check that runs in every interactive runtime and rendered by the static check; [`FormaField`](docs/component-catalog.md#formafield), [`FormaVisibility`](docs/component-catalog.md#formavisibility) and `FormaDataSortMenu` gained check pages.
