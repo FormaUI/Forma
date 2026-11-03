@@ -1,0 +1,9 @@
+<Solution>
+    <Project Path="Forma.Examples.Coordinated\Forma.Examples.Coordinated.csproj" />
+    <Project Path="Forma.Examples.Coordinated.Client\Forma.Examples.Coordinated.Client.csproj" />
+    <Project Path="Forma.Examples.Independent\Forma.Examples.Independent.csproj" />
+    <Project Path="Forma.Examples.Independent.Client\Forma.Examples.Independent.Client.csproj" />
+    <Project Path="Forma.Examples.Maui\Forma.Examples.Maui.csproj" />
+    <Project Path="Forma.Examples.WindowsForms\Forma.Examples.WindowsForms.csproj" />
+    <Project Path="Forma.Examples.Wpf\Forma.Examples.Wpf.csproj" />
+</Solution>

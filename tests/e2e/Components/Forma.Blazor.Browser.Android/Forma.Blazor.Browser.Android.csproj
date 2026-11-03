@@ -3,7 +3,8 @@
     <!--
         The Android check host: a MAUI application whose web view renders every component's check page, which the browser check
         drives on an Android device or emulator through its web view's DevTools socket. It builds against the maui-android workload,
-        so it stands outside the solution, and the browser step builds it where it is asked to check Android.
+        so it stands outside the repository's solution, in one of its own beside it, and the browser step builds it where it is asked
+        to check Android.
     -->
     <PropertyGroup>
         <OutputType>Exe</OutputType>
