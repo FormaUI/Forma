@@ -1454,10 +1454,10 @@ function Test-AndroidDevice {
 
     $tools = if ($env:ANDROID_HOME) { Join-Path $env:ANDROID_HOME 'platform-tools' } else { $null }
     $adb = if ($tools -and (Test-Path -LiteralPath $tools)) {
-        (Get-ChildItem -LiteralPath $tools -Filter 'adb*' | Where-Object { $_.BaseName -eq 'adb' } | Select-Object -First 1).FullName
+        Get-ChildItem -LiteralPath $tools -Filter 'adb*' | Where-Object { $_.BaseName -eq 'adb' } | Select-Object -First 1 -ExpandProperty FullName
     }
     else {
-        (Get-Command adb -ErrorAction SilentlyContinue).Source
+        Get-Command adb -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source
     }
 
     $isAttached = [bool]$adb -and ((& $adb get-state 2>$null) -join '').Trim() -eq 'device'
