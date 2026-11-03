@@ -73,8 +73,10 @@ by default, since a WPF web view whose native window closed answers nothing.
 
 An application's page is its `wwwroot/index.html`, which the web view serves itself: the host links Forma's
 stylesheets, its own scoped styles and `_framework/blazor.webview.js`, as a standalone WebAssembly app's
-`index.html` does. `FormaPageHead` renders a server's document head and has no place there; each web view's
-document coordinator starts from its registration, as on a standalone app's page.
+`index.html` does. Under MAUI the script loads with `autostart="false"`, since MAUI starts Blazor itself once
+the web view's channel to the application is in place, and on Android a page that starts it first loses that
+channel and never renders. `FormaPageHead` renders a server's document head and has no place there; each web
+view's document coordinator starts from its registration, as on a standalone app's page.
 
 ## Native operations
 

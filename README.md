@@ -277,6 +277,14 @@ stylesheets and the application's scoped styles, and loads the web view's script
 <script src="_framework/blazor.webview.js"></script>
 ```
 
+A MAUI application's page leaves Blazor's start to MAUI, which starts it once the web view's channel to the
+application is in place:
+
+<!-- example: tests/Forma.Examples/Forma.Examples.Maui/wwwroot/index.html -->
+```html
+<script src="_framework/blazor.webview.js" autostart="false"></script>
+```
+
 **3. Dispose a WPF web view as its native window closes.** WPF disposes no control on its own, and disposing the
 web view releases its scope and every subscription its components made. The WebView2 control's own disposal can
 throw an `InvalidCastException` moments after a keyboard shortcut, once that scope was released:

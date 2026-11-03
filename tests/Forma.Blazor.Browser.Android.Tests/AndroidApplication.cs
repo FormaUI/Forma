@@ -49,7 +49,7 @@ public sealed class AndroidApplication : IAsyncDisposable
         // A share sheet an earlier check opened would stand in front of this one's.
         await RunAdbAsync("shell", "am", "force-stop", ShareSheetPackage).ConfigureAwait(false);
 
-        return await LaunchAsync(canRelaunch: true).ConfigureAwait(false);
+        return await LaunchAsync().ConfigureAwait(false);
     }
 
     /// <summary>The activity Android shows in front, which names the share sheet while it is open.</summary>
@@ -118,11 +118,8 @@ public sealed class AndroidApplication : IAsyncDisposable
         throw new TimeoutException($"The application's web view opened no DevTools socket within {StartTimeout.TotalMinutes} minutes.");
     }
 
-    // Clears the application's data, starts it and connects to its web view once it renders interactively. MAUI's Android web view runs
-    // Blazor's start-up each time the page reports it finished loading, which a starved device can report twice; the second start
-    // replaces the channel the first opened, so no render reaches the page and its console says Blazor has already started. A start
-    // that fails so is the platform's, and the application is started once more; any other is the check's to report.
-    private static async Task<AndroidApplication> LaunchAsync(bool canRelaunch)
+    // Clears the application's data, starts it and connects to its web view once it renders interactively.
+    private static async Task<AndroidApplication> LaunchAsync()
     {
         await RunAdbAsync("shell", "pm", "clear", PackageName).ConfigureAwait(false);
         await RunAdbAsync("shell", "monkey", "-p", PackageName, "-c", "android.intent.category.LAUNCHER", "1").ConfigureAwait(false);
@@ -131,7 +128,6 @@ public sealed class AndroidApplication : IAsyncDisposable
         var port = GetFreePort();
         await RunAdbAsync("forward", $"tcp:{port}", $"localabstract:{socket}").ConfigureAwait(false);
         var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
-        string? description = null;
 
         try
         {
@@ -144,18 +140,10 @@ public sealed class AndroidApplication : IAsyncDisposable
             }
             catch (PlaywrightException exception)
             {
-                description = await DescribeAsync(page).ConfigureAwait(false);
-
-                if (!canRelaunch || !description.Contains("Blazor has already started", StringComparison.Ordinal))
-                {
-                    throw new TimeoutException($"The application's web view never rendered interactively.{description}", exception);
-                }
+                throw new TimeoutException($"The application's web view never rendered interactively.{await DescribeAsync(page).ConfigureAwait(false)}", exception);
             }
 
-            if (description is null)
-            {
-                return new AndroidApplication(playwright, port, page);
-            }
+            return new AndroidApplication(playwright, port, page);
         }
         catch
         {
@@ -164,12 +152,6 @@ public sealed class AndroidApplication : IAsyncDisposable
 
             throw;
         }
-
-        playwright.Dispose();
-        await RunAdbAsync("forward", "--remove", $"tcp:{port}").ConfigureAwait(false);
-        TestContext.Current.SendDiagnosticMessage($"MAUI started Blazor twice in the application's web view, so the application is started once more.{description}");
-
-        return await LaunchAsync(canRelaunch: false).ConfigureAwait(false);
     }
 
     // What the web view shows, what holds the device's focus, and what the application and its web view's console last wrote, for a start

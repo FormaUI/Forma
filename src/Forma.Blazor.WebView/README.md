@@ -55,6 +55,9 @@ its own scoped styles and `_framework/blazor.webview.js`, as a standalone WebAss
 <link rel="stylesheet" href="MyApp.styles.css" />
 ```
 
+A MAUI application's page loads the script with `autostart="false"`, leaving Blazor's start to MAUI, which
+starts it once the web view's channel to the application is in place.
+
 Each web view's document takes the application's culture from its first Forma component, so the page
 carries no culture marker of its own.
 
