@@ -10,9 +10,11 @@ public sealed class RecordingJSObjectReference(Func<string, object?[], object?> 
     public JSCallRecorder Recorder { get; } = new(respond);
 
     private readonly TaskCompletionSource _released = new();
+    private int _releases;
 
     /// <summary>How many times the reference has been released.</summary>
-    public int Releases { get; private set; }
+    public int Releases
+        => Volatile.Read(ref _releases);
 
     /// <summary>Completes as the reference is first released.</summary>
     public Task Released
@@ -29,7 +31,7 @@ public sealed class RecordingJSObjectReference(Func<string, object?[], object?> 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
-        Releases++;
+        Interlocked.Increment(ref _releases);
         _released.TrySetResult();
 
         return ValueTask.CompletedTask;
