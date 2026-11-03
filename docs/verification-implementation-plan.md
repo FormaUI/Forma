@@ -49,11 +49,21 @@ Each step lands buildable and passes its gate before the next starts.
    components rendered without their isolated CSS, the pagination showing its steps and its input row at once;
    each links its bundle now. The MAUI example's Android driver ran as `Forma.Examples.Maui.Smoke.Tests` on the
    emulator, its 4 cases passing, and every new smoke check ran on Windows, where the Blazor Hybrid examples run.
-4. **The gates.** `./build.ps1 Fast`, its selection verified to run on Linux and timed from a job's start to its
-   result, setup and restore included; the step timings decide any further work, such as running the
-   JavaScript and .NET tests side by side. `./build.ps1` stays the full local gate, and names each platform
-   check the machine couldn't run. Gate: the fast selection's discovery and timing, and the full gate's report
-   on a machine without WebView2 or an Android device.
+4. **The gates.** ✅ `./build.ps1 Fast`, its selection verified to run on Linux and timed from a job's start to
+   its result, setup and restore included; the step timings decide any further work, such as running the
+   JavaScript and .NET tests side by side. `./build.ps1` stays the full local gate, and names each platform check
+   the machine couldn't run. Gate: the fast selection's discovery and timing, and the full gate's report on a
+   machine without WebView2 or an Android device. The fast gate's selection is every test project under the unit
+   and bUnit folders and the analyzers' in `eng/`, 50 suites and 4,073 cases, written as a solution filter under
+   `artifacts/fast/`; with the 958 JavaScript cases and the glyph program's 25 it took 93 seconds on the
+   development machine after a build. On CI, Linux's fast job took 6 min 59 s from its start to its result on a
+   cold package cache and 4 min 50 s with the NuGet packages it now keeps between runs, 123 seconds of it
+   building and 93 testing, within five or six minutes, so the JavaScript and .NET tests stay in turn; Linux's
+   full gate named WebView2's and Android's checks as not run, and Windows' named Android's alone. Departures:
+   the full gate's tooling step now runs the build's own cases too, which CI ran in a step of its own and the
+   local gate didn't, so a case broken by step 2 failed in CI alone; the full gate drives Android, the components
+   in its web view and the MAUI example's smoke check, where a device is attached and the `maui-android` workload
+   is installed.
 5. **The promotion workflow and publication.** CI runs the fast gate on feature branches, pull requests into
    `dev` and integrated `dev` commits; the full gate, every required platform job included, nightly on `dev` and
    on each `preview` promotion; and the release on an annotated tag. Once a full `preview` run passes and the
