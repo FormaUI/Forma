@@ -11,4 +11,8 @@
         <PackageReference Include="Microsoft.Playwright" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+    </ItemGroup>
+
 </Project>
