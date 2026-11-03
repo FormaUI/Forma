@@ -1,0 +1,48 @@
+name: Start an Android emulator
+description: Boots an emulator of the API level the maui-android workload targets, accelerated by the runner's KVM, its screen 1280 by 800 points, for adb to reach.
+
+runs:
+  using: composite
+  steps:
+    - name: Start an Android emulator
+      shell: bash
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+        ls -l /dev/kvm
+        tools="$ANDROID_HOME/cmdline-tools/latest/bin"
+        adb="$ANDROID_HOME/platform-tools/adb"
+        image='system-images;android-37.0;google_apis;x86_64'
+        # The image leaves a few gigabytes free, less than a virtual device's data partition and the build after it need, so
+        # the toolchains no Forma job uses make the room.
+        sudo rm -rf /usr/share/swift /usr/local/.ghcup /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY/CodeQL" "$ANDROID_HOME/ndk"
+        docker image prune --all --force > /dev/null
+        # The SDK's tools write a virtual device where the emulator doesn't look unless both are told one folder.
+        export ANDROID_AVD_HOME="$HOME/.android/avd"
+        mkdir -p "$ANDROID_AVD_HOME"
+        yes | "$tools/sdkmanager" --licenses > /dev/null || true
+        "$tools/sdkmanager" --install emulator platform-tools "$image" | tail -n 5
+        echo no | "$tools/avdmanager" create avd --force --name forma --package "$image" --device pixel_7
+        # The component checks lay their page out 1280 by 720, and Chrome drops wheel input past the screen's edge, so the
+        # screen holds the page whole, at a point a pixel.
+        sed -i -e 's/^hw.lcd.width=.*/hw.lcd.width=1280/' -e 's/^hw.lcd.height=.*/hw.lcd.height=800/' -e 's/^hw.lcd.density=.*/hw.lcd.density=160/' "$ANDROID_AVD_HOME/forma.avd/config.ini"
+        "$ANDROID_HOME/emulator/emulator" -list-avds | grep -x forma
+        "$ANDROID_HOME/emulator/emulator" -accel-check
+        df -h "$ANDROID_AVD_HOME"
+        nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -no-metrics -gpu swiftshader_indirect -no-snapshot -partition-size 4096 -cores 2 -memory 4096 > "$RUNNER_TEMP/emulator.log" 2>&1 &
+        booted() { [ "$("$adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
+        timeout 300 "$adb" wait-for-device || true
+        for attempt in $(seq 1 120); do booted && break; sleep 5; done
+        if ! booted; then
+          echo 'The emulator never finished booting; its log:'
+          tail -n 80 "$RUNNER_TEMP/emulator.log"
+          exit 1
+        fi
+        # A device on two cores without a GPU reports its own services not responding, in dialogs that take the focus, and
+        # spends its time animating; neither is the application's.
+        "$adb" shell settings put global hide_error_dialogs 1
+        "$adb" shell settings put global window_animation_scale 0
+        "$adb" shell settings put global transition_animation_scale 0
+        "$adb" shell settings put global animator_duration_scale 0
+        "$adb" shell getprop ro.build.version.release
