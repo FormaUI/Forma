@@ -11,4 +11,7 @@ public interface IJSEnvironment : IJSRuntime
 
     /// <summary>The owner's logger.</summary>
     ILogger Logger { get; }
+
+    /// <summary>What a value the browser sends the owner through the transfer accepts where its receiver names no maximum of its own.</summary>
+    JSTransferOptions TransferOptions { get; }
 }

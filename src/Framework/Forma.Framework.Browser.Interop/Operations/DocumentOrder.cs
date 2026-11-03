@@ -12,8 +12,10 @@ public sealed class DocumentOrder(IJSEnvironment js) : IAsyncDisposable
     /// <summary>The places of <paramref name="elements"/> in the order they stand in the document, those no longer in it last.</summary>
     /// <param name="elements">The elements.</param>
     /// <returns>The places, or <see langword="null"/> where the browser can't be asked.</returns>
-    public ValueTask<int[]?> SortAsync(IReadOnlyList<ElementReference> elements)
-        => _module.TryInvokeAsync<int[]>("sort", elements);
+    public async ValueTask<int[]?> SortAsync(IReadOnlyList<ElementReference> elements)
+        => await _module.TryInvokeJsonAsync("sort", js.TransferOptions.MaximumLength, elements) is { } places
+            ? [.. places.EnumerateArray().Select(place => place.GetInt32())]
+            : null;
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()

@@ -17,7 +17,7 @@ describe('Print', () => {
     describe('composing a document', () => {
         it('writes the markup alone into a document of its own, titled, in the page\'s language and direction', () => {
             // Act
-            const written = read(compose('<p>Report</p>', 'Quarter', 'prose'));
+            const written = read(compose('<p>Report</p>', 'Quarter', 'prose').value);
 
             // Assert
             expect(written.title).toBe('Quarter');
@@ -28,7 +28,7 @@ describe('Print', () => {
 
         it('writes the page\'s own styles into the document', () => {
             // Act
-            const written = read(compose('<p>Report</p>', 'Quarter', 'prose'));
+            const written = read(compose('<p>Report</p>', 'Quarter', 'prose').value);
 
             // Assert
             expect(written.querySelector('style').textContent).toContain('.prose');
@@ -36,7 +36,7 @@ describe('Print', () => {
 
         it('starts the document with its doctype and its character set', () => {
             // Act
-            const written = compose('<p>Report</p>', 'Quarter', 'prose');
+            const written = compose('<p>Report</p>', 'Quarter', 'prose').value;
 
             // Assert
             expect(written.startsWith('<!DOCTYPE html>')).toBe(true);
@@ -47,7 +47,7 @@ describe('Print', () => {
     describe('composing the page', () => {
         it('writes the page as it stands, titled, leaving its scripts out', () => {
             // Act
-            const written = read(composePage('Orders'));
+            const written = read(composePage('Orders').value);
 
             // Assert
             expect(written.title).toBe('Orders');

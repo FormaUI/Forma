@@ -61,7 +61,7 @@ public sealed class NativeOperationsTests
         public async Task Should_hand_the_host_the_composed_document_as_a_file_named_for_its_title()
         {
             // Arrange
-            var (environment, module) = CreateBrowser((identifier, _) => identifier == "compose" ? "<!DOCTYPE html><html></html>" : null);
+            var (environment, module) = CreateBrowser((identifier, _) => identifier == "compose" ? InlineTransfer.Of("<!DOCTYPE html><html></html>") : null);
             var native = new FakeNativeOperations();
             await using var print = new Print(environment, native);
 
@@ -78,7 +78,7 @@ public sealed class NativeOperationsTests
         public async Task Should_print_in_the_web_view_a_document_the_host_declines()
         {
             // Arrange
-            var (environment, module) = CreateBrowser((identifier, _) => identifier == "compose" ? "<!DOCTYPE html><html></html>" : null);
+            var (environment, module) = CreateBrowser((identifier, _) => identifier == "compose" ? InlineTransfer.Of("<!DOCTYPE html><html></html>") : null);
             await using var print = new Print(environment, new FakeNativeOperations(takes: false));
 
             // Act
@@ -92,7 +92,7 @@ public sealed class NativeOperationsTests
         public async Task Should_name_the_page_s_file_for_a_document_where_its_title_names_nothing()
         {
             // Arrange
-            var (environment, _) = CreateBrowser((identifier, _) => identifier == "composePage" ? "<!DOCTYPE html><html></html>" : null);
+            var (environment, _) = CreateBrowser((identifier, _) => identifier == "composePage" ? InlineTransfer.Of("<!DOCTYPE html><html></html>") : null);
             var native = new FakeNativeOperations();
             await using var print = new Print(environment, native);
 

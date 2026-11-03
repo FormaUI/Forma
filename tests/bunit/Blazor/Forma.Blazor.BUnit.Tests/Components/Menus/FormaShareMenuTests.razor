@@ -302,7 +302,7 @@
             using var ctx = new FormaShareMenuTests();
             var native = new FakeNativeOperations();
             ctx.Services.AddSingleton<INativeOperations>(native);
-            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/Print.js").Setup<string>("composePage", _ => true).SetResult("<!DOCTYPE html><html></html>");
+            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/Print.js").Setup<JSTransfer>("composePage", _ => true).SetResult(InlineTransfer.Of("<!DOCTYPE html><html></html>"));
             var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
             cut.Find(".forma-dropdown-menu-anchor button").Click();
 

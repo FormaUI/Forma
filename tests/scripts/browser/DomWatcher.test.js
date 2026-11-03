@@ -68,7 +68,7 @@ describe('DomWatcher', () => {
 
         scrollTo(300);
 
-        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 4, expect.objectContaining({ canScrollBack: true, canScrollForward: true }));
+        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 4, { value: expect.objectContaining({ canScrollBack: true, canScrollForward: true }) });
     });
 
     it('holds a state measured before the task after its attach, sending only the latest', async () => {
@@ -80,7 +80,7 @@ describe('DomWatcher', () => {
 
         await nextTask();
 
-        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 1, expect.objectContaining({ canScrollBack: true, canScrollForward: false }));
+        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 1, { value: expect.objectContaining({ canScrollBack: true, canScrollForward: false }) });
     });
 
     it('waits for the receiver to take a state before sending the next', async () => {
@@ -97,7 +97,7 @@ describe('DomWatcher', () => {
         await nextTask();
 
         expect(receiver.invokeMethodAsync).toHaveBeenCalledTimes(2);
-        expect(receiver.invokeMethodAsync).toHaveBeenLastCalledWith('NotifyAsync', '1', 1, expect.objectContaining({ canScrollForward: false }));
+        expect(receiver.invokeMethodAsync).toHaveBeenLastCalledWith('NotifyAsync', '1', 1, { value: expect.objectContaining({ canScrollForward: false }) });
     });
 
     it('reports a state the receiver failed to take under the owner, the capability and the registration', async () => {
@@ -123,7 +123,7 @@ describe('DomWatcher', () => {
 
         expect(isRefreshed).toBe(true);
         expect(receiver.invokeMethodAsync).toHaveBeenCalledTimes(2);
-        expect(receiver.invokeMethodAsync).toHaveBeenLastCalledWith('NotifyAsync', '1', 1, expect.objectContaining({ canScrollBack: true }));
+        expect(receiver.invokeMethodAsync).toHaveBeenLastCalledWith('NotifyAsync', '1', 1, { value: expect.objectContaining({ canScrollBack: true }) });
     });
 
     it('measures afresh once refreshed, sending the state unchanged or not', async () => {
@@ -133,7 +133,7 @@ describe('DomWatcher', () => {
         refresh(runtimeKey, '1', 1);
         frames.flush();
 
-        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 1, expect.objectContaining({ canScrollForward: true }));
+        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 1, { value: expect.objectContaining({ canScrollForward: true }) });
     });
 
     it('refreshes the observations named for each owner after a reconnection, sending their state unchanged or not', async () => {
@@ -145,7 +145,7 @@ describe('DomWatcher', () => {
         refreshAll([{ runtimeKey, registrations: [{ token: '1', generation: 1 }] }, { runtimeKey: 'owner-2', registrations: [{ token: '1', generation: 1 }] }]);
         frames.flush();
 
-        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 1, expect.objectContaining({ canScrollForward: true }));
+        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 1, { value: expect.objectContaining({ canScrollForward: true }) });
         expect(other.invokeMethodAsync).toHaveBeenCalledOnce();
     });
 
@@ -172,7 +172,7 @@ describe('DomWatcher', () => {
 
         scrollTo(300);
 
-        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 2, expect.objectContaining({ viewportExtent: 300 }));
+        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '1', 2, { value: expect.objectContaining({ viewportExtent: 300 }) });
     });
 
     it('drops an attach that a later generation overtook while its capability loaded', async () => {
@@ -216,7 +216,7 @@ describe('DomWatcher', () => {
         after.focus();
 
         expect(baseline).toEqual({ isWithin: true });
-        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '2', 1, { isWithin: false });
+        expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '2', 1, { value: { isWithin: false } });
     });
 
     it('observes whether a target is in view of its root, sending each change the native observer reports', async () => {
@@ -233,7 +233,7 @@ describe('DomWatcher', () => {
             intersections.latest().deliver([{ target: sentinel, isIntersecting: true }]);
 
             expect(baseline).toEqual({ isIntersecting: false });
-            expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '2', 1, { isIntersecting: true });
+            expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '2', 1, { value: { isIntersecting: true } });
         } finally {
             release(runtimeKey);
             intersections.restore();

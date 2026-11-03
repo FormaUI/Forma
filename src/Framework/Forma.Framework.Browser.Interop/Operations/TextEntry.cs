@@ -14,7 +14,7 @@ public sealed class TextEntry(IJSEnvironment js) : IAsyncDisposable
 
     /// <summary>Reads what is currently typed and empties the entry.</summary>
     public ValueTask<string?> ReadAndClearAsync(ElementReference input)
-        => _module.TryInvokeAsync<string>("take", input);
+        => _module.TryInvokeTextAsync("take", js.TransferOptions.MaximumLength, input);
 
     /// <summary>Reads the entry's current selected range.</summary>
     public ValueTask<TextRange?> ReadSelectionAsync(ElementReference input)

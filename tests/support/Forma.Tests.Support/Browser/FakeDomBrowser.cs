@@ -84,6 +84,6 @@ public sealed class FakeDomBrowser
 
         var receiver = ((DotNetObjectReference<DomReceiver>)attach.Arguments[1]!).Value;
 
-        return receiver.NotifyAsync((string)GetRequestField(attach, "token")!, (int)GetRequestField(attach, "generation")!, JsonSerializer.SerializeToElement(state, JsonSerializerOptions.Web));
+        return receiver.NotifyAsync((string)GetRequestField(attach, "token")!, (int)GetRequestField(attach, "generation")!, new JSTransfer { Value = JsonSerializer.SerializeToElement(state, JsonSerializerOptions.Web) });
     }
 }

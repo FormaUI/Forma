@@ -53,7 +53,8 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
             Services.GetJSRuntime,
             () => Services.GetStringLocaleFactory().Create(LocalizationSourceType, CultureState),
             () => LoggerFactory.CreateLogger(GetType()),
-            () => Services.GetService<DomBridge>());
+            () => Services.GetService<DomBridge>(),
+            Services.GetJSTransferOptions);
 
     /// <summary>The component's strings, in the culture state's UI culture.</summary>
     protected IStringLocale L

@@ -14,6 +14,9 @@ internal static partial class DomLog
     [LoggerMessage(Level = LogLevel.Debug, Message = "{Root} was released before {Operation} reached it for {RuntimeId}.")]
     public static partial void BridgeReleased(ILogger logger, string operation, string root, Guid runtimeId);
 
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The state of registration {Token}.{Generation} was lost on its way to {RuntimeId} and not delivered.")]
+    public static partial void StateLost(ILogger logger, Exception exception, string token, int generation, Guid runtimeId);
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "{Root} could not be imported for {Operation} by {RuntimeId}.")]
     public static partial void ImportFailed(ILogger logger, Exception exception, string root, string operation, Guid runtimeId);
 

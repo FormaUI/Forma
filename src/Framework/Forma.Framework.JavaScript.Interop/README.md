@@ -44,6 +44,20 @@ public sealed class Clipboard(IJSEnvironment js) : IAsyncDisposable
 }
 ```
 
+An export that answers with content a reader can make large, a text or a list of every item, answers
+through the transfer, `Transfer.of(value)`, and the wrapper reads it with `TryInvokeTextAsync` or
+`TryInvokeJsonAsync`, naming the size it accepts in bytes:
+
+```csharp
+public ValueTask<string?> ReadAndClearAsync(ElementReference input)
+    => _module.TryInvokeTextAsync("take", js.TransferOptions.MaximumLength, input);
+```
+
+The value travels inline while the call carrying it fits the transfer's budget, under Blazor Server's
+default message limit, and as a stream past it, which Blazor sends in chunks under any limit. A value
+larger than the wrapper accepts is refused before it is read, and the call answers `null` as a call
+that did not run does.
+
 A component builds a wrapper from its `Context.JS`, the environment carrying the component's logger
 and `RuntimeId`, attaches it from `OnAfterRenderAsync`, and disposes it from `DisposeAsyncCore`. An
 attach that a later attach, a detach or the disposal overtakes releases the instance it gets and
@@ -60,9 +74,13 @@ _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
 | `IJSEnvironment` | A JS runtime carrying the `RuntimeId` and `Logger` of the owner whose interop it runs. |
 | `JSEnvironment` | An `IJSEnvironment` over an `IJSRuntime`. |
 | `JSInterop` | The base of a wrapper whose module attaches to an element: `AttachCoreAsync`, `InvokeAsync` on the attached instance, `InvokeModuleAsync` on the module's exports, `DetachAsync`, `IsAttached`, and disposal as teardown. |
-| `JSModule` | A lazily imported module: `InvokeAsync` and `InvokeVoidAsync` throw on failure, and `TryInvokeAsync` and `TryInvokeVoidAsync` return `default` or `false`. |
+| `JSModule` | A lazily imported module: `InvokeAsync` and `InvokeVoidAsync` throw on failure, `TryInvokeAsync` and `TryInvokeVoidAsync` return `default` or `false`, and `TryInvokeTextAsync` and `TryInvokeJsonAsync` read what an export answered through the transfer. |
+| `JSTransfer` | A value the browser sent .NET through the transfer, inline or streamed, which its receiver reads up to the size it accepts or discards. |
+| `JSTransferException` | A value refused for its size, or broken on its way. |
+| `JSTransferOptions` | The size a value with no maximum of its own may reach, which a host registers; 16 MiB by default. |
 | `UnavailableJSRuntime` | A runtime whose every call throws `JSRuntimeUnavailableException`, for a container with no runtime of its own. |
 | `ServiceProviderExtensions.GetJSRuntime` | The JS runtime the platform registered, or `UnavailableJSRuntime.Instance` where it registered none, so a service built on the runtime resolves in any registration order. |
+| `ServiceProviderExtensions.GetJSTransferOptions` | The transfer options the host registered, or `JSTransferOptions.Default`. |
 
 ## Shared scripts
 
@@ -81,6 +99,7 @@ import { tell } from '../../../core/scripts/Owner.js';
 | `Owner.js` | `tell(owner, method, ...args)`, which reports to a script's .NET owner. |
 | `Sanitizer.js` | `sanitize(html)`, which reduces untrusted markup to what a document may carry. |
 | `Scrolling.js` | Which elements scroll, and the nearest ancestor of an element that does. |
+| `Transfer.js` | `Transfer.of(value)`, which carries a value to .NET inline within the budget and as a stream past it. |
 
 ## License
 

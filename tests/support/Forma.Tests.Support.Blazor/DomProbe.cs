@@ -5,6 +5,7 @@ using System.Text.Json;
 using Bunit;
 
 using Forma.Framework.Browser.Interop;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Interop;
 
 using Microsoft.JSInterop;
@@ -86,7 +87,7 @@ public sealed class DomProbe<TState>
 
             var receiver = ((DotNetObjectReference<DomReceiver>)attach.Arguments[1]!).Value;
 
-            return receiver.NotifyAsync((string)GetRequestField(attach, "token")!, (int)GetRequestField(attach, "generation")!, JsonSerializer.SerializeToElement(state, JsonSerializerOptions.Web));
+            return receiver.NotifyAsync((string)GetRequestField(attach, "token")!, (int)GetRequestField(attach, "generation")!, new JSTransfer { Value = JsonSerializer.SerializeToElement(state, JsonSerializerOptions.Web) });
         });
 
     /// <summary>Holds each observation's attach until the test answers it.</summary>

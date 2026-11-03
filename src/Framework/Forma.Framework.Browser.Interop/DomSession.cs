@@ -93,8 +93,28 @@ internal sealed class DomSession
     }
 
     /// <summary>Delivers a state the browser measured to the registration holding <paramref name="token"/>.</summary>
-    public Task DeliverAsync(string token, int generation, JsonElement state)
-        => _stateTargets.TryGetValue(token, out var deliverAsync) ? deliverAsync(generation, state) : Task.CompletedTask;
+    public async Task DeliverAsync(string token, int generation, JSTransfer state)
+    {
+        if (!_stateTargets.TryGetValue(token, out var deliverAsync))
+        {
+            await state.DiscardAsync();
+            return;
+        }
+
+        JsonElement value;
+
+        try
+        {
+            value = await state.ReadJsonAsync(_js.TransferOptions.MaximumLength);
+        }
+        catch (JSTransferException ex)
+        {
+            DomLog.StateLost(_js.Logger, ex, token, generation, _js.RuntimeId);
+            return;
+        }
+
+        await deliverAsync(generation, value);
+    }
 
     /// <summary>Invokes <paramref name="identifier"/> on <paramref name="root"/> and returns its result, where <see langword="default"/> means the call did not run.</summary>
     /// <param name="root">The entry the call is made through.</param>

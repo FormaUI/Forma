@@ -2,24 +2,26 @@
  * Print — sending a document alone to the printer
  */
 
+import { Transfer } from '../../../core/scripts/Transfer.js';
+
 /** Prints the page as it stands. */
 export function page() {
     window.print();
 }
 
-/** The markup by itself as a document of its own, titled and dressed in the page's own styles written into it. */
+/** The markup by itself as a document of its own, titled and dressed in the page's own styles written into it, answered through the transfer. */
 export function compose(html, title, className) {
-    return writeDocument(title, body => {
+    return Transfer.of(writeDocument(title, body => {
         const article = body.ownerDocument.createElement('article');
         article.className = className;
         article.innerHTML = html;
         body.append(article);
-    });
+    }));
 }
 
-/** The page as it stands as a document of its own, titled and dressed in its own styles, its scripts left out. */
+/** The page as it stands as a document of its own, titled and dressed in its own styles, its scripts left out, answered through the transfer. */
 export function composePage(title) {
-    return writeDocument(title, body => {
+    return Transfer.of(writeDocument(title, body => {
         for (const node of document.body.childNodes) {
             body.append(body.ownerDocument.importNode(node, true));
         }
@@ -27,7 +29,7 @@ export function composePage(title) {
         for (const script of body.querySelectorAll('script')) {
             script.remove();
         }
-    });
+    }));
 }
 
 function writeDocument(title, fill) {

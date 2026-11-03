@@ -685,8 +685,8 @@
             var received = new List<int>();
             ctx.JSInterop
                 .SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js")
-                .Setup<string>("take", _ => true)
-                .SetResult("3");
+                .Setup<JSTransfer>("take", _ => true)
+                .SetResult(InlineTransfer.Of("3"));
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
                     OnPageChanged="@((int p) => received.Add(p))" />);

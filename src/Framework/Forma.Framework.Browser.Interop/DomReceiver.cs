@@ -1,6 +1,6 @@
 namespace Forma.Framework.Browser.Interop;
 
-using System.Text.Json;
+using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.JSInterop;
 
@@ -17,6 +17,10 @@ public sealed class DomReceiver
     /// <summary>Delivers the state the observation holding <paramref name="token"/> measured under <paramref name="generation"/>.</summary>
     /// <returns>A task that completes as the observation takes the state.</returns>
     [JSInvokable]
-    public Task NotifyAsync(string token, int generation, JsonElement state)
-        => _session.DeliverAsync(token, generation, state);
+    public Task NotifyAsync(string token, int generation, JSTransfer state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        return _session.DeliverAsync(token, generation, state);
+    }
 }

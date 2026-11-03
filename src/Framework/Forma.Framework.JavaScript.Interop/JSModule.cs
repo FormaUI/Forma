@@ -1,6 +1,7 @@
 namespace Forma.Framework.JavaScript.Interop;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 using Microsoft.JSInterop;
 
@@ -81,6 +82,46 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         {
             LogCallFailure(identifier, ex);
             return default;
+        }
+    }
+
+    /// <summary>Tries to invoke an export answering through the transfer, and reads the text it answers, at most <paramref name="maximumLength"/> bytes of it.</summary>
+    /// <param name="identifier">The export.</param>
+    /// <param name="maximumLength">The size the caller accepts, in bytes.</param>
+    /// <param name="args">The export's arguments.</param>
+    /// <returns>The text, where <see langword="null"/> means the call didn't succeed or its answer was lost.</returns>
+    public async ValueTask<string?> TryInvokeTextAsync(string identifier, long maximumLength, params object?[] args)
+    {
+        var transfer = await TryInvokeAsync<JSTransfer>(identifier, args);
+
+        try
+        {
+            return transfer is null ? null : await transfer.ReadTextAsync(maximumLength);
+        }
+        catch (JSTransferException ex)
+        {
+            InteropLog.AnswerLost(js.Logger, ex, identifier, path, js.RuntimeId);
+            return null;
+        }
+    }
+
+    /// <summary>Tries to invoke an export answering through the transfer, and reads the value it answers as JSON, at most <paramref name="maximumLength"/> bytes of it.</summary>
+    /// <param name="identifier">The export.</param>
+    /// <param name="maximumLength">The size the caller accepts, in bytes.</param>
+    /// <param name="args">The export's arguments.</param>
+    /// <returns>The value, where <see langword="null"/> means the call didn't succeed or its answer was lost.</returns>
+    public async ValueTask<JsonElement?> TryInvokeJsonAsync(string identifier, long maximumLength, params object?[] args)
+    {
+        var transfer = await TryInvokeAsync<JSTransfer>(identifier, args);
+
+        try
+        {
+            return transfer is null ? null : await transfer.ReadJsonAsync(maximumLength);
+        }
+        catch (JSTransferException ex)
+        {
+            InteropLog.AnswerLost(js.Logger, ex, identifier, path, js.RuntimeId);
+            return null;
         }
     }
 

@@ -19,8 +19,8 @@ public sealed class ComponentContext : IComponentContext, IAsyncDisposable
     private DomWatcher? _domWatcher;
     private DomEngine? _domEngine;
 
-    /// <summary>Creates a context over the user scope's culture state, from the functions that create its JS runtime, strings and log, and that find the bridge its watcher shares imports through.</summary>
-    public ComponentContext(ICultureState cultureState, Func<IJSRuntime> jsRuntime, Func<IStringLocale> locale, Func<ILogger> logger, Func<DomBridge?>? domBridge = null)
+    /// <summary>Creates a context over the user scope's culture state, from the functions that create its JS runtime, strings and log, that find the bridge its watcher shares imports through, and that read the transfer's options.</summary>
+    public ComponentContext(ICultureState cultureState, Func<IJSRuntime> jsRuntime, Func<IStringLocale> locale, Func<ILogger> logger, Func<DomBridge?>? domBridge = null, Func<JSTransferOptions>? transferOptions = null)
     {
         ArgumentNullException.ThrowIfNull(cultureState);
         ArgumentNullException.ThrowIfNull(jsRuntime);
@@ -30,7 +30,7 @@ public sealed class ComponentContext : IComponentContext, IAsyncDisposable
         CultureState = cultureState;
         _locale = new(locale);
         _logger = new(logger);
-        _js = new(() => new JSEnvironment(jsRuntime(), Logger, RuntimeId));
+        _js = new(() => new JSEnvironment(jsRuntime(), Logger, RuntimeId, transferOptions?.Invoke()));
         _domBridge = domBridge ?? (static () => null);
     }
 

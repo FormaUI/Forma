@@ -3,6 +3,7 @@ namespace Forma.Framework.Browser.Interop.Tests;
 using System.Text.Json;
 
 using Forma.Framework.Browser.Interop.Scrolling;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Browser;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
@@ -553,10 +554,70 @@ public sealed class DomObservationTests
             var receiver = ((DotNetObjectReference<DomReceiver>)GetAttaches(browser)[0].Arguments[1]!).Value;
 
             // Act
-            await receiver.NotifyAsync("99", 1, JsonSerializer.SerializeToElement(End, JsonSerializerOptions.Web));
+            await receiver.NotifyAsync("99", 1, new JSTransfer { Value = JsonSerializer.SerializeToElement(End, JsonSerializerOptions.Web) });
 
             // Assert
             Assert.Equal(Start, observation.Current);
+        }
+
+        [Fact]
+        public async Task Should_release_unread_a_streamed_state_for_a_registration_it_does_not_hold()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = CreateWatcher(browser, loggerFactory);
+            await using var observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(_ => Task.CompletedTask, Inline);
+            var receiver = ((DotNetObjectReference<DomReceiver>)GetAttaches(browser)[0].Arguments[1]!).Value;
+            await using var stream = new FakeJSStreamReference(JsonSerializer.SerializeToUtf8Bytes(End, JsonSerializerOptions.Web));
+
+            // Act
+            await receiver.NotifyAsync("99", 1, new JSTransfer { Stream = stream });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(stream.OpenedWith),
+                () => Assert.True(stream.IsDisposed));
+        }
+
+        [Fact]
+        public async Task Should_take_a_state_streamed_past_the_transfer_s_budget()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = CreateWatcher(browser, loggerFactory);
+            await using var observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(_ => Task.CompletedTask, Inline);
+            var attach = GetAttaches(browser)[0];
+            var receiver = ((DotNetObjectReference<DomReceiver>)attach.Arguments[1]!).Value;
+            await using var stream = new FakeJSStreamReference(JsonSerializer.SerializeToUtf8Bytes(End, JsonSerializerOptions.Web));
+
+            // Act
+            await receiver.NotifyAsync((string)FakeDomBrowser.GetRequestField(attach, "token")!, (int)FakeDomBrowser.GetRequestField(attach, "generation")!, new JSTransfer { Stream = stream });
+
+            // Assert
+            Assert.Equal(End, observation.Current);
+        }
+
+        [Fact]
+        public async Task Should_drop_and_log_a_state_larger_than_it_accepts()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = CreateWatcher(browser, loggerFactory);
+            await using var observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(_ => Task.CompletedTask, Inline);
+            var attach = GetAttaches(browser)[0];
+            var receiver = ((DotNetObjectReference<DomReceiver>)attach.Arguments[1]!).Value;
+            await using var stream = new FakeJSStreamReference([], length: JSTransferOptions.Default.MaximumLength + 1);
+
+            // Act
+            await receiver.NotifyAsync((string)FakeDomBrowser.GetRequestField(attach, "token")!, (int)FakeDomBrowser.GetRequestField(attach, "generation")!, new JSTransfer { Stream = stream });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(Start, observation.Current),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Message.Contains("was lost on its way", StringComparison.Ordinal)));
         }
     }
 

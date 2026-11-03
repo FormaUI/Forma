@@ -2,6 +2,7 @@
  * DomWatcher — what an owner observes of its elements
  */
 
+import { Transfer } from '../../core/scripts/Transfer.js';
 import { RegistrationTable } from './RegistrationTable.mjs';
 import { StateDelivery } from './StateDelivery.mjs';
 
@@ -53,7 +54,7 @@ export class DomWatcher {
         }
 
         const delivery = new StateDelivery(
-            state => receiver.invokeMethodAsync('NotifyAsync', token, generation, state),
+            state => receiver.invokeMethodAsync('NotifyAsync', token, generation, Transfer.of(state)),
             error => console.error(`Forma: the ${capability} state of owner ${this.#runtimeKey}, registration ${token}.${generation}, could not be delivered; delivery waits for a refresh.`, error));
         const observer = new Observer(target, options, state => delivery.offer(state));
         const hold = this.#elements.get(target).hold(() => this.#registrations.remove(token, generation));

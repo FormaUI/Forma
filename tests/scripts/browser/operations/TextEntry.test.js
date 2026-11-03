@@ -14,7 +14,7 @@ describe('TextEntry', () => {
         it('reads what is currently typed', () => {
             input.value = 'Rider';
 
-            expect(take(input)).toBe('Rider');
+            expect(take(input)).toEqual({ value: 'Rider' });
         });
 
         it('empties the entry it read', () => {
@@ -26,7 +26,7 @@ describe('TextEntry', () => {
         });
 
         it('reads an empty entry as an empty string', () => {
-            expect(take(input)).toBe('');
+            expect(take(input)).toEqual({ value: '' });
         });
     });
 

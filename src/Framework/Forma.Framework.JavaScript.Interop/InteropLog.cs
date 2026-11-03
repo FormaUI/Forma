@@ -23,6 +23,9 @@ internal static partial class InteropLog
     [LoggerMessage(Level = LogLevel.Debug, Message = "{Identifier} in {Module} threw for {RuntimeId}.")]
     public static partial void ScriptThrewWhileCalling(ILogger logger, Exception exception, string identifier, string module, Guid runtimeId);
 
+    [LoggerMessage(Level = LogLevel.Debug, Message = "What {Identifier} in {Module} answered was lost on its way to {RuntimeId}.")]
+    public static partial void AnswerLost(ILogger logger, Exception exception, string identifier, string module, Guid runtimeId);
+
     [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while releasing {Module} for {RuntimeId}.")]
     public static partial void CircuitDroppedWhileReleasing(ILogger logger, string module, Guid runtimeId);
 

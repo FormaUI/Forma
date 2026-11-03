@@ -5,6 +5,7 @@ using System.Globalization;
 using Forma.Blazor.Components;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Scrolling;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 using Forma.Tests.Browser;
 using Forma.Tests.Culture;
@@ -65,6 +66,29 @@ public sealed class ComponentContextTests
             Assert.Same(logger, environment.Logger);
             Assert.Same(context.Logger, environment.Logger);
         });
+    }
+
+    [Fact]
+    public async Task Should_give_its_js_environment_the_transfer_options_the_host_registered()
+    {
+        // Arrange
+        var options = new JSTransferOptions { MaximumLength = 2048 };
+
+        // Act
+        await using var context = new ComponentContext(CreateCultureState(), CreateRuntime, CreateLocale, CreateLogger, transferOptions: () => options);
+
+        // Assert
+        Assert.Same(options, context.JS.TransferOptions);
+    }
+
+    [Fact]
+    public async Task Should_give_its_js_environment_the_default_transfer_options_where_the_host_registered_none()
+    {
+        // Act
+        await using var context = new ComponentContext(CreateCultureState(), CreateRuntime, CreateLocale, CreateLogger);
+
+        // Assert
+        Assert.Same(JSTransferOptions.Default, context.JS.TransferOptions);
     }
 
     [Fact]
