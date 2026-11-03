@@ -1,0 +1,53 @@
+# Holds main to the promotion rule: only a pull request from this repository's preview branch may merge into main, once
+# preview's full run has passed for the commit it promotes. Every other route is blocked with the one to take instead,
+# whichever base the pull request was opened against or later moved to, so the check is required of main.
+name: Promotion
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  promotion:
+    name: promotion
+    runs-on: ubuntu-latest
+
+    steps:
+      # A branch named preview in a fork is another repository's, so the source is told by the repository's ID as well
+      # as the branch's name.
+      - name: Hold the pull request to the promotion route
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_ID: ${{ github.repository_id }}
+          HEAD_REPOSITORY_ID: ${{ github.event.pull_request.head.repo.id }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if ("$env:HEAD_REPOSITORY_ID" -ne "$env:REPOSITORY_ID") {
+              Write-Host "::error::Only this repository's preview branch merges into main, and this pull request comes from another repository. Open it against dev."
+              exit 1
+          }
+          if ($env:HEAD_REF -eq 'dev') {
+              Write-Host "::error::dev reaches main through preview: fast-forward preview to the dev commit, let its full run pass, and promote it from preview."
+              exit 1
+          }
+          if ($env:HEAD_REF -ne 'preview') {
+              Write-Host "::error::Feature and fix pull requests go to dev: change this pull request's base to dev."
+              exit 1
+          }
+          $passed = gh api "repos/$env:REPOSITORY/actions/workflows/full.yml/runs?branch=preview&event=push&status=success&head_sha=$env:HEAD_SHA" --jq '.total_count'
+          if ($LASTEXITCODE -ne 0) {
+              exit 1
+          }
+          if ([int]$passed -eq 0) {
+              Write-Host "::error::No full run on preview has passed for $env:HEAD_SHA yet; run this check again once it has."
+              exit 1
+          }
+          Write-Host "preview's full run passed for $env:HEAD_SHA, so the promotion can proceed to approval."

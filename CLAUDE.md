@@ -74,6 +74,7 @@ The gate is the build with no warnings, every test project, the format check, th
 ## Working agreement
 
 - Do build, review, and commit one component at a time, finishing what is in progress before taking the next from the roadmap's build order.
+- Do land work on `dev`, from a branch of its own or directly, and leave `preview` and `main` to promotion.
 - Do derive parameters, validation, disposal, CSS, ARIA, localization, and tests from established repository patterns.
 - Do deliver the complete component set: markup, logic, stylesheet, warranted locale or script files, tests, and Showcase page.
 - Do verify both directions, color-independent states, accessible names and focus, touch targets, and every render mode the library supports before review; the `forma-checking-components` skill carries the full standard.

@@ -3,34 +3,36 @@
 
 <#
 .SYNOPSIS
-Releases a version of Forma: commits the version, tags it, pushes both, and publishes every package to the organization's GitHub feed, to nuget.org, or to both.
+Publishes a released version of Forma: every package of the commit its annotated vX.Y.Z tag marks, to the organization's GitHub feed, to nuget.org, or to both.
 
 .DESCRIPTION
-Every package ships at the one version the root properties file holds, so a release writes that version
-there, commits it, packs the solution in Release, marks the commit with a signed annotated tag named for
-the version, pushes the commit and the tag together, and pushes each package the pack produced.
+A release publishes the commit promoted to main, which the release workflow runs this for once the annotated tag
+vX.Y.Z is pushed. Every package ships at the one version the root properties file holds, which a commit on dev
+sets before the candidate's final run on preview, so the commit published already carries it.
 
-Before changing anything it refuses a version any chosen feed already holds for any package, a tag of
-that name marking another commit, a branch behind its upstream, and uncommitted changes, so a package
-always matches a pushed commit and a published version is never overwritten. A run that stopped after
-its release commit or its tag resumes from them.
+Before packing it refuses a version the properties file doesn't hold, uncommitted changes, a tag of the version
+that is missing, lightweight or marks another commit, a commit main doesn't hold, a commit no full run on preview
+passed for, and a version any chosen feed already holds for any package, so a package always matches the commit
+approved for release and a published version is never overwritten. -WhatIf is the dry run: every check and the
+pack, with a tag not yet made reported rather than refused, and no package pushed.
 
 .PARAMETER Source
 Where to publish: GitHub, NuGet or All. Matched without regard to case.
 
 .PARAMETER Version
-The version to release, which also names its tag. A version any chosen feed already holds, or whose tag marks another commit, is refused.
+The version to publish, which names its tag, vX.Y.Z. A version the properties file doesn't hold, or any chosen
+feed already holds, is refused.
 
 .PARAMETER Force
 Publishes from a working tree that has uncommitted changes.
 
 .EXAMPLE
-./publish.ps1 -Source GitHub -Version 1.0.0-preview.1
+./publish.ps1 -Source All -Version 1.0.0-preview.1
 
 .EXAMPLE
 ./publish.ps1 -Source All -Version 1.0.0-preview.1 -WhatIf
 
-Runs every check and lists the commit, tag, pack and pushes a release would make, without making them.
+Runs every check and the pack, and lists the pushes a release would make, without making them.
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
@@ -51,8 +53,10 @@ $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 $solution = Join-Path $root 'Forma.slnx'
 $properties = Join-Path $root 'Directory.Build.props'
-$artifacts = Join-Path $root 'artifacts'
+$artifacts = Join-Path $root 'artifacts' 'release'
 $organization = 'FormaUI'
+$repository = "$organization/Forma"
+$isDryRun = [bool]$WhatIfPreference
 
 $feeds = @{
     GitHub = "https://nuget.pkg.github.com/$organization/index.json"
@@ -72,8 +76,13 @@ function Get-GitHubCli {
     return $gh
 }
 
-# The GitHub CLI's own token publishes to the organization's feed once it carries the write:packages scope.
+# The release workflow hands its own token in GH_TOKEN; by hand, the GitHub CLI's publishes once it carries the
+# write:packages scope.
 function Get-GitHubKey {
+    if ($env:GH_TOKEN) {
+        return $env:GH_TOKEN
+    }
+
     $gh = Get-GitHubCli
     $status = & $gh auth status 2>&1 | Out-String
     if ($status -notmatch 'write:packages') {
@@ -148,52 +157,67 @@ function Invoke-Git {
     }
 }
 
+# The version is held as a prefix and a suffix, which is what the build assembles a package version from, and a commit
+# on dev sets it before the candidate's final run; feeds and the tag compare versions without build metadata.
+[xml] $props = Get-Content $properties
+$heldPrefix = $props.SelectSingleNode('//PropertyGroup/VersionPrefix').InnerText
+$heldSuffix = $props.SelectSingleNode('//PropertyGroup/VersionSuffix').InnerText
+$heldVersion = if ($heldSuffix) { "$heldPrefix-$heldSuffix" } else { $heldPrefix }
+if ($heldVersion -ne $Version) {
+    throw "The properties file holds version $heldVersion, not $Version; a commit on dev sets the version before the candidate's final run on preview."
+}
+
+$feedVersion = $Version -replace '\+.*$', ''
+$tag = "v$feedVersion"
+
 # A package is built from a commit, so a tree with changes on top of one is refused unless asked.
 if ((git -C $root status --porcelain) -and -not $Force) {
     throw 'The working tree has uncommitted changes; commit them, or pass -Force to publish anyway.'
 }
-if (git -C $root status --porcelain -- $properties) {
-    throw 'The properties file has uncommitted changes, and the release commit would carry them.'
-}
 
-# The release commit and its tag are pushed to the branch's upstream, so the branch must have one and hold everything it has.
-$upstream = git -C $root rev-parse --abbrev-ref '@{upstream}' 2> $null
-if ($LASTEXITCODE -ne 0) {
-    throw 'The current branch tracks no upstream branch to push the release to.'
-}
-$branch = git -C $root symbolic-ref --short HEAD
-$remote = git -C $root config "branch.$branch.remote"
-$upstreamRef = git -C $root config "branch.$branch.merge"
-Invoke-Git fetch --quiet --tags $remote
-if ([int] (git -C $root rev-list --count 'HEAD..@{upstream}') -gt 0) {
-    throw 'The current branch is behind its upstream; pull before releasing.'
-}
+$commit = git -C $root rev-parse HEAD
+Invoke-Git fetch --quiet --tags origin main
 
-# The version is held as a prefix and a suffix, which is what the build assembles a package version from.
-[xml] $props = Get-Content $properties
-$currentPrefix = $props.SelectSingleNode('//PropertyGroup/VersionPrefix').InnerText
-$currentSuffix = $props.SelectSingleNode('//PropertyGroup/VersionSuffix').InnerText
-$currentVersion = if ($currentSuffix) { "$currentPrefix-$currentSuffix" } else { $currentPrefix }
-
-# The version is written as given, build metadata included; feeds and the tag compare versions without it and without regard to case.
-$prefix, $suffix = $Version -split '-', 2
-$suffix = if ($suffix) { $suffix } else { '' }
-$feedVersion = $Version -replace '\+.*$', ''
-
-# A tag marks the commit a version was packed from, so an existing one is only picked up again when it marks HEAD.
-$tag = $feedVersion
+# The release names its commit through an annotated tag, which carries who made it and when; a lightweight tag is a
+# bare pointer, refused, as is a tag marking anything but the commit being published.
 $tagged = git -C $root rev-parse --quiet --verify "refs/tags/$tag^{commit}"
-if ($tagged -and $tagged -ne (git -C $root rev-parse HEAD)) {
-    throw "The tag $tag already marks commit $($tagged.Substring(0, 7)), not HEAD; choose a new version, or delete the tag if it was never pushed."
+if ($tagged) {
+    if ((git -C $root cat-file -t "refs/tags/$tag") -ne 'tag') {
+        throw "The tag $tag is lightweight; a release is tagged with an annotated tag: git tag --sign --message 'Forma $Version' $tag"
+    }
+    if ($tagged -ne $commit) {
+        throw "The tag $tag marks commit $($tagged.Substring(0, 7)), not the commit being published, $($commit.Substring(0, 7))."
+    }
 }
-if ($tagged -and $currentVersion -ne $Version) {
-    throw "The tag $tag marks HEAD, but the properties file holds version $currentVersion."
+elseif ($isDryRun) {
+    Write-Host "No tag $tag marks $($commit.Substring(0, 7)) yet; the release would need it."
+}
+else {
+    throw "No tag $tag marks the commit being published; tag the promoted commit on main: git tag --sign --message 'Forma $Version' $tag"
 }
 
-# Every key is in hand before anything changes, so a missing one stops the run with nothing half done.
+# main receives a commit only by promotion, so a commit main doesn't hold was never promoted.
+git -C $root merge-base --is-ancestor $commit origin/main
+if ($LASTEXITCODE -ne 0) {
+    throw "main doesn't hold commit $($commit.Substring(0, 7)); a release publishes a commit promoted to main."
+}
+
+# The candidate's approval is a full run on preview that passed for this exact commit, every platform's job among it.
+$gh = Get-GitHubCli
+$passed = & $gh api "repos/$repository/actions/workflows/full.yml/runs?branch=preview&event=push&status=success&head_sha=$commit" --jq '.total_count' 2>&1
+if ($LASTEXITCODE -ne 0) {
+    throw "Reading the full runs of preview failed: $($passed | Out-String)"
+}
+if ([int]$passed -eq 0) {
+    throw "No full run on preview passed for commit $($commit.Substring(0, 7)); promote it to preview and let its full run pass first."
+}
+
+# Every key is in hand before anything is pushed, so a missing one stops the run with nothing half done.
 $keys = @{}
-foreach ($target in $targets) {
-    $keys[$target] = if ($target -eq 'GitHub') { Get-GitHubKey } else { Get-NuGetKey }
+if (-not $isDryRun) {
+    foreach ($target in $targets) {
+        $keys[$target] = if ($target -eq 'GitHub') { Get-GitHubKey } else { Get-NuGetKey }
+    }
 }
 
 Write-Host 'Reading the packages the solution produces'
@@ -210,45 +234,22 @@ foreach ($target in $targets) {
     }
 }
 
-# A run that stopped after its release commit or its tag resumes from them rather than making them again.
-if ($currentVersion -ne $Version) {
-    $text = [IO.File]::ReadAllText($properties)
-    $released = $text.
-        Replace("<VersionPrefix>$currentPrefix</VersionPrefix>", "<VersionPrefix>$prefix</VersionPrefix>").
-        Replace("<VersionSuffix>$currentSuffix</VersionSuffix>", "<VersionSuffix>$suffix</VersionSuffix>")
-    if ($released -eq $text) {
-        throw "The properties file holds no version $currentVersion to change."
-    }
-    if ($PSCmdlet.ShouldProcess($properties, "Commit release $Version")) {
-        Write-Host "Committing release $Version"
-        [IO.File]::WriteAllText($properties, $released)
-        Invoke-Git commit --quiet -m "chore: release $Version" -- $properties
-    }
+# The dry run packs too, since a package that doesn't pack is a release that can't happen.
+Write-Host "Packing $($packageIds.Count) packages at $feedVersion from $($commit.Substring(0, 7))"
+if (Test-Path -LiteralPath $artifacts) {
+    Remove-Item -LiteralPath $artifacts -Recurse -Force -WhatIf:$false
 }
-
-if ($PSCmdlet.ShouldProcess("$($packageIds.Count) packages at $feedVersion", 'Pack in Release')) {
-    Write-Host "Packing $($packageIds.Count) packages at $feedVersion"
-    dotnet pack $solution -c Release -o $artifacts -nologo -v:q
-    if ($LASTEXITCODE -ne 0) {
-        throw 'dotnet pack failed.'
-    }
-}
-
-# The tag follows a successful pack, so a failed build leaves nothing marked as released.
-if (-not $tagged -and $PSCmdlet.ShouldProcess($tag, 'Sign and tag the release commit')) {
-    Write-Host "Tagging $tag"
-    Invoke-Git tag --sign --message "Forma $Version" $tag
-}
-
-# Atomic, so the branch never receives the release commit without its tag, nor the tag without its commit.
-if ($PSCmdlet.ShouldProcess("$upstream and $tag", 'Push the release commit and its tag')) {
-    Write-Host "Pushing the release commit and $tag to $upstream"
-    Invoke-Git push --quiet --atomic $remote "HEAD:$upstreamRef" "refs/tags/$tag"
+dotnet pack $solution -c Release -o $artifacts -nologo -v:q
+if ($LASTEXITCODE -ne 0) {
+    throw 'dotnet pack failed.'
 }
 
 foreach ($target in $targets) {
     foreach ($packageId in $packageIds) {
         $package = Join-Path $artifacts "$packageId.$feedVersion.nupkg"
+        if (-not (Test-Path -LiteralPath $package)) {
+            throw "The pack produced no $packageId $feedVersion."
+        }
         if ($PSCmdlet.ShouldProcess($feeds[$target], "Push $packageId $feedVersion")) {
             Write-Host "Pushing $packageId to $target ($($feeds[$target]))"
             dotnet nuget push $package --source $feeds[$target] --api-key $keys[$target]
@@ -257,8 +258,4 @@ foreach ($target in $targets) {
             }
         }
     }
-}
-
-if (-not $WhatIfPreference) {
-    Write-Host "Published $($packageIds.Count) packages at $feedVersion to $($targets -join ' and ')."
 }

@@ -1,0 +1,63 @@
+# Publishes a release from its annotated vX.Y.Z tag, which marks the commit promoted to main. publish.ps1 refuses a
+# version the commit doesn't carry, a lightweight tag, a commit main doesn't hold, a commit preview's full run didn't
+# pass for, and a version a feed already holds, so this file installs a toolchain and invokes it. Run by hand, it takes
+# a tag or a commit and makes the same checks and the pack as a dry run, pushing nothing.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The tag to release, vX.Y.Z, or for a dry run a commit
+        required: true
+      dry-run:
+        description: Make every check and the pack, and push nothing
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # The approval is read from preview's full runs.
+  actions: read
+  # The packages are pushed to the organization's feed.
+  packages: write
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Publish the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
+          IS_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
+        run: |
+          [xml] $props = Get-Content Directory.Build.props
+          $prefix = $props.SelectSingleNode('//PropertyGroup/VersionPrefix').InnerText
+          $suffix = $props.SelectSingleNode('//PropertyGroup/VersionSuffix').InnerText
+          $version = if ($suffix) { "$prefix-$suffix" } else { $prefix }
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+              Write-Host "::error::The tag $env:GITHUB_REF_NAME names a version the commit doesn't carry, $version."
+              exit 1
+          }
+          ./publish.ps1 -Source All -Version $version -WhatIf:($env:IS_DRY_RUN -eq 'true')

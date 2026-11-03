@@ -169,6 +169,9 @@ Test-Case -Name 'a release version that is not semantic is refused' -Script 'pub
 Test-Case -Name 'a release to a feed nobody named is refused' -Script 'publish.ps1' `
     -Arguments @('-Source', 'Elsewhere', '-Version', '1.0.0', '-WhatIf') -Fails
 
+Test-Case -Name 'a release of a version the properties file does not hold is refused' -Script 'publish.ps1' `
+    -Arguments @('-Source', 'GitHub', '-Version', '99.0.0', '-WhatIf') -Fails -Expect @('not 99.0.0')
+
 # The currency data is read from the network and rewrites a checked-in asset, so what runs here is what it
 # describes and what it refuses.
 Test-Case -Name 'the currency data update describes the snapshot it would write' -Script 'Update-CurrencyData.ps1' `
