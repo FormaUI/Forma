@@ -49,8 +49,8 @@ through the transfer, `Transfer.of(value)`, and the wrapper reads it with `TryIn
 `TryInvokeJsonAsync`, naming the size it accepts in bytes:
 
 ```csharp
-public ValueTask<string?> ReadAndClearAsync(ElementReference input)
-    => _module.TryInvokeTextAsync("take", js.TransferOptions.MaximumLength, input);
+public ValueTask<string?> ComposeAsync(string html)
+    => _module.TryInvokeTextAsync("compose", js.TransferOptions.MaximumLength, html);
 ```
 
 The value travels inline while the call carrying it fits the transfer's budget, under Blazor Server's

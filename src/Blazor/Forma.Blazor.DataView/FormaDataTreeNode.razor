@@ -26,8 +26,7 @@
      data-focus-heir="@Tree.GetHeirMark(key, marker: false)"
      data-item="@(Tree.HasSelection ? Token : null)"
      data-item-position="@Position"
-     @onfocusin="Tree.GetNodeFocusInHandler(Item)"
-     @onfocusout="Tree.GetNodeFocusOutHandler()"
+     data-tree-node="@Token"
      @ref="Tree.NodeElements[key]">
     @if (isLoading)
     {

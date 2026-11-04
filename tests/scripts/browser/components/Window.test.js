@@ -90,6 +90,26 @@ describe('Window', () => {
         expect(box.showPopover).toHaveBeenCalledTimes(2);
     });
 
+    it('tells its owner of each press inside it, leaving the press to what it lands on', () => {
+        const owner = { invokeMethodAsync: vi.fn().mockResolvedValue(undefined) };
+        attach(box, options({ owner }));
+
+        const press = pointerEvent('pointerdown', { clientX: 200, clientY: 90 });
+        document.querySelector('.titlebar span').dispatchEvent(press);
+
+        expect(owner.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('HandlePressAsync');
+        expect(press.defaultPrevented).toBe(false);
+    });
+
+    it('tells its owner of no press once disposed', () => {
+        const owner = { invokeMethodAsync: vi.fn().mockResolvedValue(undefined) };
+        attach(box, options({ owner })).dispose();
+
+        document.querySelector('.titlebar span').dispatchEvent(pointerEvent('pointerdown', { clientX: 200, clientY: 90 }));
+
+        expect(owner.invokeMethodAsync).not.toHaveBeenCalled();
+    });
+
     it('treats the browser window losing focus as the end of a press, and raises then', () => {
         popoverOf(box);
         const handle = attach(box, options());

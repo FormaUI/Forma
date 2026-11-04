@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Composer.PlainTextEditor;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Blazor.Components.Inputs;
+using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Composer.Editing;
@@ -10,14 +11,15 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>The canvas of the plain text editor.</summary>
 public sealed partial class FormaPlainTextEditor : FormaComponentBase
 {
-    // Keystrokes within this delay commit as one history state.
+    // Keystrokes within this delay commit as one history state, and the selection they move is reported once they pause.
     private static readonly TimeSpan CommitDelay = TimeSpan.FromMilliseconds(400);
+
+    private static readonly TextSelectionWatchOptions SelectionOptions = new();
 
     /// <summary>The context of the composer the canvas belongs to.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
@@ -41,6 +43,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private InputScope? _inputScope;
     private CancellationTokenSource? _commitCancellation;
     private CancellationTokenSource? _selectionCancellation;
+    private DomObservation<TextSelectionWatchOptions, TextSelection>? _selection;
     private string? _typedContent;
     private string? _committedContent;
 
@@ -64,13 +67,6 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private TextEditOptions EditOptions
         => new() { SendsOnInput = !UpdatesOnChange };
 
-    // Updating on change, the selection arrives with the commit, so the textarea handles no click or keystroke of its own.
-    private EventCallback<MouseEventArgs> ClickCallback
-        => UpdatesOnChange ? default : EventCallback.Factory.Create<MouseEventArgs>(this, HandleClickAsync);
-
-    private EventCallback<KeyboardEventArgs> KeyUpCallback
-        => UpdatesOnChange ? default : EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleKeyUpAsync);
-
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -82,7 +78,19 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Updating on change, the selection arrives with the commit, so the textarea's selection is followed only while it updates on input. The
+        // watch starts inactive, so _selection holds it before anything is awaited and a render landing meanwhile syncs the same watch.
+        if (firstRender)
+        {
+            _selection = await Context.DomWatcher.GetElement(_textareaElement).Text.WatchSelectionAsync(HandleSelectionAsync, shouldObserve: false);
+        }
+
         await _edits.SyncAsync(_textareaElement, Content, EditOptions);
+
+        if (_selection is { } selection)
+        {
+            await selection.SyncAsync(_textareaElement, SelectionOptions, !UpdatesOnChange);
+        }
 
         // The composer's routes are registered on the textarea, ahead of its native shortcuts.
         if (firstRender && Composer is { } context)
@@ -97,7 +105,8 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        // The command reads the document, so the reader's edits made before it are applied and committed first.
+        // The command reads the document and the selection, so the reader's edits made before it are applied and committed first, and the
+        // selection is read as it stands.
         if (Interaction is null || !await _edits.SettleAsync())
         {
             return;
@@ -108,7 +117,13 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
             await _commitCancellation.CancelAsync();
         }
 
+        if (_selectionCancellation is not null)
+        {
+            await _selectionCancellation.CancelAsync();
+        }
+
         await CommitAsync();
+        await ReportSelectionAsync();
         await Interaction.ExecuteCommandAsync(action);
     }
 
@@ -170,30 +185,38 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         }
     }
 
-    private Task HandleClickAsync(MouseEventArgs args)
-        => ReportSelectionAsync();
-
-    // Selection reports are debounced by the same delay as the content commit.
-    private async Task HandleKeyUpAsync(KeyboardEventArgs args)
-    {
-        if (_selectionCancellation is not null)
+    private Task HandleSelectionAsync(TextSelection selection)
+        => InvokeAsync(async () =>
         {
-            await _selectionCancellation.CancelAsync();
-            _selectionCancellation.Dispose();
-        }
+            if (_selectionCancellation is not null)
+            {
+                await _selectionCancellation.CancelAsync();
+                _selectionCancellation.Dispose();
+            }
 
-        _selectionCancellation = new CancellationTokenSource();
+            _selectionCancellation = new CancellationTokenSource();
+            _ = ReportSelectionAfterPauseAsync(new ComposerSelection { Start = selection.Start, End = selection.End }, _selectionCancellation.Token);
+        });
 
+    [SuppressMessage("Design", "CA1031", Justification = "The report failing is the component's own failure, handed to the renderer as it would be from an event.")]
+    private async Task ReportSelectionAfterPauseAsync(ComposerSelection selection, CancellationToken cancellationToken)
+    {
         try
         {
-            await Task.Delay(CommitDelay, _selectionCancellation.Token);
+            await Task.Delay(CommitDelay, cancellationToken);
+
+            if (Interaction is { } interaction)
+            {
+                await interaction.ReportSelectionAsync(selection);
+            }
         }
         catch (OperationCanceledException)
         {
-            return;
         }
-
-        await ReportSelectionAsync();
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
     }
 
     private async Task ReportSelectionAsync()
@@ -236,6 +259,11 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         {
             await _selectionCancellation.CancelAsync();
             _selectionCancellation.Dispose();
+        }
+
+        if (_selection is { } selection)
+        {
+            await selection.DisposeAsync();
         }
 
         await _edits.DisposeAsync();

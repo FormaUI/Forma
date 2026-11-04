@@ -18,10 +18,7 @@
      hidden="@(!IsPresented)"
      inert="@IsInert"
      aria-modal="@(Modal ? "true" : "false")"
-     aria-label="@Title"
-     @onpointerdown="HandlePointerDownAsync"
-     @onfocusin="HandleFocusInAsync"
-     @onfocusout="HandleFocusOut">
+     aria-label="@Title">
     <CascadingValue Value="FrameBox.Parent" IsFixed="true">
         <FormaChrome Title="@Title"
                      Icon="Icon"

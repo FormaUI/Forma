@@ -1,7 +1,9 @@
 namespace Forma.Blazor.Components.Windows;
 
 using Forma.Blazor.Components.Layout;
+using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Components;
+using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -10,6 +12,7 @@ using Forma.Framework.Toolbar;
 using Forma.Framework.Windows;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 /// <summary>A workspace window: a chrome floated into the top layer, whose frame moves, resizes and maximizes the window.</summary>
 public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
@@ -19,8 +22,12 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     private const string MinimizeCommand = "window.minimize";
     private const string LockCommand = "window.lock";
 
+    private static readonly FocusWatchOptions FocusOptions = new();
+
     private ElementReference _scrim;
     private Window _window = default!;
+    private DotNetObjectReference<FormaWindow>? _selfReference;
+    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
     private InputRegistration _inputRegistration = default!;
     private InputProfile _inputProfile = default!;
     private (bool Modal, WindowPressAway PressAway)? _scopeInputs;
@@ -252,6 +259,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     protected override void OnInitialized()
     {
         _window = new Window(Context.JS);
+        _selfReference = DotNetObjectReference.Create(this);
         _inputRegistration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
     }
 
@@ -295,13 +303,23 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 
             // The scope goes with the attachment it was made for and comes back with the next.
             await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: false);
-            _isAttached = await _window.AttachAsync(RootElement, IsPresented, Modal, ShowsScrim ? _scrim : null);
+            _isAttached = await _window.AttachAsync(RootElement, IsPresented, Modal, ShowsScrim ? _scrim : null, _selfReference!);
 
             // A window that opens becomes the current one.
             if (_isAttached && !Active && !Disabled && IsPresented)
             {
                 await ActivateAsync();
             }
+        }
+
+        if (firstRender)
+        {
+            _focusState = await Context.DomWatcher.GetElement(RootElement).Focus.WatchAsync(HandleFocusStateAsync);
+        }
+
+        if (_focusState is { } focusState)
+        {
+            await focusState.SyncAsync(RootElement, FocusOptions);
         }
 
         // The window is a scope while attached, held active while it is the workspace's current window and focus is inside it.
@@ -445,8 +463,9 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         await LockedChanged.InvokeAsync(locked);
     }
 
-    // A press anywhere inside makes the window current, or brings the current one forward; the press is observed, and stays with what owns it.
-    private async Task HandlePointerDownAsync()
+    /// <summary>Makes the window current, or brings the current one forward, as the reader presses anywhere inside it.</summary>
+    [JSInvokable]
+    public async Task HandlePressAsync()
     {
         if (IsInert)
         {
@@ -463,21 +482,25 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         }
     }
 
-    // Focus arriving makes the window current; focus already current only re-arms its scope.
-    private async Task HandleFocusInAsync()
-    {
-        if (!Active)
+    // Focus arriving makes the window current; focus already current only re-arms its scope, and focus leaving lets the scope go.
+    private Task HandleFocusStateAsync(FocusState state)
+        => InvokeAsync(async () =>
         {
-            await ActivateAsync();
-        }
-        else
-        {
-            _holdsInput = true;
-        }
-    }
+            if (!state.IsWithin)
+            {
+                _holdsInput = false;
+            }
+            else if (!Active)
+            {
+                await ActivateAsync();
+            }
+            else
+            {
+                _holdsInput = true;
+            }
 
-    private void HandleFocusOut()
-        => _holdsInput = false;
+            StateHasChanged();
+        });
 
     private WindowDeclaration Declare()
         => new(Title, Icon, Parent?.RuntimeId, Origin, CascadedOrigin, Minimized, Disabled, Modal);
@@ -548,8 +571,14 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             await Manager.UnregisterAsync(this);
         }
 
+        if (_focusState is { } focusState)
+        {
+            await focusState.DisposeAsync();
+        }
+
         await _inputRegistration.DisposeAsync();
         await _window.DisposeAsync();
+        _selfReference?.Dispose();
         await base.DisposeAsyncCore();
     }
 }

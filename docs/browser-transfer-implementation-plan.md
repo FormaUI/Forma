@@ -37,17 +37,29 @@ own host layer, so the transfer belongs to that layer and every converted script
    composition, and `DocumentOrder.sort`. A host sets the accepted maximum by registering its own
    `JSTransferOptions`, 16 MiB by default. A stream's reference is released once its stream has been read, since
    WebAssembly pulls each chunk through it, and a stream no receiver takes is released unread.
-2. **Edits.** `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaSearchBox`, `FormaNumberInput`,
+2. **Edits.** ✅ `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaSearchBox`, `FormaNumberInput`,
    `FormaTimeBox`, `FormaPlainTextEditor` and everything that draws them send edits through their scripts in place
    of Blazor's binding, in both update modes, with the browser holding the text it edits, .NET's own changes
    written through the script, and static rendering unchanged; and the components whose Blazor handlers an event
    raised in a text field reaches take those events through the input router and the DOM watcher. Gate: unit and
    script tests of applying edits, a disagreement resolved through the transfer, and a host's change written back;
    bUnit tests of both modes, validation following each applied edit or commit, and the count; and no Forma
-   component left with a .NET handler a text field's event reaches. The fields' edits landed first, with step 4. Departures:
-   the running count is an option of the field's edits rather than a capability of its own, so a text .NET writes
-   is counted as it lands, and the standalone count retired with no other user; and the bUnit tests type through a
-   stand-in for the field's script, since a field takes no Blazor event to trigger.
+   component left with a .NET handler a text field's event reaches. The fields' edits landed first, with step 4.
+   The DOM watcher's focus observation gained the item holding the focus, named by an attribute the surface's
+   items carry, which the data tree follows its nodes by, and the watcher gained a text field's selection, which
+   the plain text editor reports to the composer once the reader pauses, as its key-up did, and reads afresh for a
+   command, in both update modes. The window, the pagination's entry, the explorer's search and the time box
+   follow the focus through the watcher. Departures: the running count is an option of the field's edits rather
+   than a capability of its own, so a text .NET writes is counted as it lands, and the standalone count retired
+   with no other user; the bUnit tests type through a stand-in for the field's script, since a field takes no
+   Blazor event to trigger; a window hears of a press inside it from its own script, which already listened for
+   presses to hold a raise until they end, since a window only observes a press its content owns; `TextEntry.take`
+   retired with its one caller, since the pagination's entry holds what the reader typed before the circuit
+   connected once its edits settle; and a focus observation sends every state as it is measured, rather than one
+   in flight with the latest waiting, since the data tree's browser check found a click on a node's disclosure
+   overtaking the focus held behind an earlier one, as the DOM watcher's design records of occurrences, and the
+   tree's keys and disclosures wait for its focus watch, whose first state says where the focus is, as a Blazor
+   handler live from the first render had known.
 3. **The editor and the channels beside it.** `FormaRichTextEditor`'s content as edits of its serialized HTML at
    its pace; the composer's activations and the data view's range selection through the transfer. Gate: unit and
    script tests of each, at a size past the budget.

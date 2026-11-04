@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>An element's focus: observing whether the reader is within it, and the interaction that decides where the focus goes inside it.</summary>
 public sealed class DomFocus : IDomFocusObservation
 {
-    private static readonly DomCapability<FocusWatchOptions> Watching = new(DomRoot.Watcher, "focus", _ => new());
+    private static readonly DomCapability<FocusWatchOptions> Watching = new(DomRoot.Watcher, "focus", DescribeWatch);
 
     private static readonly DomCapability<FocusInteractionOptions> Interacting = new(DomRoot.Engine, "focus", DescribeInteraction)
     {
@@ -26,12 +26,22 @@ public sealed class DomFocus : IDomFocusObservation
     }
 
     /// <inheritdoc />
-    public async Task<DomObservation<FocusWatchOptions, FocusState>> WatchAsync(Func<FocusState, Task> handler, bool shouldObserve = true)
+    public Task<DomObservation<FocusWatchOptions, FocusState>> WatchAsync(Func<FocusState, Task> handler, bool shouldObserve = true)
+        => WatchAsync(handler, new FocusWatchOptions(), shouldObserve);
+
+    /// <inheritdoc />
+    public async Task<DomObservation<FocusWatchOptions, FocusState>> WatchAsync(Func<FocusState, Task> handler, FocusWatchOptions options, bool shouldObserve = true)
     {
         ArgumentNullException.ThrowIfNull(handler);
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (options.ItemAttribute is { } itemAttribute)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(itemAttribute, nameof(options));
+        }
 
         var observation = new DomObservation<FocusWatchOptions, FocusState>(_watcher.Session, Watching, DomJsonContext.Default.FocusState, handler);
-        await observation.SyncAsync(_element, new FocusWatchOptions(), shouldObserve);
+        await observation.SyncAsync(_element, options, shouldObserve);
 
         return observation;
     }
@@ -56,6 +66,9 @@ public sealed class DomFocus : IDomFocusObservation
         return interaction;
     }
 
+    private static WatchDescription DescribeWatch(FocusWatchOptions options)
+        => new() { ItemAttribute = options.ItemAttribute };
+
     private static InteractionDescription DescribeInteraction(FocusInteractionOptions options)
         => new()
         {
@@ -70,9 +83,12 @@ public sealed class DomFocus : IDomFocusObservation
             Heir = options.HeirAttribute,
         };
 
-    /// <summary>The focus watch as the browser reads it, which takes no options.</summary>
+    /// <summary>The focus watch as the browser reads it: the attribute the element's items carry.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
-    private sealed record WatchDescription;
+    private sealed record WatchDescription
+    {
+        public required string? ItemAttribute { get; init; }
+    }
 
     /// <summary>The focus interaction as the browser reads it.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]

@@ -3,6 +3,8 @@
 @using Forma.Blazor.Components.Composer.Plugins
 @using Forma.Blazor.Components.Composer.RichTextEditor
 @using Forma.Blazor.Components.Composer.RichTextEditor.Views
+@using Forma.Framework.Browser.Interop.Operations
+@using Forma.Framework.Browser.Interop.Text
 @using Forma.Framework.Composer.Dialogs
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
@@ -10,6 +12,7 @@
 @using Forma.Blazor.Components.Composer.Dialogs
 @using Forma.Framework.Localization
 @using Forma.Tests.Localization
+@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 
 @code {
@@ -137,6 +140,7 @@
         {
             public string Id => "commands";
             public List<string> Executed { get; } = [];
+            public List<ComposerSelection> Selections { get; } = [];
             public IReadOnlyList<ComposerToolbarItem> Items =>
                 [new(ComposerRows.Plugins, [new ToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }])];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
@@ -146,6 +150,7 @@
             public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
             {
                 Executed.Add(command);
+                Selections.Add(context.Selection);
                 return ValueTask.CompletedTask;
             }
         }
@@ -1098,6 +1103,46 @@
 
             // Assert
             Assert.Equal("Shout (Ctrl+Shift+K)", cut.Find("button[aria-label=Shout]").GetAttribute("title"));
+        }
+
+        [Theory]
+        [InlineData(TextUpdate.Input)]
+        [InlineData(TextUpdate.Change)]
+        public async Task Should_hand_a_routed_command_the_selection_the_plain_text_holds_as_it_runs(TextUpdate updateOn)
+        {
+            // Arrange — the reader's last move of the selection not yet reported
+            using var ctx = new FormaComposerTests();
+            _ = new TextFieldProbe(ctx);
+            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js")
+                .Setup<TextEntry.TextRange?>("readSelection", _ => true)
+                .SetResult(new TextEntry.TextRange { Start = 2, End = 5 });
+            var model = new TestModel();
+            var plugin = new CommandPlugin();
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>(editor => editor.AddFeaturePlugin(_ => plugin)));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" Options="@(new ComposerOptions { PlainTextUpdateOn = updateOn })" />);
+
+            // Act — the input router hands the editor the command its key binding names
+            var editor = cut.FindComponent<FormaPlainTextEditor>();
+            await editor.InvokeAsync(() => editor.Instance.HandleInputActionAsync("demo.shout", new InputKeyInfo { Type = "keydown", Key = "K" }));
+
+            // Assert
+            Assert.Equal(new ComposerSelection { Start = 2, End = 5 }, Assert.Single(plugin.Selections));
+        }
+
+        [Fact]
+        public void Should_follow_no_selection_in_a_plain_text_that_updates_on_change()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var probe = new DomProbe<TextSelection>(ctx);
+            _ = new TextFieldProbe(ctx, probe.Engine);
+            var model = new TestModel();
+
+            // Act
+            ctx.Render(@<FormaComposer @bind-Value="model.Body" Options="@(new ComposerOptions { PlainTextUpdateOn = TextUpdate.Change })" />);
+
+            // Assert
+            Assert.DoesNotContain(probe.Observations, attach => DomProbe<TextSelection>.GetRequestField(attach, "capability") is "selection");
         }
 
         [Fact]

@@ -67,9 +67,10 @@ it started moving.
 
 | Capability | Watcher | Engine |
 | --- | --- | --- |
-| `Focus` | `WatchAsync`: whether the reader is within the element | `AttachAsync`: where the focus goes inside the element, from Tab wrapping, regions Tab visits first, one roving Tab stop and the element taking the focus when the one holding it goes away, each selectable alone |
+| `Focus` | `WatchAsync`: whether the reader is within the element, and which of its items holds the focus, named by the attribute its items carry | `AttachAsync`: where the focus goes inside the element, from Tab wrapping, regions Tab visits first, one roving Tab stop and the element taking the focus when the one holding it goes away, each selectable alone |
 | `Intersection` | `WatchAsync`: whether the element is in view of its root, or of the viewport, grown by a margin | |
 | `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
+| `Text` | `WatchSelectionAsync`: the range a text field's selection spans, as the reader moves it | |
 
 A text field's edits are a `DomTextEdits`, made over the component's engine as it initializes, from the
 text it first shows: .NET applies the edits the field sends, in revision order, as each is typed or as
@@ -98,7 +99,8 @@ protected override Task OnAfterRenderAsync(bool firstRender)
 `TextEditOptions` also names the most the field accepts, and where it shows a running count of its
 characters, which the browser keeps as the reader types. The field takes no Blazor event, since Blazor
 sends the field's whole text with every event a .NET handler takes on it or on an element the event
-reaches.
+reaches, and neither does an element around a text field: a surface follows the focus within it
+through `Focus.WatchAsync`, and a field's selection through `Text.WatchSelectionAsync`.
 
 A host registers the bridge the watchers and engines of one circuit share their imports through with
 `AddFormaBrowserServices`, which `AddFormaUI` calls. On Interactive Server, `AddFormaUIServer` also
@@ -188,7 +190,7 @@ wrapper.
 | `Dialog` | Opens and closes a native dialog as a modal. |
 | `Frame` | Moves a frame by its drag region, resizes it at its edges, steps it with the arrow keys and holds it within its bounds. |
 | `Virtualize` | Tells a virtualized list's owner where the list stands in what scrolls it and how much room its drawn items take, and scrolls it to an offset or an item. |
-| `Window` | Shows a window in the top layer, raises it in front of the others, and returns focus to where it was inside it. |
+| `Window` | Shows a window in the top layer, raises it in front of the others, returns focus to where it was inside it, and tells its owner of each press inside it. |
 
 ## License
 

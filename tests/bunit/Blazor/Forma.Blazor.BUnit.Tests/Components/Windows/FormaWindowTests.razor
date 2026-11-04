@@ -513,7 +513,7 @@
         }
 
         [Fact]
-        public void Should_become_current_on_a_press_inside_it()
+        public async Task Should_become_current_on_a_press_inside_it()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
@@ -522,8 +522,9 @@
             var cut = ctx.Render(@<FormaWindow Title="Folders"><Body>Plain text</Body></FormaWindow>);
             ctx.Render(@<FormaWindow Title="Later" />);
 
-            // Act
-            cut.Find(".forma-window").PointerDown();
+            // Act — the window's script tells it of the press
+            var window = cut.FindComponent<FormaWindow>();
+            await window.InvokeAsync(window.Instance.HandlePressAsync);
 
             // Assert
             Assert.Equal("Folders", manager.Current?.Title);
@@ -643,8 +644,9 @@
             await manager.ActivateAsync(new WindowSelector { Title = "Back" });
             await ctx.Router.DismissAsync(cut.FindComponents<FormaWindow>()[0].Instance.RootElement, DismissBehavior.Dismiss, DismissReason.PressAway);
 
-            // Act
-            cut.FindAll(".forma-window")[0].PointerDown();
+            // Act — the window's script tells it of the press
+            var back = cut.FindComponents<FormaWindow>()[0];
+            await back.InvokeAsync(back.Instance.HandlePressAsync);
 
             // Assert
             Assert.Multiple(

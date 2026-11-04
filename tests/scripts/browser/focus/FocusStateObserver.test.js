@@ -207,4 +207,60 @@ describe('FocusStateObserver', () => {
 
         expect(publish).not.toHaveBeenCalled();
     });
+
+    describe('items', () => {
+        /** Observes the surface's items, by the attribute they carry. */
+        const watchItems = () => {
+            surface.querySelector('#first').setAttribute('data-node', 'a');
+            surface.querySelector('#second').setAttribute('data-node', 'b');
+            const observer = new FocusStateObserver(surface, { itemAttribute: 'data-node' }, publish);
+            observers.push(observer);
+
+            return { observer, first: observer.read() };
+        };
+
+        it('reads the item holding the focus', () => {
+            focus('first');
+
+            expect(watchItems().first).toEqual({ isWithin: true, item: 'a' });
+        });
+
+        it('publishes the item the focus moves to inside the surface', () => {
+            focus('first');
+            watchItems();
+
+            focus('second');
+
+            expect(publish).toHaveBeenLastCalledWith({ isWithin: true, item: 'b' });
+        });
+
+        it('names no item for focus on something inside that no item holds', () => {
+            focus('first');
+            watchItems();
+
+            focus('inside-popup');
+
+            expect(publish).toHaveBeenLastCalledWith({ isWithin: true, item: null });
+        });
+
+        it('names no item once the reader leaves the surface', () => {
+            focus('first');
+            watchItems();
+
+            focus('after');
+
+            expect(publish).toHaveBeenLastCalledWith({ isWithin: false, item: null });
+        });
+
+        it('names no item where a press inside drops the focus to the page, the reader still within', () => {
+            focus('first');
+            watchItems();
+
+            press('label');
+            document.querySelector('#first').blur();
+            vi.runAllTimers();
+
+            expect(publish).toHaveBeenLastCalledWith({ isWithin: true, item: null });
+        });
+    });
 });

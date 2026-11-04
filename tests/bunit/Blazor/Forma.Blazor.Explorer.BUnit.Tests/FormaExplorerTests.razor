@@ -7,6 +7,7 @@
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
 @using Forma.Framework.Explorer
+@using Forma.Framework.Browser.Interop.Focus
 @using Forma.Framework.Browser.Interop.Scrolling
 @using Microsoft.AspNetCore.Components.Web
 
@@ -1479,6 +1480,29 @@
                 () => Assert.NotNull(cut.Find(".forma-explorer-compact-bar .forma-search-box")),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-compact-bar .forma-explorer-breadcrumb-bar")),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-compact-bar .forma-explorer-overflow-menu")));
+        }
+
+        [Fact]
+        public async Task Should_give_the_glyph_back_once_the_reader_leaves_an_empty_search()
+        {
+            // Arrange — the compact row's search opened from its glyph, the focus in its box
+            using var ctx = new FormaExplorerTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
+            cut.Find(".forma-explorer-compact-bar .forma-explorer-search-button").Click();
+            var box = cut.Find(".forma-explorer-compact-bar .forma-search-box");
+            await probe.ReportAsync(box, new FocusState(IsWithin: true));
+            var isOpenWithin = cut.FindAll(".forma-explorer-compact-bar .forma-search-box").Count;
+
+            // Act
+            await probe.ReportAsync(box, new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1, isOpenWithin),
+                () => Assert.NotNull(cut.Find(".forma-explorer-compact-bar .forma-explorer-search-button")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-compact-bar .forma-search-box")));
         }
 
         [Fact]

@@ -2,12 +2,15 @@ namespace Forma.Tests.Blazor;
 
 using System.Text.Json;
 
+using AngleSharp.Dom;
+
 using Bunit;
 
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Interop;
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A stand-in for the DOM watcher's and engine's scripts under a bUnit context: it holds each observation's attach until the test reports the state the browser measured, then delivers later states through the owner's receiver, and attaches every interaction.</summary>
@@ -75,6 +78,16 @@ public sealed class DomProbe<TState>
     /// <summary>Reports <paramref name="state"/> as the browser measured it for the last observation attached by the owner whose runtime identity is <paramref name="runtimeId"/>, on the renderer.</summary>
     public Task ReportAsync(string runtimeId, TState state)
         => ReportAsync(_heldAttach.Attaches.Last(attach => (string?)attach.Arguments[0] == runtimeId), state);
+
+    /// <summary>Reports <paramref name="state"/> as the browser measured it for the last observation attached to <paramref name="target"/>, on the renderer.</summary>
+    public Task ReportAsync(IElement target, TState state)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+
+        var id = target.GetAttribute("blazor:elementReference");
+
+        return ReportAsync(_heldAttach.Attaches.Last(attach => GetRequestField(attach, "target") is ElementReference observed && observed.Id == id), state);
+    }
 
     // The state answers the attach where it still waits, and otherwise is the next the browser delivers.
     private Task ReportAsync(JSRuntimeInvocation attach, TState state)

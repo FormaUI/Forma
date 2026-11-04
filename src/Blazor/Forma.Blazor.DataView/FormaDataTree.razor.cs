@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.DataView;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
@@ -84,7 +85,12 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private object? _heirKey;
     private static readonly FocusInteractionOptions RecoveryOptions = new() { HeirAttribute = HeirAttribute };
 
+    // Each node carries its token, which names the node holding the focus.
+    private static readonly FocusWatchOptions FocusOptions = new() { ItemAttribute = "data-tree-node" };
+
     private DomInteraction<FocusInteractionOptions>? _recovery;
+    private Task<DomObservation<FocusWatchOptions, FocusState>>? _focusWatching;
+    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
     private FormaVirtualize<VisibleNode>? _virtualizer;
     private List<VisibleNode> _visibleRows = [];
 
@@ -218,7 +224,22 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await _inputRegistration.SyncAsync(RootElement, GetInputProfile(), wanted: IsActive);
+        if (firstRender)
+        {
+            _focusWatching = Context.DomWatcher.GetElement(RootElement).Focus.WatchAsync(HandleFocusStateAsync, FocusOptions);
+            _focusState = await _focusWatching;
+        }
+        else if (_focusState is { } focusState)
+        {
+            await focusState.SyncAsync(RootElement, FocusOptions);
+        }
+
+        // The keys act on the node holding the focus, so they are routed only once the tree knows which node that is; a render landing while
+        // the watch is still being made leaves them to the first render's pass.
+        if (_focusState is not null)
+        {
+            await _inputRegistration.SyncAsync(RootElement, GetInputProfile(), wanted: IsActive);
+        }
 
         // The hand-off watches the tree while it shows, and lets go of a root the tree no longer draws.
         if (firstRender)
@@ -274,8 +295,16 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private IReadOnlyList<TItem> Admit(IReadOnlyList<TItem> nodes)
         => NodeFilter is { } filter ? [.. nodes.Where(filter)] : nodes;
 
-    internal Task ToggleNodeAsync(TItem node)
-        => View.IsOpen(node) ? Interaction.CloseNodeAsync(node) : Interaction.OpenNodeAsync(node);
+    // A node closed over the focus hands it on, so the toggle waits until the tree knows where the focus is.
+    internal async Task ToggleNodeAsync(TItem node)
+    {
+        if (_focusWatching is { } watching)
+        {
+            await watching;
+        }
+
+        await (View.IsOpen(node) ? Interaction.CloseNodeAsync(node) : Interaction.OpenNodeAsync(node));
+    }
 
     // Choosing a node, by a press on its row or Enter, makes it current where the tree drives the other views, and activates it otherwise; a row with a marker leaves both to the selection.
     private Task HandleNodeClickAsync(TItem node)
@@ -583,12 +612,36 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             | (GetHeirMark(key, marker: true) is not null ? 512 : 0);
     }
 
-    // The tree is the receiver, so a node taking the focus draws the tree again, which pins the node it holds.
-    internal EventCallback<FocusEventArgs> GetNodeFocusInHandler(TItem node)
-        => EventCallback.Factory.Create<FocusEventArgs>(this, () => HandleNodeFocusIn(node));
+    // A node taking the focus draws the tree again, which pins the node it holds.
+    private Task HandleFocusStateAsync(FocusState state)
+        => InvokeAsync(() =>
+        {
+            if (state.IsWithin && state.Item is { } item && int.TryParse(item, NumberStyles.None, CultureInfo.InvariantCulture, out var token) && TryGetVisibleNode(token, out var node))
+            {
+                HandleNodeFocusIn(node);
+            }
+            else
+            {
+                HandleNodeFocusOut();
+            }
 
-    internal EventCallback<FocusEventArgs> GetNodeFocusOutHandler()
-        => EventCallback.Factory.Create<FocusEventArgs>(this, HandleNodeFocusOut);
+            StateHasChanged();
+        });
+
+    private bool TryGetVisibleNode(int token, [MaybeNullWhen(false)] out TItem node)
+    {
+        foreach (var row in _visibleRows)
+        {
+            if (View.GetItemToken(row.Node) == token)
+            {
+                node = row.Node;
+                return true;
+            }
+        }
+
+        node = default;
+        return false;
+    }
 
     // A node losing the focus to a move the browser has yet to report leaves the focus where that move sent it.
     private void HandleNodeFocusOut()
@@ -793,6 +846,12 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     {
         View.Unsubscribe(HandleViewChangedAsync);
         Interaction.UnregisterView(ViewKey);
+
+        if (_focusState is { } focusState)
+        {
+            await focusState.DisposeAsync();
+        }
+
         await _inputRegistration.DisposeAsync();
         await base.DisposeAsyncCore();
     }

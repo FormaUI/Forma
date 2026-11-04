@@ -3,7 +3,9 @@ namespace Forma.Blazor.Components.Navigation;
 using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
+using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
@@ -29,6 +31,8 @@ public sealed partial class FormaPagination : FormaElementBase
 
     private static readonly TextBoxOptions NavigationEntryOptions = new() { InputMode = TextInputMode.Numeric, EnterKeyHint = TextEnterKeyHint.Go };
 
+    private static readonly FocusWatchOptions EntryFocusOptions = new();
+
     // Enter in the box goes to the typed page; routed on the box, it wins over the box's own claim and the enclosing form's submission.
     private static readonly InputProfile NavigationInputProfile = new()
     {
@@ -41,6 +45,8 @@ public sealed partial class FormaPagination : FormaElementBase
     private Wheel _wheel = default!;
     private TextEntry _textEntry = default!;
     private DotNetObjectReference<FormaPagination>? _selfReference;
+    private DomObservation<FocusWatchOptions, FocusState>? _entryFocus;
+    private bool _isEntryFocused;
     private string? _navigationEntry;
     private string? _shownPageSummary;
     private int _shownPage;
@@ -75,13 +81,6 @@ public sealed partial class FormaPagination : FormaElementBase
     private FormaTextBox NavigationInput { get; set; } = default!;
 
     private string NavLabel => AdditionalAttributes?.GetValueOrDefault("aria-label")?.ToString() ?? L["Pagination"].Value;
-
-    // Handlers splatted onto the box's input.
-    private EventCallback<FocusEventArgs> NavigationInputFocus
-        => EventCallback.Factory.Create<FocusEventArgs>(this, SelectNavigationEntryAsync);
-
-    private EventCallback<FocusEventArgs> NavigationInputBlur
-        => EventCallback.Factory.Create<FocusEventArgs>(this, ShowPageIfEmpty);
 
     // The box reads "7 of 200" at rest.
     private string PageSummary
@@ -118,6 +117,13 @@ public sealed partial class FormaPagination : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The entry's focus is watched while the entry shows. The watch starts inactive, so _entryFocus holds it before anything is awaited and a
+        // render landing meanwhile syncs the same watch.
+        if (firstRender)
+        {
+            _entryFocus = await Context.DomWatcher.GetElement(default).Focus.WatchAsync(HandleEntryFocusAsync, EntryFocusOptions, shouldObserve: false);
+        }
+
         // A change of culture renders the box again without setting a parameter, so the page it shows at rest is written again in the new culture.
         if (_navigationEntry == _shownPageSummary && _shownPageSummary != PageSummary)
         {
@@ -128,11 +134,22 @@ public sealed partial class FormaPagination : FormaElementBase
         if (PageCount <= 1)
         {
             await _navigationInputRegistration.SyncAsync(default, NavigationInputProfile, wanted: false);
+
+            if (_entryFocus is { } hiddenEntryFocus)
+            {
+                await hiddenEntryFocus.SyncAsync(default, EntryFocusOptions, shouldObserve: false);
+            }
+
             await _wheel.DetachAsync();
             return;
         }
 
         await _navigationInputRegistration.SyncAsync(NavigationInput.RootElement, NavigationInputProfile);
+
+        if (_entryFocus is { } entryFocus)
+        {
+            await entryFocus.SyncAsync(NavigationInput.RootElement, EntryFocusOptions);
+        }
 
         if (Options.PageOnWheelGesture && !_wheel.IsAttached)
         {
@@ -227,9 +244,7 @@ public sealed partial class FormaPagination : FormaElementBase
             return;
         }
 
-        var entry = await TakeNavigationEntryAsync();
-
-        if (int.TryParse(entry, NumberStyles.Integer, Context.CultureState.Culture, out var page))
+        if (int.TryParse(_navigationEntry, NumberStyles.Integer, Context.CultureState.Culture, out var page))
         {
             await GoToPageAsync(Math.Clamp(page, 1, PageCount));
         }
@@ -240,6 +255,25 @@ public sealed partial class FormaPagination : FormaElementBase
 
     private void ShowPage()
         => _navigationEntry = _shownPageSummary = PageSummary;
+
+    // Focus arriving selects the entry, a focus the reader moved there before the entry was watched among it; leaving an emptied entry shows
+    // the page again.
+    private Task HandleEntryFocusAsync(FocusState state)
+        => InvokeAsync(async () =>
+        {
+            var wasFocused = _isEntryFocused;
+            _isEntryFocused = state.IsWithin;
+
+            if (state.IsWithin && !wasFocused)
+            {
+                await SelectNavigationEntryAsync();
+            }
+            else if (!state.IsWithin && wasFocused)
+            {
+                ShowPageIfEmpty();
+                StateHasChanged();
+            }
+        });
 
     // Only an emptied box reverts to the page shown.
     private void ShowPageIfEmpty()
@@ -257,17 +291,6 @@ public sealed partial class FormaPagination : FormaElementBase
         await _textEntry.TryWriteSelectionAsync(NavigationInput.RootElement, 0, _navigationEntry?.Length ?? 0);
     }
 
-    // Typing before the circuit connects raises no input event, so the box is read when the tracked value is empty.
-    private async ValueTask<string?> TakeNavigationEntryAsync()
-    {
-        if (!string.IsNullOrEmpty(_navigationEntry))
-        {
-            return _navigationEntry;
-        }
-
-        return await _textEntry.ReadAndClearAsync(NavigationInput.RootElement);
-    }
-
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder.Add("forma-pagination");
@@ -276,6 +299,12 @@ public sealed partial class FormaPagination : FormaElementBase
     protected override async ValueTask DisposeAsyncCore()
     {
         await _navigationInputRegistration.DisposeAsync();
+
+        if (_entryFocus is { } entryFocus)
+        {
+            await entryFocus.DisposeAsync();
+        }
+
         await _wheel.DisposeAsync();
         await _textEntry.DisposeAsync();
         _selfReference?.Dispose();

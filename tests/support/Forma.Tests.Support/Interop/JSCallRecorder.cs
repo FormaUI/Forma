@@ -10,6 +10,7 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
     private readonly Lock _lock = new();
     private readonly List<RecordedCall> _calls = [];
     private readonly HashSet<string> _heldIdentifiers = [];
+    private readonly List<CallWaiter> _waiters = [];
 
     /// <summary>Every call taken, in order.</summary>
     public IReadOnlyList<RecordedCall> Calls
@@ -29,6 +30,25 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
         lock (_lock)
         {
             return [.. _calls.Where(call => call.Identifier == identifier)];
+        }
+    }
+
+    /// <summary>The first call to <paramref name="identifier"/> that <paramref name="predicate"/> matches, once it is taken.</summary>
+    public Task<RecordedCall> WaitForCallAsync(string identifier, Func<RecordedCall, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        lock (_lock)
+        {
+            if (_calls.FirstOrDefault(call => call.Identifier == identifier && predicate(call)) is { } taken)
+            {
+                return Task.FromResult(taken);
+            }
+
+            var waiter = new CallWaiter(identifier, predicate);
+            _waiters.Add(waiter);
+
+            return waiter.Call.Task;
         }
     }
 
@@ -55,11 +75,19 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
     public ValueTask<TValue> TakeAsync<TValue>(string identifier, object?[]? args, CancellationToken cancellationToken = default)
     {
         var call = new RecordedCall(identifier, args ?? []);
+        List<CallWaiter> matched;
 
         lock (_lock)
         {
             call.IsHeld = _heldIdentifiers.Contains(identifier);
             _calls.Add(call);
+            matched = [.. _waiters.Where(waiter => waiter.Identifier == identifier && waiter.Predicate(call))];
+            _waiters.RemoveAll(matched.Contains);
+        }
+
+        foreach (var waiter in matched)
+        {
+            waiter.Call.SetResult(call);
         }
 
         if (call.IsHeld)
@@ -81,4 +109,10 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
     // included, where an await leaving the context would queue it to the thread pool instead.
     private static Task<TValue> AwaitAnswerAsync<TValue>(RecordedCall call, CancellationToken cancellationToken)
         => call.Answer.Task.WaitAsync(cancellationToken).ContinueWith(answer => (TValue)answer.GetAwaiter().GetResult()!, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+
+    // A test waiting for a call, resumed apart from the caller, so the test never runs inside the code that made the call.
+    private sealed record CallWaiter(string Identifier, Func<RecordedCall, bool> Predicate)
+    {
+        public TaskCompletionSource<RecordedCall> Call { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
 }

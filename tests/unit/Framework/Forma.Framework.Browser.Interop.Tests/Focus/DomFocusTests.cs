@@ -56,6 +56,39 @@ public sealed class DomFocusTests
             // Assert
             Assert.Equal([new FocusState(IsWithin: true)], handled);
         }
+
+        [Fact]
+        public async Task Should_ask_the_browser_to_name_the_item_holding_the_focus_by_the_attribute_items_carry()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+
+            // Act
+            await using var observation = await watcher.GetElement(Surface).Focus.WatchAsync(_ => Task.CompletedTask, new FocusWatchOptions { ItemAttribute = "data-node" });
+
+            // Assert
+            var attach = Assert.Single(browser.Watcher.Recorder.GetCalls("attach"));
+            Assert.Equal("data-node", FakeDomBrowser.GetOption(attach, "itemAttribute"));
+        }
+
+        [Fact]
+        public async Task Should_refuse_an_empty_item_attribute()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+
+            // Act
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() => watcher.GetElement(Surface).Focus.WatchAsync(_ => Task.CompletedTask, new FocusWatchOptions { ItemAttribute = " " }));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("options", exception.ParamName),
+                () => Assert.Empty(browser.Runtime.Recorder.Calls));
+        }
     }
 
     public sealed class Interacting

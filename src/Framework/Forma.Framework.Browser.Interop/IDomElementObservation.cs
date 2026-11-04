@@ -2,6 +2,7 @@ namespace Forma.Framework.Browser.Interop;
 
 using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Browser.Interop.Scrolling;
+using Forma.Framework.Browser.Interop.Text;
 
 using Microsoft.AspNetCore.Components;
 
@@ -19,4 +20,7 @@ public interface IDomElementObservation
 
     /// <summary>The element's focus, as an owner observes it.</summary>
     IDomFocusObservation Focus { get; }
+
+    /// <summary>The element's text entry, as an owner observes it.</summary>
+    IDomTextObservation Text { get; }
 }

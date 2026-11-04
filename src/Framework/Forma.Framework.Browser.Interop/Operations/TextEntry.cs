@@ -7,14 +7,10 @@ using Forma.Framework.JavaScript.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>The value and selected range of a text entry.</summary>
+/// <summary>The selected range of a text entry.</summary>
 public sealed class TextEntry(IJSEnvironment js) : IAsyncDisposable
 {
     private readonly JSModule _module = new(js, "./_content/forma/browser/scripts/operations/TextEntry.js");
-
-    /// <summary>Reads what is currently typed and empties the entry.</summary>
-    public ValueTask<string?> ReadAndClearAsync(ElementReference input)
-        => _module.TryInvokeTextAsync("take", js.TransferOptions.MaximumLength, input);
 
     /// <summary>Reads the entry's current selected range.</summary>
     public ValueTask<TextRange?> ReadSelectionAsync(ElementReference input)

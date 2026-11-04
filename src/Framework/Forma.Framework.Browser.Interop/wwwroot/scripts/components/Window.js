@@ -4,6 +4,7 @@
  * where focus was inside it and takes focus back.
  */
 
+import { tell } from '../../../core/scripts/Owner.js';
 import { FocusSurface } from '../focus/FocusSurface.mjs';
 import { TabOrder } from '../focus/TabOrder.mjs';
 
@@ -12,10 +13,11 @@ import { TabOrder } from '../focus/TabOrder.mjs';
  * @param {{
  *   presented: boolean,
  *   modal: boolean,
- *   scrim: HTMLElement | null
+ *   scrim: HTMLElement | null,
+ *   owner?: import('../../../core/scripts/Owner.js').Owner | null
  * }} options
- *   Whether the window is shown; whether Tab stays inside it; and the scrim popover shown
- *   beneath it.
+ *   Whether the window is shown; whether Tab stays inside it; the scrim popover shown
+ *   beneath it; and the .NET owner told of each press inside it.
  */
 export function attach(target, options) {
     return new Window(target, options);
@@ -28,19 +30,26 @@ class Window {
     #window;
     #presented;
     #scrim;
+    #owner;
     #listeners = new AbortController();
     #lastFocused = null;
     #isPressed = false;
     #raiseAfterRelease = false;
 
-    constructor(window, { presented, modal, scrim }) {
+    constructor(window, { presented, modal, scrim, owner = null }) {
         this.#window = window;
         this.#presented = presented;
         this.#scrim = scrim ?? null;
+        this.#owner = owner;
 
         const { signal } = this.#listeners;
         window.addEventListener('focusout', event => this.#remember(event.target), { signal });
-        window.addEventListener('pointerdown', () => { this.#isPressed = true; }, { signal });
+
+        // A press anywhere inside is observed, neither prevented nor stopped, and stays with what owns it.
+        window.addEventListener('pointerdown', () => {
+            this.#isPressed = true;
+            tell(this.#owner, 'HandlePressAsync');
+        }, { signal });
         globalThis.addEventListener('pointerup', () => this.#handleRelease(), { capture: true, signal });
         globalThis.addEventListener('pointercancel', () => this.#handleRelease(), { capture: true, signal });
         globalThis.addEventListener('blur', () => this.#handleRelease(), { signal });

@@ -13,10 +13,6 @@ public sealed partial class FormaExplorerSearchBox : FormaComponentBase
 {
     private FormaSearchBox SearchBox { get; set; } = default!;
 
-    /// <summary>Additional attributes applied to the search input.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     [CascadingParameter] private IExplorerLocationView Location { get; set; } = default!;
 
     [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;
@@ -26,6 +22,10 @@ public sealed partial class FormaExplorerSearchBox : FormaComponentBase
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaExplorer);
+
+    /// <summary>The box's text element, once rendered.</summary>
+    internal ElementReference InputElement
+        => SearchBox.RootElement;
 
     /// <summary>Moves keyboard focus into the search input.</summary>
     public ValueTask FocusAsync()

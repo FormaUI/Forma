@@ -208,12 +208,12 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
             </FakeFormHost>);
-            await probe.ReportAsync(new FocusState(IsWithin: true));
+            await ReportFocusAsync(probe, cut, isWithin: true);
             await fields.ChangeAsync(GetTime(cut), "2:30 PM");
             var whileBetween = cut.FindAll(".forma-field-message").Count;
 
             // Act
-            await probe.ReportAsync(new FocusState(IsWithin: false));
+            await ReportFocusAsync(probe, cut, isWithin: false);
 
             // Assert
             Assert.Multiple(
@@ -285,7 +285,7 @@
             await fields.ChangeAsync(GetTime(cut), "2:30 PM");
 
             // Act
-            await probe.ReportAsync(new FocusState(IsWithin: false));
+            await ReportFocusAsync(probe, cut, isWithin: false);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-field-message"));
@@ -305,11 +305,11 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@editContext">
                 <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
             </FakeFormHost>);
-            await probe.ReportAsync(new FocusState(IsWithin: true));
+            await ReportFocusAsync(probe, cut, isWithin: true);
 
             // Act
             await fields.ChangeAsync(GetTime(cut), string.Empty);
-            await probe.ReportAsync(new FocusState(IsWithin: false));
+            await ReportFocusAsync(probe, cut, isWithin: false);
             var isValid = await cut.InvokeAsync(() => editContext.ValidateAsync());
 
             // Assert
@@ -632,6 +632,10 @@
 
     private static IElement GetTime(IRenderedComponent<IComponent> cut)
         => cut.Find("input[role=combobox]");
+
+    // The focus within the picker's field, which the picker watches apart from the time box inside it.
+    private static Task ReportFocusAsync(DomProbe<FocusState> probe, IRenderedComponent<IComponent> cut, bool isWithin)
+        => probe.ReportAsync(GetTime(cut).GetAttribute("data-rid")!, new FocusState(isWithin));
 
     private static void PickDay(IRenderedComponent<IComponent> cut, string day)
     {

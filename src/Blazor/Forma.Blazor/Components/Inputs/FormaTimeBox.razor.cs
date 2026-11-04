@@ -2,6 +2,8 @@ namespace Forma.Blazor.Components.Inputs;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Virtualization;
+using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
@@ -97,8 +99,12 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     // Each edit reaches the owner as it is typed, and the field's commit as its change.
     private static readonly TextEditOptions EditOptions = new() { SendsOnInput = true };
 
+    private static readonly FocusWatchOptions FocusOptions = new();
+
     private InputRegistration _inputRegistration = default!;
     private DomTextEdits _edits = default!;
+    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
+    private bool _isWithin;
     private ElementReference _anchorElement;
     private IReadOnlyList<TimeOnly>? _optionsSource;
     private TimeOption[] _options = [];
@@ -165,6 +171,16 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     {
         await _edits.SyncAsync(InputElement, _text, EditOptions);
 
+        if (firstRender)
+        {
+            _focusState = await Context.DomWatcher.GetElement(InputElement).Focus.WatchAsync(HandleFocusStateAsync);
+        }
+
+        if (_focusState is { } focusState)
+        {
+            await focusState.SyncAsync(InputElement, FocusOptions);
+        }
+
         await _inputRegistration.SyncAsync(InputElement, IsOpen ? OpenProfile : ClosedProfile);
     }
 
@@ -198,8 +214,17 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     }
 
     // Leaving the field closes the list; a press on the list or the button keeps the focus, so only a move elsewhere leaves.
-    private Task HandleFocusOutAsync()
-        => IsOpen ? Popover.CloseAsync() : Task.CompletedTask;
+    private Task HandleFocusStateAsync(FocusState state)
+        => InvokeAsync(async () =>
+        {
+            var hasLeft = _isWithin && !state.IsWithin;
+            _isWithin = state.IsWithin;
+
+            if (hasLeft && IsOpen)
+            {
+                await Popover.CloseAsync();
+            }
+        });
 
     private async Task HandleActionAsync(string action, InputInfo input)
     {
@@ -296,6 +321,11 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     protected override async ValueTask DisposeAsyncCore()
     {
         await _edits.DisposeAsync();
+
+        if (_focusState is { } focusState)
+        {
+            await focusState.DisposeAsync();
+        }
 
         await _inputRegistration.DisposeAsync();
         await base.DisposeAsyncCore();

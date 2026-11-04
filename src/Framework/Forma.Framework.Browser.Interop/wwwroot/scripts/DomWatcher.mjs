@@ -15,6 +15,7 @@ const Observers = {
     scroll: () => import('./scrolling/ScrollStateObserver.mjs').then(module => module.ScrollStateObserver),
     intersection: () => import('./scrolling/IntersectionStateObserver.mjs').then(module => module.IntersectionStateObserver),
     focus: () => import('./focus/FocusStateObserver.mjs').then(module => module.FocusStateObserver),
+    selection: () => import('./text/TextSelectionObserver.mjs').then(module => module.TextSelectionObserver),
 };
 
 export class DomWatcher {
@@ -55,7 +56,8 @@ export class DomWatcher {
 
         const delivery = new StateDelivery(
             state => receiver.invokeMethodAsync('NotifyAsync', token, generation, Transfer.of(state)),
-            error => console.error(`Forma: the ${capability} state of owner ${this.#runtimeKey}, registration ${token}.${generation}, could not be delivered; delivery waits for a refresh.`, error));
+            error => console.error(`Forma: the ${capability} state of owner ${this.#runtimeKey}, registration ${token}.${generation}, could not be delivered; delivery waits for a refresh.`, error),
+            { deliversEveryState: Observer.deliversEveryState === true });
         const observer = new Observer(target, options, state => delivery.offer(state));
         const hold = this.#elements.get(target).hold(() => this.#registrations.remove(token, generation));
 

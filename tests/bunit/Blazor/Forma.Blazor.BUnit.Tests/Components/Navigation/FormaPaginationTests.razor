@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using AngleSharp.Dom
+@using Forma.Framework.Browser.Interop.Focus
+@using Microsoft.AspNetCore.Components.Web
 
 @code {
     public sealed class Component
@@ -477,17 +479,21 @@
         {
             // Arrange
             using var ctx = new FormaPaginationTests();
-            var fields = new TextFieldProbe(ctx);
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
             var received = new List<int>();
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
                     OnPageChanged="@((int p) => received.Add(p))" />);
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+            await probe.ReportAsync(new FocusState(IsWithin: true));
 
-            // Act
+            // Act — pressing Go takes the focus from the box, which commits what it holds
             var input = cut.Find(InputBox);
             await fields.TypeAsync(input, "3");
-            input.Blur();
-            cut.Find(GoButton).Click();
+            await fields.CommitAsync(input);
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+            await cut.Find(GoButton).ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal([3], received);
@@ -498,17 +504,58 @@
         {
             // Arrange
             using var ctx = new FormaPaginationTests();
-            var fields = new TextFieldProbe(ctx);
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="2" />);
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+            await probe.ReportAsync(new FocusState(IsWithin: true));
 
             // Act
             var input = cut.Find(InputBox);
             await fields.TypeAsync(input, "");
-            input.Blur();
+            await fields.CommitAsync(input);
+            await probe.ReportAsync(new FocusState(IsWithin: false));
 
             // Assert
-            Assert.Equal("2 of 5", cut.Find(InputBox).GetAttribute("value"));
+            Assert.Equal("2 of 5", fields.GetText(cut.Find(InputBox)));
+        }
+
+        [Fact]
+        public async Task Should_select_what_the_box_holds_as_the_focus_arrives()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            _ = new TextFieldProbe(ctx, probe.Engine);
+            var textEntry = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js");
+            ctx.Render(@<FormaPagination TotalItems="50" PageSize="10" CurrentPage="2" />);
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+
+            // Assert
+            var selection = Assert.Single(textEntry.Invocations, invocation => invocation.Identifier == "writeSelection");
+            Assert.Equal([0, "2 of 5".Length], selection.Arguments.Skip(1));
+        }
+
+        [Fact]
+        public async Task Should_select_what_the_box_holds_where_the_reader_focused_it_before_it_was_watched()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            _ = new TextFieldProbe(ctx, probe.Engine);
+            var textEntry = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js");
+            ctx.Render(@<FormaPagination TotalItems="50" PageSize="10" CurrentPage="2" />);
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+
+            // Assert
+            var selection = Assert.Single(textEntry.Invocations, invocation => invocation.Identifier == "writeSelection");
+            Assert.Equal([0, "2 of 5".Length], selection.Arguments.Skip(1));
         }
 
         [Fact]
@@ -681,30 +728,6 @@
 
             // Assert
             Assert.Empty(received);
-        }
-
-        [Fact]
-        public async Task Should_read_the_box_when_typing_preceded_the_connection()
-        {
-            // Arrange — the box is emptied so the entry is read from the element.
-            using var ctx = new FormaPaginationTests();
-            var fields = new TextFieldProbe(ctx);
-            var router = new InputRouterProbe(ctx);
-            var received = new List<int>();
-            ctx.JSInterop
-                .SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js")
-                .Setup<JSTransfer>("take", _ => true)
-                .SetResult(InlineTransfer.Of("3"));
-            var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
-                    OnPageChanged="@((int p) => received.Add(p))" />);
-
-            // Act
-            await fields.TypeAsync(cut.Find(InputBox), "");
-            await router.RouteAsync("pagination.go", "Enter");
-
-            // Assert
-            Assert.Equal([3], received);
         }
 
         [Fact]

@@ -61,6 +61,10 @@ public sealed class DomTextEditsTests
     private static IReadOnlyList<RecordedCall> GetCommands(FakeDomBrowser browser, string command)
         => [.. browser.Engine.Recorder.GetCalls("invoke").Where(call => (string?)call.Arguments[3] == command)];
 
+    // A command the edits send from work of their own, which resumes apart from the test.
+    private static Task<RecordedCall> WaitForCommandAsync(FakeDomBrowser browser, string command)
+        => browser.Engine.Recorder.WaitForCallAsync("invoke", call => (string?)call.Arguments[3] == command);
+
     public sealed class Following
     {
         [Fact]
@@ -634,9 +638,10 @@ public sealed class DomTextEditsTests
             // Act — the attach lands, and the field's commit reaches .NET ahead of the flush's answer
             browser.Engine.Recorder.GetCalls("attach")[0].Complete(true);
             await syncing;
+            var flush = await WaitForCommandAsync(browser, "flush");
             await EditAsync(browser, 1, 3, 0, " L", isCommit: true);
             var isSettledBeforeTheAnswer = settling.IsCompleted;
-            GetCommands(browser, "flush")[0].Complete(1);
+            flush.Complete(1);
 
             var isSettled = await settling;
 
@@ -665,8 +670,8 @@ public sealed class DomTextEditsTests
 
             // Act — the flush answers revision 2, though the edit before it never arrived
             await EditAsync(browser, 2, 4, 0, "!");
-            GetCommands(browser, "flush")[0].Complete(2);
-            GetCommands(browser, "resend")[0].Complete(true);
+            (await WaitForCommandAsync(browser, "flush")).Complete(2);
+            (await WaitForCommandAsync(browser, "resend")).Complete(true);
             await ReplaceAsync(browser, 2, "Ada?!");
 
             var isSettled = await settling;

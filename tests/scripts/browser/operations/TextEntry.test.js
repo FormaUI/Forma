@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readSelection, take, writeSelection } from '#browser/operations/TextEntry.js';
+import { readSelection, writeSelection } from '#browser/operations/TextEntry.js';
 
 describe('TextEntry', () => {
     /** @type {HTMLInputElement} */
@@ -8,26 +8,6 @@ describe('TextEntry', () => {
     beforeEach(() => {
         document.body.innerHTML = '<input id="entry" />';
         input = document.querySelector('#entry');
-    });
-
-    describe('take', () => {
-        it('reads what is currently typed', () => {
-            input.value = 'Rider';
-
-            expect(take(input)).toEqual({ value: 'Rider' });
-        });
-
-        it('empties the entry it read', () => {
-            input.value = 'Rider';
-
-            take(input);
-
-            expect(input.value).toBe('');
-        });
-
-        it('reads an empty entry as an empty string', () => {
-            expect(take(input)).toEqual({ value: '' });
-        });
     });
 
     describe('readSelection', () => {

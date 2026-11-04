@@ -5,22 +5,30 @@
 export class StateDelivery {
     #send;
     #report;
-    #pending = null;
-    #hasPending = false;
+    #deliversEveryState;
+    /** The samples waiting to be sent, in the order they were measured. */
+    #waiting = [];
+    /** The sample measured last, which a failed send leaves waiting. */
+    #latest = null;
     #isInFlight = false;
     #isOpen = false;
     #isSuspended = false;
     #isClosed = false;
     #opening = null;
     #sending = 0;
+    /** The resumes so far; a send made before the last of them is given up on. */
+    #resumes = 0;
 
     /**
      * @param {(state: unknown) => Promise<unknown>} send Sends a sample to the owner.
      * @param {(error: unknown) => void} report Reports a send that failed.
+     * @param {{ deliversEveryState?: boolean }} options Whether every sample is sent as it is measured, ahead of anything the
+     *   reader does next, rather than one in flight with only the latest waiting behind it.
      */
-    constructor(send, report) {
+    constructor(send, report, { deliversEveryState = false } = {}) {
         this.#send = send;
         this.#report = report;
+        this.#deliversEveryState = deliversEveryState;
     }
 
     /** Whether delivery is suspended. */
@@ -41,14 +49,20 @@ export class StateDelivery {
         }, 0);
     }
 
-    /** Takes the latest sample, replacing any still waiting. */
+    /** Takes the latest sample, behind those waiting where every sample is sent, and in their place otherwise or while suspended. */
     offer(state) {
         if (this.#isClosed) {
             return;
         }
 
-        this.#pending = state;
-        this.#hasPending = true;
+        this.#latest = state;
+
+        if (this.#deliversEveryState && !this.#isSuspended) {
+            this.#waiting.push(state);
+        } else {
+            this.#waiting = [state];
+        }
+
         this.#flush();
     }
 
@@ -57,14 +71,14 @@ export class StateDelivery {
         this.#isSuspended = false;
         this.#isInFlight = false;
         this.#sending++;
+        this.#resumes++;
         this.#flush();
     }
 
     /** Stops delivery. */
     close() {
         this.#isClosed = true;
-        this.#pending = null;
-        this.#hasPending = false;
+        this.#waiting = [];
 
         if (this.#opening !== null) {
             clearTimeout(this.#opening);
@@ -73,14 +87,15 @@ export class StateDelivery {
     }
 
     #flush() {
-        if (!this.#isOpen || this.#isInFlight || this.#isSuspended || this.#isClosed || !this.#hasPending) {
-            return;
+        while (this.#isOpen && !this.#isSuspended && !this.#isClosed && this.#waiting.length > 0 && (this.#deliversEveryState || !this.#isInFlight)) {
+            this.#sendNext();
         }
+    }
 
-        const state = this.#pending;
+    #sendNext() {
+        const state = this.#waiting.shift();
         const sending = ++this.#sending;
-        this.#pending = null;
-        this.#hasPending = false;
+        const resumes = this.#resumes;
         this.#isInFlight = true;
 
         this.#send(state).then(
@@ -93,19 +108,14 @@ export class StateDelivery {
                 this.#flush();
             },
             error => {
-                if (sending !== this.#sending || this.#isClosed) {
+                if (this.#isClosed || resumes !== this.#resumes) {
                     this.#report(error);
                     return;
                 }
 
+                // The latest sample waits for the resume, the one that failed or one measured after it.
                 this.#isInFlight = false;
-
-                // A failed sample is kept unless a newer one waits.
-                if (!this.#hasPending) {
-                    this.#pending = state;
-                    this.#hasPending = true;
-                }
-
+                this.#waiting = [this.#latest];
                 this.#isSuspended = true;
                 this.#report(error);
             });

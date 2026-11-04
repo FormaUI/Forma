@@ -32,7 +32,8 @@ action that reads a field's text waits until the text it reads is the one the re
   it, through the field's script, only for a change of its own.
 - **No .NET handler takes a text field's events.** Blazor sends the value of an event's target with every event a
   .NET handler takes, wherever the handler is, so no Forma component takes in .NET an event a text field raises:
-  presses and keys reach it through the input router, and focus through the DOM watcher.
+  presses and keys reach it through the input router, or through its own script where it only observes a press
+  its content owns, and focus and a field's selection through the DOM watcher.
 - **The edit boundary.** When a user invokes a participating action, validation and the action handler see
   every edit made in that form before the action. If Forma cannot apply an earlier edit, it reports the failure
   and stops the action before it saves stale data.
@@ -50,8 +51,9 @@ pass the cap.
 Blazor sends the value of an event's target with every event a .NET handler takes, whichever element the handler
 is on, so a handler on a text field, or on any element an event raised in a text field reaches, carries the
 field's whole text. No Forma component takes such an event in .NET: its text crosses through the field's edits,
-its presses and keys through the input router, and its focus through the DOM watcher's observation. A host's own
-handler is the host's to keep off its fields.
+its presses and keys through the input router, a press a component only observes, as a window brought forward by
+any press inside it, through that component's own script, and its focus and selection through the DOM watcher's
+observations. A host's own handler is the host's to keep off its fields.
 
 A value travels inline while the call that carries it fits the **budget**, a fixed size under Blazor's default
 hub limit, measured on the call as it is encoded: its JSON, escaping included, with the call's other arguments

@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Feedback
+@using Forma.Framework.Browser.Interop.Focus
 @using Forma.Framework.Input
 @using System.Globalization
 
@@ -415,6 +416,31 @@
                 () => Assert.Equal(new TimeOnly(10, 0), model.End),
                 () => Assert.Equal(FormatInEnglish("10:00 AM"), cut.Find("input").GetAttribute("value")),
                 () => Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
+        public async Task Should_close_its_list_once_the_focus_leaves_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            var model = new Shift { End = new TimeOnly(9, 30) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+            await router.RouteAsync("time-box.next", "ArrowDown");
+            var isOpenWithin = cut.Find("input").GetAttribute("aria-expanded");
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("true", isOpenWithin),
+                () => Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded")),
+                () => Assert.Equal(new TimeOnly(9, 30), model.End));
         }
 
         [Fact]

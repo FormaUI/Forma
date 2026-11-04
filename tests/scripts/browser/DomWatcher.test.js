@@ -219,6 +219,23 @@ describe('DomWatcher', () => {
         expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('NotifyAsync', '2', 1, { value: { isWithin: false } });
     });
 
+    it('sends each change of the focus as it comes, without waiting for the receiver to take the one before', async () => {
+        receiver.invokeMethodAsync.mockImplementation(() => new Promise(() => {}));
+        const first = document.createElement('button');
+        const second = document.createElement('button');
+        track.append(first, second);
+        const after = document.createElement('button');
+        document.body.appendChild(after);
+        await attach(runtimeKey, receiver, { token: '2', generation: 1, capability: 'focus', target: track, options: {} });
+        await nextTask();
+
+        first.focus();
+        after.focus();
+        second.focus();
+
+        expect(receiver.invokeMethodAsync.mock.calls.map(([, , , state]) => state.value)).toEqual([{ isWithin: true }, { isWithin: false }, { isWithin: true }]);
+    });
+
     it('observes whether a target is in view of its root, sending each change the native observer reports', async () => {
         const intersections = stubIntersectionObserver();
         track.getBoundingClientRect = () => ({ top: 0, bottom: 300, left: 0, right: 300 });

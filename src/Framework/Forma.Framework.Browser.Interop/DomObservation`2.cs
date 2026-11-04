@@ -13,7 +13,8 @@ using Microsoft.AspNetCore.Components;
 /// Establishing the observation returns its first state, which becomes <see cref="Current"/> and is handed to the handler before any state
 /// measured later; a state arriving before the first is held until it has been taken, and only the latest so held is kept. The handler is
 /// called once at a time, in the order the states were measured. A state that crosses while the handler is still busy waits in the browser,
-/// which keeps only the latest.
+/// which keeps only the latest, except for a capability whose every state crosses as it is measured, as the focus's does, so it reaches .NET
+/// ahead of what the reader does next; such states wait here, in order.
 /// </remarks>
 public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TState> : IAsyncDisposable, IDomRegistrationHost<TOptions>
     where TOptions : notnull

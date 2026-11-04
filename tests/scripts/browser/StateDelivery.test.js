@@ -140,6 +140,64 @@ describe('StateDelivery', () => {
         expect(sent.map(send => send.state)).toEqual(['first']);
     });
 
+    describe('delivering every state', () => {
+        beforeEach(() => {
+            delivery = new StateDelivery(
+                state => new Promise((resolve, reject) => sent.push({ state, resolve, reject })),
+                report,
+                { deliversEveryState: true });
+        });
+
+        it('sends each sample as it is measured, in order, without waiting for the one before', async () => {
+            delivery.open();
+            await settle();
+
+            delivery.offer('first');
+            delivery.offer('second');
+            delivery.offer('third');
+
+            expect(sent.map(send => send.state)).toEqual(['first', 'second', 'third']);
+        });
+
+        it('sends every sample measured before it opened, in order', async () => {
+            delivery.offer('first');
+            delivery.offer('second');
+            delivery.open();
+            await settle();
+
+            expect(sent.map(send => send.state)).toEqual(['first', 'second']);
+        });
+
+        it('suspends on a failed send and resumes with the latest sample alone', async () => {
+            delivery.open();
+            await settle();
+            delivery.offer('first');
+            delivery.offer('second');
+
+            sent[0].reject(new Error('The circuit dropped.'));
+            await settle();
+            delivery.offer('third');
+            delivery.resume();
+
+            expect(sent.map(send => send.state)).toEqual(['first', 'second', 'third']);
+            expect(delivery.isSuspended).toBe(false);
+        });
+
+        it('stays open when a send made before it resumed fails late', async () => {
+            delivery.open();
+            await settle();
+            delivery.offer('lost');
+            delivery.resume();
+
+            sent[0].reject(new Error('The circuit dropped.'));
+            await settle();
+            delivery.offer('current');
+
+            expect(sent.map(send => send.state)).toEqual(['lost', 'current']);
+            expect(delivery.isSuspended).toBe(false);
+        });
+    });
+
     it('never opens once closed before its task came', async () => {
         delivery.offer('first');
         delivery.open();

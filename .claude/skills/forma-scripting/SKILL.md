@@ -106,7 +106,7 @@ language, the input router and the virtualizer as the five pillars of the browse
 - Do share what the document needs once, such as the resize observer, as a small module with module-level state, installed with its first user and removed with its last.
 - Do load only the capabilities a request requires: an observation request that names no input loads no input integration, querying or subscribing to input loads the input integration it requires, observing alone establishes no routing behavior, and watcher-only requests leave the engine unloaded.
 - Do give a capability its C# as the typed actions and behaviors a component requests through the engine, and its facts and occurrences as DOMQL vocabulary that a component's text queries name, with no C# type standing for each; a component declares no `[JSInvokable]` method and holds no `DotNetObjectReference` for it.
-- Do send each state through the owner's receiver with one sample in flight and only the latest waiting, and report a failed send in the browser, under the owner, the capability and the registration.
+- Do send each state through the owner's receiver with one sample in flight and only the latest waiting, and report a failed send in the browser, under the owner, the capability and the registration; a capability whose owner acts on its state when the reader next presses or types, as one following the focus does, sends every state as it is measured instead, since a click or a key goes to .NET at once and would overtake a state held behind an earlier one.
 - Do route an input an interaction acts on through the input router, so the host's remapping reaches it and a native control keeps its own activation.
 - Do convert a script in a kind folder by replacing it and its wrapper with its area's concepts, never by relocating it first; move a script as it is only where it survives unchanged, as the embedding adapter's does, and only when there is reason to work on it.
 - Do keep the input router's and a product's own scripts in their own assemblies; a component reaches the router through the engine and the watcher, never through a registration of its own.
@@ -138,7 +138,7 @@ export function capture(element, pointerId) {
 
 - Do export plain named functions, because an operation holds nothing and hands back no handle.
 - Do name an export for the action and let the module supply the subject, so `Pointer.js` exports `capture` rather than `capturePointer`.
-- Do qualify an export where its module covers more than one thing, so `TextEntry.js` exports `take` beside `readSelection` and `writeSelection`.
+- Do qualify an export where its module covers more than one thing, so `TextEntry.js` exports `readSelection` and `writeSelection`.
 - Don't reach for a class, private fields, an `AbortController`, or a `dispose`; needing any of them means a behavior has been filed as an operation.
 
 ## Component contract
