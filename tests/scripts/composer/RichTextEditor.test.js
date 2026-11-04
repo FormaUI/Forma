@@ -66,6 +66,17 @@ describe('RichTextEditor', () => {
         expect(commits).toEqual(['<p>Typing...</p>']);
     });
 
+    it('commits a document its pause committed before its edits listened as they start listening', () => {
+        attach(editor, { owner, debounceDelay: 300 });
+
+        editor.innerHTML = '<p>Typed early</p>';
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+        vi.advanceTimersByTime(300);
+        const { commits } = listenToCommits();
+
+        expect(commits).toEqual(['<p>Typed early</p>']);
+    });
+
     it('commits the document at once as the canvas loses the focus', () => {
         attach(editor, { owner, debounceDelay: 300 });
         const { commits } = listenToCommits();

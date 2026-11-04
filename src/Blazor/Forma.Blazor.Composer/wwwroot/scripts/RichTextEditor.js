@@ -45,9 +45,10 @@ class RichTextEditor {
     #controller = new AbortController();
     #isDisposed = false;
 
-    /** The canvas as the source its edits read and write, and the commit they take from it. */
+    /** The canvas as the source its edits read and write, the commit they take from it, and whether one went unheard. */
     #textSource;
     #commit = null;
+    #isCommitUnheard = false;
 
     /** What the owner was last told of the selection: the block, the styles and whether it is a caret. */
     #lastSelectionKey = null;
@@ -75,6 +76,12 @@ class RichTextEditor {
             listen: (onInput, onCommit, signal) => {
                 this.#commit = onCommit;
                 signal.addEventListener('abort', () => { this.#commit = null; });
+
+                // A pause that ended before the edits listened committed to nothing, so its commit is made as they start.
+                if (this.#isCommitUnheard) {
+                    this.#isCommitUnheard = false;
+                    onCommit();
+                }
             },
         });
 
@@ -433,7 +440,11 @@ class RichTextEditor {
             return;
         }
 
-        this.#commit?.();
+        if (this.#commit) {
+            this.#commit();
+        } else {
+            this.#isCommitUnheard = true;
+        }
     }
 
     #handleSelectionChange() {
