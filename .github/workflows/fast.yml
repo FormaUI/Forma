@@ -27,8 +27,6 @@ permissions:
   # On a pull request the change detection below reads the changed files through the API rather than
   # from git, which this scope is what allows.
   pull-requests: read
-  # The locale lint is a tool the organization publishes to its own private feed.
-  packages: read
 
 jobs:
   # The unit and bUnit suites built once and run, the script tests and the task programs' tests: the feedback a routine
@@ -78,8 +76,6 @@ jobs:
 
       - name: Run the fast gate
         if: steps.filter.outputs.code == 'true'
-        env:
-          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
         run: pwsh ./build.ps1 Fast
 
       - name: Report the gate was not needed

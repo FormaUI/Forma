@@ -11,8 +11,6 @@ on:
 
 permissions:
   contents: read
-  # The locale lint is a tool the organization publishes to its own private feed.
-  packages: read
 
 jobs:
   android:
@@ -36,6 +34,4 @@ jobs:
         uses: ./.github/actions/android-emulator
 
       - name: Check the components on Android
-        env:
-          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
         run: pwsh ./scripts/build/browser.ps1 -Android

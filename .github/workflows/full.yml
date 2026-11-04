@@ -20,8 +20,6 @@ concurrency:
 
 permissions:
   contents: read
-  # The locale lint is a tool the organization publishes to its own private feed.
-  packages: read
 
 jobs:
   gate:
@@ -96,8 +94,6 @@ jobs:
           "FORMA_WEBVIEW_POLICY_PORTS=$(($ports.Keys | ForEach-Object { "$_=$($ports[$_])" }) -join ';')" >> $env:GITHUB_ENV
 
       - name: Run the gate
-        env:
-          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
         run: pwsh ./build.ps1
 
   # A Blazor Hybrid application on a phone or a tablet builds from Forma's packages on the platform's own machine, with
@@ -139,8 +135,6 @@ jobs:
         uses: ./.github/actions/android-emulator
 
       - name: Build the MAUI example host for the platform
-        env:
-          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
         run: pwsh ./scripts/build/mobile.ps1 -Platform ${{ matrix.platform }}
 
   # Every component in an Android web view, the Android check host's on an emulator, beside the browser check's
@@ -171,6 +165,4 @@ jobs:
         uses: ./.github/actions/android-emulator
 
       - name: Check the components on Android
-        env:
-          NuGetPackageSourceCredentials_formaui: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
         run: pwsh ./scripts/build/browser.ps1 -Android
