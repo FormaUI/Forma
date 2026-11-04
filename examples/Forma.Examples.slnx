@@ -4,6 +4,6 @@
     <Project Path="Forma.Examples.Independent\Forma.Examples.Independent.csproj" />
     <Project Path="Forma.Examples.Independent.Client\Forma.Examples.Independent.Client.csproj" />
     <Project Path="Forma.Examples.Maui\Forma.Examples.Maui.csproj" />
-    <Project Path="Forma.Examples.WindowsForms\Forma.Examples.WindowsForms.csproj" />
+    <Project Path="Forma.Examples.WinForms\Forma.Examples.WinForms.csproj" />
     <Project Path="Forma.Examples.Wpf\Forma.Examples.Wpf.csproj" />
 </Solution>

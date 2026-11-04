@@ -14,7 +14,7 @@ public sealed class WebViewExampleTests(BrowserHost host)
     private const string HebrewTitle = "דוגמת Forma";
 
     /// <summary>The example hosts, by name.</summary>
-    public static TheoryData<string> Examples { get; } = ["Wpf", "WindowsForms", "Maui"];
+    public static TheoryData<string> Examples { get; } = ["Wpf", "WinForms", "Maui"];
 
     [Theory]
     [MemberData(nameof(Examples))]

@@ -3,5 +3,5 @@
 dotnet_diagnostic.CA2007.severity = none
 
 # A Windows Forms form shown on its own disposes itself as it closes, which the analyzer can't see.
-[Forma.Examples.WindowsForms/**.cs]
+[Forma.Examples.WinForms/**.cs]
 dotnet_diagnostic.CA2000.severity = none

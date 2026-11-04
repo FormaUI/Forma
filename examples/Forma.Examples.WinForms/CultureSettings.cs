@@ -1,4 +1,4 @@
-namespace Forma.Examples.WindowsForms;
+namespace Forma.Examples.WinForms;
 
 using System.Globalization;
 
@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 internal static class CultureSettings
 {
     private static readonly string SettingsFile = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Forma.Examples.WindowsForms", "culture.txt");
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Forma.Examples.WinForms", "culture.txt");
 
     /// <summary>Applies the saved culture, before the first web view opens, since the culture state starts from the culture in force as it is first resolved.</summary>
     public static void Apply()

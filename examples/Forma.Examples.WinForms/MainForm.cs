@@ -1,6 +1,6 @@
-namespace Forma.Examples.WindowsForms;
+namespace Forma.Examples.WinForms;
 
-using Forma.Examples.WindowsForms.Components;
+using Forma.Examples.WinForms.Components;
 using Forma.Framework.Culture;
 using Forma.Framework.Localization;
 

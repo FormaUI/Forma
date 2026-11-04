@@ -218,7 +218,7 @@ services.AddJsonLocalization();
 A Windows Forms application builds it in its `Main`, which runs on the single-threaded apartment WebView2 needs, so
 it is a method marked `[STAThread]` rather than top-level statements:
 
-<!-- example: examples/Forma.Examples.WindowsForms/Program.cs -->
+<!-- example: examples/Forma.Examples.WinForms/Program.cs -->
 ```csharp
 [STAThread]
 private static void Main()
@@ -226,7 +226,7 @@ private static void Main()
     ApplicationConfiguration.Initialize();
 ```
 
-<!-- example: examples/Forma.Examples.WindowsForms/Program.cs -->
+<!-- example: examples/Forma.Examples.WinForms/Program.cs -->
 ```csharp
 var services = new ServiceCollection();
 services.AddFormaUIWebView();

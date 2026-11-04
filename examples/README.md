@@ -10,7 +10,7 @@ packages, never its projects, so they build as a host outside the repository bui
 | `Forma.Examples.Coordinated` | A Server island and a WebAssembly island following one culture, the client starting in the server's |
 | `Forma.Examples.Independent` | The same islands, the client's culture its own, switched alone, with culture capture off |
 | `Forma.Examples.Wpf` | A WPF application, registering the platform's web view before Forma, each native window disposing its web view as it closes |
-| `Forma.Examples.WindowsForms` | A Windows Forms application, registering Forma before the platform's web view |
+| `Forma.Examples.WinForms` | A Windows Forms application, registering Forma before the platform's web view |
 | `Forma.Examples.Maui` | A MAUI application on Windows, Android, iOS and Mac Catalyst, registering on its builder, keeping the culture in its preferences |
 
 Each Web App's page shows the islands' runtime, a string of the host's own from the server's `.locales` folder,

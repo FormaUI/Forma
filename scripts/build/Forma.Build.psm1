@@ -1370,7 +1370,7 @@ function Test-BrowserCheck {
         $exampleNames = @('Coordinated', 'Independent')
 
         if ($isWebViewPublished) {
-            $exampleNames += @('Wpf', 'WindowsForms', 'Maui')
+            $exampleNames += @('Wpf', 'WinForms', 'Maui')
         }
 
         foreach ($example in $exampleNames) {

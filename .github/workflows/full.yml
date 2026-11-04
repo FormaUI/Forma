@@ -89,7 +89,7 @@ jobs:
         run: |
           $key = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
           New-Item -Path $key -Force | Out-Null
-          $ports = [ordered]@{ 'Forma.Examples.Wpf' = 9311; 'Forma.Examples.WindowsForms' = 9312; 'Forma.Examples.Maui' = 9313 }
+          $ports = [ordered]@{ 'Forma.Examples.Wpf' = 9311; 'Forma.Examples.WinForms' = 9312; 'Forma.Examples.Maui' = 9313 }
           foreach ($example in $ports.Keys) {
               Set-ItemProperty -Path $key -Name "$example.exe" -Value "--remote-debugging-port=$($ports[$example])"
           }

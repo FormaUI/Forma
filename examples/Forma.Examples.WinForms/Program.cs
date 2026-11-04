@@ -1,4 +1,4 @@
-namespace Forma.Examples.WindowsForms;
+namespace Forma.Examples.WinForms;
 
 using Forma.Blazor;
 using Forma.Framework.Localization.Json;

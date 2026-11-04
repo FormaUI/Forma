@@ -95,7 +95,7 @@ Each step lands buildable and passes its gate before the next starts.
 | 4 | `Forma.Scripts.Tests` | Unit: all 25 cases parse a drawing's text in process, and none launches PowerShell or crosses a process boundary. Revised by the maintainer: the tests move beside the rules they test, as `scripts/cs/GlyphParserTests.cs`, a single-file test program that names its packages in its own header and includes `GlyphParser.cs`, and the project goes; the gate's `tasks` step runs each task program named `*Tests.cs` once it has built it. |
 | 5 | E2E's groups | `Components/` and `Clients/`; the browser check keeps its name, `Forma.Blazor.Browser.Tests`. |
 | 6 | Host lifecycle | `Forma.Tests.Support.Hosts`: publishing, launching, waiting until ready, stopping and cleaning up after a failed start. Smoke and E2E each own their fixture's lifetime and their assertions. |
-| 7 | Smoke checks | One for each runnable example: Coordinated and its client as one Web App, Independent and its client as another, Wpf, WindowsForms, and Maui on Windows; MAUI on Android has a smoke suite of its own. Both web culture-transition checks stay in E2E. |
+| 7 | Smoke checks | One for each runnable example: Coordinated and its client as one Web App, Independent and its client as another, Wpf, WinForms, and Maui on Windows; MAUI on Android has a smoke suite of its own. Both web culture-transition checks stay in E2E. |
 | 8 | The JavaScript tests | One Vitest project, its tests grouped by the assembly whose modules they exercise, in the fast gate. Revised by the maintainer: at `tests/scripts/`. |
 
 Six suites split, five into unit and bUnit and one into unit and integration; one loses a reference it never
@@ -111,7 +111,7 @@ Production assembly names and static asset paths don't change.
 | `src/Forma.Blazor`, `.Composer`, `.DataView`, `.Explorer`, `.Server`, `.Showcase`, `.WebAssembly`, `.WebView` (8) | `src/Blazor/*` |
 | `src/Forma.Framework/*` (34) | `src/Framework/*` |
 | `src/Forma.Locales/*` (2) | `src/Locales/*` |
-| `tests/Forma.Examples/*`: Coordinated and its client, Independent and its client, Wpf, WindowsForms, Maui, with their build and NuGet configuration and README | `examples/*`; the package file imports the root's one level up instead of two |
+| `tests/Forma.Examples/*`: Coordinated and its client, Independent and its client, Wpf, WinForms, Maui, with their build and NuGet configuration and README | `examples/*`; the package file imports the root's one level up instead of two |
 | `tests/Forma.Analyzers.Tests` | `eng/Forma.Analyzers.Tests`, unit, 20 cases, in the fast gate |
 
 ### Unit, bUnit and integration

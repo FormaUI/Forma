@@ -1,4 +1,4 @@
-namespace Forma.Examples.WindowsForms;
+namespace Forma.Examples.WinForms;
 
 /// <summary>The application's native windows, which a page opens another of.</summary>
 /// <param name="services">The application's services, which every web view shares.</param>
