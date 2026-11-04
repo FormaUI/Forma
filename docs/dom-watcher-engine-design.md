@@ -203,7 +203,7 @@ A capability installs listeners only while a read or a watch asks for its facts 
 | A frame's placement | `@frame.placement.changes { rect }` |
 | A reorder | `@list.reorder.moves { from, to, after }` |
 | A data view's selection | `@view.dataView.selects { item: target.attribute-of("data-key"), additive }` |
-| Rich text's selection and content | `@canvas.richText.selection { start, end, collapsed, blockType, styles }` and `@canvas.richText.changes { html }` |
+| Rich text's selection and content | `@canvas.richText.selection { start, end, collapsed, blockType, styles }` and `@canvas.richText.changes { revision, start, removed, inserted }`, the edits of its serialized HTML the [browser transfer](browser-transfer-design.md) carries |
 
 A data grid's column fit measures at intrinsic widths under a temporary class, so it is an engine action returning its measurement, or a behavior keeping one that `@table.columnFit { available, columns { key, width } }` reads.
 
@@ -268,17 +268,17 @@ Separate watches and subscriptions carry no global order. Facts that must agree 
 | Scheduled state | Geometry and scroll measurements | Coalesces invalidations and reports changed requested facts. |
 | Ordered occurrences | Close, accepted drop, completed reorder | Preserves accepted occurrences and their order while delivery is healthy. |
 
-These are constraints on each capability's implementation. Invalidation, evaluation and delivery keep separate schedules: a local watch evaluates immediately where its timing requires, as focus recovery does at mutation delivery, while ordinary watches evaluate once a frame and managed delivery stays asynchronous and coalesced.
+These are constraints on each capability's implementation. Invalidation, evaluation and delivery keep separate schedules: a local watch evaluates immediately where its timing requires, as focus recovery does at mutation delivery, while ordinary watches evaluate once a frame and managed delivery stays asynchronous and coalesced, but for focus's, which sends every state.
 
 ### Bounded delivery and visible failure
 
 The owner has one managed callback reference and one typed receiver, shared by watcher and engine notifications. Subscriptions dispatch independently, and no lock is held across application code.
 
-Each watch keeps one delivery in flight and its pending changes coalesced into one change set, computed against the state the delivery in flight establishes once accepted, with the first snapshot protected as a complete baseline; after the baseline, a notification carries only what changed, through the same channel. Recovery follows DOMQL's ordering: once a fresh baseline is accepted, an abandoned delivery and its late completion change neither the state nor the delivery slot, which the registration's generation, or a private delivery revision beside it, enforces; the envelope carrying them is the implementation's. The interop invocation can stay outstanding until that watch's handler work completes; establishment, actions and unrelated subscriptions proceed meanwhile. Several listeners on one watch are awaited deliberately, each failure isolated and logged.
+Focus is the exception: a press or a key acts on where the focus went, so its watch sends every state in the order it is measured, each as it is queued, as occurrences are sent. Every other watch keeps one delivery in flight and its pending changes coalesced into one change set, computed against the state the delivery in flight establishes once accepted, with the first snapshot protected as a complete baseline; after the baseline, a notification carries only what changed, through the same channel. Recovery follows DOMQL's ordering: once a fresh baseline is accepted, an abandoned delivery and its late completion change neither the state nor the delivery slot, which the registration's generation, or a private delivery revision beside it, enforces; the envelope carrying them is the implementation's. The interop invocation can stay outstanding until that watch's handler work completes; establishment, actions and unrelated subscriptions proceed meanwhile. Several listeners on one watch are awaited deliberately, each failure isolated and logged.
 
 A rejected application handler is reported with the owner, capability and registration identity. A transport failure is reported locally in the browser and suspends managed delivery; bounded state is retained, and delivery resumes through explicit resynchronization. Every failure is reported: a shared helper never swallows a rejection the way `.catch(() => {})` does, and failure reporting never runs through the channel that failed.
 
-Occurrences are delivered through a bounded ordered queue per consumer, with an explicit failure on overflow, and are never coalesced into state. Ordering applies while delivery is healthy; an occurrence whose delivery becomes uncertain on disconnection is not automatically replayed. State recovery uses a new snapshot, while occurrence recovery follows the capability's contract.
+Occurrences are delivered through a bounded ordered queue per consumer, with an explicit failure on overflow, and are never coalesced into state. The queue sends each occurrence as it is queued, never once .NET has acknowledged the one before it: a click the browser dispatches next reaches .NET by Blazor's own route, and in a Blazor Web App it overtook a blur's flush held behind an earlier one in every run. An action that must see what an occurrence carries waits for it to be applied, as the [edit boundary](browser-transfer-design.md#the-edit-boundary) does. Ordering applies while delivery is healthy; an occurrence whose delivery becomes uncertain on disconnection is not automatically replayed. State recovery uses a new snapshot, while occurrence recovery follows the capability's contract.
 
 ### Actions and snapshots
 

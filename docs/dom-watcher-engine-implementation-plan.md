@@ -1,6 +1,6 @@
 # Forma DOM Watcher and Engine Implementation Plan
 
-The plan for building what [the DOM watcher and engine design](dom-watcher-engine-design.md) states, through complete consumer slices, and the record of what has landed. The capability mapping below is a destination; each capability is built with the consumer that first needs it.
+The plan for building what [the DOM watcher and engine design](dom-watcher-engine-design.md) states, through complete consumer slices, and the record of what has landed. The capability mapping below is a destination; each capability is built with the consumer that first needs it. What replacing every script with DOMQL needs of DOMQL, and what each script becomes, is in [replacing Forma's JavaScript with DOMQL](forma-javascripts-domql-replacement.md).
 
 ## Status
 
