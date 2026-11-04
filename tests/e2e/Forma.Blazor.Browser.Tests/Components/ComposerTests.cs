@@ -370,7 +370,9 @@ public sealed class ComposerTests
             await GetCommand(page, "Plugin Commands").ClickAsync();
             await GetCommand(page, "Mark Second").ClickAsync();
             var marker = page.Locator("#check .forma-composer-rich-text-gutter [data-block='1']");
-            await Assertions.Expect(marker).ToBeVisibleAsync();
+
+            // A row shows once the gutter's script has placed it beside its block, an answer that waits as long as every script's.
+            await Assertions.Expect(marker).ToBeVisibleAsync(new() { Timeout = 30000 });
 
             // Act
             await marker.GetByRole(AriaRole.Button).ClickAsync();
