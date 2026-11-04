@@ -1,5 +1,7 @@
 namespace Forma.Framework.JavaScript.Interop.Tests;
 
+using System.Text.Json;
+
 using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
@@ -196,6 +198,68 @@ public sealed class JSInteropTests
         }
     }
 
+    public sealed class Answers
+    {
+        [Fact]
+        public async Task Should_read_a_value_the_attached_instance_answers_inline_through_the_transfer()
+        {
+            // Arrange
+            await using var handle = new FakeJSObjectReference((identifier, _) => identifier == "read" ? InlineTransfer.Of(new { name = "Ada" }) : null);
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? handle : null);
+            await using var probe = new Probe(CreateEnvironment(FakeJSRuntime.Importing(moduleReference)));
+            await probe.AttachAsync(default);
+
+            // Act
+            var value = await probe.ReadAsync();
+
+            // Assert
+            Assert.Equal("Ada", value?.GetProperty("name").GetString());
+        }
+
+        [Fact]
+        public async Task Should_read_a_value_the_attached_instance_streams_past_the_budget_and_release_its_stream()
+        {
+            // Arrange
+            var name = new string('a', 40_000);
+            await using var stream = new FakeJSStreamReference(JsonSerializer.SerializeToUtf8Bytes(new { name }));
+            await using var handle = new FakeJSObjectReference((identifier, _) => identifier == "read" ? new JSTransfer { Stream = stream } : null);
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? handle : null);
+            await using var probe = new Probe(CreateEnvironment(FakeJSRuntime.Importing(moduleReference)));
+            await probe.AttachAsync(default);
+
+            // Act
+            var value = await probe.ReadAsync();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(name, value?.GetProperty("name").GetString()),
+                () => Assert.True(stream.IsDisposed));
+        }
+
+        [Fact]
+        public async Task Should_answer_nothing_for_a_value_larger_than_the_environment_accepts_and_log_it_at_debug()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var stream = new FakeJSStreamReference([], length: JSTransferOptions.Default.MaximumLength + 1);
+            await using var handle = new FakeJSObjectReference((identifier, _) => identifier == "read" ? new JSTransfer { Stream = stream } : null);
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? handle : null);
+            await using var probe = new Probe(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory));
+            await probe.AttachAsync(default);
+
+            // Act
+            var value = await probe.ReadAsync();
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.Null(value),
+                () => Assert.True(stream.IsDisposed),
+                () => Assert.Equal(LogLevel.Debug, entry.Level),
+                () => Assert.Contains("read", entry.Message, StringComparison.Ordinal));
+        }
+    }
+
     public sealed class Detachment
     {
         [Fact]
@@ -264,5 +328,8 @@ public sealed class JSInteropTests
 
         public ValueTask<bool> MeasureAsync()
             => InvokeAsync("measure");
+
+        public ValueTask<JsonElement?> ReadAsync()
+            => InvokeJsonAsync("read");
     }
 }

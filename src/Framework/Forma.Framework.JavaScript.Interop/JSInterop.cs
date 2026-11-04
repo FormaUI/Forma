@@ -1,6 +1,7 @@
 namespace Forma.Framework.JavaScript.Interop;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 using Microsoft.JSInterop;
 
@@ -86,6 +87,23 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         {
             LogCallFailure(identifier, ex);
             return default;
+        }
+    }
+
+    /// <summary>Invokes a method on the attached instance answering through the transfer, and reads the value it answers as JSON, at most the size the environment's transfer accepts.</summary>
+    /// <returns>The value, where <see langword="null"/> means the call did not run or its answer was lost.</returns>
+    protected async ValueTask<JsonElement?> InvokeJsonAsync(string identifier, params object?[] args)
+    {
+        var transfer = await InvokeAsync<JSTransfer>(identifier, args);
+
+        try
+        {
+            return transfer is null ? null : await transfer.ReadJsonAsync(js.TransferOptions.MaximumLength);
+        }
+        catch (JSTransferException ex)
+        {
+            InteropLog.AnswerLost(js.Logger, ex, identifier, path, js.RuntimeId);
+            return null;
         }
     }
 

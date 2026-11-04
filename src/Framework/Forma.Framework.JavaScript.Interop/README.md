@@ -73,7 +73,7 @@ _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
 | --- | --- |
 | `IJSEnvironment` | A JS runtime carrying the `RuntimeId` and `Logger` of the owner whose interop it runs. |
 | `JSEnvironment` | An `IJSEnvironment` over an `IJSRuntime`. |
-| `JSInterop` | The base of a wrapper whose module attaches to an element: `AttachCoreAsync`, `InvokeAsync` on the attached instance, `InvokeModuleAsync` on the module's exports, `DetachAsync`, `IsAttached`, and disposal as teardown. |
+| `JSInterop` | The base of a wrapper whose module attaches to an element: `AttachCoreAsync`, `InvokeAsync` on the attached instance and `InvokeJsonAsync` for what it answers through the transfer, `InvokeModuleAsync` on the module's exports, `DetachAsync`, `IsAttached`, and disposal as teardown. |
 | `JSModule` | A lazily imported module: `InvokeAsync` and `InvokeVoidAsync` throw on failure, `TryInvokeAsync` and `TryInvokeVoidAsync` return `default` or `false`, and `TryInvokeTextAsync` and `TryInvokeJsonAsync` read what an export answered through the transfer. |
 | `JSTransfer` | A value the browser sent .NET through the transfer, inline or streamed, which its receiver reads up to the size it accepts or discards. |
 | `JSTransferException` | A value refused for its size, or broken on its way. |
