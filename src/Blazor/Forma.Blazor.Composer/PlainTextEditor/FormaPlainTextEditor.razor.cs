@@ -30,6 +30,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     /// <summary>The options of the composer the canvas belongs to.</summary>
     [CascadingParameter] public ComposerOptions? ComposerOptions { get; set; }
 
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <inheritdoc />
@@ -43,6 +44,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private InputScope? _inputScope;
     private CancellationTokenSource? _commitCancellation;
     private CancellationTokenSource? _selectionCancellation;
+    private IDisposable? _editsRegistration;
     private DomObservation<TextSelectionWatchOptions, TextSelection>? _selection;
     private string? _typedContent;
     private string? _committedContent;
@@ -73,6 +75,8 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         _edits = new DomTextEdits(Context.DomEngine, Content, HandleTextChangedAsync);
         _textEntry = new TextEntry(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
+
+        _editsRegistration = Interaction?.JoinEdits(SettleAsync);
     }
 
     /// <inheritdoc />
@@ -105,11 +109,20 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        // The command reads the document and the selection, so the reader's edits made before it are applied and committed first, and the
-        // selection is read as it stands.
-        if (Interaction is null || !await _edits.SettleAsync())
+        if (Interaction is null || !await SettleAsync())
         {
             return;
+        }
+
+        await Interaction.ExecuteCommandAsync(action);
+    }
+
+    // What reads the document reads the reader's edits made before it, applied and committed, and the selection as it stands.
+    private async Task<bool> SettleAsync()
+    {
+        if (!await _edits.SettleAsync())
+        {
+            return false;
         }
 
         if (_commitCancellation is not null)
@@ -124,7 +137,8 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
         await CommitAsync();
         await ReportSelectionAsync();
-        await Interaction.ExecuteCommandAsync(action);
+
+        return true;
     }
 
     /// <inheritdoc />
@@ -249,6 +263,8 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
+        _editsRegistration?.Dispose();
+
         if (_commitCancellation is not null)
         {
             await _commitCancellation.CancelAsync();

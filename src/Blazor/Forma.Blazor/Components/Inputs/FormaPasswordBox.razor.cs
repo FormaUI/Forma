@@ -200,7 +200,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     protected override void OnInitialized()
     {
         _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
-        JoinForm(_edits);
+        JoinForm(_edits.SettleAsync);
         _autofill = new AutofillTracker(Context.JS);
         _messages = new ValidationMessageStore(EditContext);
         EditContext.OnValidationRequested += HandleValidationRequested;

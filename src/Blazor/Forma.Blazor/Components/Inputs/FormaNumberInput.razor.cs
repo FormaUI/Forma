@@ -169,7 +169,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     protected override void OnInitialized()
     {
         _edits = new DomTextEdits(Context.DomEngine, DisplayText, HandleTextChangedAsync);
-        JoinForm(_edits);
+        JoinForm(_edits.SettleAsync);
         if (!IsWhole && !IsBinaryFraction && NumberType != typeof(decimal))
         {
             throw new InvalidOperationException($"{nameof(FormaNumberInput<TValue>)} binds an int, a long, a short, a float, a double or a decimal, or a nullable one, not a {typeof(TValue).Name}.");

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TextEdits } from '#browser/text/TextEdits.mjs';
+import { TextSources } from '#browser/text/TextSources.mjs';
 
 const edits = [];
 
@@ -300,6 +301,89 @@ describe('TextEdits', () => {
 
         it('offers its owner writing, resending and flushing alone', () => {
             expect([...TextEdits.commands]).toEqual(['write', 'resend', 'flush']);
+        });
+    });
+
+    describe('a source its script provides', () => {
+        /** A canvas whose script owns its text, committing at its own pace. */
+        const provideCanvas = () => {
+            document.body.insertAdjacentHTML('beforeend', '<div id="canvas" contenteditable="true"></div>');
+            const canvas = document.querySelector('#canvas');
+            const source = {
+                html: '',
+                commit: null,
+                commitsUnchanged: false,
+                read() {
+                    return this.html;
+                },
+                write(text) {
+                    this.html = text;
+                },
+                holdsFocus: () => false,
+                listen(onInput, onCommit, signal) {
+                    this.commit = onCommit;
+                    signal.addEventListener('abort', () => { this.commit = null; });
+                },
+            };
+            const handle = TextSources.provide(canvas, source);
+
+            return { canvas, source, handle };
+        };
+
+        it('sends what its source commits, as edits of the text it read last', () => {
+            const { canvas, source } = provideCanvas();
+            const report = vi.fn().mockResolvedValue(undefined);
+            follow({ sendsOnInput: false }, { report }, canvas);
+
+            source.html = '<p>Ada</p>';
+            source.commit();
+            source.html = '<p>Ada Lovelace</p>';
+            source.commit();
+
+            expect(sent(report)).toEqual([
+                { revision: 1, start: 0, removed: 0, inserted: '<p>Ada</p>', isCommit: true },
+                { revision: 2, start: 6, removed: 0, inserted: ' Lovelace', isCommit: true },
+            ]);
+        });
+
+        it('sends nothing for a commit that left its source as it was sent', () => {
+            const { canvas, source } = provideCanvas();
+            const report = vi.fn().mockResolvedValue(undefined);
+            follow({ sendsOnInput: false }, { report }, canvas);
+
+            source.html = '<p>Ada</p>';
+            source.commit();
+            source.commit();
+
+            expect(report).toHaveBeenCalledOnce();
+        });
+
+        it('writes a text of the owner through its source', () => {
+            const { canvas, source } = provideCanvas();
+            const textEdits = follow({ sendsOnInput: false }, {}, canvas);
+
+            textEdits.write('<p>Notes</p>');
+
+            expect(source.html).toBe('<p>Notes</p>');
+        });
+
+        it('hears nothing from its source once disposed', () => {
+            const { canvas, source } = provideCanvas();
+            follow({ sendsOnInput: false }, {}, canvas).dispose();
+
+            expect(source.commit).toBeNull();
+        });
+
+        it('reads the value of a field once the source provided for the element is disposed', () => {
+            const { handle } = provideCanvas();
+            const field = document.querySelector('#field');
+            const report = vi.fn().mockResolvedValue(undefined);
+            handle.dispose();
+            follow({}, { report }, field);
+
+            type('Ada', field);
+
+            expect(sent(report)).toEqual([{ revision: 1, start: 0, removed: 0, inserted: 'Ada', isCommit: false }]);
         });
     });
 });

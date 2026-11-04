@@ -4,6 +4,7 @@
 
 import { Transfer } from '../../../core/scripts/Transfer.js';
 import { CharacterCount } from './CharacterCount.mjs';
+import { TextSources } from './TextSources.mjs';
 
 /** @typedef {(method: string, ...args: unknown[]) => Promise<unknown>} Report */
 /** @typedef {{ name: string, report: Report, predecessor: TextEdits | null }} Owner */
@@ -12,7 +13,9 @@ export class TextEdits {
     /** The commands the owner runs on the field's edits. */
     static commands = new Set(['write', 'resend', 'flush']);
 
-    #field;
+    #element;
+    /** @type {import('./TextSources.mjs').TextSource} */
+    #source;
     #sendsOnInput;
     #name;
     #report;
@@ -25,7 +28,7 @@ export class TextEdits {
     #controller = new AbortController();
 
     /**
-     * @param {HTMLInputElement | HTMLTextAreaElement} field The field edited.
+     * @param {HTMLElement} field The field edited, or an element whose script provides the text its edits read and write.
      * @param {{ sendsOnInput: boolean, count?: { output: string, maxLength?: number | null } | null, text: string, revision: number }} options
      * Whether the field sends each edit as it is typed, the running count of its characters it shows, and the text its owner holds with
      * the revision it stands at.
@@ -33,7 +36,8 @@ export class TextEdits {
      * registration sent.
      */
     constructor(field, { sendsOnInput, count = null, text, revision }, { name, report, predecessor }) {
-        this.#field = field;
+        this.#element = field;
+        this.#source = TextSources.of(field);
         this.#sendsOnInput = sendsOnInput;
         this.#name = name;
         this.#report = report;
@@ -44,8 +48,8 @@ export class TextEdits {
             this.#text = predecessor.#text;
             this.#revision = predecessor.#revision;
 
-            if (predecessor.#field !== field) {
-                field.value = predecessor.#field.value;
+            if (predecessor.#element !== field) {
+                this.#source.write(predecessor.#source.read());
             }
         } else {
             this.#text = text;
@@ -56,14 +60,12 @@ export class TextEdits {
             this.#count = new CharacterCount(field, count);
         }
 
-        const signal = this.#controller.signal;
-        field.addEventListener('input', () => this.#sendsOnInput && this.#send(false), { signal });
-        field.addEventListener('change', () => this.#send(true), { signal });
+        this.#source.listen(() => this.#sendsOnInput && this.#send(false), () => this.#send(true), this.#controller.signal);
 
         // What the reader typed before the edits listened is sent at once, as a commit where the reader has left the field, since its
         // change went unheard; a field still holding the focus updating on change commits as it is left.
-        if (field.value !== this.#text) {
-            const isLeft = field.ownerDocument.activeElement !== field;
+        if (this.#source.read() !== this.#text) {
+            const isLeft = !this.#source.holdsFocus();
 
             if (isLeft || this.#sendsOnInput) {
                 this.#send(isLeft);
@@ -107,7 +109,7 @@ export class TextEdits {
      * @param {string} text
      */
     write(text) {
-        this.#field.value = text;
+        this.#source.write(text);
         this.#text = text;
         this.#count?.show();
 
@@ -131,7 +133,7 @@ export class TextEdits {
 
     /** Commits what the field holds where it holds an edit not yet committed, returning the revision it then stands at. */
     flush() {
-        if (this.#field.value !== this.#text || !this.#isCommitted) {
+        if (this.#source.read() !== this.#text || !this.#isCommitted) {
             this.#send(true);
         }
 
@@ -144,9 +146,9 @@ export class TextEdits {
     }
 
     #send(isCommit) {
-        const text = this.#field.value;
+        const text = this.#source.read();
 
-        if (text === this.#text && !isCommit) {
+        if (text === this.#text && (!isCommit || !this.#source.commitsUnchanged)) {
             return;
         }
 

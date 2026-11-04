@@ -23,4 +23,8 @@ public interface IComposerInteraction
 
     /// <summary>Hands an insertion to the active editor, reporting whether it took one of that kind.</summary>
     ValueTask<bool> TryInsertAsync(ComposerInsertion insertion);
+
+    /// <summary>Takes the edits of the editor in the surface, which <paramref name="settleEditsAsync"/> settles, answering whether the document holds every edit the reader made there, so the composer settles them before anything reads the document.</summary>
+    /// <returns>The registration, which takes the edits out as it is disposed.</returns>
+    IDisposable JoinEdits(Func<Task<bool>> settleEditsAsync);
 }

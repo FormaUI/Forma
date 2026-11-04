@@ -37,7 +37,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     private ComponentContext? _context;
     private bool _isSubscribedToCultureState;
-    private DomTextEdits? _textEdits;
+    private Func<Task<bool>>? _settleEditsAsync;
     private ValidationMessageStore? _textFaults;
 
     /// <summary>Whether the component has been disposed.</summary>
@@ -150,9 +150,9 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
             CultureState.Unsubscribe(HandleCultureChangedAsync);
         }
 
-        if (_textEdits is { } textEdits && EditContext is { } form)
+        if (_settleEditsAsync is { } settleEditsAsync && EditContext is { } form)
         {
-            form.GetTextEditScope().Remove(textEdits);
+            form.GetTextEditScope().Remove(settleEditsAsync);
         }
 
         try
@@ -189,16 +189,16 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     {
     }
 
-    /// <summary>Takes <paramref name="edits"/> as the input's text edits, which the form settles with its other fields before an action reads it.</summary>
-    protected void JoinForm(DomTextEdits edits)
+    /// <summary>Takes the input's text, which <paramref name="settleEditsAsync"/> settles, into its form, which settles it with its other fields before an action reads it.</summary>
+    protected void JoinForm(Func<Task<bool>> settleEditsAsync)
     {
-        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(settleEditsAsync);
 
-        _textEdits = edits;
+        _settleEditsAsync = settleEditsAsync;
 
         if (EditContext is { } form)
         {
-            form.GetTextEditScope().Add(edits);
+            form.GetTextEditScope().Add(settleEditsAsync);
         }
     }
 

@@ -156,6 +156,7 @@ handle's `Text`, `Tooltip` or `Command` and disposes it to remove it.
 | `RequestRenderAsync` | Re-renders the composer. |
 | `OpenDialogAsync` | Opens a dialog the plugin describes in the composer's own shell. |
 | `TryInsertAsync` | Hands an insertion to the active editor, reporting whether it took it. |
+| `JoinEdits` | Takes the edits of the editor in the surface, which the composer settles before a command, a form's action or a switch of editors reads the document, until the registration is disposed. |
 
 `ComposerCommands` names the commands the engine runs: `Undo`, `Redo`, `Maximize`,
 `SelectionBar`, `Attach` and `Shortcuts`.

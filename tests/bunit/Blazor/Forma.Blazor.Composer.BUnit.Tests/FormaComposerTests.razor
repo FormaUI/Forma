@@ -155,6 +155,21 @@
             }
         }
 
+        // Reads the document a command is run with.
+        private sealed class ReadingPlugin(Action<ComposerDocument> read) : IComposerFeaturePlugin
+        {
+            public string Id => "reading";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new ToolbarCommand { Id = "read", Title = "Read", Icon = Glyph.File, Command = "demo.read" }])];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+            public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+            {
+                read(context.Document);
+                return ValueTask.CompletedTask;
+            }
+        }
+
         private sealed class ManyCommandsPlugin(int count) : IComposerFeaturePlugin
         {
             public string Id => "many";
@@ -959,6 +974,70 @@
             cut.WaitForAssertion(
                 () => Assert.False(cut.Find("button[aria-label=Undo]").HasAttribute("disabled")),
                 TimeSpan.FromSeconds(5));
+        }
+
+        [Fact]
+        public async Task Should_hand_an_action_in_its_form_the_plain_text_typed_inside_its_commit_pause()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new TestModel();
+            string? saved = null;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" />
+                <FormaButton OnClick="@(() => saved = model.Body.Content)">Save</FormaButton>
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("textarea"), "typed");
+
+            // Act
+            await cut.Find("button.forma-button:not([aria-label])").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal("typed", saved);
+        }
+
+        [Fact]
+        public async Task Should_convert_the_plain_text_typed_inside_its_commit_pause_as_it_switches_editors()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            ctx.Services.AddSingleton<IComposerDocumentConverter>(new TextToHtmlConverter());
+            var fields = new TextFieldProbe(ctx);
+            var model = new TestModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddEditorPlugin<PlainTextEditorPlugin>()
+                .AddEditorPlugin<HtmlEditorPlugin>());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            await fields.TypeAsync(cut.Find("textarea"), "typed");
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => composer.SwitchEditorAsync("html"));
+
+            // Assert
+            Assert.Equal("<p>typed</p>", model.Body.Content);
+        }
+
+        [Fact]
+        public async Task Should_hand_a_command_the_plain_text_typed_inside_its_commit_pause()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new TestModel();
+            string? read = null;
+            var plugin = new ReadingPlugin(document => read = document.Content);
+            var plugins = ComposerDefinition.Create(composer => composer.AddFeaturePlugin(_ => plugin));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            await fields.TypeAsync(cut.Find("textarea"), "typed");
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => composer.HandleCommandAsync("demo.read"));
+
+            // Assert
+            Assert.Equal("typed", read);
         }
 
         [Fact]

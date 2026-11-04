@@ -78,7 +78,7 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
     protected override void OnInitialized()
     {
         _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
-        JoinForm(_edits);
+        JoinForm(_edits.SettleAsync);
     }
 
     /// <inheritdoc />

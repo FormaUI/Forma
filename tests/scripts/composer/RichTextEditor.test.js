@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#composer/RichTextEditor.js';
+import { TextSources } from '#browser/text/TextSources.mjs';
 import { fakeOwner } from '#support/owner.js';
 
 describe('RichTextEditor', () => {
@@ -24,39 +25,74 @@ describe('RichTextEditor', () => {
         vi.useRealTimers();
     });
 
-    it('sets HTML content', () => {
-        const handle = attach(editor, { owner });
+    /** Listens as the canvas's edits do, recording the document the canvas holds at each commit. */
+    function listenToCommits() {
+        const source = TextSources.of(editor);
+        const commits = [];
+        const controller = new AbortController();
+        source.listen(() => {}, () => commits.push(source.read()), controller.signal);
 
-        handle.setHtml('<p>Updated</p>');
+        return { source, commits, controller };
+    }
+
+    it('provides its canvas as the source its edits read and write, a commit never counting where the document stayed', () => {
+        attach(editor, { owner });
+
+        const source = TextSources.of(editor);
+
+        expect(source.read()).toBe('<p>Hello world</p>');
+        expect(source.commitsUnchanged).toBe(false);
+    });
+
+    it('writes a document of its owner through its source', () => {
+        attach(editor, { owner });
+
+        TextSources.of(editor).write('<p>Updated</p>');
 
         expect(editor.innerHTML).toBe('<p>Updated</p>');
     });
 
-    it('debounces content changes on input', () => {
+    it('commits the document once typing pauses', () => {
         attach(editor, { owner, debounceDelay: 300 });
+        const { commits } = listenToCommits();
 
         editor.innerHTML = '<p>Typing...</p>';
         editor.dispatchEvent(new Event('input', { bubbles: true }));
 
-        expect(owner.invokeMethodAsync).not.toHaveBeenCalled();
+        expect(commits).toEqual([]);
 
         vi.advanceTimersByTime(300);
 
-        expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleContentChangedAsync', '<p>Typing...</p>');
+        expect(commits).toEqual(['<p>Typing...</p>']);
     });
 
-    it('flushes pending content changes on blur', () => {
+    it('commits the document at once as the canvas loses the focus', () => {
         attach(editor, { owner, debounceDelay: 300 });
+        const { commits } = listenToCommits();
 
         editor.innerHTML = '<p>Immediate blur</p>';
         editor.dispatchEvent(new Event('input', { bubbles: true }));
         editor.dispatchEvent(new Event('blur', { bubbles: true }));
+        vi.advanceTimersByTime(300);
 
-        expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleContentChangedAsync', '<p>Immediate blur</p>');
+        expect(commits).toEqual(['<p>Immediate blur</p>']);
     });
 
-    it('executes formatting commands and returns the updated state', () => {
+    it('commits the document at once as the input router commits the edit of the element holding the focus', () => {
+        attach(editor, { owner, debounceDelay: 300 });
+        const { commits } = listenToCommits();
+
+        editor.innerHTML = '<p>Before a shortcut</p>';
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+        editor.dispatchEvent(new Event('change', { bubbles: true }));
+        vi.advanceTimersByTime(300);
+
+        expect(commits).toEqual(['<p>Before a shortcut</p>']);
+    });
+
+    it('commits the document a command leaves ahead of answering with its selection', () => {
         const handle = attach(editor, { owner });
+        const { commits } = listenToCommits();
         const range = document.createRange();
         range.selectNodeContents(editor.querySelector('p'));
         const selection = window.getSelection();
@@ -65,8 +101,16 @@ describe('RichTextEditor', () => {
 
         const result = handle.exec('bold');
 
-        expect(result).not.toBeNull();
-        expect(result.html).toBe('<p><b>Hello world</b></p>');
+        expect(commits).toEqual(['<p><b>Hello world</b></p>']);
+        expect(result).not.toHaveProperty('html');
+        expect(result.selection.activeStyles).toContain('bold');
+    });
+
+    it('hears nothing of the canvas once disposed', () => {
+        const handle = attach(editor, { owner });
+        handle.dispose();
+
+        expect(TextSources.of(editor).read()).toBeUndefined();
     });
 
     it('converts the block the caret sits in', () => {
@@ -458,7 +502,7 @@ describe('RichTextEditor', () => {
         selection.addRange(range);
         document.dispatchEvent(new Event('selectionchange'));
 
-        expect(handle.beginLinkDialog().text).toBe('Stage report');
+        expect(handle.beginLinkDialog().value.text).toBe('Stage report');
     });
 
     it('anchors the text a dialog was opened against even after the caret collapses', () => {
@@ -784,7 +828,7 @@ describe('RichTextEditor', () => {
 
             // Starts in the text ahead of the link and ends inside it, covering it only partly.
             selectWithin(texts[0], 2, texts[1], 7);
-            const target = handle.beginLinkDialog();
+            const target = handle.beginLinkDialog().value;
 
             expect(target.count).toBe(1);
             expect(target.href).toBe('https://a.test');
@@ -797,7 +841,7 @@ describe('RichTextEditor', () => {
             const inside = editor.querySelector('a').firstChild;
 
             selectWithin(inside, 0, inside, 4);
-            const target = handle.beginLinkDialog();
+            const target = handle.beginLinkDialog().value;
 
             expect(target.href).toBe('https://a.test');
             expect(target.opensInNewTab).toBe(true);
@@ -809,7 +853,7 @@ describe('RichTextEditor', () => {
             const inside = editor.querySelector('a').firstChild;
 
             selectWithin(inside, 0, inside, 11);
-            const target = handle.beginLinkDialog('a[name]');
+            const target = handle.beginLinkDialog('a[name]').value;
 
             expect(target.count).toBe(1);
             expect(target.name).toBe('results');
@@ -826,7 +870,7 @@ describe('RichTextEditor', () => {
             while (walker.nextNode()) texts.push(walker.currentNode);
 
             selectWithin(texts[0], 0, texts[texts.length - 1], 1);
-            const target = handle.beginLinkDialog();
+            const target = handle.beginLinkDialog().value;
 
             expect(target.count).toBe(2);
             expect(target.href).toBeNull();
@@ -930,7 +974,7 @@ describe('RichTextEditor', () => {
             editor.dispatchEvent(new Event('click', { bubbles: true }));
 
             // The host pushes fresh content, detaching every node the saved range pointed into.
-            handle.setHtml('<p>Replaced content</p>');
+            TextSources.of(editor).write('<p>Replaced content</p>');
             window.getSelection().removeAllRanges();
 
             handle.exec('insertText', '\u{1F600}');
@@ -1105,14 +1149,14 @@ describe('RichTextEditor', () => {
             expect(window.getSelection().anchorNode.parentElement).toBe(armed);
         });
 
-        it('keeps armed markers out of the reported content', () => {
+        it('keeps armed markers out of the document its edits read', () => {
             const handle = attach(editor, { owner });
             const text = editor.querySelector('p').firstChild;
 
             select(text, 5, text, 5);
-            const { html } = handle.exec('bold');
+            handle.exec('bold');
 
-            expect(html).toBe('<p>Hello world</p>');
+            expect(TextSources.of(editor).read()).toBe('<p>Hello world</p>');
         });
 
         it('dissolves an armed mark nothing was typed into when focus leaves', () => {
@@ -1231,11 +1275,11 @@ describe('RichTextEditor', () => {
 
             doubleClick(editor.querySelector('img'));
 
-            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleImageActivatedAsync', {
+            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleImageActivatedAsync', { value: {
                 source: '/cat.png',
                 altText: 'A cat',
                 caption: 'Tiddles',
-            });
+            } });
         });
 
         it('reports a video with what it already holds', () => {
@@ -1244,11 +1288,11 @@ describe('RichTextEditor', () => {
 
             doubleClick(editor.querySelector('.forma-composer-video p'));
 
-            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleVideoActivatedAsync', {
+            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleVideoActivatedAsync', { value: {
                 source: 'https://example.com/v',
                 title: 'Clip',
                 autoplay: true,
-            });
+            } });
         });
 
         it('reports an embed with what it already holds', () => {
@@ -1257,11 +1301,11 @@ describe('RichTextEditor', () => {
 
             doubleClick(editor.querySelector('.forma-composer-embed'));
 
-            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleEmbedActivatedAsync', {
+            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleEmbedActivatedAsync', { value: {
                 embedType: 'form',
                 identifier: '42',
                 settings: 'wide',
-            });
+            } });
         });
 
         it('reports a link so its own dialog reopens on it', () => {

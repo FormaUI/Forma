@@ -1,8 +1,19 @@
+@using System.Text.Json
 @using Bunit.Rendering
+@using Forma.Blazor.Components.Composer.Dialogs
 @using Forma.Blazor.Components.Composer.Plugins
 @using Forma.Blazor.Components.Composer.Interop
+@using Forma.Framework.JavaScript.Interop
+@using Forma.Tests.Interop
+@using Microsoft.AspNetCore.Components.Web
 @inherits FormaBunitContext
 @code {
+    private const string CanvasPath = "./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js";
+
+    // The canvas the composer's document is edited in, whose edits the probe sends.
+    private static AngleSharp.Dom.IElement GetCanvas(IRenderedComponent<IComponent> cut)
+        => cut.Find(".forma-composer-rich-text-canvas");
+
     public sealed class Component
     {
         private sealed class TestModel
@@ -197,9 +208,9 @@
         {
             // Arrange
             using var ctx = new FormaRichTextEditorTests();
-            var canvas = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
+            var canvas = ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
             canvas.Setup<RichTextCommandResult>("exec", _ => true)
-                .SetResult(new RichTextCommandResult { Html = "<p><strong>Initial Text</strong></p>", Selection = new RichTextSelectionDto { Start = 0, End = 0, IsCollapsed = true, BlockType = "p", ActiveStyles = ["bold"] } });
+                .SetResult(new RichTextCommandResult { Selection = new RichTextSelectionDto { Start = 0, End = 0, IsCollapsed = true, BlockType = "p", ActiveStyles = ["bold"] } });
             var model = new TestModel();
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
 
@@ -213,18 +224,157 @@
         [Fact]
         public async Task Should_leave_the_canvas_as_typed_when_a_render_brings_the_document_as_it_stood()
         {
-            // Arrange — an empty document, and a selection change that renders the editor again before any change is reported
+            // Arrange — a document the canvas committed, and a selection change that renders the editor again
             using var ctx = new FormaRichTextEditorTests();
-            var canvas = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js").SetupModule("attach", _ => true);
-            var model = new TestModel { Body = new ComposerDocument(ComposerDocumentFormat.Html, string.Empty) };
+            var fields = new TextFieldProbe(ctx);
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
             var editor = cut.FindComponent<FormaRichTextEditor>();
+            await fields.ChangeAsync(GetCanvas(cut), "<p>Typed <script>x()</script></p>");
 
             // Act
             await editor.InvokeAsync(() => editor.Instance.HandleSelectionChangedAsync(new RichTextSelectionDto { Start = 0, End = 0, IsCollapsed = true, BlockType = "p", ActiveStyles = [] }));
 
+            // Assert — the canvas keeps what was typed though the document holds it sanitized
+            Assert.Multiple(
+                () => Assert.Equal("<p>Typed </p>", model.Body.Content),
+                () => Assert.Equal("<p>Typed <script>x()</script></p>", fields.GetText(GetCanvas(cut))));
+        }
+
+        [Fact]
+        public void Should_write_the_document_into_its_canvas_once_the_canvas_attaches()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var fields = new TextFieldProbe(ctx);
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+
             // Assert
-            Assert.DoesNotContain(canvas.Invocations, invocation => invocation.Identifier == "setHtml");
+            Assert.Equal("<p>Initial Text</p>", fields.GetText(GetCanvas(cut)));
+        }
+
+        [Fact]
+        public async Task Should_take_each_document_its_canvas_commits()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var fields = new TextFieldProbe(ctx);
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+
+            // Act
+            await fields.ChangeAsync(GetCanvas(cut), "<p>Initial Text, edited</p>");
+
+            // Assert
+            Assert.Equal("<p>Initial Text, edited</p>", model.Body.Content);
+        }
+
+        [Fact]
+        public async Task Should_write_a_document_of_the_composer_own_into_its_canvas()
+        {
+            // Arrange — an edit the composer's undo takes back
+            using var ctx = new FormaRichTextEditorTests();
+            var fields = new TextFieldProbe(ctx);
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            await fields.ChangeAsync(GetCanvas(cut), "<p>Edited</p>");
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Undo));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("<p>Initial Text</p>", model.Body.Content),
+                () => Assert.Equal("<p>Initial Text</p>", fields.GetText(GetCanvas(cut))));
+        }
+
+        [Fact]
+        public async Task Should_commit_its_canvas_ahead_of_a_command_the_composer_runs()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            _ = new TextFieldProbe(ctx);
+            var canvas = ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
+
+            // Act
+            await cut.Find("button[aria-label='Bold']").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal(["commit", "exec"], canvas.Invocations.Select(invocation => invocation.Identifier).Where(identifier => identifier is "commit" or "exec"));
+        }
+
+        [Fact]
+        public async Task Should_reopen_an_image_whose_values_stream_past_the_budget()
+        {
+            // Arrange — an image carried as a data address larger than a message
+            using var ctx = new FormaRichTextEditorTests();
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            var editor = cut.FindComponent<FormaRichTextEditor>();
+            var image = new ImageDialogResult { Source = "data:image/png;base64," + new string('A', 40_000), AltText = "A cat" };
+            await using var stream = new FakeJSStreamReference(JsonSerializer.SerializeToUtf8Bytes(image, JsonSerializerOptions.Web));
+
+            // Act
+            await editor.InvokeAsync(() => editor.Instance.HandleImageActivatedAsync(new JSTransfer { Stream = stream }));
+
+            // Assert
+            var reopened = Assert.IsType<ImageDialogResult>(cut.FindComponent<FormaComposerImageDialog>().Instance.Reopening);
+            Assert.Multiple(
+                () => Assert.Equal(image.Source, reopened.Source),
+                () => Assert.Equal("A cat", reopened.AltText),
+                () => Assert.True(stream.IsDisposed));
+        }
+
+        [Fact]
+        public async Task Should_leave_the_dialog_closed_for_values_larger_than_it_accepts()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            var editor = cut.FindComponent<FormaRichTextEditor>();
+            await using var stream = new FakeJSStreamReference([], length: JSTransferOptions.Default.MaximumLength + 1);
+
+            // Act
+            await editor.InvokeAsync(() => editor.Instance.HandleVideoActivatedAsync(new JSTransfer { Stream = stream }));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindComponents<FormaComposerVideoDialog>()),
+                () => Assert.True(stream.IsDisposed));
+        }
+
+        [Fact]
+        public async Task Should_prefill_the_link_dialog_with_a_selected_text_that_streams_past_the_budget()
+        {
+            // Arrange — the whole document selected as the dialog opens
+            using var ctx = new FormaRichTextEditorTests();
+            var canvas = ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var text = new string('x', 40_000);
+            var stream = new FakeJSStreamReference(JsonSerializer.SerializeToUtf8Bytes(new { text, href = (string?)null, name = (string?)null, opensInNewTab = false, count = 0 }));
+            canvas.Setup<JSTransfer>("beginLinkDialog", _ => true).SetResult(new JSTransfer { Stream = stream });
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            var plugin = Assert.IsType<RichTextEditorPlugin>(cut.FindComponent<FormaRichTextEditor>().Instance.Editor);
+
+            // Act
+            await cut.InvokeAsync(() => plugin.RequestLinkDialog());
+
+            // Assert
+            var reopened = Assert.IsType<LinkDialogResult>(cut.FindComponent<FormaComposerLinkDialog>().Instance.Reopening);
+            Assert.Equal(text, reopened.Name);
         }
 
         [Fact]

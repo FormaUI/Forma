@@ -48,6 +48,7 @@ public sealed partial class FormaComposer(
     private IComposerHistory _history = default!;
     private readonly IComposerSyntaxHighlighter _syntaxHighlighter = syntaxHighlighter ?? NullSyntaxHighlighter.Instance;
     private IComposerEditorPlugin _activeEditor = default!;
+    private Func<Task<bool>>? _settleEditorEditsAsync;
     private IReadOnlyList<IComposerViewPlugin>? _activeViews;
     private IComposerViewPlugin? _activeView;
     private IReadOnlyList<IComposerPlugin> _surfacePlugins = [];
@@ -157,6 +158,7 @@ public sealed partial class FormaComposer(
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
+        JoinForm(SettleEditorAsync);
         _assetLoader = new JSComposerAssetLoader(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
 
@@ -348,7 +350,12 @@ public sealed partial class FormaComposer(
 
         await InvokeAsync(async () =>
         {
-            if (await _commandRegistry.ExecuteAsync(command, context, this) is ComposerCommandResult.Plugin)
+            if (!await SettleEditorAsync() || Composer is not { } settled)
+            {
+                return;
+            }
+
+            if (await _commandRegistry.ExecuteAsync(command, settled, this) is ComposerCommandResult.Plugin)
             {
                 StateHasChanged();
             }
@@ -377,7 +384,8 @@ public sealed partial class FormaComposer(
             return;
         }
 
-        if (target.Format != CurrentDocument.Format && !TryConvertTo(target.Format))
+        // The document converts as the reader left it.
+        if (!await SettleEditorAsync() || (target.Format != CurrentDocument.Format && !TryConvertTo(target.Format)))
         {
             return;
         }
@@ -395,6 +403,10 @@ public sealed partial class FormaComposer(
 
         StateHasChanged();
     }
+
+    // The editor in the surface brings the document in step with what the reader did in it, before anything reads it.
+    private Task<bool> SettleEditorAsync()
+        => _settleEditorEditsAsync?.Invoke() ?? Task.FromResult(true);
 
     private bool TryConvertTo(ComposerDocumentFormat format)
     {
@@ -442,6 +454,15 @@ public sealed partial class FormaComposer(
         _dialogRefusal = null;
 
         return InvokeAsync(StateHasChanged);
+    }
+
+    IDisposable IComposerInteraction.JoinEdits(Func<Task<bool>> settleEditsAsync)
+    {
+        ArgumentNullException.ThrowIfNull(settleEditsAsync);
+
+        _settleEditorEditsAsync = settleEditsAsync;
+
+        return new EditsRegistration(this, settleEditsAsync);
     }
 
     ValueTask<bool> IComposerInteraction.TryInsertAsync(ComposerInsertion insertion)
@@ -675,5 +696,17 @@ public sealed partial class FormaComposer(
         await _assetLoader.DisposeAsync();
         await _ownPlugins.DisposeAsync();
         await base.DisposeAsyncCore();
+    }
+
+    /// <summary>The edits of the editor in the surface, joined to the composer until the editor leaves.</summary>
+    private sealed class EditsRegistration(FormaComposer composer, Func<Task<bool>> settleEditsAsync) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (composer._settleEditorEditsAsync == settleEditsAsync)
+            {
+                composer._settleEditorEditsAsync = null;
+            }
+        }
     }
 }

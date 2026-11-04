@@ -141,7 +141,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     {
         _autofill = new AutofillTracker(Context.JS);
         _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
-        JoinForm(_edits);
+        JoinForm(_edits.SettleAsync);
     }
 
     // Autofill is watched once labeled, keeping the label floated over a browser-filled value; a label can arrive after the first render.

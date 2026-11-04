@@ -2,14 +2,18 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor;
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Blazor.Components.Composer.Interop;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
+using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -32,10 +36,18 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     protected override Type LocalizationSourceType
         => typeof(FormaComposer);
 
+    // The canvas commits at its own pace, so each edit it sends is a commit.
+    private static readonly TextEditOptions EditOptions = new();
+
     private ElementReference _editorElement;
     private DotNetObjectReference<FormaRichTextEditor>? _selfReference;
     private RichTextEditor _canvas = default!;
+    private DomTextEdits _edits = default!;
+    private IDisposable? _editsRegistration;
     private InputScope? _inputScope;
+
+    // The document the canvas shows: the one it last sent, until the composer's document departs from what the canvas committed.
+    private string _canvasText = string.Empty;
     private string? _committedContent;
     private string? _receivedContent;
     private string _announcement = string.Empty;
@@ -73,8 +85,15 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         _canvas = new RichTextEditor(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
 
+        // The canvas attaches empty, and the document is written into it as a text of .NET's own.
+        _edits = new DomTextEdits(Context.DomEngine, string.Empty, HandleContentChangedAsync);
+        _committedContent = _receivedContent = Composer?.Document.Content;
+        _canvasText = _committedContent ?? string.Empty;
+
         _editorPlugin = Editor as RichTextEditorPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextEditor)} requires a cascaded {nameof(RichTextEditorPlugin)}.");
+
+        _editsRegistration = Interaction?.JoinEdits(SettleAsync);
 
         _editorPlugin.CommandRequested += HandlePluginCommand;
         _editorPlugin.LinkDialogRequested += HandleLinkDialogRequested;
@@ -84,10 +103,10 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         _editorPlugin.EmbedDialogRequested += HandleEmbedDialogRequested;
     }
 
-    // The canvas takes the document's content only when the document changed since it was last received, so a render that
-    // brings the document as it stood never writes over what was typed since.
+    // The canvas takes the document's content only when the document changed since it was last received, and departs from what the canvas
+    // committed, so a render that brings the document as it stood never writes over what was typed since.
     /// <inheritdoc />
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         var documentContent = Composer?.Document.Content;
 
@@ -98,10 +117,10 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
 
         _receivedContent = documentContent;
 
-        if (_isAttached && documentContent != _committedContent && documentContent is not null)
+        if (documentContent != _committedContent)
         {
             _committedContent = documentContent;
-            await _canvas.SetHtmlAsync(documentContent);
+            _canvasText = documentContent ?? string.Empty;
         }
     }
 
@@ -118,42 +137,58 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
                 _inputScope = await InputRouter.RegisterAsync(_editorElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() }, _selfReference);
             }
 
-            // The canvas holds the document it attached with, an empty one included.
-            var initialContent = Composer?.Document.Content;
-            _committedContent = initialContent;
-            _receivedContent = initialContent;
-
-            if (!string.IsNullOrEmpty(initialContent))
-            {
-                await _canvas.SetHtmlAsync(initialContent);
-            }
-
             StateHasChanged();
+        }
+
+        // The canvas's script provides the document its edits read, so they follow it once it is attached.
+        if (_isAttached)
+        {
+            await _edits.SyncAsync(_editorElement, _canvasText, EditOptions);
         }
     }
 
     /// <summary>Runs the composer command named by the action the router matched inside the canvas.</summary>
     [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    public async Task HandleInputActionAsync(string action, InputInfo input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return Interaction?.ExecuteCommandAsync(action) ?? Task.CompletedTask;
-    }
-
-    /// <summary>Commits the canvas's changed content to the composer document.</summary>
-    [JSInvokable]
-    public async Task HandleContentChangedAsync(string html)
-    {
-        if (Composer is null || Interaction is null)
+        // The router commits the canvas ahead of the action, so the command reads the document once its edits are applied.
+        if (Interaction is null || !await _edits.SettleAsync())
         {
             return;
         }
 
-        var sanitized = Composer.Sanitizer.Sanitize(html);
+        await Interaction.ExecuteCommandAsync(action);
+    }
+
+    // Each commit the canvas sends becomes the composer's document.
+    private async Task HandleContentChangedAsync(TextChange change)
+    {
+        _canvasText = change.Text;
+
+        if (Composer is null || Interaction is null || change.IsFaulted)
+        {
+            return;
+        }
+
+        var sanitized = Composer.Sanitizer.Sanitize(change.Text);
         _committedContent = sanitized;
 
         await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitized });
+    }
+
+    // What reads the document reads every edit the reader made in the canvas, its pause cut short.
+    private async Task<bool> SettleAsync()
+    {
+        if (!_isAttached)
+        {
+            return true;
+        }
+
+        await _canvas.CommitAsync();
+
+        return await _edits.SettleAsync();
     }
 
     /// <summary>Reports the canvas's selection snapshot to the composer.</summary>
@@ -180,22 +215,22 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     }
 
     /// <summary>Reopens the image dialog on an image in the document.</summary>
-    /// <param name="image">The image's current values.</param>
+    /// <param name="image">The image's current values, as the transfer carries them.</param>
     [JSInvokable]
-    public Task HandleImageActivatedAsync(ImageDialogResult image)
-        => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Image, image));
+    public Task HandleImageActivatedAsync(JSTransfer image)
+        => ReopenAsync(RichTextDialogKind.Image, image, RichTextEditorJsonContext.Default.ImageDialogResult);
 
     /// <summary>Reopens the video dialog on a video in the document.</summary>
-    /// <param name="video">The video's current values.</param>
+    /// <param name="video">The video's current values, as the transfer carries them.</param>
     [JSInvokable]
-    public Task HandleVideoActivatedAsync(VideoDialogResult video)
-        => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Video, video));
+    public Task HandleVideoActivatedAsync(JSTransfer video)
+        => ReopenAsync(RichTextDialogKind.Video, video, RichTextEditorJsonContext.Default.VideoDialogResult);
 
     /// <summary>Reopens the embed dialog on an embed in the document.</summary>
-    /// <param name="embed">The embed's current values.</param>
+    /// <param name="embed">The embed's current values, as the transfer carries them.</param>
     [JSInvokable]
-    public Task HandleEmbedActivatedAsync(EmbedDialogResult embed)
-        => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Embed, embed));
+    public Task HandleEmbedActivatedAsync(JSTransfer embed)
+        => ReopenAsync(RichTextDialogKind.Embed, embed, RichTextEditorJsonContext.Default.EmbedDialogResult);
 
     /// <summary>Reopens the link dialog on a link or a named anchor in the document.</summary>
     /// <param name="isAnchor">Whether the link is a named anchor.</param>
@@ -212,18 +247,32 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         return Task.CompletedTask;
     }
 
-    // The canvas has already selected the element whole, so confirming replaces it.
-    private Task ReopenAsync(RichTextDialogState dialog)
+    // The canvas has already selected the element whole, so confirming replaces it. What the element holds can be large, an image's
+    // data address among it, so it crosses through the transfer.
+    private async Task ReopenAsync<TResult>(RichTextDialogKind kind, JSTransfer values, JsonTypeInfo<TResult> typeInfo)
+        where TResult : ComposerDialogResult
     {
-        if (Composer is null || Interaction is null || IsDisabled || IsReadOnly)
+        ArgumentNullException.ThrowIfNull(values);
+
+        JsonElement json;
+
+        try
         {
-            return Task.CompletedTask;
+            json = await values.ReadJsonAsync(Context.JS.TransferOptions.MaximumLength);
+        }
+        catch (JSTransferException ex)
+        {
+            RichTextEditorLog.ActivationLost(Context.Logger, ex, kind.ToString(), Context.RuntimeId);
+            return;
         }
 
-        _dialog = dialog;
-        StateHasChanged();
+        if (Composer is null || Interaction is null || IsDisabled || IsReadOnly || json.Deserialize(typeInfo) is not { } result)
+        {
+            return;
+        }
 
-        return Task.CompletedTask;
+        _dialog = new RichTextDialogState(kind, result);
+        StateHasChanged();
     }
 
     /// <summary>Runs the named composer command.</summary>
@@ -236,7 +285,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             return;
         }
 
-        // Plugin command names route through the engine's command registry.
+        // Plugin command names route through the engine's command registry, which brings the document in step with the canvas first.
         _ = Interaction.ExecuteCommandAsync(command);
     }
 
@@ -341,20 +390,13 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             return;
         }
 
+        // The document the command leaves reaches the canvas's edits ahead of its answer, and is the composer's once they are applied.
         var result = await execute();
-        if (result is not null)
+        if (result is not null && await _edits.SettleAsync() && result.Selection is not null)
         {
-            var sanitized = Composer.Sanitizer.Sanitize(result.Html);
-            _committedContent = sanitized;
-
-            await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitized });
-
-            if (result.Selection is not null)
-            {
-                var before = _activeStyles;
-                await HandleSelectionChangedAsync(result.Selection);
-                AnnounceFormatting(before, _activeStyles);
-            }
+            var before = _activeStyles;
+            await HandleSelectionChangedAsync(result.Selection);
+            AnnounceFormatting(before, _activeStyles);
         }
     }
 
@@ -447,7 +489,15 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             await inputScope.DisposeAsync();
         }
 
+        _editsRegistration?.Dispose();
         _selfReference?.Dispose();
+
+        // The edits are made before the plugin is checked, so disposal after a missing cascade finds none.
+        if (_edits is not null)
+        {
+            await _edits.DisposeAsync();
+        }
+
         await _canvas.DisposeAsync();
         await base.DisposeAsyncCore();
     }

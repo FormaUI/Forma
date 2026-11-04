@@ -60,10 +60,19 @@ own host layer, so the transfer belongs to that layer and every converted script
    overtaking the focus held behind an earlier one, as the DOM watcher's design records of occurrences, and the
    tree's keys and disclosures wait for its focus watch, whose first state says where the focus is, as a Blazor
    handler live from the first render had known.
-3. **The editor and the channels beside it.** `FormaRichTextEditor`'s content as edits of its serialized HTML at
+3. **The editor and the channels beside it.** ✅ `FormaRichTextEditor`'s content as edits of its serialized HTML at
    its pace; the composer's activations through the transfer; and the data view's range selection through the
-   transfer ✅, a range lost on its way logged under the data view and left unselected. Gate: unit and script tests
-   of each, at a size past the budget.
+   transfer, a range lost on its way logged under the data view and left unselected. Gate: unit and script tests
+   of each, at a size past the budget. The survey missed two channels the editor's conversion found, both through
+   the transfer now: every command answered with the whole document, which now reaches .NET as the canvas's edit
+   ahead of the answer, and the link dialog's opening answered with the text the selection covers. Departures: the
+   editor's content takes the fields' own edits rather than a protocol of its own, the edits reading a source the
+   editor's script provides for its canvas, so one copy, one disagreement and one boundary serve both; and the
+   composer joins its host's form, its editor settling its edits, cutting its pause short and reporting its
+   selection before a form's action, a command or a switch of editors reads the document, which step 4 had left to
+   the plain text editor's own commands, so a Save pressed inside the plain text editor's commit pause read the
+   document as it stood before; the input router commits an editable's edit before it routes an action, as it does
+   a field's.
 4. **The edit boundary.** ✅ The browser's capture of the latest revision in the action's form or interaction
    scope, flushing debounced edits through it; Forma's buttons, the input router's actions and the form helper
    waiting for it before validation, with delivery running meanwhile; a failure reported on its field and the

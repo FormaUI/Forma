@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Composer.Interop;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 using Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Framework.Composer.Editing;
@@ -18,13 +19,15 @@ internal sealed class RichTextEditor(IJSEnvironment js)
         where TOwner : class
         => AttachCoreAsync(target, new AttachOptions<TOwner> { Owner = owner, DebounceDelay = debounceDelay });
 
-    /// <summary>Sets the HTML content of the editor.</summary>
-    public ValueTask<bool> SetHtmlAsync(string html)
-        => InvokeAsync("setHtml", html);
+    /// <summary>Commits what the canvas holds through its edits at once, cutting its pause short.</summary>
+    public ValueTask<bool> CommitAsync()
+        => InvokeAsync("commit");
 
     /// <summary>Freezes the selection a link dialog will act on, and reports what it covers.</summary>
-    public ValueTask<RichTextLinkTargetDto?> BeginLinkDialogAsync(bool isAnchor)
-        => InvokeAsync<RichTextLinkTargetDto>("beginLinkDialog", isAnchor ? "a[name]" : "a[href]");
+    public async ValueTask<RichTextLinkTargetDto?> BeginLinkDialogAsync(bool isAnchor)
+        => await InvokeJsonAsync("beginLinkDialog", isAnchor ? "a[name]" : "a[href]") is { } target
+            ? target.Deserialize(RichTextEditorJsonContext.Default.RichTextLinkTargetDto)
+            : null;
 
     /// <summary>Executes a rich text formatting command on the active selection.</summary>
     public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, string? value = null)
@@ -53,12 +56,10 @@ internal sealed class RichTextEditor(IJSEnvironment js)
     }
 }
 
-/// <summary>The result of executing a rich text command.</summary>
+/// <summary>The result of executing a rich text command: the selection it leaves, the document it leaves having reached the canvas's edits ahead of it.</summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record RichTextCommandResult
 {
-    public string Html { get; init; } = "";
-
     public RichTextSelectionDto? Selection { get; init; }
 }
 

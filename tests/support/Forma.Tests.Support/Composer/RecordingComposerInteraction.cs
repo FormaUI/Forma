@@ -28,6 +28,9 @@ public sealed class RecordingComposerInteraction : IComposerInteraction
     /// <summary>How many re-renders were requested.</summary>
     public int RenderRequests { get; private set; }
 
+    /// <summary>The settling of the edits joined through <see cref="JoinEdits"/>, while joined.</summary>
+    public Func<Task<bool>>? JoinedEdits { get; private set; }
+
     /// <inheritdoc />
     public Task ChangeDocumentAsync(ComposerDocument document)
     {
@@ -68,5 +71,25 @@ public sealed class RecordingComposerInteraction : IComposerInteraction
     {
         Insertions.Add(insertion);
         return ValueTask.FromResult(TakesInsertions);
+    }
+
+    /// <inheritdoc />
+    public IDisposable JoinEdits(Func<Task<bool>> settleEditsAsync)
+    {
+        JoinedEdits = settleEditsAsync;
+
+        return new Joined(this, settleEditsAsync);
+    }
+
+    /// <summary>The edits joined, taken out as the registration is disposed.</summary>
+    private sealed class Joined(RecordingComposerInteraction interaction, Func<Task<bool>> settleEditsAsync) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (interaction.JoinedEdits == settleEditsAsync)
+            {
+                interaction.JoinedEdits = null;
+            }
+        }
     }
 }

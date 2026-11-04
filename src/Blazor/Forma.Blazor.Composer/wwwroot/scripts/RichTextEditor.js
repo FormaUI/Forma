@@ -4,6 +4,8 @@
  */
 
 import { sanitize } from '../../forma/core/scripts/Sanitizer.js';
+import { Transfer } from '../../forma/core/scripts/Transfer.js';
+import { TextSources } from '../../forma/browser/scripts/text/TextSources.mjs';
 import { Canvas } from './RichTextEditor/Canvas.mjs';
 import { SelectionMemory } from './RichTextEditor/SelectionMemory.mjs';
 import { InlineFormatter } from './RichTextEditor/InlineFormatter.mjs';
@@ -42,7 +44,10 @@ class RichTextEditor {
     #debounceTimer = null;
     #controller = new AbortController();
     #isDisposed = false;
-    #lastHtml = null;
+
+    /** The canvas as the source its edits read and write, and the commit they take from it. */
+    #textSource;
+    #commit = null;
 
     /** What the owner was last told of the selection: the block, the styles and whether it is a caret. */
     #lastSelectionKey = null;
@@ -60,12 +65,26 @@ class RichTextEditor {
 
         this.#owner = owner;
         this.#debounceDelay = debounceDelay;
-        this.#lastHtml = InlineFormatter.stripMarkers(target.innerHTML);
+
+        // The document's edits read the canvas through its markup, which the canvas commits at its own pace.
+        this.#textSource = TextSources.provide(target, {
+            commitsUnchanged: false,
+            read: () => InlineFormatter.stripMarkers(this.#canvas.html),
+            write: html => this.#write(html),
+            holdsFocus: () => target.contains(target.ownerDocument.activeElement),
+            listen: (onInput, onCommit, signal) => {
+                this.#commit = onCommit;
+                signal.addEventListener('abort', () => { this.#commit = null; });
+            },
+        });
 
         const { signal } = this.#controller;
 
         target.addEventListener('input', () => this.#handleInput(), { signal });
         target.addEventListener('blur', () => this.#handleBlur(), { signal });
+
+        // The input router commits the edit of the element holding the focus before it routes an action from it.
+        target.addEventListener('change', () => this.#commitNow(), { signal });
         target.addEventListener('click', () => this.#reportSelection(), { signal });
         target.addEventListener('keyup', () => this.#reportSelection(), { signal });
         target.addEventListener('dblclick', event => this.#handleDoubleClick(event), { signal });
@@ -107,7 +126,8 @@ class RichTextEditor {
             return;
         }
 
-        this.#tell(RichTextEditor.#Activations[found.kind], MediaMarkup.read(found.kind, found.element));
+        // What the element holds can be large, an image carried as a data address among it.
+        this.#tell(RichTextEditor.#Activations[found.kind], Transfer.of(MediaMarkup.read(found.kind, found.element)));
     }
 
     /**
@@ -133,13 +153,19 @@ class RichTextEditor {
         }
 
         this.#controller.abort();
+        this.#textSource.dispose();
     }
 
-    setHtml(html) {
+    /** Commits what the canvas holds through its edits at once, cutting its pause short. */
+    commit() {
+        this.#commitNow();
+    }
+
+    // A document of the owner's own, written through the canvas's edits.
+    #write(html) {
         // The comparison ignores pending-format markers, so a round trip leaves a pending mark armed.
         if (InlineFormatter.stripMarkers(this.#canvas.html) !== html) {
             this.#canvas.html = html;
-            this.#lastHtml = html;
             this.#lastSelectionKey = null;
             // The rewrite detached every node the remembered selection pointed into.
             this.#memory.forget();
@@ -148,26 +174,27 @@ class RichTextEditor {
 
     /**
      * What the link dialog is about to act on: the text the selection covers, the address of the single
-     * link it touches, and how many links it touches.
+     * link it touches, and how many links it touches, through the transfer, since the selection can
+     * cover the whole document.
      */
     beginLinkDialog(selector = 'a[href]') {
         const frozen = this.#memory.freeze();
 
         if (!frozen) {
-            return { text: '', href: null, name: null, opensInNewTab: false, count: 0 };
+            return Transfer.of({ text: '', href: null, name: null, opensInNewTab: false, count: 0 });
         }
 
         const selected = frozen.collapsed ? '' : frozen.toString();
         const touched = this.#links.touching(frozen, selector);
         const single = touched.length === 1 ? touched[0] : null;
 
-        return {
+        return Transfer.of({
             text: selected || (single ? single.textContent : ''),
             href: single?.getAttribute('href') ?? null,
             name: single?.getAttribute('name') ?? null,
             opensInNewTab: single?.getAttribute('target') === '_blank',
             count: touched.length,
-        };
+        });
     }
 
     exec(command, value = null) {
@@ -357,12 +384,12 @@ class RichTextEditor {
                 break;
         }
 
-        const html = InlineFormatter.stripMarkers(this.#canvas.html);
-        this.#lastHtml = html;
+        // The document the command leaves reaches the owner as an edit, ahead of this answer.
+        this.#commitNow();
         const selection = this.#inspector.snapshot();
         this.#lastSelectionKey = RichTextEditor.#keyOf(selection);
 
-        return { html, selection };
+        return { selection };
     }
 
     /** Runs an operation over the selection the author last made in the canvas, and keeps its outcome. */
@@ -384,16 +411,21 @@ class RichTextEditor {
     }
 
     #handleBlur() {
+        // A format armed at the caret but never typed into is dropped as focus leaves.
+        this.#inline.clearPendingMarkers();
+
+        this.#commitNow();
+        this.#reportSelection();
+    }
+
+    // Commits what the canvas holds at once, cutting its pause short.
+    #commitNow() {
         if (this.#debounceTimer !== null) {
             clearTimeout(this.#debounceTimer);
             this.#debounceTimer = null;
         }
 
-        // A format armed at the caret but never typed into is dropped as focus leaves.
-        this.#inline.clearPendingMarkers();
-
         this.#flushContent();
-        this.#reportSelection();
     }
 
     #flushContent() {
@@ -401,11 +433,7 @@ class RichTextEditor {
             return;
         }
 
-        const currentHtml = InlineFormatter.stripMarkers(this.#canvas.html);
-        if (currentHtml !== this.#lastHtml) {
-            this.#lastHtml = currentHtml;
-            this.#tell('HandleContentChangedAsync', currentHtml);
-        }
+        this.#commit?.();
     }
 
     #handleSelectionChange() {

@@ -102,7 +102,10 @@ pause, such as a search's or a commit's debounce, runs apart from the change it 
 
 The character count follows every keystroke in the browser, whichever mode the field updates in, as part of the
 field's edits, so a text .NET writes is counted as it lands. An editor whose content is a document sends the
-edits of its serialized content in the same way, at its own pace.
+edits of its serialized content in the same way, at its own pace: its script provides the text its edits read
+and write, the document as it serializes it, and commits it as the reader pauses, as the editor loses the focus,
+as the input router commits it before an action, and as a command it runs leaves a document, ahead of the
+command's answer. A command answers with what it alone carries, as the selection it leaves, never the document.
 
 While a reader edits a field, its text belongs to the browser: .NET doesn't render it back, so typing that
 outpaces a render is never reverted. The field renders the text it was last rendered or written with for as long
@@ -125,7 +128,8 @@ saves stale data.
   its form holds every edit received: applied, a handler's work on it included, not merely received, since a
   handler that awaits before it applies lets the action run in between. A field whose edits were still attaching
   as the action began commits what it holds once they land, since what the reader typed before they listened
-  went unsent, and a pause a component keeps of its own, as a commit's debounce, is cut short by its action.
+  went unsent, and a pause a component keeps of its own, as a commit's debounce, is cut short by its action and
+  by its form's.
   Later typing, or an upload in another form, never keeps the action waiting.
 - **The wait comes before validation.** A form's submit path waits before it validates, so clicking Save and
   pressing Enter behave the same; a wait inside the handler a valid submit calls would come after validation had
@@ -134,7 +138,10 @@ saves stale data.
   reported on its field, and the action it held back never runs.
 
 Forma's buttons and input scopes inside a form wait for the form's fields, a component acting on its own field
-waits for that field, and a form's submit through Forma's helper waits for the form's. A host's form opts in
+waits for that field, and a form's submit through Forma's helper waits for the form's. A composer in a form is
+one of its fields: the editor in its surface settles its edits, cuts its pause short and reports its selection,
+as it does before any command the composer runs and before the composer converts the document for another
+editor. A host's form opts in
 through that helper, which takes the form's submit path in place of its own validation and handler call, so a
 host keeps its own components and gains the guarantee without deriving them from a Forma base. A host's own
 control outside a participating action reads the bound model as it stands.
