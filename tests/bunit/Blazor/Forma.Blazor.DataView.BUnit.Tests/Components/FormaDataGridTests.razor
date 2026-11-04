@@ -2,6 +2,8 @@
 @using AngleSharp.Dom
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
+@using System.Text.Json
+@using Forma.Framework.JavaScript.Interop
 @using Forma.Blazor.Components.DataView.Interop
 @using Forma.Framework.Css
 @using Forma.Blazor.Components.Layout
@@ -2178,13 +2180,72 @@
                 .ToArray();
 
             // Act
-            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(tokens, additive: false));
+            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(InlineTransfer.Of(tokens), additive: false));
 
             // Assert
             Assert.Equal(3, changedTo!.Count);
             Assert.Contains(changedTo!, item => item.Id == 2);
             Assert.Contains(changedTo!, item => item.Id == 3);
             Assert.Contains(changedTo!, item => item.Id == 4);
+        }
+
+        [Fact]
+        public async Task Should_select_a_range_whose_tokens_stream_past_the_budget()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(5)" PageSize="10" EnableItemSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 5);
+            var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
+            var tokens = cut.FindAll("tbody .forma-data-grid-row-marker")
+                .Select(marker => int.Parse(marker.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture))
+                .ToArray();
+            await using var stream = new FakeJSStreamReference(JsonSerializer.SerializeToUtf8Bytes(tokens));
+
+            // Act
+            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(new JSTransfer { Stream = stream }, additive: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(5, changedTo!.Count),
+                () => Assert.True(stream.IsDisposed));
+        }
+
+        [Fact]
+        public async Task Should_select_nothing_for_a_range_larger_than_it_accepts()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(5)" PageSize="10" EnableItemSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 5);
+            var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
+            await using var stream = new FakeJSStreamReference([], length: JSTransferOptions.Default.MaximumLength + 1);
+
+            // Act
+            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(new JSTransfer { Stream = stream }, additive: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(changedTo),
+                () => Assert.True(stream.IsDisposed));
         }
 
         [Fact]

@@ -93,7 +93,27 @@ describe('SelectionInteraction', () => {
             click(cellOf(2));
             click(cellOf(4), { shiftKey: true });
 
-            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', [2, 3, 4], false);
+            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', { value: [2, 3, 4] }, false);
+        });
+
+        it('carries a range past the budget of the transfer as a stream of its tokens', () => {
+            globalThis.DotNet = { createJSStreamReference: bytes => ({ bytes }) };
+
+            try {
+                const count = 6000;
+                grid.querySelector('tbody').innerHTML = Array.from({ length: count }, (_, index) => row(index + 1, '')).join('');
+                attachSelection(grid, { owner });
+
+                click(cellOf(1));
+                click(cellOf(count), { shiftKey: true });
+
+                const [method, transfer, additive] = owner.invokeMethodAsync.mock.lastCall;
+                expect(method).toBe('HandleRangeSelectAsync');
+                expect(additive).toBe(false);
+                expect(JSON.parse(new TextDecoder().decode(transfer.stream.bytes))).toEqual(Array.from({ length: count }, (_, index) => index + 1));
+            } finally {
+                delete globalThis.DotNet;
+            }
         });
 
         it('extends backwards in the order the items are rendered', () => {
@@ -102,7 +122,7 @@ describe('SelectionInteraction', () => {
             click(cellOf(3));
             click(cellOf(1), { shiftKey: true });
 
-            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', [1, 2, 3], false);
+            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', { value: [1, 2, 3] }, false);
         });
 
         it('selects rather than extends when nothing anchored the range', () => {
@@ -247,7 +267,7 @@ describe('SelectionInteraction', () => {
 
             press(cellOf(1), 'ArrowDown', { shiftKey: true });
 
-            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', [1, 2], false);
+            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', { value: [1, 2] }, false);
         });
 
         // The router's native table gives the caret keys to the field and a vertical arrow to the list.
@@ -537,7 +557,7 @@ describe('SelectionInteraction', () => {
 
             press(cellOf(2), 'End', { ctrlKey: true, shiftKey: true });
 
-            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', [2, 3, 4, 5, 6], false);
+            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', { value: [2, 3, 4, 5, 6] }, false);
         });
 
         it('moves the focus alone with Ctrl and Shift on an arrow, which reaches no end', () => {

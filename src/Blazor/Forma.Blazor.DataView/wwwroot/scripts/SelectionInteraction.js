@@ -36,6 +36,7 @@
 
 import { Controls } from '../../forma/core/scripts/Controls.js';
 import { tell } from '../../forma/core/scripts/Owner.js';
+import { Transfer } from '../../forma/core/scripts/Transfer.js';
 import { register } from '../../forma/input/scripts/InputRouter.js';
 
 /** Where each key sends the focused item: a step in a direction, or to either end of its row or the list. */
@@ -447,7 +448,8 @@ class SelectionInteraction {
             return;
         }
 
-        tell(this.#owner, 'HandleRangeSelectAsync', this.#rangeTokens(this.#anchor, marker), additive);
+        // A range can span every item drawn, so its tokens cross through the transfer.
+        tell(this.#owner, 'HandleRangeSelectAsync', Transfer.of(this.#rangeTokens(this.#anchor, marker)), additive);
     }
 
     #select(event) {

@@ -61,8 +61,9 @@ own host layer, so the transfer belongs to that layer and every converted script
    tree's keys and disclosures wait for its focus watch, whose first state says where the focus is, as a Blazor
    handler live from the first render had known.
 3. **The editor and the channels beside it.** `FormaRichTextEditor`'s content as edits of its serialized HTML at
-   its pace; the composer's activations and the data view's range selection through the transfer. Gate: unit and
-   script tests of each, at a size past the budget.
+   its pace; the composer's activations through the transfer; and the data view's range selection through the
+   transfer ✅, a range lost on its way logged under the data view and left unselected. Gate: unit and script tests
+   of each, at a size past the budget.
 4. **The edit boundary.** ✅ The browser's capture of the latest revision in the action's form or interaction
    scope, flushing debounced edits through it; Forma's buttons, the input router's actions and the form helper
    waiting for it before validation, with delivery running meanwhile; a failure reported on its field and the

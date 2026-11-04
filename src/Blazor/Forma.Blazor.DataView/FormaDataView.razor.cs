@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
 using System.Linq.Expressions;
+using System.Text.Json;
 
 using Forma.Blazor.Components.DataView.Interop;
 using Forma.Blazor.Components.Feedback;
@@ -9,6 +10,7 @@ using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Events;
 using Forma.Framework.Input.Interop;
+using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -1018,24 +1020,41 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => _itemTokens.TryGetItem(itemToken, out var item) ? ActivateAsync(item) : Task.CompletedTask;
 
     /// <summary>Replaces or extends the selection with a contiguous range of items.</summary>
-    /// <param name="itemTokens">The tokens of the items in the range.</param>
+    /// <param name="itemTokens">The tokens of the items in the range, as the transfer carries them.</param>
     /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>
     [JSInvokable]
-    public Task HandleRangeSelectAsync(int[] itemTokens, bool additive)
+    public async Task HandleRangeSelectAsync(JSTransfer itemTokens, bool additive)
     {
         ArgumentNullException.ThrowIfNull(itemTokens);
 
+        JsonElement tokens;
+
+        try
+        {
+            tokens = await itemTokens.ReadJsonAsync(Context.JS.TransferOptions.MaximumLength);
+        }
+        catch (JSTransferException ex)
+        {
+            DataViewLog.RangeLost(Context.Logger, ex, Context.RuntimeId);
+            return;
+        }
+
+        if (tokens.ValueKind is not JsonValueKind.Array)
+        {
+            return;
+        }
+
         List<TItem> range = [];
 
-        foreach (var token in itemTokens)
+        foreach (var token in tokens.EnumerateArray())
         {
-            if (_itemTokens.TryGetItem(token, out var item))
+            if (token.TryGetInt32(out var itemToken) && _itemTokens.TryGetItem(itemToken, out var item))
             {
                 range.Add(item);
             }
         }
 
-        return SelectRangeAsync(range, additive);
+        await SelectRangeAsync(range, additive);
     }
 
     /// <summary>Replaces or extends the selection with the items the active view reaches between two positions in its order.</summary>
