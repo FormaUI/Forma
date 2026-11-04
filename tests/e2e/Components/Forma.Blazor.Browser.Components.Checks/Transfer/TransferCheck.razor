@@ -5,7 +5,7 @@
 @using Forma.Framework.Composer.Documents
 
 @* Values a reader can make larger than a circuit message: a form of Forma's own, saved by its button, with a text area, a box
-   accepting eight characters and a rich text composer; and a form of the host's own, submitted through Forma's helper. What each
+   accepting eight characters and a rich text composer; and a form of the host's own, on its valid submit alone. What each
    save saw, as its length and the start of its SHA-256, and how many saves ran, are written where the check reads them. *@
 <EditForm id="forma-form" Model="_forma">
     <FormaTextArea Id="forma-notes" @bind-Value="_forma.Notes" Label="Notes" />
@@ -17,7 +17,7 @@
 <output id="forma-body-saved">@_formaBodySaved</output>
 <output id="forma-body-end">@_formaBodyEnd</output>
 
-<EditForm id="host-form" Model="_host" OnSubmit="@(form => form.SubmitAsync(SaveHostAsync))">
+<EditForm id="host-form" Model="_host" OnValidSubmit="SaveHost">
     <FormaTextBox Id="host-name" @bind-Value="_host.Name" Label="Name" />
     <FormaTextArea Id="host-notes" @bind-Value="_host.Notes" Label="Host Notes" />
     <button id="host-save" type="submit">Submit</button>
@@ -50,12 +50,10 @@
         _formaBodyEnd = _forma.Body?.Content is { Length: > 0 } content ? content[^Math.Min(content.Length, 32)..] : string.Empty;
     }
 
-    private Task SaveHostAsync(EditContext form)
+    private void SaveHost()
     {
         _saves++;
         _hostSaved = $"{_host.Name} {Describe(_host.Notes)}";
-
-        return Task.CompletedTask;
     }
 
     private sealed class FormaModel

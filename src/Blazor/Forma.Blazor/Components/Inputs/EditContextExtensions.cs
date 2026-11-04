@@ -4,7 +4,12 @@ using Forma.Framework.Browser.Interop.Text;
 
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>A form's edit boundary: the edits of the Forma text fields bound in it, which an action settles before it reads the form.</summary>
+/// <summary>A form's edit boundary: the edits of the Forma text fields bound in it, which the form's validation, and an action reading the form, settle before they read it.</summary>
+/// <remarks>
+/// The form's fields join one scope on its <see cref="EditContext"/>, which takes part in every asynchronous validation of the form, as
+/// <c>EditForm</c>'s submit and <see cref="EditContext.ValidateAsync(CancellationToken)"/> run it: the validation waits until every field
+/// holds the reader's edits, and fails where a field's text can't follow them. A synchronous validation reads the form as it stands.
+/// </remarks>
 public static class EditContextExtensions
 {
     private static readonly object TextEditScopeKey = new();
@@ -18,37 +23,34 @@ public static class EditContextExtensions
         return editContext.Properties.TryGetValue(TextEditScopeKey, out var scope) ? ((TextEditScope)scope).SettleAsync() : Task.FromResult(true);
     }
 
-    /// <summary>Submits the form once its fields' edits are settled: validates it and hands it to <paramref name="onValidSubmit"/> where it is valid, or to <paramref name="onInvalidSubmit"/>; a form whose edits couldn't be settled isn't submitted.</summary>
-    /// <remarks>A form takes it as its submit, <c>OnSubmit="@(form => form.SubmitAsync(SaveAsync))"</c>, in place of its own validation, so Enter and a submit button wait as Forma's buttons do.</remarks>
-    public static async Task SubmitAsync(this EditContext editContext, Func<EditContext, Task> onValidSubmit, Func<EditContext, Task>? onInvalidSubmit = null)
-    {
-        ArgumentNullException.ThrowIfNull(editContext);
-        ArgumentNullException.ThrowIfNull(onValidSubmit);
-
-        if (!await editContext.SettleEditsAsync())
-        {
-            return;
-        }
-
-        if (await editContext.ValidateAsync())
-        {
-            await onValidSubmit(editContext);
-        }
-        else if (onInvalidSubmit is not null)
-        {
-            await onInvalidSubmit(editContext);
-        }
-    }
-
     /// <summary>The edits of the text fields bound in the form.</summary>
     internal static TextEditScope GetTextEditScope(this EditContext editContext)
     {
-        if (!editContext.Properties.TryGetValue(TextEditScopeKey, out var scope))
+        if (editContext.Properties.TryGetValue(TextEditScopeKey, out var existing))
         {
-            scope = new TextEditScope();
-            editContext.Properties[TextEditScopeKey] = scope;
+            return (TextEditScope)existing;
         }
 
-        return (TextEditScope)scope;
+        var scope = new TextEditScope();
+        editContext.Properties[TextEditScopeKey] = scope;
+        editContext.OnValidationRequested += (_, args) =>
+        {
+            // A synchronous validation hands its handlers the shared arguments, which take no asynchronous work.
+            if (!ReferenceEquals(args, ValidationRequestedEventArgs.Empty))
+            {
+                args.AddAsyncValidator(_ => SettleForValidationAsync(scope));
+            }
+        };
+
+        return scope;
+    }
+
+    // A validation pass contains its validators' failures and fails with them, which is how a text that can't follow fails the form.
+    private static async Task SettleForValidationAsync(TextEditScope scope)
+    {
+        if (!await scope.SettleAsync())
+        {
+            throw new InvalidOperationException("A Forma field's text didn't arrive in full.");
+        }
     }
 }

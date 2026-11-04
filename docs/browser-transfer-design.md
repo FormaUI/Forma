@@ -37,8 +37,8 @@ action that reads a field's text waits until the text it reads is the one the re
 - **The edit boundary.** When a user invokes a participating action, validation and the action handler see
   every edit made in that form before the action. If Forma cannot apply an earlier edit, it reports the failure
   and stops the action before it saves stale data.
-- **Participation.** Forma's buttons, its input router's actions and a form's submit participate; a host's form
-  opts in through a helper, never a required base, so an ordinary Blazor form keeps its own components.
+- **Participation.** Forma's buttons, its input router's actions and every form's submit and validation
+  participate, an ordinary Blazor form among them, with nothing for its host to add.
 
 ## The transfer
 
@@ -131,17 +131,22 @@ saves stale data.
   went unsent, and a pause a component keeps of its own, as a commit's debounce, is cut short by its action and
   by its form's.
   Later typing, or an upload in another form, never keeps the action waiting.
-- **The wait comes before validation.** A form's submit path waits before it validates, so clicking Save and
-  pressing Enter behave the same; a wait inside the handler a valid submit calls would come after validation had
-  read the old value. Edit delivery and its acknowledgement keep running while the action waits.
+- **The wait comes before validation.** A form's submission waits in the browser while an edit of a field in
+  it is still on its way, a large paste streaming among them, and is made again, by the same submitter, once the
+  edit is applied, so the form's own validators read what the reader typed and clicking Save and pressing Enter
+  behave the same. The form's validation settles its fields too, as an asynchronous validator, for a field whose
+  edits were attaching and for a validation a host runs itself. Edit delivery and its acknowledgement keep
+  running while the action waits.
 - **A failure stops the action.** An edit that can't be applied, a transfer refused or broken among them, is
-  reported on its field, and the action it held back never runs.
+  reported on its field and fails the form's validation, and the action it held back never runs: a valid submit
+  isn't called, an invalid one is.
 
 Forma's buttons and input scopes inside a form wait for the form's fields, a component acting on its own field
-waits for that field, and a form's submit through Forma's helper waits for the form's. A composer in a form is
+waits for that field, and a form's submit, and any asynchronous validation of the form, wait for the form's. A composer in a form is
 one of its fields: the editor in its surface settles its edits, cuts its pause short and reports its selection,
 as it does before any command the composer runs, before the composer converts the document for another
-editor, and before a view takes the editor's place, since the editor's edits go with it. A host's form opts in
-through that helper, which takes the form's submit path in place of its own validation and handler call, so a
-host keeps its own components and gains the guarantee without deriving them from a Forma base. A host's own
-control outside a participating action reads the bound model as it stands.
+editor, and before a view takes the editor's place, since the editor's edits go with it. A host's form takes
+part as it stands, on `OnValidSubmit`, `OnInvalidSubmit` or a submit of its own that awaits `ValidateAsync`, so a
+host keeps its own components and forms. A synchronous `Validate`, which takes no asynchronous work, reads the
+form as it stands, and so does a host's own control outside a participating action, which settles the form's
+fields first through `SettleEditsAsync` where it reads them.

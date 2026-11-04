@@ -405,18 +405,20 @@ printing, travels in pieces past a message's size. Blazor Server's default limit
 holds for all of them, so a host has no need to raise `MaximumReceiveMessageSize` for Forma. A
 `FormaButton` or a `FormaInputScope` inside a form waits, before it acts, until every Forma field in
 the form holds what the reader typed, a `FormaComposer` among them, and doesn't act where a field's
-text didn't arrive, which that field says. A form of the host's own waits the
-same way by submitting through `SubmitAsync`, which validates the form once its fields hold the
-reader's text and hands it on where it is valid, so Enter and a plain submit button wait too:
+text didn't arrive, which that field says. A form of the host's own waits the same way with nothing
+added: its submit, by Enter or a plain submit button, waits for its Forma fields before it validates,
+and a field whose text didn't arrive fails the validation, so `OnValidSubmit` sees what the reader
+typed or isn't called:
 
 ```razor
-<EditForm Model="Model" OnSubmit="@(form => form.SubmitAsync(SaveAsync))">
+<EditForm Model="Model" OnValidSubmit="SaveAsync">
     <FormaTextArea @bind-Value="Model.Notes" Label="Notes" />
     <button type="submit">Save</button>
 </EditForm>
 ```
 
-`SettleEditsAsync` does the waiting alone, for an action of the host's own that reads the form.
+`ValidateAsync` waits the same way, and `SettleEditsAsync` waits alone, for an action of the host's own
+that reads the form without validating it.
 
 Toasts and confirmation dialogs are raised through a service and drawn by a component placed once
 where it renders interactively, in a layout under global interactivity or on the page itself:

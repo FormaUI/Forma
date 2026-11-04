@@ -1,65 +1,74 @@
 @inherits FormaBunitContext
+@using Microsoft.AspNetCore.Components.Forms
 @code {
-    public sealed class Submitting
+    public sealed class Validating
     {
         [Fact]
-        public async Task Should_submit_a_valid_form_once_its_fields_hold_the_reader_s_edits()
+        public async Task Should_hand_a_plain_form_s_valid_submit_the_text_the_reader_typed()
         {
-            // Arrange
+            // Arrange — a form of the host's own, on its valid submit alone
             using var ctx = new EditContextExtensionsTests();
             var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
-            var form = new EditContext(model);
             string? submitted = null;
-            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+            var cut = ctx.Render(@<EditForm Model="model" OnValidSubmit="@(() => submitted = model.Text)">
                 <FormaTextBox @bind-Value="model.Text" Label="Name" />
-            </FakeFormHost>);
+                <button type="submit">Save</button>
+            </EditForm>);
             await fields.TypeAsync(cut.Find("input"), "Ada");
 
             // Act
-            await cut.InvokeAsync(() => form.SubmitAsync(_ =>
-            {
-                submitted = model.Text;
-                return Task.CompletedTask;
-            }));
+            await cut.Find("form").SubmitAsync();
 
             // Assert
             Assert.Equal("Ada", submitted);
         }
 
         [Fact]
-        public async Task Should_submit_nothing_while_a_field_s_text_did_not_arrive()
+        public async Task Should_hand_a_plain_form_to_its_invalid_submit_while_a_field_s_text_did_not_arrive()
+        {
+            // Arrange — a box accepting two characters, sent a text the reader could not have typed into it
+            using var ctx = new EditContextExtensionsTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var outcome = string.Empty;
+            var cut = ctx.Render(@<EditForm Model="model" OnValidSubmit="@(() => outcome = "valid")" OnInvalidSubmit="@(() => outcome = "invalid")">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
+                <button type="submit">Save</button>
+            </EditForm>);
+            await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
+
+            // Act
+            await cut.Find("form").SubmitAsync();
+
+            // Assert
+            Assert.Equal("invalid", outcome);
+        }
+
+        [Fact]
+        public async Task Should_validate_a_form_holding_its_fields_text_once_it_settles_them()
         {
             // Arrange
             using var ctx = new EditContextExtensionsTests();
             var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             var form = new EditContext(model);
-            var submissions = 0;
             var cut = ctx.Render(@<FakeFormHost EditContext="@form">
-                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
+                <FormaTextBox @bind-Value="model.Text" Label="Name" />
             </FakeFormHost>);
-            await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
+            await fields.TypeAsync(cut.Find("input"), "Ada");
 
             // Act
-            await cut.InvokeAsync(() => form.SubmitAsync(
-                _ =>
-                {
-                    submissions++;
-                    return Task.CompletedTask;
-                },
-                _ =>
-                {
-                    submissions++;
-                    return Task.CompletedTask;
-                }));
+            var isValid = await cut.InvokeAsync(() => form.ValidateAsync());
 
             // Assert
-            Assert.Equal(0, submissions);
+            Assert.Multiple(
+                () => Assert.True(isValid),
+                () => Assert.Equal("Ada", model.Text));
         }
 
         [Fact]
-        public async Task Should_hand_an_invalid_form_to_its_invalid_submit()
+        public async Task Should_leave_a_form_invalid_by_its_own_rules_to_its_invalid_submit()
         {
             // Arrange
             using var ctx = new EditContextExtensionsTests();
@@ -68,22 +77,13 @@
             var store = new ValidationMessageStore(form);
             form.OnValidationRequested += (_, _) => store.Add(FieldIdentifier.Create(() => model.Text), "Required");
             var outcome = string.Empty;
-            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+            var cut = ctx.Render(@<EditForm EditContext="form" OnValidSubmit="@(() => outcome = "valid")" OnInvalidSubmit="@(() => outcome = "invalid")">
                 <FormaTextBox @bind-Value="model.Text" Label="Name" />
-            </FakeFormHost>);
+                <button type="submit">Save</button>
+            </EditForm>);
 
             // Act
-            await cut.InvokeAsync(() => form.SubmitAsync(
-                _ =>
-                {
-                    outcome = "valid";
-                    return Task.CompletedTask;
-                },
-                _ =>
-                {
-                    outcome = "invalid";
-                    return Task.CompletedTask;
-                }));
+            await cut.Find("form").SubmitAsync();
 
             // Assert
             Assert.Equal("invalid", outcome);

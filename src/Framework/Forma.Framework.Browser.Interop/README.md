@@ -99,7 +99,9 @@ protected override Task OnAfterRenderAsync(bool firstRender)
 `TextEditOptions` also names the most the field accepts, and where it shows a running count of its
 characters, which the browser keeps as the reader types. An element whose script owns its text, as a rich text
 editor's canvas, follows the same edits: the script provides the text they read and write through
-`TextSources.provide`, and commits it at its own pace. The field takes no Blazor event, since Blazor
+`TextSources.provide`, and commits it at its own pace. A form's submission waits in the browser while an
+edit of a field in it is still on its way, and is made again, by the same submitter, once the edit has
+reached .NET. The field takes no Blazor event, since Blazor
 sends the field's whole text with every event a .NET handler takes on it or on an element the event
 reaches, and neither does an element around a text field: a surface follows the focus within it
 through `Focus.WatchAsync`, and a field's selection through `Text.WatchSelectionAsync`.

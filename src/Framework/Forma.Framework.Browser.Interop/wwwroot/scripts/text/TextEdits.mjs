@@ -4,6 +4,7 @@
 
 import { Transfer } from '../../../core/scripts/Transfer.js';
 import { CharacterCount } from './CharacterCount.mjs';
+import { SubmissionHold } from './SubmissionHold.mjs';
 import { TextSources } from './TextSources.mjs';
 
 /** @typedef {(method: string, ...args: unknown[]) => Promise<unknown>} Report */
@@ -25,6 +26,9 @@ export class TextEdits {
     #isCommitted = true;
     /** @type {CharacterCount | null} */
     #count = null;
+    /** The sends the owner has yet to take. */
+    #sending = new Set();
+    #hold;
     #controller = new AbortController();
 
     /**
@@ -59,6 +63,9 @@ export class TextEdits {
         if (count) {
             this.#count = new CharacterCount(field, count);
         }
+
+        // A submission of the form the field is in waits while an edit of it is on its way.
+        this.#hold = SubmissionHold.track(this);
 
         this.#source.listen(() => this.#sendsOnInput && this.#send(false), () => this.#send(true), this.#controller.signal);
 
@@ -104,6 +111,21 @@ export class TextEdits {
         return { start, removed: before.length - start - end, inserted: after.slice(start, after.length - end) };
     }
 
+    /** The field the edits are of. */
+    get element() {
+        return this.#element;
+    }
+
+    /** Whether an edit is still on its way to the owner. */
+    get isDelivering() {
+        return this.#sending.size > 0;
+    }
+
+    /** Settles once every edit sent so far has reached the owner, or failed on its way. */
+    get delivered() {
+        return Promise.allSettled([...this.#sending]);
+    }
+
     /**
      * Writes a text of the owner's own into the field, returning the revision it stands at.
      * @param {string} text
@@ -126,7 +148,7 @@ export class TextEdits {
             return false;
         }
 
-        this.#report('ReplaceAsync', this.#revision, Transfer.of(this.#text)).catch(error => this.#fail(error));
+        this.#deliver(this.#report('ReplaceAsync', this.#revision, Transfer.of(this.#text)));
 
         return true;
     }
@@ -143,6 +165,7 @@ export class TextEdits {
     dispose() {
         this.#controller.abort();
         this.#count?.dispose();
+        this.#hold.dispose();
     }
 
     #send(isCommit) {
@@ -156,7 +179,14 @@ export class TextEdits {
         this.#text = text;
         this.#isCommitted = isCommit;
 
-        this.#report('EditAsync', ++this.#revision, start, removed, Transfer.of(inserted), isCommit).catch(error => this.#fail(error));
+        this.#deliver(this.#report('EditAsync', ++this.#revision, start, removed, Transfer.of(inserted), isCommit));
+    }
+
+    // A send is on its way until the owner has taken it or it failed, which is reported.
+    #deliver(sending) {
+        const delivery = sending.catch(error => this.#fail(error));
+        this.#sending.add(delivery);
+        delivery.finally(() => this.#sending.delete(delivery));
     }
 
     #fail(error) {

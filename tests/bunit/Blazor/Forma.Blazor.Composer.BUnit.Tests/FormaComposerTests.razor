@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Microsoft.AspNetCore.Components.Forms
 @using Bunit.Rendering
 @using Forma.Blazor.Components.Composer.Plugins
 @using Forma.Blazor.Components.Composer.RichTextEditor
@@ -992,6 +993,27 @@
 
             // Act
             await cut.Find("button.forma-button:not([aria-label])").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal("typed", saved);
+        }
+
+        [Fact]
+        public async Task Should_hand_a_plain_form_s_valid_submit_the_plain_text_typed_inside_its_commit_pause()
+        {
+            // Arrange — a form of the host's own, on its valid submit alone
+            using var ctx = new FormaComposerTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new TestModel();
+            string? saved = null;
+            var cut = ctx.Render(@<EditForm Model="model" OnValidSubmit="@(() => saved = model.Body.Content)">
+                <FormaComposer @bind-Value="model.Body" />
+                <button type="submit">Save</button>
+            </EditForm>);
+            await fields.TypeAsync(cut.Find("textarea"), "typed");
+
+            // Act
+            await cut.Find("form").SubmitAsync();
 
             // Assert
             Assert.Equal("typed", saved);
