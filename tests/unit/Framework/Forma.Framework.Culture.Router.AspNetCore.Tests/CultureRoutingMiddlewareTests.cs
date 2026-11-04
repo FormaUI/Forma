@@ -2,9 +2,12 @@ namespace Forma.Framework.Culture.Router.AspNetCore.Tests;
 
 using System.Globalization;
 
+using Forma.Tests.Culture;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 public sealed class CultureRoutingMiddlewareTests
 {
@@ -428,6 +431,29 @@ public sealed class CultureRoutingMiddlewareTests
 
         // Assert
         Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
+    }
+
+    [Fact]
+    public async Task Should_run_the_request_in_the_provider_s_cultures_for_its_route()
+    {
+        // Arrange
+        using var fixture = new CultureFixture();
+        await using var services = new ServiceCollection().AddSingleton<ICultureProvider>(new FakeCultureProvider()).BuildServiceProvider();
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/he/file-viewer");
+        context.RequestServices = services;
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        var requestCulture = context.Features.Get<IRequestCultureFeature>()!.RequestCulture;
+        Assert.Multiple(
+            () => Assert.Equal("he/he", $"{CultureInfo.CurrentCulture.Name}/{CultureInfo.CurrentUICulture.Name}"),
+            () => Assert.Equal(FakeCultureProvider.ShortTimePattern, CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern),
+            () => Assert.Equal(FakeCultureProvider.ShortTimePattern, CultureInfo.CurrentUICulture.DateTimeFormat.ShortTimePattern),
+            () => Assert.Same(CultureInfo.CurrentCulture, requestCulture.Culture),
+            () => Assert.Same(CultureInfo.CurrentUICulture, requestCulture.UICulture));
     }
 
     private static CultureRouter CreateRouter(CulturePrefix prefix)

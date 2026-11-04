@@ -36,7 +36,7 @@ public static class ServiceCollectionExtensions
         }
 
         // Ahead of the neutral registrations, which then keep these.
-        services.TryAddSingleton<ICultureState>(_ => new DefaultCultureState());
+        services.TryAddSingleton<ICultureState>(provider => new DefaultCultureState(provider.GetService<ICultureProvider>()));
         services.TryAddSingleton<ICultureStateIntegration>(provider => new ProcessCultureIntegration(provider.GetRequiredService<ICultureState>()));
         services.AddFormaCultureServices();
 

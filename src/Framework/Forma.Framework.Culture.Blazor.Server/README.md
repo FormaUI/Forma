@@ -20,6 +20,23 @@ builder.Services.AddFormaCultureServer(new CultureSwitchPolicy { Persistence = C
 builder.Services.AddFormaUI();
 ```
 
+## The request's cultures
+
+An application that registers an `ICultureProvider` and chooses each request's cultures through ASP.NET
+Core's request localization, which takes them from lists fixed at startup, adds `UseFormaRequestCulture()`
+after it. The step runs the request in the provider's cultures for the names request localization chose,
+setting `CultureInfo.CurrentCulture`, `CultureInfo.CurrentUICulture` and the request culture feature, so
+code reading them in a prerender reads the application's patterns, as a circuit the request starts does.
+Without a provider, it leaves the request in its own cultures; culture routing applies the provider
+itself.
+
+```csharp
+using Forma.Framework.Culture.Blazor.Server;
+
+app.UseRequestLocalization();
+app.UseFormaRequestCulture();
+```
+
 ## License
 
 Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

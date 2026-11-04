@@ -39,6 +39,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [Culture routing](src/Framework/Forma.Framework.Culture.Router/README.md) registers only its own services, so `AddFormaCultureRouting` goes before or after a product's registrar; registered first, it had left a WebAssembly runtime's culture state scoped.
 
+- [The application's cultures](docs/culture-design.md#the-applications-cultures): an application whose cultures carry patterns of their own, a company's 12- or 24-hour clock, registers an `ICultureProvider`, and every culture Forma holds or applies is the provider's for its name, a switch coming back from the page's culture coordinator by name among them, which had rebuilt the platform's culture and lost the application's patterns; culture routing runs a request in the provider's cultures, and `UseFormaRequestCulture` does after request localization.
+
 - The state notifier takes subscriptions from any thread and notifies every subscriber where one fails, where it had stopped at the first failure.
 
 - [The input router](docs/input-router-design.md#a-fields-pending-edit) commits the focused text field's pending edit before it routes an action or a dismissal, an editable element's among them, so a shortcut pressed in a field that updates on change reads the text as it stands; [the DOM engine](src/Framework/Forma.Framework.Browser.Interop/README.md) keeps a text field's running count of its characters in the browser, as part of the field's edits.

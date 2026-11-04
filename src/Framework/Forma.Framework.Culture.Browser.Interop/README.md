@@ -22,7 +22,10 @@ each WebAssembly runtime:
 
 Each is added with `TryAdd`, so a host's own registration made first is the one used.
 `CultureCoordinatorRegistration.RegisterAsync()` registers the scope's state with the coordinator, which
-adopts the pair the page accepted, and `CoordinatedCultureSwitch` requests each switch through it.
+adopts the pair the page accepted, and `CoordinatedCultureSwitch` requests each switch through it. The
+coordinator delivers each pair by its names, and the registration hands the state the application's
+`ICultureProvider`'s culture for each name, or the platform's where none is registered; a delivery the
+provider fails is logged as an error under `CultureCoordinatorRegistration`.
 
 The coordinator starts from the culture marker `FormaPageHead` publishes in the page's head, the cultures
 the server rendered the page in; a page without it can't be coordinated, and every registration fails

@@ -113,6 +113,39 @@ instance; no startup check builds a scoped state in the root
 provider to look. The state knows nothing of navigation, addresses, cookies or the document; the switch
 does.
 
+### The application's cultures
+
+An application can write dates, numbers or times with patterns of its own in a culture that keeps its
+platform name, as a company's 12- or 24-hour clock does. A pair crosses the page by its names, to the
+coordinator and back, in the marker and in a culture address, and a name alone stands for the platform's
+culture, so the application tells Forma its culture for each name through a provider of its own:
+
+```csharp
+public interface ICultureProvider
+{
+    CultureInfo GetCulture(string name);
+}
+```
+
+- Where one is registered, every culture Forma holds or applies is the provider's for its name: the
+  state's start and every pair it applies, whichever switch accepted the pair, each pair the coordinator
+  delivers by name, and a request's cultures where culture routing sets them. Without one, a name the
+  coordinator delivers stands for the platform's culture, and a culture a switch is given is held as it
+  is.
+- The provider returns a culture carrying the name it is asked for, since the document's language, the
+  culture addresses and the coordinator name a culture by its name. A culture under another name is
+  rejected with `InvalidOperationException` and changes nothing, and a delivery the provider fails is
+  logged, since the coordinator hands that failure to the switch that requested the pair alone.
+- The provider takes a lifetime the state reading it can resolve: on a server, scoped where its cultures
+  differ by user scope; under WebAssembly, whose runtime is one user scope, and for a Blazor Hybrid
+  application's culture, whose state is the application's, a singleton.
+- A request's cultures are its pipeline's to choose. Culture routing chooses the provider's. ASP.NET
+  Core's request localization takes its cultures from lists fixed at startup, so a host choosing the
+  request's cultures through it adds the request step after it, `UseFormaRequestCulture`, which applies
+  the provider's cultures for the names it chose to the request's ambient cultures and its request culture
+  feature, so the host's own code reads them in a prerender as Forma's output does, which reads the
+  state.
+
 ## One switch for the page
 
 A page can hold more than one runtime, islands of Interactive Server beside islands of WebAssembly, or
@@ -703,9 +736,9 @@ as an integration with ASP.NET Core does across .NET:
 
 | Assembly | Holds |
 | --- | --- |
-| `Forma.Framework.Culture` | The culture state's abstraction, its integration contract and its default, the switch's abstraction, the culture version, the local switch and the registrar, with no dependency on ASP.NET Core or navigation |
+| `Forma.Framework.Culture` | The culture state's abstraction, its integration contract and its default, the switch's abstraction, the culture provider's abstraction, the culture version, the local switch and the registrar, with no dependency on ASP.NET Core or navigation |
 | `Forma.Framework.Culture.Browser.Interop` | The document's culture coordinator: its script, which holds every policy, building an address switch's destination and resolving an interactive landing from the published mapping; the initializer that reads the marker and the published policy and releases a closed circuit's registration; the registration that keeps a culture state on the accepted pair and reports a page's landing; the switch that requests through the coordinator; and the culture addressing a page's culture follows, the contract culture routing gives, through which the head publishes the document's base and the mapping and the switch refuses a pair no route carries |
-| `Forma.Framework.Culture.Blazor.Server` | The circuit handler that applies the culture before every inbound activity and registers the circuit's state with the coordinator |
+| `Forma.Framework.Culture.Blazor.Server` | The circuit handler that applies the culture before every inbound activity and registers the circuit's state with the coordinator, and the request step that runs a request in the culture provider's cultures for the names its pipeline chose |
 | `Forma.Framework.Culture.Blazor.WebAssembly` | The startup that registers the runtime's state with the coordinator, and the application that sets the runtime's current and the process's default cultures on every application of a pair, the local switch's included |
 | `Forma.Framework.Culture.Blazor.WebView` | The application's culture state and its coordinator, which orders every switch across the web views and applies each accepted pair to the state, the process's default cultures and each web view's UI thread; the application's switch; each web view's registration with the coordinator, which its first component starts and its document's coordinator follows; and the startup checks that reject a cookie policy and a full-load switch |
 | `Forma.Framework.Culture.Router` | The culture routes, their tokens and the mapping between addresses and pairs, `CultureRouter`, which gives the page its culture addressing, the switcher, the page base and the culture route scope, with no dependency on ASP.NET Core, so the server, a WebAssembly runtime and the published mapping share one set of rules |
@@ -749,3 +782,4 @@ makes one call on each side and can still override any single service.
 | C25 | What does Forma refresh under Blazor Hybrid, and what the host? | Forma: the state and its subscribers, its components, each document and each address; the host: its own components that don't follow the state and its native user interface, through the state's notification |
 | C26 | How does a Blazor Hybrid application persist its choice? | In its own settings, saved as the state notifies and applied at startup; the switch's policy is the state alone, and a cookie policy is rejected at startup |
 | C27 | How do addresses follow under Blazor Hybrid? | The application's culture decides: a navigation a web view makes to an address in another culture requests a switch, every web view replaces its address in the accepted culture under Forma's mark, which requests nothing, a web view refusing it keeps its address while showing the pair, Back, Forward and a web view's first landing adopt the application's culture, and only an in-place switch is accepted, as [culture addresses across web views](#culture-addresses-across-web-views) sets out |
+| C28 | Which culture does a name stand for? | The application's, where it registers an `ICultureProvider`: every culture Forma holds or applies is the provider's for its name, checked to carry that name; the platform's otherwise, as [the application's cultures](#the-applications-cultures) sets out |

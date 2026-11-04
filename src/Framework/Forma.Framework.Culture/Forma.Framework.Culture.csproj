@@ -5,8 +5,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Forma.Framework.Culture.Blazor.Server" />
         <InternalsVisibleTo Include="Forma.Framework.Culture.Blazor.WebAssembly" />
         <InternalsVisibleTo Include="Forma.Framework.Culture.Blazor.WebView" />
+        <InternalsVisibleTo Include="Forma.Framework.Culture.Browser.Interop" />
+        <InternalsVisibleTo Include="Forma.Framework.Culture.Router.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>

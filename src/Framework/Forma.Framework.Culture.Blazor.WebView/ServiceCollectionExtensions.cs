@@ -49,7 +49,7 @@ public static class ServiceCollectionExtensions
         }
 
         // Ahead of the neutral registrations, which then keep these.
-        services.TryAddSingleton<ICultureState>(_ => new DefaultCultureState());
+        services.TryAddSingleton<ICultureState>(provider => new DefaultCultureState(provider.GetService<ICultureProvider>()));
         services.TryAddSingleton(provider => new ApplicationCultureCoordinator(
             provider.GetRequiredService<ICultureState>(),
             provider.GetRequiredService<CultureSwitchPolicy>(),
@@ -58,7 +58,8 @@ public static class ServiceCollectionExtensions
         services.TryAddScoped(provider => new CultureCoordinatorRegistration(
             provider.GetRequiredService<ApplicationCultureCoordinator>().DocumentIntegration,
             provider.GetJSRuntime(),
-            provider.GetRequiredService<ILogger<CultureCoordinatorRegistration>>()));
+            provider.GetRequiredService<ILogger<CultureCoordinatorRegistration>>(),
+            provider.GetService<ICultureProvider>()));
         services.AddFormaCultureSwitchPolicy();
         services.AddFormaCultureCoordination();
         services.TryAddSingleton<ICultureSwitch>(provider => new ApplicationCultureSwitch(provider.GetRequiredService<ApplicationCultureCoordinator>(), provider.GetService<ICultureAddressing>()));

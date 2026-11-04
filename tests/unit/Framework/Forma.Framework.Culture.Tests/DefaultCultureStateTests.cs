@@ -2,6 +2,7 @@ namespace Forma.Framework.Culture.Tests;
 
 using System.Globalization;
 
+using Forma.Tests.Culture;
 using Forma.Tests.Shared;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -487,6 +488,72 @@ public sealed class DefaultCultureStateTests
                 () => Assert.Equal(English, GetState(otherScope).Culture),
                 () => Assert.Equal(0, GetState(otherScope).Revision),
                 () => Assert.Equal(0, otherNotifications));
+        }
+    }
+
+    public sealed class Provision
+    {
+        private static ServiceProvider CreateServices(FakeCultureProvider cultureProvider)
+            => new ServiceCollection().AddSingleton<ICultureProvider>(cultureProvider).AddFormaCultureServices().BuildServiceProvider();
+
+        [Fact]
+        public void Should_start_in_the_provider_s_cultures_for_the_names_in_force()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("he");
+            CultureInfo.CurrentCulture = German;
+            using var services = CreateServices(new FakeCultureProvider());
+            using var scope = services.CreateScope();
+
+            // Act
+            var state = GetState(scope);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("de-DE/he", $"{state.Culture.Name}/{state.UICulture.Name}"),
+                () => Assert.Equal(FakeCultureProvider.ShortTimePattern, state.Culture.DateTimeFormat.ShortTimePattern),
+                () => Assert.Equal(FakeCultureProvider.ShortTimePattern, state.UICulture.DateTimeFormat.ShortTimePattern));
+        }
+
+        [Fact]
+        public async Task Should_apply_the_provider_s_cultures_for_the_names_a_pair_carries()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices(new FakeCultureProvider());
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+
+            // Act
+            await ApplyAsync(scope, German, Hebrew);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("de-DE/he", $"{state.Culture.Name}/{state.UICulture.Name}"),
+                () => Assert.Equal(FakeCultureProvider.ShortTimePattern, state.Culture.DateTimeFormat.ShortTimePattern),
+                () => Assert.Equal(FakeCultureProvider.ShortTimePattern, state.UICulture.DateTimeFormat.ShortTimePattern),
+                () => Assert.Equal(FakeCultureProvider.ShortTimePattern, CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern));
+        }
+
+        [Fact]
+        public async Task Should_reject_a_culture_the_provider_returns_under_another_name_and_keep_its_pair()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en");
+            var cultureProvider = new FakeCultureProvider();
+            using var services = CreateServices(cultureProvider);
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+            cultureProvider.ReturnedName = "fr-FR";
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => ApplyAsync(scope, German));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.IsType<InvalidOperationException>(exception),
+                () => Assert.Equal("en/en", $"{state.Culture.Name}/{state.UICulture.Name}"),
+                () => Assert.Same(CultureVersion.Initial, state.Version));
         }
     }
 }

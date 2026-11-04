@@ -69,6 +69,9 @@ public sealed class ServiceCollectionExtensionsTests
     private static string GetCurrent()
         => $"{CultureInfo.CurrentCulture.Name}/{CultureInfo.CurrentUICulture.Name}";
 
+    private static string GetPatterns(ICultureState state)
+        => $"{state.Culture.DateTimeFormat.ShortTimePattern}/{state.UICulture.DateTimeFormat.ShortTimePattern}";
+
     public sealed class Lifetimes : IDisposable
     {
         private readonly ProcessCultures _cultures = new();
@@ -203,6 +206,27 @@ public sealed class ServiceCollectionExtensionsTests
                 () => Assert.Equal("de-DE/he", GetDefaults()),
                 () => Assert.Equal([("de-DE", "he")], first.Followed),
                 () => Assert.Equal([("de-DE", "he")], second.Followed));
+        }
+
+        [Fact]
+        public async Task Should_hold_the_provider_s_cultures_for_a_switch_and_for_a_web_view_s_landing()
+        {
+            // Arrange
+            await using var provider = CreateServices(services => services.AddSingleton<ICultureProvider>(new FakeCultureProvider()));
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var webView = OpenWebView(provider, browser);
+            var state = provider.GetRequiredService<ICultureState>();
+            var patterns = $"{FakeCultureProvider.ShortTimePattern}/{FakeCultureProvider.ShortTimePattern}";
+
+            // Act
+            await SwitchAsync(provider, German, Hebrew);
+            var switched = $"{Describe(state)} {GetPatterns(state)} {CultureInfo.DefaultThreadCurrentCulture?.DateTimeFormat.ShortTimePattern}";
+            await browser.LandAsync("en-US", "en-US");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal($"de-DE/he {patterns} {FakeCultureProvider.ShortTimePattern}", switched),
+                () => Assert.Equal($"en-US/en-US {patterns}", $"{Describe(state)} {GetPatterns(state)}"));
         }
 
         [Fact]

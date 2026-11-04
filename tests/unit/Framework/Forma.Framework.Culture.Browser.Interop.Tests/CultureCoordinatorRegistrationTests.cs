@@ -303,4 +303,90 @@ public sealed class CultureCoordinatorRegistrationTests
                 () => Assert.Equal(CultureInfo.GetCultureInfo("en-US"), GetCultureState(scope).UICulture));
         }
     }
+
+    public sealed class Provision
+    {
+        // A state of the host's own, which applies the cultures it is handed as they are.
+        private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser browser, FakeCultureProvider cultureProvider, FakeLoggerFactory? loggerFactory = null)
+        {
+            var services = new ServiceCollection()
+                .AddSingleton<IJSRuntime>(browser.Runtime)
+                .AddSingleton<ICultureProvider>(cultureProvider)
+                .AddScoped<ICultureState>(_ => new FakeCultureState(CultureInfo.GetCultureInfo("en-US")));
+
+            if (loggerFactory is not null)
+            {
+                services.AddSingleton<ILoggerFactory>(loggerFactory).AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            }
+
+            return services.AddFormaCultureCoordination().BuildServiceProvider();
+        }
+
+        private static string DescribeLast(IServiceScope scope)
+        {
+            var applied = ((FakeCultureState)GetCultureState(scope)).Applied[^1];
+
+            return $"{applied.Culture.Name} {applied.Culture.DateTimeFormat.ShortTimePattern}/{applied.UICulture.Name} {applied.UICulture.DateTimeFormat.ShortTimePattern}";
+        }
+
+        [Fact]
+        public async Task Should_hand_the_state_the_provider_s_cultures_for_the_pair_the_page_accepted()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser("de-DE", "he");
+            await using var provider = CreateServices(browser, new FakeCultureProvider());
+            await using var scope = provider.CreateAsyncScope();
+
+            // Act
+            await GetRegistration(scope).RegisterAsync();
+
+            // Assert
+            Assert.Equal($"de-DE {FakeCultureProvider.ShortTimePattern}/he {FakeCultureProvider.ShortTimePattern}", DescribeLast(scope));
+        }
+
+        [Fact]
+        public async Task Should_hand_the_state_the_provider_s_cultures_for_each_pair_the_page_accepts()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            var cultureProvider = new FakeCultureProvider();
+            await using var provider = CreateServices(browser, cultureProvider);
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+
+            // Act
+            await browser.LandAsync("es-419", "he");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal($"es-419 {FakeCultureProvider.ShortTimePattern}/he {FakeCultureProvider.ShortTimePattern}", DescribeLast(scope)),
+                () => Assert.Equal(["en-US", "en-US", "es-419", "he"], cultureProvider.Requested));
+        }
+
+        [Fact]
+        public async Task Should_log_and_fail_a_delivery_whose_culture_the_provider_returns_under_another_name()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeCultureCoordinatorBrowser();
+            var cultureProvider = new FakeCultureProvider();
+            await using var provider = CreateServices(browser, cultureProvider, loggerFactory);
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+            cultureProvider.ReturnedName = "fr-FR";
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => browser.LandAsync("de-DE", "he"));
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.IsType<InvalidOperationException>(exception),
+                () => Assert.Equal(LogLevel.Error, entry.Level),
+                () => Assert.Single(((FakeCultureState)GetCultureState(scope)).Applied));
+        }
+    }
 }

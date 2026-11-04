@@ -6,6 +6,7 @@ using Forma.Framework.Culture.Router;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Selects the request culture from the first URL path segment, strips that segment before routing,
@@ -77,16 +78,21 @@ public sealed class CultureRoutingMiddleware
         return _next(context);
     }
 
+    // Each of the route's cultures is the application's culture provider's for its name, where it registered one.
     private static void ApplyCulture(HttpContext context, CultureRoute route)
     {
-        CultureInfo.CurrentCulture = route.Culture;
-        CultureInfo.CurrentUICulture = route.UICulture;
+        var cultureProvider = context.RequestServices?.GetService<ICultureProvider>();
+        var culture = CultureResolution.GetCulture(cultureProvider, route.Culture);
+        var uiCulture = CultureResolution.GetCulture(cultureProvider, route.UICulture);
 
-        context.Response.Headers.ContentLanguage = route.UICulture.Name;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = uiCulture;
+
+        context.Response.Headers.ContentLanguage = uiCulture.Name;
 
         // Blazor resolves the interactive circuit's culture from this feature.
         context.Features.Set<IRequestCultureFeature>(
-            new RequestCultureFeature(new RequestCulture(route.Culture, route.UICulture), provider: null));
+            new RequestCultureFeature(new RequestCulture(culture, uiCulture), provider: null));
     }
 
     private static bool IsDocument(string value)

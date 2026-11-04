@@ -15,11 +15,16 @@ using Microsoft.JSInterop;
 
 public sealed class ServiceCollectionExtensionsTests
 {
-    private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser browser, CultureArrangement arrangement = CultureArrangement.Coordinated, CultureSwitchPolicy? policy = null, bool isRouted = false)
+    private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser browser, CultureArrangement arrangement = CultureArrangement.Coordinated, CultureSwitchPolicy? policy = null, bool isRouted = false, ICultureProvider? cultureProvider = null)
     {
         var services = new ServiceCollection()
             .AddSingleton<IJSRuntime>(browser.Runtime)
             .AddSingleton<NavigationManager>(new FakeNavigationManager(new Uri("https://example.com/app/"), new Uri("https://example.com/app/")));
+
+        if (cultureProvider is not null)
+        {
+            services.AddSingleton(cultureProvider);
+        }
 
         if (isRouted)
         {
@@ -47,6 +52,12 @@ public sealed class ServiceCollectionExtensionsTests
     private static string GetDefaults()
         => $"{CultureInfo.DefaultThreadCurrentCulture?.Name}/{CultureInfo.DefaultThreadCurrentUICulture?.Name}";
 
+    private static string GetPatterns(ICultureState state)
+        => $"{state.Culture.DateTimeFormat.ShortTimePattern}/{state.UICulture.DateTimeFormat.ShortTimePattern}";
+
+    private static string GetDefaultPatterns()
+        => $"{CultureInfo.DefaultThreadCurrentCulture?.DateTimeFormat.ShortTimePattern}/{CultureInfo.DefaultThreadCurrentUICulture?.DateTimeFormat.ShortTimePattern}";
+
     public sealed class Coordinated : IDisposable
     {
         private readonly ProcessCultures _cultures = new();
@@ -70,6 +81,26 @@ public sealed class ServiceCollectionExtensionsTests
             Assert.Multiple(
                 () => Assert.Equal("de-DE/he", $"{state.Culture.Name}/{state.UICulture.Name}"),
                 () => Assert.Equal("de-DE/he", GetDefaults()));
+        }
+
+        [Fact]
+        public async Task Should_hold_the_provider_s_cultures_for_the_page_s_pair_and_set_the_process_s_defaults_to_them()
+        {
+            // Arrange
+            var browser = new FakeCultureCoordinatorBrowser("de-DE", "he");
+            await using var provider = CreateServices(browser, cultureProvider: new FakeCultureProvider());
+            await using var scope = provider.CreateAsyncScope();
+
+            // Act
+            await StartAsync(provider);
+
+            // Assert
+            var state = scope.ServiceProvider.GetRequiredService<ICultureState>();
+            var patterns = $"{FakeCultureProvider.ShortTimePattern}/{FakeCultureProvider.ShortTimePattern}";
+            Assert.Multiple(
+                () => Assert.Equal("de-DE/he", $"{state.Culture.Name}/{state.UICulture.Name}"),
+                () => Assert.Equal(patterns, GetPatterns(state)),
+                () => Assert.Equal(patterns, GetDefaultPatterns()));
         }
 
         [Fact]
@@ -167,6 +198,25 @@ public sealed class ServiceCollectionExtensionsTests
 
         public void Dispose()
             => _cultures.Dispose();
+
+        [Fact]
+        public async Task Should_switch_the_runtime_alone_to_the_provider_s_cultures()
+        {
+            // Arrange
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser, CultureArrangement.Independent, cultureProvider: new FakeCultureProvider());
+            await using var scope = provider.CreateAsyncScope();
+            await StartAsync(provider);
+
+            // Act
+            await scope.ServiceProvider.GetRequiredService<ICultureSwitch>().SwitchAsync(CultureInfo.GetCultureInfo("he"));
+
+            // Assert
+            var patterns = $"{FakeCultureProvider.ShortTimePattern}/{FakeCultureProvider.ShortTimePattern}";
+            Assert.Multiple(
+                () => Assert.Equal(patterns, GetPatterns(scope.ServiceProvider.GetRequiredService<ICultureState>())),
+                () => Assert.Equal(patterns, GetDefaultPatterns()));
+        }
 
         [Fact]
         public async Task Should_switch_the_runtime_alone_and_set_the_process_s_defaults_to_its_pair()

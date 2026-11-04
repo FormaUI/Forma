@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddScoped<ICultureState>(_ => new DefaultCultureState());
+        services.TryAddScoped<ICultureState>(provider => new DefaultCultureState(provider.GetService<ICultureProvider>()));
         RequireIntegration(services);
         services.TryAddScoped(provider => GetIntegration(provider.GetRequiredService<ICultureState>()));
 

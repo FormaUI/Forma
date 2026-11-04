@@ -5,16 +5,18 @@ using System.Globalization;
 using Forma.Framework.Events;
 
 /// <summary>The <see cref="ICultureState"/> a user scope holds, starting from the cultures in force when the scope first resolves it.</summary>
-internal sealed class DefaultCultureState : ICultureState, ICultureStateIntegration
+/// <remarks>Where the application registered an <see cref="ICultureProvider"/>, the state holds the provider's culture for each name it starts from or applies.</remarks>
+/// <param name="cultureProvider">The application's culture provider, where it registered one.</param>
+internal sealed class DefaultCultureState(ICultureProvider? cultureProvider = null) : ICultureState, ICultureStateIntegration
 {
     private readonly StateNotifier _notifier = new();
     private int _revision;
 
     /// <inheritdoc />
-    public CultureInfo Culture { get; private set; } = CultureInfo.ReadOnly(CultureInfo.CurrentCulture);
+    public CultureInfo Culture { get; private set; } = CultureInfo.ReadOnly(CultureResolution.GetCulture(cultureProvider, CultureInfo.CurrentCulture));
 
     /// <inheritdoc />
-    public CultureInfo UICulture { get; private set; } = CultureInfo.ReadOnly(CultureInfo.CurrentUICulture);
+    public CultureInfo UICulture { get; private set; } = CultureInfo.ReadOnly(CultureResolution.GetCulture(cultureProvider, CultureInfo.CurrentUICulture));
 
     /// <inheritdoc />
     public bool IsRightToLeft
@@ -38,8 +40,8 @@ internal sealed class DefaultCultureState : ICultureState, ICultureStateIntegrat
             return Task.CompletedTask;
         }
 
-        var culture = CultureInfo.ReadOnly(accepted.Culture);
-        var uiCulture = CultureInfo.ReadOnly(accepted.UICulture);
+        var culture = CultureInfo.ReadOnly(CultureResolution.GetCulture(cultureProvider, accepted.Culture));
+        var uiCulture = CultureInfo.ReadOnly(CultureResolution.GetCulture(cultureProvider, accepted.UICulture));
         Version = accepted.Version;
 
         if (IsHeld(culture, Culture) && IsHeld(uiCulture, UICulture))

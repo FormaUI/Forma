@@ -602,6 +602,27 @@ the switch, and a locale bound to the state looks its strings up in the state's 
 renders. A culture of the same name with patterns of its own, a 12- or 24-hour clock, is a change like
 any other.
 
+An application whose cultures carry patterns of their own registers an `ICultureProvider`, whose
+`GetCulture(name)` returns its culture for each name, carrying that name, and every culture Forma holds
+or applies is the provider's: the culture state's, a switch's coming back from the page by name, and a
+request's under culture routing. On a server, one whose cultures differ by user is registered scoped;
+a WebAssembly client registers it as a singleton, since its runtime is one user. A host
+choosing a request's cultures through ASP.NET Core's request localization, which takes them from lists
+fixed at startup, runs each request in the provider's cultures with `UseFormaRequestCulture()` after it,
+as [`Forma.Framework.Culture`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture/README.md)
+and [`Forma.Framework.Culture.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Blazor.Server/README.md)
+set out:
+
+```csharp
+using Forma.Framework.Culture;
+using Forma.Framework.Culture.Blazor.Server;
+
+builder.Services.AddScoped<ICultureProvider, ClockCultureProvider>();
+
+app.UseRequestLocalization();
+app.UseFormaRequestCulture();
+```
+
 A host's file overrides the library's and the pack's for the keys it holds.
 [`Forma.Framework.Localization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization/README.md)
 documents the lookup, the plural syntax and every place a file may sit, and

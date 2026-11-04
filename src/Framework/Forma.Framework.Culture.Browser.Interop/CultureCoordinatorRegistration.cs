@@ -20,6 +20,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     private const string ModulePath = "./_content/forma/culture/scripts/CultureCoordinator.js";
 
     private readonly ICultureStateIntegration _integration;
+    private readonly ICultureProvider? _cultureProvider;
     private readonly DotNetObjectReference<CultureCoordinatorReceiver> _receiverReference;
     private readonly JSEnvironment _environment;
     private readonly string _identity = Guid.CreateVersion7().ToString("N");
@@ -34,11 +35,13 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     /// <param name="integration">The integration that applies each accepted pair to the scope's culture state.</param>
     /// <param name="js">The scope's JS runtime.</param>
     /// <param name="logger">The logger the registration writes what it absorbs to.</param>
-    public CultureCoordinatorRegistration(ICultureStateIntegration integration, IJSRuntime js, ILogger<CultureCoordinatorRegistration> logger)
+    /// <param name="cultureProvider">The application's culture provider, which gives the culture for each name the coordinator delivers, where the application registered one.</param>
+    public CultureCoordinatorRegistration(ICultureStateIntegration integration, IJSRuntime js, ILogger<CultureCoordinatorRegistration> logger, ICultureProvider? cultureProvider = null)
     {
         ArgumentNullException.ThrowIfNull(integration);
 
         _integration = integration;
+        _cultureProvider = cultureProvider;
         _receiverReference = DotNetObjectReference.Create(new CultureCoordinatorReceiver(this));
         _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
         _module = new JSModule(_environment, ModulePath);
@@ -54,7 +57,8 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         return new CultureCoordinatorRegistration(
             services.GetRequiredService<ICultureStateIntegration>(),
             services.GetJSRuntime(),
-            services.GetRequiredService<ILogger<CultureCoordinatorRegistration>>());
+            services.GetRequiredService<ILogger<CultureCoordinatorRegistration>>(),
+            services.GetService<ICultureProvider>());
     }
 
     /// <summary>Registers the culture state with the page's coordinator, as each connection to the browser comes up, and adopts the pair the page accepted.</summary>
@@ -171,14 +175,30 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         await registration.InvokeVoidAsync("reportLanding", token, order).ConfigureAwait(false);
     }
 
-    /// <summary>Applies a pair the coordinator delivered, completing once the state holds it.</summary>
-    /// <remarks>The state's subscribers are notified after the delivery completes, so what waits on the delivery, a switch or a page's landing, goes on in the new pair as the rest of the page renders again; a notification that fails is logged.</remarks>
-    internal Task ApplyAsync(AcceptedCulture accepted)
+    /// <summary>Applies the pair of the cultures <paramref name="cultureName"/> and <paramref name="uiCultureName"/> name, which the coordinator delivered under <paramref name="version"/>, completing once the state holds it.</summary>
+    /// <remarks>Each culture is the application's culture provider's for its name, or the platform's where there is no provider; a provider that fails the delivery is logged, since the coordinator hands the failure to the switch that requested the pair alone. The state's subscribers are notified after the delivery completes, so what waits on the delivery, a switch or a page's landing, goes on in the new pair as the rest of the page renders again; a notification that fails is logged.</remarks>
+    /// <exception cref="InvalidOperationException">The culture provider returned no culture for a name, or a culture under another name.</exception>
+    internal Task ApplyAsync(string cultureName, string uiCultureName, CultureVersion version)
     {
-        if (!_isDisposed)
+        if (_isDisposed)
         {
-            _ = ObserveAsync(_integration.ApplyAsync(accepted), accepted);
+            return Task.CompletedTask;
         }
+
+        AcceptedCulture accepted;
+
+        try
+        {
+            accepted = new AcceptedCulture(CultureResolution.GetCulture(_cultureProvider, cultureName), CultureResolution.GetCulture(_cultureProvider, uiCultureName), version);
+        }
+        catch (Exception ex) when (_cultureProvider is not null)
+        {
+            CultureBrowserInteropLog.CultureNotProvided(_environment.Logger, ex, cultureName, uiCultureName, _environment.RuntimeId);
+
+            throw;
+        }
+
+        _ = ObserveAsync(_integration.ApplyAsync(accepted), accepted);
 
         return Task.CompletedTask;
     }

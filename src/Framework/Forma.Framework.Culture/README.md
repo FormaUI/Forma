@@ -18,6 +18,41 @@ The package comes with `formaui-net.Blazor`, and `AddFormaUI()` registers its st
 They are added with `TryAdd`, so a host registers its own `ICultureState` first to replace it. The state
 starts from the cultures in force when the scope first resolves it, which on a server are the request's.
 
+## The application's cultures
+
+An application that writes dates, numbers or times with patterns of its own, a 12- or 24-hour clock, in a
+culture that keeps its platform name registers an `ICultureProvider`, whose `GetCulture(name)` returns the
+application's culture for the name:
+
+```csharp
+using System.Globalization;
+using Forma.Framework.Culture;
+
+public sealed class ClockCultureProvider(ClockSettings clock) : ICultureProvider
+{
+    public CultureInfo GetCulture(string name)
+    {
+        var culture = (CultureInfo)CultureInfo.GetCultureInfo(name).Clone();
+        culture.DateTimeFormat.ShortTimePattern = clock.IsTwentyFourHour ? "HH:mm" : "h:mm tt";
+
+        return CultureInfo.ReadOnly(culture);
+    }
+}
+```
+
+```csharp
+builder.Services.AddScoped<ICultureProvider, ClockCultureProvider>();
+```
+
+The state then starts in the provider's cultures for the names in force and holds the provider's
+culture for the names of every pair it applies, whichever switch accepted the pair, so a switch that
+comes back from the page's culture coordinator by name keeps the application's patterns. The provider
+returns a culture carrying the name it is asked for; one under another name is rejected with
+`InvalidOperationException`, and the state keeps its pair. On a server it is registered scoped where its
+cultures differ by user; a WebAssembly client, whose runtime is one user, and a Blazor Hybrid application
+holding one culture register it as a singleton, since their states are the runtime's and the
+application's.
+
 ## Switching
 
 `ICultureSwitch.SwitchAsync(culture, uiCulture)` requests both cultures; an omitted `uiCulture` takes

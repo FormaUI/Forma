@@ -34,7 +34,8 @@ For a page request, the middleware:
 
 - sets `CultureInfo.CurrentCulture` to the route's culture and `CultureInfo.CurrentUICulture` to its UI
   culture, the `Content-Language` header to the UI culture, and the `IRequestCultureFeature` a Blazor
-  interactive circuit reads, from the route the first segment names or the default route;
+  interactive circuit reads, from the route the first segment names or the default route, each culture
+  the application's `ICultureProvider`'s for its name where one is registered;
 - removes the culture segment from the path before routing;
 - redirects with `302 Found` to the canonical address, keeping the path base and query, when the address
   used an alias, a token in another case, a token on the default route under `ExceptDefault`, or no token
