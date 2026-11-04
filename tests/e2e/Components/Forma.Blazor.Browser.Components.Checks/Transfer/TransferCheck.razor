@@ -1,0 +1,76 @@
+@page "/{Runtime}/transfer"
+@using System.Security.Cryptography
+@using System.Text
+@using Forma.Blazor.Components.Composer
+@using Forma.Framework.Composer.Documents
+
+@* Values a reader can make larger than a circuit message: a form of Forma's own, saved by its button, with a text area, a box
+   accepting eight characters and a rich text composer; and a form of the host's own, submitted through Forma's helper. What each
+   save saw, as its length and the start of its SHA-256, and how many saves ran, are written where the check reads them. *@
+<EditForm id="forma-form" Model="_forma">
+    <FormaTextArea Id="forma-notes" @bind-Value="_forma.Notes" Label="Notes" />
+    <FormaTextBox Id="forma-code" @bind-Value="_forma.Code" Label="Code" Options="CodeOptions" />
+    <FormaComposer Id="forma-body" @bind-Value="_forma.Body" />
+    <FormaButton Id="forma-save" OnClick="SaveForma">Save</FormaButton>
+</EditForm>
+<output id="forma-notes-saved">@_formaNotesSaved</output>
+<output id="forma-body-saved">@_formaBodySaved</output>
+<output id="forma-body-end">@_formaBodyEnd</output>
+
+<EditForm id="host-form" Model="_host" OnSubmit="@(form => form.SubmitAsync(SaveHostAsync))">
+    <FormaTextBox Id="host-name" @bind-Value="_host.Name" Label="Name" />
+    <FormaTextArea Id="host-notes" @bind-Value="_host.Notes" Label="Host Notes" />
+    <button id="host-save" type="submit">Submit</button>
+</EditForm>
+<output id="host-saved">@_hostSaved</output>
+<output id="saves">@_saves</output>
+
+@code {
+    private static readonly TextBoxOptions CodeOptions = new() { MaxLength = 8 };
+
+    private readonly FormaModel _forma = new();
+    private readonly HostModel _host = new();
+    private string? _formaNotesSaved;
+    private string? _formaBodySaved;
+    private string? _formaBodyEnd;
+    private string? _hostSaved;
+    private int _saves;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+
+    // A value as the check compares it: its length and the start of its SHA-256.
+    private static string Describe(string? value)
+        => value is null ? string.Empty : $"{value.Length}:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)))[..16]}";
+
+    private void SaveForma()
+    {
+        _saves++;
+        _formaNotesSaved = Describe(_forma.Notes);
+        _formaBodySaved = Describe(_forma.Body?.Content);
+        _formaBodyEnd = _forma.Body?.Content is { Length: > 0 } content ? content[^Math.Min(content.Length, 32)..] : string.Empty;
+    }
+
+    private Task SaveHostAsync(EditContext form)
+    {
+        _saves++;
+        _hostSaved = $"{_host.Name} {Describe(_host.Notes)}";
+
+        return Task.CompletedTask;
+    }
+
+    private sealed class FormaModel
+    {
+        public string? Notes { get; set; }
+
+        public string? Code { get; set; }
+
+        public ComposerDocument? Body { get; set; } = new(ComposerDocumentFormat.Html, string.Empty);
+    }
+
+    private sealed class HostModel
+    {
+        public string? Name { get; set; }
+
+        public string? Notes { get; set; }
+    }
+}
