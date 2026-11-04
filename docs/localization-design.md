@@ -11,7 +11,7 @@ linter's.
 
 A source reads its folder once, as the application starts; a path that names `$Culture` is
 read for whichever culture its file names, never chosen by the culture asked for; and a
-misplaced file is the linter's to report, since the build embeds files the ordinary way.
+misplaced file is the linter's to report, since the build embeds every locale file wherever it sits.
 
 ## Purpose
 
@@ -129,29 +129,52 @@ just before the extension, as in `Bars.he.json`. A source lists a satellite's fi
 names they would carry in the assembly itself, so every path reads them as it reads any other. A
 file whose culture is the whole of its name, as `.locales/he.json`'s is, stays in the assembly.
 
-A project embeds its files with its own item. Nothing about a path asks the build for more.
+The build embeds an assembly's locale files itself, through the targets the library ships, so a
+project names them nowhere. A locale file is a JSON file carrying the `$localization` entry, which
+every locale file carries, so the build finds the files by that entry wherever they sit in the
+project, outside its build output and outside any folder whose name starts with a dot but `.locales`,
+and embeds each once, under the resource name its path forms, with no culture taken from its name.
+Where a file sits is for the paths to read at runtime, so a project that states other paths in its
+`.locale.json` states nothing to the build. A file the project embeds through an item of its own is
+left to that item, under the name the item gives it. An application's files for other assemblies are
+embedded apart from its own, as [host files](#host-files) sets out, and a pack embeds its files by
+[its own rule](#a-pack-is-a-hosts-folder-that-ships-as-an-assembly).
 
 ### Host files
 
-A host's folder is named by `LocalesPath`, `.locales` beside the application by default. A folder
-whose name starts with a dot is hidden from a default listing on Linux and macOS and is read like
-any other; the source walks its folder with nothing skipped, since .NET treats such names as
-hidden and skips them unless told not to.
+A host keeps its files for other assemblies in the application's root `.locales`, the folder that
+also holds the application's own root files: a file directly in it is the application's own, read as
+any assembly's files are, and a folder inside it is an assembly's folder, holding the host's files
+for that assembly. The runtime reads a host's files one assembly at a time, so a file directly in the
+folder is never one of them.
 
-A WebAssembly client has no file system to read a folder from, and an application MAUI packages has
-none beside it, so in a client and in a Blazor Hybrid application a host's files are embedded in the
-application's assembly by the package's targets, under the resource names and discovery metadata the
-loader reads, and they stand where a host's folder stands in the order below. A Blazor Hybrid
-application is known to the build as an application that references its platform's web view package,
-WPF's, Windows Forms' or MAUI's. The targets reach every project that references the library, through
-another package too, and in such an application they embed the folder the project's `LocalesPath`
-property names, `.locales` beside the project by default, so a Web App's client can name its server's
-folder and both runtimes read one set of files. Each file is embedded as a
-pack's is, under its path in the folder with its folders joined by dots, after the prefix `.locales.`,
-which no resource name the build forms starts with, so the client's own embedded files and any other
-resource stay apart from them; and the assembly is marked as carrying them, which is how the loader,
-reading the entry assembly, finds them. They are read as a pack is, ahead of a host's folder, so a
-folder on disk, where one exists, still has the last word.
+A WebAssembly client has no file system to read a folder from, an application MAUI packages has none
+beside it, and a server's build copies none beside its binary, so the build embeds a host's files in
+the application's assembly. An application is a WebAssembly client, a server built on the Web SDK,
+or a Blazor Hybrid application, which the build knows as an application referencing its platform's
+web view package, WPF's, Windows Forms' or MAUI's, its output an executable or, on Android, the
+project the Android SDK marks as an application. Each file in an assembly's folder is embedded as a
+pack's is, under its path in the folder with its folders joined by dots, after the prefix
+`.locales.`, which the build reserves for a host's files and which no resource name it forms
+otherwise starts with, so the application's own files and any other resource stay apart from them.
+
+A Web App's server renders its client's components too, so it reads the host's files its client
+embedded as well as its own. As the server builds, it asks each project it references whether that
+project embedded a host's files, and records each one that did with `HostLocaleAssemblyAttribute`,
+naming its assembly; an assembly never names itself, since its own are found by their prefix. A Web
+App therefore keeps the host's files both runtimes read in its client, and its own strings beside
+the components they belong to, which every runtime that loads the assembly reads.
+
+The runtime finds the application by its entry assembly or, where the runtime names none, as a
+native host such as .NET for Android's or iOS's names none, among the loaded assemblies: each one
+that embeds a host's files, names an assembly that does, or records a pack. It reads each named
+assembly's files first, in the order the application's attributes name them, then the application's
+own, and then the host's folder on disk, which `LocalizationOptions.LocalesPath` names, `.locales`
+beside the application by default. No build fills that folder; a host places files in it to change
+a string without building again, and it has the last word. A named assembly that can't be loaded is
+reported and left out, as a pack is. A folder whose name starts with a dot is hidden from a default
+listing on Linux and macOS and is read like any other; the source walks its folder with nothing
+skipped, since .NET treats such names as hidden and skips them unless told not to.
 
 ## Roots
 
@@ -317,7 +340,8 @@ say and the file's name to spell, so a file declares no root and no path of its 
 For one type and one culture, entries are applied in this order, each overriding the one before:
 
 1. An assembly's own embedded files, then each locale pack in the order the entry assembly's
-   attributes name them, then host files: those a client embedded, then the host's folder.
+   attributes name them, then host files: each assembly the application names, in the order its
+   attributes name them, then the application's own, then the host's folder.
 2. Within a source, shallower anchors, then deeper ones.
 3. Within one anchor, files in the order of the assembly's paths, then the files whose rooted
    sections name the anchor.
@@ -333,7 +357,7 @@ different paths are both read, and the linter reports the pair.
 
 | # | Question | Decision |
 |---|---|---|
-| L1 | Is a file's placement a build setting or a library feature? | A library feature. A project embeds its files the ordinary way, and the paths are read at runtime, so every consumer gets it by referencing the package. |
+| L1 | Is a file's placement a build setting or a library feature? | A library feature. The build embeds every locale file wherever it sits, and the paths are read at runtime, so every consumer gets it by referencing the package. |
 | L2 | One canonical form or many? | One canonical form with two files: a folder's own `.locales` folder holding the folder's file per culture and, beside it, a file per culture named for a type or namespace beneath the folder, as every source's default, and one mechanism for any other form a project states. A host's folder is itself a folder of locale files, so inside it both may sit directly in the folder; the two forms resolve equally, at one anchor, with no precedence between them, and a file in both places is a duplicate. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
 | L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds localized strings alone, so neither carries the other's keys. |
@@ -349,3 +373,6 @@ different paths are both read, and the linter reports the pair.
 | L14 | Is a pack a source of its own kind? | It is a source of its own, reading what a host's folder reads: the same paths, one folder per assembly laid out by that assembly's declared root namespace, no config file of its own. The arrangement a host already writes is the one a pack ships. |
 | L15 | How is a pack found? | By an assembly attribute the pack's own targets file stamps the referencing project with, which also roots the pack for the trimmer. A pack declares no type, so a reference to it survives nowhere else: the compiler records none, and a trimmed publish deletes the assembly. A host writes a `PackageReference` and no code. |
 | L16 | Does the runtime read anything out of a pack's name? | No. A pack is loaded by name and read by its resources, neither of which is parsed, so any assembly can be a pack whatever it is called, for whichever assemblies it holds folders for, published by anyone. `Forma.Blazor.Locales.{Language}` is this repository's convention for its own. |
+| L17 | What does a project write to embed its locale files? | Nothing. The build finds them by the `$localization` entry every locale file carries and embeds each once, so configuration stays in `.locale.json` and `LocalizationOptions` and no fact about a locale file lives in a project file; a file a project embeds through an item of its own keeps that item's name. |
+| L18 | Where does a host's folder sit, and how does it reach a runtime with no file system? | In the application's root `.locales`, beside the application's own root files, a folder per assembly inside it; an application, a WebAssembly client, a Web SDK server or a Blazor Hybrid application, embeds it under the prefix `.locales.`, which the build reserves for it. |
+| L19 | How does a Web App's server read its client's host files? | Through `HostLocaleAssemblyAttribute`, which the server's build writes for each referenced project that embedded a host's files, naming its assembly; the server reads them before its own. The runtime finds the application by its entry assembly or, with none, by what a loaded assembly embeds, names or records. |
