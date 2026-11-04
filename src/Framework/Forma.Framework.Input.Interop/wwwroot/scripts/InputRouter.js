@@ -111,7 +111,7 @@ let suppressedClick = null;
 let pendingPress = null;
 const dispatched = new WeakSet();
 
-// The text fields edited since they last reported a change.
+// The text fields, and the editable elements an editor's script owns, edited since they last reported a change.
 const editedFields = new WeakSet();
 
 /**
@@ -702,12 +702,13 @@ function ensureDocumentListeners() {
 }
 
 function noteEdit(field) {
-    if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+    if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || (field instanceof HTMLElement && field.isContentEditable)) {
         editedFields.add(field);
     }
 }
 
-// The browser reports a text field's change as it loses the focus; an action routed while it holds the focus would run first.
+// The browser reports a text field's change as it loses the focus, and an editable's script commits at its own pace; an action routed
+// while it holds the focus would run first.
 function commitEdit() {
     const field = document.activeElement;
 

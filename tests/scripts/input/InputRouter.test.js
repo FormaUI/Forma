@@ -641,6 +641,23 @@ describe('InputRouter pending edits', () => {
         expect(order).toEqual(['change typed', 'action typed']);
     });
 
+    it("commits the focused editable's edit before it routes an action, as an editor's script hears it", () => {
+        const order = [];
+        const editor = document.createElement('div');
+        editor.setAttribute('contenteditable', 'true');
+        editor.tabIndex = 0;
+        grid().append(editor);
+        host({ preemptiveRoutes: [route('test.save', () => order.push(`action ${editor.textContent}`), keyBinding('s', { primary: true }))] });
+        editor.addEventListener('change', () => order.push(`change ${editor.textContent}`));
+        editor.focus();
+        editor.textContent = 'typed';
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+
+        key(editor, 's', { ctrlKey: true });
+
+        expect(order).toEqual(['change typed', 'action typed']);
+    });
+
     it("commits the focused field's edit before it dismisses", () => {
         const order = [];
         scope(popup(), { onDismiss: () => order.push('dismiss') }).activate();
