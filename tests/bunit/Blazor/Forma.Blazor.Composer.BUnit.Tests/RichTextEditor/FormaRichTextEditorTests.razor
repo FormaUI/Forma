@@ -3,6 +3,7 @@
 @using Forma.Blazor.Components.Composer.Dialogs
 @using Forma.Blazor.Components.Composer.Plugins
 @using Forma.Blazor.Components.Composer.Interop
+@using Forma.Blazor.Components.Composer.RichTextEditor.Views
 @using Forma.Framework.JavaScript.Interop
 @using Forma.Tests.Interop
 @using Microsoft.AspNetCore.Components.Web
@@ -311,6 +312,26 @@
 
             // Assert
             Assert.Equal(["commit", "exec"], canvas.Invocations.Select(invocation => invocation.Identifier).Where(identifier => identifier is "commit" or "exec"));
+        }
+
+        [Fact]
+        public async Task Should_show_a_view_once_its_canvas_committed_what_it_holds()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            _ = new TextFieldProbe(ctx);
+            var canvas = ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor.AddViewPlugin<RichTextPreviewViewPlugin>()));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            await cut.FindAll("[role=tab]")[1].ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains(canvas.Invocations, invocation => invocation.Identifier == "commit"),
+                () => Assert.NotNull(cut.Find(".forma-composer-preview")));
         }
 
         [Fact]

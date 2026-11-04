@@ -187,8 +187,14 @@ public sealed partial class FormaComposer(
         return Task.CompletedTask;
     }
 
+    // A view shows the document as the reader left it, and takes the editor's surface, whose edits go with it.
     private async Task ShowViewAsync(IComposerViewPlugin? view)
     {
+        if (view is not null && !await SettleEditorAsync())
+        {
+            return;
+        }
+
         _activeView = view;
 
         await RescopeAsync();

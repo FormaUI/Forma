@@ -140,8 +140,8 @@ saves stale data.
 Forma's buttons and input scopes inside a form wait for the form's fields, a component acting on its own field
 waits for that field, and a form's submit through Forma's helper waits for the form's. A composer in a form is
 one of its fields: the editor in its surface settles its edits, cuts its pause short and reports its selection,
-as it does before any command the composer runs and before the composer converts the document for another
-editor. A host's form opts in
+as it does before any command the composer runs, before the composer converts the document for another
+editor, and before a view takes the editor's place, since the editor's edits go with it. A host's form opts in
 through that helper, which takes the form's submit path in place of its own validation and handler call, so a
 host keeps its own components and gains the guarantee without deriving them from a Forma base. A host's own
 control outside a participating action reads the bound model as it stands.
