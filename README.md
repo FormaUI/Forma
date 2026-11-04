@@ -399,9 +399,13 @@ Aligning a row at its top edge keeps the boxes level when a validation message s
 them.
 
 A Forma text field sends the server what the reader changes as they type, rather than its whole
-text, so a long text never outgrows a message. A `FormaButton` or a `FormaInputScope` inside a form
-waits, before it acts, until every Forma field in the form holds what the reader typed, and doesn't
-act where a field's text didn't arrive, which that field says. A form of the host's own waits the
+text, so a long text never outgrows a message, and every other value a reader can make large in a
+Forma component, a composer's document, a selection across a long list, a page composed for
+printing, travels in pieces past a message's size. Blazor Server's default limit on a message, 32 KB,
+holds for all of them, so a host has no need to raise `MaximumReceiveMessageSize` for Forma. A
+`FormaButton` or a `FormaInputScope` inside a form waits, before it acts, until every Forma field in
+the form holds what the reader typed, a `FormaComposer` among them, and doesn't act where a field's
+text didn't arrive, which that field says. A form of the host's own waits the
 same way by submitting through `SubmitAsync`, which validates the form once its fields hold the
 reader's text and hands it on where it is valid, so Enter and a plain submit button wait too:
 

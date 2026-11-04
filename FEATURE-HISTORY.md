@@ -41,7 +41,11 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - The state notifier takes subscriptions from any thread and notifies every subscriber where one fails, where it had stopped at the first failure.
 
-- [The input router](docs/input-router-design.md#a-fields-pending-edit) commits the focused text field's pending edit before it routes an action or a dismissal, so a shortcut pressed in a field that updates on change reads the text as it stands; [the DOM engine](src/Framework/Forma.Framework.Browser.Interop/README.md) keeps a text field's running count of its characters in the browser, as `Text.AttachAsync`.
+- [The input router](docs/input-router-design.md#a-fields-pending-edit) commits the focused text field's pending edit before it routes an action or a dismissal, an editable element's among them, so a shortcut pressed in a field that updates on change reads the text as it stands; [the DOM engine](src/Framework/Forma.Framework.Browser.Interop/README.md) keeps a text field's running count of its characters in the browser, as part of the field's edits.
+
+- [The browser transfer](docs/browser-transfer-design.md): every value a reader can make large crosses to .NET inline under a budget or as a stream past it, so Blazor Server's default 32 KB hub limit holds whatever a reader types, pastes or selects in Forma's components, which had closed the circuit past it. Text fields send .NET the edits their text undergoes, and the rich text editor the edits of its document at its own pace; a range selected across a long list, a menu's order, a reopened image's or video's values, the text a link dialog opens on and a page composed for printing travel through the transfer; and no component takes a text field's events in a .NET handler, the window, the data tree, the pagination's entry, the explorer's search, the time box and the plain text editor following the focus, presses and the selection through the DOM watcher and their own scripts. [The edit boundary](docs/browser-transfer-design.md#the-edit-boundary): a `FormaButton` or a `FormaInputScope` in a form, and a host's form submitting through `SubmitAsync`, act once every field holds what the reader typed, a `FormaComposer` among them, and not at all where a field's text didn't arrive, which the field says; the composer settles its editor the same way before a command, a switch of editors or a view reads its document.
+
+- [The DOM watcher](src/Framework/Forma.Framework.Browser.Interop/README.md) names the item holding the focus within a surface, by an attribute its items carry, sends every focus state as it is measured so a press or key never overtakes it, and observes a text field's selection; [the JavaScript interop](src/Framework/Forma.Framework.JavaScript.Interop/README.md) reads what a script answers or sends through the transfer, an attached instance's answers among them.
 
 - [A host's locale files](src/Framework/Forma.Framework.Localization/README.md) are embedded in a Blazor Hybrid application's assembly, as in a WebAssembly client's, so an application MAUI packages reads them with no folder beside it.
 
@@ -71,6 +75,12 @@ Until the first release, a month may break what the one before it allowed, and e
 - `BasicFormattingPlugin` offers no subscript or superscript, their toolbar toggles, shortcuts or commands, unless `BasicFormattingPluginOptions.IncludeSubscriptAndSuperscript` is set.
 - `FormaColumnBase` derives from `FormaComponentBase` and carries no `CultureState` of its own; a column reads its cultures through `Context.CultureState`.
 - `Print.PrintPageAsync` takes the title the page goes by as a file.
+- A text field's value reaches .NET through its edits, not Blazor's binding: a test drives a Forma field through the field's script, and a field takes no `@oninput`, `@onchange` or focus handler of a host's own.
+- `DomText.AttachAsync` and `CharacterCountOptions` are gone; a field's count is `TextEditOptions.CountOutputId`. `TextEntry.ReadAndClearAsync` is gone.
+- `FormaInputBase.JoinForm` takes the function that settles the input's text; `TextEditScope` holds such functions.
+- `IComposerInteraction` gains `JoinEdits`, which an implementer of its own adds.
+- `RichTextCommandResult` carries the selection alone; `FormaRichTextEditor.HandleContentChangedAsync` is gone, and its activation handlers and `FormaDataView.HandleRangeSelectAsync` take a `JSTransfer`.
+- `Window.AttachAsync` takes the owner it tells of each press inside the window.
 
 <a id="2026-10"></a>
 
