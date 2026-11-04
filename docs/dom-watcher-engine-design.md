@@ -320,11 +320,32 @@ A native dialog element uses the engine's native dialog presentation object and 
 
 The component owns its `Opened` parameter, its confirmation and cancellation callbacks, and its close policy. A browser close can originate from a routed request, a dialog form or native behavior; these paths converge on one component close transition, so `OnClose` is raised once. The engine never interprets a native close as approval of an application-level confirmation.
 
+Closing on a scrim click is an opt-in presentation behavior, `scrimClose`, which the component establishes only where its close policy asks for it. A dialog's scrim is the dialog element's own box around its content:
+
+- A click whose original target is the dialog element itself closes the dialog during that click, and the close converges on the component's one close transition.
+- A click on a descendant leaves the dialog open, including a click on empty space inside a content wrapper.
+- The original target is the node the browser dispatched the click to. An input router that delegates the click compares that node with the registered dialog element, never the scope it matched the click to, since every click on the dialog's content lies within that scope.
+
 ### Frames
 
 A frame uses a placement registration over an explicitly designated box, which may be its own element or its presenter's element. Options supply the drag region, resize handles, bounds, limits, keyboard actions and visual markers, so the framework names no Forma component class.
 
-Movement and resizing stay local through a gesture, with a placement result at completion. A bounds change can also report a corrected placement. Gesture cancellation retains and reports the position reached, as the frame does today; a rollback policy is a separate API decision.
+Movement and resizing stay local through a gesture, with a placement result at completion. A bounds change can also report a corrected placement, and a registration centers an unplaced box that has bounds as it starts, reporting that placement too. Gesture cancellation retains and reports the position reached, as the frame does today; a rollback policy is a separate API decision.
+
+A component subscribes to its frame's placement results before it establishes the registration. A subscription receives only occurrences after it began, so one made later loses the placement the start reports.
+
+A completed gesture hands the box's geometry from the engine's writes to the component's render. Releasing a drag's writes exposes the placement Forma accepted for that drag, whether Forma took the placement the drag proposed, adjusted it, or kept the one before. The engine holds the box's `left`, `top`, `width` and `height` against the render while the gesture moves the box, and goes on holding them after the placement result until the hand-over, so a render arriving in between shows no frame of an older geometry. A placement the engine makes itself, centering a box as it starts or clamping one as its bounds resize, is held and handed over as a drag's is.
+
+The hand-over carries the accepted placement:
+
+- **Its moment.** The component whose render writes the box's geometry hands it over from `OnAfterRenderAsync` of the render that carries the accepted placement: the frame for its own box, the presenter for the presenter's box. Blazor calls it only once that render is applied in the browser: on Server and in a web view once the browser has acknowledged the render's batch, and under WebAssembly once the batch has been applied.
+- **Its registration.** A hand-over reaches only the registration of the owner that established it, on its element, so the presenter hands over through its frame, which owns the registration, or with the frame's owner.
+- **Its placement.** The engine writes the accepted placement into its holdings, then ends them, writing nothing back. A placement Forma keeps unchanged renders nothing new. Merely ending the holdings would then leave the drag's geometry in place of the accepted one, and restoring the earlier values would undo a placement the render already shows; writing the hand-over's own placement settles both.
+- **Its render.** Blazor builds a later render without waiting for an earlier one to be applied, so the component pairs each hand-over with the render that carries its placement, in render order, never with whichever render completes next.
+- **Its drag.** A hand-over names its drag, which the placement result carries; a placement the engine makes itself carries an identity of its own. A drag that starts while an earlier drag's hand-over is pending takes the holdings over, so the earlier hand-over releases and writes nothing, and no order of arrival brings an earlier drag's geometry back.
+- **Its absence.** While the connection is down the render stays unapplied, and the holdings keep the geometry where the reader left it. Disposal ends the holdings with the component.
+
+While the frame is maximized, the engine fills its bounds and reports no placement. It holds that geometry only while the frame is maximized, and ends the holding as the marker goes, since a holding kept past it would undo the render that writes the placement back.
 
 The component retains `Placement`, `Maximized`, `Locked`, its disabled state, handles, labels and callbacks. Frame geometry carries no workspace identity or stacking policy. Its arrow keys are input routes established through the engine.
 
@@ -400,7 +421,7 @@ Blazor owns rendered structure, domain state and ordinary markup. The engine own
 
 The engine owns, for example, native focus, scroll offsets, pointer capture, a checkbox's `indeterminate` property, object URLs for engine-owned preview sources, and a placement surface's geometry. Blazor-rendered content stays Blazor's: the engine offers no general `innerHTML` replacement or reordering of rendered children.
 
-Continuous visual updates need a deliberate ownership boundary. A placement surface uses an engine-owned property or layer, or an explicit transient-write and managed-commit protocol, and the component renders no competing value into the same property. A managed render acknowledges a committed placement before the transient state is released, and an external placement update during a gesture follows an explicit cancel-and-apply policy.
+Continuous visual updates need a deliberate ownership boundary. A placement surface uses an engine-owned property or layer, or an explicit transient-write and managed-commit protocol, and the component renders no competing value into the same property. A managed render takes a committed placement over before the transient state is released, through the hand-over [frames](#frames) set out, and an external placement update during a gesture follows an explicit cancel-and-apply policy.
 
 Separating individual CSS properties is not enough on its own, because Blazor can replace an entire rendered `style` attribute. Each component whose style the engine writes establishes an exclusive style owner or an isolated presentation layer, and keeps the host's ordinary `Style` and `Class` working.
 
