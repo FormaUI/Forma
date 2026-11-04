@@ -97,7 +97,8 @@ function Get-GitHubKey {
     return $token
 }
 
-# nuget.org takes an API key made under the account's settings, read from NUGET_API_KEY.
+# nuget.org takes an API key from NUGET_API_KEY: the release workflow's, which trusted publishing issues for the run, or by
+# hand one made under the account's settings.
 function Get-NuGetKey {
     if (-not $env:NUGET_API_KEY) {
         throw 'Set NUGET_API_KEY to an API key from nuget.org before publishing there.'

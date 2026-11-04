@@ -27,6 +27,9 @@ permissions:
   actions: read
   # The packages are pushed to the organization's feed.
   packages: write
+  # nuget.org exchanges the run's OIDC token for a key that lasts an hour, through its trusted publishing policy for this
+  # workflow.
+  id-token: write
 
 jobs:
   release:
@@ -44,11 +47,19 @@ jobs:
         with:
           global-json-file: global.json
 
+      # A dry run pushes nothing, so it asks for no key.
+      - name: Get a nuget.org key
+        id: login
+        if: github.event_name == 'push' || !inputs.dry-run
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Publish the release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
           IS_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
         run: |
           [xml] $props = Get-Content Directory.Build.props
