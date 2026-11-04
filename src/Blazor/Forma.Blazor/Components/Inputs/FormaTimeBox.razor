@@ -21,12 +21,9 @@
            aria-describedby="@InputDescribedBy"
            autocomplete="off"
            placeholder="@Placeholder"
-           @bind:get="_text"
-           @bind:set="HandleInputAsync"
-           @bind:event="oninput"
+           value="@ShownText"
            disabled="@Disabled"
            readonly="@ReadOnly"
-           @onchange="HandleChangeAsync"
            @onfocusout="HandleFocusOutAsync" />
     @* The button opens the list without taking the focus, which stays in the field the keys move the list from. *@
     <span class="forma-time-box-toggle" @onpointerdown:preventDefault @onmousedown:preventDefault>

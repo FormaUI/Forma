@@ -1,6 +1,8 @@
 namespace Forma.Blazor.Components;
 
+using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Browser.Interop;
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 using Forma.Framework.Culture;
 using Forma.Framework.JavaScript.Interop;
@@ -35,6 +37,8 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     private ComponentContext? _context;
     private bool _isSubscribedToCultureState;
+    private DomTextEdits? _textEdits;
+    private ValidationMessageStore? _textFaults;
 
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }
@@ -146,6 +150,11 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
             CultureState.Unsubscribe(HandleCultureChangedAsync);
         }
 
+        if (_textEdits is { } textEdits && EditContext is { } form)
+        {
+            form.GetTextEditScope().Remove(textEdits);
+        }
+
         try
         {
             await DisposeAsyncCore();
@@ -178,6 +187,38 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>Adds the declarations the component gives its root element in its current state.</summary>
     protected virtual void BuildRootStyle(CssStyleBuilder builder)
     {
+    }
+
+    /// <summary>Takes <paramref name="edits"/> as the input's text edits, which the form settles with its other fields before an action reads it.</summary>
+    protected void JoinForm(DomTextEdits edits)
+    {
+        ArgumentNullException.ThrowIfNull(edits);
+
+        _textEdits = edits;
+
+        if (EditContext is { } form)
+        {
+            form.GetTextEditScope().Add(edits);
+        }
+    }
+
+    /// <summary>Shows on the field, with <paramref name="message"/>, that its text can't follow the reader's edits while <paramref name="isFaulted"/>, and takes it off once it can.</summary>
+    protected void ReportTextFault(bool isFaulted, string message)
+    {
+        if (EditContext is not { } form || (!isFaulted && _textFaults is null))
+        {
+            return;
+        }
+
+        _textFaults ??= new ValidationMessageStore(form);
+        _textFaults.Clear(FieldIdentifier);
+
+        if (isFaulted)
+        {
+            _textFaults.Add(FieldIdentifier, message);
+        }
+
+        form.NotifyValidationStateChanged();
     }
 
     /// <summary>Adds the IDs of elements rendered by this component that describe the input.</summary>

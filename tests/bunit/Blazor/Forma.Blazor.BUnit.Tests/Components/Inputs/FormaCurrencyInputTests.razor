@@ -26,10 +26,11 @@
         }
 
         [Fact]
-        public void Should_draw_one_field_with_one_label_one_input_and_one_set_of_messages()
+        public async Task Should_draw_one_field_with_one_label_one_input_and_one_set_of_messages()
         {
             // Arrange
             using var ctx = new FormaCurrencyInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Product { Price = 12m };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -37,7 +38,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("1.234");
+            await fields.ChangeAsync(cut.Find("input"), "1.234");
 
             // Assert
             var input = cut.Find("input");
@@ -53,10 +54,11 @@
         }
 
         [Fact]
-        public void Should_write_the_amount_the_reader_types_to_the_model()
+        public async Task Should_write_the_amount_the_reader_types_to_the_model()
         {
             // Arrange
             using var ctx = new FormaCurrencyInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Product();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -64,7 +66,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("1,234.5");
+            await fields.ChangeAsync(cut.Find("input"), "1,234.5");
 
             // Assert
             Assert.Multiple(
@@ -97,10 +99,11 @@
         }
 
         [Fact]
-        public void Should_take_a_negative_amount_unless_the_host_sets_a_least_one()
+        public async Task Should_take_a_negative_amount_unless_the_host_sets_a_least_one()
         {
             // Arrange
             using var ctx = new FormaCurrencyInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Product();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -108,7 +111,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("-5");
+            await fields.ChangeAsync(cut.Find("input"), "-5");
 
             // Assert
             Assert.Equal(-5m, model.Price);
@@ -211,10 +214,11 @@
         [Theory]
         [InlineData("USD", "1.234", "The Price field must have no more than 2 decimal places.")]
         [InlineData("JPY", "1.5", "The Price field must be a whole number.")]
-        public void Should_report_more_places_than_the_currency_s_minor_units(string currency, string typed, string message)
+        public async Task Should_report_more_places_than_the_currency_s_minor_units(string currency, string typed, string message)
         {
             // Arrange
             using var ctx = new FormaCurrencyInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Product { Price = 1m };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -222,20 +226,21 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(1m, model.Price),
-                () => Assert.Equal(typed, cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(typed, fields.GetText(cut.Find("input"))),
                 () => Assert.Equal(message, cut.Find(".forma-field-message").TextContent));
         }
 
         [Fact]
-        public void Should_take_the_places_the_host_allows_beyond_the_minor_units()
+        public async Task Should_take_the_places_the_host_allows_beyond_the_minor_units()
         {
             // Arrange
             using var ctx = new FormaCurrencyInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Product();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -243,12 +248,12 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("0.1234");
+            await fields.ChangeAsync(cut.Find("input"), "0.1234");
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(0.1234m, model.Price),
-                () => Assert.Equal("0.1234", cut.Find("input").GetAttribute("value")));
+                () => Assert.Equal("0.1234", fields.GetText(cut.Find("input"))));
         }
 
         [Fact]
@@ -276,17 +281,18 @@
         {
             // Arrange — English reads 1,234 as a thousand and more, and German as one and a fraction
             using var ctx = new FormaCurrencyInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Product();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" />
             </FakeFormHost>);
-            cut.Find("input").Input("1,234");
+            await fields.TypeAsync(cut.Find("input"), "1,234");
             await ctx.ChangeCultureAsync("de-DE");
-            var textAfterChange = cut.Find("input").GetAttribute("value");
+            var textAfterChange = fields.GetText(cut.Find("input"));
 
             // Act
-            cut.Find("input").Change("1,234");
+            await fields.ChangeAsync(cut.Find("input"), "1,234");
 
             // Assert
             Assert.Multiple(

@@ -3,39 +3,19 @@
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@Required" Multiline="true">
     <ChildContent>
-        @* The binding names the event literally, and it tells the renderer which attribute the event updates, so typing outpacing a render is never reverted. *@
-        @if (UpdateOn is TextUpdate.Change)
-        {
-            <textarea id="@ElementId"
-                      data-rid="@Context.RuntimeId"
-                      class="@RootClass"
-                      style="@RootStyle"
-                      @attributes="AdditionalAttributes"
-                      @ref="RootElement"
-                      placeholder=" "
-                      rows="@Rows"
-                      maxlength="@MaxLength"
-                      @bind="CurrentValueAsString"
-                      @bind:event="onchange"
-                      aria-required="@(Required ? "true" : null)"
-                      aria-describedby="@DescribedBy"></textarea>
-        }
-        else
-        {
-            <textarea id="@ElementId"
-                      data-rid="@Context.RuntimeId"
-                      class="@RootClass"
-                      style="@RootStyle"
-                      @attributes="AdditionalAttributes"
-                      @ref="RootElement"
-                      placeholder=" "
-                      rows="@Rows"
-                      maxlength="@MaxLength"
-                      @bind="CurrentValueAsString"
-                      @bind:event="oninput"
-                      aria-required="@(Required ? "true" : null)"
-                      aria-describedby="@DescribedBy"></textarea>
-        }
+        @* The value is the browser's while the reader edits it, which the area's edits carry to the component. *@
+        <textarea id="@ElementId"
+                  data-rid="@Context.RuntimeId"
+                  class="@RootClass"
+                  style="@RootStyle"
+                  @attributes="AdditionalAttributes"
+                  @ref="RootElement"
+                  placeholder=" "
+                  rows="@Rows"
+                  maxlength="@MaxLength"
+                  value="@ShownText"
+                  aria-required="@(Required ? "true" : null)"
+                  aria-describedby="@DescribedBy"></textarea>
         @if (ShowCharacterCount)
         {
             <div class="forma-textarea-count">

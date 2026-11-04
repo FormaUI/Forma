@@ -222,6 +222,11 @@ public sealed partial class FormaPagination : FormaElementBase
     // A typed page outside the range settles on the nearest one; an unparseable entry gives way to the page shown.
     private async Task GoAsync()
     {
+        if (!await NavigationInput.SettleEditsAsync())
+        {
+            return;
+        }
+
         var entry = await TakeNavigationEntryAsync();
 
         if (int.TryParse(entry, NumberStyles.Integer, Context.CultureState.Culture, out var page))

@@ -1,6 +1,7 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "$shared": {
+    "Your text didn't arrive in full. Edit it to try again.": "הטקסט שלך לא הגיע במלואו. ערוך אותו כדי לנסות שוב.",
     "Clear": "נקה"
   },
   "FormaCalendar": {

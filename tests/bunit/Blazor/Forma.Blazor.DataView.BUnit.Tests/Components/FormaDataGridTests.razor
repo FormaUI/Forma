@@ -2922,6 +2922,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var employees = CreateEmployees();
             Employee? saved = null;
@@ -2939,7 +2940,7 @@
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
             // Act
-            cut.Find("tbody input").Change("1,250.5");
+            await fields.ChangeAsync(cut.Find("tbody input"), "1,250.5");
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert
@@ -2953,6 +2954,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
+            var fields = new TextFieldProbe(ctx);
             var employees = CreateEmployees();
             Employee? saved = null;
 
@@ -2973,7 +2975,7 @@
             var editor = cut.Find("tbody input");
             var role = editor.GetAttribute("role");
             var editorClass = editor.ClassName;
-            editor.Change("10:15");
+            await fields.ChangeAsync(editor, "10:15");
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert
@@ -2989,6 +2991,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
+            var fields = new TextFieldProbe(ctx);
             var employees = CreateEmployees();
             Employee? saved = null;
 
@@ -3009,7 +3012,7 @@
             var group = cut.Find("tbody [role=group]");
             var groupName = cut.Find($"[id='{group.GetAttribute("aria-labelledby")}']").FirstChild!.TextContent.Trim();
             var groupClass = group.ClassName;
-            cut.Find("tbody input[role=combobox]").Change("10:15");
+            await fields.ChangeAsync(cut.Find("tbody input[role=combobox]"), "10:15");
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert
@@ -3150,6 +3153,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
+            var fields = new TextFieldProbe(ctx);
             var employees = CreateEmployees();
             Employee? saved = null;
 
@@ -3166,7 +3170,7 @@
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
             // Act
-            cut.Find("tbody input").Input("Alicia");
+            await fields.TypeAsync(cut.Find("tbody input"), "Alicia");
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert
@@ -3180,6 +3184,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
+            var fields = new TextFieldProbe(ctx);
             var employees = CreateEmployees();
             var saved = false;
 
@@ -3196,7 +3201,7 @@
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
             // Act
-            cut.Find("tbody input").Input(string.Empty);
+            await fields.TypeAsync(cut.Find("tbody input"), string.Empty);
             var accepted = await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert
@@ -3210,6 +3215,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
+            var fields = new TextFieldProbe(ctx);
             var employees = CreateEmployees();
 
             var cut = ctx.Render(
@@ -3223,7 +3229,7 @@
             cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
             var grid = cut.FindComponent<FormaDataGrid<Employee>>();
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
-            cut.Find("tbody input").Input("Discarded");
+            await fields.TypeAsync(cut.Find("tbody input"), "Discarded");
 
             // Act
             await cut.InvokeAsync(() => grid.Instance.CancelEditAsync());

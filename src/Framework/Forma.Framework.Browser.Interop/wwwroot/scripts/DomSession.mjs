@@ -6,7 +6,7 @@ import { DomElements } from './DomElements.mjs';
 import { DomWatcher } from './DomWatcher.mjs';
 
 /** @typedef {{ dispose(): void }} Part */
-/** @typedef {new (elements: DomElements) => Part} EngineClass */
+/** @typedef {new (elements: DomElements, runtimeKey: string) => Part} EngineClass */
 
 export class DomSession {
     #runtimeKey;
@@ -43,7 +43,7 @@ export class DomSession {
      * @param {EngineClass} Engine The engine's class.
      */
     openEngine(Engine) {
-        return this.#engine ??= new Engine(this.#elements);
+        return this.#engine ??= new Engine(this.#elements, this.#runtimeKey);
     }
 
     /** Releases the owner's engine. */

@@ -46,7 +46,7 @@ public sealed class DomInteraction<TOptions> : IAsyncDisposable, IDomRegistratio
             await inputRouter.ConfigureAsync();
         }
 
-        return await _registration.TryInvokeAsync<bool>("attach", createsState: true, _session.RuntimeKey, new DomAttachRequest
+        return await _registration.TryInvokeAsync<bool>("attach", createsState: true, _session.RuntimeKey, null, new DomAttachRequest
         {
             Token = _registration.Token,
             Generation = generation,

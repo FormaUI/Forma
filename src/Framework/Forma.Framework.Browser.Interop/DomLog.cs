@@ -17,6 +17,12 @@ internal static partial class DomLog
     [LoggerMessage(Level = LogLevel.Debug, Message = "The state of registration {Token}.{Generation} was lost on its way to {RuntimeId} and not delivered.")]
     public static partial void StateLost(ILogger logger, Exception exception, string token, int generation, Guid runtimeId);
 
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The edit of registration {Token} at revision {Revision} was lost on its way to {RuntimeId}; its field sends its whole text in its place.")]
+    public static partial void EditLost(ILogger logger, Exception exception, string token, int revision, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The edit of registration {Token} at revision {Revision} falls outside the text {RuntimeId} holds; its field sends its whole text in its place.")]
+    public static partial void EditMisplaced(ILogger logger, string token, int revision, Guid runtimeId);
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "{Root} could not be imported for {Operation} by {RuntimeId}.")]
     public static partial void ImportFailed(ILogger logger, Exception exception, string root, string operation, Guid runtimeId);
 

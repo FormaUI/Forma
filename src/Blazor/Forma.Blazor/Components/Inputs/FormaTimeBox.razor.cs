@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Virtualization;
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
@@ -93,7 +94,11 @@ public sealed partial class FormaTimeBox : FormaComponentBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    // Each edit reaches the owner as it is typed, and the field's commit as its change.
+    private static readonly TextEditOptions EditOptions = new() { SendsOnInput = true };
+
     private InputRegistration _inputRegistration = default!;
+    private DomTextEdits _edits = default!;
     private ElementReference _anchorElement;
     private IReadOnlyList<TimeOnly>? _optionsSource;
     private TimeOption[] _options = [];
@@ -113,6 +118,10 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     private bool IsOpen
         => Popover is { IsOpen: true };
 
+    // The value the field renders, which a render never writes back over the reader's typing.
+    private string? ShownText
+        => _edits.GetShownText(_text);
+
     private string ListId
         => $"{ElementId}-list";
 
@@ -125,7 +134,10 @@ public sealed partial class FormaTimeBox : FormaComponentBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+    {
+        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _edits = new DomTextEdits(Context.DomEngine, Text, HandleTextChangedAsync);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -149,8 +161,12 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     }
 
     /// <inheritdoc />
-    protected override Task OnAfterRenderAsync(bool firstRender)
-        => _inputRegistration.SyncAsync(InputElement, IsOpen ? OpenProfile : ClosedProfile);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await _edits.SyncAsync(InputElement, _text, EditOptions);
+
+        await _inputRegistration.SyncAsync(InputElement, IsOpen ? OpenProfile : ClosedProfile);
+    }
 
     private string GetOptionId(int index)
         => $"{ElementId}-option-{index}";
@@ -165,15 +181,21 @@ public sealed partial class FormaTimeBox : FormaComponentBase
         return builder.ToStringOrNull()!;
     }
 
-    private Task HandleInputAsync(string? text)
+    private async Task HandleTextChangedAsync(TextChange change)
     {
-        _text = text;
+        var isEdited = change.Text != (_text ?? string.Empty);
+        _text = change.Text;
 
-        return OnInput.InvokeAsync(text);
+        if (isEdited)
+        {
+            await OnInput.InvokeAsync(change.Text);
+        }
+
+        if (change.IsCommit)
+        {
+            await OnChange.InvokeAsync(change.Text);
+        }
     }
-
-    private Task HandleChangeAsync(ChangeEventArgs args)
-        => OnChange.InvokeAsync(args.Value?.ToString());
 
     // Leaving the field closes the list; a press on the list or the button keeps the focus, so only a move elsewhere leaves.
     private Task HandleFocusOutAsync()
@@ -273,6 +295,8 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
+        await _edits.DisposeAsync();
+
         await _inputRegistration.DisposeAsync();
         await base.DisposeAsyncCore();
     }

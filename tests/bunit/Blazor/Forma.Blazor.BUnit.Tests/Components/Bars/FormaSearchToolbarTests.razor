@@ -63,12 +63,13 @@
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
+            var fields = new TextFieldProbe(ctx);
             var received = new List<string>();
             var cut = ctx.Render(
                 @<FormaSearchToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" Search="@(Search with { DebounceDelay = TimeSpan.Zero })" />);
 
             // Act
-            await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
+            await fields.TypeAsync(cut.Find("input"), "hello");
 
             // Assert
             Assert.Equal(["hello"], received);
@@ -79,6 +80,7 @@
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
+            var fields = new TextFieldProbe(ctx);
             var debouncer = new RecordingDebounceable();
             ctx.Services.AddSingleton<IDebounceable>(debouncer);
             var received = new List<string>();
@@ -87,9 +89,9 @@
             var input = cut.Find("input");
 
             // Act
-            await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "h" });
-            await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "he" });
-            await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
+            await fields.TypeAsync(input, "h");
+            await fields.TypeAsync(input, "he");
+            await fields.TypeAsync(input, "hello");
 
             // Assert
             Assert.Multiple(

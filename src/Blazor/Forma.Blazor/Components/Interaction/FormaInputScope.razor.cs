@@ -1,10 +1,12 @@
 namespace Forma.Blazor.Components.Interaction;
 
+using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>An element registered with the input router as a scope that answers the routes its profile declares.</summary>
 public sealed partial class FormaInputScope : FormaElementBase
@@ -32,13 +34,15 @@ public sealed partial class FormaInputScope : FormaElementBase
     /// <summary>Raised when the router dismisses this scope while it is foremost.</summary>
     [Parameter] public EventCallback<InputDismissal> OnDismiss { get; set; }
 
+    [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized()
         => _inputRegistration = new InputRegistration(
             InputRouter,
-            (action, input) => OnAction.InvokeAsync(new InputAction(action, input)),
+            HandleActionAsync,
             (action, reason) => OnDismiss.InvokeAsync(new InputDismissal(action, reason)));
 
     /// <inheritdoc />
@@ -48,6 +52,17 @@ public sealed partial class FormaInputScope : FormaElementBase
     /// <inheritdoc />
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(RootElement, Profile, active: Active, parent: Parent, within: Within);
+
+    // An action inside a form waits for the form's text fields to hold the reader's edits, and doesn't run where one can't.
+    private async Task HandleActionAsync(string action, InputInfo input)
+    {
+        if (CascadedEditContext is { } form && !await form.SettleEditsAsync())
+        {
+            return;
+        }
+
+        await OnAction.InvokeAsync(new InputAction(action, input));
+    }
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

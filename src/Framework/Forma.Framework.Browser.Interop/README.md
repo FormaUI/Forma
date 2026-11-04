@@ -70,13 +70,42 @@ it started moving.
 | `Focus` | `WatchAsync`: whether the reader is within the element | `AttachAsync`: where the focus goes inside the element, from Tab wrapping, regions Tab visits first, one roving Tab stop and the element taking the focus when the one holding it goes away, each selectable alone |
 | `Intersection` | `WatchAsync`: whether the element is in view of its root, or of the viewport, grown by a margin | |
 | `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
-| `Text` | | `AttachAsync`: a text field's running count of its characters, shown in an element's text as the reader types, with the most the field accepts after it |
+
+A text field's edits are a `DomTextEdits`, made over the component's engine as it initializes, from the
+text it first shows: .NET applies the edits the field sends, in revision order, as each is typed or as
+the field commits, and writes a text of its own through the field. The field renders `GetShownText`,
+which keeps the text it was last rendered or written with while the text its component shows is the
+one .NET holds, so a render never writes back over typing, and syncs the edits with that text after each
+render, which attaches them and writes a text of .NET's own into the field:
+
+```razor
+<input @ref="RootElement" value="@ShownText" />
+```
+
+```csharp
+private DomTextEdits _edits = default!;
+
+private string? ShownText
+    => _edits.GetShownText(CurrentValueAsString);
+
+protected override void OnInitialized()
+    => _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
+
+protected override Task OnAfterRenderAsync(bool firstRender)
+    => _edits.SyncAsync(RootElement, CurrentValueAsString, new TextEditOptions { SendsOnInput = true });
+```
+
+`TextEditOptions` also names the most the field accepts, and where it shows a running count of its
+characters, which the browser keeps as the reader types. The field takes no Blazor event, since Blazor
+sends the field's whole text with every event a .NET handler takes on it or on an element the event
+reaches.
 
 A host registers the bridge the watchers and engines of one circuit share their imports through with
 `AddFormaBrowserServices`, which `AddFormaUI` calls. On Interactive Server, `AddFormaUIServer` also
-registers `Forma.Framework.Browser.Blazor.Server`, which refreshes a circuit's observations once its
-connection is restored. A watcher made with no bridge imports through one of its own, and its
-observations recover through `RefreshAsync`.
+registers `Forma.Framework.Browser.Blazor.Server`, which refreshes a circuit's observations, and has
+each text field whose edits could have been lost send its whole text, once its connection is restored.
+A watcher made with no bridge imports through one of its own, and its observations recover through
+`RefreshAsync`.
 
 ## Using a wrapper
 

@@ -6,12 +6,12 @@
 @code {
     public sealed class Component
     {
-        private static void Fill(IRenderedComponent<ContainerFragment> cut, string label, string value)
+        private static Task FillAsync(TextFieldProbe fields, IRenderedComponent<ContainerFragment> cut, string label, string value)
         {
             var field = cut.FindAll("label.forma-field-label")
                 .Single(candidate => candidate.TextContent.Trim().TrimEnd('*', ' ') == label);
 
-            cut.Find($"#{field.GetAttribute("for")}").Input(value);
+            return fields.TypeAsync(cut.Find($"#{field.GetAttribute("for")}"), value);
         }
 
         private static void Confirm(IRenderedComponent<ContainerFragment> cut)
@@ -52,14 +52,15 @@
         }
 
         [Fact]
-        public void Should_name_only_the_detail_still_missing()
+        public async Task Should_name_only_the_detail_still_missing()
         {
             // Arrange
             using var ctx = new FormaComposerEmbedDialogTests();
+            var fields = new TextFieldProbe(ctx);
 
             // Act
             var cut = ctx.Render(@<FormaComposerEmbedDialog Opened="true" />);
-            Fill(cut, "Embed Type", "youtube");
+            await FillAsync(fields, cut, "Embed Type", "youtube");
             Confirm(cut);
 
             // Assert
@@ -67,16 +68,17 @@
         }
 
         [Fact]
-        public void Should_insert_once_both_details_are_given()
+        public async Task Should_insert_once_both_details_are_given()
         {
             // Arrange
             using var ctx = new FormaComposerEmbedDialogTests();
+            var fields = new TextFieldProbe(ctx);
             EmbedDialogResult? result = null;
 
             // Act
             var cut = ctx.Render(@<FormaComposerEmbedDialog Opened="true" OnInsert="value => result = value" />);
-            Fill(cut, "Embed Type", "  youtube  ");
-            Fill(cut, "Identifier", "  dQw4w9WgXcQ  ");
+            await FillAsync(fields, cut, "Embed Type", "  youtube  ");
+            await FillAsync(fields, cut, "Identifier", "  dQw4w9WgXcQ  ");
             Confirm(cut);
 
             // Assert

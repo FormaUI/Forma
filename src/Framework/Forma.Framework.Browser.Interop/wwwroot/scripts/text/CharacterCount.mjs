@@ -16,15 +16,17 @@ export class CharacterCount {
         this.#field = field;
         this.#output = output;
         this.#maxLength = maxLength;
-        field.addEventListener('input', () => this.#show(), { signal: this.#controller.signal });
+        field.addEventListener('input', () => this.show(), { signal: this.#controller.signal });
 
         // What was typed before the count attached is counted at once.
-        this.#show();
+        this.show();
     }
 
-    // UTF-16 code units, which the browser's own maxlength counts, written into the output's own text so the renderer that drew
-    // it goes on updating the same node.
-    #show() {
+    /**
+     * Shows the count of the text the field holds: UTF-16 code units, which the browser's own maxlength counts, written into the output's
+     * own text so the renderer that drew it goes on updating the same node.
+     */
+    show() {
         const text = document.getElementById(this.#output)?.firstChild;
 
         if (!(text instanceof Text)) {

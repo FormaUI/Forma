@@ -2,7 +2,6 @@ namespace Forma.Framework.Browser.Interop;
 
 using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Browser.Interop.Scrolling;
-using Forma.Framework.Browser.Interop.Text;
 
 using Microsoft.AspNetCore.Components;
 
@@ -33,10 +32,6 @@ public sealed class DomElement : IDomElementObservation
     /// <summary>The element's focus.</summary>
     public DomFocus Focus
         => field ??= new DomFocus(_watcher, _engine, Element);
-
-    /// <summary>The element's text entry, where it is a text field.</summary>
-    public DomText Text
-        => field ??= new DomText(_watcher, _engine, Element);
 
     /// <inheritdoc />
     IDomScrollObservation IDomElementObservation.Scroll

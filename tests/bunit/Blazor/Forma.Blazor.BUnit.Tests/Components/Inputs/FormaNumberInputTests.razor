@@ -9,6 +9,7 @@
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -17,7 +18,7 @@
             await ctx.ChangeCultureAsync("de-DE");
 
             // Act
-            cut.Find("input").Change("1.234,5");
+            await fields.ChangeAsync(cut.Find("input"), "1.234,5");
 
             // Assert
             Assert.Multiple(
@@ -75,10 +76,11 @@
         }
 
         [Fact]
-        public void Should_read_and_show_a_number_in_the_reader_s_culture()
+        public async Task Should_read_and_show_a_number_in_the_reader_s_culture()
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("es");
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -86,27 +88,28 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("1234,5");
+            await fields.ChangeAsync(cut.Find("input"), "1234,5");
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(1234.5m, model.Price),
-                () => Assert.Equal("1234,5", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("1234,5", fields.GetText(cut.Find("input"))),
                 () => Assert.Equal("1234.5", cut.Find("input").GetAttribute("aria-valuenow")));
         }
 
         [Fact]
-        public void Should_empty_a_number_that_can_be_empty_when_cleared()
+        public async Task Should_empty_a_number_that_can_be_empty_when_cleared()
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Stock { Count = 5 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(string.Empty);
+            await fields.ChangeAsync(cut.Find("input"), string.Empty);
 
             // Assert
             Assert.Multiple(
@@ -115,17 +118,18 @@
         }
 
         [Fact]
-        public void Should_keep_a_number_that_cannot_be_empty_and_report_the_field_when_cleared()
+        public async Task Should_keep_a_number_that_cannot_be_empty_and_report_the_field_when_cleared()
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Stock { Limit = 20 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Limit" Label="Usage limit" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(string.Empty);
+            await fields.ChangeAsync(cut.Find("input"), string.Empty);
 
             // Assert
             Assert.Multiple(
@@ -135,17 +139,18 @@
         }
 
         [Fact]
-        public void Should_keep_the_last_number_and_report_text_that_is_not_one()
+        public async Task Should_keep_the_last_number_and_report_text_that_is_not_one()
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Stock { Count = 5 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("five");
+            await fields.ChangeAsync(cut.Find("input"), "five");
 
             // Assert
             Assert.Multiple(
@@ -160,10 +165,11 @@
         [InlineData("de-DE", "1.234,5", 1234.5)]
         [InlineData("en-IN", "12,34,567", 1234567)]
         [InlineData("fr-FR", "1 234,5", 1234.5)]
-        public void Should_read_a_number_grouped_as_the_culture_groups_it(string name, string typed, double expected)
+        public async Task Should_read_a_number_grouped_as_the_culture_groups_it(string name, string typed, double expected)
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(name);
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -171,7 +177,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
@@ -186,10 +192,11 @@
         [InlineData("ar-SA", "-5", -5)]
         [InlineData("fa-IR", "-5", -5)]
         [InlineData("ur-PK", "-12", -12)]
-        public void Should_read_a_sign_typed_without_the_directional_mark_a_right_to_left_culture_writes_beside_it(string name, string typed, double expected)
+        public async Task Should_read_a_sign_typed_without_the_directional_mark_a_right_to_left_culture_writes_beside_it(string name, string typed, double expected)
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(name);
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -197,7 +204,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
@@ -212,10 +219,11 @@
         [InlineData("en-US", "1.234,5")]
         [InlineData("de-DE", "1.5")]
         [InlineData("en-IN", "1,234,567")]
-        public void Should_refuse_a_separator_that_does_not_group_as_the_culture_does(string name, string typed)
+        public async Task Should_refuse_a_separator_that_does_not_group_as_the_culture_does(string name, string typed)
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(name);
             var model = new Stock { Price = 2m };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -223,7 +231,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
@@ -234,10 +242,11 @@
         [Theory]
         [InlineData("-1", "The In stock field must be at least 0.")]
         [InlineData("11", "The In stock field must be at most 10.")]
-        public void Should_report_a_number_past_a_limit_and_keep_the_last_one(string typed, string message)
+        public async Task Should_report_a_number_past_a_limit_and_keep_the_last_one(string typed, string message)
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock { Count = 5 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -245,7 +254,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
@@ -254,18 +263,19 @@
         }
 
         [Fact]
-        public void Should_clear_a_report_once_a_number_is_typed_in_range()
+        public async Task Should_clear_a_report_once_a_number_is_typed_in_range()
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Stock { Count = 5 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Count" Label="In stock" Min="0" Max="10" />
             </FakeFormHost>);
-            cut.Find("input").Change("11");
+            await fields.ChangeAsync(cut.Find("input"), "11");
 
             // Act
-            cut.Find("input").Change("7");
+            await fields.ChangeAsync(cut.Find("input"), "7");
 
             // Assert
             Assert.Multiple(
@@ -483,12 +493,13 @@
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             var router = new InputRouterProbe(ctx);
             var model = new Stock { Count = 5 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
             </FakeFormHost>);
-            cut.Find("input").Change("five");
+            await fields.ChangeAsync(cut.Find("input"), "five");
 
             // Act
             await router.RouteAsync("number-input.increase", "ArrowUp");
@@ -524,13 +535,14 @@
         {
             // Arrange — the number stands at its limit, with a word typed over it
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             var router = new InputRouterProbe(ctx);
             var model = new Stock { Count = 10 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Count" Label="In stock" Max="10" />
             </FakeFormHost>);
-            cut.Find("input").Change("ten");
-            var unread = cut.Find("input").GetAttribute("value");
+            await fields.ChangeAsync(cut.Find("input"), "ten");
+            var unread = fields.GetText(cut.Find("input"));
 
             // Act — a step at the limit lands on the same number
             await router.RouteAsync("number-input.increase", "ArrowUp");
@@ -539,7 +551,7 @@
             Assert.Multiple(
                 () => Assert.Equal("ten", unread),
                 () => Assert.Equal(10, model.Count),
-                () => Assert.Equal("10", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("10", fields.GetText(cut.Find("input"))),
                 () => Assert.Empty(cut.FindAll(".forma-field-message")));
         }
 
@@ -576,10 +588,11 @@
         [InlineData(2, "1.234", "The Price field must have no more than 2 decimal places.")]
         [InlineData(1, "1.25", "The Price field must have no more than 1 decimal place.")]
         [InlineData(0, "1.5", "The Price field must be a whole number.")]
-        public void Should_report_more_decimal_places_than_the_field_takes_and_keep_the_text(int places, string typed, string message)
+        public async Task Should_report_more_decimal_places_than_the_field_takes_and_keep_the_text(int places, string typed, string message)
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock { Price = 1m };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -587,20 +600,21 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(1m, model.Price),
-                () => Assert.Equal(typed, cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(typed, fields.GetText(cut.Find("input"))),
                 () => Assert.Equal(message, cut.Find(".forma-field-message").TextContent));
         }
 
         [Fact]
-        public void Should_not_count_trailing_zeros_against_the_places_the_field_takes()
+        public async Task Should_not_count_trailing_zeros_against_the_places_the_field_takes()
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -608,7 +622,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("1.2300");
+            await fields.ChangeAsync(cut.Find("input"), "1.2300");
 
             // Assert
             Assert.Multiple(
@@ -617,10 +631,11 @@
         }
 
         [Fact]
-        public void Should_take_any_number_of_places_where_the_field_sets_no_limit()
+        public async Task Should_take_any_number_of_places_where_the_field_sets_no_limit()
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -628,7 +643,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("1.23456789");
+            await fields.ChangeAsync(cut.Find("input"), "1.23456789");
 
             // Assert
             Assert.Equal(1.23456789m, model.Price);
@@ -790,25 +805,26 @@
         {
             // Arrange — English reads 1,234 as a thousand and more, and German as one and a fraction
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Price" Label="Price" />
             </FakeFormHost>);
-            cut.Find("input").Input("1,234");
+            await fields.TypeAsync(cut.Find("input"), "1,234");
             await ctx.ChangeCultureAsync("de-DE");
-            var textAfterChange = cut.Find("input").GetAttribute("value");
+            var textAfterChange = fields.GetText(cut.Find("input"));
             var valueAfterChange = model.Price;
 
             // Act
-            cut.Find("input").Change("1,234");
+            await fields.ChangeAsync(cut.Find("input"), "1,234");
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal("1,234", textAfterChange),
                 () => Assert.Null(valueAfterChange),
                 () => Assert.Equal(1234m, model.Price),
-                () => Assert.Equal("1234", cut.Find("input").GetAttribute("value")));
+                () => Assert.Equal("1234", fields.GetText(cut.Find("input"))));
         }
 
         [Fact]
@@ -816,17 +832,18 @@
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Price" Label="Price" />
             </FakeFormHost>);
-            cut.Find("input").Input("1,234");
+            await fields.TypeAsync(cut.Find("input"), "1,234");
             await ctx.ChangeCultureAsync("de-DE");
             await ctx.ChangeCultureAsync("fr-FR");
 
             // Act
-            cut.Find("input").Change("1,234");
+            await fields.ChangeAsync(cut.Find("input"), "1,234");
 
             // Assert
             Assert.Equal(1234m, model.Price);
@@ -837,24 +854,25 @@
         {
             // Arrange — German would read 1,234 as one and a fraction, within the limit
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Price" Label="Price" Max="1000" />
             </FakeFormHost>);
-            cut.Find("input").Input("1,234");
-            cut.Find("input").Change("1,234");
+            await fields.TypeAsync(cut.Find("input"), "1,234");
+            await fields.ChangeAsync(cut.Find("input"), "1,234");
             await ctx.ChangeCultureAsync("de-DE");
-            var textAfterChange = cut.Find("input").GetAttribute("value");
+            var textAfterChange = fields.GetText(cut.Find("input"));
 
             // Act
-            cut.Find("input").Change("1,234");
+            await fields.ChangeAsync(cut.Find("input"), "1,234");
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal("1,234", textAfterChange),
                 () => Assert.Null(model.Price),
-                () => Assert.Equal("1,234", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("1,234", fields.GetText(cut.Find("input"))),
                 () => Assert.Equal("The Price field must be at most 1000.", cut.Find(".forma-field-message").TextContent));
         }
 
@@ -863,17 +881,18 @@
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock { Price = 1234.5m };
             var editContext = new EditContext(model);
             var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
                 <FormaNumberInput @bind-Value="model.Price" Label="Price" />
             </FakeFormHost>);
-            cut.Find("input").Input("1,234.5");
+            await fields.TypeAsync(cut.Find("input"), "1,234.5");
             await ctx.ChangeCultureAsync("de-DE");
 
             // Act
-            cut.Find("input").Change("1,234.5");
+            await fields.ChangeAsync(cut.Find("input"), "1,234.5");
             await ctx.ChangeCultureAsync("fr-FR");
 
             // Assert
@@ -888,17 +907,18 @@
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock { Price = 5m };
             var cut = ctx.Render<FormaNumberInput<decimal?>>(parameters => parameters
                 .Add(p => p.Value, model.Price)
                 .Add(p => p.ValueExpression, () => model.Price));
-            cut.Find("input").Input("1,234");
+            await fields.TypeAsync(cut.Find("input"), "1,234");
             await ctx.ChangeCultureAsync("de-DE");
 
             // Act
             cut.Render(parameters => parameters.Add(p => p.Value, 5m));
-            cut.Find("input").Change("1,234");
+            await fields.ChangeAsync(cut.Find("input"), "1,234");
 
             // Assert
             Assert.Equal("1234", cut.Find("input").GetAttribute("value"));
@@ -909,12 +929,13 @@
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock { Price = 5m };
             var cut = ctx.Render<FormaNumberInput<decimal?>>(parameters => parameters
                 .Add(p => p.Value, model.Price)
                 .Add(p => p.ValueExpression, () => model.Price));
-            cut.Find("input").Input("1,234");
+            await fields.TypeAsync(cut.Find("input"), "1,234");
             await ctx.ChangeCultureAsync("de-DE");
 
             // Act
@@ -929,13 +950,14 @@
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var router = new InputRouterProbe(ctx);
             var model = new Stock { Price = 5m };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Price" Label="Price" Step="0.5m" />
             </FakeFormHost>);
-            cut.Find("input").Input("1,234");
+            await fields.TypeAsync(cut.Find("input"), "1,234");
             await ctx.ChangeCultureAsync("de-DE");
 
             // Act
@@ -952,12 +974,13 @@
         {
             // Arrange — a number above the limit typed and refused
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             var router = new InputRouterProbe(ctx);
             var model = new Stock { Count = 50 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaNumberInput @bind-Value="model.Count" Label="In stock" Max="100" />
             </FakeFormHost>);
-            cut.Find("input").Change("150");
+            await fields.ChangeAsync(cut.Find("input"), "150");
 
             // Act
             await router.RouteAsync("number-input.decrease", "ArrowDown");
@@ -976,6 +999,7 @@
         {
             // Arrange
             using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Stock { Price = 1234.5m };
             var editContext = new EditContext(model);
@@ -985,7 +1009,7 @@
 
             if (isModified)
             {
-                cut.Find("input").Change("1,000.5");
+                await fields.ChangeAsync(cut.Find("input"), "1,000.5");
             }
 
             // Act

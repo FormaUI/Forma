@@ -398,6 +398,22 @@ field and a `FormaSearchBox` given a `Label` stand at one height:
 Aligning a row at its top edge keeps the boxes level when a validation message shows under one of
 them.
 
+A Forma text field sends the server what the reader changes as they type, rather than its whole
+text, so a long text never outgrows a message. A `FormaButton` or a `FormaInputScope` inside a form
+waits, before it acts, until every Forma field in the form holds what the reader typed, and doesn't
+act where a field's text didn't arrive, which that field says. A form of the host's own waits the
+same way by submitting through `SubmitAsync`, which validates the form once its fields hold the
+reader's text and hands it on where it is valid, so Enter and a plain submit button wait too:
+
+```razor
+<EditForm Model="Model" OnSubmit="@(form => form.SubmitAsync(SaveAsync))">
+    <FormaTextArea @bind-Value="Model.Notes" Label="Notes" />
+    <button type="submit">Save</button>
+</EditForm>
+```
+
+`SettleEditsAsync` does the waiting alone, for an action of the host's own that reads the form.
+
 Toasts and confirmation dialogs are raised through a service and drawn by a component placed once
 where it renders interactively, in a layout under global interactivity or on the page itself:
 

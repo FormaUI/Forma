@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -12,6 +13,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
 {
     private AutofillTracker _autofill = default!;
     private bool _isWatchingAutofill;
+    private DomTextEdits _edits = default!;
 
     /// <summary>The placeholder text shown when the input is empty.</summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -40,6 +42,13 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     /// <inheritdoc />
     protected override bool HasFieldContainer
         => HasLabel;
+
+    // The value the box renders, which a render never writes back over the reader's typing.
+    private string? ShownText
+        => _edits.GetShownText(CurrentValueAsString);
+
+    private TextEditOptions EditOptions
+        => new() { SendsOnInput = Options.UpdateOn is TextUpdate.Input, MaxLength = Options.MaxLength };
 
     // The floating label takes the placeholder's place over a labeled box.
     private string? EffectivePlaceholder
@@ -129,12 +138,18 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _autofill = new AutofillTracker(Context.JS);
+    {
+        _autofill = new AutofillTracker(Context.JS);
+        _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
+        JoinForm(_edits);
+    }
 
     // Autofill is watched once labeled, keeping the label floated over a browser-filled value; a label can arrive after the first render.
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await _edits.SyncAsync(RootElement, CurrentValueAsString, EditOptions);
+
         if (HasLabel && !_isWatchingAutofill)
         {
             // Claimed before the await, so a render arriving mid-call watches no second time.
@@ -143,8 +158,19 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
         }
     }
 
-    private void HandleInput(string? text)
-        => CurrentValueAsString = text;
+    /// <summary>Waits until the box's text holds every edit the reader made before the call.</summary>
+    /// <returns>Whether the text holds them.</returns>
+    internal Task<bool> SettleEditsAsync()
+        => _edits.SettleAsync();
+
+    private Task HandleTextChangedAsync(TextChange change)
+    {
+        ReportTextFault(change.IsFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
+        CurrentValueAsString = change.Text;
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
@@ -164,6 +190,8 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
+        await _edits.DisposeAsync();
+
         await _autofill.DisposeAsync();
         await base.DisposeAsyncCore();
     }

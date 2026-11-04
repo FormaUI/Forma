@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -20,6 +21,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     private IReadOnlyList<string> _advice = [];
     private bool _hasForbiddenTerm;
     private bool _isRevealed;
+    private DomTextEdits _edits = default!;
 
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -41,6 +43,9 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
 
     // One meter segment per rating.
     private static readonly int SegmentCount = Enum.GetValues<PasswordStrength>().Length;
+
+    // A password reaches the component as each character is typed, which the strength and the advice follow.
+    private static readonly TextEditOptions EditOptions = new() { SendsOnInput = true };
 
     private PasswordStrength? Strength
         => !StrengthOptions.ShowMeter || string.IsNullOrEmpty(CurrentValue) ? null
@@ -135,6 +140,10 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     private string AdviceId
         => $"{ElementId}-advice";
 
+    // The value the box renders, which a render never writes back over the reader's typing.
+    private string? ShownText
+        => _edits.GetShownText(CurrentValueAsString);
+
     // Every criterion the built-in rating still withholds.
     private IEnumerable<string> Advise(string value)
     {
@@ -190,6 +199,8 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     /// <inheritdoc />
     protected override void OnInitialized()
     {
+        _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
+        JoinForm(_edits);
         _autofill = new AutofillTracker(Context.JS);
         _messages = new ValidationMessageStore(EditContext);
         EditContext.OnValidationRequested += HandleValidationRequested;
@@ -203,10 +214,14 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
         Reassess();
     }
 
-    private void HandleInput(string? text)
+    private Task HandleTextChangedAsync(TextChange change)
     {
-        CurrentValueAsString = text;
+        ReportTextFault(change.IsFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
+        CurrentValueAsString = change.Text;
         Reassess();
+        StateHasChanged();
+
+        return Task.CompletedTask;
     }
 
     // Forbidden terms are validated first, since the advice reads their outcome.
@@ -291,12 +306,12 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
-        {
-            return;
-        }
+        await _edits.SyncAsync(RootElement, CurrentValueAsString, EditOptions);
 
-        await _autofill.AttachAsync(RootElement);
+        if (firstRender)
+        {
+            await _autofill.AttachAsync(RootElement);
+        }
     }
 
     /// <inheritdoc />
@@ -328,6 +343,8 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
+        await _edits.DisposeAsync();
+
         await _autofill.DisposeAsync();
         await base.DisposeAsyncCore();
     }

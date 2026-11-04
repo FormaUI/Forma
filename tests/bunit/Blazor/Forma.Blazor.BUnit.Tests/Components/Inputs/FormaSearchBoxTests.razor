@@ -69,30 +69,32 @@
         }
 
         [Fact]
-        public void Should_update_value_on_input()
+        public async Task Should_update_value_on_input()
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var fields = new TextFieldProbe(ctx);
             string? bound = null;
 
             // Act
             var cut = ctx.Render(@<FormaSearchBox Value="@bound" ValueChanged="v => bound = v" />);
-            cut.Find("input").Input("cover");
+            await fields.TypeAsync(cut.Find("input"), "cover");
 
             // Assert
             Assert.Equal("cover", bound);
         }
 
         [Fact]
-        public void Should_raise_on_search_instantly_without_a_debounce_delay()
+        public async Task Should_raise_on_search_instantly_without_a_debounce_delay()
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var fields = new TextFieldProbe(ctx);
             var searched = new List<string>();
 
             // Act
             var cut = ctx.Render(@<FormaSearchBox OnSearch="v => searched.Add(v)" />);
-            cut.Find("input").Input("cover");
+            await fields.TypeAsync(cut.Find("input"), "cover");
 
             // Assert
             Assert.Equal(["cover"], searched);
@@ -103,6 +105,7 @@
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var fields = new TextFieldProbe(ctx);
             var debouncer = new RecordingDebounceable();
             ctx.Services.AddSingleton<IDebounceable>(debouncer);
             var searched = new List<string>();
@@ -110,7 +113,7 @@
             var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = delay })" OnSearch="v => searched.Add(v)" />);
 
             // Act
-            await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "cov" });
+            await fields.TypeAsync(cut.Find("input"), "cov");
 
             // Assert
             Assert.Multiple(
@@ -123,13 +126,14 @@
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var fields = new TextFieldProbe(ctx);
             var debouncer = new RecordingDebounceable();
             ctx.Services.AddSingleton<IDebounceable>(debouncer);
             var searched = new List<string>();
             var cut = ctx.Render(@<FormaSearchBox OnSearch="v => searched.Add(v)" />);
 
             // Act
-            await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "cov" });
+            await fields.TypeAsync(cut.Find("input"), "cov");
 
             // Assert
             Assert.Multiple(
@@ -142,6 +146,7 @@
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var fields = new TextFieldProbe(ctx);
             var router = new InputRouterProbe(ctx);
             var debouncer = new RecordingDebounceable();
             ctx.Services.AddSingleton<IDebounceable>(debouncer);
@@ -150,7 +155,7 @@
             var input = cut.Find("input");
 
             // Act
-            await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "cover" });
+            await fields.TypeAsync(input, "cover");
             await router.RouteAsync("search-box.search", "Enter");
 
             // Assert
@@ -234,6 +239,7 @@
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var fields = new TextFieldProbe(ctx);
             var router = new InputRouterProbe(ctx);
             var searched = new List<string>();
             var delay = TimeSpan.FromSeconds(30);
@@ -241,7 +247,7 @@
             // Act
             var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = delay })" OnSearch="v => searched.Add(v)" />);
             var input = cut.Find("input");
-            input.Input("cover");
+            await fields.TypeAsync(input, "cover");
             await router.RouteAsync("search-box.search", "Enter");
 
             // Assert

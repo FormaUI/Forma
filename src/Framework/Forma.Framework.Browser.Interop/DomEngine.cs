@@ -21,6 +21,10 @@ public sealed class DomEngine : IAsyncDisposable
     public bool IsDisposed
         => _isDisposed || _watcher.IsDisposed;
 
+    /// <summary>The owner's side of the browser the engine acts through.</summary>
+    internal DomSession Session
+        => _watcher.Session;
+
     /// <summary>Gets <paramref name="element"/> as the engine acts on it and observes it.</summary>
     public DomElement GetElement(ElementReference element)
         => new(_watcher, this, element);

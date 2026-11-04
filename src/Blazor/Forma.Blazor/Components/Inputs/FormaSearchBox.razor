@@ -15,9 +15,7 @@
                    type="search"
                    dir="auto"
                    placeholder="@EffectivePlaceholder"
-                   @bind:get="Value"
-                   @bind:set="HandleInputAsync"
-                   @bind:event="oninput"
+                   value="@ShownText"
                    disabled="@Options.Disabled" />
             @if (!string.IsNullOrEmpty(Value))
             {

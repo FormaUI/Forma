@@ -1,0 +1,92 @@
+@inherits FormaBunitContext
+@code {
+    public sealed class Submitting
+    {
+        [Fact]
+        public async Task Should_submit_a_valid_form_once_its_fields_hold_the_reader_s_edits()
+        {
+            // Arrange
+            using var ctx = new EditContextExtensionsTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var form = new EditContext(model);
+            string? submitted = null;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" />
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), "Ada");
+
+            // Act
+            await cut.InvokeAsync(() => form.SubmitAsync(_ =>
+            {
+                submitted = model.Text;
+                return Task.CompletedTask;
+            }));
+
+            // Assert
+            Assert.Equal("Ada", submitted);
+        }
+
+        [Fact]
+        public async Task Should_submit_nothing_while_a_field_s_text_did_not_arrive()
+        {
+            // Arrange
+            using var ctx = new EditContextExtensionsTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var form = new EditContext(model);
+            var submissions = 0;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
+
+            // Act
+            await cut.InvokeAsync(() => form.SubmitAsync(
+                _ =>
+                {
+                    submissions++;
+                    return Task.CompletedTask;
+                },
+                _ =>
+                {
+                    submissions++;
+                    return Task.CompletedTask;
+                }));
+
+            // Assert
+            Assert.Equal(0, submissions);
+        }
+
+        [Fact]
+        public async Task Should_hand_an_invalid_form_to_its_invalid_submit()
+        {
+            // Arrange
+            using var ctx = new EditContextExtensionsTests();
+            var model = new FakeModel();
+            var form = new EditContext(model);
+            var store = new ValidationMessageStore(form);
+            form.OnValidationRequested += (_, _) => store.Add(FieldIdentifier.Create(() => model.Text), "Required");
+            var outcome = string.Empty;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" />
+            </FakeFormHost>);
+
+            // Act
+            await cut.InvokeAsync(() => form.SubmitAsync(
+                _ =>
+                {
+                    outcome = "valid";
+                    return Task.CompletedTask;
+                },
+                _ =>
+                {
+                    outcome = "invalid";
+                    return Task.CompletedTask;
+                }));
+
+            // Assert
+            Assert.Equal("invalid", outcome);
+        }
+    }
+}

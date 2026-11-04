@@ -152,20 +152,106 @@
         }
 
         [Fact]
-        public void Should_update_value_on_input()
+        public async Task Should_update_value_on_input()
         {
             // Arrange
             using var ctx = new FormaTextBoxTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTextBox @bind-Value="model.Text" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Input("Updated Value");
+            await fields.TypeAsync(cut.Find("input"), "Updated Value");
 
             // Assert
             Assert.Equal("Updated Value", model.Text);
+        }
+
+        [Fact]
+        public async Task Should_leave_the_reader_s_typing_in_the_field_rather_than_render_it_back()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel { Text = "Ada" };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Ada Lovelace", model.Text),
+                () => Assert.Equal("Ada", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("Ada Lovelace", fields.GetText(cut.Find("input"))));
+        }
+
+        [Fact]
+        public async Task Should_write_a_value_of_the_host_s_own_into_the_field()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var fields = new TextFieldProbe(ctx);
+            string? name = null;
+            var cut = ctx.Render<FormaTextBox>(parameters => parameters
+                .Add(p => p.Value, name)
+                .Add(p => p.ValueExpression, () => name));
+            await fields.TypeAsync(cut.Find("input"), "ada");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, "ADA"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("ADA", fields.GetText(cut.Find("input"))),
+                () => Assert.Equal("ADA", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_follow_typing_after_a_value_of_the_host_s_own()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var cut = ctx.Render<FormaTextBox>(parameters => parameters
+                .Add(p => p.Value, model.Text)
+                .Add(p => p.ValueChanged, (string? text) => model.Text = text)
+                .Add(p => p.ValueExpression, () => model.Text));
+            cut.Render(parameters => parameters.Add(p => p.Value, "ADA"));
+
+            // Act
+            await fields.TypeAsync(cut.Find("input"), "ADA!");
+
+            // Assert
+            Assert.Equal("ADA!", model.Text);
+        }
+
+        [Fact]
+        public async Task Should_say_on_its_field_that_its_text_did_not_arrive_and_take_it_off_once_it_does()
+        {
+            // Arrange — a box accepting two characters, sent a text the reader could not have typed into it
+            using var ctx = new FormaTextBoxTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
+            var whileLost = cut.FindAll(".forma-field-message").Select(message => message.TextContent).ToList();
+            await fields.TypeAsync(cut.Find("input"), "Al");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Your text didn't arrive in full. Edit it to try again."], whileLost),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")),
+                () => Assert.Equal("Al", model.Text));
         }
 
         [Fact]
@@ -728,10 +814,11 @@
         }
 
         [Fact]
-        public void Should_apply_validation_classes_when_valid_and_modified()
+        public async Task Should_apply_validation_classes_when_valid_and_modified()
         {
             // Arrange
             using var ctx = new FormaTextBoxTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             var editContext = new EditContext(model);
 
@@ -740,7 +827,7 @@
                 <FormaTextBox @bind-Value="model.Text" />
             </FakeFormHost>);
 
-            cut.Find("input").Input("Valid Text");
+            await fields.TypeAsync(cut.Find("input"), "Valid Text");
 
             // Assert
             var classes = cut.Find("input").ClassList;
@@ -769,10 +856,11 @@
         }
 
         [Fact]
-        public void Should_take_its_value_and_tell_the_form_as_its_edit_commits_when_it_updates_on_change()
+        public async Task Should_take_its_value_and_tell_the_form_as_its_edit_commits_when_it_updates_on_change()
         {
             // Arrange
             using var ctx = new FormaTextBoxTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             var editContext = new EditContext(model);
             var changedFields = new List<string>();
@@ -782,7 +870,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("typed");
+            await fields.ChangeAsync(cut.Find("input"), "typed");
 
             // Assert
             Assert.Multiple(

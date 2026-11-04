@@ -243,10 +243,11 @@
         }
 
         [Fact]
-        public void Should_filter_resources_by_search_query()
+        public async Task Should_filter_resources_by_search_query()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var fields = new TextFieldProbe(ctx);
             IReadOnlyList<ResourceInfo> resources =
             [
                 new ImageResourceInfo("https://example.com/cover.jpg"),
@@ -256,7 +257,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
 
             // Act
-            cut.Find("input.forma-search-box").Input("banner");
+            await fields.TypeAsync(cut.Find("input.forma-search-box"), "banner");
 
             // Assert
             var item = Assert.Single(cut.FindAll(".forma-explorer-item"));
@@ -691,10 +692,11 @@
         }
 
         [Fact]
-        public void Should_raise_on_rename_when_rename_is_confirmed()
+        public async Task Should_raise_on_rename_when_rename_is_confirmed()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var fields = new TextFieldProbe(ctx);
             IReadOnlyList<ResourceInfo> resources =
             [
                 new ImageResourceInfo("https://example.com/old-name.jpg")
@@ -706,7 +708,7 @@
             // Act
             cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
             cut.Find("[data-action='rename']").Click();
-            cut.Find("#forma-explorer-rename-input").Input("new-name.jpg");
+            await fields.TypeAsync(cut.Find("#forma-explorer-rename-input"), "new-name.jpg");
             cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert
@@ -739,10 +741,11 @@
         }
 
         [Fact]
-        public void Should_raise_on_folder_create_rename_and_delete()
+        public async Task Should_raise_on_folder_create_rename_and_delete()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var fields = new TextFieldProbe(ctx);
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             CatalogFolderCreateRequest? createReq = null;
             CatalogFolderRenameRequest? renameReq = null;
@@ -756,7 +759,7 @@
 
             // Act
             cut.Find(".forma-explorer-new-folder-tool").Click();
-            cut.Find("#forma-explorer-folder-input").Input("New Album");
+            await fields.TypeAsync(cut.Find("#forma-explorer-folder-input"), "New Album");
             cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert
@@ -766,7 +769,7 @@
             // Act
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-rename']").Click();
-            cut.Find("#forma-explorer-rename-input").Input("Updated Races");
+            await fields.TypeAsync(cut.Find("#forma-explorer-rename-input"), "Updated Races");
             cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert
@@ -784,10 +787,11 @@
         }
 
         [Fact]
-        public void Should_raise_folder_create_with_the_node_as_parent_when_created_from_its_own_row()
+        public async Task Should_raise_folder_create_with_the_node_as_parent_when_created_from_its_own_row()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var fields = new TextFieldProbe(ctx);
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             CatalogFolderCreateRequest? createReq = null;
 
@@ -798,7 +802,7 @@
             // Act
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-create']").Click();
-            cut.Find("#forma-explorer-folder-input").Input("2027");
+            await fields.TypeAsync(cut.Find("#forma-explorer-folder-input"), "2027");
             cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert
@@ -808,10 +812,11 @@
         }
 
         [Fact]
-        public void Should_raise_folder_create_at_the_root_from_the_sidebar_toolbar_while_inside_a_folder()
+        public async Task Should_raise_folder_create_at_the_root_from_the_sidebar_toolbar_while_inside_a_folder()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var fields = new TextFieldProbe(ctx);
             var folder = CatalogItem.ForFolder(new FolderResourceInfo("races") { Name = "Races" });
             IReadOnlyList<ICatalogItem> folders = [folder];
             CatalogFolderCreateRequest? createReq = null;
@@ -823,7 +828,7 @@
 
             // Act
             cut.Find(".forma-explorer-new-folder-tool").Click();
-            cut.Find("#forma-explorer-folder-input").Input("Archive");
+            await fields.TypeAsync(cut.Find("#forma-explorer-folder-input"), "Archive");
             cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert

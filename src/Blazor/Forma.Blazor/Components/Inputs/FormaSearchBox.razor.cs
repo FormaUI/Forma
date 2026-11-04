@@ -1,5 +1,8 @@
 namespace Forma.Blazor.Components.Inputs;
 
+using System.Diagnostics.CodeAnalysis;
+
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 using Forma.Framework.Events;
 using Forma.Framework.Input;
@@ -20,7 +23,11 @@ public sealed partial class FormaSearchBox : FormaElementBase
         InputRoutes = [new InputRoute(SearchAction, new KeyBinding("Enter"))],
     };
 
+    // A search reaches the component as each character is typed.
+    private static readonly TextEditOptions EditOptions = new() { SendsOnInput = true };
+
     private InputRegistration _inputRegistration = default!;
+    private DomTextEdits _edits = default!;
 
     /// <summary>The current text.</summary>
     [Parameter] public string Value { get; set; } = string.Empty;
@@ -42,6 +49,10 @@ public sealed partial class FormaSearchBox : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    // The value the box renders, which a render never writes back over the reader's typing.
+    private string? ShownText
+        => _edits.GetShownText(Value);
+
     private string EffectivePlaceholder
         => Options.Placeholder ?? L["Search..."].Value;
 
@@ -53,7 +64,10 @@ public sealed partial class FormaSearchBox : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+    {
+        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _edits = new DomTextEdits(Context.DomEngine, Value, HandleTextChangedAsync);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -63,15 +77,39 @@ public sealed partial class FormaSearchBox : FormaElementBase
     }
 
     /// <inheritdoc />
-    protected override Task OnAfterRenderAsync(bool firstRender)
-        => _inputRegistration.SyncAsync(RootElement, SearchProfile);
-
-    private async Task HandleInputAsync(string? text)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Value = text ?? string.Empty;
+        await _edits.SyncAsync(RootElement, Value, EditOptions);
 
+        await _inputRegistration.SyncAsync(RootElement, SearchProfile);
+    }
+
+    private async Task HandleTextChangedAsync(TextChange change)
+    {
+        if (change.Text == Value)
+        {
+            return;
+        }
+
+        Value = change.Text;
+        StateHasChanged();
         await ValueChanged.InvokeAsync(Value);
-        await Debouncer.DebounceAsync(_ => OnSearch.InvokeAsync(Value), Options.DebounceDelay);
+
+        // The search waits out its delay apart from the edit, so the next keystroke's edit is applied meanwhile and restarts it.
+        _ = SearchAfterDelayAsync();
+    }
+
+    [SuppressMessage("Design", "CA1031", Justification = "The host's search failing is the component's own failure, handed to the renderer as it would be from an event.")]
+    private async Task SearchAfterDelayAsync()
+    {
+        try
+        {
+            await Debouncer.DebounceAsync(_ => OnSearch.InvokeAsync(Value), Options.DebounceDelay);
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
     }
 
     private async Task HandleActionAsync(string action, InputInfo input)
@@ -104,6 +142,9 @@ public sealed partial class FormaSearchBox : FormaElementBase
     protected override async ValueTask DisposeAsyncCore()
     {
         Debouncer.Cancel();
+
+        await _edits.DisposeAsync();
+
         await _inputRegistration.DisposeAsync();
         await base.DisposeAsyncCore();
     }

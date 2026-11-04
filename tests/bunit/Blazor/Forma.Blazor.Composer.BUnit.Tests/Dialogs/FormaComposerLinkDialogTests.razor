@@ -6,12 +6,12 @@
 @code {
     public sealed class Component
     {
-        private static void Fill(IRenderedComponent<ContainerFragment> cut, string label, string value)
+        private static Task FillAsync(TextFieldProbe fields, IRenderedComponent<ContainerFragment> cut, string label, string value)
         {
             var field = cut.FindAll("label.forma-field-label")
                 .Single(candidate => candidate.TextContent.Trim().TrimEnd('*', ' ') == label);
 
-            cut.Find($"#{field.GetAttribute("for")}").Input(value);
+            return fields.TypeAsync(cut.Find($"#{field.GetAttribute("for")}"), value);
         }
 
         private static void Confirm(IRenderedComponent<ContainerFragment> cut)
@@ -53,15 +53,16 @@
         [InlineData("javascript:alert(1)")]
         [InlineData("ftp://files.example.com")]
         [InlineData("just some text")]
-        public void Should_refuse_an_address_the_document_could_not_keep(string address)
+        public async Task Should_refuse_an_address_the_document_could_not_keep(string address)
         {
             // Arrange
             using var ctx = new FormaComposerLinkDialogTests();
+            var fields = new TextFieldProbe(ctx);
             var inserted = false;
 
             // Act
             var cut = ctx.Render(@<FormaComposerLinkDialog Opened="true" OnInsert="_ => inserted = true" />);
-            Fill(cut, "URL", address);
+            await FillAsync(fields, cut, "URL", address);
             Confirm(cut);
 
             // Assert
@@ -76,15 +77,16 @@
         [InlineData("/news/stage-12")]
         [InlineData("#results")]
         [InlineData("mailto:editor@epica.cc")]
-        public void Should_insert_an_address_the_document_may_keep(string address)
+        public async Task Should_insert_an_address_the_document_may_keep(string address)
         {
             // Arrange
             using var ctx = new FormaComposerLinkDialogTests();
+            var fields = new TextFieldProbe(ctx);
             LinkDialogResult? result = null;
 
             // Act
             var cut = ctx.Render(@<FormaComposerLinkDialog Opened="true" OnInsert="value => result = value" />);
-            Fill(cut, "URL", address);
+            await FillAsync(fields, cut, "URL", address);
             Confirm(cut);
 
             // Assert
@@ -94,15 +96,16 @@
         }
 
         [Fact]
-        public void Should_trim_the_address_before_inserting_it()
+        public async Task Should_trim_the_address_before_inserting_it()
         {
             // Arrange
             using var ctx = new FormaComposerLinkDialogTests();
+            var fields = new TextFieldProbe(ctx);
             LinkDialogResult? result = null;
 
             // Act
             var cut = ctx.Render(@<FormaComposerLinkDialog Opened="true" OnInsert="value => result = value" />);
-            Fill(cut, "URL", "  https://example.com  ");
+            await FillAsync(fields, cut, "URL", "  https://example.com  ");
             Confirm(cut);
 
             // Assert
@@ -127,15 +130,16 @@
         }
 
         [Fact]
-        public void Should_insert_an_anchor_without_judging_it_as_an_address()
+        public async Task Should_insert_an_anchor_without_judging_it_as_an_address()
         {
             // Arrange
             using var ctx = new FormaComposerLinkDialogTests();
+            var fields = new TextFieldProbe(ctx);
             LinkDialogResult? result = null;
 
             // Act
             var cut = ctx.Render(@<FormaComposerLinkDialog Opened="true" IsAnchor="true" OnInsert="value => result = value" />);
-            Fill(cut, "Anchor Name", "results");
+            await FillAsync(fields, cut, "Anchor Name", "results");
             Confirm(cut);
 
             // Assert
@@ -145,16 +149,17 @@
         }
 
         [Fact]
-        public void Should_name_the_link_after_the_text_the_author_selected()
+        public async Task Should_name_the_link_after_the_text_the_author_selected()
         {
             // Arrange
             using var ctx = new FormaComposerLinkDialogTests();
+            var fields = new TextFieldProbe(ctx);
             LinkDialogResult? result = null;
             var selected = new LinkDialogResult { IsAnchor = false, Name = "stage twelve", Href = string.Empty, OpenInNewTab = false };
 
             // Act
             var cut = ctx.Render(@<FormaComposerLinkDialog Opened="true" Reopening="selected" OnInsert="value => result = value" />);
-            Fill(cut, "URL", "https://example.com");
+            await FillAsync(fields, cut, "URL", "https://example.com");
             Confirm(cut);
 
             // Assert

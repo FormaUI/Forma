@@ -6,6 +6,7 @@ import { DomEngine } from './DomEngine.mjs';
 import { DomSessionRegistry } from './DomSessionRegistry.mjs';
 
 /** @typedef {import('./DomEngine.mjs').Request} Request */
+/** @typedef {import('./DomWatcher.mjs').Receiver} Receiver */
 
 /** The commands each capability runs by name. */
 const Commands = {
@@ -40,10 +41,23 @@ export async function run(capability, command, target, ...args) {
 /**
  * Attaches an interaction for the owner, returning whether it attached.
  * @param {string} runtimeKey
+ * @param {Receiver | null} receiver The owner's receiver, which an interaction reporting to its owner reports through.
  * @param {Request} request
  */
-export function attach(runtimeKey, request) {
-    return DomSessionRegistry.open(runtimeKey).openEngine(DomEngine).attach(request);
+export function attach(runtimeKey, receiver, request) {
+    return DomSessionRegistry.open(runtimeKey).openEngine(DomEngine).attach(request, receiver);
+}
+
+/**
+ * Runs one of the commands the owner's interaction offers, returning its result, or null where the generation is no longer the token's.
+ * @param {string} runtimeKey
+ * @param {string} token
+ * @param {number} generation
+ * @param {string} command
+ * @param {...unknown} args
+ */
+export function invoke(runtimeKey, token, generation, command, ...args) {
+    return DomSessionRegistry.find(runtimeKey)?.engine?.invoke(token, generation, command, args) ?? null;
 }
 
 /** Releases one of the owner's interactions. */

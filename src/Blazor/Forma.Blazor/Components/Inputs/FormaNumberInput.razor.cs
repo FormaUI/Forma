@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
@@ -84,7 +85,11 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         : NumberType == typeof(short) ? (short.MinValue, short.MaxValue)
         : (decimal.MinValue, decimal.MaxValue);
 
+    // Each edit drafts the number as it is typed, and the field's commit reads it.
+    private static readonly TextEditOptions EditOptions = new() { SendsOnInput = true };
+
     private InputRegistration _inputRegistration = default!;
+    private DomTextEdits _edits = default!;
 
     // The edit in progress and the value it began over, which a different value bound to the field replaces.
     private readonly TextDraft _draft = new();
@@ -92,6 +97,14 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
+
+    // The text the field shows: the edit in progress, or the number bound to it.
+    private string? DisplayText
+        => _draft.Text ?? CurrentValueAsString;
+
+    // The value the input renders, which a render never writes back over the reader's typing.
+    private string? ShownText
+        => _edits.GetShownText(DisplayText);
 
     /// <inheritdoc />
     protected override bool HasFieldContainer
@@ -155,6 +168,8 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     /// <inheritdoc />
     protected override void OnInitialized()
     {
+        _edits = new DomTextEdits(Context.DomEngine, DisplayText, HandleTextChangedAsync);
+        JoinForm(_edits);
         if (!IsWhole && !IsBinaryFraction && NumberType != typeof(decimal))
         {
             throw new InvalidOperationException($"{nameof(FormaNumberInput<TValue>)} binds an int, a long, a short, a float, a double or a decimal, or a nullable one, not a {typeof(TValue).Name}.");
@@ -205,13 +220,34 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     }
 
     /// <inheritdoc />
-    protected override Task OnAfterRenderAsync(bool firstRender)
-        => _inputRegistration.SyncAsync(RootElement, StepProfile);
-
-    private void HandleChange(ChangeEventArgs args)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var text = args.Value?.ToString();
+        await _edits.SyncAsync(RootElement, DisplayText, EditOptions);
 
+        await _inputRegistration.SyncAsync(RootElement, StepProfile);
+    }
+
+    private Task HandleTextChangedAsync(TextChange change)
+    {
+        ReportTextFault(change.IsFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
+
+        if (change.IsCommit)
+        {
+            Commit(change.Text);
+        }
+        else
+        {
+            Draft(change.Text);
+        }
+
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    // Reads the number the field committed.
+    private void Commit(string text)
+    {
         Draft(text);
         CurrentValueAsString = text;
 
@@ -276,7 +312,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         _draft.Clear();
         CurrentValueAsString = next.ToString(Context.CultureState.Culture);
 
-        // A routed key is no event of the field's own, so the field draws the number it stepped to itself.
+        // A routed key is no event of the field's own, so the field renders the number it stepped to itself, and its edits write it in.
         StateHasChanged();
 
         return Task.CompletedTask;
@@ -517,6 +553,8 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
+        await _edits.DisposeAsync();
+
         await _inputRegistration.DisposeAsync();
         await base.DisposeAsyncCore();
     }

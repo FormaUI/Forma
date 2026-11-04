@@ -2,6 +2,7 @@ namespace Forma.Framework.Browser.Blazor.Server.Tests;
 
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Scrolling;
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Tests.Browser;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
@@ -21,6 +22,8 @@ public sealed class BrowserCircuitHandlerTests
         => new((path, identifier, _) => (path, identifier) switch
         {
             (FakeDomBrowser.WatcherPath, "attach") => new ScrollState(false, true, 0, 0),
+            (FakeDomBrowser.EnginePath, "attach") => true,
+            (FakeDomBrowser.EnginePath, "invoke") => true,
             _ => null,
         });
 
@@ -39,6 +42,30 @@ public sealed class BrowserCircuitHandlerTests
 
     public sealed class Reconnecting
     {
+        [Fact]
+        public async Task Should_have_each_text_field_send_its_whole_text_where_net_holds_another_revision()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var bridge = scope.ServiceProvider.GetRequiredService<DomBridge>();
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory), bridge);
+            await using var engine = new DomEngine(watcher);
+            await using var edits = new DomTextEdits(engine, "Ada", _ => Task.CompletedTask);
+            await edits.SyncAsync(new ElementReference("notes"), "Ada", new TextEditOptions { SendsOnInput = true });
+
+            // Act
+            await ConnectAsync(scope.ServiceProvider);
+
+            // Assert
+            var resend = Assert.Single(browser.Engine.Recorder.GetCalls("invoke"));
+            Assert.Multiple(
+                () => Assert.Equal("resend", resend.Arguments[3]),
+                () => Assert.Equal(0, resend.Arguments[4]));
+        }
+
         [Fact]
         public async Task Should_call_nothing_while_nothing_is_observed()
         {

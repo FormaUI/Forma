@@ -148,10 +148,11 @@
         }
 
         [Fact]
-        public void Should_filter_options_by_the_search_text()
+        public async Task Should_filter_options_by_the_search_text()
         {
             // Arrange
             using var ctx = new FormaMultiSelectTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
@@ -159,7 +160,7 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Act
-            cut.Find(".forma-multi-select-search").Input("run");
+            await fields.TypeAsync(cut.Find(".forma-multi-select-search"), "run");
 
             // Assert
             var remaining = cut.FindAll(".forma-multi-select-options .forma-checkbox-label");
@@ -168,10 +169,11 @@
         }
 
         [Fact]
-        public void Should_show_no_results_message_when_search_matches_nothing()
+        public async Task Should_show_no_results_message_when_search_matches_nothing()
         {
             // Arrange
             using var ctx = new FormaMultiSelectTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
@@ -179,7 +181,7 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Act
-            cut.Find(".forma-multi-select-search").Input("zzz");
+            await fields.TypeAsync(cut.Find(".forma-multi-select-search"), "zzz");
 
             // Assert
             Assert.Equal("No matches", cut.Find(".forma-multi-select-empty").TextContent);
@@ -220,10 +222,11 @@
         }
 
         [Fact]
-        public void Should_raise_on_add_new_with_the_search_text()
+        public async Task Should_raise_on_add_new_with_the_search_text()
         {
             // Arrange
             using var ctx = new FormaMultiSelectTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             string? raised = null;
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -231,7 +234,7 @@
                                           AllowAdd="true" OnAddNew="@(text => raised = text)" Label="Categories" />
             </FakeFormHost>);
             cut.Find(".forma-multi-select-trigger").Click();
-            cut.Find(".forma-multi-select-search").Input("Yoga");
+            await fields.TypeAsync(cut.Find(".forma-multi-select-search"), "Yoga");
 
             // Act
             cut.Find(".forma-multi-select-add").Click();
@@ -316,10 +319,11 @@
         }
 
         [Fact]
-        public void Should_not_offer_add_new_until_the_search_text_is_unmatched()
+        public async Task Should_not_offer_add_new_until_the_search_text_is_unmatched()
         {
             // Arrange
             using var ctx = new FormaMultiSelectTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" AllowAdd="true" Label="Categories" />
@@ -329,10 +333,10 @@
             // Act & Assert
             Assert.Empty(cut.FindAll(".forma-multi-select-add"));
 
-            cut.Find(".forma-multi-select-search").Input("Cycling");
+            await fields.TypeAsync(cut.Find(".forma-multi-select-search"), "Cycling");
             Assert.Empty(cut.FindAll(".forma-multi-select-add"));
 
-            cut.Find(".forma-multi-select-search").Input("Yoga");
+            await fields.TypeAsync(cut.Find(".forma-multi-select-search"), "Yoga");
             cut.Find(".forma-multi-select-add");
         }
 

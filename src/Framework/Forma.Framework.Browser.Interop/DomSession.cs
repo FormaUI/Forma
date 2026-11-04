@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,9 @@ internal sealed class DomSession
     private readonly DomBridge? _sharedBridge;
     private readonly List<IDomRegistration> _registrations = [];
     private readonly Dictionary<string, Func<int, JsonElement, Task>> _stateTargets = [];
+    private readonly Dictionary<string, DomTextEdits> _editTargets = [];
     private readonly HashSet<DomRoot> _reachedRoots = [];
+    private readonly SynchronizationContext? _context;
     private DomBridge? _ownBridge;
     private DotNetObjectReference<DomReceiver>? _receiver;
     private int _lastToken;
@@ -28,6 +31,7 @@ internal sealed class DomSession
 
         _js = js;
         _sharedBridge = bridge;
+        _context = SynchronizationContext.Current;
     }
 
     /// <summary>The text form of <see cref="RuntimeId"/>.</summary>
@@ -41,6 +45,10 @@ internal sealed class DomSession
     /// <summary>The owner's logger.</summary>
     public ILogger Logger
         => _js.Logger;
+
+    /// <summary>What a value the browser sends the owner accepts where its receiver names no maximum of its own.</summary>
+    public JSTransferOptions TransferOptions
+        => _js.TransferOptions;
 
     /// <summary>Whether the session has been released.</summary>
     public bool IsReleased { get; private set; }
@@ -74,11 +82,42 @@ internal sealed class DomSession
     public void AddStateTarget(string token, Func<int, JsonElement, Task> deliverAsync)
         => _stateTargets[token] = deliverAsync;
 
+    /// <summary>Routes the edits the browser delivers under <paramref name="token"/> to <paramref name="edits"/>.</summary>
+    public void AddEditTarget(string token, DomTextEdits edits)
+        => _editTargets[token] = edits;
+
+    /// <summary>Gets the text field's edits the browser delivers under <paramref name="token"/>.</summary>
+    public bool TryGetEditTarget(string token, [NotNullWhen(true)] out DomTextEdits? edits)
+        => _editTargets.TryGetValue(token, out edits);
+
+    /// <summary>Starts bringing every text field's edits back in step with its field, as the connection comes back.</summary>
+    /// <remarks>The connection comes back off the owner's context, where its edits run, so the resync is posted there.</remarks>
+    public void BeginResync()
+    {
+        if (_context is { } context)
+        {
+            context.Post(_ => Resync(), null);
+        }
+        else
+        {
+            Resync();
+        }
+    }
+
+    private void Resync()
+    {
+        foreach (var edits in _editTargets.Values.ToList())
+        {
+            _ = edits.ResyncAsync();
+        }
+    }
+
     /// <summary>Drops a registration released on its own.</summary>
     public void Remove(IDomRegistration registration)
     {
         _registrations.Remove(registration);
         _stateTargets.Remove(registration.Token);
+        _editTargets.Remove(registration.Token);
     }
 
     /// <summary>The owner's established observations, each by its token and current generation.</summary>

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach, detach, release, releaseEngine, run } from '#browser/DomEngine.js';
+import { attach, detach, invoke, release, releaseEngine, run } from '#browser/DomEngine.js';
 import { attach as watch, detach as unwatch, refresh } from '#browser/DomWatcher.js';
 import { describe as describeScope } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
@@ -48,7 +48,7 @@ describe('DomEngine', () => {
     };
 
     it('attaches the interaction the request names', async () => {
-        const isAttached = await attach(runtimeKey, request());
+        const isAttached = await attach(runtimeKey, null, request());
 
         expect(isAttached).toBe(true);
         expect(describeScope(viewport).routes.map(route => route.action)).toEqual(['pane.scroll']);
@@ -56,17 +56,17 @@ describe('DomEngine', () => {
     });
 
     it('attaches a focus interaction the request names', async () => {
-        const isAttached = await attach(runtimeKey, { token: '2', generation: 1, capability: 'focus', target: pane, options: { roving: 'horizontal' } });
+        const isAttached = await attach(runtimeKey, null, { token: '2', generation: 1, capability: 'focus', target: pane, options: { roving: 'horizontal' } });
 
         expect(isAttached).toBe(true);
         expect(describeScope(pane).routes.map(route => route.action)).toEqual(['focus.next', 'focus.previous', 'focus.first', 'focus.last']);
     });
 
-    it('attaches a character count the request names', async () => {
+    it('attaches a field\'s edits with the character count the request names', async () => {
         pane.insertAdjacentHTML('beforeend', '<textarea id="field"></textarea><bdi id="count">0</bdi>');
         const field = pane.querySelector('#field');
 
-        const isAttached = await attach(runtimeKey, { token: '3', generation: 1, capability: 'text', target: field, options: { output: 'count', maxLength: 10 } });
+        const isAttached = await attach(runtimeKey, fakeOwner(), { token: '3', generation: 1, capability: 'edits', target: field, options: { sendsOnInput: true, count: { output: 'count', maxLength: 10 }, text: '', revision: 0 } });
         field.value = 'abc';
         field.dispatchEvent(new Event('input', { bubbles: true }));
 
@@ -75,7 +75,7 @@ describe('DomEngine', () => {
     });
 
     it('steps the target from its button with no call to its owner', async () => {
-        await attach(runtimeKey, request());
+        await attach(runtimeKey, null, request());
 
         pane.querySelector('.forward').dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
 
@@ -83,16 +83,16 @@ describe('DomEngine', () => {
     });
 
     it('replaces the interaction the token holds with a later generation', async () => {
-        await attach(runtimeKey, request(1));
+        await attach(runtimeKey, null, request(1));
 
-        await attach(runtimeKey, request(2, { buttons: buttons() }));
+        await attach(runtimeKey, null, request(2, { buttons: buttons() }));
 
         expect(describeScope(viewport)).toBeNull();
         expect(describeScope(pane.querySelector('.back'))).not.toBeNull();
     });
 
     it('drops an attach that a detach overtook while its capability loaded', async () => {
-        const overtaken = attach(runtimeKey, request(1));
+        const overtaken = attach(runtimeKey, null, request(1));
 
         detach(runtimeKey, '1', 2);
 
@@ -101,15 +101,15 @@ describe('DomEngine', () => {
     });
 
     it('answers a target that has gone with no interaction', async () => {
-        expect(await attach(runtimeKey, request(1, {}, null))).toBe(false);
+        expect(await attach(runtimeKey, null, request(1, {}, null))).toBe(false);
     });
 
     it('refuses a capability it has no interaction for', async () => {
-        await expect(attach(runtimeKey, { ...request(), capability: 'weather' })).rejects.toThrow("The capability 'weather' has no interaction.");
+        await expect(attach(runtimeKey, null, { ...request(), capability: 'weather' })).rejects.toThrow("The capability 'weather' has no interaction.");
     });
 
     it('releases the interaction once detached', async () => {
-        await attach(runtimeKey, request());
+        await attach(runtimeKey, null, request());
 
         detach(runtimeKey, '1', 2);
 
@@ -118,7 +118,7 @@ describe('DomEngine', () => {
     });
 
     it('releases an interaction whose target left the document', async () => {
-        await attach(runtimeKey, request());
+        await attach(runtimeKey, null, request());
 
         leave();
 
@@ -127,7 +127,7 @@ describe('DomEngine', () => {
 
     it('keeps an interaction running, and its target\'s leaving noticed, once an observation of the same target is released', async () => {
         await watch(runtimeKey, fakeOwner(), observation());
-        await attach(runtimeKey, request());
+        await attach(runtimeKey, null, request());
 
         unwatch(runtimeKey, '2', 1);
         expect(describeScope(viewport).routes.map(route => route.action)).toEqual(['pane.scroll']);
@@ -138,7 +138,7 @@ describe('DomEngine', () => {
 
     it('releases its engine alone, leaving the owner\'s observations, and their target\'s leaving noticed', async () => {
         await watch(runtimeKey, fakeOwner(), observation());
-        await attach(runtimeKey, request());
+        await attach(runtimeKey, null, request());
 
         releaseEngine(runtimeKey);
         expect(describeScope(viewport)).toBeNull();
@@ -150,13 +150,97 @@ describe('DomEngine', () => {
 
     it('releases the engine and the watcher together for the owner\'s release', async () => {
         await watch(runtimeKey, fakeOwner(), observation());
-        await attach(runtimeKey, request());
+        await attach(runtimeKey, null, request());
 
         release(runtimeKey);
 
         expect(describeScope(viewport)).toBeNull();
         expect(refresh(runtimeKey, '2', 1)).toBe(false);
         expect(resizes.latest().isConnected).toBe(false);
+    });
+
+    describe('edits', () => {
+        const edits = (generation = 1, target = document.querySelector('#notes')) => ({ token: '4', generation, capability: 'edits', target, options: { sendsOnInput: true, text: 'Ada', revision: 0 } });
+
+        // A reader types into the field holding the focus.
+        const type = (value, field = document.querySelector('#notes')) => {
+            field.focus();
+            field.value = value;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        };
+
+        beforeEach(() => {
+            // The field shows its owner's text, as its render leaves it.
+            pane.insertAdjacentHTML('beforeend', '<textarea id="notes">Ada</textarea><textarea id="redrawn"></textarea>');
+        });
+
+        it('reports each edit through the owner\'s receiver under the registration\'s token', async () => {
+            const receiver = fakeOwner();
+            await attach(runtimeKey, receiver, edits());
+
+            type('Ada L');
+
+            expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('EditAsync', '4', 1, 3, 0, { value: ' L' }, false);
+        });
+
+        it('goes on from the generation it replaces, revision by revision', async () => {
+            const receiver = fakeOwner();
+            await attach(runtimeKey, receiver, edits(1));
+            type('Ada L');
+
+            await attach(runtimeKey, receiver, edits(2, document.querySelector('#redrawn')));
+            type('Ada Lo', document.querySelector('#redrawn'));
+
+            expect(document.querySelector('#redrawn').value).toBe('Ada Lo');
+            expect(receiver.invokeMethodAsync).toHaveBeenLastCalledWith('EditAsync', '4', 2, 5, 0, { value: 'o' }, false);
+        });
+
+        it('starts afresh from the owner\'s text once detached, sending what the field holds beyond it', async () => {
+            const receiver = fakeOwner();
+            await attach(runtimeKey, receiver, edits(1));
+            type('Ada L');
+            detach(runtimeKey, '4', 1);
+            receiver.invokeMethodAsync.mockClear();
+
+            await attach(runtimeKey, receiver, edits(2));
+
+            expect(document.querySelector('#notes').value).toBe('Ada L');
+            expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('EditAsync', '4', 1, 3, 0, { value: ' L' }, false);
+        });
+
+        it('runs a command the interaction offers, answering its result', async () => {
+            await attach(runtimeKey, fakeOwner(), edits());
+
+            const revision = invoke(runtimeKey, '4', 1, 'write', 'ADA');
+
+            expect(revision).toBe(1);
+            expect(document.querySelector('#notes').value).toBe('ADA');
+        });
+
+        it('answers nothing for a generation no longer the token\'s', async () => {
+            await attach(runtimeKey, fakeOwner(), edits(1));
+            await attach(runtimeKey, fakeOwner(), edits(2));
+
+            expect(invoke(runtimeKey, '4', 1, 'write', 'ADA')).toBeNull();
+        });
+
+        it('refuses a command the interaction doesn\'t offer', async () => {
+            await attach(runtimeKey, fakeOwner(), edits());
+
+            expect(() => invoke(runtimeKey, '4', 1, 'dispose')).toThrow("The interaction of registration 4 has no command 'dispose'.");
+        });
+
+        it('rejects a report where the owner attached no receiver, rather than throwing into the field', async () => {
+            const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+            await attach(runtimeKey, null, edits());
+
+            type('Ada L');
+            await Promise.resolve();
+            await Promise.resolve();
+
+            expect(error).toHaveBeenCalledExactlyOnceWith(expect.stringContaining(`owner ${runtimeKey}, registration 4.1`), expect.any(Error));
+            error.mockRestore();
+        });
     });
 
     describe('run', () => {

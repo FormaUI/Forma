@@ -53,10 +53,11 @@
         [Theory]
         [InlineData("en-US", "2:15 PM")]
         [InlineData("he-IL", "14:15")]
-        public void Should_read_a_time_typed_as_the_formatting_culture_writes_it(string name, string typed)
+        public async Task Should_read_a_time_typed_as_the_formatting_culture_writes_it(string name, string typed)
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(name);
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -64,7 +65,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Equal(new TimeOnly(14, 15), model.End);
@@ -116,10 +117,11 @@
         }
 
         [Fact]
-        public void Should_empty_a_time_that_can_be_empty_and_report_one_that_cannot_when_cleared()
+        public async Task Should_empty_a_time_that_can_be_empty_and_report_one_that_cannot_when_cleared()
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Shift { Start = new TimeOnly(9, 0), End = new TimeOnly(17, 0) };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.Start" Label="Starts" />
@@ -127,8 +129,8 @@
             </FakeFormHost>);
 
             // Act
-            cut.FindAll("input")[0].Change(string.Empty);
-            cut.FindAll("input")[1].Change(string.Empty);
+            await fields.ChangeAsync(cut.FindAll("input")[0], string.Empty);
+            await fields.ChangeAsync(cut.FindAll("input")[1], string.Empty);
 
             // Assert
             Assert.Multiple(
@@ -138,37 +140,39 @@
         }
 
         [Fact]
-        public void Should_keep_text_that_is_not_a_time_in_the_field_and_report_it()
+        public async Task Should_keep_text_that_is_not_a_time_in_the_field_and_report_it()
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Shift { End = new TimeOnly(17, 0) };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("teatime");
+            await fields.ChangeAsync(cut.Find("input"), "teatime");
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(new TimeOnly(17, 0), model.End),
-                () => Assert.Equal("teatime", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("teatime", fields.GetText(cut.Find("input"))),
                 () => Assert.Equal("The Ends field must be a time.", cut.Find(".forma-field-message").TextContent));
         }
 
         [Fact]
-        public void Should_describe_the_time_by_the_message_it_reports()
+        public async Task Should_describe_the_time_by_the_message_it_reports()
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Shift { End = new TimeOnly(17, 0) };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("teatime");
+            await fields.ChangeAsync(cut.Find("input"), "teatime");
 
             // Assert
             Assert.Equal(cut.Find(".forma-field-messages").Id, cut.Find("input").GetAttribute("aria-describedby"));
@@ -179,10 +183,11 @@
         [InlineData("09:00", null, "08:00", "The Ends field must be 9:00 AM or later.")]
         [InlineData(null, "17:00", "18:00", "The Ends field must be 5:00 PM or earlier.")]
         [InlineData("22:00", "02:00", "12:00", "The Ends field must be between 10:00 PM and 2:00 AM.")]
-        public void Should_report_a_time_outside_the_range(string? earliest, string? latest, string typed, string message)
+        public async Task Should_report_a_time_outside_the_range(string? earliest, string? latest, string typed, string message)
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Shift();
             var min = earliest is null ? (TimeOnly?)null : TimeOnly.Parse(earliest, CultureInfo.InvariantCulture);
@@ -192,7 +197,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
@@ -205,17 +210,18 @@
         [InlineData("01:00")]
         [InlineData("22:00")]
         [InlineData("02:00")]
-        public void Should_take_a_time_inside_a_range_across_midnight(string typed)
+        public async Task Should_take_a_time_inside_a_range_across_midnight(string typed)
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" Min="new TimeOnly(22, 0)" Max="new TimeOnly(2, 0)" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
@@ -224,10 +230,11 @@
         }
 
         [Fact]
-        public void Should_report_a_time_off_the_step_with_the_times_either_side_and_never_round_it()
+        public async Task Should_report_a_time_off_the_step_with_the_times_either_side_and_never_round_it()
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -235,7 +242,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("9:10 AM");
+            await fields.ChangeAsync(cut.Find("input"), "9:10 AM");
 
             // Assert
             Assert.Multiple(
@@ -244,34 +251,36 @@
         }
 
         [Fact]
-        public void Should_count_the_step_from_the_earliest_time()
+        public async Task Should_count_the_step_from_the_earliest_time()
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" Min="new TimeOnly(9, 5)" Step="TimeSpan.FromMinutes(15)" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("09:20");
+            await fields.ChangeAsync(cut.Find("input"), "09:20");
 
             // Assert
             Assert.Equal(new TimeOnly(9, 20), model.End);
         }
 
         [Fact]
-        public void Should_take_a_typed_time_the_list_does_not_suggest()
+        public async Task Should_take_a_typed_time_the_list_does_not_suggest()
         {
             // Arrange — a list of half hours and no step
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
             </FakeFormHost>);
 
             // Act
-            cut.Find("input").Change("09:15");
+            await fields.ChangeAsync(cut.Find("input"), "09:15");
 
             // Assert
             Assert.Equal(new TimeOnly(9, 15), model.End);
@@ -537,25 +546,26 @@
         {
             // Arrange — the typing culture reads the text as half past one in the afternoon, and English refuses it
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(PinnedCultures.GetCulture(typingCulture));
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
             </FakeFormHost>);
-            cut.Find("input").Input(typed);
+            await fields.TypeAsync(cut.Find("input"), typed);
             await ctx.ChangeCultureAsync("en-US");
-            var textAfterChange = cut.Find("input").GetAttribute("value");
+            var textAfterChange = fields.GetText(cut.Find("input"));
             var valueAfterChange = model.End;
 
             // Act
-            cut.Find("input").Change(typed);
+            await fields.ChangeAsync(cut.Find("input"), typed);
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(typed, textAfterChange),
                 () => Assert.Null(valueAfterChange),
                 () => Assert.Equal(new TimeOnly(13, 30), model.End),
-                () => Assert.Equal(FormatInEnglish("1:30 PM"), cut.Find("input").GetAttribute("value")));
+                () => Assert.Equal(FormatInEnglish("1:30 PM"), fields.GetText(cut.Find("input"))));
         }
 
         [Fact]
@@ -563,17 +573,18 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
             </FakeFormHost>);
-            cut.Find("input").Input("1:30 אחה״צ");
+            await fields.TypeAsync(cut.Find("input"), "1:30 אחה״צ");
             await ctx.ChangeCultureAsync("en-US");
             await ctx.ChangeCultureAsync("de-DE");
 
             // Act
-            cut.Find("input").Change("1:30 אחה״צ");
+            await fields.ChangeAsync(cut.Find("input"), "1:30 אחה״צ");
 
             // Assert
             Assert.Equal(new TimeOnly(13, 30), model.End);
@@ -584,18 +595,19 @@
         {
             // Arrange — English would refuse the text as no time at all
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" Max="new TimeOnly(12, 0)" />
             </FakeFormHost>);
-            cut.Find("input").Input("1:30 אחה״צ");
-            cut.Find("input").Change("1:30 אחה״צ");
+            await fields.TypeAsync(cut.Find("input"), "1:30 אחה״צ");
+            await fields.ChangeAsync(cut.Find("input"), "1:30 אחה״צ");
             await ctx.ChangeCultureAsync("en-US");
-            var textAfterChange = cut.Find("input").GetAttribute("value");
+            var textAfterChange = fields.GetText(cut.Find("input"));
 
             // Act
-            cut.Find("input").Change("1:30 אחה״צ");
+            await fields.ChangeAsync(cut.Find("input"), "1:30 אחה״צ");
 
             // Assert
             Assert.Multiple(
@@ -609,17 +621,18 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift { End = new TimeOnly(13, 30) };
             var editContext = new EditContext(model);
             var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
             </FakeFormHost>);
-            cut.Find("input").Input("1:30 אחה״צ");
+            await fields.TypeAsync(cut.Find("input"), "1:30 אחה״צ");
             await ctx.ChangeCultureAsync("en-US");
 
             // Act
-            cut.Find("input").Change("1:30 אחה״צ");
+            await fields.ChangeAsync(cut.Find("input"), "1:30 אחה״צ");
 
             // Assert
             Assert.Multiple(
@@ -633,20 +646,21 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift { End = new TimeOnly(9, 0) };
             var cut = ctx.Render<FormaTimePicker<TimeOnly?>>(parameters => parameters
                 .Add(p => p.Label, "Ends")
                 .Add(p => p.Value, model.End)
                 .Add(p => p.ValueExpression, () => model.End));
-            cut.Find("input").Input("1:30 אחה״צ");
+            await fields.TypeAsync(cut.Find("input"), "1:30 אחה״צ");
             await ctx.ChangeCultureAsync("en-US");
 
             // Act
             cut.Render(parameters => parameters.Add(p => p.Value, new TimeOnly(9, 0)));
 
             // Assert
-            Assert.Equal("1:30 אחה״צ", cut.Find("input").GetAttribute("value"));
+            Assert.Equal("1:30 אחה״צ", fields.GetText(cut.Find("input")));
         }
 
         [Fact]
@@ -654,13 +668,14 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture(PinnedCultures.Hebrew);
             var model = new Shift { End = new TimeOnly(9, 0) };
             var cut = ctx.Render<FormaTimePicker<TimeOnly?>>(parameters => parameters
                 .Add(p => p.Label, "Ends")
                 .Add(p => p.Value, model.End)
                 .Add(p => p.ValueExpression, () => model.End));
-            cut.Find("input").Input("1:30 אחה״צ");
+            await fields.TypeAsync(cut.Find("input"), "1:30 אחה״צ");
             await ctx.ChangeCultureAsync("en-US");
 
             // Act
@@ -677,6 +692,7 @@
         {
             // Arrange
             using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
             using var culture = new CultureFixture("en-US");
             var model = new Shift { End = new TimeOnly(13, 30) };
             var editContext = new EditContext(model);
@@ -686,7 +702,7 @@
 
             if (isModified)
             {
-                cut.Find("input").Change("2:15 PM");
+                await fields.ChangeAsync(cut.Find("input"), "2:15 PM");
             }
 
             // Act

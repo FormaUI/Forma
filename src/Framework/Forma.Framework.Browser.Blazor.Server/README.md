@@ -3,7 +3,9 @@
 What the DOM watcher and engine need from an Interactive Server host: when a circuit's connection to
 the browser is restored, every observation its components hold is measured afresh and delivered
 again in one call, so a state the browser sent while the connection was down still reaches its
-component. Nothing is called on the circuit's first connection, before anything has been observed.
+component, and every text field whose text the circuit holds at another revision sends its whole
+text, so an edit lost while the connection was down is replaced. Nothing is called on the circuit's
+first connection, before anything has been observed or edited.
 
 The package comes with `formaui-net.Blazor.Server`, and `AddFormaUIServer` registers it through
 `AddFormaBrowserServer`, which also registers the browser services of

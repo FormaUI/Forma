@@ -1,7 +1,10 @@
 namespace Forma.Blazor.Components.Composer.PlainTextEditor;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Browser.Interop.Operations;
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
@@ -33,6 +36,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
     private ElementReference _textareaElement;
     private TextEntry _textEntry = default!;
+    private DomTextEdits _edits = default!;
     private DotNetObjectReference<FormaPlainTextEditor>? _selfReference;
     private InputScope? _inputScope;
     private CancellationTokenSource? _commitCancellation;
@@ -53,9 +57,24 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private bool UpdatesOnChange
         => ComposerOptions?.PlainTextUpdateOn is TextUpdate.Change;
 
+    // The text the textarea renders, which a render never writes back over the reader's typing.
+    private string? ShownText
+        => _edits.GetShownText(Content);
+
+    private TextEditOptions EditOptions
+        => new() { SendsOnInput = !UpdatesOnChange };
+
+    // Updating on change, the selection arrives with the commit, so the textarea handles no click or keystroke of its own.
+    private EventCallback<MouseEventArgs> ClickCallback
+        => UpdatesOnChange ? default : EventCallback.Factory.Create<MouseEventArgs>(this, HandleClickAsync);
+
+    private EventCallback<KeyboardEventArgs> KeyUpCallback
+        => UpdatesOnChange ? default : EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleKeyUpAsync);
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
+        _edits = new DomTextEdits(Context.DomEngine, Content, HandleTextChangedAsync);
         _textEntry = new TextEntry(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
     }
@@ -63,6 +82,8 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await _edits.SyncAsync(_textareaElement, Content, EditOptions);
+
         // The composer's routes are registered on the textarea, ahead of its native shortcuts.
         if (firstRender && Composer is { } context)
         {
@@ -72,11 +93,23 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
     /// <summary>Runs the composer command named by the action the router matched inside the textarea.</summary>
     [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    public async Task HandleInputActionAsync(string action, InputInfo input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return Interaction?.ExecuteCommandAsync(action) ?? Task.CompletedTask;
+        // The command reads the document, so the reader's edits made before it are applied and committed first.
+        if (Interaction is null || !await _edits.SettleAsync())
+        {
+            return;
+        }
+
+        if (_commitCancellation is not null)
+        {
+            await _commitCancellation.CancelAsync();
+        }
+
+        await CommitAsync();
+        await Interaction.ExecuteCommandAsync(action);
     }
 
     /// <inheritdoc />
@@ -91,9 +124,23 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         }
     }
 
-    private async Task HandleInputAsync(string? text)
+    // Typing commits after a pause, and the textarea's commit at once with the selection it leaves, since updating on change no keystroke
+    // reports either.
+    private async Task HandleTextChangedAsync(TextChange change)
     {
-        _typedContent = text ?? string.Empty;
+        _typedContent = change.Text;
+
+        if (change.IsCommit)
+        {
+            if (_commitCancellation is not null)
+            {
+                await _commitCancellation.CancelAsync();
+            }
+
+            await CommitAsync();
+            await ReportSelectionAsync();
+            return;
+        }
 
         if (_commitCancellation is not null)
         {
@@ -102,38 +149,25 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         }
 
         _commitCancellation = new CancellationTokenSource();
+        _ = CommitAfterPauseAsync(_commitCancellation.Token);
+    }
 
+    // The pause is waited out apart from the edit, so the next keystroke's edit is applied meanwhile and restarts it.
+    [SuppressMessage("Design", "CA1031", Justification = "The commit failing is the component's own failure, handed to the renderer as it would be from an event.")]
+    private async Task CommitAfterPauseAsync(CancellationToken cancellationToken)
+    {
         try
         {
-            await Task.Delay(CommitDelay, _commitCancellation.Token);
+            await Task.Delay(CommitDelay, cancellationToken);
+            await CommitAsync();
         }
         catch (OperationCanceledException)
         {
-            return;
         }
-
-        await CommitAsync();
-    }
-
-    private async Task HandleChangeAsync(ChangeEventArgs args)
-    {
-        _typedContent = args.Value?.ToString() ?? string.Empty;
-
-        if (_commitCancellation is not null)
+        catch (Exception ex)
         {
-            await _commitCancellation.CancelAsync();
+            await DispatchExceptionAsync(ex);
         }
-
-        await CommitAsync();
-        await ReportSelectionAsync();
-    }
-
-    // Updating on change, the text and the selection arrive together as the edit commits, since no keystroke reports either.
-    private async Task HandleCommitAsync(string? text)
-    {
-        _typedContent = text ?? string.Empty;
-        await CommitAsync();
-        await ReportSelectionAsync();
     }
 
     private Task HandleClickAsync(MouseEventArgs args)
@@ -203,6 +237,8 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
             await _selectionCancellation.CancelAsync();
             _selectionCancellation.Dispose();
         }
+
+        await _edits.DisposeAsync();
 
         if (_inputScope is { } inputScope)
         {

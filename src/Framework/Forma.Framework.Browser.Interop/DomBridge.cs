@@ -59,17 +59,22 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
         _modules.Clear();
     }
 
-    /// <summary>Starts refreshing every established observation of the bridge's sessions, in one call.</summary>
+    /// <summary>Starts refreshing every established observation of the bridge's sessions, in one call, and bringing every text field's edits back in step with its field.</summary>
     /// <remarks>
     /// Each observation is named by its owner, token and generation at the start of the refresh, and the browser refreshes nothing for one
     /// released or replaced since. The reply, and the states the refresh delivers, reach a circuit only after the connection that asked for the
-    /// refresh has finished coming up.
+    /// refresh has finished coming up. A field whose edits could not be delivered while the connection was down sends its whole text.
     /// </remarks>
     internal void BeginRefresh()
     {
         if (_isDisposed)
         {
             return;
+        }
+
+        foreach (var session in _liveSessions.ToList())
+        {
+            session.BeginResync();
         }
 
         var owners = _liveSessions.Select(session => session.DescribeObservations()).OfType<DomObservedOwner>().ToList();

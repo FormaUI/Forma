@@ -1,8 +1,10 @@
 namespace Forma.Blazor.Components.Buttons;
 
+using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A button with a visual variant, a size, and a busy state.</summary>
@@ -36,6 +38,8 @@ public sealed partial class FormaButton : FormaElementBase
     /// <summary>Content rendered inside the button.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+
     private bool IsDisabled => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
 
     // Busy is announced through aria-disabled, so the button keeps focus.
@@ -49,8 +53,16 @@ public sealed partial class FormaButton : FormaElementBase
     private EventCallback<MouseEventArgs> ClickCallback
         => OnClick.HasDelegate ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleClickAsync) : default;
 
-    private Task HandleClickAsync(MouseEventArgs args)
-        => Busy ? Task.CompletedTask : OnClick.InvokeAsync(args);
+    // A click inside a form waits for the form's text fields to hold the reader's edits, and does nothing where one can't.
+    private async Task HandleClickAsync(MouseEventArgs args)
+    {
+        if (Busy || (CascadedEditContext is { } form && !await form.SettleEditsAsync()))
+        {
+            return;
+        }
+
+        await OnClick.InvokeAsync(args);
+    }
 
     private string TypeAttribute => Type switch
     {

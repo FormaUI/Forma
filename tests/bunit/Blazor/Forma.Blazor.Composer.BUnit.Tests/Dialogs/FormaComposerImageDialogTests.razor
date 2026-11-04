@@ -6,12 +6,12 @@
 @code {
     public sealed class Component
     {
-        private static void Fill(IRenderedComponent<ContainerFragment> cut, string label, string value)
+        private static Task FillAsync(TextFieldProbe fields, IRenderedComponent<ContainerFragment> cut, string label, string value)
         {
             var field = cut.FindAll("label.forma-field-label")
                 .Single(candidate => candidate.TextContent.Trim().TrimEnd('*', ' ') == label);
 
-            cut.Find($"#{field.GetAttribute("for")}").Input(value);
+            return fields.TypeAsync(cut.Find($"#{field.GetAttribute("for")}"), value);
         }
 
         private static void Confirm(IRenderedComponent<ContainerFragment> cut)
@@ -51,15 +51,16 @@
         [InlineData("javascript:alert(1)")]
         [InlineData("ftp://files.example.com")]
         [InlineData("just some text")]
-        public void Should_refuse_an_address_the_document_could_not_keep(string address)
+        public async Task Should_refuse_an_address_the_document_could_not_keep(string address)
         {
             // Arrange
             using var ctx = new FormaComposerImageDialogTests();
+            var fields = new TextFieldProbe(ctx);
             var inserted = false;
 
             // Act
             var cut = ctx.Render(@<FormaComposerImageDialog Opened="true" OnInsert="_ => inserted = true" />);
-            Fill(cut, "Source", address);
+            await FillAsync(fields, cut, "Source", address);
             Confirm(cut);
 
             // Assert
@@ -86,15 +87,16 @@
         }
 
         [Fact]
-        public void Should_report_the_image_entered_by_address()
+        public async Task Should_report_the_image_entered_by_address()
         {
             // Arrange
             using var ctx = new FormaComposerImageDialogTests();
+            var fields = new TextFieldProbe(ctx);
             ImageDialogResult? result = null;
             var cut = ctx.Render(@<FormaComposerImageDialog Opened="true" OnInsert="value => result = value" />);
-            Fill(cut, "Source", "/media/photo.jpg");
-            Fill(cut, "Alt Text", "A photo");
-            Fill(cut, "Caption", "On the podium");
+            await FillAsync(fields, cut, "Source", "/media/photo.jpg");
+            await FillAsync(fields, cut, "Alt Text", "A photo");
+            await FillAsync(fields, cut, "Caption", "On the podium");
 
             // Act
             Confirm(cut);

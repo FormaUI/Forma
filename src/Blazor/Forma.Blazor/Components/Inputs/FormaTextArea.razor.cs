@@ -30,9 +30,7 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
     /// <summary>When the value reaches the component, as each character is typed or as the field commits its edit.</summary>
     [Parameter] public TextUpdate UpdateOn { get; set; }
 
-    private DomInteraction<CharacterCountOptions>? _characterCount;
-
-    private bool _isCountRequested;
+    private DomTextEdits _edits = default!;
 
     private string CountId
         => $"{ElementId}-count";
@@ -40,21 +38,28 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
     private string CountValueId
         => $"{ElementId}-count-value";
 
-    // Updating on change, the count follows the typing in the browser, since the value arrives only as the edit commits.
-    private bool CountsInBrowser
-        => ShowCharacterCount && UpdateOn is TextUpdate.Change;
+    // The value the area renders, which a render never writes back over the reader's typing.
+    private string? ShownText
+        => _edits.GetShownText(CurrentValueAsString);
 
-    private CharacterCountOptions CountOptions
-        => new() { OutputId = CountValueId, MaxLength = MaxLength };
+    private TextEditOptions EditOptions
+        => new() { SendsOnInput = UpdateOn is TextUpdate.Input, MaxLength = MaxLength, CountOutputId = ShowCharacterCount ? CountValueId : null };
 
     // UTF-16 code units, which is what the browser's own maxlength counts.
     private int CharacterCount
         => CurrentValue?.Length ?? 0;
 
+    // The count follows the typing in the browser, whichever way the value reaches the component, so the count rendered is the text the area
+    // renders and a render never writes back an older count.
     private string CountText
-        => MaxLength is { } maxLength
-            ? $"{CharacterCount.ToString(Context.CultureState.Culture)} / {maxLength.ToString(Context.CultureState.Culture)}"
-            : CharacterCount.ToString(Context.CultureState.Culture);
+    {
+        get
+        {
+            var count = (ShownText?.Length ?? 0).ToString(Context.CultureState.Culture);
+
+            return MaxLength is { } maxLength ? $"{count} / {maxLength.ToString(Context.CultureState.Culture)}" : count;
+        }
+    }
 
     // The count spelled out for assistive technology.
     private string CountLabel
@@ -67,6 +72,13 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
                 ? L["{Characters} of {Allowed} characters", characters, allowed]
                 : L["[$ plural; one: # character; other: # characters; $]", characters];
         }
+    }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
+        JoinForm(_edits);
     }
 
     /// <inheritdoc />
@@ -87,18 +99,16 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
     }
 
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _edits.SyncAsync(RootElement, CurrentValueAsString, EditOptions);
+
+    private Task HandleTextChangedAsync(TextChange change)
     {
-        if (_characterCount is { } characterCount)
-        {
-            await characterCount.SyncAsync(RootElement, CountOptions, CountsInBrowser);
-        }
-        else if (CountsInBrowser && !_isCountRequested)
-        {
-            // Claimed before the await, so a render arriving mid-call attaches no second count.
-            _isCountRequested = true;
-            _characterCount = await Context.DomEngine.GetElement(RootElement).Text.AttachAsync(CountOptions);
-        }
+        ReportTextFault(change.IsFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
+        CurrentValueAsString = change.Text;
+        StateHasChanged();
+
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -115,6 +125,14 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
         {
             ids.Add(CountId);
         }
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _edits.DisposeAsync();
+
+        await base.DisposeAsyncCore();
     }
 
     /// <inheritdoc />
