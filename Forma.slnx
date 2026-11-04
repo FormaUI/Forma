@@ -112,6 +112,7 @@
     <Project Path="tests\unit\AddOns\Forma.AddOns.Emojis.Twemoji.Tests\Forma.AddOns.Emojis.Twemoji.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Operations.Maui.Tests\Forma.AddOns.Operations.Maui.Tests.csproj" />
     <Project Path="tests\integration\AddOns\Forma.AddOns.Operations.Maui.Integration.Tests\Forma.AddOns.Operations.Maui.Integration.Tests.csproj" />
+    <Project Path="tests\integration\Framework\Forma.Framework.Localization.Integration.Tests\Forma.Framework.Localization.Integration.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Resources.Office.Tests\Forma.AddOns.Resources.Office.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Resources.Markdown.Tests\Forma.AddOns.Resources.Markdown.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Localization.Tests\Forma.Framework.Localization.Tests.csproj" />

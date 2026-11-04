@@ -1,6 +1,7 @@
 namespace Forma.Framework.Localization.Json.Tests;
 
 using System.Reflection;
+using System.Reflection.Emit;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Localization.Json.Tests.Fixtures;
@@ -147,18 +148,21 @@ public sealed class LocalePackTests
         }
 
         [Fact]
-        public void Should_read_them_from_every_assembly_the_build_marked_where_the_runtime_names_no_entry()
+        public void Should_read_them_from_each_assembly_that_embeds_a_host_s_files_names_one_or_records_a_pack_where_the_runtime_names_no_entry()
         {
-            // Arrange — an application on a runtime naming no entry assembly, as .NET for Android's, beside a library and the framework.
-            var application = new FakeAssembly("Contoso.App") { Attributes = { new HostLocalesAttribute() } };
+            // Arrange — on a runtime naming no entry assembly, as .NET for Android's: an application embedding a host's files, a server
+            // naming its client, a library recording a pack, the framework, and a dynamic assembly, which lists no resources.
+            var application = new FakeAssembly("Contoso.App") { Resources = { [LocalePackSource.HostResourcePrefix + "Contoso.Library.he.json"] = "{}" } };
+            var server = new FakeAssembly("Contoso.Server") { Attributes = { new LocaleReferenceAttribute("Contoso.Client") } };
             var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Hebrew") } };
-            var framework = new FakeAssembly("System.Runtime");
+            var framework = new FakeAssembly("System.Runtime") { Resources = { ["System.Runtime.Strings.resources"] = string.Empty } };
+            var dynamic = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Contoso.Dynamic"), AssemblyBuilderAccess.Run);
 
             // Act
-            var applications = LocalePackLoader.GetApplicationAssemblies(null, [framework, application, library]);
+            var applications = LocalePackLoader.GetApplicationAssemblies(null, [framework, application, dynamic, server, library]);
 
             // Assert
-            Assert.Equal([application, library], applications);
+            Assert.Equal([application, server, library], applications);
         }
 
         [Fact]
@@ -214,7 +218,7 @@ public sealed class LocalePackTests
         private const string Fixtures = "Forma.Framework.Localization.Json.Tests.Fixtures.he.json";
 
         private static IStringLocale CreateLocale<T>(Assembly host, string localesPath, params Assembly[] packs)
-            => new JsonStringLocaleFactory(new LocalizationOptions { LocalePacks = packs, HostLocaleAssembly = host, LocalesPath = localesPath }).Create(typeof(T));
+            => new JsonStringLocaleFactory(new LocalizationOptions { LocalePacks = packs, HostLocaleAssemblies = [host], LocalesPath = localesPath }).Create(typeof(T));
 
         [Fact]
         public void Should_override_the_packs_with_the_hosts_files_embedded_under_the_prefix_alone()
@@ -226,7 +230,7 @@ public sealed class LocalePackTests
             {
                 Resources =
                 {
-                    [HostLocalesAttribute.ResourcePrefix + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Open": "host" } }""",
+                    [LocalePackSource.HostResourcePrefix + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Open": "host" } }""",
                     [Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Save": "not the host's" } }""",
                 },
             };
@@ -251,7 +255,7 @@ public sealed class LocalePackTests
             {
                 Resources =
                 {
-                    [HostLocalesAttribute.ResourcePrefix + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "HostOverridden": { "Open": "embedded", "Save": "embedded" } }""",
+                    [LocalePackSource.HostResourcePrefix + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "HostOverridden": { "Open": "embedded", "Save": "embedded" } }""",
                 },
             };
             var strings = CreateLocale<HostOverridden>(host, new LocalizationOptions().LocalesPath);
@@ -264,6 +268,94 @@ public sealed class LocalePackTests
             Assert.Multiple(
                 () => Assert.Equal("root file", save.Value),
                 () => Assert.Equal("embedded", open.Value));
+        }
+    }
+
+    // An application found where the runtime names no entry assembly, its keys written in Spanish and read in French, with a distinct French text in
+    // every source, so a source discovery passes over shows as another source's text or as the key itself.
+    public sealed class Discovery
+    {
+        // The localization library's own types ship no locale file, so a file for its root folder is the only one that localizes them.
+        private const string RootFile = "Forma.Framework.Localization.fr.json";
+
+        // The test assembly carries a pack's file and a host's file for the localization library, loadable by its name.
+        private static readonly string TestAssembly = typeof(Discovery).Assembly.GetName().Name!;
+
+        private static string CreateFile(string text)
+            => $$"""{ "$localization": "SchemaVersion: 1.0.0; Culture: fr;", "LocalizationOptions": { "Open": "{{text}}" } }""";
+
+        private static IStringLocale CreateDiscoveredLocale(LocalizationOptions options, params Assembly[] loaded)
+        {
+            var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+            var configured = LocalePackLoader.GetApplicationAssemblies(null, loaded).Aggregate(options, (recorded, application) => recorded.WithRecordedLocales(application, logger));
+
+            return new JsonStringLocaleFactory(configured).Create(typeof(LocalizationOptions));
+        }
+
+        [Fact]
+        public void Should_read_an_application_s_own_host_files()
+        {
+            // Arrange — an application whose only locales are a host's files it embedded, over a pack the options name
+            using var culture = new CultureScope("fr");
+            var application = new FakeAssembly("Contoso.App") { Resources = { [LocalePackSource.HostResourcePrefix + RootFile] = CreateFile("Ouvrir (application)") } };
+            var pack = new FakeAssembly("Contoso.Pack") { Resources = { [RootFile] = CreateFile("Ouvrir (paquet nommé)") } };
+            var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty, LocalePacks = [pack] }, new FakeAssembly("System.Runtime"), application);
+
+            // Act
+            var open = strings["Open"];
+
+            // Assert
+            Assert.Equal("Ouvrir (application)", open.Value);
+        }
+
+        [Fact]
+        public void Should_read_the_pack_an_application_records()
+        {
+            // Arrange — an application whose only locale is a recorded pack
+            using var culture = new CultureScope("fr");
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocalePackAttribute(TestAssembly) } };
+            var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty }, new FakeAssembly("System.Runtime"), application);
+
+            // Act
+            var open = strings["Open"];
+
+            // Assert
+            Assert.Equal("Ouvrir (paquet)", open.Value);
+        }
+
+        [Fact]
+        public void Should_read_the_host_files_of_the_client_a_server_names()
+        {
+            // Arrange — a server whose only locale is the client it names, over a pack the options name
+            using var culture = new CultureScope("fr");
+            var server = new FakeAssembly("Contoso.Server") { Attributes = { new LocaleReferenceAttribute(TestAssembly) } };
+            var pack = new FakeAssembly("Contoso.Pack") { Resources = { [RootFile] = CreateFile("Ouvrir (paquet nommé)") } };
+            var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty, LocalePacks = [pack] }, new FakeAssembly("System.Runtime"), server);
+
+            // Act
+            var open = strings["Open"];
+
+            // Assert
+            Assert.Equal("Ouvrir (client)", open.Value);
+        }
+
+        [Fact]
+        public void Should_let_the_server_s_own_host_files_override_its_client_s()
+        {
+            // Arrange — a server naming its client and embedding a host's files of its own for the same key
+            using var culture = new CultureScope("fr");
+            var server = new FakeAssembly("Contoso.Server")
+            {
+                Attributes = { new LocaleReferenceAttribute(TestAssembly) },
+                Resources = { [LocalePackSource.HostResourcePrefix + RootFile] = CreateFile("Ouvrir (serveur)") },
+            };
+            var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty }, server);
+
+            // Act
+            var open = strings["Open"];
+
+            // Assert
+            Assert.Equal("Ouvrir (serveur)", open.Value);
         }
     }
 }

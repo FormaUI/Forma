@@ -48,13 +48,8 @@ Uploads/.locales/he.json
 }
 ```
 
-Embed the files, since the SDK embeds no JSON by default:
-
-```xml
-<ItemGroup>
-    <EmbeddedResource Include="**\.locales\*.json" Exclude="$(DefaultItemExcludes)" WithCulture="false" />
-</ItemGroup>
-```
+The build embeds each file by the `$localization` entry it opens with, so the project names none of
+them.
 
 Then look each string up by its source text:
 

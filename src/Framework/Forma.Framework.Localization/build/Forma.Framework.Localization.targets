@@ -3,14 +3,16 @@
     <!--
         What the build does for an assembly that localizes. This file ships in the library's package,
         named for the package there, and is imported into every project that references it, directly or
-        through another package. For any project it embeds the config file; for a WebAssembly client and a
-        Blazor Hybrid application it embeds the host's own locale files, since the browser has no folder to
-        read them from and an application MAUI packages has none beside it; and for a
-        locale pack, a project that declared IsLocalePack, it does the rest: a pack is a project of
-        nothing but locale files, for other assemblies' types, so it compiles no code, embeds every
-        locale file beneath it under its own path so that a resource name spells the tree a reader sees,
-        and carries in its own package a targets file that records the pack in whatever references it,
-        since nothing else would.
+        through another package. For any project it embeds the config file and every locale file, found
+        by the $localization entry each one carries, so a project names none of them; for an application
+        it embeds the host's files for other assemblies apart from its own, since a browser has no folder
+        to read them from, an application MAUI packages has none beside it, and a server's build copies
+        none beside its binary; for a server it records the client it references whose build embedded
+        a host's files; and for a locale pack, a project that declared IsLocalePack, it does the rest: a
+        pack is a project of nothing but locale files, for other assemblies' types, so it compiles no
+        code, embeds every locale file beneath it under its own path so that a resource name spells the
+        tree a reader sees, and carries in its own package a targets file that records the pack in
+        whatever references it, since nothing else would.
     -->
 
     <!-- An assembly's config file sits at its root and is embedded whenever it is there, since the SDK embeds nothing by default and would ship it as content instead. -->
@@ -20,31 +22,78 @@
         <None Remove=".locale.json" />
     </ItemGroup>
 
-    <!--
-        A WebAssembly client embeds the host's folder of locale files, the one LocalesPath names, .locales
-        beside the project by default, as a pack embeds its own, each under its path in the folder, after
-        the prefix HostLocalesAttribute names, which no resource name the build forms starts with; the
-        attribute tells the runtime the assembly carries them, and where it reads them. A Blazor Hybrid
-        application embeds them the same way, known as an application referencing its platform's web view
-        package, its output an executable, or, on Android, whose build compiles an application's code as a
-        library, the project the Android SDK marks as an application.
-    -->
-    <PropertyGroup Condition="'$(LocalesPath)' == ''">
-        <LocalesPath>.locales</LocalesPath>
-    </PropertyGroup>
-
     <ItemGroup>
         <_BlazorWebViewPlatformPackage Include="@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.Wpf'));@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.WindowsForms'));@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.Components.WebView.Maui'))" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or ('@(_BlazorWebViewPlatformPackage)' != '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true'))">
-        <_HostLocaleFile Include="$(LocalesPath)/**/*.json" />
-        <EmbeddedResource Include="$(LocalesPath)/**/*.json" WithCulture="false" LogicalName=".locales.$([System.String]::Copy('%(RecursiveDir)%(Filename)%(Extension)').Replace('\', '.').Replace('/', '.'))" />
-    </ItemGroup>
+    <!--
+        The project's locale files: every JSON file carrying the $localization entry, in a .locales folder
+        or anywhere outside a folder whose name starts with a dot, outside the build output, and left to
+        an item that embeds it, which keeps the name it gives the file, or to an item in the project file
+        that copies it beside the output, which keeps it a file there. A file inside an assembly's folder in the root
+        .locales is a host's, for that assembly, which only an application embeds, and every other file
+        is the project's own. An application is a WebAssembly client, a server built on
+        the Web SDK, or a Blazor Hybrid application, known as an application referencing its platform's
+        web view package, its output an executable or, on Android, whose build compiles an application's
+        code as a library, the project the Android SDK marks as an application.
+    -->
+    <Target Name="CollectLocaleFiles" Condition="'$(IsLocalePack)' != 'true'">
+        <PropertyGroup>
+            <_IsLocaleApplication Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWeb)' == 'true' or ('@(_BlazorWebViewPlatformPackage)' != '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true'))">true</_IsLocaleApplication>
+        </PropertyGroup>
+        <ItemGroup>
+            <_CopiedFile Include="@(Content)" Condition="'%(Content.DefiningProjectFullPath)' == '$(MSBuildProjectFullPath)' and '%(Content.CopyToOutputDirectory)' != '' and '%(Content.CopyToOutputDirectory)' != 'Never'" />
+            <_CopiedFile Include="@(None)" Condition="'%(None.DefiningProjectFullPath)' == '$(MSBuildProjectFullPath)' and '%(None.CopyToOutputDirectory)' != '' and '%(None.CopyToOutputDirectory)' != 'Never'" />
+            <_LocaleFileCandidate Include="**/.locales/**/*.json" Exclude="$(DefaultItemExcludes);**/node_modules/**;@(EmbeddedResource);@(_CopiedFile)" />
+            <_LocaleFileCandidate Include="**/*.json" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);**/node_modules/**;@(EmbeddedResource);@(_CopiedFile);@(_LocaleFileCandidate)" />
+        </ItemGroup>
+        <!-- A condition batched over an empty list is still evaluated once, with empty metadata, so each batch waits for a list to hold an item. -->
+        <ItemGroup Condition="'@(_LocaleFileCandidate)' != ''">
+            <_LocaleFile Include="@(_LocaleFileCandidate)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($([System.IO.File]::ReadAllText('%(_LocaleFileCandidate.FullPath)')), '&quot;\$localization&quot;\s*:'))" />
+        </ItemGroup>
+        <ItemGroup Condition="'@(_LocaleFile)' != ''">
+            <_HostLocaleFile Include="@(_LocaleFile)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_LocaleFile.Identity)', '^\.locales[\\/][^\\/]+[\\/]'))" />
+            <_OwnLocaleFile Include="@(_LocaleFile)" Exclude="@(_HostLocaleFile)" />
+        </ItemGroup>
+    </Target>
 
-    <ItemGroup Condition="'@(_HostLocaleFile)' != ''">
-        <AssemblyAttribute Include="Forma.Framework.Localization.HostLocalesAttribute" />
-    </ItemGroup>
+    <!--
+        Embeds the project's own locale files under the names their paths form, and, in an application, the
+        host's under their paths in the root .locales with their folders joined by dots, after the prefix
+        .locales., which the build reserves for a host's files and which no resource name it forms otherwise
+        starts with; an embedded file is no content, which a server would otherwise copy beside its binary.
+    -->
+    <Target Name="EmbedLocaleFiles" BeforeTargets="AssignTargetPaths" DependsOnTargets="CollectLocaleFiles" Condition="'$(IsLocalePack)' != 'true'">
+        <ItemGroup>
+            <EmbeddedResource Include="@(_OwnLocaleFile)" WithCulture="false" />
+            <Content Remove="@(_OwnLocaleFile)" />
+            <None Remove="@(_OwnLocaleFile)" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_IsLocaleApplication)' == 'true' and '@(_HostLocaleFile)' != ''">
+            <EmbeddedResource Include="@(_HostLocaleFile)" WithCulture="false" LogicalName=".locales.$([System.String]::Copy('%(_HostLocaleFile.Identity)').Substring(9).Replace('\', '.').Replace('/', '.'))" />
+            <Content Remove="@(_HostLocaleFile)" />
+            <None Remove="@(_HostLocaleFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Answers a server referencing this project with the project's assembly where its build embeds a host's files, which the server reads too. -->
+    <Target Name="GetHostLocaleAssemblyName" DependsOnTargets="CollectLocaleFiles" Returns="@(_HostLocaleAssemblyName)">
+        <ItemGroup>
+            <_HostLocaleAssemblyName Include="$(AssemblyName)" Condition="'$(_IsLocaleApplication)' == 'true' and '@(_HostLocaleFile)' != ''" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Records each referenced project whose build embeds a host's files, as a Web App's server references its client, so the server reads them as well as its own. -->
+    <Target Name="RecordHostLocaleAssemblies" BeforeTargets="GetAssemblyAttributes" Condition="'@(ProjectReference)' != ''">
+        <MSBuild Projects="@(ProjectReference)" Targets="GetHostLocaleAssemblyName" SkipNonexistentTargets="true">
+            <Output TaskParameter="TargetOutputs" ItemName="_ReferencedHostLocaleAssembly" />
+        </MSBuild>
+        <ItemGroup>
+            <AssemblyAttribute Include="Forma.Framework.Localization.LocaleReferenceAttribute" Condition="'@(_ReferencedHostLocaleAssembly)' != ''">
+                <_Parameter1>%(_ReferencedHostLocaleAssembly.Identity)</_Parameter1>
+            </AssemblyAttribute>
+        </ItemGroup>
+    </Target>
 
     <PropertyGroup Condition="'$(IsLocalePack)' == 'true'">
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

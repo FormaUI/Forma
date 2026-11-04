@@ -7,6 +7,7 @@ public sealed class ExampleHostTests(BrowserHost host)
 {
     private const string Welcome = "ברוכים הבאים";
     private const string PaginationLabel = "ניווט עמודים";
+    private const string OverriddenPaginationLabel = "ניווט בין העמודים";
 
     [Theory]
     [InlineData("webassembly")]
@@ -20,9 +21,9 @@ public sealed class ExampleHostTests(BrowserHost host)
         // Act
         await page.Locator($"#{switching} .switch").ClickAsync();
 
-        // Assert
-        await ExpectHebrewAsync(page, "server");
-        await ExpectHebrewAsync(page, "webassembly");
+        // Assert — the client's override of the library's label, which the server reads from the client too
+        await ExpectHebrewAsync(page, "server", OverriddenPaginationLabel);
+        await ExpectHebrewAsync(page, "webassembly", OverriddenPaginationLabel);
         await WaitForDocumentAsync(page, "he/rtl");
     }
 
@@ -36,13 +37,13 @@ public sealed class ExampleHostTests(BrowserHost host)
 
         // Act
         await page.Locator("#webassembly .switch").ClickAsync();
-        await ExpectHebrewAsync(page, "webassembly");
+        await ExpectHebrewAsync(page, "webassembly", PaginationLabel);
         var afterClient = await GetDocumentAsync(page);
         var serverAfterClient = await page.Locator("#server .welcome").TextContentAsync();
         await page.Locator("#server .switch").ClickAsync();
 
         // Assert — the client's switch left the server's island and the document as they were
-        await ExpectHebrewAsync(page, "server");
+        await ExpectHebrewAsync(page, "server", PaginationLabel);
         await WaitForDocumentAsync(page, "he/rtl");
         Assert.Multiple(
             () => Assert.Equal(served, afterClient),
@@ -61,10 +62,10 @@ public sealed class ExampleHostTests(BrowserHost host)
         return (context, page);
     }
 
-    // The host's own string, from its folder, and the library's, from the Hebrew pack.
-    private static async Task ExpectHebrewAsync(IPage page, string island)
+    // The client's own string, from beside its component, and the library's label, from the Hebrew pack or a host's override of it.
+    private static async Task ExpectHebrewAsync(IPage page, string island, string paginationLabel)
     {
         await Assertions.Expect(page.Locator($"#{island} .welcome")).ToHaveTextAsync(Welcome);
-        await Assertions.Expect(page.Locator($"#{island} nav")).ToHaveAttributeAsync("aria-label", PaginationLabel);
+        await Assertions.Expect(page.Locator($"#{island} nav")).ToHaveAttributeAsync("aria-label", paginationLabel);
     }
 }

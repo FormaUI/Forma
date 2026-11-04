@@ -10,11 +10,6 @@
         <ProjectReference Include="..\..\Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     </ItemGroup>
 
-    <!-- The translations embed in the assembly itself rather than in satellite assemblies. -->
-    <ItemGroup>
-        <EmbeddedResource Include=".locales\**\*.json" WithCulture="false" />
-    </ItemGroup>
-
     <ItemGroup>
       <PackageReference Include="HtmlSanitizer" />
       <PackageReference Include="OfficeIMO.Excel" />

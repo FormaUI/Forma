@@ -18,8 +18,4 @@
         <ProjectReference Include="..\Forma.Examples.Coordinated.Client\Forma.Examples.Coordinated.Client.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-
 </Project>

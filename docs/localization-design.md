@@ -136,7 +136,9 @@ project, outside its build output and outside any folder whose name starts with 
 and embeds each once, under the resource name its path forms, with no culture taken from its name.
 Where a file sits is for the paths to read at runtime, so a project that states other paths in its
 `.locale.json` states nothing to the build. A file the project embeds through an item of its own is
-left to that item, under the name the item gives it. An application's files for other assemblies are
+left to that item, under the name the item gives it, and so is a file an item in the project file
+copies beside its output, which stays a file there; an embedded file is no content, so a server never
+also copies it. An application's files for other assemblies are
 embedded apart from its own, as [host files](#host-files) sets out, and a pack embeds its files by
 [its own rule](#a-pack-is-a-hosts-folder-that-ships-as-an-assembly).
 
@@ -160,7 +162,7 @@ otherwise starts with, so the application's own files and any other resource sta
 
 A Web App's server renders its client's components too, so it reads the host's files its client
 embedded as well as its own. As the server builds, it asks each project it references whether that
-project embedded a host's files, and records each one that did with `HostLocaleAssemblyAttribute`,
+project embedded a host's files, and records each one that did with `LocaleReferenceAttribute`,
 naming its assembly; an assembly never names itself, since its own are found by their prefix. A Web
 App therefore keeps the host's files both runtimes read in its client, and its own strings beside
 the components they belong to, which every runtime that loads the assembly reads.
@@ -375,4 +377,4 @@ different paths are both read, and the linter reports the pair.
 | L16 | Does the runtime read anything out of a pack's name? | No. A pack is loaded by name and read by its resources, neither of which is parsed, so any assembly can be a pack whatever it is called, for whichever assemblies it holds folders for, published by anyone. `Forma.Blazor.Locales.{Language}` is this repository's convention for its own. |
 | L17 | What does a project write to embed its locale files? | Nothing. The build finds them by the `$localization` entry every locale file carries and embeds each once, so configuration stays in `.locale.json` and `LocalizationOptions` and no fact about a locale file lives in a project file; a file a project embeds through an item of its own keeps that item's name. |
 | L18 | Where does a host's folder sit, and how does it reach a runtime with no file system? | In the application's root `.locales`, beside the application's own root files, a folder per assembly inside it; an application, a WebAssembly client, a Web SDK server or a Blazor Hybrid application, embeds it under the prefix `.locales.`, which the build reserves for it. |
-| L19 | How does a Web App's server read its client's host files? | Through `HostLocaleAssemblyAttribute`, which the server's build writes for each referenced project that embedded a host's files, naming its assembly; the server reads them before its own. The runtime finds the application by its entry assembly or, with none, by what a loaded assembly embeds, names or records. |
+| L19 | How does a Web App's server read its client's host files? | Through `LocaleReferenceAttribute`, which the server's build writes for each referenced project that embedded a host's files, naming its assembly; the server reads them before its own. The runtime finds the application by its entry assembly or, with none, by what a loaded assembly embeds, names or records. |

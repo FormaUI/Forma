@@ -6,10 +6,13 @@ using System.Reflection;
 /// <param name="pack">The assembly the files are embedded in.</param>
 /// <param name="format">The format the files are written in.</param>
 /// <param name="rootNamespaces">The root namespace each assembly's own config declares, by the assembly's name.</param>
-/// <param name="resourcePrefix">What the resource name of each of the files starts with, as a host's files embedded in its assembly start with <see cref="HostLocalesAttribute.ResourcePrefix"/>; the pack's other resources are no files of it.</param>
+/// <param name="resourcePrefix">What the resource name of each of the files starts with, as a host's files embedded in an application start with <see cref="HostResourcePrefix"/>; the pack's other resources are no files of it.</param>
 /// <remarks>A pack is read as a host's folder is: an assembly's folder is laid out by the root namespace the assembly's own config declares.</remarks>
 public sealed class LocalePackSource(Assembly pack, ILocaleFileFormat format, Func<string, string?> rootNamespaces, string resourcePrefix = "") : LocaleSource(format)
 {
+    /// <summary>What the resource name of each of a host's files embedded in an application starts with, followed by the file's path in the host's folder with its folders joined by dots; the build reserves it for a host's files, and no resource name it forms otherwise starts with a dot.</summary>
+    public const string HostResourcePrefix = ".locales.";
+
     private readonly Assembly _pack = pack ?? throw new ArgumentNullException(nameof(pack));
     private readonly string _packName = pack.GetName().Name ?? string.Empty;
     private readonly Func<string, string?> _rootNamespaces = rootNamespaces ?? throw new ArgumentNullException(nameof(rootNamespaces));

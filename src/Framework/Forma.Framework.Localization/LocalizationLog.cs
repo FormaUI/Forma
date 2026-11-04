@@ -10,4 +10,7 @@ internal static partial class LocalizationLog
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Locale pack {Pack} could not be loaded, so what it localizes reads in the language its keys are written in: {Reason}")]
     public static partial void LocalePackNotLoaded(ILogger logger, string pack, string reason);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Host locale assembly {Assembly} could not be loaded, so the host's strings it carries are left out: {Reason}")]
+    public static partial void HostLocaleAssemblyNotLoaded(ILogger logger, string assembly, string reason);
 }

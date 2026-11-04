@@ -41,6 +41,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [The application's cultures](docs/culture-design.md#the-applications-cultures): an application whose cultures carry patterns of their own, a company's 12- or 24-hour clock, registers an `ICultureProvider`, and every culture Forma holds or applies is the provider's for its name, a switch coming back from the page's culture coordinator by name among them, which had rebuilt the platform's culture and lost the application's patterns; culture routing runs a request in the provider's cultures, and `UseFormaRequestCulture` does after request localization.
 
+- [Locale files embedded by the build](docs/localization-design.md#embedded-files-and-resource-names): the localization package's build embeds every locale file by the `$localization` entry it carries, so a project names none, and an application's root `.locales` holds its own root files beside its folder for each assembly whose strings it rewords, where two items had claimed one folder and failed a client's build; a Web App's server reads the [host's files its client embedded](docs/localization-design.md#host-files), and a server embeds its own rather than copying them beside its binary.
+
 - The state notifier takes subscriptions from any thread and notifies every subscriber where one fails, where it had stopped at the first failure.
 
 - [The input router](docs/input-router-design.md#a-fields-pending-edit) commits the focused text field's pending edit before it routes an action or a dismissal, an editable element's among them, so a shortcut pressed in a field that updates on change reads the text as it stands; [the DOM engine](src/Framework/Forma.Framework.Browser.Interop/README.md) keeps a text field's running count of its characters in the browser, as part of the field's edits.
@@ -71,6 +73,9 @@ Until the first release, a month may break what the one before it allowed, and e
 
 **Breaking:**
 
+- The `LocalesPath` build property is gone: a client's own strings sit beside its components, and a Web App keeps the host's files both runtimes read in its client's root `.locales`, which the server reads through the client it references.
+- `HostLocalesAttribute` is gone; an application's own embedded host files are found by their `.locales.` prefix, and `LocaleReferenceAttribute(string assemblyName)` names another assembly carrying them. `LocalizationOptions.HostLocaleAssembly` is `HostLocaleAssemblies`.
+- A server's build embeds the host's files rather than copying a `.locales` folder beside its binary; a folder there, placed by hand, is still read last.
 - `AddFormaUI` registers no `IJSRuntime`, `IStringLocaleFactory`, `IIconProvider` or `IEmojiProvider` of its own: a host that resolves one from the container registers it, as `AddJsonLocalization`, `AddFormaGlyphServices` and `AddFormaEmojiServices` do, and its logging is the platform's `LoggerFactory`, with the host's providers, where it was a null factory.
 - `AddFormaCultureRouting` registers no culture state or coordination: a host registers them through a product's registrar, as every host already does.
 - `StateNotifier.NotifyAsync` faults with an `AggregateException` holding every subscriber's failure, where it faulted with the first one's.

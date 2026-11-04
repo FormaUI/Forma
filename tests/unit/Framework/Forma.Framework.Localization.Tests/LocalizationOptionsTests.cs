@@ -1,5 +1,7 @@
 namespace Forma.Framework.Localization.Tests;
 
+using Microsoft.Extensions.Logging;
+
 public sealed class LocalizationOptionsTests
 {
     public sealed class RecordedLocales
@@ -40,12 +42,12 @@ public sealed class LocalizationOptionsTests
         }
 
         [Fact]
-        public void Should_take_the_application_as_the_host_s_assembly_where_its_build_embedded_the_host_s_files()
+        public void Should_take_the_application_as_a_host_s_assembly_where_its_build_embedded_the_host_s_files()
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
-            var client = new FakeAssembly("Contoso.Client") { Attributes = { new HostLocalesAttribute() } };
-            var server = new FakeAssembly("Contoso.Server");
+            var client = new FakeAssembly("Contoso.Client") { Resources = { [LocalePackSource.HostResourcePrefix + "Contoso.Library.he.json"] = "{}" } };
+            var server = new FakeAssembly("Contoso.Server") { Resources = { ["Contoso.Server.Strings.he.json"] = "{}" } };
 
             // Act
             var clientOptions = new LocalizationOptions().WithRecordedLocales(client, loggerFactory.CreateLogger("packs"));
@@ -53,8 +55,46 @@ public sealed class LocalizationOptionsTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Same(client, clientOptions.HostLocaleAssembly),
-                () => Assert.Null(serverOptions.HostLocaleAssembly));
+                () => Assert.Equal([client], clientOptions.HostLocaleAssemblies),
+                () => Assert.Empty(serverOptions.HostLocaleAssemblies));
+        }
+
+        [Fact]
+        public void Should_place_each_assembly_the_application_names_before_its_own_and_both_before_the_ones_named()
+        {
+            // Arrange — a server naming the localization library as its client, embedding a host's files of its own, with options naming another
+            using var loggerFactory = new FakeLoggerFactory();
+            var client = typeof(LocalizationOptions).Assembly;
+            var server = new FakeAssembly("Contoso.Server")
+            {
+                Attributes = { new LocaleReferenceAttribute(client.GetName().Name!) },
+                Resources = { [LocalePackSource.HostResourcePrefix + "Contoso.Library.he.json"] = "{}" },
+            };
+            var named = new FakeAssembly("Contoso.Named");
+
+            // Act
+            var configured = new LocalizationOptions { HostLocaleAssemblies = [named, server] }.WithRecordedLocales(server, loggerFactory.CreateLogger("hosts"));
+
+            // Assert
+            Assert.Equal([client, server, named], configured.HostLocaleAssemblies);
+        }
+
+        [Fact]
+        public void Should_report_a_named_assembly_that_cannot_be_loaded_and_leave_it_out()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var server = new FakeAssembly("Contoso.Server") { Attributes = { new LocaleReferenceAttribute("Contoso.Missing") } };
+
+            // Act
+            var configured = new LocalizationOptions().WithRecordedLocales(server, loggerFactory.CreateLogger("hosts"));
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.Empty(configured.HostLocaleAssemblies),
+                () => Assert.Equal(LogLevel.Warning, entry.Level),
+                () => Assert.Contains("Contoso.Missing", entry.Message, StringComparison.Ordinal));
         }
 
         [Fact]

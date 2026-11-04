@@ -1,4 +1,4 @@
-@* Every package a client can load, each in use, so a trimmed publish keeps what a host using it downloads, with what the culture checks read and press on a standalone app's page: its state, a string of the host's own and a switch. *@
+@* Every package a client can load, each in use, so a trimmed publish keeps what a host using it downloads, with what the culture checks read and press on a standalone app's page: its state, a string of its own and one of the host's, both in its root .locales, and a switch. *@
 @inherits FormaComponentBase
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Web
@@ -10,6 +10,7 @@
 
 <output id="standalone-state">@Context.CultureState.Culture.Name/@Context.CultureState.UICulture.Name</output>
 <output id="standalone-host-string">@L["Host String"]</output>
+<output id="standalone-own-string">@L["Own String"]</output>
 <button id="standalone-switch" @onclick="SwitchAsync">Switch to Hebrew</button>
 
 <FormaComposer @bind-Value="_document" />

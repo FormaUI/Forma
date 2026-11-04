@@ -135,21 +135,25 @@ builder.Services.AddFormaUIWebAssembly();
 await builder.Build().RunAsync();
 ```
 
-The host's locale files stay in the server's `.locales` folder, which the server copies beside its binary, and
-the client names the same folder, which its build embeds for the browser, so both runtimes read one set of files:
+The client keeps its own strings beside its components, which both runtimes read from the client's assembly, and
+its root `.locales` holds a folder for each assembly whose strings the host rewords, which the server reads from the
+client too, since its build records the client it references; neither project names a locale file. The example
+rewords the library's pagination label in Hebrew:
 
-<!-- example: examples/Forma.Examples.Coordinated/Forma.Examples.Coordinated.csproj -->
-```xml
-<ItemGroup>
-    <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
-</ItemGroup>
+<!-- example: examples/Forma.Examples.Coordinated.Client/.locales/Forma.Blazor/Components/Navigation/he.json -->
+```json
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaPagination": {
+    "Pagination": "ניווט בין העמודים"
+  }
+}
 ```
 
 <!-- example: examples/Forma.Examples.Coordinated.Client/Forma.Examples.Coordinated.Client.csproj -->
 ```xml
 <PropertyGroup>
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-    <LocalesPath>..\MyApp\.locales</LocalesPath>
 </PropertyGroup>
 ```
 
@@ -369,8 +373,10 @@ the application's own formats through its web view's `ICultureState` and reads i
 to it, `factory.Create(typeof(Orders), cultureState)`, and native code switches one web view through that web
 view's services, `webView.TryDispatchAsync(services => ...)`.
 
-The application's own locale files stay in its `.locales` folder, which the build embeds in the application's
-assembly, so an application MAUI packages reads them with no folder beside it.
+The application's own strings sit beside its types, `.locales/he.json` beside `MainWindow` and
+`Components/.locales/he.json` beside its components, and the build embeds them in the application's assembly,
+with its root `.locales` folder for each assembly whose strings it rewords, so an application MAUI packages
+reads them with no folder beside it.
 
 ## Use the components
 
@@ -547,14 +553,14 @@ look a string up by its English text, passing the values for its holes in order:
 <p>@L["Stored {Stored} of {Total}.", stored, total]</p>
 ```
 
-A key with no localization renders as written. The localized text lives in a `.locales` folder
-beside the application: the first folder is the assembly's name, the folders below it are the
-namespace past the assembly's root namespace, and each file is named for its culture with a
-section per type. The same layout rewords a string the library ships or adds a language it has no
-pack for:
+A key with no localization renders as written. The application's own strings live beside the
+components they belong to, as a library's do: a `.locales` folder in each folder, with a file per
+culture holding a section per type. The application's root `.locales` also holds a folder for each
+assembly whose strings it rewords, or adds a language to that has no pack: the first folder is the
+assembly's name, the folders below it are the namespace past that assembly's root namespace:
 
 ```text
-.locales/MyApp/Components/Pages/he.json          { "Orders": { "Save": "שמירה" } }
+Components/Pages/.locales/he.json                { "Orders": { "Save": "שמירה" } }
 .locales/Forma.Blazor/Components/Bars/he.json    { "FormaSelectionToolbar": { "Clear Selection": "ניקוי הבחירה" } }
 .locales/Forma.Blazor/Components/Bars/fr.json    { "FormaSelectionToolbar": { "Clear Selection": "Effacer la sélection" } }
 ```
@@ -571,13 +577,11 @@ Each file opens with a `$localization` entry naming its culture:
 }
 ```
 
-The folder reaches the output as content:
-
-```xml
-<ItemGroup>
-    <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
-</ItemGroup>
-```
+The build embeds every file carrying that entry, so a project names none of them: an application's
+own strings in its assembly, as a library's are, and its files for other assemblies apart from them,
+which every runtime reads, a WebAssembly client's and a packaged Blazor Hybrid application's among
+them. A `.locales` folder beside the running application, which no build fills, is read last, so a
+string can change there without building again.
 
 A host that changes the culture without a new request, switching language in place, requests it
 through the `ICultureSwitch` every user scope resolves, which applies it to the scope's

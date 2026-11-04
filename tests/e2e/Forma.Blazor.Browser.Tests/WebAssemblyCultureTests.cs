@@ -168,6 +168,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
         await Assertions.Expect(page.Locator("#standalone-state")).ToHaveTextAsync("de-DE/de-DE", new() { Timeout = 60000 });
         await WaitForDocumentAsync(page, "de-DE/ltr");
         await Assertions.Expect(page.Locator("#standalone-host-string")).ToHaveTextAsync("Host String");
+        await Assertions.Expect(page.Locator("#standalone-own-string")).ToHaveTextAsync("Own String");
 
         // Act
         await page.Locator("#standalone-switch").ClickAsync();
@@ -176,6 +177,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
         await Assertions.Expect(page.Locator("#standalone-state")).ToHaveTextAsync("he/he");
         await WaitForDocumentAsync(page, "he/rtl");
         await Assertions.Expect(page.Locator("#standalone-host-string")).ToHaveTextAsync("מחרוזת המארח");
+        await Assertions.Expect(page.Locator("#standalone-own-string")).ToHaveTextAsync("מחרוזת הלקוח");
         await Assertions.Expect(page.Locator("nav[aria-label='ניווט עמודים']")).ToHaveCountAsync(1);
     }
 

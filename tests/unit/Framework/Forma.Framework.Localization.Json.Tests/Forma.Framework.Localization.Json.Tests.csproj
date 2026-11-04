@@ -24,6 +24,9 @@
         <EmbeddedResource Update="Fixtures\Foreign\ForeignRoot\.locales\he.json" LogicalName="Contoso.Widgets.ForeignRoot..locales.he.json" />
         <!-- A type outside any namespace, whose resource the root namespace alone qualifies. -->
         <EmbeddedResource Update="Fixtures\GlobalRoot\.locales\he.json" LogicalName="Forma.Framework.Localization.Json.Tests.GlobalRoot..locales.he.json" />
+        <!-- A pack's file and a host's file for the localization library's root folder, which a test reads with this assembly named as a pack or as a server's client. -->
+        <EmbeddedResource Update="Fixtures\Discovery\Pack\fr.json" LogicalName="Forma.Framework.Localization.fr.json" WithCulture="false" />
+        <EmbeddedResource Update="Fixtures\Discovery\Host\fr.json" LogicalName=".locales.Forma.Framework.Localization.fr.json" WithCulture="false" />
     </ItemGroup>
 
     <!-- The host's own files, copied beside the test assembly, where the default folder is looked for. -->

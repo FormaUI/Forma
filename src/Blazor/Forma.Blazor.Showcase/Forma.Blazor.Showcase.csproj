@@ -51,12 +51,7 @@
         <ProjectReference Include="..\..\Locales\Forma.Blazor.Locales.Spanish\Forma.Blazor.Locales.Spanish.csproj" />
     </ItemGroup>
 
-    <!-- The translations embed in the assembly itself rather than in satellite assemblies. -->
-    <ItemGroup>
-        <EmbeddedResource Include="Components\**\*.json" WithCulture="false" />
-    </ItemGroup>
-
-    <!-- The host's own files, copied beside the application where the default folder is looked for; the SDK's own globs pass over a folder whose name starts with a dot. -->
+    <!-- The host's folder, kept beside the application rather than embedded, as a host keeps one to change a string without building again, which the Localization page shows. -->
     <ItemGroup>
         <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>

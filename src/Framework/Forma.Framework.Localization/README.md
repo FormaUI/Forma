@@ -155,45 +155,39 @@ Uploads/.locales/UploadStatus.he.json      { "Saved": "נשמר" }
 A folder's file may also sit higher up, spelling the rest of the name in its sections. A regional
 culture's file, `es-419.json`, holds only what differs from its parent's.
 
+**Embedded by the build.** The build embeds every locale file it finds by the `$localization` entry
+each one carries, wherever it sits in the project, outside the build output and outside a folder
+whose name starts with a dot but `.locales`, so a project names none of them; a file the project
+embeds through an item of its own keeps the name that item gives it, and one an item in the project
+file copies beside its output stays a file there.
+
 **In the host.** An application rewords a string, or adds a language the library never shipped, in
-a `.locales` folder beside its binary: a folder named for the assembly, then the type's namespace
-as folders, holding only the keys it changes:
+its root `.locales` folder, beside its own root files: a folder named for the assembly, then the
+type's namespace as folders, holding only the keys it changes:
 
 ```text
 .locales/Forma.Blazor/Components/Bars/he.json             { "FormaSelectionToolbar": { "Clear Selection": "בטל בחירה" } }
 .locales/Forma.Blazor/Components/Bars/fr.json             { "FormaSelectionToolbar": { "Clear Selection": "Effacer la sélection" } }
 ```
 
-The folder reaches the output as content:
+An application, a WebAssembly client, a server built on the Web SDK or a Blazor Hybrid application,
+embeds these in its assembly, under resource names starting with `.locales.`, so a browser and an
+application MAUI packages, with no folder to read, read them too. A Web App's server reads its
+client's as well: its build records each client it references whose build embedded such files with
+`LocaleReferenceAttribute`, so a Web App keeps the files both runtimes read in its client. A library
+embeds none, since rewording another assembly's strings is the application's choice.
 
-```xml
-<ItemGroup>
-    <Content Include=".locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
-</ItemGroup>
-```
-
-**In a WebAssembly client.** The browser has no folder to read, so the client's build embeds the
-host's folder in the client's assembly, laid out as above, and the runtime reads it from there. The
-folder is `.locales` beside the client project unless its `LocalesPath` property names another, as a Web
-App's client names its server's, so both runtimes read the same files:
-
-```xml
-<PropertyGroup>
-    <LocalesPath>..\MyApp\.locales</LocalesPath>
-</PropertyGroup>
-```
-
-**In a Blazor Hybrid application.** An application MAUI packages has no folder beside it to read, so
-the build of an application referencing its platform's web view package, WPF's, Windows Forms' or
-MAUI's, embeds the host's folder in the application's assembly as a client's build does, `.locales`
-beside the project unless `LocalesPath` names another, and the folder need not be copied beside it.
+**Beside the running application.** A `.locales` folder beside the application's binary, which
+`LocalesPath` names and no build fills, is read last, so a string can change there without building
+again.
 
 **Which entry wins.** The assembly's own files are read first, then each locale pack, then the
-host's files, those an application embedded and then the folder's, each overriding the one before; within
-each, a file closer to the type wins.
+host's files: each client the application names, then the application's own, then the folder beside
+it, each overriding the one before; within each, a file closer to the type wins.
 
 **Another layout.** An assembly that keeps its files elsewhere, or whose root namespace differs
-from its name, states it in a `.locale.json` at the project root, which the build embeds:
+from its name, states it in a `.locale.json` at the project root, which the build embeds and which
+the build needs nothing from, since it finds the files by their entry:
 
 ```json
 { "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }
@@ -252,8 +246,9 @@ pack directly; a class library or a test that references one names it in `Locale
 | --- | --- | --- |
 | `SourceLanguage` | `en` | The language the keys are written in. |
 | `RequireMatchingLocalization` | `false` | Throws `LocalizationNotFoundException` for a key no locale file localizes, so a development build finds what is missing. |
-| `LocalesPath` | `.locales` | The host's folder of locale files, relative to the application's base directory; empty reads none. |
+| `LocalesPath` | `.locales` | The host's folder of locale files beside the running application, relative to its base directory; empty reads none. |
 | `LocalePacks` | none | Locale packs read beside the ones the application's build recorded. |
+| `HostLocaleAssemblies` | none | Assemblies carrying a host's embedded files, read beside the ones the application's build recorded. |
 
 ## Reference
 
