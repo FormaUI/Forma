@@ -46,6 +46,7 @@ public static partial class ComponentChecks
         };
 
         var (context, page) = await host.OpenPageAsync(host.ComponentsAddress).ConfigureAwait(false);
+        var problems = WatchProblems(page);
 
         if (prepare is not null)
         {
@@ -57,17 +58,24 @@ public static partial class ComponentChecks
         {
             var downloads = new FrameworkDownloads(page);
             await page.GotoAsync($"{mode}/{path}").ConfigureAwait(false);
-            await WaitForRendererAsync(page, "Server").ConfigureAwait(false);
+            await WaitForRendererAsync(page, "Server", problems).ConfigureAwait(false);
             await downloads.WaitAsync().ConfigureAwait(false);
             await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)))").ConfigureAwait(false);
             downloads.Stop();
         }
 
         await page.GotoAsync($"{mode}/{path}").ConfigureAwait(false);
-        await WaitForRendererAsync(page, renderer).ConfigureAwait(false);
+        await WaitForRendererAsync(page, renderer, problems).ConfigureAwait(false);
 
         return (context, page);
     }
+
+    /// <summary>Waits until <paramref name="item"/> stands in the page's viewport, which a script brings it into, as a list opening on it or scrolling to it does.</summary>
+    /// <param name="item">The element.</param>
+    /// <returns>A task that completes once the element is in view.</returns>
+    /// <remarks>It waits as long as a page's own waits, as every wait on a script's answer here does, since a busy machine can hold a script's first call past an assertion's.</remarks>
+    public static Task WaitForInViewportAsync(ILocator item)
+        => Assertions.Expect(item).ToBeInViewportAsync(new() { Timeout = 30000 });
 
     /// <summary>Waits until the input router has registered the element <paramref name="selector"/> names, which a component's script does once it answers input.</summary>
     /// <param name="page">The page read.</param>
@@ -168,6 +176,7 @@ public static partial class ComponentChecks
             await Assertions.Expect(opened).Not.ToHaveTextAsync(previous).ConfigureAwait(false);
             name = (await opened.TextContentAsync().ConfigureAwait(false))!;
             page = await application.GetWebViewAsync(name).ConfigureAwait(false);
+            var problems = WatchProblems(page);
             await page.SetViewportSizeAsync(1280, 720).ConfigureAwait(false);
 
             if (prepare is not null)
@@ -176,7 +185,7 @@ public static partial class ComponentChecks
                 await page.ReloadAsync().ConfigureAwait(false);
             }
 
-            await WaitForRendererAsync(page, "WebView").ConfigureAwait(false);
+            await WaitForRendererAsync(page, "WebView", problems).ConfigureAwait(false);
         }
         catch
         {
@@ -228,6 +237,7 @@ public static partial class ComponentChecks
         try
         {
             (browser, var page) = await application.ConnectAsync().ConfigureAwait(false);
+            var problems = WatchProblems(page);
             await page.SetViewportSizeAsync(1280, 720).ConfigureAwait(false);
 
             if (prepare is not null)
@@ -236,7 +246,7 @@ public static partial class ComponentChecks
             }
 
             await page.GotoAsync(new Uri(new Uri(page.Url), $"/android/{path}").ToString()).ConfigureAwait(false);
-            await WaitForRendererAsync(page, "WebView").ConfigureAwait(false);
+            await WaitForRendererAsync(page, "WebView", problems).ConfigureAwait(false);
 
             return (WebViewCheckContext.Create(page.Context, EndAsync), page);
         }
@@ -248,8 +258,35 @@ public static partial class ComponentChecks
         }
     }
 
-    private static Task WaitForRendererAsync(IPage page, string renderer)
-        => Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex($"^{renderer} True$"), new() { Timeout = 60000 });
+    // A page that never becomes interactive fails with what it reported, its errors and the requests that failed, beside the wait's own message.
+    private static async Task WaitForRendererAsync(IPage page, string renderer, System.Collections.Concurrent.ConcurrentQueue<string> problems)
+    {
+        try
+        {
+            await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex($"^{renderer} True$"), new() { Timeout = 60000 }).ConfigureAwait(false);
+        }
+        catch (PlaywrightException ex) when (!problems.IsEmpty)
+        {
+            throw new PlaywrightException($"{ex.Message}{Environment.NewLine}The page reported:{Environment.NewLine}{string.Join(Environment.NewLine, problems)}", ex);
+        }
+    }
+
+    // What a page reports going wrong: its console's errors, its uncaught errors and the requests that failed.
+    private static System.Collections.Concurrent.ConcurrentQueue<string> WatchProblems(IPage page)
+    {
+        var problems = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        page.Console += (_, message) =>
+        {
+            if (message.Type == "error")
+            {
+                problems.Enqueue($"console: {message.Text}");
+            }
+        };
+        page.PageError += (_, error) => problems.Enqueue($"error: {error}");
+        page.RequestFailed += (_, request) => problems.Enqueue($"request: {request.Url} {request.Failure}");
+
+        return problems;
+    }
 
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d+$")]
     private static partial System.Text.RegularExpressions.Regex LayerPattern();

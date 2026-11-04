@@ -181,7 +181,7 @@ public sealed class PickersTests
             await field.FocusAsync();
             await field.PressAsync("ArrowDown");
             await Assertions.Expect(field).ToHaveAttributeAsync("aria-activedescendant", "check-option-19");
-            await Assertions.Expect(page.Locator("#check-option-19")).ToBeInViewportAsync();
+            await ComponentChecks.WaitForInViewportAsync(page.Locator("#check-option-19"));
 
             // Act — six half hours on, to 12:30, past the options the list first drew
             for (var step = 0; step < 6; step++)
@@ -191,7 +191,7 @@ public sealed class PickersTests
 
             // Assert
             await Assertions.Expect(field).ToHaveAttributeAsync("aria-activedescendant", "check-option-25");
-            await Assertions.Expect(page.Locator("#check-option-25")).ToBeInViewportAsync();
+            await ComponentChecks.WaitForInViewportAsync(page.Locator("#check-option-25"));
             await field.PressAsync("Enter");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("12:30");
             await Assertions.Expect(page.Locator("#check-list")).ToBeHiddenAsync();

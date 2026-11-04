@@ -21,7 +21,7 @@ public sealed class VirtualizationTests
             await page.Locator("#check").EvaluateAsync("box => box.scrollTop = 500 * 40");
 
             // Assert
-            await Assertions.Expect(middle).ToBeInViewportAsync();
+            await ComponentChecks.WaitForInViewportAsync(middle);
             await Assertions.Expect(first).ToHaveCountAsync(0);
         }
 
@@ -33,7 +33,7 @@ public sealed class VirtualizationTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "virtualize");
             await using var _ = context;
             var box = page.Locator("#opened");
-            await Assertions.Expect(page.Locator("#opened-300")).ToBeInViewportAsync();
+            await ComponentChecks.WaitForInViewportAsync(page.Locator("#opened-300"));
 
             // Act — an item far past those drawn, then one already drawn
             await page.Locator("#to-700").ClickAsync();
