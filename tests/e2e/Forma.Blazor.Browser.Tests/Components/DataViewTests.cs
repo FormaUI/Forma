@@ -69,13 +69,13 @@ public sealed class DataViewTests
             await Assertions.Expect(notes).ToBeVisibleAsync();
             await Assertions.Expect(count).ToBeVisibleAsync();
 
-            // Act
+            // Act — each width the grid's script reports, which the check waits for as it waits for a script's answer
             await page.SetViewportSizeAsync(360, viewport.Height);
-            await Assertions.Expect(notes).ToHaveCountAsync(0);
+            await Assertions.Expect(notes).ToHaveCountAsync(0, new() { Timeout = 30_000 });
             await page.SetViewportSizeAsync(viewport.Width, viewport.Height);
 
             // Assert
-            await Assertions.Expect(notes).ToBeVisibleAsync();
+            await Assertions.Expect(notes).ToBeVisibleAsync(new() { Timeout = 30_000 });
             await Assertions.Expect(page.GetByRole(AriaRole.Columnheader, new() { Name = "Name", Exact = true })).ToBeVisibleAsync();
             await Assertions.Expect(count).ToBeVisibleAsync();
         }

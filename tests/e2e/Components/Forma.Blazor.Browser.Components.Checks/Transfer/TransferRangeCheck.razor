@@ -1,23 +1,12 @@
 @page "/{Runtime}/transfer-range"
 @using Forma.Blazor.Components.DataView
 
-@* Four thousand items, each drawn, so a range across them names more items than a circuit message holds; and a menu of as many,
-   whose order the browser answers. The count selected and the item the menu ran are written where the check reads them. *@
+@* Four thousand items, each drawn, so a range across them names more items than a circuit message holds, the count selected
+   written where the check reads it. *@
 <FormaDataView Id="list" TItem="Row" Items="Rows" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" EnablePagination="false" EnableItemSelection="true" @bind-SelectedItems="_selectedRows">
     <FormaDataList TItem="Row" />
 </FormaDataView>
 <output id="selected">@_selectedRows.Count</output>
-
-<FormaDropDownMenu Id="menu">
-    <Trigger>Items</Trigger>
-    <ChildContent>
-        @foreach (var row in Rows)
-        {
-            <FormaDropDownMenuItem @key="row" Id="@($"menu-{row.Index}")" OnClick="@(() => _ran = row.Name)">@row.Name</FormaDropDownMenuItem>
-        }
-    </ChildContent>
-</FormaDropDownMenu>
-<output id="ran">@_ran</output>
 
 @code {
     private const int Count = 4000;
@@ -25,7 +14,6 @@
     private static readonly IQueryable<Row> Rows = Enumerable.Range(1, Count).Select(index => new Row(index, $"Item {index}")).AsQueryable();
 
     private IReadOnlyList<Row> _selectedRows = [];
-    private string? _ran;
 
     [Parameter] public string Runtime { get; set; } = default!;
 

@@ -1,0 +1,22 @@
+@page "/{Runtime}/transfer-menu"
+
+@* A menu of four thousand items, whose order the browser answers in more places than a circuit message holds, the item it ran
+   written where the check reads it. *@
+<FormaDropDownMenu Id="menu">
+    <Trigger>Items</Trigger>
+    <ChildContent>
+        @foreach (var index in Indexes)
+        {
+            <FormaDropDownMenuItem @key="index" Id="@($"menu-{index}")" OnClick="@(() => _ran = $"Item {index}")">Item @index</FormaDropDownMenuItem>
+        }
+    </ChildContent>
+</FormaDropDownMenu>
+<output id="ran">@_ran</output>
+
+@code {
+    private static readonly int[] Indexes = [.. Enumerable.Range(1, 4000)];
+
+    private string? _ran;
+
+    [Parameter] public string Runtime { get; set; } = default!;
+}

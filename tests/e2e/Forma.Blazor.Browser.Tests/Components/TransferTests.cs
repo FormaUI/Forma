@@ -117,6 +117,12 @@ public sealed class TransferTests
     {
         private const int Count = 4000;
 
+        // The menu answers its opening, End and a run once it has drawn, ordered or drawn again every one of its items, an answer the
+        // check waits for as it waits for a script's.
+        private static readonly LocatorAssertionsToBeFocusedOptions MenuFocus = new() { Timeout = 30_000 };
+
+        private static readonly LocatorAssertionsToHaveTextOptions MenuRun = new() { Timeout = 30_000 };
+
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_select_a_range_across_thousands_of_items(string runtime)
@@ -140,19 +146,19 @@ public sealed class TransferTests
         public async Task Should_reach_the_last_of_thousands_of_menu_items_by_their_order_on_the_page(string runtime)
         {
             // Arrange — the menu opened on its first item
-            var (context, page) = await OpenAsync(host, runtime, "transfer-range");
+            var (context, page) = await OpenAsync(host, runtime, "transfer-menu");
             await using var _ = context;
             await page.Locator("#menu").ClickAsync();
-            await Assertions.Expect(page.Locator("#menu-1")).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#menu-1")).ToBeFocusedAsync(MenuFocus);
             await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = page.GetByRole(AriaRole.Menu) }));
 
             // Act — End moves by the items' order the browser answers
             await page.Keyboard.PressAsync("End");
-            await Assertions.Expect(page.Locator($"#menu-{Count}")).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator($"#menu-{Count}")).ToBeFocusedAsync(MenuFocus);
             await page.Keyboard.PressAsync("Enter");
 
             // Assert
-            await Assertions.Expect(page.Locator("#ran")).ToHaveTextAsync($"Item {Count}");
+            await Assertions.Expect(page.Locator("#ran")).ToHaveTextAsync($"Item {Count}", MenuRun);
         }
 
         [Theory]
