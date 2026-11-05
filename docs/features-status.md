@@ -25,7 +25,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
-| [The build](#the-build) | Faster tests and a faster gate |
+| [The build](#the-build) | Faster tests, a faster gate, and the rest area's check on Android |
 | [Release](#release) | A locale pack proven from a feed, and CI's exclusion of prose narrowed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -160,6 +160,7 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 - **Faster tests.** The slowest test projects and tests are measured and made faster, starting with the tests that wait on time and those that load the machine.
 - **A faster gate.** The gate's total time comes down, starting with its longest step, the format check; and the test step builds the solution again although the gate has just built it, about a minute where the suite takes about 20 seconds on the build already on disk.
+- **The rest area's check on Android.** Restoring a minimized window from its handle failed once in a candidate's run, in the Android web view under Auto with WebAssembly: the window's Minimize was pressed and the window never hid. Forty runs on a loaded machine passed, and the code shows no cause. A browser check that fails in CI keeps a Playwright trace of its page as the run's artifact, so the next failure arrives with what the page did.
 
 <a id="release"></a>
 
