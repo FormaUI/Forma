@@ -121,7 +121,8 @@ public static partial class ComponentChecks
     }
 
     // A check in a web view opens its page in a native window of its own, through the application's first web view, at the size a
-    // check's page has in a browser; a page it prepares loads again once prepared, as a browser's page opens prepared. Every web view
+    // check's page has in a browser; a page it prepares loads again once prepared, as a browser's page opens prepared, after its first
+    // load has started its renderer, since a web view reloaded while its renderer starts can leave it unstarted. Every web view
     // shares the application's context, so the check's end takes back what it routed and granted, and closes its web view.
     private static async Task<(IBrowserContext Context, IPage Page)> OpenInWebViewAsync(BrowserHost host, string path, Func<IPage, Task>? prepare)
     {
@@ -181,6 +182,7 @@ public static partial class ComponentChecks
 
             if (prepare is not null)
             {
+                await WaitForRendererAsync(page, "WebView", problems).ConfigureAwait(false);
                 await prepare(page).ConfigureAwait(false);
                 await page.ReloadAsync().ConfigureAwait(false);
             }
