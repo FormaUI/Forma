@@ -2270,8 +2270,8 @@
             // Act - a second press lands while the host is still fetching the first
             var first = cut.Find(".forma-explorer-load-more-button").ClickAsync(new MouseEventArgs());
             var second = cut.Find(".forma-explorer-load-more-button").ClickAsync(new MouseEventArgs());
-            await requested.Task;
-            await second;
+            await requested.Task.WaitAsync(TestContext.Current.CancellationToken);
+            await second.WaitAsync(TestContext.Current.CancellationToken);
 
             // Assert - the guard turned the second press away while the first was still parked
             Assert.Multiple(

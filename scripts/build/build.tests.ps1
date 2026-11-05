@@ -286,9 +286,10 @@ finally {
     Remove-Item -LiteralPath $log -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-# The progress is read off the results each project writes, so it runs for real here on two projects of
-# three finishing, one with a failed test whose name holds a space, beside the runner's lines as they reach
-# the step from projects running side by side: each summary split and mixed with the other's.
+# The progress is read off the results each project writes, each in a folder of its own, so it runs for real
+# here on two projects of three finishing, one with a failed test whose name holds a space, beside the lines
+# the testing platform prints as the projects run: what it runs, each failure, each project's summary, where
+# it wrote the results and the run's summary.
 $progressFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-progress-$([guid]::NewGuid().ToString('N'))"
 
 try {
@@ -307,32 +308,40 @@ try {
 </TestRun>
 '@
     $failure = '<UnitTestResult testName="Forma.B.Tests.Thing.Should_work(text: &quot;a b&quot;)" outcome="Failed" />'
-    $first = Join-Path $progressFolder 'a.trx'
-    $second = Join-Path $progressFolder 'b.trx'
+    $first = Join-Path $progressFolder 'Forma.A.Tests' 'net11.0_x64' 'a.trx'
+    $second = Join-Path $progressFolder 'Forma.B.Tests' 'net11.0_x64' 'b.trx'
+    $null = New-Item -ItemType Directory -Path (Split-Path $first), (Split-Path $second)
     Set-Content -LiteralPath $first -Value ($trx -f '2026-10-01T10:00:00.052+00:00', '', 'Forma.A.Tests', 'Completed', 26, 26, 0, 0)
     Set-Content -LiteralPath $second -Value ($trx -f '2026-10-01T10:00:01.000+00:00', $failure, 'Forma.B.Tests', 'Failed', 13, 10, 1, 2)
     (Get-Item -LiteralPath $first).LastWriteTimeUtc = [datetime]::UtcNow.AddSeconds(-2)
 
     $module = Get-Module Forma.Build
     $runnerLines = @(
-        'Test run for C:\tests\A.Tests.dll (.NETCoreApp,Version=v11.0)'
-        'A total of 1 test files matched the specified pattern.'
+        'Running tests from C:\tests\Forma.A.Tests\bin\Debug\net11.0\Forma.A.Tests.dll (net11.0|x64)'
+        'Running tests from C:\tests\Forma.B.Tests\bin\Debug\net11.0\Forma.B.Tests.dll (net11.0|x64)'
         ''
-        '  Failed Forma.B.Tests.Thing.Should_work(text: "a b") [12 ms]'
-        '  Error Message:'
-        'Passed!  - Failed:     0, Passed:    26, Skipped:     0, Total:    26, Duration: 52 msFailed!  - Failed:     1, Passed:    10, Skipped:     2, Total:    13, Duration: 1 s - Forma.A.Tests.dll (net11.0)'
-        ' - Forma.B.Tests.dll (net11.0)'
-        "Results File: $second"
+        'failed Forma.B.Tests.Thing.Should_work(text: "a b") (12ms)'
+        '  Assert.Equal() Failure: Values differ'
+        'C:\tests\Forma.A.Tests\bin\Debug\net11.0\Forma.A.Tests.dll (net11.0|x64) passed [+26/x0/?0] (52ms)'
+        'C:\tests\Forma.B.Tests\bin\Debug\net11.0\Forma.B.Tests.dll (net11.0|x64) failed [+10/x1/?2] (1s 000ms)'
+        '  In process file artifacts produced:'
+        "    - $second"
+        'Test run summary: Failed!'
+        '  total: 13'
+        '  failed: 1'
+        '  succeeded: 10'
+        '  skipped: 2'
+        '  duration: 1s 052ms'
     )
     $shown = @($runnerLines | & $module { param($Folder) $input | Write-TestProgress -ProjectCount 3 -ResultsDirectory $Folder -Estimate ([timespan]::FromMinutes(5)) } $progressFolder 6>&1 | ForEach-Object { "$_" })
     $counted = & $module { param($Target) Get-TestProjectCount -Target $Target } (Initialize-BuildContext -RepositoryRoot $repositoryRoot).Solution
 
     $wrong = @(
-        if ($shown -match '^Test run for|^A total of|^Results File') { 'the runner''s announcements were shown' }
-        if ($shown -match 'Passed!|Failed!|\.dll \(net') { 'the runner''s summaries were shown' }
+        if ($shown -match '^Running tests from|In process file artifacts produced|\.trx$') { 'the runner''s announcements were shown' }
+        if ($shown -match '\.dll \(net[^)]*\) (passed|failed) \[|^Test run summary|^\s+(total|failed|succeeded|skipped|duration): ') { 'the runner''s summaries were shown' }
         if (-not ($shown -match '^\s+\[1/3\] passed Forma\.A\.Tests, 26 tests in 52 ms .*left\)$')) { 'the first project finishing was not shown with its count and the time left' }
         if (-not ($shown -match '^\s+\[2/3\] FAILED Forma\.B\.Tests, 1 of 13 failed in 1 s')) { 'the failing project was not shown as failed with its counts' }
-        if (-not ($shown -match '^\s+Error Message:$')) { 'a failed test''s message was not passed through' }
+        if (-not ($shown -match '^failed Forma\.B\.Tests\.Thing\.Should_work') -or -not ($shown -match '^\s+Assert\.Equal\(\) Failure: Values differ$')) { 'a failed test and its message were not passed through' }
         if (-not ($shown -match '^\s+36 passed, 1 failed, 2 skipped, across 2 of 3 projects')) { 'the totals were not added up across the projects' }
         if (-not ($shown -match '^\s+1 project gave no result$')) { 'the project that gave no result was not reported' }
         if (-not ($shown -match '^\s+Forma\.B\.Tests\.Thing\.Should_work\(text: "a b"\)$')) { 'the failed test was not listed by name' }

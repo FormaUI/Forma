@@ -659,8 +659,10 @@ function Test-Solution {
     $writeTestProgress = ${function:Write-TestProgress}
     $projectCount = if ($Fast) { @(Get-FastTestProject -Context $Context).Count } else { Get-TestProjectCount -Target $target }
 
-    # Minimal verbosity prints each failed test with its message and stack as it fails.
-    $arguments = @($target, '--nologo', '-v:q', '--logger', 'console;verbosity=minimal')
+    # The testing platform runs a solution or one project, and prints each failed test with its message and stack as it
+    # fails; its live progress is left off, since the results files stand for it here.
+    $targetOption = if ([System.IO.Path]::GetExtension($target) -in '.sln', '.slnx', '.slnf') { '--solution' } else { '--project' }
+    $arguments = @($targetOption, $target, '--nologo', '-v:q', '--no-progress', '--no-ansi')
 
     if ($NoBuild) {
         $arguments += '--no-build'
@@ -724,7 +726,7 @@ function Test-Solution {
 
                         try {
                             while (-not $token.IsCancellationRequested) {
-                                $process = Start-Process -FilePath 'dotnet' -ArgumentList 'test', $project, '--no-build', '--nologo', '-v:q' -Environment @{ FORMA_WAIT_LOG = $null } -NoNewWindow -Wait -PassThru -RedirectStandardOutput $output -RedirectStandardError $errors
+                                $process = Start-Process -FilePath 'dotnet' -ArgumentList 'test', '--project', $project, '--no-build', '--nologo', '-v:q', '--no-progress', '--no-ansi' -Environment @{ FORMA_WAIT_LOG = $null } -NoNewWindow -Wait -PassThru -RedirectStandardOutput $output -RedirectStandardError $errors
                                 $ran++
 
                                 if ($process.ExitCode -ne 0) {
@@ -753,7 +755,7 @@ function Test-Solution {
                 $null = New-Item -ItemType Directory -Path $resultsDirectory
 
                 try {
-                    dotnet test @arguments --logger trx --results-directory $resultsDirectory 2>&1 |
+                    dotnet test @arguments --results-directory $resultsDirectory --results-directory-layout per-module --report-xunit-trx 2>&1 |
                         ForEach-Object { "$_" } |
                         & $writeTestProgress -ProjectCount $projectCount -ResultsDirectory $resultsDirectory -Estimate $runEstimate
 
@@ -865,7 +867,7 @@ function Write-TestProgress {
 
         # Shows each project whose results file appeared since the last look, in the order the files were written.
         $showFinished = {
-            $files = @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -File -ErrorAction SilentlyContinue |
+            $files = @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -File -Recurse -ErrorAction SilentlyContinue |
                     Sort-Object LastWriteTimeUtc, Name)
 
             foreach ($file in $files) {
@@ -925,10 +927,10 @@ function Write-TestProgress {
     }
 
     process {
-        $isAnnouncement = $Line -match '^Test run for ' -or $Line -match '^A total of \d+ test files? matched' -or $Line -match '^Results File: ' -or -not $Line.Trim()
+        $isAnnouncement = $Line -match '^Running tests from ' -or $Line -match '^\s*In process file artifacts produced:' -or $Line -match '^\s+-\s+\S.*\.trx$' -or -not $Line.Trim()
 
         # A runner's summary, whole or in pieces mixed with another's, gives way to its results file.
-        $isSummary = $Line -match '(Passed|Failed)!' -or $Line -match 'Failed:\s+\d+,\s+Passed:\s+\d+,' -or $Line -match '^\s*-\s+\S+\.dll\s+\(net'
+        $isSummary = $Line -match '\.dll \([^)]*\) (passed|failed) \[' -or $Line -match '^Test run summary: ' -or $Line -match '^\s+(total|failed|succeeded|skipped|duration): '
 
         if (-not $isAnnouncement -and -not $isSummary) {
             Write-Host $Line

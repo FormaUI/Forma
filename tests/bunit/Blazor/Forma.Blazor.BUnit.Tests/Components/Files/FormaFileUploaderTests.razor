@@ -64,9 +64,9 @@
 
             // Act
             var upload = cut.InvokeAsync(() => uploader.StartAsync());
-            await store.Saving;
+            await store.Saving.WaitAsync(TestContext.Current.CancellationToken);
             uploader.Cancel();
-            await upload;
+            await upload.WaitAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(

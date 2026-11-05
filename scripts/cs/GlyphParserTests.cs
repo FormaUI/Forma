@@ -1,5 +1,5 @@
 #!/usr/bin/env dotnet
-#:package xunit.v3@3.0.1
+#:package xunit.v3@4.0.2
 #:include GlyphParser.cs
 
 // The rules a glyph drawing is held to, exercised on drawings written inline.
