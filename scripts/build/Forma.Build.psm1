@@ -895,7 +895,6 @@ function Write-TestProgress {
 
                 $null = $reported.Add($file.FullName)
                 $summary = & $element 'ResultSummary'
-                $method = & $element 'TestMethod'
                 $failed = [int]$counters.GetAttribute('failed') + [int]$counters.GetAttribute('error')
                 $total = [int]$counters.GetAttribute('total')
                 $finishedCount++
@@ -907,7 +906,8 @@ function Write-TestProgress {
                     $failedTests.Add($result.GetAttribute('testName'))
                 }
 
-                $name = if ($method) { [System.IO.Path]::GetFileNameWithoutExtension($method.GetAttribute('codeBase')) } else { $file.BaseName }
+                # Each project writes its results under a folder named for it, holding one for its target.
+                $name = $file.Directory.Parent.Name
                 # The run's start includes the test host starting; its creation is when the tests began, as the runner times them.
                 $took = [datetimeoffset]$times.GetAttribute('finish') - [datetimeoffset]$times.GetAttribute('creation')
                 $duration = if ($took.TotalSeconds -lt 1) { '{0} ms' -f [int]$took.TotalMilliseconds } else { '{0} s' -f [int][math]::Round($took.TotalSeconds) }

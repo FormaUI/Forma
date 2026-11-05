@@ -286,7 +286,7 @@ finally {
     Remove-Item -LiteralPath $log -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-# The progress is read off the results each project writes, each in a folder of its own, so it runs for real
+# The progress is read off the results each project writes, each in a folder named for it, so it runs for real
 # here on two projects of three finishing, one with a failed test whose name holds a space, beside the lines
 # the testing platform prints as the projects run: what it runs, each failure, each project's summary, where
 # it wrote the results and the run's summary.
@@ -299,11 +299,8 @@ try {
 <TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-01T10:00:00.000+00:00" start="2026-09-30T10:00:00.000+00:00" finish="{0}" />
   <Results>{1}</Results>
-  <TestDefinitions>
-    <UnitTest name="Should_work"><TestMethod codeBase="/tests/{2}/bin/{2}.dll" /></UnitTest>
-  </TestDefinitions>
-  <ResultSummary outcome="{3}">
-    <Counters total="{4}" executed="{4}" passed="{5}" failed="{6}" error="0" notExecuted="{7}" />
+  <ResultSummary outcome="{2}">
+    <Counters total="{3}" executed="{3}" passed="{4}" failed="{5}" error="0" notExecuted="{6}" />
   </ResultSummary>
 </TestRun>
 '@
@@ -311,9 +308,14 @@ try {
     $first = Join-Path $progressFolder 'Forma.A.Tests' 'net11.0_x64' 'a.trx'
     $second = Join-Path $progressFolder 'Forma.B.Tests' 'net11.0_x64' 'b.trx'
     $null = New-Item -ItemType Directory -Path (Split-Path $first), (Split-Path $second)
-    Set-Content -LiteralPath $first -Value ($trx -f '2026-10-01T10:00:00.052+00:00', '', 'Forma.A.Tests', 'Completed', 26, 26, 0, 0)
-    Set-Content -LiteralPath $second -Value ($trx -f '2026-10-01T10:00:01.000+00:00', $failure, 'Forma.B.Tests', 'Failed', 13, 10, 1, 2)
+    Set-Content -LiteralPath $first -Value ($trx -f '2026-10-01T10:00:00.052+00:00', '', 'Completed', 26, 26, 0, 0)
+    Set-Content -LiteralPath $second -Value ($trx -f '2026-10-01T10:00:01.000+00:00', $failure, 'Failed', 13, 10, 1, 2)
     (Get-Item -LiteralPath $first).LastWriteTimeUtc = [datetime]::UtcNow.AddSeconds(-2)
+
+    # A third project's results file the runner has created and not yet written, as a reader on Linux can see it.
+    $third = Join-Path $progressFolder 'Forma.C.Tests' 'net11.0_x64' 'c.trx'
+    $null = New-Item -ItemType Directory -Path (Split-Path $third)
+    $null = New-Item -ItemType File -Path $third
 
     $module = Get-Module Forma.Build
     $runnerLines = @(
