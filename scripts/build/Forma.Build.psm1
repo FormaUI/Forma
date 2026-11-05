@@ -668,8 +668,9 @@ function Test-Solution {
         $arguments += '--no-build'
     }
 
+    # A project the filter matches no test in ends its run with the testing platform's code for zero tests, which passes.
     if ($Filter) {
-        $arguments += @('--filter', $Filter)
+        $arguments += @('--filter', $Filter, '--ignore-exit-code', '8')
     }
 
     $runs = $Times
