@@ -26,7 +26,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
 | [The build](#the-build) | Faster tests and a faster gate |
-| [Release](#release) | The first release, `1.0.0-preview.1` |
+| [Release](#release) | A locale pack proven from a feed, and CI's exclusion of prose narrowed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -165,7 +165,7 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 ## Release
 
-`release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
+Forma's first release, `1.0.0-preview.1`, is published. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
 - Narrow CI's exclusion of prose to what no package carries, since a project's README and notices are packed with it.
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
