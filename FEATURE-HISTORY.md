@@ -1,6 +1,6 @@
 # Feature history
 
-Each month of Forma's development, newest first, with the features it added and the changes it made to those already there. Forma was created on June 17, 2025, as part of another project, where its first components were built, and became a project of its own on July 22, 2026. Forma is unreleased: every package carries `1.0.0-preview` and none is published, so a month stands where a version will. Each feature is named by the document that states it now, its entry in [the catalog](docs/component-catalog.md) or [the roadmap](docs/component-roadmap.md), its design under [`docs/`](docs/) or its package's README, and [the features status](docs/features-status.md) says where each stands today.
+Each month of Forma's development, newest first, with the features it added and the changes it made to those already there. Forma was created on June 17, 2025, as part of another project, where its first components were built, and became a project of its own on July 22, 2026. The history runs until Forma's first release, `1.0.0-preview.1`, where a month stood for a version; from then on [the changelog](CHANGELOG.md) records each release. Each feature is named by the document that states it now, its entry in [the catalog](docs/component-catalog.md) or [the roadmap](docs/component-roadmap.md), its design under [`docs/`](docs/) or its package's README, and [the features status](docs/features-status.md) says where each stands today.
 
 Until the first release, a month may break what the one before it allowed, and each month lists what it broke.
 

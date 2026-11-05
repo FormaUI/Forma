@@ -1,6 +1,6 @@
 ---
 name: forma-documenting
-description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a specification the contract of a language, format or protocol, a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, the features status where the project stands and the feature history what each month added, a README what its project is and how to use it, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, specification, design document, implementation plan, catalog or roadmap entry, the features status or the feature history, and when deciding whether a code change should touch any prose at all.
+description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a specification the contract of a language, format or protocol, a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, the features status where the project stands and the changelog what each release changed, a README what its project is and how to use it, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, specification, design document, implementation plan, catalog or roadmap entry, the features status or the changelog, and when deciding whether a code change should touch any prose at all.
 ---
 
 # Documentation
@@ -17,7 +17,7 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 | The component catalog | Which components exist or are in progress, one line saying what each is, and the structure they live in | Parameters, options, approach, technical design, anything not yet started |
 | The component roadmap | Which components are still to build, in what order, one line saying what each will be | Technical design, anything already built |
 | The features status | Where the project stands: each feature with its state, the work that remains, the decisions open for the maintainer and what is deferred | The design, the steps of a plan under way, what a month added |
-| The feature history | What each month added to the project and what it broke, newest first | Work not yet landed, how a change was made, fixes that changed nothing a reader relies on |
+| The changelog | What each release changed for a consumer, newest first, and how to migrate from what it breaks | Work not yet landed, how a change was made, fixes that changed nothing a consumer relies on |
 | A README | What its project is, what it is useful for, and how to use it | Who consumes it, how it works inside, what may or might happen |
 | An instruction, a skill or the repository's working rules | How to work | Project structure, project names, the change that prompted the rule |
 
@@ -83,14 +83,15 @@ The catalog lists the components that exist and the roadmap the components still
 - Do refer to a component by name alone, never by a number or a position.
 - Don't put parameters, options, the rendering approach, notes on mechanics or any other API or design detail in an entry; a component that needs a technical design gets its own design document.
 
-## The features status and the feature history
+## The features status and the changelog
 
-The features status says where the project stands and where it goes next, and the feature history what it has become, month by month. Each points at the documents that state a feature, never restating them.
+The features status says where the project stands and where it goes next, and the changelog what each release changed. Each points at the documents that state a feature, never restating them.
 
 - Do change the features status in the change that changes what it records: a feature landing or changing state, a plan's step landing, a decision opened or taken, work deferred or taken up.
 - Do give every open decision a proposal, and move a decision out once the maintainer takes it, into the document the decision changes.
-- Do add to the feature history, in the month a change lands, what the change gives a reader of the project or takes away from one, naming each feature by the document that states it.
-- Don't record in the feature history a fix, a refactoring or a document that changes nothing a reader relies on.
+- Do add to the changelog's newest entry, in the commit that makes it, each change a consumer can notice, naming each feature by the document that states it, and say how to migrate from a change that breaks what the release before it allowed; the first such change after a release opens the next entry and advances the declared version, in the same commit.
+- Don't record in the changelog a fix, a refactoring or a document that changes nothing a consumer relies on.
+- Don't add to the record a project kept before its first release; it stays as that period's archive, which the changelog links to.
 
 ## Instructions
 
@@ -104,5 +105,5 @@ An instruction — a skill, or the repository's working rules — describes how 
 ## When a code change touches prose
 
 - Do fix a summary, comment, banner or README sentence the change made false, as part of the change.
-- Do update an instruction when the change changes a rule, a design document when it changes the design, the implementation plan when a step lands or departs from the design, and the features status and the feature history when a feature lands or changes.
+- Do update an instruction when the change changes a rule, a design document when it changes the design, the implementation plan when a step lands or departs from the design, and the features status and the changelog when a feature lands or changes.
 - Don't update an instruction, a design document, a catalog entry or a roadmap entry because code landed; landing a step is not a rule change and not a design change.
