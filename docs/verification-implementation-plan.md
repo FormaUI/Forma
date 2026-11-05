@@ -66,22 +66,35 @@ Each step lands buildable and passes its gate before the next starts.
    is installed.
 5. **The promotion workflow and publication.** CI runs the fast gate on feature branches, pull requests into
    `dev` and integrated `dev` commits; the full gate, every required platform job included, nightly on `dev` and
-   on each `preview` promotion; and the release on an annotated tag. Once a full `preview` run passes and the
+   on each `candidate` promotion; and the release on an annotated tag. Once a full `candidate` run passes and the
    candidate is approved, `main` fast-forwards to that exact SHA and the annotated `vX.Y.Z` tag goes on it; the
    tag's workflow verifies the version and the approved SHA, then publishes the packages of that revision.
    Android's E2E is confirmed in both full workflows before the weekly Android workflow retires. A required check
    on `main` holds the promotion rule whatever base a pull request was opened against or later moved to, and the
    contributing guide links feature and fix pull requests to `dev`; nothing moves a pull request's base for its
    author. Gate: publication exercised end to end against a dry run or a test feed, a later commit without a
-   passing `preview` run refused, and each pull request below behaving as its row says.
+   passing `candidate` run refused, and each pull request below behaving as its row says. The workflows call
+   Versioning's promotion and release checks, as the design's
+   [branches and promotion](verification-design.md#branches-and-promotion) sets out, and `1.0.0-preview.1` went
+   through them on 2026-11-05: the candidate's full run, Android's E2E among its jobs, promotion pull request #4,
+   the signed tag, and its 49 packages published to nuget.org and the organization's GitHub feed. Pull requests #5,
+   from `dev`, and #6, from a feature branch, were refused, each told its route, and each commit refused for
+   having no passing `candidate` run. Departures: the candidate branch is `candidate`, renamed from `preview` once
+   `preview` named a version stage; publication was rehearsed against a draft release, the digests of its
+   packages and the order the feeds take them in, and then made for real, rather than against a test feed; a
+   release publishes the packages the candidate's run packed and checked rather than packing the tagged revision
+   again, so what was checked is what ships; and a fork's branch is refused by its repository's full name, which
+   no fork shares, rather than by its ID, shown with a pull request event made for it, since no fork exists to
+   open one from. Open: the first nightly run, which GitHub schedules from `main`'s workflow and so starts now
+   that `main` holds the schedule, confirming Android's E2E before `android.yml` retires.
 
    | Pull request | Expected behavior |
    | --- | --- |
    | Feature branch → `dev` | Run the normal fast gate. |
    | Feature branch → `main` | Block the merge and tell the author to change the base to `dev`. |
-   | Forma's `preview` → `main` | Allow the promotion to proceed through the release checks and approval. |
-   | A fork's branch named `preview` → `main` | Block the merge. Check both the source repository ID and the branch name. |
-   | Forma's `dev` → `main` | Block the merge and explain that the candidate must go through `preview`. |
+   | Forma's `candidate` → `main` | Allow the promotion to proceed through the release checks and approval. |
+   | A fork's branch named `candidate` → `main` | Block the merge. Check both the source repository ID and the branch name. |
+   | Forma's `dev` → `main` | Block the merge and explain that the candidate must go through `candidate`. |
 
 ## Ledger
 
