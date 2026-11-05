@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The services behind Forma's feedback surfaces: a toast service any code raises a notice through, a confirm dialog service any code awaits a yes or no from, and a catalog of the statuses an application's badges are named after.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

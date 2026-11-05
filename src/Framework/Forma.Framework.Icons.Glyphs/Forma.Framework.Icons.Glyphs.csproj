@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Forma's own icon set, as an IIconProvider from Forma.Framework.Icons: every Glyph in both variants, every Brand as its official mark, and any character.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Culture routing's request side for ASP.NET Core: the middleware that runs a request in the pair its address names, removes the culture segment before routing, redirects to the canonical address and keeps the cookie naming the route last chosen.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

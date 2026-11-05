@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>A FormaComposer plugin that lets an author pick one of the host's stored files and insert it.</Description>
         <!-- The AddOn borrows the namespace of the composer plugins it joins, so a host reaches it with the using it already writes. -->
         <RootNamespace>Forma.Blazor.Components.Composer.Plugins</RootNamespace>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>

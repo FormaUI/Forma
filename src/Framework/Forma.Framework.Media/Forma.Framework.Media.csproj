@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The provider contract FormaVideoPlayer plays through.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

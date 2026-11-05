@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The WebAssembly half of Forma's component library: the registration a WebAssembly client makes, which registers what the components need in the browser and the culture a WebAssembly runtime keeps.</Description>
         <!-- The WebAssembly half borrows the product's namespace, so a client reaches its registrar with the using it already writes. -->
         <RootNamespace>Forma.Blazor</RootNamespace>
     </PropertyGroup>

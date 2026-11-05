@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>What the culture state needs from a Blazor Hybrid application: one culture for the whole application, across every web view in every native window.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

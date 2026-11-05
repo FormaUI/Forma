@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The default emoji provider for Forma.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

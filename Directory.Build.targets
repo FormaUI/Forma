@@ -39,6 +39,34 @@
         <None Update="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
+    <!-- The release a package belongs to, whose tag names its changelog entry. -->
+    <PropertyGroup>
+        <_FormaReleaseTag>v$(VersionPrefix)</_FormaReleaseTag>
+        <_FormaReleaseTag Condition="'$(VersionSuffix)' != ''">v$(VersionPrefix)-$(VersionSuffix)</_FormaReleaseTag>
+    </PropertyGroup>
+
+    <!-- A package records the commit it was built from, ships its symbols beside it, links its release's changelog entry, and has its assemblies checked across its targets; a build in CI writes source paths that don't name the machine. -->
+    <PropertyGroup>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <PackageReleaseNotes>What this release changed is in Forma's changelog: https://github.com/FormaUI/Forma/blob/$(_FormaReleaseTag)/CHANGELOG.md</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
+    <!-- A pre-release may break the one before it, so a package depends on Forma's other packages at its release's exact version while the release is one. -->
+    <Target Name="PinProjectPackageVersions" AfterTargets="_GetProjectReferenceVersions" Condition="'$(VersionSuffix)' != ''">
+        <ItemGroup>
+            <_ExactProjectReferenceVersion Include="@(_ProjectReferencesWithVersions)" ProjectVersion="[%(_ProjectReferencesWithVersions.ProjectVersion)]" />
+            <_ProjectReferencesWithVersions Remove="@(_ProjectReferencesWithVersions)" />
+            <_ProjectReferencesWithVersions Include="@(_ExactProjectReferenceVersion)" />
+        </ItemGroup>
+    </Target>
+
     <!-- A project with third-party notices beside it ships them in its package, since what they credit ships there. -->
     <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\THIRD-PARTY-NOTICES.md')">
         <None Update="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />

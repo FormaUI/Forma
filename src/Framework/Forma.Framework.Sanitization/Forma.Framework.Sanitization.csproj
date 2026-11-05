@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>An allowlist HTML sanitizer for content people author, such as a rich text editor's output or a pasted document, so the application can render it as markup.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

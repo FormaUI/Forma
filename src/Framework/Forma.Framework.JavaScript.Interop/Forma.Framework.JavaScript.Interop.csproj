@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>The bases Forma's C# wrappers over JavaScript modules are built from, and the scripts that Forma's other scripts share.</Description>
         <IsPackable>true</IsPackable>
         <StaticWebAssetBasePath>_content/forma/core</StaticWebAssetBasePath>
     </PropertyGroup>

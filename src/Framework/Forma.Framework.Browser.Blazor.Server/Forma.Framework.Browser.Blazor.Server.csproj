@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>What the DOM watcher and engine need from an Interactive Server host: when a circuit's connection to the browser is restored, every observation its components hold is measured afresh and delivered again in one call, so a state the browser sent while the connection was down still reaches its component, and every text field whose text the circuit holds at another revision sends its whole text, so an edit lost while the connection was down is replaced.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

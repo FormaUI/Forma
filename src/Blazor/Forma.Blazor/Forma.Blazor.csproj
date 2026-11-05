@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>A Blazor component library for .NET 11: form inputs and pickers, dialogs, popovers and toasts, toolbars and menus, tabs and layout, file pickers, uploaders and viewers, icons, emoji and windows.</Description>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

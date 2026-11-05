@@ -8,7 +8,7 @@ emoji `FormaEmojiPicker` offers.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Framework.Emojis
+dotnet add package formaui-net.Framework.Emojis --prerelease
 ```
 
 ## Naming an emoji

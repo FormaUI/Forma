@@ -10,7 +10,7 @@ advances a fake clock to trigger it.
 ## Install and register
 
 ```pwsh
-dotnet add package formaui-net.Framework.Events
+dotnet add package formaui-net.Framework.Events --prerelease
 ```
 
 ```csharp

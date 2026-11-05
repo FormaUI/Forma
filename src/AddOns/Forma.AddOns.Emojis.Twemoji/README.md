@@ -7,7 +7,7 @@ the emoji by group and finds them by name and keyword.
 ## Install and register
 
 ```pwsh
-dotnet add package formaui-net.AddOns.Emojis.Twemoji
+dotnet add package formaui-net.AddOns.Emojis.Twemoji --prerelease
 ```
 
 ```csharp

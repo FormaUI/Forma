@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The icon contracts for Forma: Icon, which names what to draw, a glyph, a brand mark or a character; IconSize, the size it is drawn at; IconArtwork, the geometry or character that draws it; and IIconProvider, which answers an icon with its artwork.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

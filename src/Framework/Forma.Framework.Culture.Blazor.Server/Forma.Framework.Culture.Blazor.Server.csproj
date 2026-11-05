@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>What the culture state needs from an Interactive Server host: a circuit handler that sets CultureInfo.CurrentCulture and CultureInfo.CurrentUICulture from the circuit's culture state before every inbound activity, each UI event and each call from script into .NET, and registers the circuit's state with the page's culture coordinator of Forma.Framework.Culture.Browser.Interop as each connection comes up, before the circuit renders.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

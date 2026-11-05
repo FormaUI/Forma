@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The emoji contracts for Forma: Emoji, the value that names one emoji; IEmojiProvider, which gives the artwork an emoji is drawn with; and IEmojiCatalog, the emoji a picker browses and searches.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

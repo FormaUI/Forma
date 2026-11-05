@@ -10,7 +10,7 @@ in, and it holds every HTML document to the library's sanitizer on the way in an
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Blazor.Composer
+dotnet add package formaui-net.Blazor.Composer --prerelease
 ```
 
 The package depends on [`formaui-net.Blazor`](https://github.com/FormaUI/Forma/blob/main/README.md),

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>The input router: the script that resolves every key, press, wheel turn and drop on the page to one owner, and the C# a component registers its elements through.</Description>
         <IsPackable>true</IsPackable>
         <StaticWebAssetBasePath>_content/forma/input</StaticWebAssetBasePath>
     </PropertyGroup>

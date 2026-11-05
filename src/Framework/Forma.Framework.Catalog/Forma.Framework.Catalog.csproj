@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The model of a browsable collection of items and folders: the item and folder contracts, the provider that answers one slice of them at a time, the requests a surface hands back when the reader renames, deletes or moves something, and the ceilings a collection keeps.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

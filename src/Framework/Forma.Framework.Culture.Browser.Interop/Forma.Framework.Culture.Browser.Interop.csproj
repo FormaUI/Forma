@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>The page's culture coordinator: one per document, it orders every culture switch on the page, gives each the next number in the document's sequence, and delivers the accepted pair to the culture state of every runtime registered with it, each Interactive Server circuit and WebAssembly runtime on the page, so they converge on one pair.</Description>
         <IsPackable>true</IsPackable>
         <StaticWebAssetBasePath>_content/forma/culture</StaticWebAssetBasePath>
     </PropertyGroup>

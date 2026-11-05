@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The engine FormaComposer runs its plugins with: the description of a composer's plugins and the builders that write it, the catalog that picks the editor and the plugins in play, the registry that routes a command to the layer that runs it, the toolbar layout, the undo history, the status items and gutter markers, text operations, and document conversion.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

@@ -1,0 +1,488 @@
+# The files each of Forma's packages holds, beyond its manifest and the parts every package carries. The gate's
+# browser step compares every package it packs with this list and fails on a file missing or unlisted, so a package
+# gains or loses a file only by a change to this list. The step writes what it found to
+# artifacts/browser/package-files.txt, in this form. {fingerprint} stands for the fingerprint a stylesheet bundle's
+# or a script initializer's name carries, which follows its content.
+
+formaui-net.AddOns.Composer.Plugins.Explorer
+    build/formaui-net.AddOns.Composer.Plugins.Explorer.PackageAssets.json
+    build/formaui-net.AddOns.Composer.Plugins.Explorer.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.AddOns.Composer.Plugins.Explorer.targets
+    buildTransitive/formaui-net.AddOns.Composer.Plugins.Explorer.targets
+    lib/net11.0/Forma.AddOns.Composer.Plugins.Explorer.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/formaui-net.AddOns.Composer.Plugins.Explorer.{fingerprint}.bundle.scp.css
+
+formaui-net.AddOns.Emojis.Twemoji
+    build/formaui-net.AddOns.Emojis.Twemoji.PackageAssets.json
+    build/formaui-net.AddOns.Emojis.Twemoji.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.AddOns.Emojis.Twemoji.targets
+    buildTransitive/formaui-net.AddOns.Emojis.Twemoji.targets
+    lib/net11.0/Forma.AddOns.Emojis.Twemoji.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/assets/activities-0.svg
+    staticwebassets/assets/activities-1.svg
+    staticwebassets/assets/animals-0.svg
+    staticwebassets/assets/animals-1.svg
+    staticwebassets/assets/animals-2.svg
+    staticwebassets/assets/flags-0.svg
+    staticwebassets/assets/flags-1.svg
+    staticwebassets/assets/flags-2.svg
+    staticwebassets/assets/flags-3.svg
+    staticwebassets/assets/flags-4.svg
+    staticwebassets/assets/food-0.svg
+    staticwebassets/assets/food-1.svg
+    staticwebassets/assets/food-2.svg
+    staticwebassets/assets/objects-0.svg
+    staticwebassets/assets/objects-1.svg
+    staticwebassets/assets/objects-2.svg
+    staticwebassets/assets/objects-3.svg
+    staticwebassets/assets/objects-4.svg
+    staticwebassets/assets/people-0.svg
+    staticwebassets/assets/people-1.svg
+    staticwebassets/assets/people-2.svg
+    staticwebassets/assets/people-3.svg
+    staticwebassets/assets/people-4.svg
+    staticwebassets/assets/people-5.svg
+    staticwebassets/assets/people-6.svg
+    staticwebassets/assets/smileys-0.svg
+    staticwebassets/assets/smileys-1.svg
+    staticwebassets/assets/smileys-2.svg
+    staticwebassets/assets/symbols-0.svg
+    staticwebassets/assets/symbols-1.svg
+    staticwebassets/assets/symbols-2.svg
+    staticwebassets/assets/symbols-3.svg
+    staticwebassets/assets/travel-0.svg
+    staticwebassets/assets/travel-1.svg
+    staticwebassets/assets/travel-2.svg
+    staticwebassets/assets/travel-3.svg
+    THIRD-PARTY-NOTICES.md
+
+formaui-net.AddOns.Operations.Maui
+    lib/net11.0/Forma.AddOns.Operations.Maui.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.AddOns.Resources.Markdown
+    lib/net11.0/Forma.AddOns.Resources.Markdown.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.AddOns.Resources.Office
+    lib/net11.0/Forma.AddOns.Resources.Office.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.AddOns.Share.Targets
+    lib/net11.0/Forma.AddOns.Share.Targets.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Blazor
+    build/formaui-net.Blazor.PackageAssets.json
+    build/formaui-net.Blazor.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Blazor.targets
+    buildTransitive/formaui-net.Blazor.targets
+    lib/net11.0/Forma.Blazor.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/forma-base.css
+    staticwebassets/forma-input.css
+    staticwebassets/forma-prose.css
+    staticwebassets/forma-reset.css
+    staticwebassets/forma-tokens.css
+    staticwebassets/formaui-net.Blazor.{fingerprint}.bundle.scp.css
+
+formaui-net.Blazor.Composer
+    build/formaui-net.Blazor.Composer.PackageAssets.json
+    build/formaui-net.Blazor.Composer.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Blazor.Composer.targets
+    buildTransitive/formaui-net.Blazor.Composer.targets
+    lib/net11.0/Forma.Blazor.Composer.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/formaui-net.Blazor.Composer.{fingerprint}.bundle.scp.css
+    staticwebassets/scripts/BlockAlignment.js
+    staticwebassets/scripts/RichTextEditor.js
+    staticwebassets/scripts/RichTextEditor/BlockFormatter.mjs
+    staticwebassets/scripts/RichTextEditor/Canvas.mjs
+    staticwebassets/scripts/RichTextEditor/ContentWriter.mjs
+    staticwebassets/scripts/RichTextEditor/Fragments.mjs
+    staticwebassets/scripts/RichTextEditor/InlineFormatter.mjs
+    staticwebassets/scripts/RichTextEditor/Links.mjs
+    staticwebassets/scripts/RichTextEditor/ListFormatter.mjs
+    staticwebassets/scripts/RichTextEditor/Markup.mjs
+    staticwebassets/scripts/RichTextEditor/MediaMarkup.mjs
+    staticwebassets/scripts/RichTextEditor/SelectionInspector.mjs
+    staticwebassets/scripts/RichTextEditor/SelectionMemory.mjs
+    staticwebassets/scripts/RichTextEditor/TableEditor.mjs
+    staticwebassets/scripts/SelectionFollower.js
+
+formaui-net.Blazor.DataView
+    build/formaui-net.Blazor.DataView.PackageAssets.json
+    build/formaui-net.Blazor.DataView.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Blazor.DataView.targets
+    buildTransitive/formaui-net.Blazor.DataView.targets
+    lib/net11.0/Forma.Blazor.DataView.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/formaui-net.Blazor.DataView.{fingerprint}.bundle.scp.css
+    staticwebassets/scripts/ColumnFit.js
+    staticwebassets/scripts/GridColumns.js
+    staticwebassets/scripts/HeightReservation.js
+    staticwebassets/scripts/SelectionInteraction.js
+
+formaui-net.Blazor.Explorer
+    build/formaui-net.Blazor.Explorer.PackageAssets.json
+    build/formaui-net.Blazor.Explorer.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Blazor.Explorer.targets
+    buildTransitive/formaui-net.Blazor.Explorer.targets
+    lib/net11.0/Forma.Blazor.Explorer.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/formaui-net.Blazor.Explorer.{fingerprint}.bundle.scp.css
+    staticwebassets/scripts/Breakpoint.js
+
+formaui-net.Blazor.Locales.Hebrew
+    build/formaui-net.Blazor.Locales.Hebrew.targets
+    lib/net11.0/Forma.Blazor.Locales.Hebrew.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Blazor.Locales.Spanish
+    build/formaui-net.Blazor.Locales.Spanish.targets
+    lib/net11.0/Forma.Blazor.Locales.Spanish.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Blazor.Server
+    lib/net11.0/Forma.Blazor.Server.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Blazor.WebAssembly
+    lib/net11.0/Forma.Blazor.WebAssembly.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Blazor.WebView
+    lib/net11.0/Forma.Blazor.WebView.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Browser.Blazor.Server
+    lib/net11.0/Forma.Framework.Browser.Blazor.Server.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Browser.Interop
+    build/formaui-net.Framework.Browser.Interop.PackageAssets.json
+    build/formaui-net.Framework.Browser.Interop.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Framework.Browser.Interop.targets
+    buildTransitive/formaui-net.Framework.Browser.Interop.targets
+    lib/net11.0/Forma.Framework.Browser.Interop.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/scripts/behaviors/AnchoredPopover.js
+    staticwebassets/scripts/behaviors/AutofillTracker.js
+    staticwebassets/scripts/behaviors/DragGesture.js
+    staticwebassets/scripts/behaviors/DropZone.js
+    staticwebassets/scripts/behaviors/FileDropZone.js
+    staticwebassets/scripts/behaviors/FilePreview.js
+    staticwebassets/scripts/behaviors/PanGesture.js
+    staticwebassets/scripts/behaviors/ReorderInteraction.js
+    staticwebassets/scripts/behaviors/Scroll.js
+    staticwebassets/scripts/behaviors/Wheel.js
+    staticwebassets/scripts/components/Dialog.js
+    staticwebassets/scripts/components/Frame.js
+    staticwebassets/scripts/components/Splitter.js
+    staticwebassets/scripts/components/Virtualize.js
+    staticwebassets/scripts/components/Window.js
+    staticwebassets/scripts/DomElement.mjs
+    staticwebassets/scripts/DomElements.mjs
+    staticwebassets/scripts/DomEngine.js
+    staticwebassets/scripts/DomEngine.mjs
+    staticwebassets/scripts/DomSession.mjs
+    staticwebassets/scripts/DomSessionRegistry.mjs
+    staticwebassets/scripts/DomWatcher.js
+    staticwebassets/scripts/DomWatcher.mjs
+    staticwebassets/scripts/focus/FocusInteraction.mjs
+    staticwebassets/scripts/focus/FocusRecovery.mjs
+    staticwebassets/scripts/focus/FocusStateObserver.mjs
+    staticwebassets/scripts/focus/FocusSurface.mjs
+    staticwebassets/scripts/focus/RovingFocus.mjs
+    staticwebassets/scripts/focus/TabOrder.mjs
+    staticwebassets/scripts/IntersectionObserverPool.mjs
+    staticwebassets/scripts/operations/Asset.js
+    staticwebassets/scripts/operations/CheckBox.js
+    staticwebassets/scripts/operations/Clipboard.js
+    staticwebassets/scripts/operations/DocumentOrder.js
+    staticwebassets/scripts/operations/Download.js
+    staticwebassets/scripts/operations/Embedding.js
+    staticwebassets/scripts/operations/Playback.js
+    staticwebassets/scripts/operations/Pointer.js
+    staticwebassets/scripts/operations/Print.js
+    staticwebassets/scripts/operations/Share.js
+    staticwebassets/scripts/operations/TextEntry.js
+    staticwebassets/scripts/RegistrationTable.mjs
+    staticwebassets/scripts/ResizeObserverPool.mjs
+    staticwebassets/scripts/scrolling/IntersectionStateObserver.mjs
+    staticwebassets/scripts/scrolling/ScrollButtons.mjs
+    staticwebassets/scripts/scrolling/ScrollContainer.mjs
+    staticwebassets/scripts/scrolling/ScrollInteraction.mjs
+    staticwebassets/scripts/scrolling/ScrollStateObserver.mjs
+    staticwebassets/scripts/StateDelivery.mjs
+    staticwebassets/scripts/text/CharacterCount.mjs
+    staticwebassets/scripts/text/SubmissionHold.mjs
+    staticwebassets/scripts/text/TextEdits.mjs
+    staticwebassets/scripts/text/TextSelectionObserver.mjs
+    staticwebassets/scripts/text/TextSources.mjs
+
+formaui-net.Framework.Catalog
+    lib/net11.0/Forma.Framework.Catalog.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Composer
+    lib/net11.0/Forma.Framework.Composer.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Composer.Extensibility
+    lib/net11.0/Forma.Framework.Composer.Extensibility.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Css
+    lib/net11.0/Forma.Framework.Css.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Culture
+    lib/net11.0/Forma.Framework.Culture.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Culture.Blazor.Server
+    lib/net11.0/Forma.Framework.Culture.Blazor.Server.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Culture.Blazor.WebAssembly
+    lib/net11.0/Forma.Framework.Culture.Blazor.WebAssembly.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Culture.Blazor.WebView
+    lib/net11.0/Forma.Framework.Culture.Blazor.WebView.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Culture.Browser.Interop
+    build/formaui-net.Framework.Culture.Browser.Interop.PackageAssets.json
+    build/formaui-net.Framework.Culture.Browser.Interop.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Framework.Culture.Browser.Interop.targets
+    buildTransitive/formaui-net.Framework.Culture.Browser.Interop.targets
+    lib/net11.0/Forma.Framework.Culture.Browser.Interop.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/formaui-net.Framework.Culture.Browser.Interop.{fingerprint}.lib.module.js
+    staticwebassets/scripts/CultureCoordinator.js
+
+formaui-net.Framework.Culture.Router
+    lib/net11.0/Forma.Framework.Culture.Router.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Culture.Router.AspNetCore
+    lib/net11.0/Forma.Framework.Culture.Router.AspNetCore.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Currencies
+    lib/net11.0/Forma.Framework.Currencies.dll
+    LICENSE
+    NOTICE
+    README.md
+    THIRD-PARTY-NOTICES.md
+
+formaui-net.Framework.Emojis
+    lib/net11.0/Forma.Framework.Emojis.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Emojis.Unicode
+    lib/net11.0/Forma.Framework.Emojis.Unicode.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Events
+    lib/net11.0/Forma.Framework.Events.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Explorer
+    lib/net11.0/Forma.Framework.Explorer.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Feedback
+    lib/net11.0/Forma.Framework.Feedback.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Files
+    lib/net11.0/Forma.Framework.Files.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Icons
+    lib/net11.0/Forma.Framework.Icons.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Icons.Glyphs
+    lib/net11.0/Forma.Framework.Icons.Glyphs.dll
+    LICENSE
+    NOTICE
+    README.md
+    THIRD-PARTY-NOTICES.md
+
+formaui-net.Framework.Input
+    lib/net11.0/Forma.Framework.Input.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Input.Interop
+    build/formaui-net.Framework.Input.Interop.PackageAssets.json
+    build/formaui-net.Framework.Input.Interop.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Framework.Input.Interop.targets
+    buildTransitive/formaui-net.Framework.Input.Interop.targets
+    lib/net11.0/Forma.Framework.Input.Interop.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/scripts/InputInspector.js
+    staticwebassets/scripts/InputRouter.js
+
+formaui-net.Framework.JavaScript.Interop
+    build/formaui-net.Framework.JavaScript.Interop.PackageAssets.json
+    build/formaui-net.Framework.JavaScript.Interop.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Framework.JavaScript.Interop.targets
+    buildTransitive/formaui-net.Framework.JavaScript.Interop.targets
+    lib/net11.0/Forma.Framework.JavaScript.Interop.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/scripts/Controls.js
+    staticwebassets/scripts/Direction.js
+    staticwebassets/scripts/FrameScheduler.js
+    staticwebassets/scripts/Owner.js
+    staticwebassets/scripts/Sanitizer.js
+    staticwebassets/scripts/Scrolling.js
+    staticwebassets/scripts/Transfer.js
+
+formaui-net.Framework.Localization
+    buildTransitive/formaui-net.Framework.Localization.targets
+    buildTransitive/LocalePack.targets
+    lib/net11.0/Forma.Framework.Localization.dll
+    LICENSE
+    NOTICE
+    README.md
+    THIRD-PARTY-NOTICES.md
+
+formaui-net.Framework.Localization.Json
+    lib/net11.0/Forma.Framework.Localization.Json.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Media
+    lib/net11.0/Forma.Framework.Media.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Plugins
+    lib/net11.0/Forma.Framework.Plugins.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Resources
+    lib/net11.0/Forma.Framework.Resources.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Sanitization
+    lib/net11.0/Forma.Framework.Sanitization.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Share
+    lib/net11.0/Forma.Framework.Share.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Toolbar
+    lib/net11.0/Forma.Framework.Toolbar.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Windows
+    lib/net11.0/Forma.Framework.Windows.dll
+    LICENSE
+    NOTICE
+    README.md

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The contracts that connect Forma.Blazor's file components to wherever an application keeps its files.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

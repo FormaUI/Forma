@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>The Twemoji artwork and emoji catalog for Forma.Blazor.</Description>
         <RootNamespace>Forma.Framework.Emojis.Twemoji</RootNamespace>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
     </PropertyGroup>

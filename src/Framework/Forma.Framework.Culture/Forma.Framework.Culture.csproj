@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The culture state each user scope holds: the culture that formats dates, numbers and collation, and the UI culture that chooses strings and direction, kept apart so an application can show English text with German formats.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

@@ -8,7 +8,7 @@ names, whatever culture the reader formats numbers in: a price field, a table of
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Framework.Currencies
+dotnet add package formaui-net.Framework.Currencies --prerelease
 ```
 
 The catalog is static and registers nothing.

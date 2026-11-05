@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>The server half of Forma's component library: what a host that renders on the server needs beside the components, the document head FormaPageHead and the registration that adds the interactive server circuit's integrations.</Description>
         <!-- The server half borrows the product's namespace, so a host reaches its registrar and its components with the usings it already writes. -->
         <RootNamespace>Forma.Blazor</RootNamespace>
     </PropertyGroup>

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>What the culture state needs from a WebAssembly client: the runtime's state registered with the page's culture coordinator of Forma.Framework.Culture.Browser.Interop as the runtime starts, before it renders, and each pair the state applies set as the process's default cultures too, so an event, a timer or any work the runtime starts after a switch runs in the new pair.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

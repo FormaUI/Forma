@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>What a MAUI application does for its web views on Android, iOS and Mac Catalyst, whose web views can't save a file, print or share by themselves: the platform's share sheet takes a file Forma's components hand the reader, a document they print and an address they share.</Description>
         <IsPackable>true</IsPackable>
         <RootNamespace>Forma.Framework.Browser.Interop.Operations.Maui</RootNamespace>
     </PropertyGroup>

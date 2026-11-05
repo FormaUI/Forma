@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>What is known about a currency apart from any culture: the ISO 4217 codes of the currencies in use, the number of decimal places an amount in each usually carries, and the symbol each is written with in a given culture.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

@@ -8,8 +8,8 @@ direction, and draws from one set of design tokens a host can retheme.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Blazor.Server
-dotnet add package formaui-net.Framework.Localization.Json
+dotnet add package formaui-net.Blazor.Server --prerelease
+dotnet add package formaui-net.Framework.Localization.Json --prerelease
 ```
 
 The first package is the library's server half, which brings the library and the Framework packages it
@@ -18,8 +18,8 @@ through. The library's
 strings are English, and each other language is a locale pack of its own:
 
 ```pwsh
-dotnet add package formaui-net.Blazor.Locales.Hebrew
-dotnet add package formaui-net.Blazor.Locales.Spanish
+dotnet add package formaui-net.Blazor.Locales.Hebrew --prerelease
+dotnet add package formaui-net.Blazor.Locales.Spanish --prerelease
 ```
 
 ## Set up a host
@@ -196,8 +196,8 @@ application holds. Each host below is an
 Forma's packages and drives through WebView2, with `MyApp` standing for the example's name.
 
 ```pwsh
-dotnet add package formaui-net.Blazor.WebView
-dotnet add package formaui-net.Framework.Localization.Json
+dotnet add package formaui-net.Blazor.WebView --prerelease
+dotnet add package formaui-net.Framework.Localization.Json --prerelease
 ```
 
 The application targets Windows 10.0.19041 or later, whose SDK projection WebView2's controls load:
@@ -504,7 +504,7 @@ supplies both, registered on each side, the server and a client, beside the prod
 in either order:
 
 ```pwsh
-dotnet add package formaui-net.AddOns.Emojis.Twemoji
+dotnet add package formaui-net.AddOns.Emojis.Twemoji --prerelease
 ```
 
 ```csharp
@@ -641,8 +641,8 @@ address per route; a server host adds the request side from
 [`Forma.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Router.AspNetCore/README.md):
 
 ```pwsh
-dotnet add package formaui-net.Framework.Culture.Router
-dotnet add package formaui-net.Framework.Culture.Router.AspNetCore
+dotnet add package formaui-net.Framework.Culture.Router --prerelease
+dotnet add package formaui-net.Framework.Culture.Router.AspNetCore --prerelease
 ```
 
 ```csharp

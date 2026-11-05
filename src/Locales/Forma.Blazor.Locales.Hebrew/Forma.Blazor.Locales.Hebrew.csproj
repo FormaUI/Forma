@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The Hebrew localization of Forma, as a locale pack: a package of locale files alone, carrying the Hebrew strings of Forma.Blazor, Forma.Blazor.Composer, Forma.Blazor.DataView and Forma.Blazor.Explorer.</Description>
         <IsPackable>true</IsPackable>
         <IsLocalePack>true</IsLocalePack>
         <LocalePackCulture>he</LocalePackCulture>

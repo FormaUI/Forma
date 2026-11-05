@@ -167,7 +167,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
-- Check that each package declares and bundles what it should.
 - Narrow CI's exclusion of prose to what no package carries, since a project's README and notices are packed with it.
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
 

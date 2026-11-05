@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Change notification and debouncing.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

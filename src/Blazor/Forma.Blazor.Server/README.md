@@ -7,7 +7,7 @@ circuit's integrations.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Blazor.Server
+dotnet add package formaui-net.Blazor.Server --prerelease
 ```
 
 It brings `formaui-net.Blazor` and the Framework packages the components build on.

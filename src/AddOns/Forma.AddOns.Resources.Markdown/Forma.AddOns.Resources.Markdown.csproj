@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>A resource provider that converts a Markdown document into sanitized HTML, so FormaFileViewer renders a .md or .markdown file as a page.</Description>
         <IsPackable>true</IsPackable>
         <RootNamespace>Forma.Framework.Resources.Markdown</RootNamespace>
     </PropertyGroup>

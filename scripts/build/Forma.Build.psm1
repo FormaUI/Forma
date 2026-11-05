@@ -1236,6 +1236,114 @@ function Test-BrowserScript {
     }.GetNewClosure()
 }
 
+# The header of the list of the files each package holds, which the comparison also writes above what it found.
+$packageFilesHeader = @(
+    "# The files each of Forma's packages holds, beyond its manifest and the parts every package carries. The gate's"
+    '# browser step compares every package it packs with this list and fails on a file missing or unlisted, so a package'
+    '# gains or loses a file only by a change to this list. The step writes what it found to'
+    '# artifacts/browser/package-files.txt, in this form. {fingerprint} stands for the fingerprint a stylesheet bundle''s'
+    '# or a script initializer''s name carries, which follows its content.'
+)
+
+<#
+.SYNOPSIS
+Compares the files each package in a folder holds with the list the repository keeps of them.
+
+.DESCRIPTION
+Reads every package in the folder, writes the files each holds, beyond its manifest and the parts every package
+carries, to the found list in the kept list's own form, and returns one line for each difference: a package the
+list doesn't name or the pack didn't make, and a file a package lacks or holds unlisted.
+#>
+function Test-PackageFile {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)] [string] $Directory,
+        [Parameter(Mandatory)] [string] $ListPath,
+        [Parameter(Mandatory)] [string] $FoundPath
+    )
+
+    $found = [ordered]@{}
+
+    foreach ($package in Get-ChildItem -LiteralPath $Directory -Filter '*.nupkg' -File | Sort-Object Name) {
+        $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
+
+        try {
+            $manifest = $archive.Entries | Where-Object { $_.FullName -notmatch '/' -and $_.Name -like '*.nuspec' } | Select-Object -First 1
+            $reader = [System.IO.StreamReader]::new($manifest.Open())
+
+            try {
+                $id = ([xml]$reader.ReadToEnd()).package.metadata.id
+            }
+            finally {
+                $reader.Dispose()
+            }
+
+            $found[$id] = @($archive.Entries |
+                    Where-Object { $_.FullName -notmatch '^(_rels/|package/|\[Content_Types\]\.xml$)' -and $_.FullName -ne $manifest.FullName -and $_.Name } |
+                    ForEach-Object { $_.FullName -replace '\.[0-9a-z]{10}\.(bundle\.scp\.css|lib\.module\.js)$', '.{fingerprint}.$1' } |
+                    Sort-Object)
+        }
+        finally {
+            $archive.Dispose()
+        }
+    }
+
+    $lines = [System.Collections.Generic.List[string]]::new([string[]] $packageFilesHeader)
+
+    foreach ($id in $found.Keys) {
+        $lines.Add('')
+        $lines.Add($id)
+
+        foreach ($file in $found[$id]) {
+            $lines.Add("    $file")
+        }
+    }
+
+    $null = New-Item -ItemType Directory -Path (Split-Path -Parent $FoundPath) -Force
+    [System.IO.File]::WriteAllText($FoundPath, (($lines -join "`n") + "`n"))
+
+    $listed = [ordered]@{}
+    $current = $null
+
+    if (Test-Path -LiteralPath $ListPath) {
+        foreach ($line in [System.IO.File]::ReadAllLines($ListPath)) {
+            if (-not $line.Trim() -or $line.StartsWith('#')) {
+                continue
+            }
+
+            if ($line -match '^\s') {
+                if ($current) {
+                    $listed[$current].Add($line.Trim())
+                }
+            }
+            else {
+                $current = $line.Trim()
+                $listed[$current] = [System.Collections.Generic.List[string]]::new()
+            }
+        }
+    }
+
+    foreach ($id in $found.Keys) {
+        if (-not $listed.Contains($id)) {
+            "$id isn't in the list"
+            continue
+        }
+
+        foreach ($file in $listed[$id] | Where-Object { $found[$id] -cnotcontains $_ }) {
+            "$id lacks $file"
+        }
+
+        foreach ($file in $found[$id] | Where-Object { $listed[$id] -cnotcontains $_ }) {
+            "$id holds $file, which the list doesn't name"
+        }
+    }
+
+    foreach ($id in $listed.Keys | Where-Object { -not $found.Contains($_) }) {
+        "$id is in the list, and the pack made no such package"
+    }
+}
+
 <#
 .SYNOPSIS
 Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, runs the examples' smoke checks and drives them.
@@ -1295,6 +1403,9 @@ function Test-BrowserCheck {
     $examples = $Context.BrowserExamples
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
     $examplesOutput = Join-Path $Context.BrowserOutput 'examples'
+    $packageFiles = Join-Path $Context.RepositoryRoot 'eng' 'package-files.txt'
+    $foundPackageFiles = Join-Path $Context.BrowserOutput 'package-files.txt'
+    $testPackageFile = ${function:Test-PackageFile}
     $version = $Context.Version
     $solution = $Context.Solution
     $isVisible = $Visible.IsPresent
@@ -1308,7 +1419,7 @@ function Test-BrowserCheck {
         $description += ', dotnet build the Android check host'
     }
 
-    $description += ', dotnet pack the solution and publish the example hosts from it'
+    $description += ', dotnet pack the solution, check each package''s files against eng/package-files.txt and publish the example hosts from it'
 
     if ($isWebViewPublished) {
         $description += ', the Blazor Hybrid ones among them'
@@ -1382,6 +1493,12 @@ function Test-BrowserCheck {
 
         if ($LASTEXITCODE -ne 0) {
             return
+        }
+
+        $differences = @(& $testPackageFile -Directory $packagesOutput -ListPath $packageFiles -FoundPath $foundPackageFiles)
+
+        if ($differences.Count -gt 0) {
+            throw "The packages' files differ from eng/package-files.txt, and what the pack made is in $($foundPackageFiles):`n   $($differences -join "`n   ")"
         }
 
         $cache = (dotnet nuget locals global-packages --list) -replace '^global-packages:\s*', ''

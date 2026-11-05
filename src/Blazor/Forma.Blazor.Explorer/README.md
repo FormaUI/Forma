@@ -11,8 +11,8 @@ and uploads go into the host's `IFileStore`.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Blazor.Explorer
-dotnet add package formaui-net.Framework.Localization.Json
+dotnet add package formaui-net.Blazor.Explorer --prerelease
+dotnet add package formaui-net.Framework.Localization.Json --prerelease
 ```
 
 The package depends on `formaui-net.Blazor` and `formaui-net.Framework.Catalog`, which restore

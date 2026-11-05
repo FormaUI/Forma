@@ -9,8 +9,8 @@ rules here hold in every runtime; a server host adds the request side from
 ## Install and register
 
 ```pwsh
-dotnet add package formaui-net.Framework.Culture.Router
-dotnet add package formaui-net.Framework.Culture.Router.AspNetCore
+dotnet add package formaui-net.Framework.Culture.Router --prerelease
+dotnet add package formaui-net.Framework.Culture.Router.AspNetCore --prerelease
 ```
 
 ```csharp

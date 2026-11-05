@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Typed CSS values and attribute builders for Blazor markup.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

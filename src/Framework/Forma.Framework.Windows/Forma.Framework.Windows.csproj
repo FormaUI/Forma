@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The workspace behind Forma's windows.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

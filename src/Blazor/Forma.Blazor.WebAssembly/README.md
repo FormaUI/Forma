@@ -6,7 +6,7 @@ registers what the components need in the browser and the culture a WebAssembly 
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Blazor.WebAssembly
+dotnet add package formaui-net.Blazor.WebAssembly --prerelease
 ```
 
 It brings `formaui-net.Blazor` and the Framework packages the components build on.

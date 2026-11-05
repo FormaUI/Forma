@@ -9,7 +9,7 @@ whose README sets the whole arrangement out.
 ## Install and register
 
 ```pwsh
-dotnet add package formaui-net.Framework.Culture.Router.AspNetCore
+dotnet add package formaui-net.Framework.Culture.Router.AspNetCore --prerelease
 ```
 
 ```csharp

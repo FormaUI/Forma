@@ -8,7 +8,7 @@ it accepts.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Framework.Share
+dotnet add package formaui-net.Framework.Share --prerelease
 ```
 
 `formaui-net.Blazor` depends on this package, so a host with Forma installed already has it.

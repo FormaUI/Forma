@@ -8,7 +8,7 @@ add-on leaves them to it.
 ## Install and register
 
 ```pwsh
-dotnet add package formaui-net.AddOns.Operations.Maui
+dotnet add package formaui-net.AddOns.Operations.Maui --prerelease
 ```
 
 ```csharp

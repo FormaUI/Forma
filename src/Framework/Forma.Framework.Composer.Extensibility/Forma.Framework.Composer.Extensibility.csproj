@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The contracts a FormaComposer plugin is written against: what a plugin contributes, what it reads of the composer while it runs, and what it can ask the composer to do.</Description>
         <RootNamespace>Forma.Framework.Composer</RootNamespace>
         <IsPackable>true</IsPackable>
     </PropertyGroup>

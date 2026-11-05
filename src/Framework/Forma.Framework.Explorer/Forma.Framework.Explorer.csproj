@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The options and state behind FormaExplorer: the records a host configures an explorer with, and the view and interaction contracts through which the explorer's parts, its toolbar, sidebar, address bar and content views, read its state and ask it for changes.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

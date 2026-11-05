@@ -7,7 +7,7 @@ culture the application keeps across its web views.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Blazor.WebView
+dotnet add package formaui-net.Blazor.WebView --prerelease
 ```
 
 It brings `formaui-net.Blazor` and the Framework packages the components build on.

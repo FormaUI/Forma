@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The JSON backend for Forma.Framework.Localization.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

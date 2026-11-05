@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>FormaComposer, a rich text authoring surface for Blazor: an editor with the toolbar, dialogs, views and attachments an article or a page body needs, assembled from plugins the host picks.</Description>
         <!-- The component borrows the product's namespace, so its translations embed and resolve as the product's own do. -->
         <RootNamespace>Forma.Blazor.Components.Composer</RootNamespace>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>

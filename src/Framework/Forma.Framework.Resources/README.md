@@ -9,7 +9,7 @@ so the implementations can live in any class library.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Framework.Resources
+dotnet add package formaui-net.Framework.Resources --prerelease
 ```
 
 ## Resources

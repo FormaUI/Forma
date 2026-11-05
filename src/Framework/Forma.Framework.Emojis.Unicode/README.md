@@ -7,7 +7,7 @@ renders straight from text, in the style of the reader's platform.
 ## Install and register
 
 ```pwsh
-dotnet add package formaui-net.Framework.Emojis.Unicode
+dotnet add package formaui-net.Framework.Emojis.Unicode --prerelease
 ```
 
 ```csharp

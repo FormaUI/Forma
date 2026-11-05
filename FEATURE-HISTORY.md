@@ -59,6 +59,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - [Releases](docs/verification-design.md#branches-and-promotion) follow [FormaUI Versioning](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.2/README.md): a candidate is stabilized on `candidate`, its full run packs and checks the packages, `main` receives it by a promotion its check holds, and the signed tag's workflow publishes the packages the candidate's run built, to nuget.org and the organization's GitHub feed.
 
+- Every package carries its description, its release notes, the commit it was built from and its symbols beside it, depends on Forma's other packages at its release's exact version while the release is a pre-release, and holds exactly the files [`eng/package-files.txt`](eng/package-files.txt) lists for it.
+
 - The .NET tests run on xunit v3 4, the test SDK 18 and bUnit 2.13, through Microsoft's testing platform, which `global.json` names as `dotnet test`'s runner; the browser and smoke checks stay programs the gate runs, outside `dotnet test`.
 
 - The script tests run on Vitest 5 and happy-dom 21.

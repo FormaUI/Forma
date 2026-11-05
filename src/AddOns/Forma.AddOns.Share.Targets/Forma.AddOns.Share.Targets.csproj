@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Ready-made share targets for FormaShareMenu: the social networks, Messenger and Discord, the cloud drives, TikTok and Mastodon.</Description>
         <IsPackable>true</IsPackable>
         <RootNamespace>Forma.Framework.Share.Targets</RootNamespace>
     </PropertyGroup>

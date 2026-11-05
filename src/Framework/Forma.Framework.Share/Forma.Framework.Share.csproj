@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The share contracts: the item a share menu acts on, the targets an item can be shared to, and the sources a host answers a user's credentials through.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The item model Forma's toolbars render: a toolbar described as a list of records, each a command, a toggle, a menu of options, a readout or a component of the caller's own, grouped or standing alone.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

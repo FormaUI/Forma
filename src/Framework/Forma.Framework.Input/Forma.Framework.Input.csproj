@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The types that describe input routing in Forma: the routes an element answers, the bindings that raise them, how an open surface treats Escape and a press away, the policy a host sets for the whole application, and the records an action arrives with.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

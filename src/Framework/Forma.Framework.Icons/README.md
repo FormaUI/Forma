@@ -8,7 +8,7 @@ icons with a set of your own, or to name icons in a library of your own.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Framework.Icons
+dotnet add package formaui-net.Framework.Icons --prerelease
 ```
 
 ## Naming an icon

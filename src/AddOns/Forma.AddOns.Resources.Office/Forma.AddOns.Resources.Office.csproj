@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>A resource provider that converts Word, Excel and PowerPoint documents into sanitized HTML, so FormaFileViewer renders a .docx, .xlsx or .pptx file as a page.</Description>
         <IsPackable>true</IsPackable>
         <RootNamespace>Forma.Framework.Resources.Office</RootNamespace>
     </PropertyGroup>

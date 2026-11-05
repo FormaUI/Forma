@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+        <Description>FormaExplorer, a file manager for the Forma component library over items and folders the host already holds: a folder tree, an address bar with history and breadcrumbs, thumbnail, details and list views, search, sorting and grouping, selection, drag and drop between folders, upload, and a preview of any item.</Description>
         <!-- The component borrows the product's namespace, so its translations embed and resolve as the product's own do. -->
         <RootNamespace>Forma.Blazor.Components.Explorer</RootNamespace>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>

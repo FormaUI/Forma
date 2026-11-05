@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>The WebView half of Forma's component library: the registration a Blazor Hybrid application makes, in WPF, Windows Forms or MAUI on Windows, which registers what the components need in a web view and the one culture the application keeps across its web views.</Description>
         <!-- The WebView half borrows the product's namespace, so an application reaches its registrar with the using it already writes. -->
         <RootNamespace>Forma.Blazor</RootNamespace>
     </PropertyGroup>

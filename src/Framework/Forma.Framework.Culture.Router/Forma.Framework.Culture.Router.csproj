@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Culture routing: the first segment of the URL path selects the page's culture pair, as in /he/about, every page has one canonical address per route, and CultureRouter builds the link to any page in any route.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

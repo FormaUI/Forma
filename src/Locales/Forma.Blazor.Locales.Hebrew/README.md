@@ -8,8 +8,8 @@ Hebrew.
 ## Install
 
 ```pwsh
-dotnet add package formaui-net.Blazor.Locales.Hebrew
-dotnet add package formaui-net.Framework.Localization.Json
+dotnet add package formaui-net.Blazor.Locales.Hebrew --prerelease
+dotnet add package formaui-net.Framework.Localization.Json --prerelease
 ```
 
 Reference the pack from the application itself. The package records the pack in the application

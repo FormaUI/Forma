@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>A plugin registry for a feature that others extend.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

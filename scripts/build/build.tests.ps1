@@ -376,6 +376,92 @@ foreach ($problem in $progress.Problems) {
     Write-Host ("        {0}" -f $problem)
 }
 
+# The packages' files are compared with the list the repository keeps of them, so it runs for real here on packages
+# made for the purpose: one as the list names it, with a fingerprinted stylesheet bundle, one holding a file the list
+# doesn't name and lacking one it does, one the list doesn't name, and a package the list names that the pack didn't
+# make.
+$packageFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-packages-$([guid]::NewGuid().ToString('N'))"
+
+try {
+    $null = New-Item -ItemType Directory -Path $packageFolder
+    $newPackage = {
+        param($Id, [string[]] $Files)
+
+        $archive = [System.IO.Compression.ZipFile]::Open((Join-Path $packageFolder "$Id.1.0.0.nupkg"), 'Create')
+
+        try {
+            foreach ($name in @("$Id.nuspec", '[Content_Types].xml', '_rels/.rels', 'package/services/metadata/core-properties/a.psmdcp') + $Files) {
+                $writer = [System.IO.StreamWriter]::new($archive.CreateEntry($name).Open())
+                $writer.Write($(if ($name -like '*.nuspec') { "<package><metadata><id>$Id</id><version>1.0.0</version></metadata></package>" } else { $name }))
+                $writer.Dispose()
+            }
+        }
+        finally {
+            $archive.Dispose()
+        }
+    }
+
+    & $newPackage 'Forma.A' @('lib/net11.0/Forma.A.dll', 'staticwebassets/Forma.A.zfk2ozwrg0.bundle.scp.css', 'README.md')
+    & $newPackage 'Forma.B' @('lib/net11.0/Forma.B.dll', 'lib/net11.0/Forma.B.stray.dll')
+    & $newPackage 'Forma.C' @('lib/net11.0/Forma.C.dll')
+
+    $list = Join-Path $packageFolder 'package-files.txt'
+    $found = Join-Path $packageFolder 'found' 'package-files.txt'
+    [System.IO.File]::WriteAllText($list, (@(
+                '# A comment line.', '', 'Forma.A', '    README.md', '    lib/net11.0/Forma.A.dll',
+                '    staticwebassets/Forma.A.{fingerprint}.bundle.scp.css', '', 'Forma.B', '    lib/net11.0/Forma.B.dll',
+                '    README.md', '', 'Forma.D', '    lib/net11.0/Forma.D.dll'
+            ) -join "`n"))
+
+    $module = Get-Module Forma.Build
+    $differences = @(& $module { param($Directory, $List, $Found) Test-PackageFile -Directory $Directory -ListPath $List -FoundPath $Found } $packageFolder $list $found)
+    $written = if (Test-Path -LiteralPath $found) { [System.IO.File]::ReadAllText($found) } else { '' }
+    $expected = @(
+        'Forma.B lacks README.md'
+        "Forma.B holds lib/net11.0/Forma.B.stray.dll, which the list doesn't name"
+        "Forma.C isn't in the list"
+        'Forma.D is in the list, and the pack made no such package'
+    )
+
+    $wrong = @(
+        foreach ($line in $expected) {
+            if ($differences -cnotcontains $line) { "the difference '$line' wasn't found" }
+        }
+
+        foreach ($line in $differences) {
+            if ($expected -cnotcontains $line) { "a difference was found where there is none: $line" }
+        }
+
+        if ($written -notmatch '(?m)^Forma\.C$' -or $written -notmatch '(?m)^    staticwebassets/Forma\.A\.\{fingerprint\}\.bundle\.scp\.css$') { 'the files the pack made weren''t written in the list''s form' }
+        if ($written -match 'nuspec|_rels|psmdcp|Content_Types') { 'the parts every package carries were written as its files' }
+    )
+
+    $packageFiles = [pscustomobject]@{
+        Name     = 'the packages'' files are compared with the list kept of them'
+        Passed   = $wrong.Count -eq 0
+        Problems = $wrong
+        Output   = ''
+    }
+}
+catch {
+    $packageFiles = [pscustomobject]@{
+        Name     = 'the packages'' files are compared with the list kept of them'
+        Passed   = $false
+        Problems = @("the check could not be made: $($_.Exception.Message)")
+        Output   = ''
+    }
+}
+finally {
+    Remove-Item -LiteralPath $packageFolder -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+$mark = if ($packageFiles.Passed) { 'ok  ' } else { 'FAIL' }
+Write-Host ("  {0} {1}" -f $mark, $packageFiles.Name)
+
+foreach ($problem in $packageFiles.Problems) {
+    Write-Host ("        {0}" -f $problem)
+}
+
 $mark = if ($waitLog.Passed) { 'ok  ' } else { 'FAIL' }
 Write-Host ("  {0} {1}" -f $mark, $waitLog.Name)
 
@@ -397,7 +483,7 @@ foreach ($problem in $guard.Problems) {
     Write-Host ("        {0}" -f $problem)
 }
 
-$all = @($results) + $guard + $cleaning + $waitLog + $progress
+$all = @($results) + $guard + $cleaning + $waitLog + $progress + $packageFiles
 $failed = @($all | Where-Object { -not $_.Passed })
 
 Write-Host ''
