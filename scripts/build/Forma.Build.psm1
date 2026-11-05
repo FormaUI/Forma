@@ -64,6 +64,17 @@ function Initialize-BuildContext {
         throw "No .slnx solution found at $RepositoryRoot."
     }
 
+    # The one version every package ships at, as the root properties file declares it, a prefix and a suffix.
+    $properties = Join-Path $RepositoryRoot 'Directory.Build.props'
+    $version = $null
+
+    if (Test-Path -LiteralPath $properties) {
+        [xml] $declared = Get-Content -LiteralPath $properties -Raw
+        $prefix = $declared.SelectSingleNode('//PropertyGroup/VersionPrefix')
+        $suffix = $declared.SelectSingleNode('//PropertyGroup/VersionSuffix')
+        $version = if ($prefix -and $suffix -and $suffix.InnerText) { "$($prefix.InnerText)-$($suffix.InnerText)" } elseif ($prefix) { $prefix.InnerText }
+    }
+
     [pscustomobject]@{
         RepositoryRoot = $RepositoryRoot
         Solution       = $solution.FullName
@@ -82,6 +93,7 @@ function Initialize-BuildContext {
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
         FastSelection  = Join-Path $RepositoryRoot 'artifacts' 'fast' 'Forma.Fast.slnf'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
+        Version        = $version
     }
 }
 
@@ -1283,6 +1295,7 @@ function Test-BrowserCheck {
     $examples = $Context.BrowserExamples
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
     $examplesOutput = Join-Path $Context.BrowserOutput 'examples'
+    $version = $Context.Version
     $solution = $Context.Solution
     $isVisible = $Visible.IsPresent
     $description = 'dotnet publish the host, the full client and the components host'
@@ -1363,8 +1376,9 @@ function Test-BrowserCheck {
             }
         }
 
-        $version = '1.0.0-examples'
-        dotnet pack $solution -c Release -o $packagesOutput "-p:PackageVersion=$version" --nologo -v:q
+        # The packages are packed at the version a release would carry, so the examples are built from the packages a
+        # release publishes; a cached copy of that version is dropped, so the examples restore these.
+        dotnet pack $solution -c Release -o $packagesOutput --nologo -v:q
 
         if ($LASTEXITCODE -ne 0) {
             return
@@ -1473,6 +1487,7 @@ function Test-MobileExample {
     $example = Join-Path $Context.BrowserExamples 'Forma.Examples.Maui'
     $checks = $Context.AndroidChecks
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
+    $version = $Context.Version
     $platformName = $Platform.ToLowerInvariant()
     $workload = "maui-$platformName"
     $isSimulator = $Platform -eq 'iOS'
@@ -1493,8 +1508,8 @@ function Test-MobileExample {
             Remove-Item -LiteralPath $packagesOutput -Recurse -Force
         }
 
-        $version = '1.0.0-examples'
-        dotnet pack $solution -c Release -o $packagesOutput "-p:PackageVersion=$version" --nologo -v:q
+        # The packages are packed at the version a release would carry, as the browser step packs them.
+        dotnet pack $solution -c Release -o $packagesOutput --nologo -v:q
 
         if ($LASTEXITCODE -ne 0) {
             return

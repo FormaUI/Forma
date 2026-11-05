@@ -23,8 +23,9 @@ and the application keeps the culture from one run to the next.
 ## Build
 
 `Forma.Examples.slnx` lists them all, outside the repository's own solution, and restores once their packages are
-packed. The gate's browser step packs the solution into `artifacts/browser/packages` at version `1.0.0-examples`,
-clears that version from the machine's package cache, publishes each example and drives it, the applications on
+packed. The gate's browser step packs the solution into `artifacts/browser/packages` at the version the root properties
+file declares, which the examples read from it, clears that version from the machine's package cache, publishes each
+example and drives it, the applications on
 Windows alone and through WebView2: its smoke checks start each example and turn a page of the library's
 pagination, and the browser check drives each one's culture. The gate's unit tests hold the README's setup to the
 examples' own files. The MAUI example builds against the `maui-windows` workload. `scripts/build/mobile.ps1
@@ -32,7 +33,7 @@ examples' own files. The MAUI example builds against the `maui-windows` workload
 or `maccatalyst`, against that platform's MAUI workload; Apple's platforms build on a Mac alone. By hand:
 
 ```pwsh
-dotnet pack Forma.slnx -c Release -o artifacts/browser/packages -p:PackageVersion=1.0.0-examples
+dotnet pack Forma.slnx -c Release -o artifacts/browser/packages
 dotnet publish examples/Forma.Examples.Coordinated -c Release -o artifacts/browser/examples/Coordinated
 ```
 

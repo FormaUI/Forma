@@ -1,13 +1,14 @@
 # Runs the full gate a person runs before a commit, on every platform a release is held to: Linux's and Windows' gates,
 # WebView2 among Windows', and Android's checks on an emulator, the components in its web view and the MAUI example.
-# A push to preview runs it on the candidate, whose run a promotion to main and a release require to have passed for
-# the exact commit, and the nightly run on dev surfaces an integration regression before a candidate is selected. The
-# gates themselves live in the repository, not here: this file installs a toolchain and invokes the scripts.
+# A push to candidate runs it on the candidate, whose run a promotion to main and a release require to have passed for
+# the exact commit, and whose Linux gate keeps the packages it packed and checked, which the release publishes as they
+# are; the nightly run on dev surfaces an integration regression before a candidate is selected. The gates themselves
+# live in the repository, not here: this file installs a toolchain and invokes the scripts.
 name: Full
 
 on:
   push:
-    branches: [preview]
+    branches: [candidate]
   schedule:
     # Every night, UTC.
     - cron: '0 2 * * *'
@@ -15,7 +16,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
-  # A candidate superseded on preview before its run finished is no longer the one to approve.
+  # A candidate superseded before its run finished is no longer the one to approve.
   cancel-in-progress: true
 
 permissions:
@@ -95,6 +96,16 @@ jobs:
 
       - name: Run the gate
         run: pwsh ./build.ps1
+
+      # The packages the candidate's gate packed, built the examples from and checked, kept for its release.
+      - name: Keep the candidate's packages
+        if: github.event_name == 'push' && runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: packages
+          path: artifacts/browser/packages
+          if-no-files-found: error
+          retention-days: 90
 
   # A Blazor Hybrid application on a phone or a tablet builds from Forma's packages on the platform's own machine, with
   # the MAUI workload for its platform, which the gate's machines have no use for. Android's builds on Linux; Apple's

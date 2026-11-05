@@ -104,31 +104,20 @@ failed, so a fix to a host's startup reaches both.
   among it. It is the local gate before every commit, and runs every check the machine it runs on can execute,
   naming each platform check it couldn't, as WebView2's away from Windows or Android's without a device. A full
   run in CI passes only once every required platform job has passed for the same SHA: Linux's, Windows' with
-  WebView2, and Android's E2E. The nightly run on `dev` holds the same coverage as a `preview` promotion's.
+  WebView2, and Android's E2E. The nightly run on `dev` holds the same coverage as a candidate's.
 
 ## Branches and promotion
 
-Three permanent branches carry the work: `dev` holds the latest integrated features, `preview` the candidate
-deliberately selected, and `main` the commit approved for release.
+Forma follows [Versioning `1.0.0-preview.2`](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.2/README.md): its [branches](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.2/docs/branches.md)
+set out how work lands on `dev` and how a candidate is stabilized on `candidate`, and its
+[releases](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.2/docs/releases.md) how `main` receives the candidate by promotion and how its tag is
+released. What Forma adds is when each of its gates runs. The nightly run, which GitHub schedules from the default
+branch's workflow, checks out `dev`.
 
-`main` is the repository's default branch and shows the commit approved for release. Contributors open feature and
-fix pull requests against `dev`. Only a pull request from this repository's `preview` branch may merge into `main`,
-subject to the release checks and approval. A pull request opened or later redirected to `main` from any other
-source is blocked with an explanation of the correct route. The nightly run, which GitHub schedules from the
-default branch's workflow, checks out `dev`.
-
-| Event | What happens |
+| Event | What runs |
 | --- | --- |
-| Feature development | `feature/*` branches from `dev`; an ordinary push runs the fast gate. |
-| A feature's pull request into `dev` | The fast gate, required of every contributor. After the merge, the integrated `dev` commit is checked; push and pull request triggers never check one revision twice. |
+| A push to `dev` or to a fix or feature branch, and a pull request into `dev` | The fast gate, required of every pull request into `dev`; push and pull request triggers never check one revision twice. |
 | Nightly on `dev` | The full gate, Android's E2E included, so an integration regression surfaces before a candidate is selected. |
-| Promotion from `dev` to `preview` | Stabilization begins at the current `dev` tip, whose SHA is recorded, and `preview` fast-forwards to it; the full gate runs on that SHA, packaging, integration, smoke, the browsers, WebView2 and Android's E2E included. |
-| Promotion from `preview` to `main` | A successful full `preview` run for the exact SHA to release is required; `main` fast-forwards to that commit. |
-| An annotated `vX.Y.Z` tag | It tags the promoted commit on `main`; the release verifies that the tag's version and commit match the approved candidate, then publishes from the tag. |
-
-When stabilization begins, unrelated merges into `dev` pause, the current `dev` tip's SHA is recorded and
-`preview` fast-forwards to it; selecting the tip rather than an older commit leaves no unrelated feature between
-the candidate and a later fix. Feature work goes on in its branches meanwhile. A fix for the candidate merges
-into `dev`, and each corrected tip goes to `preview` for a fresh full run. The release version is set before the final `preview` run, so the commit that passes and is
-approved is the one `main` receives and the release tag names. Ordinary merges into `dev` resume after the
-promotion.
+| A push to `candidate` | The full gate on the candidate's SHA, packaging, integration, smoke, the browsers, WebView2 and Android's E2E included; its Linux gate keeps the packages it packed, built the examples from and checked. |
+| A pull request into `main` | Versioning's promotion check, the required check `promotion`. |
+| A release tag | Versioning's release check, then the candidate's packages attached to the tag's GitHub release and published from there to nuget.org and the organization's GitHub feed. |

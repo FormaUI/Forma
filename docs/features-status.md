@@ -165,14 +165,11 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 ## Release
 
-`publish.ps1` releases a version: it writes the version, packs the solution in Release, tags the commit with a signed annotated tag, and pushes the packages, refusing a version a feed already holds. What remains:
+`release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
-- Run the gate before the tag is written.
 - Check that each package declares and bundles what it should.
-- Publish from the workflow, which refuses any tag of another form.
 - Narrow CI's exclusion of prose to what no package carries, since a project's README and notices are packed with it.
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
-- Give the repository access to the package feed CI restores `locali` from.
 
 <a id="open-decisions"></a>
 

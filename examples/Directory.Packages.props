@@ -4,13 +4,18 @@
         Forma Example Package Versions
 
         The framework's packages at the versions the repository builds with, and Forma's at the version the
-        gate packs them at, which only the examples use.
+        repository declares, which the gate packs them at.
     -->
 
     <Import Project="..\Directory.Packages.props" />
 
-    <PropertyGroup>
-        <FormaVersion Condition="'$(FormaVersion)' == ''">1.0.0-examples</FormaVersion>
+    <!-- The version is read from the root properties file, its one declaration, unless a build names another. -->
+    <PropertyGroup Condition="'$(FormaVersion)' == ''">
+        <_FormaProperties>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\Directory.Build.props'))</_FormaProperties>
+        <_FormaVersionPrefix>$([System.Text.RegularExpressions.Regex]::Replace($(_FormaProperties), '(?s)^.*&lt;VersionPrefix&gt;([^&lt;]*)&lt;/VersionPrefix&gt;.*$', '$1'))</_FormaVersionPrefix>
+        <_FormaVersionSuffix Condition="$(_FormaProperties.Contains('&lt;VersionSuffix&gt;'))">$([System.Text.RegularExpressions.Regex]::Replace($(_FormaProperties), '(?s)^.*&lt;VersionSuffix&gt;([^&lt;]*)&lt;/VersionSuffix&gt;.*$', '$1'))</_FormaVersionSuffix>
+        <FormaVersion>$(_FormaVersionPrefix)</FormaVersion>
+        <FormaVersion Condition="'$(_FormaVersionSuffix)' != ''">$(_FormaVersionPrefix)-$(_FormaVersionSuffix)</FormaVersion>
     </PropertyGroup>
 
     <!-- The Windows Forms web view, which only an example uses, at the WPF one's version. -->

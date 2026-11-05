@@ -1,30 +1,25 @@
-# Publishes a release from its annotated vX.Y.Z tag, which marks the commit promoted to main. publish.ps1 refuses a
-# version the commit doesn't carry, a lightweight tag, a commit main doesn't hold, a commit preview's full run didn't
-# pass for, and a version a feed already holds, so this file installs a toolchain and invokes it. Run by hand, it takes
-# a tag or a commit and makes the same checks and the pack as a dry run, pushing nothing.
+# Publishes a release from its signed annotated vX.Y.Z tag, which marks the commit promoted to main. Versioning's
+# release check holds the tag to the release rules first; the packages the candidate's full run packed and checked are
+# then attached to the tag's GitHub release with their digests, and published from there, each after the packages it
+# depends on, to nuget.org and to the organization's GitHub feed. A publication that stops partway runs again for the
+# same tag and publishes what the feeds lack.
 name: Release
 
 on:
   push:
     tags: ['v*']
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: The tag to release, vX.Y.Z, or for a dry run a commit
-        required: true
-      dry-run:
-        description: Make every check and the pack, and push nothing
-        type: boolean
-        default: true
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
-  contents: read
-  # The approval is read from preview's full runs.
+  # The release's packages are attached to its GitHub release.
+  contents: write
+  # The candidate's full run and the packages it kept are read.
   actions: read
+  # The promotion's pull request is read.
+  pull-requests: read
   # The packages are pushed to the organization's feed.
   packages: write
   # nuget.org exchanges the run's OIDC token for a key that lasts an hour, through its trusted publishing policy for this
@@ -37,37 +32,56 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # The whole history, so the check reads main's as the repository holds it.
       - uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 0
 
+      - name: Hold the tag to the release check
+        id: check
+        uses: FormaUI/Versioning/actions/release-check@02a1d86b1ddd408ae0557a8636385046a10b9683 # v1.0.0-preview.2
+        with:
+          gate-workflow: full.yml
+          packages-artifact: packages
+          version-command: |
+            $properties = [xml](Get-Content Directory.Build.props -Raw)
+            $prefix = $properties.SelectSingleNode('//PropertyGroup/VersionPrefix').InnerText
+            $suffix = $properties.SelectSingleNode('//PropertyGroup/VersionSuffix').InnerText
+            if ($suffix) { "$prefix-$suffix" } else { $prefix }
+
+      - name: Attach the release's packages
+        id: packages
+        uses: FormaUI/Versioning/actions/release-packages@02a1d86b1ddd408ae0557a8636385046a10b9683 # v1.0.0-preview.2
+        with:
+          gate-run-id: ${{ steps.check.outputs.gate-run-id }}
+          packages-artifact: packages
+          name: Forma
+
+      # The pinned SDK pushes the packages.
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
-      # A dry run pushes nothing, so it asks for no key. The user is the nuget.org account that made the policy.
+      # The user is the nuget.org account that made the policy.
       - name: Get a nuget.org key
         id: login
-        if: github.event_name == 'push' || !inputs.dry-run
         uses: NuGet/login@v1
         with:
           user: soyeyalon
 
-      - name: Publish the release
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
-          IS_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
-        run: |
-          [xml] $props = Get-Content Directory.Build.props
-          $prefix = $props.SelectSingleNode('//PropertyGroup/VersionPrefix').InnerText
-          $suffix = $props.SelectSingleNode('//PropertyGroup/VersionSuffix').InnerText
-          $version = if ($suffix) { "$prefix-$suffix" } else { $prefix }
-          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
-              Write-Host "::error::The tag $env:GITHUB_REF_NAME names a version the commit doesn't carry, $version."
-              exit 1
-          }
-          ./publish.ps1 -Source All -Version $version -WhatIf:($env:IS_DRY_RUN -eq 'true')
+      - name: Publish to nuget.org
+        uses: FormaUI/Versioning/actions/publish-packages@02a1d86b1ddd408ae0557a8636385046a10b9683 # v1.0.0-preview.2
+        with:
+          directory: ${{ steps.packages.outputs.directory }}
+          nuget-source: https://api.nuget.org/v3/index.json
+          nuget-api-key: ${{ steps.login.outputs.NUGET_API_KEY }}
+
+      # The organization's feed takes no symbols packages.
+      - name: Publish to the organization's GitHub feed
+        uses: FormaUI/Versioning/actions/publish-packages@02a1d86b1ddd408ae0557a8636385046a10b9683 # v1.0.0-preview.2
+        with:
+          directory: ${{ steps.packages.outputs.directory }}
+          nuget-source: https://nuget.pkg.github.com/FormaUI/index.json
+          nuget-api-key: ${{ github.token }}
+          nuget-symbols: 'false'

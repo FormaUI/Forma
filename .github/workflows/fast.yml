@@ -1,4 +1,4 @@
-# Runs the fast gate a person runs while working, on Linux, for every push but main's and preview's and for every pull
+# Runs the fast gate a person runs while working, on Linux, for every push but main's and candidate's and for every pull
 # request into dev, so a feature's branch, its pull request and the integrated dev commit are each checked once. The
 # gate itself lives in the repository, not here, so the two cannot drift: this file installs a toolchain and invokes
 # one script.
@@ -6,7 +6,7 @@ name: Fast
 
 on:
   push:
-    branches-ignore: [main, preview]
+    branches-ignore: [main, candidate]
   # A pull request moved to dev is edited, so it is checked against dev as it moves; a title's edit runs the gate again
   # rather than skipping it, since a skipped run would satisfy the required check over a failed one.
   pull_request:
