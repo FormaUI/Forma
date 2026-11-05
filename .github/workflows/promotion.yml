@@ -26,7 +26,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Hold the pull request to the promotion check
-        uses: FormaUI/Versioning/actions/promotion-check@542a3721f43fb4c375ea5e8165aeab85cc631918 # v1.0.0-preview.3
+        uses: FormaUI/Versioning/actions/promotion-check@fa6f941871694adb8898c8263a22ec150eb2eef9 # v1.0.0-preview.4
         with:
           gate-workflow: full.yml
           packages-artifact: packages
