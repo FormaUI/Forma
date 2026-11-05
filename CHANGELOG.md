@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.1`
 
-*Unreleased*
+*November 5, 2026*
 
 - The first release of Forma's packages, each described by its README, with what Forma held at the time in
   [the features status](docs/features-status.md) and [the catalog](docs/component-catalog.md).
