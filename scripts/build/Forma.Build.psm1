@@ -875,7 +875,8 @@ function Write-TestProgress {
                     continue
                 }
 
-                # A file still being written doesn't read as XML yet, and is shown once it is whole.
+                # A file still being written doesn't read as XML yet, or reads as an empty document where it was created
+                # and not yet written, and is shown once it is whole, which its counters and times mark.
                 try {
                     $run = [xml][System.IO.File]::ReadAllText($file.FullName)
                 }
@@ -885,10 +886,15 @@ function Write-TestProgress {
 
                 # Read by local name, since an element a run has nothing for, as one without tests has no results, is absent.
                 $element = { param($Name) $run.SelectSingleNode("//*[local-name()='$Name']") }
-                $null = $reported.Add($file.FullName)
                 $counters = & $element 'Counters'
-                $summary = & $element 'ResultSummary'
                 $times = & $element 'Times'
+
+                if (-not $counters -or -not $times) {
+                    continue
+                }
+
+                $null = $reported.Add($file.FullName)
+                $summary = & $element 'ResultSummary'
                 $method = & $element 'TestMethod'
                 $failed = [int]$counters.GetAttribute('failed') + [int]$counters.GetAttribute('error')
                 $total = [int]$counters.GetAttribute('total')
