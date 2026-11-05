@@ -30,7 +30,7 @@ The gate is the build with warnings as errors, every test project, the format ch
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
-- **Breaking changes say how to migrate** from the first release on: [the changelog](../CHANGELOG.md)'s entry names each change that breaks what the release before it allowed, as [Versioning's preview stage](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.2/docs/versions.md#stages) promises. Until then they were made directly, and [the feature history](../FEATURE-HISTORY.md) lists what each month broke.
+- **Breaking changes say how to migrate** from the first release on: [the changelog](../CHANGELOG.md)'s entry names each change that breaks what the release before it allowed, as [Versioning's preview stage](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.3/docs/versions.md#stages) promises. Until then they were made directly, and [the feature history](../FEATURE-HISTORY.md) lists what each month broke.
 - **Documents move with their change.** A design, a README, the catalog, the roadmap, this file and the changelog change in the commit that changes what they describe.
 
 <a id="features"></a>
