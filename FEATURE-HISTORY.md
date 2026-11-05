@@ -59,6 +59,8 @@ Until the first release, a month may break what the one before it allowed, and e
 
 - The .NET tests run on xunit v3 4, the test SDK 18 and bUnit 2.13, through Microsoft's testing platform, which `global.json` names as `dotnet test`'s runner; the browser and smoke checks stay programs the gate runs, outside `dotnet test`.
 
+- The script tests run on Vitest 5 and happy-dom 21.
+
 - [The WebView check host](docs/repository-structure.md#tests): a WPF application whose native windows each render the components to a web view, driven by the browser check through WebView2, checking what Blazor Hybrid guarantees of its renderer, a web view's registration, the culture each web view's events run in, a web view's address replaced and refused, a traversal, and a web view's release.
 
 - Every component's checks run in Blazor Hybrid's web view too, as the `webview` runtime, each check page in a native window of the WebView check host, from [the check pages' own library](docs/repository-structure.md#tests) the components host shares.
