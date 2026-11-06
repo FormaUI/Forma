@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.2`
 
-*Unreleased*
+*November 6, 2026*
 
 - `FormaPagination` stays within the width it's given in every language: its navigation buttons show their glyphs
   only where the glyphs stand in for the words, and where a language's words need more room than English's, the
