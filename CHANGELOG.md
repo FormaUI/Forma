@@ -5,6 +5,14 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.4/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.2`
+
+*Unreleased*
+
+- `FormaPagination` stays within the width it's given in every language: its navigation buttons show their glyphs
+  only where the glyphs stand in for the words, and where a language's words need more room than English's, the
+  page box or the steps give way.
+
 ## `1.0.0-preview.1`
 
 *November 5, 2026*

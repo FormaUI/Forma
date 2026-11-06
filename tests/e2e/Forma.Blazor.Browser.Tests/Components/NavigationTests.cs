@@ -25,6 +25,38 @@ public sealed class NavigationTests
 
     public sealed class Pagination(BrowserHost host)
     {
+        // Gives every pager the width, and names each row that reaches past it, by its spill in the row's direction.
+        private const string ReadSpills = """
+            width => [...document.querySelectorAll('nav.forma-pagination')].flatMap(pager => {
+                pager.style.inlineSize = `${width}px`;
+                const bounds = pager.getBoundingClientRect();
+                const rtl = getComputedStyle(pager).direction === 'rtl';
+                return [...pager.children].filter(row => getComputedStyle(row).display !== 'none').flatMap(row => {
+                    const parts = [...row.querySelectorAll(':scope > *, :scope > * > *')]
+                        .filter(part => getComputedStyle(part).position !== 'absolute' && part.getBoundingClientRect().width > 0);
+                    const spill = Math.max(row.scrollWidth - pager.clientWidth, ...parts.map(part => {
+                        const box = part.getBoundingClientRect();
+                        return Math.round(rtl ? bounds.left - box.left : box.right - bounds.right);
+                    }));
+                    return spill > 0 ? [`#${pager.id}'s ${row.className.split(' ')[0]} spills ${spill}px`] : [];
+                });
+            })
+            """;
+
+        // Makes each word on the navigation buttons and the Go button half again as long, as a language's words can be.
+        private const string LengthenWords = """
+            () => {
+                const lengthen = text => {
+                    const word = text.textContent.trim();
+                    text.textContent = word + word.slice(0, Math.ceil(word.length / 2));
+                };
+                for (const text of document.querySelectorAll('.forma-pagination-navigation-button-text')) lengthen(text);
+                for (const go of document.querySelectorAll('.forma-pagination-go-button')) {
+                    for (const node of go.childNodes) if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) lengthen(node);
+                }
+            }
+            """;
+
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_move_to_the_page_pressed_and_a_run_of_pages_on_next(string runtime)
@@ -85,6 +117,35 @@ public sealed class NavigationTests
             // Assert
             await Assertions.Expect(page.Locator("#entry-result")).ToHaveTextAsync("7");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("1");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stay_within_its_width_on_either_side_of_each_switch_and_with_longer_words(string runtime)
+        {
+            // Arrange — the widths on either side of where the steps give way to the input row (36.5rem), the words
+            // to their glyphs (21.25rem) and the box to its content (17.75rem), and a width below them all
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "pagination");
+            await using var _ = context;
+            int[] widths = [260, 284, 285, 320, 340, 341, 400, 584, 585, 640];
+            var spills = new List<string>();
+
+            // Act — each pager given each width, with its own words and then with words half again as long
+            foreach (var words in (string[])["its own words", "words half again as long"])
+            {
+                if (words != "its own words")
+                {
+                    await page.EvaluateAsync(LengthenWords);
+                }
+
+                foreach (var width in widths)
+                {
+                    spills.AddRange((await page.EvaluateAsync<string[]>(ReadSpills, width)).Select(spill => $"{spill} at {width}px with {words}"));
+                }
+            }
+
+            // Assert
+            Assert.Empty(spills);
         }
 
         [Theory]

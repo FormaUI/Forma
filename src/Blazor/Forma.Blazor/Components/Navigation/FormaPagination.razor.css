@@ -27,7 +27,8 @@
     list-style: none;
 }
 
-.forma-pagination-navigation-steps > li {
+.forma-pagination-navigation-steps > li:first-child,
+.forma-pagination-navigation-steps > li:last-child {
     flex-shrink: 0;
 }
 
@@ -47,7 +48,8 @@
 }
 
 /* The steps need the two navigation buttons (about 8.5rem for both, in English), seven steps at 3.7rem each,
-   and a 0.25rem gap between every pair: 36.5rem. Narrower than that, the input row takes their place. */
+   and a 0.25rem gap between every pair: 36.5rem. Narrower than that, the input row takes their place. Words longer
+   than English's take their room from the steps, which give way down to 2.7rem each, 7rem in all. */
 @container (max-width: 36.5rem) {
     .forma-pagination-navigation-steps {
         display: none;
@@ -60,9 +62,17 @@
 
 /* ── Steps ── */
 /* A step is one width in every pager, room for four digits plus a button's padding, so pagers side by side put their
-   first page in the same place; a gap or an empty step takes the same width and a control's height, so the row keeps its shape. */
+   first page in the same place; a gap or an empty step takes the same width and a control's height, so the row keeps its shape.
+   Where the navigation buttons' words need more room, the steps give way together, down to four digits with the
+   padding inside one target. */
 .forma-pagination-navigation-steps {
     --forma-pagination-step-width: calc(2.5em + 2 * var(--space-3));
+    --forma-pagination-step-min-width: calc(2.5em + 2 * var(--space-1));
+}
+
+.forma-pagination-navigation-steps > li:not(:first-child):not(:last-child) {
+    flex: 0 1 var(--forma-pagination-step-width);
+    min-inline-size: var(--forma-pagination-step-min-width);
 }
 
 .forma-pagination-navigation-steps > li > ::deep .forma-pagination-navigation-step,
@@ -72,7 +82,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: var(--forma-pagination-step-width);
+    inline-size: 100%;
     min-block-size: var(--target-size-md);
     padding-inline: 0;
     font-size: var(--font-size-sm);
@@ -99,6 +109,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    min-inline-size: 0;
 }
 
 /* The label is heard but not seen. */
@@ -114,23 +125,26 @@
     white-space: nowrap;
 }
 
-/* Wide enough to show its watermark, or four digits out of four digits, whole. */
+/* Wide enough to show its watermark, or four digits out of four digits, whole. Where the navigation buttons' words
+   need more room, the box gives way, down to four digits with a field's padding. */
 ::deep .forma-pagination-navigation-input-box {
     inline-size: 10em;
+    min-inline-size: calc(2.5em + 2 * var(--space-3));
     text-align: center;
 }
 
-/* The glyph stands in for the words at narrow widths. */
-::deep .forma-pagination-navigation-button-glyph {
+/* The glyph stands in for the words at narrow widths. Its class is doubled to outrank the icon's own display. */
+::deep .forma-pagination-navigation-button-glyph.forma-pagination-navigation-button-glyph {
     display: none;
 }
 
 /* The input row needs the two navigation buttons (78px and 55px, in English), the 10em box (140px at the small
    size), the Go button (44px) and its gaps (24px): 341px, 21.25rem. Narrower than that the words go and the
    glyphs stand in, and the buttons draw in to the tighter padding: a glyph button is then 24 + 16 + 2 = 42px
-   and Go 36px, so the row needs 42 + 140 + 36 + 42 + 24 = 284px, 17.75rem. */
+   and Go 36px, so the row needs 42 + 140 + 36 + 42 + 24 = 284px, 17.75rem. Words longer than English's take their
+   room from the box. */
 @container (max-width: 21.25rem) {
-    ::deep .forma-pagination-navigation-button-glyph {
+    ::deep .forma-pagination-navigation-button-glyph.forma-pagination-navigation-button-glyph {
         display: inline-block;
     }
 
@@ -152,14 +166,13 @@
     }
 }
 
-/* Narrower still, the box is sized by what it holds, between the 6em (84px) of a page number and the 8em (112px)
-   of four digits out of four digits, and the group closes its gaps to the row's: the row needs 42 + 84 + 36 + 42
-   + 16 = 220px, 13.75rem, for the usual "7 of 20", within what a 20rem phone leaves a page's content, and 248px,
-   15.5rem, at most. A browser without field-sizing keeps the 6em floor. */
+/* Narrower still, the box is sized by what it holds, up to the 8em (112px) of four digits out of four digits, and
+   the group closes its gaps to the row's: beside the box the row needs 42 + 36 + 42 + 16 = 136px, so it needs
+   248px, 15.5rem, at most, and the box gives way below that as it does at every width. A browser without
+   field-sizing starts the box at its 8em. */
 @container (max-width: 17.75rem) {
     ::deep .forma-pagination-navigation-input-box {
         inline-size: auto;
-        min-inline-size: 6em;
         max-inline-size: 8em;
         field-sizing: content;
     }
@@ -192,6 +205,11 @@
 
     ::deep .forma-pagination-navigation-input-box {
         min-block-size: var(--target-size-touch);
+    }
+
+    /* A step gives way no further than a touch target, which is wider than four digits. */
+    .forma-pagination-navigation-steps {
+        --forma-pagination-step-min-width: var(--target-size-touch);
     }
 
     .forma-pagination-navigation-steps > li > ::deep .forma-pagination-navigation-step,
