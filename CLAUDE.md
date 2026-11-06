@@ -16,7 +16,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 | `forma-styling` | Writing or changing a stylesheet or a token: regions on backdrops, spacing, type, radii, targets, and fitting a width |
 | `forma-verifying` | Building, testing, formatting, running the Showcase, checking in a browser, or adding a task script |
 | `forma-naming` | Naming anything: a type, member, variable, parameter, file, CSS class, script or test |
-| `forma-documenting` | Writing or changing a summary, comment, remarks block, banner, README passage, design document, implementation plan, catalog or roadmap entry, the features status or the changelog, or deciding whether a code change touches prose at all |
+| `forma-documenting` | Writing, restructuring or reviewing any document, from a README to the changelog; writing a summary, comment, remarks block or banner; or deciding whether a code change touches prose at all |
 
 ## Source of truth
 
