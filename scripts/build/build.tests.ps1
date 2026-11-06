@@ -455,6 +455,61 @@ finally {
     Remove-Item -LiteralPath $packageFolder -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+# Clearing a version from the examples' packages folder is run for real, against an examples folder made for the
+# purpose whose NuGet configuration names a packages folder beside it, holding Forma's packages at the version
+# cleared and at another, and another package at the version cleared.
+$exampleFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-examples-$([guid]::NewGuid().ToString('N'))"
+
+try {
+    $examplesRoot = Join-Path $exampleFolder 'examples'
+    $restored = Join-Path $exampleFolder 'restored'
+    $null = New-Item -ItemType Directory -Path $examplesRoot
+
+    foreach ($package in @('formaui-net.a/1.0.0-preview.1', 'formaui-net.a/0.9.0', 'formaui-net.b/1.0.0-preview.1', 'other.c/1.0.0-preview.1')) {
+        $null = New-Item -ItemType Directory -Path (Join-Path $restored $package)
+    }
+
+    [System.IO.File]::WriteAllText((Join-Path $examplesRoot 'nuget.config'), '<configuration><config><add key="globalPackagesFolder" value="../restored" /></config></configuration>')
+
+    $module = Get-Module Forma.Build
+    & $module { param($Examples, $Version) Clear-ExamplePackage -Examples $Examples -Version $Version } $examplesRoot '1.0.0-preview.1'
+
+    $wrong = @(
+        foreach ($package in @('formaui-net.a/1.0.0-preview.1', 'formaui-net.b/1.0.0-preview.1')) {
+            if (Test-Path -LiteralPath (Join-Path $restored $package)) { "$package was left in the examples' packages folder" }
+        }
+
+        foreach ($package in @('formaui-net.a/0.9.0', 'other.c/1.0.0-preview.1')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $restored $package))) { "$package was removed, which isn't Forma's at the version cleared" }
+        }
+    )
+
+    $examplePackages = [pscustomobject]@{
+        Name     = 'a version is cleared from the packages folder the examples'' configuration names'
+        Passed   = $wrong.Count -eq 0
+        Problems = $wrong
+        Output   = ''
+    }
+}
+catch {
+    $examplePackages = [pscustomobject]@{
+        Name     = 'a version is cleared from the packages folder the examples'' configuration names'
+        Passed   = $false
+        Problems = @("the check could not be made: $($_.Exception.Message)")
+        Output   = ''
+    }
+}
+finally {
+    Remove-Item -LiteralPath $exampleFolder -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+$mark = if ($examplePackages.Passed) { 'ok  ' } else { 'FAIL' }
+Write-Host ("  {0} {1}" -f $mark, $examplePackages.Name)
+
+foreach ($problem in $examplePackages.Problems) {
+    Write-Host ("        {0}" -f $problem)
+}
+
 $mark = if ($packageFiles.Passed) { 'ok  ' } else { 'FAIL' }
 Write-Host ("  {0} {1}" -f $mark, $packageFiles.Name)
 
@@ -483,7 +538,7 @@ foreach ($problem in $guard.Problems) {
     Write-Host ("        {0}" -f $problem)
 }
 
-$all = @($results) + $guard + $cleaning + $waitLog + $progress + $packageFiles
+$all = @($results) + $guard + $cleaning + $waitLog + $progress + $packageFiles + $examplePackages
 $failed = @($all | Where-Object { -not $_.Passed })
 
 Write-Host ''

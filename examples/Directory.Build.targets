@@ -2,4 +2,17 @@
 
     <!-- The repository's targets import the localization targets from source; an example takes them from the package. -->
 
+    <!--
+        The packages folder is an .editorconfig root, so a package's own sources compiled into an example, as the MAUI
+        example's are on Windows, take none of the repository's analyzer rules. The SDK reads only the .editorconfig
+        files above the sources a project names, so the compile is handed this one.
+    -->
+    <Target Name="FormaExamplePackageFolderEditorConfig" BeforeTargets="CoreCompile" Condition="'$(NuGetPackageRoot)' != ''">
+        <WriteLinesToFile File="$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)')).editorconfig" Lines="root = true" Overwrite="true" WriteOnlyWhenDifferent="true" />
+
+        <ItemGroup>
+            <EditorConfigFiles Include="$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)')).editorconfig" />
+        </ItemGroup>
+    </Target>
+
 </Project>

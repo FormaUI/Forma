@@ -1346,6 +1346,37 @@ function Test-PackageFile {
 
 <#
 .SYNOPSIS
+Removes a version of Forma's packages from the packages folder the example hosts restore into.
+
+.DESCRIPTION
+The example hosts' NuGet configuration names a packages folder of their own, which NuGet reports when asked from
+their folder, and a package of the version found there is removed, so the examples restore the packages just
+packed rather than an earlier run's of the same version.
+#>
+function Clear-ExamplePackage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)] [string] $Examples,
+        [Parameter(Mandatory)] [string] $Version
+    )
+
+    Push-Location -LiteralPath $Examples
+
+    try {
+        $folder = (dotnet nuget locals global-packages --list --force-english-output) -replace '^global-packages:\s*', ''
+    }
+    finally {
+        Pop-Location
+    }
+
+    Get-ChildItem -LiteralPath $folder -Directory -Filter 'formaui-net.*' -ErrorAction SilentlyContinue |
+        ForEach-Object { Join-Path $_.FullName $Version } |
+        Where-Object { Test-Path -LiteralPath $_ } |
+        ForEach-Object { Remove-Item -LiteralPath $_ -Recurse -Force }
+}
+
+<#
+.SYNOPSIS
 Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, runs the examples' smoke checks and drives them.
 
 .DESCRIPTION
@@ -1354,9 +1385,10 @@ its budgets, and what the publish trims is recorded, so a reference, a compile f
 breaks the browser fails here rather than in a host. Both clients are published in Release, the one configuration
 the budgets were measured in, into folders emptied first, since a publish names its files by their content and
 an earlier publish's files would be counted beside the new ones. The example hosts are built from the solution's
-packages rather than its projects, as a host outside the repository builds: the solution is packed at a version
-only the examples use, and that version is cleared from the machine's package cache first, so a package an
-earlier run cached never stands in for the one just packed. The examples' smoke checks run first, each starting
+packages rather than its projects, as a host outside the repository builds: the solution is packed at the version
+the root properties file declares, the examples restore into a packages folder of their own, which their NuGet
+configuration names, and that version is cleared from it first, so a package an earlier run restored never stands
+in for the one just packed. The examples' smoke checks run first, each starting
 an example afresh and turning a page of the library's pagination, and the browser check after them, each run
 reporting. The WebView check host and the Blazor Hybrid example hosts are published on Windows alone, the one platform WebView2 runs on, and their checks report themselves skipped
 elsewhere; the MAUI example needs the maui-windows workload, which a Windows machine installs once. -Android also
@@ -1406,6 +1438,7 @@ function Test-BrowserCheck {
     $packageFiles = Join-Path $Context.RepositoryRoot 'eng' 'package-files.txt'
     $foundPackageFiles = Join-Path $Context.BrowserOutput 'package-files.txt'
     $testPackageFile = ${function:Test-PackageFile}
+    $clearExamplePackage = ${function:Clear-ExamplePackage}
     $version = $Context.Version
     $solution = $Context.Solution
     $isVisible = $Visible.IsPresent
@@ -1488,7 +1521,7 @@ function Test-BrowserCheck {
         }
 
         # The packages are packed at the version a release would carry, so the examples are built from the packages a
-        # release publishes; a cached copy of that version is dropped, so the examples restore these.
+        # release publishes.
         dotnet pack $solution -c Release -o $packagesOutput --nologo -v:q
 
         if ($LASTEXITCODE -ne 0) {
@@ -1501,11 +1534,7 @@ function Test-BrowserCheck {
             throw "The packages' files differ from eng/package-files.txt, and what the pack made is in $($foundPackageFiles):`n   $($differences -join "`n   ")"
         }
 
-        $cache = (dotnet nuget locals global-packages --list) -replace '^global-packages:\s*', ''
-        Get-ChildItem -LiteralPath $cache -Directory -Filter 'formaui-net.*' -ErrorAction SilentlyContinue |
-            ForEach-Object { Join-Path $_.FullName $version } |
-            Where-Object { Test-Path -LiteralPath $_ } |
-            ForEach-Object { Remove-Item -LiteralPath $_ -Recurse -Force }
+        & $clearExamplePackage -Examples $examples -Version $version
 
         $exampleNames = @('Coordinated', 'Independent')
 
@@ -1575,10 +1604,10 @@ Builds the MAUI example host from the solution's packages for Android, iOS or Ma
 
 .DESCRIPTION
 A Blazor Hybrid application on a phone, a tablet or a Mac takes Forma's packages as a host outside the repository
-takes them, so the solution is packed at a version only the examples use, that version is cleared from the
-machine's package cache first, and the MAUI example host is built from the packages for the platform named, in
-Release, which trims it as the platform's own build does, so a package that doesn't load or a trim warning there
-fails here. Each platform needs its workload, maui-android, maui-ios or maui-maccatalyst; iOS and Mac Catalyst
+takes them, so the solution is packed at the version the root properties file declares, that version is cleared
+from the packages folder the examples restore into first, and the MAUI example host is built from the packages for
+the platform named, in Release, which trims it as the platform's own build does, so a package that doesn't load or
+a trim warning there fails here. Each platform needs its workload, maui-android, maui-ios or maui-maccatalyst; iOS and Mac Catalyst
 build on a Mac alone, and iOS builds for the simulator, which needs no signing. Where adb reaches an Android device
 or emulator, the Android build is installed on it and the MAUI example's smoke check on Android drives its web
 view; where none is attached, the step says so and builds alone.
@@ -1601,7 +1630,8 @@ function Test-MobileExample {
     )
 
     $solution = $Context.Solution
-    $example = Join-Path $Context.BrowserExamples 'Forma.Examples.Maui'
+    $examples = $Context.BrowserExamples
+    $example = Join-Path $examples 'Forma.Examples.Maui'
     $checks = $Context.AndroidChecks
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
     $version = $Context.Version
@@ -1609,6 +1639,7 @@ function Test-MobileExample {
     $workload = "maui-$platformName"
     $isSimulator = $Platform -eq 'iOS'
     $testAndroidDevice = ${function:Test-AndroidDevice}
+    $clearExamplePackage = ${function:Clear-ExamplePackage}
 
     $description = "dotnet pack the solution and build the MAUI example host from it for $Platform"
 
@@ -1632,11 +1663,7 @@ function Test-MobileExample {
             return
         }
 
-        $cache = (dotnet nuget locals global-packages --list) -replace '^global-packages:\s*', ''
-        Get-ChildItem -LiteralPath $cache -Directory -Filter 'formaui-net.*' -ErrorAction SilentlyContinue |
-            ForEach-Object { Join-Path $_.FullName $version } |
-            Where-Object { Test-Path -LiteralPath $_ } |
-            ForEach-Object { Remove-Item -LiteralPath $_ -Recurse -Force }
+        & $clearExamplePackage -Examples $examples -Version $version
 
         $arguments = @($example, '-c', 'Release', "-p:FormaVersion=$version", "-p:FormaExamplePlatform=$platformName", '--nologo', '-v:q')
 
