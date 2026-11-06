@@ -1,9 +1,37 @@
 # Forma.Blazor
 
-A Blazor component library for .NET 11: form inputs and pickers,
-dialogs, popovers and toasts, toolbars and menus, tabs and layout, file pickers, uploaders and
-viewers, icons, emoji and windows. Every component is localized, lays itself out in either reading
-direction, and draws from one set of design tokens a host can retheme.
+A Blazor component library for .NET 11: form inputs and pickers, dialogs, popovers and toasts, toolbars and menus,
+tabs and layout, file pickers, uploaders and viewers, icons, emoji and windows. Every component is localized, lays
+itself out in either reading direction, and draws from one set of design tokens a host can retheme.
+
+```razor
+<FormaTextBox @bind-Value="Model.Name" Label="Name" />
+<FormaButton Variant="ButtonVariant.Primary" OnClick="SaveAsync">Save</FormaButton>
+```
+
+**Requirements.** .NET 11, and a host that renders Blazor components:
+
+- a Web App under Interactive Server, WebAssembly or Auto;
+- a standalone WebAssembly app;
+- a Blazor Hybrid application: WPF, Windows Forms or MAUI on Windows, or MAUI on Android, iOS or Mac Catalyst.
+
+**Availability.** Forma's packages are previews on nuget.org, so every install asks for a pre-release with
+`--prerelease`. A preview's contract can change from one release to the next, and
+[the changelog](https://github.com/FormaUI/Forma/blob/main/CHANGELOG.md) says how to migrate from each change that
+breaks what the release before it allowed.
+
+In this README:
+
+1. [Install](#install)
+2. [Set up a server host](#set-up-a-server-host)
+3. [Use the components](#use-the-components)
+4. [Styling and theming](#styling-and-theming)
+5. [Localization](#localization)
+6. [Switching the culture](#switching-the-culture)
+7. [WebAssembly components](#webassembly-components)
+8. [Blazor Hybrid](#blazor-hybrid)
+9. [What the registration does](#what-the-registration-does)
+10. [More packages](#more-packages)
 
 ## Install
 
@@ -12,17 +40,23 @@ dotnet add package formaui-net.Blazor.Server --prerelease
 dotnet add package formaui-net.Framework.Localization.Json --prerelease
 ```
 
-The first package is the library's server half, which brings the library and the Framework packages it
-builds on beside it. The second is the JSON localization backend the components read their strings
-through. The library's
-strings are English, and each other language is a locale pack of its own:
+- `formaui-net.Blazor.Server` is the library's server half. It brings the library and the Framework packages it
+  builds on.
+- `formaui-net.Framework.Localization.Json` is the JSON localization backend the components read their strings
+  through.
+
+The library's strings are English. Each other language is a locale pack of its own:
 
 ```pwsh
 dotnet add package formaui-net.Blazor.Locales.Hebrew --prerelease
 dotnet add package formaui-net.Blazor.Locales.Spanish --prerelease
 ```
 
-## Set up a host
+## Set up a server host
+
+These steps set up a Web App whose components render under Interactive Server. A Web App that renders components
+under WebAssembly or Auto continues with [WebAssembly components](#webassembly-components), and a desktop or mobile
+application follows [Blazor Hybrid](#blazor-hybrid) instead.
 
 **1. Register the services** in `Program.cs`:
 
@@ -36,21 +70,9 @@ builder.Services.AddJsonLocalization();
 builder.AddFormaUIServer();
 ```
 
-`AddFormaUIServer()` registers the services the components use, through `AddFormaUI()`: the toast
-and confirmation dialog services, the status badge catalog, the HTML sanitizer, the culture state, and
-the input router that dispatches keyboard shortcuts. Beside them it registers what an interactive server
-circuit needs, which keeps the culture and the document's language in step with each circuit. Each is
-registered only where nothing is registered for it yet, so a host replaces any one of them by
-registering its own first. It registers no stand-in for what the platform or a package supplies, its
-logging, its JS runtime, the string locale factory `AddJsonLocalization()` registers or an artwork pack's
-providers, so a host makes those calls in any order. Application-wide shortcuts
-are passed as `AddFormaUIServer(options => options.InputRouting = new InputRouterOptions { ... })`,
-which
-[`Forma.Framework.Input`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Input/README.md)
-documents, and `options.CultureSwitchPolicy` chooses whether a culture switch also writes request
-localization's culture cookie, as
-[`Forma.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Server/README.md)
-sets out.
+`AddFormaUIServer()` registers every service the components use, and what an interactive server circuit needs. A
+host can replace any of them, and these calls can come in any order; [what the registration
+does](#what-the-registration-does) sets out what is registered and how to configure it.
 
 **2. Render the document head** in `App.razor`:
 
@@ -74,12 +96,9 @@ sets out.
 </html>
 ```
 
-`FormaPageHead`, from the server half, writes the character set, viewport, title, base address and icon, links Forma's
-stylesheets, and renders the framework's `ResourcePreloader`, `ImportMap` and `HeadOutlet`. Its
-child content renders after Forma's stylesheets, so the host's styles win, and a page's
-`PageTitle` still sets the title. `PreloadAssets="false"` leaves out the `ResourcePreloader`, which
-serves a WebAssembly render mode. Setting `dir` from the culture lays every component out right to
-left in a right-to-left language.
+`FormaPageHead`, from the server half, writes the document head and links Forma's stylesheets. Your stylesheets go
+in its child content, which renders after Forma's, so your styles win. Setting `dir` from the culture lays every
+component out right to left in a right-to-left language.
 
 **3. Map the components** with the Interactive Server render mode:
 
@@ -89,307 +108,22 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Forma.Blazor._Imports).Assembly);
 ```
 
-[The Showcase](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Showcase) is a complete
-host that renders every component in every state.
-
-## WebAssembly components
-
-A Web App that renders components under WebAssembly or Auto sets up its client beside its server, and both
-declare the same culture arrangement: how the page treats the client's culture. Each arrangement below is an
-[example host](https://github.com/FormaUI/Forma/blob/main/examples/README.md) the gate builds from
-Forma's packages and drives in a browser, with `MyApp` standing for the example's name.
-
-**Coordinated, the default.** Every runtime on the page follows the page's culture coordinator: a switch made in
-a Server island or a WebAssembly one reaches both and the document, and a prerendered client starts in the
-culture the server rendered it in. The server adds the WebAssembly render mode and registers as above:
-
-<!-- example: examples/Forma.Examples.Coordinated/Program.cs -->
-```csharp
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
-builder.Services.AddJsonLocalization();
-builder.AddFormaUIServer();
-```
-
-<!-- example: examples/Forma.Examples.Coordinated/Program.cs -->
-```csharp
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(MyApp.Client._Imports).Assembly);
-```
-
-`AddFormaUIServer()` turns on `Components:UseCultureFromServer`, the framework's handoff of the server's culture
-to the client, wherever the configuration names no value, and the host fails to start where its configuration
-sets it to `false`. `FormaPageHead` publishes the cultures the server rendered the page in, which the page's
-coordinator starts from, so a coordinated page needs it in its head. The client registers its half:
-
-<!-- example: examples/Forma.Examples.Coordinated.Client/Program.cs -->
-```csharp
-var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
-builder.Services.AddJsonLocalization();
-builder.Services.AddFormaUIWebAssembly();
-
-await builder.Build().RunAsync();
-```
-
-The client keeps its own strings beside its components, which both runtimes read from the client's assembly, and
-its root `.locales` holds a folder for each assembly whose strings the host rewords, which the server reads from the
-client too, since its build records the client it references; neither project names a locale file. The example
-rewords the library's pagination label in Hebrew:
-
-<!-- example: examples/Forma.Examples.Coordinated.Client/.locales/Forma.Blazor/Components/Navigation/he.json -->
-```json
-{
-  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "FormaPagination": {
-    "Pagination": "ניווט בין העמודים"
-  }
-}
-```
-
-<!-- example: examples/Forma.Examples.Coordinated.Client/Forma.Examples.Coordinated.Client.csproj -->
-```xml
-<PropertyGroup>
-    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-</PropertyGroup>
-```
-
-The client loads the globalization data of every culture, since the default covers only the one it starts in.
-
-**Independent client culture.** The client's culture is its own: a switch in a WebAssembly island changes that
-runtime alone, never the document, the coordinator, the address or the cookie, while the server's islands follow
-the page as before. Both sides declare it, and the handoff may then be off:
-
-<!-- example: examples/Forma.Examples.Independent/Program.cs -->
-```csharp
-builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
-```
-
-<!-- example: examples/Forma.Examples.Independent.Client/Program.cs -->
-```csharp
-builder.Services.AddFormaUIWebAssembly(options => options.CultureArrangement = CultureArrangement.Independent);
-```
-
-<!-- example: examples/Forma.Examples.Independent/appsettings.json -->
-```json
-{
-  "Components": {
-    "UseCultureFromServer": false
-  }
-}
-```
-
-A standalone WebAssembly app has no server: its runtime starts the page's coordinator itself, from the culture it
-starts in, as
-[`Forma.Blazor.WebAssembly`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.WebAssembly/README.md)
-sets out.
-
-## Blazor Hybrid
-
-A WPF, Windows Forms or MAUI application on Windows, or a MAUI application on Android, iOS or Mac Catalyst, renders
-the components in a `BlazorWebView` in each of its native windows, and every web view shows the one culture the
-application holds. Each host below is an
-[example host](https://github.com/FormaUI/Forma/blob/main/examples/README.md) the gate builds from
-Forma's packages and drives through WebView2, with `MyApp` standing for the example's name.
-
-```pwsh
-dotnet add package formaui-net.Blazor.WebView --prerelease
-dotnet add package formaui-net.Framework.Localization.Json --prerelease
-```
-
-The application targets Windows 10.0.19041 or later, whose SDK projection WebView2's controls load:
-
-<!-- example: examples/Forma.Examples.Wpf/Forma.Examples.Wpf.csproj -->
-```xml
-<TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
-```
-
-**1. Register the services once, for the application,** beside the platform's registrar and in either order,
-and hand that one provider to every web view, so they all read one culture state and switch it through one
-switch. A WPF application builds it as it starts:
-
-<!-- example: examples/Forma.Examples.Wpf/App.xaml.cs -->
-```csharp
-var services = new ServiceCollection();
-services.AddWpfBlazorWebView();
-services.AddFormaUIWebView();
-services.AddJsonLocalization();
-```
-
-A Windows Forms application builds it in its `Main`, which runs on the single-threaded apartment WebView2 needs, so
-it is a method marked `[STAThread]` rather than top-level statements:
-
-<!-- example: examples/Forma.Examples.WinForms/Program.cs -->
-```csharp
-[STAThread]
-private static void Main()
-{
-    ApplicationConfiguration.Initialize();
-```
-
-<!-- example: examples/Forma.Examples.WinForms/Program.cs -->
-```csharp
-var services = new ServiceCollection();
-services.AddFormaUIWebView();
-services.AddJsonLocalization();
-services.AddWindowsFormsBlazorWebView();
-```
-
-A MAUI application registers on its builder, whose one provider every native window already shares, and adds
-[`formaui-net.AddOns.Operations.Maui`](https://github.com/FormaUI/Forma/blob/main/src/AddOns/Forma.AddOns.Operations.Maui/README.md),
-through which the platform's share sheet saves a file, takes a document to print and shares an address on
-Android, iOS and Mac Catalyst, whose web views do none of the three:
-
-<!-- example: examples/Forma.Examples.Maui/MauiProgram.cs -->
-```csharp
-builder.Services.AddMauiBlazorWebView();
-builder.Services.AddFormaUIWebView();
-builder.Services.AddFormaMauiOperations();
-builder.Services.AddJsonLocalization();
-```
-
-The same project builds for each platform, from one `TargetFramework` per build, `net11.0-android`,
-`net11.0-ios`, `net11.0-maccatalyst` or `net11.0-windows10.0.19041.0`, each needing its MAUI workload; Apple's
-platforms build on a Mac.
-
-`AddFormaUIWebView()` registers what `AddFormaUI()` does and the culture's half for an application's web views:
-one culture state, one switch and one coordinator for the application, which applies a switch to the state, to
-the process's default cultures and to the thread each web view runs its events on, and delivers it to every web
-view's document. A component, or the application's own code, switches through `ICultureSwitch`. Application-wide
-shortcuts are passed as `AddFormaUIWebView(options => options.InputRouting = new InputRouterOptions { ... })`.
-Culture routing registers as in a Web App, before or after, under `CultureSwitchMode.InPlace`, as
-[the culture design](https://github.com/FormaUI/Forma/blob/main/docs/culture-design.md#blazor-hybrid) sets out.
-
-**2. The page** is the application's `wwwroot/index.html`, which the web view serves itself; it links Forma's
-stylesheets and the application's scoped styles, and loads the web view's script:
-
-<!-- example: examples/Forma.Examples.Wpf/wwwroot/index.html -->
-```html
-<link rel="stylesheet" href="_content/Forma.Blazor/forma-tokens.css" />
-<link rel="stylesheet" href="_content/Forma.Blazor/forma-reset.css" />
-<link rel="stylesheet" href="_content/Forma.Blazor/forma-base.css" />
-<link rel="stylesheet" href="_content/Forma.Blazor/forma-input.css" />
-<link rel="stylesheet" href="MyApp.styles.css" />
-```
-
-<!-- example: examples/Forma.Examples.Wpf/wwwroot/index.html -->
-```html
-<div id="app"></div>
-<script src="_framework/blazor.webview.js"></script>
-```
-
-A MAUI application's page leaves Blazor's start to MAUI, which starts it once the web view's channel to the
-application is in place:
-
-<!-- example: examples/Forma.Examples.Maui/wwwroot/index.html -->
-```html
-<script src="_framework/blazor.webview.js" autostart="false"></script>
-```
-
-**3. Dispose a WPF web view as its native window closes.** WPF disposes no control on its own, and disposing the
-web view releases its scope and every subscription its components made. The WebView2 control's own disposal can
-throw an `InvalidCastException` moments after a keyboard shortcut, once that scope was released:
-
-<!-- example: examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
-```csharp
-private async void OnClosed(object? sender, EventArgs e)
-{
-    _cultureState.Unsubscribe(OnCultureChangedAsync);
-
-    try
-    {
-        await WebView.DisposeAsync();
-    }
-    catch (InvalidCastException)
-    {
-    }
-}
-```
-
-Windows Forms disposes a web view with its form, and MAUI with its native window.
-
-**4. Refresh what the application draws natively.** Forma updates every component, every web view's document and
-the threads the web views run on; the application refreshes its native user interface, a native window's title
-among it, as the culture state notifies, on the thread that owns it:
-
-<!-- example: examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
-```csharp
-_cultureState = services.GetRequiredService<ICultureState>();
-_locale = services.GetRequiredService<IStringLocale<MainWindow>>();
-ShowTitle();
-_cultureState.Subscribe(OnCultureChangedAsync);
-```
-
-<!-- example: examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
-```csharp
-private Task OnCultureChangedAsync()
-    => Dispatcher.InvokeAsync(ShowTitle).Task;
-
-private void ShowTitle()
-    => Title = _locale.WithCulture(_cultureState.Culture, _cultureState.UICulture)["Forma Example"];
-```
-
-A MAUI application on Windows keeps a native window's caption, which the taskbar shows, in the system's ANSI code
-page, so a character the code page lacks shows there as a question mark, while the title bar MAUI draws shows the
-title whole.
-
-**5. Keep the reader's culture** in the application's settings: apply it before the first web view opens, since
-the culture state starts from the culture in force as it is first resolved, and save it each time the state
-notifies:
-
-<!-- example: examples/Forma.Examples.Wpf/CultureSettings.cs -->
-```csharp
-CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo(culture);
-CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo(uiCulture);
-```
-
-<!-- example: examples/Forma.Examples.Wpf/CultureSettings.cs -->
-```csharp
-var cultureState = services.GetRequiredService<ICultureState>();
-cultureState.Subscribe(() =>
-{
-    Directory.CreateDirectory(Path.GetDirectoryName(SettingsFile)!);
-    File.WriteAllLines(SettingsFile, [cultureState.Culture.Name, cultureState.UICulture.Name]);
-```
-
-A MAUI application keeps it in `Preferences` instead. The switch persists nothing itself, and a cookie policy is
-rejected, since no request reaches a server to read one.
-
-**A culture per web view.** An application whose native windows each show a culture of their own declares it as
-it registers:
-
-```csharp
-services.AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent);
-```
-
-Each web view then holds a culture state and a switch of its own: a switch in one web view, or under culture
-routing a navigation to another culture's address, changes that web view's components, its document and its
-address alone, and a native window opens a web view in a culture by its `StartPath`, `/he/orders`. The process's
-and the threads' cultures are shared by every web view, so they stay the application's to set: a component of
-the application's own formats through its web view's `ICultureState` and reads its strings through a locale bound
-to it, `factory.Create(typeof(Orders), cultureState)`, and native code switches one web view through that web
-view's services, `webView.TryDispatchAsync(services => ...)`.
-
-The application's own strings sit beside its types, `.locales/he.json` beside `MainWindow` and
-`Components/.locales/he.json` beside its components, and the build embeds them in the application's assembly,
-with its root `.locales` folder for each assembly whose strings it rewords, so an application MAUI packages
-reads them with no folder beside it.
+[The Showcase](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Showcase) is a complete host that
+renders every component in every state.
 
 ## Use the components
 
-Components live in `Forma.Blazor.Components.{Category}` namespaces, such as
-`Forma.Blazor.Components.Buttons` and `Forma.Blazor.Components.Feedback`, and the services and
-values they take live in `Forma.Framework.*` namespaces, such as `Forma.Framework.Feedback` and
-`Forma.Framework.Icons`. Add the ones you use to `_Imports.razor`.
-[The component catalog](https://github.com/FormaUI/Forma/blob/main/docs/component-catalog.md)
-lists every component, one line each.
+Components live in `Forma.Blazor.Components.{Category}` namespaces, such as `Forma.Blazor.Components.Buttons` and
+`Forma.Blazor.Components.Feedback`. The services and values they take live in `Forma.Framework.*` namespaces, such as
+`Forma.Framework.Feedback` and `Forma.Framework.Icons`. Add the ones you use to `_Imports.razor`.
+[The component catalog](https://github.com/FormaUI/Forma/blob/main/docs/component-catalog.md) lists every
+component, one line each.
 
-A field brings no space around itself; the layout that holds it does. A form whose fields stand one
-above another gives its container a gap, and a row of fields lines up with flex or grid, where every
-field and a `FormaSearchBox` given a `Label` stand at one height:
+### Lay out fields
+
+A field brings no space around itself; the layout that holds it does. A form whose fields stand one above another
+gives its container a gap. A row of fields lines up with flex or grid, where every field, and a `FormaSearchBox`
+given a `Label`, stands at one height:
 
 ```razor
 <div style="display: flex; flex-direction: column; gap: var(--space-4)">
@@ -401,20 +135,25 @@ field and a `FormaSearchBox` given a `Label` stand at one height:
 </div>
 ```
 
-Aligning a row at its top edge keeps the boxes level when a validation message shows under one of
-them.
+Aligning a row at its top edge keeps the boxes level when a validation message shows under one of them.
 
-A Forma text field sends the server what the reader changes as they type, rather than its whole
-text, so a long text never outgrows a message, and every other value a reader can make large in a
-Forma component, a composer's document, a selection across a long list, a page composed for
-printing, travels in pieces past a message's size. Blazor Server's default limit on a message, 32 KB,
-holds for all of them, so a host has no need to raise `MaximumReceiveMessageSize` for Forma. A
-`FormaButton` or a `FormaInputScope` inside a form waits, before it acts, until every Forma field in
-the form holds what the reader typed, a `FormaComposer` among them, and doesn't act where a field's
-text didn't arrive, which that field says. A form of the host's own waits the same way with nothing
-added: its submit, by Enter or a plain submit button, waits for its Forma fields before it validates,
-and a field whose text didn't arrive fails the validation, so `OnValidSubmit` sees what the reader
-typed or isn't called:
+### Forms and long text
+
+**Forma stays within Blazor Server's default message limit, 32 KB**, so a host has no need to raise
+`MaximumReceiveMessageSize` for Forma:
+
+- A Forma text field sends the server what the reader changes as they type, rather than its whole text, so a long
+  text never outgrows a message.
+- Every other value a reader can make large in a Forma component travels in pieces past a message's size: a
+  composer's document, a selection across a long list, a page composed for printing.
+
+**A Forma action inside a form waits for the form's fields.** A `FormaButton` or a `FormaInputScope` inside a form
+waits, before it acts, until every Forma field in the form holds what the reader typed, a `FormaComposer` among
+them. It doesn't act where a field's text didn't arrive, and that field says so.
+
+**A form of the host's own waits the same way, with nothing added.** Its submit, by Enter or a plain submit button,
+waits for its Forma fields before it validates. A field whose text didn't arrive fails the validation, so
+`OnValidSubmit` sees what the reader typed or isn't called:
 
 ```razor
 <EditForm Model="Model" OnValidSubmit="SaveAsync">
@@ -423,11 +162,13 @@ typed or isn't called:
 </EditForm>
 ```
 
-`ValidateAsync` waits the same way, and `SettleEditsAsync` waits alone, for an action of the host's own
-that reads the form without validating it.
+`ValidateAsync` waits the same way. `SettleEditsAsync` waits alone, for an action of the host's own that reads the
+form without validating it.
 
-Toasts and confirmation dialogs are raised through a service and drawn by a component placed once
-where it renders interactively, in a layout under global interactivity or on the page itself:
+### Toasts and confirmation dialogs
+
+Toasts and confirmation dialogs are raised through a service and drawn by a component. Place the component once
+where it renders interactively: in a layout under global interactivity, or on the page itself:
 
 ```razor
 @page "/articles"
@@ -453,8 +194,8 @@ where it renders interactively, in a layout under global interactivity or on the
 
 ### Status badges
 
-`FormaStatusBadge` draws a status the application defines, so the host registers its statuses as
-an `IStatusBadgeCatalog`:
+`FormaStatusBadge` draws a status the application defines, so the host registers its statuses as an
+`IStatusBadgeCatalog`:
 
 ```csharp
 using Forma.Framework.Css;
@@ -474,9 +215,14 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 
 ### Icons
 
-`FormaIcon` draws an `Icon`: a `Glyph` named for what it means, a `Brand` mark, or a single `Rune`
-set in the symbol font. Each converts to an icon, and `Icon.FromGlyph` picks a glyph's
-`GlyphVariant`, the outline or the solid shape in the library's own set:
+`FormaIcon` draws an `Icon`, which is one of:
+
+- a `Glyph`, named for what it means;
+- a `Brand` mark;
+- a single `Rune`, set in the symbol font.
+
+Each converts to an icon. `Icon.FromGlyph` picks a glyph's `GlyphVariant`, the outline or the solid shape in the
+library's own set:
 
 ```razor
 <FormaIcon Icon="Glyph.Save" />
@@ -484,24 +230,25 @@ set in the symbol font. Each converts to an icon, and `Icon.FromGlyph` picks a g
 <FormaIcon Icon="Icon.FromGlyph(Glyph.Save, GlyphVariant.Alternate)" />
 ```
 
-An icon is decorative, hidden from assistive technology, so the control or the text beside it names
-what it shows. An icon standing alone, as a mark linking to its brand, is named by its `Label`:
+An icon is decorative, hidden from assistive technology, so the control or the text beside it names what it shows.
+An icon standing alone, as a mark linking to its brand, is named by its `Label`:
 
 ```razor
 <a href="https://github.com/FormaUI/Forma"><FormaIcon Icon="Brand.GitHub" Label="Forma on GitHub" /></a>
 ```
 
-The artwork ships inside the library. A host that wants another set registers its own
-`IIconProvider`, and a subtree or a single icon names one through a cascading value or the
-`Provider` parameter; the library's artwork draws whatever that provider declines.
+The artwork ships inside the library. A host that wants another set registers its own `IIconProvider`. A subtree or
+a single icon names a provider through a cascading value or the `Provider` parameter, and the library's artwork
+draws whatever that provider declines.
 
 ### Emoji
 
-`FormaEmoji` draws an emoji through `IEmojiProvider`, in the reader's platform font by default,
-and `FormaEmojiPicker` browses the set an `IEmojiCatalog` describes. The
-[Twemoji artwork pack](https://github.com/FormaUI/Forma/blob/main/src/AddOns/Forma.AddOns.Emojis.Twemoji/README.md)
-supplies both, registered on each side, the server and a client, beside the product's registrar there,
-in either order:
+`FormaEmoji` draws an emoji through `IEmojiProvider`, in the reader's platform font by default. `FormaEmojiPicker`
+browses the set an `IEmojiCatalog` describes.
+
+The [Twemoji artwork pack](https://github.com/FormaUI/Forma/blob/main/src/AddOns/Forma.AddOns.Emojis.Twemoji/README.md)
+supplies both. Register it on each side, the server and a client, beside the product's registrar there, in either
+order:
 
 ```pwsh
 dotnet add package formaui-net.AddOns.Emojis.Twemoji --prerelease
@@ -514,8 +261,7 @@ builder.AddFormaUIServer();
 
 ## Styling and theming
 
-`FormaPageHead` links these stylesheets in this order; a host that links them itself takes the
-ones it needs:
+`FormaPageHead` links these stylesheets in this order. A host that links them itself takes the ones it needs:
 
 | Stylesheet | Contents | Take it when |
 |------------|----------|--------------|
@@ -525,9 +271,10 @@ ones it needs:
 | `forma-input.css` | The input box every field draws: border, radius, colors, focus ring | You use any Forma input |
 | `forma-prose.css` | Headings, quotes, code, lists, tables, figures and links in a composed document | You render `FormaComposer` content |
 
-Each lives under `_content/Forma.Blazor/`. A theme redefines the gray scale and the six role
-solids in a stylesheet loaded after Forma's, and every other token, hover, focus, links,
-backdrops and borders among them, follows:
+Each lives under `_content/Forma.Blazor/`.
+
+A theme redefines the gray scale and the six role solids in a stylesheet loaded after Forma's. Every other token
+follows from them, hover, focus, links, backdrops and borders among them:
 
 ```css
 :root {
@@ -539,12 +286,14 @@ backdrops and borders among them, follows:
 
 ## Localization
 
-Components localize themselves in the culture in force: with a locale pack installed and
-`AddJsonLocalization()` registered, a Hebrew request renders Hebrew. A locale pack is referenced by
-the application, which records it at build time for `AddJsonLocalization()` to find.
+Components localize themselves in the culture in force. With a locale pack installed and `AddJsonLocalization()`
+registered, a Hebrew request renders Hebrew. The application references the locale pack, and its build records the
+pack for `AddJsonLocalization()` to find.
 
-To localize your own strings, inject `IStringLocale<T>` from `Forma.Framework.Localization` and
-look a string up by its English text, passing the values for its holes in order:
+### Your own strings
+
+Inject `IStringLocale<T>` from `Forma.Framework.Localization` and look a string up by its English text, passing
+the values for its holes in order:
 
 ```razor
 @inject IStringLocale<Orders> L
@@ -553,11 +302,16 @@ look a string up by its English text, passing the values for its holes in order:
 <p>@L["Stored {Stored} of {Total}.", stored, total]</p>
 ```
 
-A key with no localization renders as written. The application's own strings live beside the
-components they belong to, as a library's do: a `.locales` folder in each folder, with a file per
-culture holding a section per type. The application's root `.locales` also holds a folder for each
-assembly whose strings it rewords, or adds a language to that has no pack: the first folder is the
-assembly's name, the folders below it are the namespace past that assembly's root namespace:
+A key with no localization renders as written.
+
+### Where locale files live
+
+The application's own strings live beside the components they belong to, as a library's do: a `.locales` folder in
+each folder, with a file per culture holding a section per type.
+
+The application's root `.locales` also holds a folder for each assembly whose strings it rewords, or adds a language
+to that has no pack. The first folder is the assembly's name, and the folders below it are the namespace past that
+assembly's root namespace:
 
 ```text
 Components/Pages/.locales/he.json                { "Orders": { "Save": "שמירה" } }
@@ -577,15 +331,26 @@ Each file opens with a `$localization` entry naming its culture:
 }
 ```
 
-The build embeds every file carrying that entry, so a project names none of them: an application's
-own strings in its assembly, as a library's are, and its files for other assemblies apart from them,
-which every runtime reads, a WebAssembly client's and a packaged Blazor Hybrid application's among
-them. A `.locales` folder beside the running application, which no build fills, is read last, so a
-string can change there without building again.
+The build embeds every file carrying that entry, so a project names none of them:
 
-A host that changes the culture without a new request, switching language in place, requests it
-through the `ICultureSwitch` every user scope resolves, which applies it to the scope's
-`ICultureState`, and every component renders again in it:
+- The application's own strings go into its assembly, as a library's do.
+- Its files for other assemblies are embedded apart from them, and every runtime reads them, a WebAssembly client's
+  and a packaged Blazor Hybrid application's among them.
+- A `.locales` folder beside the running application, which no build fills, is read last, so a string can change
+  there without building again.
+
+A host's file overrides the library's and the pack's for the keys it holds.
+[`Forma.Framework.Localization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization/README.md)
+documents the lookup, the plural syntax and every place a file may sit, and
+[`Forma.Framework.Localization.Json`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization.Json/README.md)
+the file format.
+
+## Switching the culture
+
+### In place
+
+A host that changes the culture without a new request requests it through the `ICultureSwitch` every user scope
+resolves. The switch applies it to the scope's `ICultureState`, and every component renders again in it:
 
 ```razor
 @using System.Globalization
@@ -596,24 +361,33 @@ through the `ICultureSwitch` every user scope resolves, which applies it to the 
 <FormaButton OnClick="@(() => CultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo("he")))">עברית</FormaButton>
 ```
 
-Text typed into a number or time field and not yet committed keeps the culture it was typed in, so
-`1,234` typed in English still commits as a thousand and more after a switch to German. A host's
-own components render again in the new culture by subscribing to the same `ICultureState`, and read
-their strings through a locale bound to it, `factory.Create(typeof(Orders), cultureState)` from the
-injected `IStringLocaleFactory`, rather than `IStringLocale<T>`, which reads the ambient culture: a
-render can run in a flow that still holds an earlier ambient culture, such as one that began before
-the switch, and a locale bound to the state looks its strings up in the state's cultures whatever flow
-renders. A culture of the same name with patterns of its own, a 12- or 24-hour clock, is a change like
-any other.
+Text typed into a number or time field and not yet committed keeps the culture it was typed in. `1,234` typed in
+English still commits as a thousand and more after a switch to German.
 
-An application whose cultures carry patterns of their own registers an `ICultureProvider`, whose
-`GetCulture(name)` returns its culture for each name, carrying that name, and every culture Forma holds
-or applies is the provider's: the culture state's, a switch's coming back from the page by name, and a
-request's under culture routing. On a server, one whose cultures differ by user is registered scoped;
-a WebAssembly client registers it as a singleton, since its runtime is one user. A host
-choosing a request's cultures through ASP.NET Core's request localization, which takes them from lists
-fixed at startup, runs each request in the provider's cultures with `UseFormaRequestCulture()` after it,
-as [`Forma.Framework.Culture`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture/README.md)
+A host's own components render again in the new culture by subscribing to the same `ICultureState`. They read their
+strings through a locale bound to it, `factory.Create(typeof(Orders), cultureState)` from the injected
+`IStringLocaleFactory`, rather than through `IStringLocale<T>`, which reads the ambient culture. A render can run in
+a flow that still holds an earlier ambient culture, such as one that began before the switch. A locale bound to the
+state looks its strings up in the state's cultures, whatever flow renders.
+
+A culture of the same name with patterns of its own, a 12- or 24-hour clock, is a change like any other.
+
+### Cultures with patterns of their own
+
+An application whose cultures carry patterns of their own registers an `ICultureProvider`. Its `GetCulture(name)`
+returns the application's culture for each name, carrying that name, and every culture Forma holds or applies is
+the provider's:
+
+- the culture state's;
+- a switch's, coming back from the page by name;
+- a request's, under culture routing.
+
+On a server, a provider whose cultures differ by user is registered scoped. A WebAssembly client registers it as a
+singleton, since its runtime is one user.
+
+ASP.NET Core's request localization takes a request's cultures from lists fixed at startup. A host choosing them
+that way runs each request in the provider's cultures with `UseFormaRequestCulture()` after it, as
+[`Forma.Framework.Culture`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture/README.md)
 and [`Forma.Framework.Culture.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Blazor.Server/README.md)
 set out:
 
@@ -627,17 +401,11 @@ app.UseRequestLocalization();
 app.UseFormaRequestCulture();
 ```
 
-A host's file overrides the library's and the pack's for the keys it holds.
-[`Forma.Framework.Localization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization/README.md)
-documents the lookup, the plural syntax and every place a file may sit, and
-[`Forma.Framework.Localization.Json`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization.Json/README.md)
-the file format.
-
-## Culture in the URL
+### Culture in the URL
 
 [`Forma.Framework.Culture.Router`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Router/README.md)
-takes the page's culture pair from the first URL segment, `/he/orders`, and gives every page one
-address per route; a server host adds the request side from
+takes the page's culture pair from the first URL segment, `/he/orders`, and gives every page one address per route.
+A server host adds the request side from
 [`Forma.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Router.AspNetCore/README.md):
 
 ```pwsh
@@ -664,9 +432,373 @@ builder.Services.AddFormaCultureRouting(new CultureRouterOptions
 app.UseFormaCultureRouting();
 ```
 
-`FormaPageHead` then writes the document's base in the page's route, and a switch is a navigation to
-the pair's address, loading it as a new document by default; `Switch = CultureSwitchMode.InPlace` keeps
-the document and the user's work instead, as the package's README sets out.
+`FormaPageHead` then writes the document's base in the page's route. A switch is a navigation to the pair's
+address, which loads it as a new document by default; `Switch = CultureSwitchMode.InPlace` keeps the document and
+the user's work instead, as the package's README sets out.
+
+## WebAssembly components
+
+A Web App that renders components under WebAssembly or Auto sets up its client beside its server. Both declare the
+same culture arrangement: how the page treats the client's culture.
+
+| Arrangement | A switch in a WebAssembly island changes |
+|-------------|------------------------------------------|
+| [Coordinated](#coordinated-the-default), the default | Every runtime on the page and the document |
+| [Independent](#independent-client-culture) | That runtime alone |
+
+Each arrangement is an [example host](https://github.com/FormaUI/Forma/blob/main/examples/README.md) that the gate
+builds from Forma's packages and drives in a browser. `MyApp` below stands for the example's name.
+
+### Coordinated, the default
+
+Every runtime on the page follows the page's culture coordinator. A switch made in a Server island or a WebAssembly
+one reaches both and the document, and a prerendered client starts in the culture the server rendered it in.
+
+**The server** adds the WebAssembly render mode and registers as a server host does:
+
+<!-- example: examples/Forma.Examples.Coordinated/Program.cs -->
+```csharp
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
+builder.Services.AddJsonLocalization();
+builder.AddFormaUIServer();
+```
+
+<!-- example: examples/Forma.Examples.Coordinated/Program.cs -->
+```csharp
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(MyApp.Client._Imports).Assembly);
+```
+
+Two requirements hold for a coordinated page:
+
+- **The framework's culture handoff stays on.** `AddFormaUIServer()` turns on `Components:UseCultureFromServer`,
+  the framework's handoff of the server's culture to the client, wherever the configuration names no value. The
+  host fails to start where its configuration sets it to `false`.
+- **`FormaPageHead` is in the page's head.** It publishes the cultures the server rendered the page in, which the
+  page's coordinator starts from.
+
+**The client** registers its half:
+
+<!-- example: examples/Forma.Examples.Coordinated.Client/Program.cs -->
+```csharp
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Services.AddJsonLocalization();
+builder.Services.AddFormaUIWebAssembly();
+
+await builder.Build().RunAsync();
+```
+
+**The client holds the strings** for both runtimes, and neither project names a locale file:
+
+- The client keeps its own strings beside its components, and both runtimes read them from the client's assembly.
+- Its root `.locales` holds a folder for each assembly whose strings the host rewords. The server reads those from
+  the client too, since its build records the client it references.
+
+The example rewords the library's pagination label in Hebrew:
+
+<!-- example: examples/Forma.Examples.Coordinated.Client/.locales/Forma.Blazor/Components/Navigation/he.json -->
+```json
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "FormaPagination": {
+    "Pagination": "ניווט בין העמודים"
+  }
+}
+```
+
+**The client loads the globalization data of every culture**, since the default covers only the one it starts in:
+
+<!-- example: examples/Forma.Examples.Coordinated.Client/Forma.Examples.Coordinated.Client.csproj -->
+```xml
+<PropertyGroup>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+</PropertyGroup>
+```
+
+### Independent client culture
+
+The client's culture is its own. A switch in a WebAssembly island changes that runtime alone, never the document,
+the coordinator, the address or the cookie, while the server's islands follow the page as before.
+
+Both sides declare the arrangement, and the culture handoff may then be off:
+
+<!-- example: examples/Forma.Examples.Independent/Program.cs -->
+```csharp
+builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
+```
+
+<!-- example: examples/Forma.Examples.Independent.Client/Program.cs -->
+```csharp
+builder.Services.AddFormaUIWebAssembly(options => options.CultureArrangement = CultureArrangement.Independent);
+```
+
+<!-- example: examples/Forma.Examples.Independent/appsettings.json -->
+```json
+{
+  "Components": {
+    "UseCultureFromServer": false
+  }
+}
+```
+
+### Standalone WebAssembly
+
+A standalone WebAssembly app has no server. Its runtime starts the page's coordinator itself, from the culture it
+starts in, as
+[`Forma.Blazor.WebAssembly`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.WebAssembly/README.md)
+sets out.
+
+## Blazor Hybrid
+
+A WPF, Windows Forms or MAUI application on Windows, or a MAUI application on Android, iOS or Mac Catalyst, renders
+the components in a `BlazorWebView` in each of its native windows. Every web view shows the one culture the
+application holds.
+
+Each host below is an [example host](https://github.com/FormaUI/Forma/blob/main/examples/README.md) that the gate
+builds from Forma's packages and drives through WebView2. `MyApp` stands for the example's name.
+
+```pwsh
+dotnet add package formaui-net.Blazor.WebView --prerelease
+dotnet add package formaui-net.Framework.Localization.Json --prerelease
+```
+
+**A Windows application targets Windows 10.0.19041 or later**, whose SDK projection WebView2's controls load:
+
+<!-- example: examples/Forma.Examples.Wpf/Forma.Examples.Wpf.csproj -->
+```xml
+<TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
+```
+
+**A MAUI project builds for each platform** from one `TargetFramework` per build, each needing its MAUI workload:
+`net11.0-android`, `net11.0-ios`, `net11.0-maccatalyst` or `net11.0-windows10.0.19041.0`. Apple's platforms build
+on a Mac.
+
+### 1. Register the services once, for the application
+
+Register Forma beside the platform's registrar, in either order, and hand that one provider to every web view, so
+they all read one culture state and switch it through one switch.
+
+A WPF application builds the provider as it starts:
+
+<!-- example: examples/Forma.Examples.Wpf/App.xaml.cs -->
+```csharp
+var services = new ServiceCollection();
+services.AddWpfBlazorWebView();
+services.AddFormaUIWebView();
+services.AddJsonLocalization();
+```
+
+A Windows Forms application builds it in its `Main`. `Main` runs on the single-threaded apartment WebView2 needs, so
+it is a method marked `[STAThread]` rather than top-level statements:
+
+<!-- example: examples/Forma.Examples.WinForms/Program.cs -->
+```csharp
+[STAThread]
+private static void Main()
+{
+    ApplicationConfiguration.Initialize();
+```
+
+<!-- example: examples/Forma.Examples.WinForms/Program.cs -->
+```csharp
+var services = new ServiceCollection();
+services.AddFormaUIWebView();
+services.AddJsonLocalization();
+services.AddWindowsFormsBlazorWebView();
+```
+
+A MAUI application registers on its builder, whose one provider every native window already shares. It also adds
+[`formaui-net.AddOns.Operations.Maui`](https://github.com/FormaUI/Forma/blob/main/src/AddOns/Forma.AddOns.Operations.Maui/README.md).
+Through it, the platform's share sheet saves a file, takes a document to print and shares an address on Android, iOS
+and Mac Catalyst, whose web views do none of the three:
+
+<!-- example: examples/Forma.Examples.Maui/MauiProgram.cs -->
+```csharp
+builder.Services.AddMauiBlazorWebView();
+builder.Services.AddFormaUIWebView();
+builder.Services.AddFormaMauiOperations();
+builder.Services.AddJsonLocalization();
+```
+
+`AddFormaUIWebView()` registers what `AddFormaUI()` does, and the culture's half for an application's web views:
+one culture state, one switch and one coordinator for the application. The coordinator applies a switch to the
+state, to the process's default cultures and to the thread each web view runs its events on, and delivers it to
+every web view's document.
+
+- A component, or the application's own code, switches through `ICultureSwitch`.
+- Application-wide shortcuts are passed as
+  `AddFormaUIWebView(options => options.InputRouting = new InputRouterOptions { ... })`.
+- Culture routing registers as in a Web App, before or after, under `CultureSwitchMode.InPlace`, as
+  [the culture design](https://github.com/FormaUI/Forma/blob/main/docs/culture-design.md#blazor-hybrid) sets out.
+
+### 2. Write the page
+
+The page is the application's `wwwroot/index.html`, which the web view serves itself. It links Forma's stylesheets
+and the application's scoped styles, and loads the web view's script:
+
+<!-- example: examples/Forma.Examples.Wpf/wwwroot/index.html -->
+```html
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-tokens.css" />
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-reset.css" />
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-base.css" />
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-input.css" />
+<link rel="stylesheet" href="MyApp.styles.css" />
+```
+
+<!-- example: examples/Forma.Examples.Wpf/wwwroot/index.html -->
+```html
+<div id="app"></div>
+<script src="_framework/blazor.webview.js"></script>
+```
+
+A MAUI application's page leaves Blazor's start to MAUI, which starts it once the web view's channel to the
+application is in place:
+
+<!-- example: examples/Forma.Examples.Maui/wwwroot/index.html -->
+```html
+<script src="_framework/blazor.webview.js" autostart="false"></script>
+```
+
+### 3. Dispose a WPF web view as its native window closes
+
+WPF disposes no control on its own, and disposing the web view releases its scope and every subscription its
+components made. The WebView2 control's own disposal can throw an `InvalidCastException` moments after a keyboard
+shortcut, once that scope was released:
+
+<!-- example: examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
+```csharp
+private async void OnClosed(object? sender, EventArgs e)
+{
+    _cultureState.Unsubscribe(OnCultureChangedAsync);
+
+    try
+    {
+        await WebView.DisposeAsync();
+    }
+    catch (InvalidCastException)
+    {
+    }
+}
+```
+
+Windows Forms disposes a web view with its form, and MAUI with its native window.
+
+### 4. Refresh what the application draws natively
+
+Forma updates every component, every web view's document and the threads the web views run on. The application
+refreshes its native user interface, a native window's title among it, as the culture state notifies, on the thread
+that owns it:
+
+<!-- example: examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
+```csharp
+_cultureState = services.GetRequiredService<ICultureState>();
+_locale = services.GetRequiredService<IStringLocale<MainWindow>>();
+ShowTitle();
+_cultureState.Subscribe(OnCultureChangedAsync);
+```
+
+<!-- example: examples/Forma.Examples.Wpf/MainWindow.xaml.cs -->
+```csharp
+private Task OnCultureChangedAsync()
+    => Dispatcher.InvokeAsync(ShowTitle).Task;
+
+private void ShowTitle()
+    => Title = _locale.WithCulture(_cultureState.Culture, _cultureState.UICulture)["Forma Example"];
+```
+
+A MAUI application on Windows keeps a native window's caption, which the taskbar shows, in the system's ANSI code
+page. A character the code page lacks shows there as a question mark, while the title bar MAUI draws shows the title
+whole.
+
+### 5. Keep the reader's culture
+
+Keep the culture in the application's settings. Apply it before the first web view opens, since the culture state
+starts from the culture in force as it is first resolved:
+
+<!-- example: examples/Forma.Examples.Wpf/CultureSettings.cs -->
+```csharp
+CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo(culture);
+CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo(uiCulture);
+```
+
+Save it each time the state notifies:
+
+<!-- example: examples/Forma.Examples.Wpf/CultureSettings.cs -->
+```csharp
+var cultureState = services.GetRequiredService<ICultureState>();
+cultureState.Subscribe(() =>
+{
+    Directory.CreateDirectory(Path.GetDirectoryName(SettingsFile)!);
+    File.WriteAllLines(SettingsFile, [cultureState.Culture.Name, cultureState.UICulture.Name]);
+```
+
+A MAUI application keeps it in `Preferences` instead. The switch persists nothing itself, and a cookie policy is
+rejected, since no request reaches a server to read one.
+
+### A culture per web view
+
+An application whose native windows each show a culture of their own declares it as it registers:
+
+```csharp
+services.AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent);
+```
+
+Each web view then holds a culture state and a switch of its own. A switch in one web view, or under culture routing
+a navigation to another culture's address, changes that web view's components, its document and its address alone.
+A native window opens a web view in a culture by its `StartPath`, `/he/orders`.
+
+The process's and the threads' cultures are shared by every web view, so they stay the application's to set:
+
+- A component of the application's own formats through its web view's `ICultureState`, and reads its strings
+  through a locale bound to it, `factory.Create(typeof(Orders), cultureState)`.
+- Native code switches one web view through that web view's services, `webView.TryDispatchAsync(services => ...)`.
+
+### The application's own strings
+
+The application's own strings sit beside its types: `.locales/he.json` beside `MainWindow`, and
+`Components/.locales/he.json` beside its components. Its root `.locales` folder holds a folder for each assembly
+whose strings it rewords. The build embeds them all in the application's assembly, so an application MAUI packages
+reads them with no folder beside it.
+
+## What the registration does
+
+`AddFormaUIServer()` registers the services the components use, through `AddFormaUI()`:
+
+- the toast and confirmation dialog services;
+- the status badge catalog;
+- the HTML sanitizer;
+- the culture state;
+- the input router that dispatches keyboard shortcuts.
+
+Beside them it registers what an interactive server circuit needs, which keeps the culture and the document's
+language in step with each circuit.
+
+**A host replaces any service by registering its own first.** Each service is registered only where nothing is
+registered for it yet.
+
+**The calls can come in any order.** The registration adds no stand-in for what the platform or a package supplies:
+logging, the JS runtime, the string locale factory `AddJsonLocalization()` registers, or an artwork pack's
+providers.
+
+**Options** are passed to `AddFormaUIServer(options => ...)`:
+
+| Option | What it sets | Documented by |
+|--------|--------------|---------------|
+| `InputRouting` | Application-wide shortcuts, as `new InputRouterOptions { ... }` | [`Forma.Framework.Input`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Input/README.md) |
+| `CultureSwitchPolicy` | Whether a culture switch also writes request localization's culture cookie | [`Forma.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Server/README.md) |
+| `CultureArrangement` | How the page treats a WebAssembly client's culture | [WebAssembly components](#webassembly-components) |
+
+**`FormaPageHead`** writes the character set, viewport, title, base address and icon, links Forma's stylesheets, and
+renders the framework's `ResourcePreloader`, `ImportMap` and `HeadOutlet`:
+
+- Its child content renders after Forma's stylesheets, so the host's styles win.
+- A page's `PageTitle` still sets the title.
+- `PreloadAssets="false"` leaves out the `ResourcePreloader`, which serves a WebAssembly render mode.
 
 ## More packages
 
@@ -690,10 +822,10 @@ Each package's README covers installing, registering and using it.
 ## Contributing
 
 Forma is developed at [github.com/FormaUI/Forma](https://github.com/FormaUI/Forma).
-[`CLAUDE.md`](https://github.com/FormaUI/Forma/blob/main/CLAUDE.md) sets out the working rules and
-the verification gate a change passes, and
-[`docs/repository-structure.md`](https://github.com/FormaUI/Forma/blob/main/docs/repository-structure.md)
-the solution's layout and its build commands.
+[`CLAUDE.md`](https://github.com/FormaUI/Forma/blob/main/CLAUDE.md) sets out the working rules and the verification
+gate a change passes, and
+[`docs/repository-structure.md`](https://github.com/FormaUI/Forma/blob/main/docs/repository-structure.md) the
+solution's layout and its build commands.
 
 ## License
 
