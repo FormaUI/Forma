@@ -9,6 +9,10 @@ using static Forma.Blazor.Browser.Tests.ComponentChecks;
 /// <summary>Values a reader can make larger than a circuit message, through each channel they take to .NET, and the actions that read them, in every runtime under Blazor's default hub limit.</summary>
 public sealed class TransferTests
 {
+    // A save of megabytes answers once the value has reached .NET in pieces, an answer the check waits for as it waits
+    // for a script's.
+    private static readonly LocatorAssertionsToHaveTextOptions Saved = new() { Timeout = 30_000 };
+
     // A value as the check page writes it: its length and the start of its SHA-256.
     private static string Describe(string value)
         => $"{value.Length}:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)))[..16]}";
@@ -29,7 +33,7 @@ public sealed class TransferTests
             await page.Locator("#forma-save").ClickAsync();
 
             // Assert
-            await Assertions.Expect(page.Locator("#forma-notes-saved")).ToHaveTextAsync(Describe(notes));
+            await Assertions.Expect(page.Locator("#forma-notes-saved")).ToHaveTextAsync(Describe(notes), Saved);
             await Assertions.Expect(page.Locator("#saves")).ToHaveTextAsync("1");
         }
 
@@ -67,7 +71,7 @@ public sealed class TransferTests
             await page.Locator("#forma-save").ClickAsync();
 
             // Assert
-            await Assertions.Expect(page.Locator("#forma-body-saved")).ToHaveTextAsync(Describe($"<p>{new string('x', Length)}</p>"));
+            await Assertions.Expect(page.Locator("#forma-body-saved")).ToHaveTextAsync(Describe($"<p>{new string('x', Length)}</p>"), Saved);
         }
 
         [Theory]
@@ -85,7 +89,7 @@ public sealed class TransferTests
             await page.Locator("#host-name").PressAsync("Enter");
 
             // Assert
-            await Assertions.Expect(page.Locator("#host-saved")).ToHaveTextAsync($"Ada {Describe(notes)}");
+            await Assertions.Expect(page.Locator("#host-saved")).ToHaveTextAsync($"Ada {Describe(notes)}", Saved);
             await Assertions.Expect(page.Locator("#saves")).ToHaveTextAsync("1");
         }
 
