@@ -5,6 +5,16 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.4/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.3`
+
+*Unreleased*
+
+- Every labeled field centers its label, while the label rests in the box, on the box itself, and so does what sits
+  over the box, such as `FormaPasswordBox`'s reveal toggle. Inside a form, where a field keeps room for a message
+  beneath the box, they sat at its bottom edge.
+- `FormaField` takes `FooterContent`, the content beneath its box and ahead of its messages, such as
+  `FormaPasswordBox`'s strength meter.
+
 ## `1.0.0-preview.2`
 
 *November 6, 2026*

@@ -3,7 +3,8 @@
    The label, required marker and validation messages around an input
    element the wrapping component renders, reached with ::deep, spaced from
    its neighbors by the layout that holds it, with one message line's room
-   beneath the element wherever it shows a form's messages.
+   beneath the element wherever it shows a form's messages. The element and
+   its label share a box, which what overlays the element is placed in.
    ============================================================ */
 
 /* ---------- wrapper ---------- */
@@ -12,6 +13,10 @@
     --forma-field-label-offset: var(--space-1);
     --forma-field-padding-block-start: calc(var(--forma-field-label-offset) + var(--font-size-xs) * var(--line-height-target));
     --forma-field-padding-block-end: var(--space-1);
+}
+
+/* ---------- box ---------- */
+.forma-field-box {
     position: relative;
 }
 
@@ -87,12 +92,12 @@
 
 /* Above and Inline: a static label ahead of the element, placed first by order so the markup
    keeps the floating modes' sibling selector. */
-.forma-field-label-above {
+.forma-field-label-above .forma-field-box {
     display: flex;
     flex-direction: column;
 }
 
-.forma-field-label-inline {
+.forma-field-label-inline .forma-field-box {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -125,11 +130,6 @@
     .forma-field-label-above ::deep .forma-field-input {
         min-block-size: var(--target-size-touch);
     }
-}
-
-/* Breaks the messages below the row. */
-.forma-field-label-inline .forma-field-messages {
-    flex-basis: 100%;
 }
 
 /* ---------- required asterisk ---------- */

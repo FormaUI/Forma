@@ -30,6 +30,9 @@ public sealed partial class FormaField : FormaElementBase
     /// <remarks>An element carrying the forma-field-input class takes the field's box, with the label floating over its value.</remarks>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
+    /// <summary>The content beneath the element, ahead of the validation messages, such as a password's strength.</summary>
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+
     /// <summary>The model field whose validation messages render beneath the element.</summary>
     [Parameter] public FieldIdentifier? Field { get; set; }
 

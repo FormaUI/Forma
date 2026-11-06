@@ -15,7 +15,7 @@
                 </FormaField>);
 
             // Assert
-            var children = cut.Find(".forma-field").Children;
+            var children = cut.Find(".forma-field-box").Children;
             Assert.Equal("INPUT", children[0].TagName);
             Assert.Equal("LABEL", children[1].TagName);
         }
@@ -229,9 +229,39 @@
             // Assert
             var children = cut.Find(".forma-field").Children;
             Assert.Multiple(
-                () => Assert.Equal("LABEL", children[1].TagName),
-                () => Assert.Contains("forma-field-messages", children[2].ClassList),
+                () => Assert.Contains("forma-field-box", children[0].ClassList),
+                () => Assert.Equal("LABEL", children[0].LastElementChild?.TagName),
+                () => Assert.Contains("forma-field-messages", children[1].ClassList),
                 () => Assert.Equal(["Required", "Too short"], cut.FindAll(".forma-field-message").Select(message => message.TextContent)));
+        }
+
+        [Fact]
+        public async Task Should_render_the_footer_content_beneath_the_box_and_ahead_of_the_messages()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(
+                @<FakeFormHost EditContext="editContext">
+                    <FormaField Label="Name" TargetId="fld-1" Field="@FieldIdentifier.Create(() => model.Text)">
+                        <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                        <FooterContent><p class="footer">Strong</p></FooterContent>
+                    </FormaField>
+                </FakeFormHost>);
+
+            // Act
+            var messages = new ValidationMessageStore(editContext);
+            messages.Add(FieldIdentifier.Create(() => model.Text), "Required");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
+
+            // Assert
+            var children = cut.Find(".forma-field").Children;
+            Assert.Multiple(
+                () => Assert.Contains("forma-field-box", children[0].ClassList),
+                () => Assert.Contains("footer", children[1].ClassList),
+                () => Assert.Contains("forma-field-messages", children[2].ClassList),
+                () => Assert.Empty(children[0].QuerySelectorAll(".footer")));
         }
 
         [Fact]
