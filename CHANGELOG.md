@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.3`
 
-*Unreleased*
+*November 7, 2026*
 
 - Every labeled field centers its label, while the label rests in the box, on the box itself, and so does what sits
   over the box, such as `FormaPasswordBox`'s reveal toggle. Inside a form, where a field keeps room for a message

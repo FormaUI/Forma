@@ -7,7 +7,7 @@
 | Measure | Now |
 | --- | --- |
 | Components | 66 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
-| Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview.2`, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed |
+| Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview.3`, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
 The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto, renders them statically, and drives them in Blazor Hybrid's web view on Windows. It passes locally on Windows and in CI on Linux and Windows.
