@@ -13,6 +13,6 @@ Every commit on `dev`, `candidate` and `main` carries a verified signature. `mai
 receives it from `candidate` alone, so a pull request into `main` from any other branch fails its promotion check
 until its base is changed to `dev`.
 
-[Versioning](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.4/README.md) sets out the rules every FormaUI project follows for its branches, commits and
+[Versioning](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/README.md) sets out the rules every FormaUI project follows for its branches, commits and
 releases, [the repository's structure](docs/repository-structure.md) the build and the checks, and
 [the verification design](docs/verification-design.md#branches-and-promotion) when each check runs.

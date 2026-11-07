@@ -108,9 +108,9 @@ failed, so a fix to a host's startup reaches both.
 
 ## Branches and promotion
 
-Forma follows [Versioning `1.0.0-preview.4`](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.4/README.md): its [branches](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.4/docs/branches.md)
+Forma follows [Versioning `1.0.0-preview.5`](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/README.md): its [branches](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/branches.md)
 set out how work lands on `dev` and how a candidate is stabilized on `candidate`, and its
-[releases](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.4/docs/releases.md) how `main` receives the candidate by promotion and how its tag is
+[releases](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md) how `main` receives the candidate by promotion and how its tag is
 released. What Forma adds is when each of its gates runs. The nightly run, which GitHub schedules from the default
 branch's workflow, resolves `dev` to one commit, which every job checks out, and a run dispatched by hand is a nightly
 run of the branch it's dispatched on.

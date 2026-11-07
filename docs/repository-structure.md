@@ -737,7 +737,7 @@ else run from a single file on the machine.
 
 Work lands on `dev`, and a release reaches `main` by promotion, as
 [the verification design](verification-design.md#branches-and-promotion) sets out after
-[Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.4/README.md).
+[Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/README.md).
 
 **Every package ships at the one version the root properties file holds.** A commit on `dev` sets it before the
 candidate's final run, and the examples read it from that file.
@@ -748,12 +748,14 @@ A release takes these steps:
    packages the browser step packed at that version, built the examples from and checked, as the artifact `packages`.
 2. **A pull request from `candidate` into `main`** carries the required `promotion` check, which `promotion.yml` runs
    through Versioning's promotion check.
-3. **`main` fast-forwards to the candidate's exact commit**, `git push origin <sha>:refs/heads/main`, which marks the
-   pull request merged.
-4. **The signed annotated tag `vX.Y.Z` on that commit starts `release.yml`.** It runs Versioning's release check and
-   attaches the candidate's packages to the tag's GitHub release with their digests. It then publishes those packages,
-   each after the packages it depends on, to nuget.org through its trusted publishing and to the organization's
-   GitHub feed.
+3. **The maintainer's release command promotes and tags the candidate.** Versioning's
+   [`commands/New-Release.ps1`](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/README.md#the-release-command),
+   run from a checkout of the Versioning release Forma follows, holds the release to the rules, signs the annotated
+   tag `vX.Y.Z` on the candidate's exact commit, and pushes `main` and the tag in one atomic push, which marks the pull
+   request merged.
+4. **The tag starts `release.yml`.** It runs Versioning's release check and attaches the candidate's packages to the
+   tag's GitHub release with their digests. It then publishes those packages, each after the packages it depends on,
+   to nuget.org through its trusted publishing and to the organization's GitHub feed.
 
 A publication that stops partway runs again for the same tag and publishes what the feeds lack, so a tag marks
 exactly the commit its packages were built from.

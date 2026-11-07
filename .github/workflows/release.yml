@@ -39,7 +39,7 @@ jobs:
 
       - name: Hold the tag to the release check
         id: check
-        uses: FormaUI/Versioning/actions/release-check@fa6f941871694adb8898c8263a22ec150eb2eef9 # v1.0.0-preview.4
+        uses: FormaUI/Versioning/actions/release-check@0e770610562fb2861eef0a9fc150dde09a5ef3c0 # v1.0.0-preview.5
         with:
           gate-workflow: full.yml
           packages-artifact: packages
@@ -51,7 +51,7 @@ jobs:
 
       - name: Attach the release's packages
         id: packages
-        uses: FormaUI/Versioning/actions/release-packages@fa6f941871694adb8898c8263a22ec150eb2eef9 # v1.0.0-preview.4
+        uses: FormaUI/Versioning/actions/release-packages@0e770610562fb2861eef0a9fc150dde09a5ef3c0 # v1.0.0-preview.5
         with:
           gate-run-id: ${{ steps.check.outputs.gate-run-id }}
           packages-artifact: packages
@@ -71,7 +71,7 @@ jobs:
           user: soyeyalon
 
       - name: Publish to nuget.org
-        uses: FormaUI/Versioning/actions/publish-packages@fa6f941871694adb8898c8263a22ec150eb2eef9 # v1.0.0-preview.4
+        uses: FormaUI/Versioning/actions/publish-packages@0e770610562fb2861eef0a9fc150dde09a5ef3c0 # v1.0.0-preview.5
         with:
           directory: ${{ steps.packages.outputs.directory }}
           nuget-source: https://api.nuget.org/v3/index.json
@@ -79,7 +79,7 @@ jobs:
 
       # The organization's feed takes no symbols packages.
       - name: Publish to the organization's GitHub feed
-        uses: FormaUI/Versioning/actions/publish-packages@fa6f941871694adb8898c8263a22ec150eb2eef9 # v1.0.0-preview.4
+        uses: FormaUI/Versioning/actions/publish-packages@0e770610562fb2861eef0a9fc150dde09a5ef3c0 # v1.0.0-preview.5
         with:
           directory: ${{ steps.packages.outputs.directory }}
           nuget-source: https://nuget.pkg.github.com/FormaUI/index.json

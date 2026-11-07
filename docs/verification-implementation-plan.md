@@ -50,7 +50,7 @@ commit. And the push that publishes a release stopped at a manual step.
    the change touches; the full gate in CI, nightly on `dev` and on every push to `candidate`; and locally for a
    change to shared interop, the component bases, the hosts or the build, and to reproduce a CI failure. The
    verifying skill, the working rules and the repository guide point to the design rather than restating it.
-7. **The release command.** Versioning ships one command a maintainer runs after asking for a release. It checks
+7. ✅ **The release command.** Versioning ships one command a maintainer runs after asking for a release. It checks
    the repository, the promotion pull request and the passing runs for the candidate's exact SHA, and holds the
    release to the release check before anything is pushed. It signs the tag locally and verifies the signature,
    then pushes `main` and the tag in one atomic push, and resumes a release that stopped partway. It runs from a
