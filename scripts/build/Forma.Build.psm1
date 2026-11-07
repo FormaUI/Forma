@@ -1865,7 +1865,8 @@ the platform named, in Release, which trims it as the platform's own build does,
 a trim warning there fails here. Each platform needs its workload, maui-android, maui-ios or maui-maccatalyst; iOS and Mac Catalyst
 build on a Mac alone, and iOS builds for the simulator, which needs no signing. Where adb reaches an Android device
 or emulator, the Android build is installed on it and the MAUI example's smoke check on Android drives its web
-view; where none is attached, the step says so and builds alone.
+view, writing its results to the browser output's mobile-results folder, which the step empties first; where none is
+attached, the step says so and builds alone.
 
 .PARAMETER Context
 The build context.
@@ -1889,6 +1890,7 @@ function Test-MobileExample {
     $example = Join-Path $examples 'Forma.Examples.Maui'
     $checks = $Context.AndroidChecks
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
+    $resultsOutput = Join-Path $Context.BrowserOutput 'mobile-results'
     $version = $Context.Version
     $platformName = $Platform.ToLowerInvariant()
     $workload = "maui-$platformName"
@@ -1940,9 +1942,16 @@ function Test-MobileExample {
         $build = Get-ChildItem -LiteralPath (Join-Path $example 'bin' 'Release') -Recurse -Filter '*-Signed.apk' | Sort-Object LastWriteTime | Select-Object -Last 1
         $previous = $env:FORMA_BROWSER_ANDROID
 
+        if (Test-Path -LiteralPath $resultsOutput) {
+            Remove-Item -LiteralPath $resultsOutput -Recurse -Force
+        }
+
+        $runResults = Join-Path $resultsOutput 'run-1'
+        $null = New-Item -ItemType Directory -Path $runResults -Force
+
         try {
             $env:FORMA_BROWSER_ANDROID = $build.FullName
-            dotnet run --project $checks -c Release
+            dotnet run --project $checks -c Release -- -result-ctrf (Join-Path $runResults 'maui.json')
         }
         finally {
             $env:FORMA_BROWSER_ANDROID = $previous

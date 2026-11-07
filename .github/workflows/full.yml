@@ -2,8 +2,10 @@
 # WebView2 among Windows', and Android's checks on an emulator, the components in its web view and the MAUI example.
 # A push to candidate runs it on the candidate, whose run a promotion to main and a release require to have passed for
 # the exact commit, and whose Linux gate keeps the packages it packed and checked, which the release publishes as they
-# are; the nightly run on dev surfaces an integration regression before a candidate is selected. The gates themselves
-# live in the repository, not here: this file installs a toolchain and invokes the scripts.
+# are; the nightly run on dev surfaces an integration regression before a candidate is selected, checking one commit and
+# running the browser check three times on Linux and on Windows so a check that fails sometimes shows as a rate, and a
+# run dispatched by hand is a nightly run of the branch it's dispatched on. Every job keeps its checks' results. The gates
+# themselves live in the repository, not here: this file installs a toolchain and invokes the scripts.
 name: Full
 
 on:
@@ -23,8 +25,41 @@ permissions:
   contents: read
 
 jobs:
+  # The commit every job checks, resolved once so a branch moving during the run changes nothing: the candidate's for a
+  # push, dev's tip for the nightly run, which GitHub schedules from the default branch's workflow, and the dispatched
+  # branch's tip for a run dispatched by hand.
+  commit:
+    name: commit
+    runs-on: ubuntu-latest
+
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+
+    steps:
+      - name: Resolve the commit every job checks
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD: ${{ github.sha }}
+        run: |
+          if [ "$EVENT" = schedule ]; then
+            sha=$(gh api "repos/$REPOSITORY/commits/dev" --jq .sha)
+          else
+            sha=$HEAD
+          fi
+          if ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "No commit resolved: '$sha'"
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Checking $sha" >> "$GITHUB_STEP_SUMMARY"
+
+  # The gate on each platform, and on the nightly run two more runs of its browser check, on runners of their own.
   gate:
-    name: gate (${{ matrix.os }})
+    name: ${{ matrix.attempt == 1 && format('gate ({0})', matrix.os) || format('browser ({0}, run {1})', matrix.os, matrix.attempt) }}
+    needs: commit
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -32,12 +67,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        attempt: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '[1, 2, 3]' || '[1]') }}
 
     steps:
-      # The nightly run checks dev, which GitHub schedules from the default branch's workflow.
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event_name == 'schedule' && 'dev' || '' }}
+          ref: ${{ needs.commit.outputs.sha }}
 
       # The pinned SDK, read from the pin itself rather than restated here where it could fall behind it.
       - name: Set up .NET
@@ -95,11 +130,26 @@ jobs:
           "FORMA_WEBVIEW_POLICY_PORTS=$(($ports.Keys | ForEach-Object { "$_=$($ports[$_])" }) -join ';')" >> $env:GITHUB_ENV
 
       - name: Run the gate
+        if: matrix.attempt == 1
         run: pwsh ./build.ps1
+
+      - name: Run the browser check again
+        if: matrix.attempt != 1
+        run: pwsh ./scripts/build/browser.ps1
+
+      # Each run's results, read beside the other runs' by the nightly report.
+      - name: Keep the checks' results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: checks-gate-${{ runner.os == 'Windows' && 'windows' || 'linux' }}-${{ matrix.attempt }}
+          path: artifacts/browser/results
+          if-no-files-found: ignore
+          retention-days: 14
 
       # The packages the candidate's gate packed, built the examples from and checked, kept for its release.
       - name: Keep the candidate's packages
-        if: github.event_name == 'push' && runner.os == 'Linux'
+        if: github.event_name == 'push' && runner.os == 'Linux' && matrix.attempt == 1
         uses: actions/upload-artifact@v7
         with:
           name: packages
@@ -112,6 +162,7 @@ jobs:
   # need the Xcode their workloads name, which no hosted Mac carries yet, so `mobile.ps1` builds them on a Mac by hand.
   mobile:
     name: mobile (${{ matrix.platform }})
+    needs: commit
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
 
@@ -124,10 +175,9 @@ jobs:
             workload: maui-android
 
     steps:
-      # The nightly run checks dev, which GitHub schedules from the default branch's workflow.
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event_name == 'schedule' && 'dev' || '' }}
+          ref: ${{ needs.commit.outputs.sha }}
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
@@ -153,18 +203,27 @@ jobs:
         if: failure() && matrix.platform == 'Android'
         uses: ./.github/actions/android-emulator-state
 
+      - name: Keep the checks' results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: checks-mobile-linux-1
+          path: artifacts/browser/mobile-results
+          if-no-files-found: ignore
+          retention-days: 14
+
   # Every component in an Android web view, the Android check host's on an emulator, beside the browser check's
   # browsers and WebView2.
   android:
     name: components on Android
+    needs: commit
     runs-on: ubuntu-latest
     timeout-minutes: 150
 
     steps:
-      # The nightly run checks dev, which GitHub schedules from the default branch's workflow.
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event_name == 'schedule' && 'dev' || '' }}
+          ref: ${{ needs.commit.outputs.sha }}
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
@@ -187,3 +246,12 @@ jobs:
       - name: Describe the Android emulator
         if: failure()
         uses: ./.github/actions/android-emulator-state
+
+      - name: Keep the checks' results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: checks-android-linux-1
+          path: artifacts/browser/results
+          if-no-files-found: ignore
+          retention-days: 14
