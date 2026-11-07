@@ -148,6 +148,11 @@ jobs:
       - name: Build the MAUI example host for the platform
         run: pwsh ./scripts/build/mobile.ps1 -Platform ${{ matrix.platform }}
 
+      # A device that went unreachable is described where it happened: its process, the runner's memory and its log.
+      - name: Describe the Android emulator
+        if: failure() && matrix.platform == 'Android'
+        uses: ./.github/actions/android-emulator-state
+
   # Every component in an Android web view, the Android check host's on an emulator, beside the browser check's
   # browsers and WebView2.
   android:
@@ -177,3 +182,8 @@ jobs:
 
       - name: Check the components on Android
         run: pwsh ./scripts/build/browser.ps1 -Android
+
+      # A device that went unreachable is described where it happened: its process, the runner's memory and its log.
+      - name: Describe the Android emulator
+        if: failure()
+        uses: ./.github/actions/android-emulator-state

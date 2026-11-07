@@ -1437,15 +1437,16 @@ Reads the checks' results files and gives each check's executions and failures a
 
 .DESCRIPTION
 Each file is the CTRF report a run of checks wrote. A check is named by its full name, a theory's row among it, so each
-row is a check of its own. A run that skipped a check didn't execute it, so it counts in neither number. A check that
-failed keeps the first line of its first failure's message.
+row is a check of its own. A run that skipped a check didn't execute it, so it counts in neither number, and a check an
+Android device adb couldn't reach interrupted didn't run either, so it counts as interrupted rather than failed. A check
+that failed keeps the first line of its first failure's message.
 
 .PARAMETER Path
 The results files.
 
 .OUTPUTS
 Each check's name, the runtime it names where it names one, how many runs executed it, how many of them it failed in,
-and its first failure's message.
+how many its device interrupted, and its first failure's message.
 #>
 function Get-CheckRate {
     [CmdletBinding()]
@@ -1463,7 +1464,7 @@ function Get-CheckRate {
             if (-not $checks.Contains($name)) {
                 $labels = $test.PSObject.Properties['labels']
                 $runtime = if ($labels -and $labels.Value -and $labels.Value.PSObject.Properties['Runtime']) { [string]$labels.Value.Runtime } else { $null }
-                $checks[$name] = [pscustomobject]@{ Name = $name; Runtime = $runtime; Executed = 0; Failed = 0; Error = $null }
+                $checks[$name] = [pscustomobject]@{ Name = $name; Runtime = $runtime; Executed = 0; Failed = 0; Interrupted = 0; Error = $null }
             }
 
             $check = $checks[$name]
@@ -1472,12 +1473,19 @@ function Get-CheckRate {
                 $check.Executed++
             }
             elseif ($test.status -eq 'failed') {
+                $message = $test.PSObject.Properties['message']
+                $text = if ($message -and $message.Value) { "$($message.Value)" } else { '' }
+
+                if ($text.Contains('AndroidDeviceUnreachableException', [System.StringComparison]::Ordinal)) {
+                    $check.Interrupted++
+                    continue
+                }
+
                 $check.Executed++
                 $check.Failed++
 
                 if (-not $check.Error) {
-                    $message = $test.PSObject.Properties['message']
-                    $check.Error = if ($message -and $message.Value) { (@("$($message.Value)" -split '\r?\n' | Where-Object { $_.Trim() }) | Select-Object -First 1).Trim() } else { 'no message' }
+                    $check.Error = if ($text) { (@($text -split '\r?\n' | Where-Object { $_.Trim() }) | Select-Object -First 1).Trim() } else { 'no message' }
                 }
             }
         }
@@ -1805,6 +1813,7 @@ function Test-BrowserCheck {
             })
         $rates = @(& $getCheckRate -Path @(Get-ChildItem -LiteralPath $resultsOutput -Recurse -Filter '*.json' | ForEach-Object { $_.FullName }))
         $failing = @($rates | Where-Object { $_.Failed -gt 0 } | Sort-Object -Property @{ Expression = 'Failed'; Descending = $true }, 'Name')
+        $interrupted = @($rates | Where-Object { $_.Interrupted -gt 0 } | Sort-Object -Property 'Name')
         $executed = [int]($rates | Measure-Object -Property Executed -Sum).Sum
 
         Write-Host ''
@@ -1821,12 +1830,20 @@ function Test-BrowserCheck {
                 Write-Host ("            {0}" -f $check.Error)
             }
         }
-        elseif ($executed -gt 0) {
+        if ($interrupted.Count -gt 0) {
+            Write-Host '   not run, the Android device unreachable, in how many runs:'
+
+            foreach ($check in $interrupted) {
+                Write-Host ("   {0,3}        {1}" -f $check.Interrupted, $check.Name)
+            }
+        }
+
+        if ($failing.Count -eq 0 -and $interrupted.Count -eq 0 -and $executed -gt 0) {
             Write-Host ("   every check passed in every run that ran it, {0} {1} across {2} {3}" -f $executed,
                 $(if ($executed -eq 1) { 'execution' } else { 'executions' }), $runs, $(if ($runs -eq 1) { 'run' } else { 'runs' }))
         }
 
-        if ($executed -eq 0 -and $missing.Count -eq 0) {
+        if ($executed -eq 0 -and $missing.Count -eq 0 -and $interrupted.Count -eq 0) {
             throw "No check ran: every check $(if ($Filter) { "the filter $Filter selects" } else { 'the step holds' }) is one this machine skips."
         }
 

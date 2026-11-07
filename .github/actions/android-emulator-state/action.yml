@@ -1,0 +1,26 @@
+name: Describe the Android emulator
+description: Writes what the emulator adb reaches and the runner it runs on look like, so a job whose device went unreachable says why.
+
+runs:
+  using: composite
+  steps:
+    - name: Describe the Android emulator
+      shell: bash
+      run: |
+        adb="$ANDROID_HOME/platform-tools/adb"
+        echo '::group::The devices adb lists'
+        "$adb" devices -l || true
+        echo '::endgroup::'
+        echo '::group::The emulator process'
+        pgrep -a -f 'qemu-system|emulator' || echo 'No emulator process is running.'
+        echo '::endgroup::'
+        echo "::group::The runner's memory and disk"
+        free -m || true
+        df -h "$RUNNER_TEMP" "$HOME" || true
+        echo '::endgroup::'
+        echo '::group::What the kernel killed'
+        sudo dmesg 2>/dev/null | grep -i -E 'out of memory|killed process|oom-kill' | tail -n 20 || echo 'Nothing.'
+        echo '::endgroup::'
+        echo "::group::The emulator's log"
+        tail -n 120 "$RUNNER_TEMP/emulator.log" 2>/dev/null || echo 'No emulator log.'
+        echo '::endgroup::'

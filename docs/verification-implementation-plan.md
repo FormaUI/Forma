@@ -23,9 +23,12 @@ commit. And the push that publishes a release stopped at a manual step.
    finishes every run it was asked for, ends with each failing check and how many of its runs failed it, and
    fails if any check failed. A filter that selects no check fails the step. Gate: the build's own cases, and a
    filtered, repeated run of a known intermittent check that reports its rate.
-2. **The Android harness says when the device is unreachable.** A launch adb refuses because the device is offline
+2. ✅ **The Android harness says when the device is unreachable.** A launch adb refuses because the device is offline
    throws an error of its own, carrying the device's state, so a report counts the checks it interrupted as not
-   run rather than failed. Gate: its unit cases.
+   run rather than failed. A job whose emulator went unreachable describes it: its process, the runner's memory, what
+   the kernel killed and its log. Gate: the support assembly has no test project of its own, so a call through the
+   harness with no device attached was made instead, which threw the error with adb's device list, and the build's
+   rate case counts an interrupted check apart.
 3. **The nightly run checks one commit, three times.** The nightly run resolves `dev` to one SHA first, and every
    job checks out that SHA. The browser step runs three times on Linux and on Windows: once in each gate, and
    twice more in jobs of their own. Every run's results are kept. The design's gate table says so. Gate: a

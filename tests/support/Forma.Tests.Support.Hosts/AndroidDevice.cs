@@ -3,6 +3,7 @@ namespace Forma.Tests.Hosts;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 /// <summary>The Android device or emulator adb reaches: installing a build, starting an application afresh, forwarding its web view's DevTools socket to a port of this machine, and reading what the device shows and logs.</summary>
 /// <remarks>
@@ -11,7 +12,7 @@ using System.Net.Sockets;
 /// the Android SDK <c>ANDROID_HOME</c> names, or the one on the path, and the device the one it reaches by default or
 /// <c>ANDROID_SERIAL</c> names.
 /// </remarks>
-public static class AndroidDevice
+public static partial class AndroidDevice
 {
     private const string ShareSheetPackage = "com.android.intentresolver";
     private const int LaunchAttempts = 3;
@@ -20,7 +21,7 @@ public static class AndroidDevice
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromMinutes(5);
     private static readonly SemaphoreSlim Installing = new(1, 1);
     private static readonly HashSet<string> Installed = new(StringComparer.Ordinal);
-    private static readonly Lazy<Task<bool>> Attached = new(async () => (await RunAdbAsync("get-state").ConfigureAwait(false)).Trim() == "device");
+    private static readonly Lazy<Task<bool>> Attached = new(async () => (await RunAdbCoreAsync("get-state").ConfigureAwait(false)).Trim() == "device");
 
     /// <summary>Whether adb reached a device or emulator as the run first asked.</summary>
     /// <returns><see langword="true"/> where one was attached.</returns>
@@ -112,7 +113,23 @@ public static class AndroidDevice
     /// <param name="arguments">The arguments.</param>
     /// <returns>What adb wrote, its output followed by its errors.</returns>
     /// <remarks>A command still running after <see cref="CommandTimeout"/> is stopped with every process it started, and throws.</remarks>
+    /// <exception cref="AndroidDeviceUnreachableException">adb couldn't reach the device, which the exception says with the devices adb lists.</exception>
     public static async Task<string> RunAdbAsync(params string[] arguments)
+    {
+        var written = await RunAdbCoreAsync(arguments).ConfigureAwait(false);
+
+        if (UnreachableDevice().Match(written) is { Success: true } unreachable)
+        {
+            var devices = await RunAdbCoreAsync("devices", "-l").ConfigureAwait(false);
+
+            throw new AndroidDeviceUnreachableException($"adb {string.Join(' ', arguments)} couldn't reach the device: {unreachable.Groups["reason"].Value}. adb lists:{Environment.NewLine}{devices.Trim()}");
+        }
+
+        return written;
+    }
+
+    // Runs adb and returns what it wrote, whatever it says about the device.
+    private static async Task<string> RunAdbCoreAsync(params string[] arguments)
     {
         var tools = Environment.GetEnvironmentVariable("ANDROID_HOME") is { Length: > 0 } home ? Path.Combine(home, "platform-tools") : null;
         var name = OperatingSystem.IsWindows() ? "adb.exe" : "adb";
@@ -188,6 +205,10 @@ public static class AndroidDevice
 
         throw new TimeoutException($"{package}'s web view opened no DevTools socket within {StartTimeout.TotalMinutes} minutes.");
     }
+
+    // What adb says where the device it addresses can't be reached, as each of its versions words it.
+    [GeneratedRegex(@"^(?:adb(?:\.exe)?|error): (?<reason>device offline|no devices/emulators found|device '[^']*' not found|device unauthorized|device still authorizing)", RegexOptions.Multiline)]
+    private static partial Regex UnreachableDevice();
 
     private static int GetFreePort()
     {

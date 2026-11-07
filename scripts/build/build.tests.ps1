@@ -270,7 +270,8 @@ try {
   { "name": "Checks.A", "status": "failed", "message": "Expected 1 but was 2" },
   { "name": "Checks.Skipped", "status": "skipped" },
   { "name": "Checks.Row(runtime: \"server\")", "status": "passed", "labels": { "Runtime": "server" } },
-  { "name": "Checks.Row(runtime: \"webview\")", "status": "failed", "labels": { "Runtime": "webview" }, "message": "A later message" }
+  { "name": "Checks.Row(runtime: \"webview\")", "status": "failed", "labels": { "Runtime": "webview" }, "message": "A later message" },
+  { "name": "Checks.Row(runtime: \"android\")", "status": "failed", "labels": { "Runtime": "android" }, "message": "Forma.Tests.Hosts.AndroidDeviceUnreachableException : adb shell couldn't reach the device: device offline." }
 ] } }
 '@
     Set-Content -LiteralPath (Join-Path $rateFolder 'first.json') -Value $first
@@ -288,18 +289,20 @@ try {
     $skipped = $byName['Checks.Skipped']
     $server = $byName['Checks.Row(runtime: "server")']
     $webView = $byName['Checks.Row(runtime: "webview")']
+    $android = $byName['Checks.Row(runtime: "android")']
 
     $wrong = @(
-        if ($rates.Count -ne 4) { "the runs read as $($rates.Count) checks rather than 4" }
+        if ($rates.Count -ne 5) { "the runs read as $($rates.Count) checks rather than 5" }
         if (-not $a -or $a.Executed -ne 2 -or $a.Failed -ne 1 -or $a.Error -ne 'Expected 1 but was 2') { 'a check that passed and then failed did not read as one failure in two runs with its message' }
         if (-not $a -or $null -ne $a.Runtime) { 'a test whose results carry no runtime read as naming one' }
         if (-not $skipped -or $skipped.Executed -ne 0 -or $skipped.Failed -ne 0) { 'a skipped check counted as run' }
         if (-not $server -or $server.Executed -ne 2 -or $server.Failed -ne 0 -or $server.Runtime -ne 'server') { "a theory's row that passed did not read as its own check, with its runtime" }
         if (-not $webView -or $webView.Failed -ne 2 -or $webView.Error -ne 'The page never rendered.') { "a theory's failing row did not keep the first line of its first failure" }
+        if (-not $android -or $android.Interrupted -ne 1 -or $android.Executed -ne 0 -or $android.Failed -ne 0) { 'a check its unreachable device interrupted counted as run or failed' }
     )
 
     $checkRates = [pscustomobject]@{
-        Name     = "each check's rate is read across the runs, a theory's rows apart and a skipped check counted in neither"
+        Name     = "each check's rate is read across the runs, a theory's rows apart, a skipped check counted in neither and an interrupted one apart"
         Passed   = $wrong.Count -eq 0
         Problems = $wrong
         Output   = ''
@@ -307,7 +310,7 @@ try {
 }
 catch {
     $checkRates = [pscustomobject]@{
-        Name     = "each check's rate is read across the runs, a theory's rows apart and a skipped check counted in neither"
+        Name     = "each check's rate is read across the runs, a theory's rows apart, a skipped check counted in neither and an interrupted one apart"
         Passed   = $false
         Problems = @("the check could not be made: $($_.Exception.Message)")
         Output   = ''
