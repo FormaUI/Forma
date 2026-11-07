@@ -1,10 +1,8 @@
 @namespace Forma.Blazor.Components.Page
-@using Microsoft.AspNetCore.Components.Web
 @using Forma.Blazor.Components
 @inherits FormaComponentBase
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>@Title</title>
 <base href="@DocumentBase" />
 @* The cultures the server rendered the page in, and how a switch persists, which the page's culture coordinator reads. *@
 <meta name="forma-culture" @attributes="MarkerAttributes" />
@@ -24,5 +22,5 @@
     <ResourcePreloader />
 }
 <ImportMap />
-@* Last, so a page's own PageTitle and HeadContent override what is set above. *@
-<HeadOutlet />
+@* Last, so a page's own HeadContent follows what is set above. *@
+@RenderHeadOutlet()

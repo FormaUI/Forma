@@ -5,6 +5,15 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.4/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.4`
+
+*Unreleased*
+
+- `FormaPageHead` writes the document's one title: the one a page sets with `PageTitle`, or `Title` where the page
+  sets none. It wrote `Title` ahead of the page's own, and browsers and search engines showed that one.
+- `FormaPageHead` takes `PageRenderMode`, the render mode a host gives `Routes`, which its head outlet renders in, so
+  a page's title and head content follow the page once it's interactive.
+
 ## `1.0.0-preview.3`
 
 *November 7, 2026*

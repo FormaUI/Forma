@@ -1,5 +1,8 @@
 namespace Forma.Blazor;
 
+using System.Diagnostics.CodeAnalysis;
+
+using Forma.Blazor.Components.Page;
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Culture;
@@ -31,6 +34,8 @@ public static class ServiceCollectionExtensions
     /// throws at its first call where no JS runtime is. A value the browser sends a component through the transfer accepts the
     /// <see cref="JSTransferOptions"/> a host registers, and <see cref="JSTransferOptions.Default"/>'s 16 MiB where it registers none.
     /// </remarks>
+    // The head outlet a server's page head starts in the page's runtime, which no client's own code names.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FormaHeadOutlet))]
     public static IServiceCollection AddFormaUI(this IServiceCollection services, InputRouterOptions? inputRouting = null)
     {
         ArgumentNullException.ThrowIfNull(services);

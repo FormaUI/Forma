@@ -58,11 +58,17 @@ builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangem
 `FormaPageHead`, in `Forma.Blazor.Components.Page`, renders the head a host's `App.razor` needs: the
 character set, viewport, title, base address and icon, the culture marker and switch policy the page's
 culture coordinator starts from, Forma's stylesheets in their cascade order, and the framework's
-`ResourcePreloader`, `ImportMap` and `HeadOutlet`. A coordinated prerendered page needs it: without the
-marker the coordinator can't start, and no circuit registers with it. Its base address is the application's
-root, or `BaseHref` where the host gives one; where culture routing is registered, it writes the base routing
-gives the page's culture and publishes the address policy, and refuses a `BaseHref`. The
-[library's README](https://github.com/FormaUI/Forma/blob/main/README.md) shows it in place.
+`ResourcePreloader`, `ImportMap` and `HeadOutlet`.
+
+The document has one title: the one a page sets with `PageTitle`, or `Title` where the page sets none. The
+`HeadOutlet` renders in `PageRenderMode`, the render mode the host gives `Routes`, so a page's title follows the
+page wherever it renders.
+
+A coordinated prerendered page needs `FormaPageHead`: without the marker the coordinator can't start, and no
+circuit registers with it. Its base address is the application's root, or `BaseHref` where the host gives one;
+where culture routing is registered, it writes the base routing gives the page's culture and publishes the address
+policy, and refuses a `BaseHref`. The [library's README](https://github.com/FormaUI/Forma/blob/main/README.md)
+shows it in place.
 
 ## License
 

@@ -4,6 +4,7 @@
 @using Forma.Framework.Culture.Browser.Interop
 @using Forma.Framework.Culture.Router
 @using Forma.Tests.Shared
+@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 
 @code {
@@ -27,7 +28,7 @@
     public sealed class Component
     {
         [Fact]
-        public void Should_render_the_title_given()
+        public void Should_write_its_title_as_the_documents_only_title_where_the_page_sets_none()
         {
             // Arrange
             using var ctx = new FormaPageHeadTests();
@@ -36,7 +37,36 @@
             var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
 
             // Assert
-            Assert.Equal("Admin Console", cut.Find("title").TextContent);
+            Assert.Equal(["Admin Console"], cut.FindAll("title").Select(title => title.TextContent));
+        }
+
+        [Fact]
+        public void Should_write_the_title_a_page_sets_as_the_documents_only_title()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Act — a page rendered after the head, setting a title of its own
+            ctx.Render(@<PageTitle>Orders · Admin Console</PageTitle>);
+
+            // Assert
+            Assert.Equal(["Orders · Admin Console"], cut.FindAll("title").Select(title => title.TextContent));
+        }
+
+        [Fact]
+        public void Should_write_its_title_again_once_the_pages_own_leaves()
+        {
+            // Arrange — a page rendered after the head, setting a title of its own
+            using var ctx = new FormaPageHeadTests();
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+            var page = ctx.Render<LayoutView>(parameters => parameters.AddChildContent(@<PageTitle>Orders · Admin Console</PageTitle>));
+
+            // Act — the page's content replaced by content that sets none
+            page.Render(parameters => parameters.AddChildContent("<p>Untitled</p>"));
+
+            // Assert
+            Assert.Equal(["Admin Console"], cut.FindAll("title").Select(title => title.TextContent));
         }
 
         [Fact]

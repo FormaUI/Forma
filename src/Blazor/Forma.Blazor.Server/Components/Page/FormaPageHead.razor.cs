@@ -7,17 +7,26 @@ using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>The document head a Forma host needs: its character set, viewport, title, base address, the culture marker and switch policy the page's culture coordinator reads, Forma's own stylesheets, and the framework's asset and head outlets.</summary>
 /// <remarks>
+/// <para>
+/// The head outlet writes the document's one title, the one a page sets or <see cref="Title"/> where it sets none, and runs
+/// in <see cref="PageRenderMode"/>, so a page's title and head content follow the page wherever it renders.
+/// </para>
+/// <para>
 /// Where culture routing is registered, the page's base is the one routing gives the page's pair and the policy is the
 /// address policy, publishing routing's mapping; otherwise the base is the host's, or the application's root where the
 /// host gives none.
+/// </para>
 /// </remarks>
 public sealed partial class FormaPageHead : FormaComponentBase
 {
     private ICultureAddressing? _addressing;
     private CultureRouteMap? _map;
 
-    /// <summary>The document title.</summary>
+    /// <summary>The document's title where a page sets none of its own.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = default!;
+
+    /// <summary>The render mode the page's content renders in, which the head outlet takes too.</summary>
+    [Parameter] public IComponentRenderMode? PageRenderMode { get; set; }
 
     /// <summary>The base address every relative URL resolves against, which culture routing gives where it is registered.</summary>
     [Parameter] public string? BaseHref { get; set; }
@@ -72,6 +81,15 @@ public sealed partial class FormaPageHead : FormaComponentBase
 
         _map = _addressing?.GetMap(Root);
     }
+
+    // The head outlet with the title, in the page's render mode.
+    private RenderFragment RenderHeadOutlet() => builder =>
+    {
+        builder.OpenComponent<FormaHeadOutlet>(0);
+        builder.AddComponentParameter(1, nameof(FormaHeadOutlet.Title), Title);
+        builder.AddComponentRenderMode(PageRenderMode);
+        builder.CloseComponent();
+    };
 
     private static Dictionary<string, object> ToAttributes(IReadOnlyDictionary<string, string> attributes)
         => attributes.ToDictionary(attribute => attribute.Key, attribute => (object)attribute.Value);

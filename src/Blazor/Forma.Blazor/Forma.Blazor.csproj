@@ -11,6 +11,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Forma.Blazor.Server" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Forms" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />

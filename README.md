@@ -100,6 +100,15 @@ does](#what-the-registration-does) sets out what is registered and how to config
 in its child content, which renders after Forma's, so your styles win. Setting `dir` from the culture lays every
 component out right to left in a right-to-left language.
 
+`Title` is the document's title wherever a page sets none of its own with `PageTitle`. Where `Routes` takes a render
+mode, give `FormaPageHead` the same one, so a page's title follows the page once it's interactive:
+
+```razor
+<FormaPageHead Title="My App" PageRenderMode="InteractiveServer" />
+...
+<Routes @rendermode="InteractiveServer" />
+```
+
 **3. Map the components** with the Interactive Server render mode:
 
 ```csharp
@@ -797,7 +806,9 @@ providers.
 renders the framework's `ResourcePreloader`, `ImportMap` and `HeadOutlet`:
 
 - Its child content renders after Forma's stylesheets, so the host's styles win.
-- A page's `PageTitle` still sets the title.
+- The document has one title: the one a page sets with `PageTitle`, or `Title` where the page sets none.
+- `PageRenderMode` is the render mode `Routes` takes. The `HeadOutlet` takes it too, so a page's title and
+  `HeadContent` follow the page wherever it renders.
 - `PreloadAssets="false"` leaves out the `ResourcePreloader`, which serves a WebAssembly render mode.
 
 ## More packages

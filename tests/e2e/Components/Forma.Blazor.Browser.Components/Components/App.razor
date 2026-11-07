@@ -2,18 +2,21 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-    <FormaPageHead Title="Forma Component Checks" IconHref="data:,">
+    <FormaPageHead Title="Forma Component Checks" IconHref="data:," PageRenderMode="PageRenderMode">
         <link rel="stylesheet" href="@Assets["Forma.Blazor.Browser.Components.styles.css"]" />
     </FormaPageHead>
 </head>
 <body>
-    <Routes @rendermode="RenderModeOf(HttpContext?.Request.Path.Value)" />
+    <Routes @rendermode="PageRenderMode" />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>
 
 @code {
     [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private IComponentRenderMode? PageRenderMode
+        => RenderModeOf(HttpContext?.Request.Path.Value);
 
     private static IComponentRenderMode? RenderModeOf(string? path)
         => path?.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() switch
