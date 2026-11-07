@@ -72,6 +72,11 @@ $cases = @(
     @{ Name = 'a visible browser check says so'; Script = 'browser.ps1'; Arguments = @('-Visible'); Expect = @('-- browser', 'in a visible browser window') }
     @{ Name = 'browser runs the examples smoke checks ahead of the browser check'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser', "then run the examples' smoke checks and drive them in a browser") }
     @{ Name = 'a browser check on Android builds the Android check host and drives the components on the device'; Script = 'browser.ps1'; Arguments = @('-Android'); Expect = @('-- browser', 'dotnet build the Android check host', 'then the components on the attached Android device in a run of their own') }
+    @{ Name = 'a filtered browser check says what it is filtered by'; Script = 'browser.ps1'; Arguments = @('-Filter', 'FullyQualifiedName~ComposerTests'); Expect = @('-- browser', 'filtered by FullyQualifiedName~ComposerTests') }
+    @{ Name = 'a repeated browser check says how many times'; Script = 'browser.ps1'; Arguments = @('-Times', '3'); Expect = @('-- browser', '3 times') }
+    @{ Name = 'a browser check under load names the projects loading it'; Script = 'browser.ps1'; Arguments = @('-LoadWith', 'Blazor.Explorer'); Expect = @('under load from Forma.Blazor.Explorer.BUnit.Tests') }
+    @{ Name = 'a browser check under load from a project that matches nothing is refused'; Script = 'browser.ps1'; Arguments = @('-LoadWith', 'NoSuchProject'); Fails = $true; Expect = @('No test project matches') }
+    @{ Name = 'a browser check repeated no times is refused'; Script = 'browser.ps1'; Arguments = @('-Times', '0'); Fails = $true }
     if ($IsWindows) {
         @{ Name = 'the browser check publishes the WebView check host on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('and the WebView check host') }
         @{ Name = 'the browser check publishes the Blazor Hybrid example hosts on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('the Blazor Hybrid ones among them') }
@@ -243,6 +248,73 @@ catch {
 }
 finally {
     Remove-Item -LiteralPath $tree -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# The rates are read off the results files each run writes, so they are read for real here off two runs' files made
+# for the purpose: a check that passed and then failed, one this machine skipped in both, a theory's two rows, one
+# failing with a message over several lines, and a test whose results carry no runtime.
+$rateFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-rates-$([guid]::NewGuid().ToString('N'))"
+
+try {
+    $null = New-Item -ItemType Directory -Path $rateFolder
+    $first = @'
+{ "results": { "summary": { "tests": 4 }, "tests": [
+  { "name": "Checks.A", "status": "passed" },
+  { "name": "Checks.Skipped", "status": "skipped" },
+  { "name": "Checks.Row(runtime: \"server\")", "status": "passed", "labels": { "Runtime": "server" } },
+  { "name": "Checks.Row(runtime: \"webview\")", "status": "failed", "labels": { "Runtime": "webview" }, "message": "\n  The page never rendered.\nCall log:" }
+] } }
+'@
+    $second = @'
+{ "results": { "summary": { "tests": 4 }, "tests": [
+  { "name": "Checks.A", "status": "failed", "message": "Expected 1 but was 2" },
+  { "name": "Checks.Skipped", "status": "skipped" },
+  { "name": "Checks.Row(runtime: \"server\")", "status": "passed", "labels": { "Runtime": "server" } },
+  { "name": "Checks.Row(runtime: \"webview\")", "status": "failed", "labels": { "Runtime": "webview" }, "message": "A later message" }
+] } }
+'@
+    Set-Content -LiteralPath (Join-Path $rateFolder 'first.json') -Value $first
+    Set-Content -LiteralPath (Join-Path $rateFolder 'second.json') -Value $second
+
+    $module = Get-Module Forma.Build
+    $rates = @(& $module { param($Path) Get-CheckRate -Path $Path } @((Join-Path $rateFolder 'first.json'), (Join-Path $rateFolder 'second.json')))
+    $byName = @{}
+
+    foreach ($rate in $rates) {
+        $byName[$rate.Name] = $rate
+    }
+
+    $a = $byName['Checks.A']
+    $skipped = $byName['Checks.Skipped']
+    $server = $byName['Checks.Row(runtime: "server")']
+    $webView = $byName['Checks.Row(runtime: "webview")']
+
+    $wrong = @(
+        if ($rates.Count -ne 4) { "the runs read as $($rates.Count) checks rather than 4" }
+        if (-not $a -or $a.Executed -ne 2 -or $a.Failed -ne 1 -or $a.Error -ne 'Expected 1 but was 2') { 'a check that passed and then failed did not read as one failure in two runs with its message' }
+        if (-not $a -or $null -ne $a.Runtime) { 'a test whose results carry no runtime read as naming one' }
+        if (-not $skipped -or $skipped.Executed -ne 0 -or $skipped.Failed -ne 0) { 'a skipped check counted as run' }
+        if (-not $server -or $server.Executed -ne 2 -or $server.Failed -ne 0 -or $server.Runtime -ne 'server') { "a theory's row that passed did not read as its own check, with its runtime" }
+        if (-not $webView -or $webView.Failed -ne 2 -or $webView.Error -ne 'The page never rendered.') { "a theory's failing row did not keep the first line of its first failure" }
+    )
+
+    $checkRates = [pscustomobject]@{
+        Name     = "each check's rate is read across the runs, a theory's rows apart and a skipped check counted in neither"
+        Passed   = $wrong.Count -eq 0
+        Problems = $wrong
+        Output   = ''
+    }
+}
+catch {
+    $checkRates = [pscustomobject]@{
+        Name     = "each check's rate is read across the runs, a theory's rows apart and a skipped check counted in neither"
+        Passed   = $false
+        Problems = @("the check could not be made: $($_.Exception.Message)")
+        Output   = ''
+    }
+}
+finally {
+    Remove-Item -LiteralPath $rateFolder -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 # Clearing a wait log deletes files, and the summary is read off what the waits wrote, so both run for real
@@ -503,6 +575,13 @@ finally {
     Remove-Item -LiteralPath $exampleFolder -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+$mark = if ($checkRates.Passed) { 'ok  ' } else { 'FAIL' }
+Write-Host ("  {0} {1}" -f $mark, $checkRates.Name)
+
+foreach ($problem in $checkRates.Problems) {
+    Write-Host ("        {0}" -f $problem)
+}
+
 $mark = if ($examplePackages.Passed) { 'ok  ' } else { 'FAIL' }
 Write-Host ("  {0} {1}" -f $mark, $examplePackages.Name)
 
@@ -538,7 +617,7 @@ foreach ($problem in $guard.Problems) {
     Write-Host ("        {0}" -f $problem)
 }
 
-$all = @($results) + $guard + $cleaning + $waitLog + $progress + $packageFiles + $examplePackages
+$all = @($results) + $guard + $cleaning + $waitLog + $progress + $packageFiles + $examplePackages + $checkRates
 $failed = @($all | Where-Object { -not $_.Passed })
 
 Write-Host ''

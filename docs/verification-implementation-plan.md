@@ -18,7 +18,7 @@ commit. And the push that publishes a release stopped at a manual step.
 
 ## Steps
 
-1. **The browser step repeats, filters and reports.** `browser.ps1` takes `-Filter`, with the filter syntax
+1. ✅ **The browser step repeats, filters and reports.** `browser.ps1` takes `-Filter`, with the filter syntax
    `test.ps1` takes, `-Times` and `-LoadWith`, as `test.ps1` does. Each run writes a results file. The step
    finishes every run it was asked for, ends with each failing check and how many of its runs failed it, and
    fails if any check failed. A filter that selects no check fails the step. Gate: the build's own cases, and a

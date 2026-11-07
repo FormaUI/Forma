@@ -628,6 +628,16 @@ workflow runs it on Linux for Android.
 | `-LoadWith` | Runs other test projects over and over beside it, to load the machine |
 | `-WaitLog` | Names the folder the waits a component test makes with diagnostics record themselves in, cleared of an earlier run's records first and read back as the waits that needed time |
 
+**`browser.ps1` narrows and repeats the browser check the same way.** Each run writes its results to
+`artifacts/browser/results`, and the step ends by listing each check that failed, with how many of the runs that
+ran it failed it:
+
+| Parameter | Does |
+|-----------|------|
+| `-Filter` | Narrows the examples' smoke checks and the browser checks, as `dotnet test` takes a filter; a filter that selects no check is refused before anything is published |
+| `-Times` | Repeats the checks on the hosts published once, continuing past a failure |
+| `-LoadWith` | Runs test projects over and over beside the checks, from the output already on disk, to load the machine |
+
 **Each script is a wrapper.** What an action does lives in `scripts/build/Forma.Build.psm1`, so the gate and a single
 action can't disagree about what a build is.
 

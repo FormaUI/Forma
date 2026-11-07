@@ -39,6 +39,9 @@ the narrower loops live under `scripts/build/`.
   sometimes with `-Times`, which continues past a failure so the failure shows as a rate; add `-LoadWith`
   to run other test projects beside it, so a race a busy machine exposes shows here too, and `-WaitLog`
   to list which waits made with diagnostics found their state only after waiting for it.
+- Do hunt a browser check that fails sometimes with `browser.ps1 -Filter`, `-Times` and `-LoadWith`, which
+  publish the hosts once and end with each failing check's rate, and run the check with the others it runs
+  beside in the gate, since some checks fail only after their neighbors have run.
 - Do reach for `clean.ps1 -All` when the disk is filling: a program run from a single .cs file is built
   into the system temp directory and left there on every edit and rename.
 - Do name a build script for its action in lowercase, since it is a command someone types; the functions

@@ -669,6 +669,8 @@ function Test-Solution {
     $clearWaitLog = ${function:Clear-WaitLog}
     $summarizeWaitLog = ${function:Get-WaitLogSummary}
     $writeTestProgress = ${function:Write-TestProgress}
+    $startTestLoad = ${function:Start-TestLoad}
+    $stopTestLoad = ${function:Stop-TestLoad}
     $projectCount = if ($Fast) { @(Get-FastTestProject -Context $Context).Count } else { Get-TestProjectCount -Target $target }
 
     # The testing platform runs a solution or one project, and prints each failed test with its message and stack as it
@@ -724,38 +726,7 @@ function Test-Solution {
                 $env:FORMA_WAIT_LOG = $waitLogPath
             }
 
-            # Each loading project runs until the runs are over, its output discarded, and without the wait
-            # log, so its own waits stay out of the records.
-            $loaders = @(foreach ($project in $load) {
-                    Write-Host ("   loading the machine with {0}" -f [System.IO.Path]::GetFileNameWithoutExtension($project))
-
-                    $job = Start-ThreadJob -ArgumentList $project, $stopLoad.Token -ScriptBlock {
-                        param($project, $token)
-
-                        $output = New-TemporaryFile
-                        $errors = New-TemporaryFile
-                        $ran = 0
-                        $failed = 0
-
-                        try {
-                            while (-not $token.IsCancellationRequested) {
-                                $process = Start-Process -FilePath 'dotnet' -ArgumentList 'test', '--project', $project, '--no-build', '--nologo', '-v:q', '--no-progress', '--no-ansi' -Environment @{ FORMA_WAIT_LOG = $null } -NoNewWindow -Wait -PassThru -RedirectStandardOutput $output -RedirectStandardError $errors
-                                $ran++
-
-                                if ($process.ExitCode -ne 0) {
-                                    $failed++
-                                }
-                            }
-                        }
-                        finally {
-                            Remove-Item -LiteralPath $output, $errors -ErrorAction SilentlyContinue
-                        }
-
-                        [pscustomobject]@{ Ran = $ran; Failed = $failed }
-                    }
-
-                    [pscustomobject]@{ Name = [System.IO.Path]::GetFileNameWithoutExtension($project); Job = $job }
-                })
+            $loaders = @(& $startTestLoad -Project $load -Token $stopLoad.Token)
 
             for ($run = 1; $run -le $runs; $run++) {
                 if ($runs -gt 1) {
@@ -784,31 +755,7 @@ function Test-Solution {
         finally {
             $env:FORMA_WAIT_LOG = $previousWaitLog
 
-            # A loading project finishes the run it is in rather than being cut off, which would leave its
-            # test host running.
-            if ($loaders.Count -gt 0) {
-                Write-Host ''
-                Write-Host '   waiting for the load to finish the runs it is in'
-                $stopLoad.Cancel()
-
-                # A loader that could not run leaves the runs without the load they were asked to have, so it
-                # is said and fails the step rather than passing as though the machine had been busy.
-                foreach ($loader in $loaders) {
-                    $loadErrors = $null
-                    $report = $loader.Job | Wait-Job | Receive-Job -ErrorVariable loadErrors -ErrorAction SilentlyContinue
-                    Remove-Job -Job $loader.Job -Force
-
-                    if ($loadErrors -or -not $report) {
-                        $loadFailed = $true
-                        Write-Host ("   {0} could not load the machine: {1}" -f $loader.Name, (@($loadErrors) | Select-Object -First 1))
-                    }
-                    else {
-                        Write-Host ("   {0} ran {1} {2} beside the runs, {3} of them failing" -f $loader.Name, $report.Ran,
-                            $(if ($report.Ran -eq 1) { 'time' } else { 'times' }), $report.Failed)
-                    }
-                }
-            }
-
+            $loadFailed = -not (& $stopTestLoad -Loader $loaders -Source $stopLoad)
             $stopLoad.Dispose()
         }
 
@@ -980,6 +927,115 @@ function Write-TestProgress {
             }
         }
     }
+}
+
+<#
+.SYNOPSIS
+Loads the machine with test projects run over and over until the token is cancelled.
+
+.DESCRIPTION
+Each project runs on a thread of its own from the output already on disk, its output discarded and without the wait
+log, so its own waits stay out of the records.
+
+.PARAMETER Project
+The test projects that load the machine.
+
+.PARAMETER Token
+Cancelled once the load is to end.
+
+.OUTPUTS
+A loader for each project, for Stop-TestLoad.
+#>
+function Start-TestLoad {
+    [CmdletBinding()]
+    [OutputType([psobject])]
+    param(
+        [AllowEmptyCollection()] [string[]] $Project = @(),
+        [Parameter(Mandatory)] [System.Threading.CancellationToken] $Token
+    )
+
+    foreach ($path in $Project) {
+        Write-Host ("   loading the machine with {0}" -f [System.IO.Path]::GetFileNameWithoutExtension($path))
+
+        $job = Start-ThreadJob -ArgumentList $path, $Token -ScriptBlock {
+            param($project, $token)
+
+            $output = New-TemporaryFile
+            $errors = New-TemporaryFile
+            $ran = 0
+            $failed = 0
+
+            try {
+                while (-not $token.IsCancellationRequested) {
+                    $process = Start-Process -FilePath 'dotnet' -ArgumentList 'test', '--project', $project, '--no-build', '--nologo', '-v:q', '--no-progress', '--no-ansi' -Environment @{ FORMA_WAIT_LOG = $null } -NoNewWindow -Wait -PassThru -RedirectStandardOutput $output -RedirectStandardError $errors
+                    $ran++
+
+                    if ($process.ExitCode -ne 0) {
+                        $failed++
+                    }
+                }
+            }
+            finally {
+                Remove-Item -LiteralPath $output, $errors -ErrorAction SilentlyContinue
+            }
+
+            [pscustomobject]@{ Ran = $ran; Failed = $failed }
+        }
+
+        [pscustomobject]@{ Name = [System.IO.Path]::GetFileNameWithoutExtension($path); Job = $job }
+    }
+}
+
+<#
+.SYNOPSIS
+Ends the load Start-TestLoad began and says what each project did.
+
+.DESCRIPTION
+Each project finishes the run it is in rather than being cut off, which would leave its test host running. A project
+that could not run leaves the runs without the load they were asked to have, which the result says.
+
+.PARAMETER Loader
+The loaders Start-TestLoad returned.
+
+.PARAMETER Source
+The source of the token the load was started with.
+
+.OUTPUTS
+Whether every project loaded the machine.
+#>
+function Stop-TestLoad {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [AllowEmptyCollection()] [object[]] $Loader = @(),
+        [Parameter(Mandatory)] [System.Threading.CancellationTokenSource] $Source
+    )
+
+    if ($Loader.Count -eq 0) {
+        return $true
+    }
+
+    Write-Host ''
+    Write-Host '   waiting for the load to finish the runs it is in'
+    $Source.Cancel()
+    $loaded = $true
+
+    foreach ($each in $Loader) {
+        $loadErrors = $null
+        $report = $each.Job | Wait-Job | Receive-Job -ErrorVariable loadErrors -ErrorAction SilentlyContinue
+        Remove-Job -Job $each.Job -Force
+
+        if ($loadErrors -or -not $report) {
+            $loaded = $false
+            Write-Host ("   {0} could not load the machine: {1}" -f $each.Name, (@($loadErrors) | Select-Object -First 1))
+        }
+        else {
+            Write-Host ("   {0} ran {1} {2} beside the runs, {3} of them failing" -f $each.Name, $report.Ran,
+                $(if ($report.Ran -eq 1) { 'time' } else { 'times' }), $report.Failed)
+        }
+    }
+
+    $loaded
 }
 
 <#
@@ -1377,6 +1433,61 @@ function Clear-ExamplePackage {
 
 <#
 .SYNOPSIS
+Reads the checks' results files and gives each check's executions and failures across them.
+
+.DESCRIPTION
+Each file is the CTRF report a run of checks wrote. A check is named by its full name, a theory's row among it, so each
+row is a check of its own. A run that skipped a check didn't execute it, so it counts in neither number. A check that
+failed keeps the first line of its first failure's message.
+
+.PARAMETER Path
+The results files.
+
+.OUTPUTS
+Each check's name, the runtime it names where it names one, how many runs executed it, how many of them it failed in,
+and its first failure's message.
+#>
+function Get-CheckRate {
+    [CmdletBinding()]
+    [OutputType([psobject])]
+    param([AllowEmptyCollection()] [string[]] $Path = @())
+
+    $checks = [ordered]@{}
+
+    foreach ($file in $Path) {
+        $report = Get-Content -LiteralPath $file -Raw | ConvertFrom-Json -Depth 64
+
+        foreach ($test in @($report.results.tests)) {
+            $name = [string]$test.name
+
+            if (-not $checks.Contains($name)) {
+                $labels = $test.PSObject.Properties['labels']
+                $runtime = if ($labels -and $labels.Value -and $labels.Value.PSObject.Properties['Runtime']) { [string]$labels.Value.Runtime } else { $null }
+                $checks[$name] = [pscustomobject]@{ Name = $name; Runtime = $runtime; Executed = 0; Failed = 0; Error = $null }
+            }
+
+            $check = $checks[$name]
+
+            if ($test.status -eq 'passed') {
+                $check.Executed++
+            }
+            elseif ($test.status -eq 'failed') {
+                $check.Executed++
+                $check.Failed++
+
+                if (-not $check.Error) {
+                    $message = $test.PSObject.Properties['message']
+                    $check.Error = if ($message -and $message.Value) { (@("$($message.Value)" -split '\r?\n' | Where-Object { $_.Trim() }) | Select-Object -First 1).Trim() } else { 'no message' }
+                }
+            }
+        }
+    }
+
+    $checks.Values
+}
+
+<#
+.SYNOPSIS
 Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, runs the examples' smoke checks and drives them.
 
 .DESCRIPTION
@@ -1397,6 +1508,11 @@ the device or emulator adb reaches, which must be attached, after the rest of th
 their own. The browser is headless unless -Visible asks for a
 browser window to watch, which also brings the WebView check host's native windows into sight.
 
+Each run writes its results to a folder of its own under the browser output's results folder, which the step
+empties first. The step finishes every run it was asked for and then lists each check that failed, with how many
+of the runs that ran it failed it and its first error, so a check that fails sometimes shows as a rate. It fails if
+any check failed, if a run wrote no results, or if the checks it selects are none this machine runs.
+
 .PARAMETER Context
 The build context.
 
@@ -1405,6 +1521,17 @@ Also checks every component in the Android check host's web view, on the attache
 
 .PARAMETER Visible
 Opens a visible browser window rather than a headless one.
+
+.PARAMETER Filter
+Narrows the examples' smoke checks and the browser checks, as dotnet test takes a filter. A filter that selects no
+check is refused before anything is published.
+
+.PARAMETER Times
+Repeats the checks on the hosts published once, continuing past a failure.
+
+.PARAMETER LoadWith
+Test projects run over and over while the checks run, from the output already on disk, so a check that fails only
+on a busy machine fails here too.
 
 .OUTPUTS
 The step's result.
@@ -1415,7 +1542,10 @@ function Test-BrowserCheck {
     param(
         [Parameter(Mandatory)] [psobject] $Context,
         [switch] $Android,
-        [switch] $Visible
+        [switch] $Visible,
+        [string] $Filter,
+        [ValidateRange(1, 10000)] [int] $Times = 1,
+        [string[]] $LoadWith
     )
 
     $hostProject = $Context.BrowserHost
@@ -1442,6 +1572,12 @@ function Test-BrowserCheck {
     $version = $Context.Version
     $solution = $Context.Solution
     $isVisible = $Visible.IsPresent
+    $resultsOutput = Join-Path $Context.BrowserOutput 'results'
+    $load = @(foreach ($name in $LoadWith) { Resolve-TestProject -Context $Context -Name $name })
+    $startTestLoad = ${function:Start-TestLoad}
+    $stopTestLoad = ${function:Stop-TestLoad}
+    $getCheckRate = ${function:Get-CheckRate}
+    $runs = $Times
     $description = 'dotnet publish the host, the full client and the components host'
 
     if ($isWebViewPublished) {
@@ -1468,6 +1604,18 @@ function Test-BrowserCheck {
         $description += ', and then the components on the attached Android device in a run of their own'
     }
 
+    if ($runs -gt 1) {
+        $description += ", $runs times"
+    }
+
+    if ($Filter) {
+        $description += ", filtered by $Filter"
+    }
+
+    if ($load.Count -gt 0) {
+        $description += ", under load from $(($load | ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) }) -join ', ')"
+    }
+
     Invoke-BuildStep -Name 'browser' -Target $checks -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         # Asked first, since the step publishes for minutes before it reaches the MAUI example host.
         if ($isWebViewPublished -and -not (dotnet workload list | Select-String -Pattern '^\s*maui-windows\s' -Quiet)) {
@@ -1481,6 +1629,27 @@ function Test-BrowserCheck {
 
             if (-not (& $testAndroidDevice)) {
                 throw 'No Android device or emulator is attached for -Android to check the components on.'
+            }
+        }
+
+        # The checks a filter selects are listed before anything is published, so a filter that selects none is refused
+        # at once rather than after minutes of publishing.
+        if ($Filter) {
+            $selected = 0
+
+            foreach ($project in @($exampleChecks, $checks)) {
+                $listed = @(dotnet run --project $project -c Release -- -list tests -preEnumerateTheories -filterVSTest $Filter 2>&1 | ForEach-Object { "$_" })
+
+                if ($LASTEXITCODE -ne 0) {
+                    $listed | Write-Host
+                    return
+                }
+
+                $selected += @($listed | Where-Object { $_.Trim() -and $_ -notmatch '^xUnit\.net ' }).Count
+            }
+
+            if ($selected -eq 0) {
+                throw "The filter $Filter selects no check among the examples' smoke checks and the browser checks."
             }
         }
 
@@ -1552,38 +1721,66 @@ function Test-BrowserCheck {
 
         $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Components = $env:FORMA_BROWSER_COMPONENTS; WebView = $env:FORMA_BROWSER_WEBVIEW; Android = $env:FORMA_BROWSER_ANDROID_CHECKS; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
 
+        if (Test-Path -LiteralPath $resultsOutput) {
+            Remove-Item -LiteralPath $resultsOutput -Recurse -Force
+        }
+
+        # A filter narrows each run, and the Android checks' trait is folded into it, since the runner takes a filter or
+        # traits, not both.
+        $smokeArguments = if ($Filter) { @('-preEnumerateTheories', '-filterVSTest', $Filter) } else { @() }
+        $checkArguments = if ($Filter) { @('-preEnumerateTheories', '-filterVSTest', $Filter) } else { @() }
+        $androidArguments = @()
+
+        if ($isAndroid) {
+            $checkArguments = if ($Filter) { @('-preEnumerateTheories', '-filterVSTest', "($Filter)&(Runtime!=android)") } else { @('-preEnumerateTheories', '-trait-', 'Runtime=android') }
+            $androidArguments = if ($Filter) { @('-preEnumerateTheories', '-filterVSTest', "($Filter)&(Runtime=android)") } else { @('-preEnumerateTheories', '-trait', 'Runtime=android') }
+        }
+
+        $failedRuns = [System.Collections.Generic.List[int]]::new()
+        $stopLoad = [System.Threading.CancellationTokenSource]::new()
+        $loaders = @()
+        $loadFailed = $false
+
         try {
             $env:FORMA_BROWSER_HOST = $hostOutput
             $env:FORMA_BROWSER_FULL = $fullOutput
             $env:FORMA_BROWSER_COMPONENTS = $componentsOutput
             $env:FORMA_BROWSER_WEBVIEW = if ($isWebViewPublished) { $webViewOutput } else { $null }
-            $env:FORMA_BROWSER_ANDROID_CHECKS = $null
             $env:FORMA_BROWSER_EXAMPLES = $examplesOutput
             $env:FORMA_BROWSER_VISIBLE = if ($isVisible) { '1' } else { $null }
+            $loaders = @(& $startTestLoad -Project $load -Token $stopLoad.Token)
 
-            # The examples' smoke checks run first, since a host that doesn't start fails every check after it; every
-            # run reports, and any one failing fails the step.
-            dotnet run --project $exampleChecks -c Release
-            $exitCode = $LASTEXITCODE
-
-            if (-not $isAndroid) {
-                dotnet run --project $checks -c Release
-            }
-            else {
-                # The Android checks run after the rest, in a run of their own, since an emulator sharing the machine
-                # with the other checks falls behind the waits of its own.
-                dotnet run --project $checks -c Release -- -preEnumerateTheories -trait- 'Runtime=android'
-
-                if ($exitCode -eq 0) {
-                    $exitCode = $LASTEXITCODE
+            for ($run = 1; $run -le $runs; $run++) {
+                if ($runs -gt 1) {
+                    Write-Host ''
+                    Write-Host ("   run {0} of {1}" -f $run, $runs)
                 }
 
-                $env:FORMA_BROWSER_ANDROID_CHECKS = $androidBuild
-                dotnet run --project $checks -c Release --no-build -- -preEnumerateTheories -trait 'Runtime=android'
-            }
+                $runResults = Join-Path $resultsOutput "run-$run"
+                $null = New-Item -ItemType Directory -Path $runResults -Force
+                $build = @(if ($run -gt 1) { '--no-build' })
+                $env:FORMA_BROWSER_ANDROID_CHECKS = $null
+                $isFailed = $false
 
-            if ($exitCode -ne 0) {
-                $global:LASTEXITCODE = $exitCode
+                # The examples' smoke checks run first, since a host that doesn't start fails every check after it; every
+                # run reports, and any one failing fails the step.
+                dotnet run --project $exampleChecks -c Release @build -- @smokeArguments -result-ctrf (Join-Path $runResults 'examples.json')
+                $isFailed = $LASTEXITCODE -ne 0
+
+                dotnet run --project $checks -c Release @build -- @checkArguments -result-ctrf (Join-Path $runResults 'checks.json')
+                $isFailed = $isFailed -or $LASTEXITCODE -ne 0
+
+                # The Android checks run after the rest, in a run of their own, since an emulator sharing the machine
+                # with the other checks falls behind the waits of its own.
+                if ($isAndroid) {
+                    $env:FORMA_BROWSER_ANDROID_CHECKS = $androidBuild
+                    dotnet run --project $checks -c Release --no-build -- @androidArguments -result-ctrf (Join-Path $runResults 'android.json')
+                    $isFailed = $isFailed -or $LASTEXITCODE -ne 0
+                }
+
+                if ($isFailed) {
+                    $failedRuns.Add($run)
+                }
             }
         }
         finally {
@@ -1594,7 +1791,48 @@ function Test-BrowserCheck {
             $env:FORMA_BROWSER_ANDROID_CHECKS = $previous.Android
             $env:FORMA_BROWSER_EXAMPLES = $previous.Examples
             $env:FORMA_BROWSER_VISIBLE = $previous.Visible
+            $loadFailed = -not (& $stopTestLoad -Loader $loaders -Source $stopLoad)
+            $stopLoad.Dispose()
         }
+
+        # Every run's results are read together, so a check that failed in some runs and passed in others shows as the
+        # share of the runs that ran it, and a check this machine skips counts in none.
+        $expected = @('examples.json', 'checks.json') + $(if ($isAndroid) { @('android.json') } else { @() })
+        $missing = @(for ($run = 1; $run -le $runs; $run++) {
+                foreach ($name in $expected) {
+                    if (-not (Test-Path -LiteralPath (Join-Path $resultsOutput "run-$run" $name))) { "run $run wrote no $name" }
+                }
+            })
+        $rates = @(& $getCheckRate -Path @(Get-ChildItem -LiteralPath $resultsOutput -Recurse -Filter '*.json' | ForEach-Object { $_.FullName }))
+        $failing = @($rates | Where-Object { $_.Failed -gt 0 } | Sort-Object -Property @{ Expression = 'Failed'; Descending = $true }, 'Name')
+        $executed = [int]($rates | Measure-Object -Property Executed -Sum).Sum
+
+        Write-Host ''
+
+        foreach ($problem in $missing) {
+            Write-Host ("   {0}" -f $problem)
+        }
+
+        if ($failing.Count -gt 0) {
+            Write-Host '   failed, in how many of the runs that ran it:'
+
+            foreach ($check in $failing) {
+                Write-Host ("   {0,3} of {1,-3} {2}" -f $check.Failed, $check.Executed, $check.Name)
+                Write-Host ("            {0}" -f $check.Error)
+            }
+        }
+        elseif ($executed -gt 0) {
+            Write-Host ("   every check passed in every run that ran it, {0} {1} across {2} {3}" -f $executed,
+                $(if ($executed -eq 1) { 'execution' } else { 'executions' }), $runs, $(if ($runs -eq 1) { 'run' } else { 'runs' }))
+        }
+
+        if ($executed -eq 0 -and $missing.Count -eq 0) {
+            throw "No check ran: every check $(if ($Filter) { "the filter $Filter selects" } else { 'the step holds' }) is one this machine skips."
+        }
+
+        # Each run's code is kept so that every run happens, so the step's own outcome is set here rather than left to
+        # whichever run happened to be last.
+        $global:LASTEXITCODE = if ($failedRuns.Count -gt 0 -or $failing.Count -gt 0 -or $missing.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
     }.GetNewClosure()
 }
 
