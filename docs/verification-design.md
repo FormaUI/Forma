@@ -2,7 +2,8 @@
 
 Forma's code is checked by tests of five kinds, run by two gates. This design states what each kind proves,
 where its suites live and what they are named, where the helpers they share live, which gate runs what and
-when, and how a commit is promoted from the integrated work to a release.
+when, and how a commit is promoted from the integrated work to a release. The steps that bring the
+repository to it are in [the implementation plan](verification-implementation-plan.md).
 
 ## Kinds of test
 
