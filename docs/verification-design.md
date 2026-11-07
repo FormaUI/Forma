@@ -122,3 +122,10 @@ run of the branch it's dispatched on.
 | A push to `candidate` | The full gate on the candidate's SHA, packaging, integration, smoke, the browsers, WebView2 and Android's E2E included; its Linux gate keeps the packages it packed, built the examples from and checked. |
 | A pull request into `main` | Versioning's promotion check, the required check `promotion`. |
 | A release tag | Versioning's release check, then the candidate's packages attached to the tag's GitHub release and published from there to nuget.org and the organization's GitHub feed. |
+
+**The nightly run files what fails.** A last job reads every run's results together and opens or updates one issue
+for each failing check, labeled `nightly`. It's labeled `flaky` where the check passed in some runs of the commit and
+failed in others, and `regression` where it failed every run that ran it, unless an earlier night showed it
+intermittent. Each later night it fails comments on the issue with the commit, the machine, the runtime, its rate, its
+first error and the run. A check an unreachable Android device interrupted counts as not run, and the night's
+interrupted checks make one issue labeled `infrastructure`, as does a job that failed with no failing check of its own.

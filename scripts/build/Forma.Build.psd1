@@ -17,6 +17,7 @@
         'Build-Solution',
         'Build-TaskProgram',
         'Clear-BuildOutput',
+        'Get-CheckRate',
         'Get-PlatformCheck',
         'Invoke-Gate',
         'Test-BrowserCheck',

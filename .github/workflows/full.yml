@@ -137,6 +137,12 @@ jobs:
         if: matrix.attempt != 1
         run: pwsh ./scripts/build/browser.ps1
 
+      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too.
+      - name: Note the job's failure
+        if: failure()
+        shell: pwsh
+        run: New-Item -ItemType File -Force -Path 'artifacts/browser/results/job-failed' | Out-Null
+
       # Each run's results, read beside the other runs' by the nightly report.
       - name: Keep the checks' results
         if: always()
@@ -203,6 +209,12 @@ jobs:
         if: failure() && matrix.platform == 'Android'
         uses: ./.github/actions/android-emulator-state
 
+      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too.
+      - name: Note the job's failure
+        if: failure()
+        shell: pwsh
+        run: New-Item -ItemType File -Force -Path 'artifacts/browser/mobile-results/job-failed' | Out-Null
+
       - name: Keep the checks' results
         if: always()
         uses: actions/upload-artifact@v7
@@ -247,6 +259,12 @@ jobs:
         if: failure()
         uses: ./.github/actions/android-emulator-state
 
+      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too.
+      - name: Note the job's failure
+        if: failure()
+        shell: pwsh
+        run: New-Item -ItemType File -Force -Path 'artifacts/browser/results/job-failed' | Out-Null
+
       - name: Keep the checks' results
         if: always()
         uses: actions/upload-artifact@v7
@@ -255,3 +273,35 @@ jobs:
           path: artifacts/browser/results
           if-no-files-found: ignore
           retention-days: 14
+
+  # The nightly run's report, made whatever the jobs before it did: every run's results read together, each failing check
+  # filed as an issue, an unreachable device as one, and a job that failed outside its checks as one of its own.
+  report:
+    name: report
+    needs: [commit, gate, mobile, android]
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.commit.outputs.sha }}
+
+      - name: Gather the checks' results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: checks-*
+          path: results
+
+      - name: File what failed
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT: ${{ needs.commit.outputs.sha }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPOSITORY: ${{ github.repository }}
+        run: ./scripts/Update-CheckIssue.ps1 -Results results -Commit $env:COMMIT -Run $env:RUN -Repository $env:REPOSITORY

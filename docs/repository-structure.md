@@ -593,7 +593,7 @@ heading gives the time it took the last time it passed, kept under `artifacts/bu
 | Workflow | Runs | When |
 |----------|------|------|
 | `fast.yml` | The fast gate, on Linux | Every push but `main`'s and `candidate`'s, and every pull request into `dev` |
-| `full.yml` | The full gate on Linux and on Windows; the MAUI example's build and smoke check on Android, and the components in Android's web view, both on an emulator of 1280 by 800 points | Every push to `candidate`, and nightly on `dev` |
+| `full.yml` | The full gate on Linux and on Windows; the MAUI example's build and smoke check on Android, and the components in Android's web view, both on an emulator of 1280 by 800 points; on the nightly run, the browser check twice more on Linux and on Windows, and a report that files each failing check as an issue | Every push to `candidate`, nightly on `dev`, and a run dispatched by hand |
 
 The MAUI example's Apple builds, for iOS and Mac Catalyst, need a Mac whose Xcode is the one their workloads name,
 which no hosted Mac carries yet.
@@ -697,6 +697,10 @@ approved verb, as PowerShell requires of anything a module exports.
 **Task scripts.** Everything else in `scripts/` is a task script: PowerShell 7, cross-platform, named
 `Verb-Noun.ps1`, such as `Get-TwemojiPack.ps1`, `Build-GlyphPack.ps1` and `Update-PluralRules.ps1`. `BrandMarks.psm1`
 beside them is the module the brand-artwork scripts share.
+
+**`Update-CheckIssue.ps1`** is the nightly run's report, which CI runs: it reads every run's results and files each
+failing check as an issue, as [the verification design](verification-design.md#branches-and-promotion) sets out.
+`-WhatIf` describes what it would file without reading or changing an issue.
 
 **`Stop-MsBuild.ps1` and `Stop-DotNet.ps1`** are for a build that fails to copy a file nothing appears to be using.
 MSBuild keeps its workers alive between builds, and they hold what they last built.

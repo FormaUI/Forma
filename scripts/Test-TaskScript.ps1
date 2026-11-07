@@ -192,6 +192,47 @@ finally {
     $stranger.Stop()
 }
 
+# The nightly report files issues, so what runs here is the run it describes, on results made for it: a check that
+# failed in one run of a commit and passed in another, one that failed in every run, one its device interrupted, and
+# a job that failed with no failing check among its results.
+$nightly = Join-Path ([System.IO.Path]::GetTempPath()) "forma-nightly-$([guid]::NewGuid().ToString('N'))"
+
+try {
+    foreach ($folder in 'checks-gate-linux-1/run-1', 'checks-gate-linux-2/run-1', 'checks-gate-windows-1/run-1', 'checks-mobile-linux-1') {
+        $null = New-Item -ItemType Directory -Force -Path (Join-Path $nightly $folder)
+    }
+
+    Set-Content -LiteralPath (Join-Path $nightly 'checks-gate-linux-1/run-1/checks.json') -Value @'
+{ "results": { "tests": [
+  { "name": "Forma.Blazor.Browser.Tests.Windows.Restore(runtime: \"webassembly\")", "status": "failed", "labels": { "Runtime": "webassembly" }, "message": "Locator expected to be hidden" },
+  { "name": "Forma.Blazor.Browser.Tests.Menus.Open(runtime: \"android\")", "status": "failed", "labels": { "Runtime": "android" }, "message": "Forma.Tests.Hosts.AndroidDeviceUnreachableException : device offline" }
+] } }
+'@
+    Set-Content -LiteralPath (Join-Path $nightly 'checks-gate-linux-2/run-1/checks.json') -Value @'
+{ "results": { "tests": [
+  { "name": "Forma.Blazor.Browser.Tests.Windows.Restore(runtime: \"webassembly\")", "status": "passed", "labels": { "Runtime": "webassembly" } }
+] } }
+'@
+    Set-Content -LiteralPath (Join-Path $nightly 'checks-gate-windows-1/run-1/checks.json') -Value @'
+{ "results": { "tests": [
+  { "name": "Forma.Blazor.Browser.Tests.WebViewProbeTests.Navigation", "status": "failed", "message": "Expected changed" }
+] } }
+'@
+    $null = New-Item -ItemType File -Path (Join-Path $nightly 'checks-mobile-linux-1/job-failed')
+
+    $commit = '0123456789abcdef0123456789abcdef01234567'
+
+    Test-Case -Name 'the nightly report describes the issues it would file' -Script 'Update-CheckIssue.ps1' `
+        -Arguments @('-Results', $nightly, '-Commit', $commit, '-Run', 'https://example.test/run', '-Repository', 'FormaUI/Forma', '-WhatIf') `
+        -Expect @('failing checks 2, checks interrupted 1, jobs failed outside their checks 1', 'Windows.Restore(runtime: "webassembly")', 'labeled nightly, flaky', 'WebViewProbeTests.Navigation', 'labeled nightly, regression', 'An Android device the checks ran on went unreachable', 'The nightly job mobile on linux failed outside its checks')
+
+    Test-Case -Name 'a commit that is not a full SHA is refused' -Script 'Update-CheckIssue.ps1' `
+        -Arguments @('-Results', $nightly, '-Commit', 'abc1234', '-Run', 'https://example.test/run', '-Repository', 'FormaUI/Forma', '-WhatIf') -Fails
+}
+finally {
+    Remove-Item -LiteralPath $nightly -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 # ── Report ───────────────────────────────────────────────────────────────────
 
 Write-Host ''
