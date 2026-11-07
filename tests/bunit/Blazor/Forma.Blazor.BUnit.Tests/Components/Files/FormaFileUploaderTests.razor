@@ -29,21 +29,24 @@
         }
 
         [Fact]
-        public void Should_store_a_file_a_store_reads_in_chunks_off_the_renderer_thread()
+        public async Task Should_store_a_file_a_store_reads_in_chunks_off_the_renderer_thread()
         {
             // Arrange
             using var ctx = new FormaFileUploaderTests();
             var store = new ChunkedFileStore();
             var failures = new List<UploadFailure>();
             IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("long.txt", new string('a', 64))];
-
-            // Act
             var cut = ctx.Render(@<FormaFileUploader Store="store"
                                                  Files="files"
+                                                 Options="@(new FileUploaderOptions { AutoStart = false })"
                                                  OnFailed="@(failure => { failures.Add(failure); return Task.CompletedTask; })" />);
+            var uploader = cut.FindComponent<FormaFileUploader>().Instance;
+
+            // Act — the upload's own task, which the store's reads off the renderer complete
+            await cut.InvokeAsync(() => uploader.StartAsync());
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal("Stored", cut.Find(".forma-file-uploader-state").TextContent));
+            Assert.Equal("Stored", cut.Find(".forma-file-uploader-state").TextContent);
             Assert.Empty(failures);
         }
 
