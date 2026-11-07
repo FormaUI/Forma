@@ -6,7 +6,7 @@ using Bunit;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Releases the completion a rendered component awaits on the renderer, where the component acts on it at once, and waits on a rendered component's state while recording whether the wait was needed.</summary>
+/// <summary>Releases the completion a rendered component awaits on the renderer, returning once the component has acted on it, and waits on a rendered component's state while recording whether the wait was needed.</summary>
 public static class RenderedComponentExtensions
 {
     // The environment variable naming the folder the waits record themselves in, one file per test process.
@@ -15,17 +15,18 @@ public static class RenderedComponentExtensions
     private static readonly Lock WaitLogLock = new();
 
     /// <summary>Runs a release on the renderer, such as completing a gate a fake holds, and returns once the component has acted on it.</summary>
-    /// <remarks>The component's continuation runs inline where the gate is completed, here the renderer, when the release completes a plain <see cref="TaskCompletionSource"/>; one created to run its continuations asynchronously queues the continuation, and the component acts after this returns.</remarks>
+    /// <remarks>The release runs on the renderer, and a second turn there follows it. A plain <see cref="TaskCompletionSource"/> runs the component's continuation inline where the release completes it; one created to run its continuations asynchronously, as bUnit's held script answers are, queues the continuation on the renderer, where the second turn runs after it.</remarks>
     /// <typeparam name="TComponent">The rendered component's type.</typeparam>
     /// <param name="cut">The rendered component.</param>
     /// <param name="release">The action that lets the component continue.</param>
-    public static Task ReleaseAsync<TComponent>(this IRenderedComponent<TComponent> cut, Action release)
+    public static async Task ReleaseAsync<TComponent>(this IRenderedComponent<TComponent> cut, Action release)
         where TComponent : IComponent
     {
         ArgumentNullException.ThrowIfNull(cut);
         ArgumentNullException.ThrowIfNull(release);
 
-        return cut.InvokeAsync(release);
+        await cut.InvokeAsync(release).ConfigureAwait(false);
+        await cut.InvokeAsync(static () => { }).ConfigureAwait(false);
     }
 
     /// <summary>Waits until the state predicate holds, as bUnit's <c>WaitForState</c> does, recording whether it already held when the wait began.</summary>
