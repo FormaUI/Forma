@@ -197,7 +197,7 @@ internal sealed class DomSession
             if (_reachedRoots.Count > 0)
             {
                 var root = _reachedRoots.Contains(DomRoot.Engine) ? DomRoot.Engine : DomRoot.Watcher;
-                await TryReleaseAsync(root, "release");
+                await TryReleaseAsync(root, "release", "release", [RuntimeKey]);
             }
         }
         finally
@@ -224,9 +224,21 @@ internal sealed class DomSession
 
         if (_reachedRoots.Remove(DomRoot.Engine))
         {
-            await TryReleaseAsync(DomRoot.Engine, "releaseEngine");
+            await TryReleaseAsync(DomRoot.Engine, "releaseEngine", "releaseEngine", [RuntimeKey]);
         }
     }
+
+    /// <summary>Detaches a registration from the browser through <paramref name="root"/>'s entry.</summary>
+    /// <remarks>
+    /// A detach, as a release, goes through the entry only once its import has landed: what the browser holds through a root was reached through
+    /// a landed import, and a call waiting on an import still under way checks once it lands whether it is still wanted. A runtime that never
+    /// answers an import, as a web view being torn down answers none, can't hold the detach open.
+    /// </remarks>
+    /// <param name="root">The entry the registration was made through.</param>
+    /// <param name="operation">What the call does, as diagnostics name it.</param>
+    /// <param name="args">The detach's arguments.</param>
+    public Task TryDetachAsync(DomRoot root, string operation, params object?[] args)
+        => IsReleased ? Task.CompletedTask : TryReleaseAsync(root, "detach", operation, args);
 
     private void ReleaseRegistrations(Func<IDomRegistration, bool> predicate)
     {
@@ -237,14 +249,25 @@ internal sealed class DomSession
         }
     }
 
-    private async Task TryReleaseAsync(DomRoot root, string identifier)
+    // Reaches the browser only through an import that has landed, as everything the browser holds through the root did.
+    private async Task TryReleaseAsync(DomRoot root, string identifier, string operation, object?[] args)
     {
-        var module = await TryImportAsync(root, identifier);
+        IJSObjectReference? module;
 
-        if (module is not null)
+        try
         {
-            await TryInvokeCoreAsync<object>(module, root, identifier, identifier, [RuntimeKey]);
+            if (!Bridge.TryGetImported(root, out module))
+            {
+                return;
+            }
         }
+        catch (ObjectDisposedException)
+        {
+            DomLog.BridgeReleased(_js.Logger, operation, root.Name, _js.RuntimeId);
+            return;
+        }
+
+        await TryInvokeCoreAsync<object>(module, root, identifier, operation, args);
     }
 
     private async Task<IJSObjectReference?> TryImportAsync(DomRoot root, string operation)

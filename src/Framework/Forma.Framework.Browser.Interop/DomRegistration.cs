@@ -163,7 +163,7 @@ internal sealed class DomRegistration<TOptions> : IDomRegistration
     }
 
     private async Task DetachAsync(int generation)
-        => await _session.TryInvokeAsync<object>(Root, "detach", FormatOperation("detach", generation), static () => true, createsState: false, _session.RuntimeKey, Token, generation);
+        => await _session.TryDetachAsync(Root, FormatOperation("detach", generation), _session.RuntimeKey, Token, generation);
 
     private int Invalidate()
     {

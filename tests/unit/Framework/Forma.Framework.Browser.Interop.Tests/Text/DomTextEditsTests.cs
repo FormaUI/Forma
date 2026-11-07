@@ -819,6 +819,34 @@ public sealed class DomTextEditsTests
     public sealed class Releasing
     {
         [Fact]
+        public async Task Should_be_released_at_once_while_its_entry_is_still_importing_and_attach_nothing_once_the_import_lands()
+        {
+            // Arrange — the engine's entry still importing as the edits attach, as a web view being torn down leaves an import unanswered
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            browser.Runtime.Recorder.Hold("import");
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            var edits = new DomTextEdits(engine, string.Empty, _ => Task.CompletedTask);
+            var importing = browser.Runtime.Recorder.WaitForCallAsync("import", _ => true);
+            var syncing = edits.SyncAsync(Field, string.Empty, Live);
+            var import = await importing;
+
+            // Act — the edits released, then the import answered
+            var releasing = edits.DisposeAsync();
+            var isReleasedAtOnce = releasing.IsCompleted;
+            import.Complete(browser.Engine);
+            await syncing;
+            await releasing;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isReleasedAtOnce),
+                () => Assert.Empty(browser.Engine.Recorder.GetCalls("attach")),
+                () => Assert.Empty(browser.Engine.Recorder.GetCalls("detach")));
+        }
+
+        [Fact]
         public async Task Should_release_unread_an_edit_still_waiting_as_its_edits_are_released()
         {
             // Arrange

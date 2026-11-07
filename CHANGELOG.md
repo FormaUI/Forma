@@ -13,6 +13,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   sets none. It wrote `Title` ahead of the page's own, and browsers and search engines showed that one.
 - `FormaPageHead` takes `PageRenderMode`, the render mode a host gives `Routes`, which its head outlet renders in, so
   a page's title and head content follow the page once it's interactive.
+- A Blazor Hybrid page reloaded while its components were still loading their scripts starts again. The old page's
+  components waited, as they were released, on a script the old page would never load, and the new page never started.
 
 ## `1.0.0-preview.3`
 

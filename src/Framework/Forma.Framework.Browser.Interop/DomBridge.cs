@@ -13,6 +13,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
 {
     private readonly IJSEnvironment _environment;
     private readonly Dictionary<DomRoot, JSModule> _modules = [];
+    private readonly Dictionary<DomRoot, Task<IJSObjectReference>> _imports = [];
     private readonly HashSet<DomSession> _liveSessions = [];
     private bool _isDisposed;
 
@@ -49,6 +50,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
         }
 
         _modules.Clear();
+        _imports.Clear();
     }
 
     /// <inheritdoc />
@@ -57,6 +59,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
     {
         _isDisposed = true;
         _modules.Clear();
+        _imports.Clear();
     }
 
     /// <summary>Starts refreshing every established observation of the bridge's sessions, in one call, and bringing every text field's edits back in step with its field.</summary>
@@ -105,7 +108,18 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
             _modules[root] = module;
         }
 
-        return module.ImportAsync();
+        return _imports[root] = module.ImportAsync();
+    }
+
+    /// <summary>Gets <paramref name="root"/>'s module where its import has landed, starting and awaiting none.</summary>
+    /// <exception cref="ObjectDisposedException">The bridge has been disposed.</exception>
+    internal bool TryGetImported(DomRoot root, [NotNullWhen(true)] out IJSObjectReference? module)
+    {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+        module = _imports.TryGetValue(root, out var import) && import.IsCompletedSuccessfully ? import.Result : null;
+
+        return module is not null;
     }
 
     private async Task RefreshAsync(List<DomObservedOwner> owners)

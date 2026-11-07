@@ -182,12 +182,12 @@ public static partial class ComponentChecks
 
             if (prepare is not null)
             {
-                await WaitForRendererAsync(page, "WebView", problems).ConfigureAwait(false);
+                await WaitForRendererAsync(page, "WebView", problems, () => application.GetOutput(80)).ConfigureAwait(false);
                 await prepare(page).ConfigureAwait(false);
                 await page.ReloadAsync().ConfigureAwait(false);
             }
 
-            await WaitForRendererAsync(page, "WebView", problems).ConfigureAwait(false);
+            await WaitForRendererAsync(page, "WebView", problems, () => application.GetOutput(80)).ConfigureAwait(false);
         }
         catch
         {
@@ -260,16 +260,20 @@ public static partial class ComponentChecks
         }
     }
 
-    // A page that never becomes interactive fails with what it reported, its errors and the requests that failed, beside the wait's own message.
-    private static async Task WaitForRendererAsync(IPage page, string renderer, System.Collections.Concurrent.ConcurrentQueue<string> problems)
+    // A page that never becomes interactive fails with what it reported, its errors and the requests that failed, and in a web view with what
+    // the check host last wrote, beside the wait's own message.
+    private static async Task WaitForRendererAsync(IPage page, string renderer, System.Collections.Concurrent.ConcurrentQueue<string> problems, Func<string>? readHostOutput = null)
     {
         try
         {
             await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex($"^{renderer} True$"), new() { Timeout = 60000 }).ConfigureAwait(false);
         }
-        catch (PlaywrightException ex) when (!problems.IsEmpty)
+        catch (PlaywrightException ex) when (!problems.IsEmpty || readHostOutput is not null)
         {
-            throw new PlaywrightException($"{ex.Message}{Environment.NewLine}The page reported:{Environment.NewLine}{string.Join(Environment.NewLine, problems)}", ex);
+            var reported = problems.IsEmpty ? string.Empty : $"{Environment.NewLine}The page reported:{Environment.NewLine}{string.Join(Environment.NewLine, problems)}";
+            var written = readHostOutput is null ? string.Empty : $"{Environment.NewLine}The check host last wrote:{Environment.NewLine}{readHostOutput()}";
+
+            throw new PlaywrightException($"{ex.Message}{reported}{written}", ex);
         }
     }
 
