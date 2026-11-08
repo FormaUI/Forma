@@ -371,12 +371,14 @@ describe('CultureCoordinator', () => {
 
             // Act
             const switching = registration.request('he', 'he', 'rtl');
-            await vi.waitFor(() => expect(window.Blazor.navigations).toEqual(['http://localhost/he/about']));
+            await settle();
+            const navigations = [...window.Blazor.navigations];
             window.happyDOM.setURL('http://localhost/he/about');
             await registration.reportLanding('he', 1);
 
             // Assert
             await expect(switching).resolves.toBe('accepted');
+            expect(navigations).toEqual(['http://localhost/he/about']);
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
         });
     });
